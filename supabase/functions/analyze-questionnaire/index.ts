@@ -1,0 +1,193 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const { answers, questions } = await req.json();
+
+    if (!answers || !questions) {
+      return new Response(
+        JSON.stringify({ error: "Missing answers or questions" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Build a detailed prompt with all Q&A pairs
+    const qaPairs = questions.map((q: any) => {
+      const answer = answers[q.id];
+      const answerText = Array.isArray(answer) ? answer.join(", ") : String(answer ?? "Keine Antwort");
+      return `[${q.category}] ${q.question}\nAntwort: ${answerText}`;
+    }).join("\n\n");
+
+    const systemPrompt = `Du bist ein erfahrener Sportpsychologe mit Expertise in Neurowissenschaften, Verhaltenspsychologie und mentalem Performance-Training. Du analysierst die Fragebogen-Antworten eines Sportlers und erstellst ein umfassendes mentales Profil.
+
+Deine Analyse muss auf wissenschaftlichen Prinzipien basieren und folgendes enthalten:
+
+1. **Stärkenprofil**: Die 3-4 größten mentalen Stärken des Sportlers mit wissenschaftlicher Begründung
+2. **Entwicklungsfelder**: Die 3-4 wichtigsten Bereiche mit Verbesserungspotenzial
+3. **Kernmuster**: Tiefere psychologische Muster die du in den Antworten erkennst
+4. **Empfehlungen**: Konkrete, wissenschaftlich fundierte Empfehlungen für die nächsten 4 Wochen
+5. **Tägliche Fokus-Bereiche**: Spezifische Aufgaben für Trainings- und Ruhetage
+
+Antworte auf Deutsch. Sei direkt, wissenschaftlich fundiert aber verständlich. Verwende neurowissenschaftliche und sportpsychologische Fachbegriffe wo angemessen, aber erkläre sie. 
+
+Strukturiere deine Antwort als JSON mit folgender Struktur:
+{
+  "summary": "2-3 Sätze Gesamteinschätzung",
+  "strengths": [{"title": "...", "description": "...", "science": "..."}],
+  "development_areas": [{"title": "...", "description": "...", "priority": "high/medium/low", "science": "..."}],
+  "patterns": [{"title": "...", "description": "..."}],
+  "recommendations": [{"title": "...", "description": "...", "duration": "...", "frequency": "..."}],
+  "training_day_tasks": ["...", "...", "..."],
+  "rest_day_tasks": ["...", "...", "..."],
+  "mental_score": 0-100,
+  "dominant_category": "..."
+}`;
+
+    const response = await fetch(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: `Hier sind die vollständigen Fragebogen-Antworten des Sportlers:\n\n${qaPairs}\n\nErstelle eine umfassende Analyse als JSON.`,
+            },
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "create_mental_profile",
+                description: "Creates a comprehensive mental performance profile based on questionnaire answers",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    summary: { type: "string", description: "2-3 sentence overall assessment" },
+                    strengths: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          science: { type: "string" },
+                        },
+                        required: ["title", "description", "science"],
+                      },
+                    },
+                    development_areas: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          priority: { type: "string", enum: ["high", "medium", "low"] },
+                          science: { type: "string" },
+                        },
+                        required: ["title", "description", "priority", "science"],
+                      },
+                    },
+                    patterns: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string" },
+                          description: { type: "string" },
+                        },
+                        required: ["title", "description"],
+                      },
+                    },
+                    recommendations: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string" },
+                          description: { type: "string" },
+                          duration: { type: "string" },
+                          frequency: { type: "string" },
+                        },
+                        required: ["title", "description", "duration", "frequency"],
+                      },
+                    },
+                    training_day_tasks: { type: "array", items: { type: "string" } },
+                    rest_day_tasks: { type: "array", items: { type: "string" } },
+                    mental_score: { type: "number" },
+                    dominant_category: { type: "string" },
+                  },
+                  required: [
+                    "summary", "strengths", "development_areas", "patterns",
+                    "recommendations", "training_day_tasks", "rest_day_tasks",
+                    "mental_score", "dominant_category",
+                  ],
+                },
+              },
+            },
+          ],
+          tool_choice: { type: "function", function: { name: "create_mental_profile" } },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit erreicht. Bitte versuche es in einer Minute erneut." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "KI-Credits aufgebraucht. Bitte lade dein Konto auf." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      throw new Error(`AI gateway error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    
+    if (!toolCall) {
+      throw new Error("No tool call in AI response");
+    }
+
+    const analysis = JSON.parse(toolCall.function.arguments);
+
+    return new Response(JSON.stringify({ analysis }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("analyze-questionnaire error:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
