@@ -1,16 +1,34 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import ProcessSection from "@/components/ProcessSection";
+import ScienceSection from "@/components/ScienceSection";
+import DailySection from "@/components/DailySection";
+import CoachSection from "@/components/CoachSection";
+import CTASection from "@/components/CTASection";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <HeroSection />
+      <div id="process">
+        <ProcessSection />
+      </div>
+      <div id="science">
+        <ScienceSection />
+      </div>
+      <DailySection />
+      <div id="coaches">
+        <CoachSection />
+      </div>
+      <CTASection />
+      <footer className="py-8 border-t border-border">
+        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
+          © 2026 MindGame. Alle Rechte vorbehalten.
+        </div>
+      </footer>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
