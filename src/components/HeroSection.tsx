@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Brain } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-athlete.jpg";
 
 const HeroSection = () => {
