@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          created_at: string
+          date: string
+          event_type: string
+          id: string
+          notes: string | null
+          session_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          session_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          session_id?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
+      daily_checkins: {
+        Row: {
+          created_at: string
+          date: string
+          energy_level: number | null
+          event_type: string
+          focus_rating: number | null
+          id: string
+          mood_before: number | null
+          reflection: string | null
+          session_id: string
+          tasks_completed: Json | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          energy_level?: number | null
+          event_type: string
+          focus_rating?: number | null
+          id?: string
+          mood_before?: number | null
+          reflection?: string | null
+          session_id: string
+          tasks_completed?: Json | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          energy_level?: number | null
+          event_type?: string
+          focus_rating?: number | null
+          id?: string
+          mood_before?: number | null
+          reflection?: string | null
+          session_id?: string
+          tasks_completed?: Json | null
+        }
+        Relationships: []
+      }
       questionnaire_responses: {
         Row: {
           analysis: Json | null
