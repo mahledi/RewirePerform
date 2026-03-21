@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const CTASection = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-32 relative">
       <div className="container mx-auto px-6">
@@ -20,7 +22,10 @@ const CTASection = () => {
             Starte jetzt mit deinem individuellen Mental-Performance-Programm. 
             Wissenschaftlich fundiert. KI-personalisiert. Täglich begleitet.
           </p>
-          <button className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]">
+          <button
+            onClick={() => navigate("/questionnaire")}
+            className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]"
+          >
             Jetzt Zugang sichern
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </button>
