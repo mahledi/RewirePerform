@@ -83,6 +83,66 @@ export type Database = {
         }
         Relationships: []
       }
+      personalized_tasks: {
+        Row: {
+          date: string
+          event_type: string
+          generated_at: string
+          id: string
+          session_id: string
+          tasks: Json
+        }
+        Insert: {
+          date: string
+          event_type: string
+          generated_at?: string
+          id?: string
+          session_id: string
+          tasks?: Json
+        }
+        Update: {
+          date?: string
+          event_type?: string
+          generated_at?: string
+          id?: string
+          session_id?: string
+          tasks?: Json
+        }
+        Relationships: []
+      }
+      program_settings: {
+        Row: {
+          competition_date: string | null
+          competition_name: string | null
+          created_at: string
+          id: string
+          program_start: string
+          program_weeks: number
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          competition_date?: string | null
+          competition_name?: string | null
+          created_at?: string
+          id?: string
+          program_start?: string
+          program_weeks?: number
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          competition_date?: string | null
+          competition_name?: string | null
+          created_at?: string
+          id?: string
+          program_start?: string
+          program_weeks?: number
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       questionnaire_responses: {
         Row: {
           analysis: Json | null
