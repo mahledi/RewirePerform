@@ -471,7 +471,10 @@ const Dashboard = () => {
             <Brain className="w-5 h-5 text-primary" />
             <span className="font-heading font-bold">MindGame</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Tests">
+              <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
+            </button>
             <button onClick={() => setShowSettings(!showSettings)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
@@ -482,6 +485,13 @@ const Dashboard = () => {
             >
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
               {syncing ? "Sync..." : "KI-Sync"}
+            </button>
+            <button
+              onClick={async () => { await signOut(); navigate("/"); }}
+              className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
+              title="Abmelden"
+            >
+              <LogOut className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
         </div>
