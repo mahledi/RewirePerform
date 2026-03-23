@@ -60,7 +60,7 @@ const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <button onClick={() => navigate("/questionnaire")} className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary font-heading font-semibold text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]">
+            <button onClick={() => navigate("/auth")} className="group flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary font-heading font-semibold text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]">
               Zugang sichern
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>

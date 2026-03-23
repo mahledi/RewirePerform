@@ -1,6 +1,8 @@
 import { Brain } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -13,7 +15,7 @@ const Navbar = () => {
           <a href="#science" className="hover:text-foreground transition-colors">Wissenschaft</a>
           <a href="#coaches" className="hover:text-foreground transition-colors">Für Coaches</a>
         </div>
-        <button className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
+        <button onClick={() => navigate("/auth")} className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
           Zugang
         </button>
       </div>
