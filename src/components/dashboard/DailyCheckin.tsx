@@ -22,6 +22,7 @@ interface CheckinTask {
   id: string;
   title: string;
   description: string;
+  science_bite?: string;
   icon: string;
 }
 
