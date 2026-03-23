@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Brain, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Brain, Mail, Lock, User, ArrowRight, Loader2, Users, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -13,6 +13,8 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [sport, setSport] = useState("");
+  const [selectedRole, setSelectedRole] = useState<"athlete" | "coach">("athlete");
+  const [teamCode, setTeamCode] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +27,18 @@ const Auth = () => {
     setLoading(true);
 
     if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
         toast.error(error.message === "Invalid login credentials" ? "Ungültige Anmeldedaten." : error.message);
       } else {
         toast.success("Willkommen zurück!");
-        navigate("/dashboard");
+        // Check role for redirect
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+        navigate(roleData?.role === "coach" ? "/coach" : "/dashboard");
       }
     } else {
       if (!fullName.trim()) {
@@ -38,17 +46,40 @@ const Auth = () => {
         setLoading(false);
         return;
       }
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          data: { full_name: fullName.trim(), sport: sport.trim() },
+          data: { full_name: fullName.trim(), sport: sport.trim(), role: selectedRole },
           emailRedirectTo: window.location.origin,
         },
       });
       if (error) {
         toast.error(error.message);
-      } else {
+      } else if (data.user) {
+        // Insert role
+        await supabase.from("user_roles").insert({
+          user_id: data.user.id,
+          role: selectedRole,
+        });
+
+        // Join team if code provided
+        if (teamCode.trim()) {
+          const { data: team } = await supabase
+            .from("teams")
+            .select("id")
+            .eq("access_code", teamCode.trim().toUpperCase())
+            .maybeSingle();
+          if (team) {
+            await supabase.from("team_members").insert({
+              team_id: team.id,
+              user_id: data.user.id,
+            });
+          } else {
+            toast.error("Teamcode nicht gefunden. Du kannst ihn später eingeben.");
+          }
+        }
+
         toast.success("Bestätigungs-Email gesendet! Bitte prüfe dein Postfach.");
       }
     }
@@ -78,6 +109,34 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <>
+              {/* Role Selection */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("athlete")}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                    selectedRole === "athlete"
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                  Sportler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("coach")}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                    selectedRole === "coach"
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  Trainer
+                </button>
+              </div>
+
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -95,6 +154,19 @@ const Auth = () => {
                   value={sport}
                   onChange={(e) => setSport(e.target.value)}
                   className="w-full px-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+                />
+              </div>
+
+              {/* Team Code */}
+              <div className="relative">
+                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Teamcode (optional)"
+                  value={teamCode}
+                  onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm uppercase tracking-widest"
                 />
               </div>
             </>

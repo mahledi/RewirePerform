@@ -10,6 +10,7 @@ import Auth from "./pages/Auth.tsx";
 import Questionnaire from "./pages/Questionnaire.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Assessment from "./pages/Assessment.tsx";
+import Coach from "./pages/Coach.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,9 @@ const App = () => (
             } />
             <Route path="/assessment" element={
               <ProtectedRoute><Assessment /></ProtectedRoute>
+            } />
+            <Route path="/coach" element={
+              <ProtectedRoute><Coach /></ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
