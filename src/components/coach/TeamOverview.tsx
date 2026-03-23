@@ -1,25 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Users, TrendingUp, Activity, Brain } from "lucide-react";
+import { Users, Activity, CheckCircle, Lock } from "lucide-react";
 
-interface AthleteData {
-  user_id: string;
-  full_name: string | null;
-  sport: string | null;
-  last_checkin_date: string | null;
-  avg_mood: number | null;
-  avg_energy: number | null;
-  checkin_count: number;
-  assessment_count: number;
+interface TeamStats {
+  totalAthletes: number;
+  activeThisWeek: number;
+  totalCheckins: number;
+  totalAssessments: number;
 }
 
 const TeamOverview = ({ teamId }: { teamId: string }) => {
-  const [athletes, setAthletes] = useState<AthleteData[]>([]);
+  const [stats, setStats] = useState<TeamStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAthletes = async () => {
+    const fetchStats = async () => {
       // Get team members
       const { data: members } = await supabase
         .from("team_members")
@@ -27,67 +22,57 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         .eq("team_id", teamId);
 
       if (!members?.length) {
+        setStats({ totalAthletes: 0, activeThisWeek: 0, totalCheckins: 0, totalAssessments: 0 });
         setLoading(false);
         return;
       }
 
       const userIds = members.map((m) => m.user_id);
 
-      // Get profiles
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, sport")
-        .in("id", userIds);
-
-      // Get checkins
-      const { data: checkins } = await supabase
-        .from("daily_checkins")
-        .select("user_id, mood_before, energy_level, date")
-        .in("user_id", userIds);
-
-      // Get assessments count
-      const { data: assessments } = await supabase
-        .from("assessments")
-        .select("user_id")
-        .in("user_id", userIds);
-
-      // Filter out coaches (only show athletes)
+      // Filter to athletes only
       const { data: roles } = await supabase
         .from("user_roles")
         .select("user_id, role")
         .in("user_id", userIds);
 
-      const athleteIds = new Set(
-        (roles ?? []).filter((r) => r.role === "athlete").map((r) => r.user_id)
+      const athleteIds = (roles ?? []).filter((r) => r.role === "athlete").map((r) => r.user_id);
+
+      if (!athleteIds.length) {
+        setStats({ totalAthletes: 0, activeThisWeek: 0, totalCheckins: 0, totalAssessments: 0 });
+        setLoading(false);
+        return;
+      }
+
+      // Get checkins (only counts, no personal data)
+      const { data: checkins } = await supabase
+        .from("daily_checkins")
+        .select("user_id, date")
+        .in("user_id", athleteIds);
+
+      // Get assessments count
+      const { data: assessments } = await supabase
+        .from("assessments")
+        .select("user_id")
+        .in("user_id", athleteIds);
+
+      // Calculate "active this week"
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const weekStr = oneWeekAgo.toISOString().split("T")[0];
+      const activeUsers = new Set(
+        (checkins ?? []).filter((c) => c.date >= weekStr).map((c) => c.user_id)
       );
 
-      const athleteData: AthleteData[] = (profiles ?? [])
-        .filter((p) => athleteIds.has(p.id))
-        .map((p) => {
-          const userCheckins = (checkins ?? []).filter((c) => c.user_id === p.id);
-          const moods = userCheckins.filter((c) => c.mood_before != null).map((c) => c.mood_before!);
-          const energies = userCheckins.filter((c) => c.energy_level != null).map((c) => c.energy_level!);
-          const lastDate = userCheckins.length
-            ? userCheckins.sort((a, b) => b.date.localeCompare(a.date))[0].date
-            : null;
-
-          return {
-            user_id: p.id,
-            full_name: p.full_name,
-            sport: p.sport,
-            last_checkin_date: lastDate,
-            avg_mood: moods.length ? Math.round((moods.reduce((a, b) => a + b, 0) / moods.length) * 10) / 10 : null,
-            avg_energy: energies.length ? Math.round((energies.reduce((a, b) => a + b, 0) / energies.length) * 10) / 10 : null,
-            checkin_count: userCheckins.length,
-            assessment_count: (assessments ?? []).filter((a) => a.user_id === p.id).length,
-          };
-        });
-
-      setAthletes(athleteData);
+      setStats({
+        totalAthletes: athleteIds.length,
+        activeThisWeek: activeUsers.size,
+        totalCheckins: (checkins ?? []).length,
+        totalAssessments: (assessments ?? []).length,
+      });
       setLoading(false);
     };
 
-    fetchAthletes();
+    fetchStats();
   }, [teamId]);
 
   if (loading) {
@@ -98,7 +83,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
     );
   }
 
-  if (!athletes.length) {
+  if (!stats || stats.totalAthletes === 0) {
     return (
       <div className="text-center py-12">
         <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -109,52 +94,42 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
   }
 
   return (
-    <div className="space-y-3">
-      {athletes.map((athlete) => (
-        <div
-          key={athlete.user_id}
-          className="bg-card border border-border/50 rounded-2xl p-5 space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-heading font-semibold text-foreground">
-                {athlete.full_name || "Unbenannt"}
-              </h3>
-              {athlete.sport && (
-                <p className="text-xs text-muted-foreground">{athlete.sport}</p>
-              )}
-            </div>
-            {athlete.last_checkin_date && (
-              <span className="text-xs text-muted-foreground">
-                Letztes Check-in: {new Date(athlete.last_checkin_date).toLocaleDateString("de-DE")}
-              </span>
-            )}
-          </div>
-
-          <div className="grid grid-cols-4 gap-2">
-            <div className="bg-secondary/50 rounded-xl p-3 text-center">
-              <Activity className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-foreground">{athlete.avg_mood ?? "–"}</p>
-              <p className="text-[10px] text-muted-foreground">Ø Mood</p>
-            </div>
-            <div className="bg-secondary/50 rounded-xl p-3 text-center">
-              <TrendingUp className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-foreground">{athlete.avg_energy ?? "–"}</p>
-              <p className="text-[10px] text-muted-foreground">Ø Energie</p>
-            </div>
-            <div className="bg-secondary/50 rounded-xl p-3 text-center">
-              <Brain className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-foreground">{athlete.checkin_count}</p>
-              <p className="text-[10px] text-muted-foreground">Check-ins</p>
-            </div>
-            <div className="bg-secondary/50 rounded-xl p-3 text-center">
-              <Brain className="w-4 h-4 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-foreground">{athlete.assessment_count}</p>
-              <p className="text-[10px] text-muted-foreground">Tests</p>
-            </div>
-          </div>
+    <div className="space-y-4">
+      {/* Aggregated Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
+          <Users className="w-5 h-5 text-primary mx-auto mb-2" />
+          <p className="text-2xl font-bold text-foreground">{stats.totalAthletes}</p>
+          <p className="text-xs text-muted-foreground">Sportler gesamt</p>
         </div>
-      ))}
+        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
+          <Activity className="w-5 h-5 text-primary mx-auto mb-2" />
+          <p className="text-2xl font-bold text-foreground">{stats.activeThisWeek}</p>
+          <p className="text-xs text-muted-foreground">Aktiv diese Woche</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
+          <CheckCircle className="w-5 h-5 text-primary mx-auto mb-2" />
+          <p className="text-2xl font-bold text-foreground">{stats.totalCheckins}</p>
+          <p className="text-xs text-muted-foreground">Check-ins gesamt</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
+          <CheckCircle className="w-5 h-5 text-primary mx-auto mb-2" />
+          <p className="text-2xl font-bold text-foreground">{stats.totalAssessments}</p>
+          <p className="text-xs text-muted-foreground">Tests abgeschlossen</p>
+        </div>
+      </div>
+
+      {/* Privacy notice */}
+      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
+        <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Privatsphäre geschützt</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Du siehst nur anonyme Teilnahme-Statistiken. Persönliche Antworten, Reflexionen, 
+            Stimmungswerte und Journale deiner Sportler sind nicht einsehbar und bleiben vollständig privat.
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

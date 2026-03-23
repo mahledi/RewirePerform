@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { Users, BarChart3, Shield, Eye } from "lucide-react";
+import { Users, BarChart3, Shield, Lock } from "lucide-react";
 
 const features = [
-  { icon: Eye, title: "Volle Transparenz", text: "Alle Sportler-Aktivitäten in einer Übersicht." },
-  { icon: BarChart3, title: "Fortschritts-Tracking", text: "Entwicklung über Wochen und Monate verfolgen." },
+  { icon: Shield, title: "Privatsphäre geschützt", text: "Keine Einblicke in persönliche Antworten, Journale oder Reflexionen." },
+  { icon: BarChart3, title: "Nur Überblick-Daten", text: "Anonyme Team-Statistiken wie Teilnahme und Aktivität." },
   { icon: Users, title: "Team-Management", text: "Mehrere Sportler gleichzeitig betreuen." },
-  { icon: Shield, title: "Datenschutz", text: "DSGVO-konform. Daten gehören dem Sportler." },
+  { icon: Lock, title: "Datenschutz", text: "DSGVO-konform. Private Inhalte bleiben beim Sportler." },
 ];
 
 const CoachSection = () => {
@@ -23,33 +23,29 @@ const CoachSection = () => {
               {/* Mock Dashboard */}
               <div className="flex items-center justify-between mb-6">
                 <span className="font-heading font-semibold">Coach Dashboard</span>
-                <span className="text-xs text-muted-foreground">Live</span>
+                <span className="text-xs text-muted-foreground">Team-Übersicht</span>
               </div>
               <div className="space-y-4">
-                {[
-                  { name: "L. Müller", status: "Check-in abgeschlossen", progress: 87 },
-                  { name: "T. Schmidt", status: "Visualisierung läuft", progress: 64 },
-                  { name: "M. Weber", status: "Fragebogen ausstehend", progress: 42 },
-                ].map((athlete) => (
-                  <div key={athlete.name} className="flex items-center gap-4 p-4 rounded-xl bg-background/50">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-heading font-bold text-primary text-sm">
-                      {athlete.name[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">{athlete.name}</span>
-                        <span className="text-xs text-muted-foreground">{athlete.progress}%</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all"
-                          style={{ width: `${athlete.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground mt-1 block">{athlete.status}</span>
-                    </div>
+                <div className="p-4 rounded-xl bg-background/50 text-center">
+                  <p className="text-2xl font-bold text-primary">12</p>
+                  <p className="text-xs text-muted-foreground">Aktive Sportler</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 rounded-xl bg-background/50 text-center">
+                    <p className="text-lg font-bold text-foreground">89%</p>
+                    <p className="text-xs text-muted-foreground">Teilnahmequote</p>
                   </div>
-                ))}
+                  <div className="p-4 rounded-xl bg-background/50 text-center">
+                    <p className="text-lg font-bold text-foreground">34</p>
+                    <p className="text-xs text-muted-foreground">Check-ins diese Woche</p>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-2">
+                  <Lock className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    Private Inhalte wie Antworten, Reflexionen und Journale sind für Coaches nicht sichtbar.
+                  </p>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -69,9 +65,9 @@ const CoachSection = () => {
               <span className="text-gradient">Dein Überblick.</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-10">
-              Als Coach siehst du jede Aktivität deiner Sportler. 
-              Verfolge Fortschritte, erkenne Muster und unterstütze gezielt – 
-              alles in einem Dashboard.
+              Als Coach siehst du, ob deine Sportler aktiv am Programm teilnehmen –
+              aber niemals ihre privaten Antworten, Reflexionen oder Journale.
+              Volle Privatsphäre für Sportler, klarer Überblick für dich.
             </p>
             <div className="grid grid-cols-2 gap-4">
               {features.map((f) => (
