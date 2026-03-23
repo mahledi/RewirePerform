@@ -365,10 +365,6 @@ const Dashboard = () => {
     navigate("/assessment?mode=pre");
   };
 
-  const [preTestsDone, setPreTestsDone] = useState(false);
-  const [postTestsDone, setPostTestsDone] = useState(false);
-  const [postTestDue, setPostTestDue] = useState(false);
-  const [programStartDate, setProgramStartDate] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAssessments = async () => {
