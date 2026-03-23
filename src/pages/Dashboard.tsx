@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 type EventType = "training" | "rest" | "competition";
@@ -310,6 +311,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -469,7 +471,10 @@ const Dashboard = () => {
             <Brain className="w-5 h-5 text-primary" />
             <span className="font-heading font-bold">MindGame</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Tests">
+              <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
+            </button>
             <button onClick={() => setShowSettings(!showSettings)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
@@ -480,6 +485,13 @@ const Dashboard = () => {
             >
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
               {syncing ? "Sync..." : "KI-Sync"}
+            </button>
+            <button
+              onClick={async () => { await signOut(); navigate("/"); }}
+              className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
+              title="Abmelden"
+            >
+              <LogOut className="w-4 h-4 text-muted-foreground" />
             </button>
           </div>
         </div>

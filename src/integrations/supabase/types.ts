@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessments: {
+        Row: {
+          answers: Json
+          assessment_type: string
+          created_at: string
+          id: string
+          scores: Json | null
+          session_id: string
+          timing: string
+          total_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          answers?: Json
+          assessment_type: string
+          created_at?: string
+          id?: string
+          scores?: Json | null
+          session_id: string
+          timing: string
+          total_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          answers?: Json
+          assessment_type?: string
+          created_at?: string
+          id?: string
+          scores?: Json | null
+          session_id?: string
+          timing?: string
+          total_score?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           created_at: string
@@ -23,6 +59,7 @@ export type Database = {
           notes: string | null
           session_id: string
           title: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -32,6 +69,7 @@ export type Database = {
           notes?: string | null
           session_id: string
           title?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -41,6 +79,7 @@ export type Database = {
           notes?: string | null
           session_id?: string
           title?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -56,6 +95,7 @@ export type Database = {
           reflection: string | null
           session_id: string
           tasks_completed: Json | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -68,6 +108,7 @@ export type Database = {
           reflection?: string | null
           session_id: string
           tasks_completed?: Json | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -80,6 +121,7 @@ export type Database = {
           reflection?: string | null
           session_id?: string
           tasks_completed?: Json | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -91,6 +133,7 @@ export type Database = {
           id: string
           session_id: string
           tasks: Json
+          user_id: string | null
         }
         Insert: {
           date: string
@@ -99,6 +142,7 @@ export type Database = {
           id?: string
           session_id: string
           tasks?: Json
+          user_id?: string | null
         }
         Update: {
           date?: string
@@ -107,6 +151,34 @@ export type Database = {
           id?: string
           session_id?: string
           tasks?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          sport: string | null
+          team: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          sport?: string | null
+          team?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          sport?: string | null
+          team?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -120,6 +192,7 @@ export type Database = {
           program_weeks: number
           session_id: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           competition_date?: string | null
@@ -130,6 +203,7 @@ export type Database = {
           program_weeks?: number
           session_id: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           competition_date?: string | null
@@ -140,6 +214,7 @@ export type Database = {
           program_weeks?: number
           session_id?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -150,6 +225,7 @@ export type Database = {
           created_at: string
           id: string
           session_id: string
+          user_id: string | null
         }
         Insert: {
           analysis?: Json | null
@@ -157,6 +233,7 @@ export type Database = {
           created_at?: string
           id?: string
           session_id: string
+          user_id?: string | null
         }
         Update: {
           analysis?: Json | null
@@ -164,6 +241,7 @@ export type Database = {
           created_at?: string
           id?: string
           session_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
