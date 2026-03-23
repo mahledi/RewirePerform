@@ -223,14 +223,29 @@ const Assessment = () => {
                   </div>
                 ))}
               </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setPhase("items")}
-                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all mx-auto"
-              >
-                Test starten <ArrowRight className="w-4 h-4" />
-              </motion.button>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={() => {
+                    if (isSequentialMode) {
+                      navigate("/dashboard");
+                    } else {
+                      setPhase("select");
+                      setSelectedTest(null);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-secondary text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Zurück
+                </button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setPhase("items")}
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
+                >
+                  Test starten <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </div>
             </motion.div>
           )}
 
