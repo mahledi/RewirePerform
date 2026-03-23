@@ -311,6 +311,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
