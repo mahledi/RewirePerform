@@ -5,6 +5,7 @@ import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
   Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
+  Lightbulb, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
