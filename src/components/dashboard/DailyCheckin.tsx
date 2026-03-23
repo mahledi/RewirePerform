@@ -5,6 +5,7 @@ import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
   Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
+  Lightbulb, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,6 +22,7 @@ interface CheckinTask {
   id: string;
   title: string;
   description: string;
+  science_bite?: string;
   icon: string;
 }
 
@@ -69,6 +71,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   const [saving, setSaving] = useState(false);
   const [tasks, setTasks] = useState<CheckinTask[]>(fallbackTasks[eventType]);
   const [loadingTasks, setLoadingTasks] = useState(true);
+  const [expandedScienceBite, setExpandedScienceBite] = useState<string | null>(null);
 
   const config = typeConfig[eventType];
 
@@ -190,32 +193,67 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
                     {tasks.map((task) => {
                       const isCompleted = completedTasks.includes(task.id);
                       const IconComp = iconMap[task.icon] || Brain;
+                      const isScienceExpanded = expandedScienceBite === task.id;
                       return (
-                        <button
-                          key={task.id}
-                          onClick={() => toggleTask(task.id)}
-                          className={`w-full text-left p-4 rounded-2xl transition-all ${
-                            isCompleted
-                              ? "bg-primary/10 ring-1 ring-primary/30"
-                              : "bg-gradient-card border-glow hover:bg-secondary/50"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center mt-0.5 shrink-0 transition-colors ${
-                              isCompleted ? "bg-primary" : "bg-secondary"
-                            }`}>
-                              {isCompleted ? (
-                                <Check className="w-3.5 h-3.5 text-primary-foreground" />
+                        <div key={task.id} className="space-y-0">
+                          <button
+                            onClick={() => toggleTask(task.id)}
+                            className={`w-full text-left p-4 rounded-2xl transition-all ${
+                              isCompleted
+                                ? "bg-primary/10 ring-1 ring-primary/30"
+                                : "bg-gradient-card border-glow hover:bg-secondary/50"
+                            } ${isScienceExpanded ? "rounded-b-none" : ""}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-6 h-6 rounded-lg flex items-center justify-center mt-0.5 shrink-0 transition-colors ${
+                                isCompleted ? "bg-primary" : "bg-secondary"
+                              }`}>
+                                {isCompleted ? (
+                                  <Check className="w-3.5 h-3.5 text-primary-foreground" />
+                                ) : (
+                                  <IconComp className="w-3.5 h-3.5 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <p className={`text-sm font-medium mb-1 ${isCompleted ? "text-primary" : ""}`}>{task.title}</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{task.description}</p>
+                              </div>
+                            </div>
+                          </button>
+                          {task.science_bite && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedScienceBite(isScienceExpanded ? null : task.id);
+                              }}
+                              className={`w-full text-left transition-all ${
+                                isScienceExpanded
+                                  ? "bg-accent/30 border border-t-0 border-accent/50 rounded-b-2xl p-4"
+                                  : "flex items-center gap-1.5 px-4 py-1.5 text-xs text-primary/70 hover:text-primary"
+                              }`}
+                            >
+                              {isScienceExpanded ? (
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2 text-xs font-medium text-primary">
+                                    <Lightbulb className="w-3.5 h-3.5" />
+                                    <span>Warum das wirkt</span>
+                                    <ChevronDown className="w-3 h-3 ml-auto rotate-180" />
+                                  </div>
+                                  <p className="text-xs text-muted-foreground leading-relaxed">{task.science_bite}</p>
+                                  <p className="text-[10px] text-primary/50 italic">
+                                    Wissen verstärkt die Wirkung: Wer versteht warum eine Übung funktioniert, zeigt höhere Compliance und tieferes Engagement (Ryan & Deci, 2000).
+                                  </p>
+                                </div>
                               ) : (
-                                <IconComp className="w-3.5 h-3.5 text-muted-foreground" />
+                                <>
+                                  <Lightbulb className="w-3 h-3" />
+                                  <span>Warum das wirkt</span>
+                                  <ChevronDown className="w-3 h-3" />
+                                </>
                               )}
-                            </div>
-                            <div>
-                              <p className={`text-sm font-medium mb-1 ${isCompleted ? "text-primary" : ""}`}>{task.title}</p>
-                              <p className="text-xs text-muted-foreground leading-relaxed">{task.description}</p>
-                            </div>
-                          </div>
-                        </button>
+                            </button>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
