@@ -51,7 +51,13 @@ Erstelle für JEDEN Tag im Kalender 3-5 spezifische mentale Aufgaben die:
 6. Bei Ruhetagen: Regeneration und Reflexion
 7. Bei Trainingstagen: Mentales Training parallel zum physischen
 
-Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield).`;
+WICHTIG – Science Bite:
+Jede Aufgabe MUSS ein "science_bite" Feld enthalten: 2-3 Sätze die dem Sportler erklären WARUM diese Übung wirkt. Nenne dabei:
+- Den konkreten neurowissenschaftlichen oder psychologischen Mechanismus (z.B. "Visualisierung aktiviert denselben prämotorischen Kortex wie die echte Bewegung")
+- Eine Studie oder Forschungsrichtung als Referenz (z.B. "Jeannerod, 2001" oder "Meta-Analyse von Hatzigeorgiadis et al., 2011")
+- Warum das WISSEN darüber die Wirkung verstärkt (Metakognition erhöht Compliance und Engagement – Flavell, 1979; Ryan & Deci, 2000: Autonomie durch Verständnis)
+
+Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield).`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
