@@ -57,11 +57,12 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else if (data.user) {
-        // Insert role
+        // Role is auto-assigned via database trigger from user metadata
+        // Ensure role also exists client-side (trigger may race)
         await supabase.from("user_roles").insert({
           user_id: data.user.id,
           role: selectedRole,
-        });
+        }).then(() => {});
 
         // Join team if code provided
         if (teamCode.trim()) {
@@ -80,7 +81,8 @@ const Auth = () => {
           }
         }
 
-        toast.success("Bestätigungs-Email gesendet! Bitte prüfe dein Postfach.");
+        toast.success("Konto erstellt! Willkommen.");
+        navigate(selectedRole === "coach" ? "/coach" : "/dashboard");
       }
     }
     setLoading(false);
