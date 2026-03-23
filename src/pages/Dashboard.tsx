@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Flame, Zap, Target, Sparkles } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Flame, Zap, Target, Sparkles, Loader2, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
@@ -16,6 +16,14 @@ interface CalendarEvent {
   event_type: EventType;
   title: string | null;
   notes: string | null;
+}
+
+interface Analysis {
+  training_day_tasks: string[];
+  rest_day_tasks: string[];
+  recommendations: { title: string; description: string; duration: string; frequency: string }[];
+  mental_score: number;
+  dominant_category: string;
 }
 
 const SESSION_KEY = "mindgame_session_id";
@@ -35,6 +43,40 @@ const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; col
   competition: { label: "Wettkampf", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
+// Generate a balanced 4-week training plan
+function generate4WeekPlan(startDate: Date): { date: string; event_type: EventType; title: string }[] {
+  const plan: { date: string; event_type: EventType; title: string }[] = [];
+
+  // Weekly pattern: Mon=Training, Tue=Training, Wed=Rest, Thu=Training, Fri=Training, Sat=Rest, Sun=Rest
+  // With variation across weeks
+  const weekPatterns: EventType[][] = [
+    ["training", "training", "rest", "training", "training", "rest", "rest"],       // Week 1: Foundation
+    ["training", "training", "rest", "training", "training", "training", "rest"],    // Week 2: Build
+    ["training", "rest", "training", "training", "rest", "training", "rest"],        // Week 3: Variation
+    ["training", "training", "rest", "training", "rest", "competition", "rest"],     // Week 4: Peak + Competition
+  ];
+
+  const weekTitles = [
+    ["Technik-Fokus", "Intensität aufbauen", "Aktive Regeneration", "Taktik-Training", "Belastungstest", "Mentale Erholung", "Vollständige Ruhe"],
+    ["Kraft & Explosivität", "Ausdauer-Session", "Regeneration & Mobility", "Spielform-Training", "Wettkampf-Simulation", "Freies Training", "Erholung"],
+    ["Schnelligkeit", "Aktive Erholung", "Koordination & Timing", "Intensiv-Training", "Mentales Training", "Leichte Belastung", "Ruhetag"],
+    ["Feinschliff", "Aktivierung", "Pre-Competition Rest", "Letzte Vorbereitung", "Mentale Vorbereitung", "Wettkampf", "Erholung & Analyse"],
+  ];
+
+  for (let week = 0; week < 4; week++) {
+    for (let day = 0; day < 7; day++) {
+      const date = addDays(startDate, week * 7 + day);
+      plan.push({
+        date: format(date, "yyyy-MM-dd"),
+        event_type: weekPatterns[week][day],
+        title: weekTitles[week][day],
+      });
+    }
+  }
+
+  return plan;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -44,9 +86,18 @@ const Dashboard = () => {
   const [newEventType, setNewEventType] = useState<EventType>("training");
   const [newEventTitle, setNewEventTitle] = useState("");
   const [showCheckin, setShowCheckin] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const sessionId = useMemo(() => getSessionId(), []);
 
   useEffect(() => {
+    // Load saved analysis
+    const savedAnalysis = localStorage.getItem("mindgame_analysis");
+    if (savedAnalysis) {
+      try {
+        setAnalysis(JSON.parse(savedAnalysis));
+      } catch {}
+    }
     loadEvents();
   }, []);
 
@@ -55,7 +106,41 @@ const Dashboard = () => {
       .from("calendar_events")
       .select("*")
       .eq("session_id", sessionId);
-    if (data) setEvents(data as CalendarEvent[]);
+    
+    if (data && data.length > 0) {
+      setEvents(data as CalendarEvent[]);
+    } else {
+      // No events → auto-generate 4-week plan
+      await generatePlan();
+    }
+  };
+
+  const generatePlan = async () => {
+    setIsGenerating(true);
+    const today = new Date();
+    // Start from next Monday
+    const dayOfWeek = today.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : 8 - dayOfWeek;
+    const startDate = addDays(today, daysUntilMonday);
+
+    const plan = generate4WeekPlan(startDate);
+
+    const inserts = plan.map((p) => ({
+      session_id: sessionId,
+      date: p.date,
+      event_type: p.event_type,
+      title: p.title,
+    }));
+
+    const { data, error } = await supabase
+      .from("calendar_events")
+      .insert(inserts)
+      .select();
+
+    if (!error && data) {
+      setEvents(data as CalendarEvent[]);
+    }
+    setIsGenerating(false);
   };
 
   const addEvent = async () => {
@@ -106,6 +191,28 @@ const Dashboard = () => {
   const restCount = events.filter((e) => e.event_type === "rest").length;
   const competitionCount = events.filter((e) => e.event_type === "competition").length;
 
+  if (isGenerating) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+            className="mx-auto mb-8"
+          >
+            <Loader2 className="w-12 h-12 text-primary" />
+          </motion.div>
+          <h2 className="font-heading text-2xl font-bold mb-3">
+            Dein 4-Wochen-Plan wird erstellt...
+          </h2>
+          <p className="text-muted-foreground">
+            Training, Ruhetage und Wettkämpfe werden basierend auf deinem Profil strukturiert.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (showCheckin && todayEventType) {
     return (
       <DailyCheckin
@@ -127,12 +234,33 @@ const Dashboard = () => {
             <span className="font-heading font-bold">MindGame</span>
           </div>
           <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground font-heading">Dashboard</span>
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Mental Score Banner */}
+        {analysis && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground font-heading mb-1">Mental Score</p>
+                <p className="text-3xl font-heading font-bold text-primary">{analysis.mental_score}<span className="text-base text-muted-foreground">/100</span></p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground mb-1">4-Wochen-Programm aktiv</p>
+                <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten geplant</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Today's Check-in CTA */}
         {todayEventType && (
           <motion.div
@@ -160,6 +288,16 @@ const Dashboard = () => {
                 <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
             </button>
+          </motion.div>
+        )}
+
+        {!todayEventType && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center"
+          >
+            <p className="text-muted-foreground text-sm">Heute ist kein Eintrag geplant. Trage ein Event im Kalender ein oder genieße deinen freien Tag.</p>
           </motion.div>
         )}
 
