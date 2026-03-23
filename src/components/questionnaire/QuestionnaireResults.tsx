@@ -46,6 +46,7 @@ interface Analysis {
 }
 
 const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
+  const navigate = useNavigate();
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState<string | null>(null);
