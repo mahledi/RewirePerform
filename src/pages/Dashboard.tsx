@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Flame, Zap, Target, Sparkles, Loader2, Calendar } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
@@ -27,6 +27,7 @@ interface Analysis {
 }
 
 const SESSION_KEY = "mindgame_session_id";
+const SETUP_DONE_KEY = "mindgame_setup_done";
 
 function getSessionId(): string {
   let id = localStorage.getItem(SESSION_KEY);
@@ -43,39 +44,251 @@ const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; col
   competition: { label: "Wettkampf", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
-// Generate a balanced 4-week training plan
-function generate4WeekPlan(startDate: Date): { date: string; event_type: EventType; title: string }[] {
-  const plan: { date: string; event_type: EventType; title: string }[] = [];
-
-  // Weekly pattern: Mon=Training, Tue=Training, Wed=Rest, Thu=Training, Fri=Training, Sat=Rest, Sun=Rest
-  // With variation across weeks
-  const weekPatterns: EventType[][] = [
-    ["training", "training", "rest", "training", "training", "rest", "rest"],       // Week 1: Foundation
-    ["training", "training", "rest", "training", "training", "training", "rest"],    // Week 2: Build
-    ["training", "rest", "training", "training", "rest", "training", "rest"],        // Week 3: Variation
-    ["training", "training", "rest", "training", "rest", "competition", "rest"],     // Week 4: Peak + Competition
-  ];
-
-  const weekTitles = [
-    ["Technik-Fokus", "Intensität aufbauen", "Aktive Regeneration", "Taktik-Training", "Belastungstest", "Mentale Erholung", "Vollständige Ruhe"],
-    ["Kraft & Explosivität", "Ausdauer-Session", "Regeneration & Mobility", "Spielform-Training", "Wettkampf-Simulation", "Freies Training", "Erholung"],
-    ["Schnelligkeit", "Aktive Erholung", "Koordination & Timing", "Intensiv-Training", "Mentales Training", "Leichte Belastung", "Ruhetag"],
-    ["Feinschliff", "Aktivierung", "Pre-Competition Rest", "Letzte Vorbereitung", "Mentale Vorbereitung", "Wettkampf", "Erholung & Analyse"],
-  ];
-
-  for (let week = 0; week < 4; week++) {
-    for (let day = 0; day < 7; day++) {
-      const date = addDays(startDate, week * 7 + day);
-      plan.push({
-        date: format(date, "yyyy-MM-dd"),
-        event_type: weekPatterns[week][day],
-        title: weekTitles[week][day],
-      });
-    }
-  }
-
-  return plan;
+// ─── Calendar Setup Component ─────────────────────────────────────
+interface CalendarSetupProps {
+  sessionId: string;
+  onComplete: (events: CalendarEvent[]) => void;
 }
+
+const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
+  const today = startOfDay(new Date());
+  const endDate = addDays(today, 27); // 4 weeks
+  const [currentMonth, setCurrentMonth] = useState(today);
+  const [selectedTool, setSelectedTool] = useState<EventType>("training");
+  const [localEvents, setLocalEvents] = useState<Map<string, EventType>>(new Map());
+  const [saving, setSaving] = useState(false);
+
+  // Show two months if needed
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+
+  const isInRange = (day: Date) => {
+    const d = startOfDay(day);
+    return d >= today && d <= endDate;
+  };
+
+  const toggleDay = (day: Date) => {
+    if (!isInRange(day)) return;
+    const key = format(day, "yyyy-MM-dd");
+    const newEvents = new Map(localEvents);
+
+    if (newEvents.has(key) && newEvents.get(key) === selectedTool) {
+      newEvents.delete(key);
+    } else {
+      newEvents.set(key, selectedTool);
+    }
+    setLocalEvents(newEvents);
+  };
+
+  const filledDays = localEvents.size;
+  const totalDays = 28;
+
+  const handleSave = async () => {
+    if (filledDays === 0) return;
+    setSaving(true);
+
+    const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
+      session_id: sessionId,
+      date,
+      event_type: type,
+      title: eventConfig[type].label,
+    }));
+
+    const { data, error } = await supabase
+      .from("calendar_events")
+      .insert(inserts)
+      .select();
+
+    if (!error && data) {
+      localStorage.setItem(SETUP_DONE_KEY, "true");
+      onComplete(data as CalendarEvent[]);
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-primary" />
+            <span className="font-heading font-bold">MindGame</span>
+          </div>
+          <span className="text-xs text-muted-foreground font-heading">Kalender-Setup</span>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-6 py-8">
+        {/* Intro */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <h1 className="font-heading text-2xl md:text-3xl font-bold mb-3">
+            Plane deine nächsten
+            <br />
+            <span className="text-gradient">4 Wochen.</span>
+          </h1>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
+            Dein Programm wird exakt an deinen Kalender angepasst.
+          </p>
+        </motion.div>
+
+        {/* Info Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6"
+        >
+          <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Wähle unten ein Tool (Training, Ruhetag, Wettkampf) und tippe auf die Tage im Kalender.
+            Jeder Tag bekommt dann automatisch passende mentale Aufgaben.
+          </p>
+        </motion.div>
+
+        {/* Tool Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="grid grid-cols-3 gap-2 mb-6"
+        >
+          {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => (
+            <button
+              key={type}
+              onClick={() => setSelectedTool(type)}
+              className={`p-3 rounded-xl text-center transition-all ${
+                selectedTool === type
+                  ? `${config.bg} ring-2 ring-current ${config.color}`
+                  : "bg-secondary/50 hover:bg-secondary"
+              }`}
+            >
+              <config.icon className={`w-5 h-5 mx-auto mb-1 ${selectedTool === type ? config.color : "text-muted-foreground"}`} />
+              <span className="text-xs font-medium">{config.label}</span>
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Calendar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-2xl bg-gradient-card border-glow p-5 mb-6"
+        >
+          {/* Month navigation */}
+          <div className="flex items-center justify-between mb-5">
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <h2 className="font-heading font-semibold">
+              {format(currentMonth, "MMMM yyyy", { locale: de })}
+            </h2>
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Week headers */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {weekDays.map((d) => (
+              <div key={d} className="text-center text-xs text-muted-foreground font-medium py-1">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((day) => {
+              const key = format(day, "yyyy-MM-dd");
+              const eventType = localEvents.get(key);
+              const inRange = isInRange(day);
+              const inMonth = isSameMonth(day, currentMonth);
+              const isPast = isBefore(startOfDay(day), today);
+
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => toggleDay(day)}
+                  disabled={!inRange}
+                  className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all ${
+                    !inMonth ? "opacity-20" : ""
+                  } ${!inRange && inMonth ? "opacity-30 cursor-not-allowed" : ""} ${
+                    isToday(day) ? "ring-1 ring-primary" : ""
+                  } ${
+                    eventType === "training" ? "bg-primary/20 text-primary ring-1 ring-primary/30" :
+                    eventType === "rest" ? "bg-blue-400/20 text-blue-400 ring-1 ring-blue-400/30" :
+                    eventType === "competition" ? "bg-yellow-400/20 text-yellow-400 ring-1 ring-yellow-400/30" :
+                    inRange ? "hover:bg-secondary" : ""
+                  }`}
+                >
+                  <span className={`font-medium text-xs ${isToday(day) && !eventType ? "text-primary" : ""}`}>
+                    {format(day, "d")}
+                  </span>
+                  {eventType && (
+                    <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${
+                      eventType === "training" ? "bg-primary" :
+                      eventType === "rest" ? "bg-blue-400" :
+                      "bg-yellow-400"
+                    }`} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Progress */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
+          <span>{filledDays} von {totalDays} Tagen geplant</span>
+          <div className="flex gap-3">
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" /> {Array.from(localEvents.values()).filter(v => v === "training").length}× Training</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-400" /> {Array.from(localEvents.values()).filter(v => v === "rest").length}× Ruhe</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-yellow-400" /> {Array.from(localEvents.values()).filter(v => v === "competition").length}× Wettkampf</span>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleSave}
+          disabled={filledDays < 7 || saving}
+          className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
+            filledDays >= 7
+              ? "bg-primary text-primary-foreground hover:shadow-glow"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
+          }`}
+        >
+          {saving ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Plan wird gespeichert...
+            </>
+          ) : (
+            <>
+              Programm starten
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
+        </motion.button>
+        {filledDays < 7 && (
+          <p className="text-xs text-muted-foreground text-center mt-3">
+            Trage mindestens 7 Tage ein, um dein Programm zu starten.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Dashboard ─────────────────────────────────────
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -86,78 +299,47 @@ const Dashboard = () => {
   const [newEventType, setNewEventType] = useState<EventType>("training");
   const [newEventTitle, setNewEventTitle] = useState("");
   const [showCheckin, setShowCheckin] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [setupMode, setSetupMode] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const sessionId = useMemo(() => getSessionId(), []);
 
   useEffect(() => {
-    // Load saved analysis
     const savedAnalysis = localStorage.getItem("mindgame_analysis");
     if (savedAnalysis) {
-      try {
-        setAnalysis(JSON.parse(savedAnalysis));
-      } catch {}
+      try { setAnalysis(JSON.parse(savedAnalysis)); } catch {}
     }
-    loadEvents();
+    checkSetup();
   }, []);
 
-  const loadEvents = async () => {
+  const checkSetup = async () => {
     const { data } = await supabase
       .from("calendar_events")
       .select("*")
       .eq("session_id", sessionId);
-    
+
     if (data && data.length > 0) {
       setEvents(data as CalendarEvent[]);
+      setSetupMode(false);
     } else {
-      // No events → auto-generate 4-week plan
-      await generatePlan();
+      setSetupMode(true);
     }
+    setLoading(false);
   };
 
-  const generatePlan = async () => {
-    setIsGenerating(true);
-    const today = new Date();
-    // Start from next Monday
-    const dayOfWeek = today.getDay();
-    const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : 8 - dayOfWeek;
-    const startDate = addDays(today, daysUntilMonday);
-
-    const plan = generate4WeekPlan(startDate);
-
-    const inserts = plan.map((p) => ({
-      session_id: sessionId,
-      date: p.date,
-      event_type: p.event_type,
-      title: p.title,
-    }));
-
-    const { data, error } = await supabase
-      .from("calendar_events")
-      .insert(inserts)
-      .select();
-
-    if (!error && data) {
-      setEvents(data as CalendarEvent[]);
-    }
-    setIsGenerating(false);
+  const handleSetupComplete = (newEvents: CalendarEvent[]) => {
+    setEvents(newEvents);
+    setSetupMode(false);
   };
 
   const addEvent = async () => {
     if (!selectedDate) return;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
-
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert({
-        session_id: sessionId,
-        date: dateStr,
-        event_type: newEventType,
-        title: newEventTitle || null,
-      })
+      .insert({ session_id: sessionId, date: dateStr, event_type: newEventType, title: newEventTitle || null })
       .select()
       .single();
-
     if (!error && data) {
       setEvents((prev) => [...prev, data as CalendarEvent]);
       setShowAddEvent(false);
@@ -180,37 +362,25 @@ const Dashboard = () => {
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-
   const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
   const todayEvents = getEventsForDate(new Date());
   const todayEventType = todayEvents.length > 0 ? todayEvents[0].event_type : null;
 
-  // Stats
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
   const competitionCount = events.filter((e) => e.event_type === "competition").length;
 
-  if (isGenerating) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-md">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            className="mx-auto mb-8"
-          >
-            <Loader2 className="w-12 h-12 text-primary" />
-          </motion.div>
-          <h2 className="font-heading text-2xl font-bold mb-3">
-            Dein 4-Wochen-Plan wird erstellt...
-          </h2>
-          <p className="text-muted-foreground">
-            Training, Ruhetage und Wettkämpfe werden basierend auf deinem Profil strukturiert.
-          </p>
-        </motion.div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
       </div>
     );
+  }
+
+  if (setupMode) {
+    return <CalendarSetup sessionId={sessionId} onComplete={handleSetupComplete} />;
   }
 
   if (showCheckin && todayEventType) {
@@ -243,11 +413,7 @@ const Dashboard = () => {
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Mental Score Banner */}
         {analysis && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground font-heading mb-1">Mental Score</p>
@@ -262,12 +428,8 @@ const Dashboard = () => {
         )}
 
         {/* Today's Check-in CTA */}
-        {todayEventType && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
+        {todayEventType ? (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <button
               onClick={() => setShowCheckin(true)}
               className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group"
@@ -275,10 +437,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl ${eventConfig[todayEventType as EventType].bg} flex items-center justify-center`}>
-                    {(() => {
-                      const Icon = eventConfig[todayEventType as EventType].icon;
-                      return <Icon className={`w-6 h-6 ${eventConfig[todayEventType as EventType].color}`} />;
-                    })()}
+                    {(() => { const Icon = eventConfig[todayEventType as EventType].icon; return <Icon className={`w-6 h-6 ${eventConfig[todayEventType as EventType].color}`} />; })()}
                   </div>
                   <div className="text-left">
                     <p className="font-heading font-semibold">Heute: {eventConfig[todayEventType as EventType].label}</p>
@@ -289,15 +448,9 @@ const Dashboard = () => {
               </div>
             </button>
           </motion.div>
-        )}
-
-        {!todayEventType && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center"
-          >
-            <p className="text-muted-foreground text-sm">Heute ist kein Eintrag geplant. Trage ein Event im Kalender ein oder genieße deinen freien Tag.</p>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center">
+            <p className="text-muted-foreground text-sm">Heute ist kein Eintrag geplant. Genieße deinen freien Tag.</p>
           </motion.div>
         )}
 
@@ -317,68 +470,45 @@ const Dashboard = () => {
         </div>
 
         {/* Calendar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-2xl bg-gradient-card border-glow p-6 mb-8"
-        >
-          {/* Month navigation */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
               <ChevronLeft className="w-5 h-5 text-muted-foreground" />
             </button>
-            <h2 className="font-heading font-semibold text-lg">
-              {format(currentMonth, "MMMM yyyy", { locale: de })}
-            </h2>
+            <h2 className="font-heading font-semibold text-lg">{format(currentMonth, "MMMM yyyy", { locale: de })}</h2>
             <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
 
-          {/* Week day headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {weekDays.map((d) => (
-              <div key={d} className="text-center text-xs text-muted-foreground font-medium py-2">
-                {d}
-              </div>
+              <div key={d} className="text-center text-xs text-muted-foreground font-medium py-2">{d}</div>
             ))}
           </div>
 
-          {/* Calendar grid */}
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day) => {
               const dayEvents = getEventsForDate(day);
               const isSelected = selectedDate && isSameDay(day, selectedDate);
               const inMonth = isSameMonth(day, currentMonth);
-
               return (
                 <button
                   key={day.toISOString()}
-                  onClick={() => {
-                    setSelectedDate(day);
-                    setShowAddEvent(false);
-                  }}
+                  onClick={() => { setSelectedDate(day); setShowAddEvent(false); }}
                   className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all ${
                     !inMonth ? "opacity-30" : ""
                   } ${isToday(day) ? "ring-1 ring-primary" : ""} ${
                     isSelected ? "bg-primary/20 ring-1 ring-primary" : "hover:bg-secondary"
                   }`}
                 >
-                  <span className={`font-medium ${isToday(day) ? "text-primary" : ""}`}>
-                    {format(day, "d")}
-                  </span>
+                  <span className={`font-medium ${isToday(day) ? "text-primary" : ""}`}>{format(day, "d")}</span>
                   {dayEvents.length > 0 && (
                     <div className="flex gap-0.5 mt-0.5">
                       {dayEvents.map((e) => (
-                        <div
-                          key={e.id}
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            e.event_type === "training" ? "bg-primary" :
-                            e.event_type === "rest" ? "bg-blue-400" :
-                            "bg-yellow-400"
-                          }`}
-                        />
+                        <div key={e.id} className={`w-1.5 h-1.5 rounded-full ${
+                          e.event_type === "training" ? "bg-primary" : e.event_type === "rest" ? "bg-blue-400" : "bg-yellow-400"
+                        }`} />
                       ))}
                     </div>
                   )}
@@ -391,29 +521,15 @@ const Dashboard = () => {
         {/* Selected Date Panel */}
         <AnimatePresence>
           {selectedDate && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="rounded-2xl bg-gradient-card border-glow p-6 mb-8"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-heading font-semibold">
-                  {format(selectedDate, "EEEE, d. MMMM", { locale: de })}
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowAddEvent(true);
-                    setNewEventType("training");
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
-                >
+                <h3 className="font-heading font-semibold">{format(selectedDate, "EEEE, d. MMMM", { locale: de })}</h3>
+                <button onClick={() => { setShowAddEvent(true); setNewEventType("training"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
                   <Plus className="w-4 h-4" />
                   Hinzufügen
                 </button>
               </div>
 
-              {/* Existing events for this date */}
               {getEventsForDate(selectedDate).length > 0 ? (
                 <div className="space-y-2 mb-4">
                   {getEventsForDate(selectedDate).map((event) => {
@@ -429,10 +545,7 @@ const Dashboard = () => {
                             <p className="text-xs text-muted-foreground">{config.label}</p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => removeEvent(event.id)}
-                          className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors"
-                        >
+                        <button onClick={() => removeEvent(event.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors">
                           <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
                         </button>
                       </div>
@@ -443,51 +556,27 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground mb-4">Kein Eintrag für diesen Tag.</p>
               )}
 
-              {/* Add event form */}
               <AnimatePresence>
                 {showAddEvent && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                     <div className="p-4 rounded-xl bg-secondary/30 space-y-4">
                       <div className="grid grid-cols-3 gap-2">
                         {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => (
-                          <button
-                            key={type}
-                            onClick={() => setNewEventType(type)}
-                            className={`p-3 rounded-xl text-center transition-all ${
-                              newEventType === type
-                                ? `${config.bg} ring-1 ring-current ${config.color}`
-                                : "bg-secondary/50 hover:bg-secondary"
-                            }`}
-                          >
+                          <button key={type} onClick={() => setNewEventType(type)} className={`p-3 rounded-xl text-center transition-all ${
+                            newEventType === type ? `${config.bg} ring-1 ring-current ${config.color}` : "bg-secondary/50 hover:bg-secondary"
+                          }`}>
                             <config.icon className={`w-5 h-5 mx-auto mb-1 ${newEventType === type ? config.color : "text-muted-foreground"}`} />
                             <span className="text-xs font-medium">{config.label}</span>
                           </button>
                         ))}
                       </div>
-                      <input
-                        type="text"
-                        placeholder="Titel (optional)"
-                        value={newEventTitle}
-                        onChange={(e) => setNewEventTitle(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
+                      <input type="text" placeholder="Titel (optional)" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
                       <div className="flex gap-2">
-                        <button
-                          onClick={addEvent}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
-                        >
+                        <button onClick={addEvent} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all">
                           <Check className="w-4 h-4" />
                           Speichern
                         </button>
-                        <button
-                          onClick={() => setShowAddEvent(false)}
-                          className="px-4 py-2.5 rounded-xl bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors"
-                        >
+                        <button onClick={() => setShowAddEvent(false)} className="px-4 py-2.5 rounded-xl bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors">
                           Abbrechen
                         </button>
                       </div>
@@ -501,18 +590,9 @@ const Dashboard = () => {
 
         {/* Legend */}
         <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-            Training
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-            Ruhetag
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-            Wettkampf
-          </div>
+          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-primary" />Training</div>
+          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-400" />Ruhetag</div>
+          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />Wettkampf</div>
         </div>
       </div>
     </div>
