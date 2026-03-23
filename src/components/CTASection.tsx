@@ -23,7 +23,7 @@ const CTASection = () => {
             Wissenschaftlich fundiert. KI-personalisiert. Täglich begleitet.
           </p>
           <button
-            onClick={() => navigate("/questionnaire")}
+            onClick={() => navigate("/auth")}
             className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]"
           >
             Jetzt Zugang sichern

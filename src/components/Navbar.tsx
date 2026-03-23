@@ -15,7 +15,7 @@ const Navbar = () => {
           <a href="#science" className="hover:text-foreground transition-colors">Wissenschaft</a>
           <a href="#coaches" className="hover:text-foreground transition-colors">Für Coaches</a>
         </div>
-        <button className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
+        <button onClick={() => navigate("/auth")} className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
           Zugang
         </button>
       </div>
