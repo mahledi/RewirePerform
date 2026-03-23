@@ -418,6 +418,11 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                // Save analysis for dashboard to use
+                localStorage.setItem("mindgame_analysis", JSON.stringify(analysis));
+                navigate("/dashboard");
+              }}
               className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground hover:shadow-glow transition-all"
             >
               Programm starten
