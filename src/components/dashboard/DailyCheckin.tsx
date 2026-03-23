@@ -71,6 +71,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   const [saving, setSaving] = useState(false);
   const [tasks, setTasks] = useState<CheckinTask[]>(fallbackTasks[eventType]);
   const [loadingTasks, setLoadingTasks] = useState(true);
+  const [expandedScienceBite, setExpandedScienceBite] = useState<string | null>(null);
 
   const config = typeConfig[eventType];
 
