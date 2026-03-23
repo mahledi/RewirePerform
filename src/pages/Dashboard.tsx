@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
+import { toast } from "sonner";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -21,6 +22,9 @@ interface CalendarEvent {
 interface Analysis {
   training_day_tasks: string[];
   rest_day_tasks: string[];
+  strengths: { title: string }[];
+  development_areas: { title: string; priority: string }[];
+  patterns: { title: string }[];
   recommendations: { title: string; description: string; duration: string; frequency: string }[];
   mental_score: number;
   dominant_category: string;
@@ -44,21 +48,23 @@ const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; col
   competition: { label: "Wettkampf", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
-// ─── Calendar Setup Component ─────────────────────────────────────
+// ─── Calendar Setup ─────────────────────────────────────
 interface CalendarSetupProps {
   sessionId: string;
+  analysis: Analysis | null;
   onComplete: (events: CalendarEvent[]) => void;
 }
 
-const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
+const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) => {
   const today = startOfDay(new Date());
-  const endDate = addDays(today, 27); // 4 weeks
+  const endDate = addDays(today, 27);
   const [currentMonth, setCurrentMonth] = useState(today);
   const [selectedTool, setSelectedTool] = useState<EventType>("training");
   const [localEvents, setLocalEvents] = useState<Map<string, EventType>>(new Map());
   const [saving, setSaving] = useState(false);
+  const [competitionDate, setCompetitionDate] = useState("");
+  const [competitionName, setCompetitionName] = useState("");
 
-  // Show two months if needed
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -66,16 +72,12 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
-  const isInRange = (day: Date) => {
-    const d = startOfDay(day);
-    return d >= today && d <= endDate;
-  };
+  const isInRange = (day: Date) => startOfDay(day) >= today && startOfDay(day) <= endDate;
 
   const toggleDay = (day: Date) => {
     if (!isInRange(day)) return;
     const key = format(day, "yyyy-MM-dd");
     const newEvents = new Map(localEvents);
-
     if (newEvents.has(key) && newEvents.get(key) === selectedTool) {
       newEvents.delete(key);
     } else {
@@ -85,12 +87,12 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
   };
 
   const filledDays = localEvents.size;
-  const totalDays = 28;
 
   const handleSave = async () => {
-    if (filledDays === 0) return;
+    if (filledDays < 7) return;
     setSaving(true);
 
+    // Save calendar events
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
       session_id: sessionId,
       date,
@@ -98,21 +100,63 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
       title: eventConfig[type].label,
     }));
 
-    const { data, error } = await supabase
+    const { data: eventData, error: eventError } = await supabase
       .from("calendar_events")
       .insert(inserts)
       .select();
 
-    if (!error && data) {
-      localStorage.setItem(SETUP_DONE_KEY, "true");
-      onComplete(data as CalendarEvent[]);
+    if (eventError) {
+      toast.error("Fehler beim Speichern des Kalenders.");
+      setSaving(false);
+      return;
     }
+
+    // Save program settings
+    await supabase.from("program_settings").upsert({
+      session_id: sessionId,
+      competition_date: competitionDate || null,
+      competition_name: competitionName || null,
+      program_start: format(today, "yyyy-MM-dd"),
+    }, { onConflict: "session_id" });
+
+    // Generate personalized tasks via AI
+    if (analysis && eventData) {
+      toast.info("KI generiert personalisierte Aufgaben...");
+      try {
+        const { data: taskData, error: taskError } = await supabase.functions.invoke("adapt-program", {
+          body: {
+            calendarEvents: eventData,
+            analysis,
+            competitionDate: competitionDate || null,
+            competitionName: competitionName || null,
+          },
+        });
+
+        if (!taskError && taskData?.daily_plans) {
+          // Save personalized tasks to DB
+          const taskInserts = taskData.daily_plans.map((plan: any) => ({
+            session_id: sessionId,
+            date: plan.date,
+            event_type: plan.event_type,
+            tasks: plan.tasks,
+          }));
+
+          await supabase.from("personalized_tasks").upsert(taskInserts, { onConflict: "session_id,date" });
+          toast.success("Personalisierte Aufgaben erstellt!");
+        }
+      } catch (err) {
+        console.error("Task generation error:", err);
+        toast.warning("Aufgaben konnten nicht personalisiert werden. Standardaufgaben werden verwendet.");
+      }
+    }
+
+    localStorage.setItem(SETUP_DONE_KEY, "true");
+    onComplete(eventData as CalendarEvent[]);
     setSaving(false);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -124,48 +168,56 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-8">
-        {/* Intro */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-heading text-2xl md:text-3xl font-bold mb-3">
-            Plane deine nächsten
-            <br />
-            <span className="text-gradient">4 Wochen.</span>
+            Plane deine nächsten <span className="text-gradient">4 Wochen.</span>
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
-            Dein Programm wird exakt an deinen Kalender angepasst.
+            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag.
           </p>
         </motion.div>
 
-        {/* Info Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6"
-        >
+        {/* Competition Goal */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="p-5 rounded-2xl bg-gradient-card border-glow mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Flag className="w-4 h-4 text-yellow-400" />
+            <h3 className="font-heading font-semibold text-sm">Hauptwettkampf (optional)</h3>
+          </div>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Name des Wettkampfs"
+              value={competitionName}
+              onChange={(e) => setCompetitionName(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            <input
+              type="date"
+              value={competitionDate}
+              onChange={(e) => setCompetitionDate(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">Wenn gesetzt, wird das gesamte Programm auf diesen Wettkampf hin periodisiert.</p>
+        </motion.div>
+
+        {/* Info */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Wähle unten ein Tool (Training, Ruhetag, Wettkampf) und tippe auf die Tage im Kalender.
-            Jeder Tag bekommt dann automatisch passende mentale Aufgaben.
+            Wähle unten ein Tool und tippe auf die Tage. Du kannst den Kalender später jederzeit anpassen – die KI passt die Aufgaben automatisch an.
           </p>
         </motion.div>
 
         {/* Tool Selector */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="grid grid-cols-3 gap-2 mb-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid grid-cols-3 gap-2 mb-6">
           {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => (
             <button
               key={type}
               onClick={() => setSelectedTool(type)}
               className={`p-3 rounded-xl text-center transition-all ${
-                selectedTool === type
-                  ? `${config.bg} ring-2 ring-current ${config.color}`
-                  : "bg-secondary/50 hover:bg-secondary"
+                selectedTool === type ? `${config.bg} ring-2 ring-current ${config.color}` : "bg-secondary/50 hover:bg-secondary"
               }`}
             >
               <config.icon className={`w-5 h-5 mx-auto mb-1 ${selectedTool === type ? config.color : "text-muted-foreground"}`} />
@@ -175,43 +227,27 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
         </motion.div>
 
         {/* Calendar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-2xl bg-gradient-card border-glow p-5 mb-6"
-        >
-          {/* Month navigation */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl bg-gradient-card border-glow p-5 mb-6">
           <div className="flex items-center justify-between mb-5">
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
               <ChevronLeft className="w-5 h-5 text-muted-foreground" />
             </button>
-            <h2 className="font-heading font-semibold">
-              {format(currentMonth, "MMMM yyyy", { locale: de })}
-            </h2>
+            <h2 className="font-heading font-semibold">{format(currentMonth, "MMMM yyyy", { locale: de })}</h2>
             <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
-
-          {/* Week headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {weekDays.map((d) => (
-              <div key={d} className="text-center text-xs text-muted-foreground font-medium py-1">
-                {d}
-              </div>
+              <div key={d} className="text-center text-xs text-muted-foreground font-medium py-1">{d}</div>
             ))}
           </div>
-
-          {/* Grid */}
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day) => {
               const key = format(day, "yyyy-MM-dd");
               const eventType = localEvents.get(key);
               const inRange = isInRange(day);
               const inMonth = isSameMonth(day, currentMonth);
-              const isPast = isBefore(startOfDay(day), today);
-
               return (
                 <button
                   key={day.toISOString()}
@@ -228,14 +264,10 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
                     inRange ? "hover:bg-secondary" : ""
                   }`}
                 >
-                  <span className={`font-medium text-xs ${isToday(day) && !eventType ? "text-primary" : ""}`}>
-                    {format(day, "d")}
-                  </span>
+                  <span className={`font-medium text-xs ${isToday(day) && !eventType ? "text-primary" : ""}`}>{format(day, "d")}</span>
                   {eventType && (
                     <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${
-                      eventType === "training" ? "bg-primary" :
-                      eventType === "rest" ? "bg-blue-400" :
-                      "bg-yellow-400"
+                      eventType === "training" ? "bg-primary" : eventType === "rest" ? "bg-blue-400" : "bg-yellow-400"
                     }`} />
                   )}
                 </button>
@@ -246,11 +278,11 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
 
         {/* Progress */}
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
-          <span>{filledDays} von {totalDays} Tagen geplant</span>
+          <span>{filledDays} / 28 Tage</span>
           <div className="flex gap-3">
-            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" /> {Array.from(localEvents.values()).filter(v => v === "training").length}× Training</span>
-            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-400" /> {Array.from(localEvents.values()).filter(v => v === "rest").length}× Ruhe</span>
-            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-yellow-400" /> {Array.from(localEvents.values()).filter(v => v === "competition").length}× Wettkampf</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" />{Array.from(localEvents.values()).filter(v => v === "training").length}</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-400" />{Array.from(localEvents.values()).filter(v => v === "rest").length}</span>
+            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-yellow-400" />{Array.from(localEvents.values()).filter(v => v === "competition").length}</span>
           </div>
         </div>
 
@@ -261,27 +293,13 @@ const CalendarSetup = ({ sessionId, onComplete }: CalendarSetupProps) => {
           onClick={handleSave}
           disabled={filledDays < 7 || saving}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
-            filledDays >= 7
-              ? "bg-primary text-primary-foreground hover:shadow-glow"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
+            filledDays >= 7 ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         >
-          {saving ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Plan wird gespeichert...
-            </>
-          ) : (
-            <>
-              Programm starten
-              <ArrowRight className="w-5 h-5" />
-            </>
-          )}
+          {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />KI erstellt dein Programm...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
         </motion.button>
         {filledDays < 7 && (
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            Trage mindestens 7 Tage ein, um dein Programm zu starten.
-          </p>
+          <p className="text-xs text-muted-foreground text-center mt-3">Mindestens 7 Tage eintragen.</p>
         )}
       </div>
     </div>
@@ -301,6 +319,10 @@ const Dashboard = () => {
   const [showCheckin, setShowCheckin] = useState(false);
   const [setupMode, setSetupMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [competitionDate, setCompetitionDate] = useState("");
+  const [competitionName, setCompetitionName] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const sessionId = useMemo(() => getSessionId(), []);
 
@@ -313,13 +335,17 @@ const Dashboard = () => {
   }, []);
 
   const checkSetup = async () => {
-    const { data } = await supabase
-      .from("calendar_events")
-      .select("*")
-      .eq("session_id", sessionId);
+    const [{ data: eventData }, { data: settingsData }] = await Promise.all([
+      supabase.from("calendar_events").select("*").eq("session_id", sessionId),
+      supabase.from("program_settings").select("*").eq("session_id", sessionId).maybeSingle(),
+    ]);
 
-    if (data && data.length > 0) {
-      setEvents(data as CalendarEvent[]);
+    if (eventData && eventData.length > 0) {
+      setEvents(eventData as CalendarEvent[]);
+      if (settingsData) {
+        setCompetitionDate(settingsData.competition_date || "");
+        setCompetitionName(settingsData.competition_name || "");
+      }
       setSetupMode(false);
     } else {
       setSetupMode(true);
@@ -332,14 +358,59 @@ const Dashboard = () => {
     setSetupMode(false);
   };
 
+  const syncTasks = async () => {
+    if (!analysis) {
+      toast.error("Keine Analyse vorhanden. Bitte fülle zuerst den Fragebogen aus.");
+      return;
+    }
+    setSyncing(true);
+    toast.info("KI passt Aufgaben an deinen Kalender an...");
+
+    try {
+      // Update program settings
+      await supabase.from("program_settings").upsert({
+        session_id: sessionId,
+        competition_date: competitionDate || null,
+        competition_name: competitionName || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "session_id" });
+
+      const { data, error } = await supabase.functions.invoke("adapt-program", {
+        body: {
+          calendarEvents: events,
+          analysis,
+          competitionDate: competitionDate || null,
+          competitionName: competitionName || null,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.daily_plans) {
+        const taskUpserts = data.daily_plans.map((plan: any) => ({
+          session_id: sessionId,
+          date: plan.date,
+          event_type: plan.event_type,
+          tasks: plan.tasks,
+        }));
+        await supabase.from("personalized_tasks").upsert(taskUpserts, { onConflict: "session_id,date" });
+        toast.success("Aufgaben wurden angepasst!");
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+      toast.error("Fehler beim Synchronisieren der Aufgaben.");
+    }
+    setSyncing(false);
+    setShowSettings(false);
+  };
+
   const addEvent = async () => {
     if (!selectedDate) return;
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const { data, error } = await supabase
       .from("calendar_events")
       .insert({ session_id: sessionId, date: dateStr, event_type: newEventType, title: newEventTitle || null })
-      .select()
-      .single();
+      .select().single();
     if (!error && data) {
       setEvents((prev) => [...prev, data as CalendarEvent]);
       setShowAddEvent(false);
@@ -380,17 +451,12 @@ const Dashboard = () => {
   }
 
   if (setupMode) {
-    return <CalendarSetup sessionId={sessionId} onComplete={handleSetupComplete} />;
+    return <CalendarSetup sessionId={sessionId} analysis={analysis} onComplete={handleSetupComplete} />;
   }
 
   if (showCheckin && todayEventType) {
     return (
-      <DailyCheckin
-        eventType={todayEventType as EventType}
-        sessionId={sessionId}
-        date={new Date()}
-        onClose={() => setShowCheckin(false)}
-      />
+      <DailyCheckin eventType={todayEventType as EventType} sessionId={sessionId} date={new Date()} onClose={() => setShowCheckin(false)} />
     );
   }
 
@@ -403,14 +469,61 @@ const Dashboard = () => {
             <Brain className="w-5 h-5 text-primary" />
             <span className="font-heading font-bold">MindGame</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground font-heading">Dashboard</span>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowSettings(!showSettings)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              <Settings className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={syncTasks}
+              disabled={syncing}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
+              {syncing ? "Sync..." : "KI-Sync"}
+            </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Settings Panel */}
+        <AnimatePresence>
+          {showSettings && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-6">
+              <div className="p-5 rounded-2xl bg-gradient-card border-glow">
+                <div className="flex items-center gap-2 mb-4">
+                  <Flag className="w-4 h-4 text-yellow-400" />
+                  <h3 className="font-heading font-semibold text-sm">Programmziel anpassen</h3>
+                </div>
+                <div className="space-y-3 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Name des Wettkampfs"
+                    value={competitionName}
+                    onChange={(e) => setCompetitionName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <input
+                    type="date"
+                    value={competitionDate}
+                    onChange={(e) => setCompetitionDate(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">Änderungen werden beim nächsten KI-Sync wirksam.</p>
+                <button
+                  onClick={syncTasks}
+                  disabled={syncing}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+                  {syncing ? "KI passt an..." : "Programm anpassen"}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Mental Score Banner */}
         {analysis && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
@@ -420,8 +533,9 @@ const Dashboard = () => {
                 <p className="text-3xl font-heading font-bold text-primary">{analysis.mental_score}<span className="text-base text-muted-foreground">/100</span></p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">4-Wochen-Programm aktiv</p>
-                <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten geplant</p>
+                <p className="text-xs text-muted-foreground mb-1">{competitionName || "4-Wochen-Programm"}</p>
+                <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten</p>
+                {competitionDate && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
               </div>
             </div>
           </motion.div>
@@ -430,10 +544,7 @@ const Dashboard = () => {
         {/* Today's Check-in CTA */}
         {todayEventType ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <button
-              onClick={() => setShowCheckin(true)}
-              className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group"
-            >
+            <button onClick={() => setShowCheckin(true)} className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl ${eventConfig[todayEventType as EventType].bg} flex items-center justify-center`}>
@@ -480,13 +591,9 @@ const Dashboard = () => {
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
-
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map((d) => (
-              <div key={d} className="text-center text-xs text-muted-foreground font-medium py-2">{d}</div>
-            ))}
+            {weekDays.map((d) => (<div key={d} className="text-center text-xs text-muted-foreground font-medium py-2">{d}</div>))}
           </div>
-
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day) => {
               const dayEvents = getEventsForDate(day);
@@ -496,20 +603,12 @@ const Dashboard = () => {
                 <button
                   key={day.toISOString()}
                   onClick={() => { setSelectedDate(day); setShowAddEvent(false); }}
-                  className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all ${
-                    !inMonth ? "opacity-30" : ""
-                  } ${isToday(day) ? "ring-1 ring-primary" : ""} ${
-                    isSelected ? "bg-primary/20 ring-1 ring-primary" : "hover:bg-secondary"
-                  }`}
+                  className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all ${!inMonth ? "opacity-30" : ""} ${isToday(day) ? "ring-1 ring-primary" : ""} ${isSelected ? "bg-primary/20 ring-1 ring-primary" : "hover:bg-secondary"}`}
                 >
                   <span className={`font-medium ${isToday(day) ? "text-primary" : ""}`}>{format(day, "d")}</span>
                   {dayEvents.length > 0 && (
                     <div className="flex gap-0.5 mt-0.5">
-                      {dayEvents.map((e) => (
-                        <div key={e.id} className={`w-1.5 h-1.5 rounded-full ${
-                          e.event_type === "training" ? "bg-primary" : e.event_type === "rest" ? "bg-blue-400" : "bg-yellow-400"
-                        }`} />
-                      ))}
+                      {dayEvents.map((e) => (<div key={e.id} className={`w-1.5 h-1.5 rounded-full ${e.event_type === "training" ? "bg-primary" : e.event_type === "rest" ? "bg-blue-400" : "bg-yellow-400"}`} />))}
                     </div>
                   )}
                 </button>
@@ -525,8 +624,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-heading font-semibold">{format(selectedDate, "EEEE, d. MMMM", { locale: de })}</h3>
                 <button onClick={() => { setShowAddEvent(true); setNewEventType("training"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
-                  <Plus className="w-4 h-4" />
-                  Hinzufügen
+                  <Plus className="w-4 h-4" />Hinzufügen
                 </button>
               </div>
 
@@ -562,9 +660,7 @@ const Dashboard = () => {
                     <div className="p-4 rounded-xl bg-secondary/30 space-y-4">
                       <div className="grid grid-cols-3 gap-2">
                         {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => (
-                          <button key={type} onClick={() => setNewEventType(type)} className={`p-3 rounded-xl text-center transition-all ${
-                            newEventType === type ? `${config.bg} ring-1 ring-current ${config.color}` : "bg-secondary/50 hover:bg-secondary"
-                          }`}>
+                          <button key={type} onClick={() => setNewEventType(type)} className={`p-3 rounded-xl text-center transition-all ${newEventType === type ? `${config.bg} ring-1 ring-current ${config.color}` : "bg-secondary/50 hover:bg-secondary"}`}>
                             <config.icon className={`w-5 h-5 mx-auto mb-1 ${newEventType === type ? config.color : "text-muted-foreground"}`} />
                             <span className="text-xs font-medium">{config.label}</span>
                           </button>
@@ -573,14 +669,14 @@ const Dashboard = () => {
                       <input type="text" placeholder="Titel (optional)" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
                       <div className="flex gap-2">
                         <button onClick={addEvent} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all">
-                          <Check className="w-4 h-4" />
-                          Speichern
+                          <Check className="w-4 h-4" />Speichern
                         </button>
-                        <button onClick={() => setShowAddEvent(false)} className="px-4 py-2.5 rounded-xl bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors">
-                          Abbrechen
-                        </button>
+                        <button onClick={() => setShowAddEvent(false)} className="px-4 py-2.5 rounded-xl bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors">Abbrechen</button>
                       </div>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-3 text-center">
+                      Nach Änderungen → <button onClick={syncTasks} className="text-primary underline">KI-Sync</button> drücken
+                    </p>
                   </motion.div>
                 )}
               </AnimatePresence>
