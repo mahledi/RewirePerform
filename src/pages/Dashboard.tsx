@@ -578,7 +578,54 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* Mental Score Banner */}
+        {/* Post-Test Banner */}
+        {postTestDue && !postTestsDone && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-yellow-400/10 border border-yellow-400/30">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-sm mb-1">Post-Tests fällig!</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Dein 4-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/assessment?mode=post")}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-400 text-background font-heading font-semibold text-sm hover:bg-yellow-300 transition-colors"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  Post-Tests starten
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Pre-Test Reminder */}
+        {!preTestsDone && !setupMode && programStartDate && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
+            <div className="flex items-start gap-3">
+              <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-sm mb-1">Pre-Tests ausstehend</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Bitte fülle die wissenschaftlichen Pre-Tests aus, um deinen Ausgangszustand zu dokumentieren.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/assessment?mode=pre")}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  Pre-Tests starten
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {analysis && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
             <div className="flex items-center justify-between">
