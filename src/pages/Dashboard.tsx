@@ -358,7 +358,49 @@ const Dashboard = () => {
   const handleSetupComplete = (newEvents: CalendarEvent[]) => {
     setEvents(newEvents);
     setSetupMode(false);
+    navigate("/assessment?mode=pre");
   };
+
+  const [preTestsDone, setPreTestsDone] = useState(false);
+  const [postTestsDone, setPostTestsDone] = useState(false);
+  const [postTestDue, setPostTestDue] = useState(false);
+  const [programStartDate, setProgramStartDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAssessments = async () => {
+      const { data: settings } = await supabase
+        .from("program_settings")
+        .select("program_start")
+        .eq("session_id", sessionId)
+        .maybeSingle();
+
+      if (settings?.program_start) {
+        setProgramStartDate(settings.program_start);
+        const daysSince = differenceInDays(new Date(), new Date(settings.program_start));
+
+        const { data: preTests } = await supabase
+          .from("assessments")
+          .select("assessment_type")
+          .eq("session_id", sessionId)
+          .eq("timing", "pre");
+        const preTypes = new Set((preTests || []).map(t => t.assessment_type));
+        setPreTestsDone(preTypes.has("csai2r") && preTypes.has("smtq") && preTypes.has("fks"));
+
+        const { data: postTests } = await supabase
+          .from("assessments")
+          .select("assessment_type")
+          .eq("session_id", sessionId)
+          .eq("timing", "post");
+        const postTypes = new Set((postTests || []).map(t => t.assessment_type));
+        setPostTestsDone(postTypes.has("csai2r") && postTypes.has("smtq") && postTypes.has("fks"));
+
+        if (daysSince >= 28 && !postTypes.has("csai2r")) {
+          setPostTestDue(true);
+        }
+      }
+    };
+    if (!setupMode && !loading) checkAssessments();
+  }, [setupMode, loading, sessionId]);
 
   const syncTasks = async () => {
     if (!analysis) {
