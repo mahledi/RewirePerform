@@ -6,6 +6,7 @@ import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Chec
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
+import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
