@@ -64,6 +64,7 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
 };
 
 const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps) => {
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
