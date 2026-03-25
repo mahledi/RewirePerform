@@ -34,6 +34,7 @@ interface Analysis {
 
 const SESSION_KEY = "mindgame_session_id";
 const SETUP_DONE_KEY = "mindgame_setup_done";
+const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
 
 function getSessionId(): string {
   let id = localStorage.getItem(SESSION_KEY);
@@ -312,7 +313,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -330,8 +331,13 @@ const Dashboard = () => {
   const [preTestsDone, setPreTestsDone] = useState(false);
   const [postTestsDone, setPostTestsDone] = useState(false);
   const [postTestDue, setPostTestDue] = useState(false);
+  const [todayCheckinDone, setTodayCheckinDone] = useState(false);
+  const [checkinStatusLoading, setCheckinStatusLoading] = useState(true);
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const sessionId = useMemo(() => getSessionId(), []);
+
+  const hasCompletedAllAssessments = (types: Set<string>) =>
+    REQUIRED_ASSESSMENTS.every((id) => types.has(id));
 
   useEffect(() => {
     const savedAnalysis = localStorage.getItem("mindgame_analysis");
@@ -378,40 +384,80 @@ const Dashboard = () => {
       setProgramStartDate(settings.program_start);
       const daysSince = differenceInDays(new Date(), new Date(settings.program_start));
 
-      const { data: preTests } = await supabase
+      let preTestsQuery = supabase
         .from("assessments")
         .select("assessment_type")
-        .eq("session_id", sessionId)
         .eq("timing", "pre");
-      const preTypes = new Set((preTests || []).map(t => t.assessment_type));
-      setPreTestsDone(preTypes.has("csai2r") && preTypes.has("smtq") && preTypes.has("fks"));
 
-      const { data: postTests } = await supabase
+      preTestsQuery = user?.id
+        ? preTestsQuery.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
+        : preTestsQuery.eq("session_id", sessionId);
+
+      const { data: preTests } = await preTestsQuery;
+      const preTypes = new Set((preTests || []).map(t => t.assessment_type));
+      setPreTestsDone(hasCompletedAllAssessments(preTypes));
+
+      let postTestsQuery = supabase
         .from("assessments")
         .select("assessment_type")
-        .eq("session_id", sessionId)
         .eq("timing", "post");
-      const postTypes = new Set((postTests || []).map(t => t.assessment_type));
-      setPostTestsDone(postTypes.has("csai2r") && postTypes.has("smtq") && postTypes.has("fks"));
 
-      if (daysSince >= 28 && !postTypes.has("csai2r")) {
-        setPostTestDue(true);
-      }
+      postTestsQuery = user?.id
+        ? postTestsQuery.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
+        : postTestsQuery.eq("session_id", sessionId);
+
+      const { data: postTests } = await postTestsQuery;
+      const postTypes = new Set((postTests || []).map(t => t.assessment_type));
+      const postDone = hasCompletedAllAssessments(postTypes);
+      setPostTestsDone(postDone);
+
+      setPostTestDue(daysSince >= 28 && !postDone);
+    } else {
+      setProgramStartDate(null);
+      setPostTestDue(false);
     }
   };
 
+  const checkTodayCheckin = async () => {
+    setCheckinStatusLoading(true);
+    const today = format(new Date(), "yyyy-MM-dd");
+
+    let checkinQuery = supabase
+      .from("daily_checkins")
+      .select("id")
+      .eq("date", today)
+      .limit(1);
+
+    checkinQuery = user?.id
+      ? checkinQuery.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
+      : checkinQuery.eq("session_id", sessionId);
+
+    const { data, error } = await checkinQuery;
+    if (error) {
+      console.error("Checkin status error:", error);
+      setTodayCheckinDone(false);
+    } else {
+      setTodayCheckinDone((data?.length || 0) > 0);
+    }
+    setCheckinStatusLoading(false);
+  };
+
+  const refreshDashboardStatus = async () => {
+    await Promise.all([checkAssessments(), checkTodayCheckin()]);
+  };
+
   useEffect(() => {
-    if (!setupMode && !loading) checkAssessments();
-  }, [setupMode, loading, sessionId]);
+    if (!setupMode && !loading) refreshDashboardStatus();
+  }, [setupMode, loading, sessionId, user?.id]);
 
   // Re-check assessments when navigating back to dashboard
   useEffect(() => {
     const handleFocus = () => {
-      if (!setupMode && !loading) checkAssessments();
+      if (!setupMode && !loading) refreshDashboardStatus();
     };
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
-  }, [setupMode, loading, sessionId]);
+  }, [setupMode, loading, sessionId, user?.id]);
 
   const syncTasks = async () => {
     if (!analysis) {
@@ -492,6 +538,11 @@ const Dashboard = () => {
 
   const todayEvents = getEventsForDate(new Date());
   const todayEventType = todayEvents.length > 0 ? todayEvents[0].event_type : null;
+  const showPreTestReminder =
+    !preTestsDone &&
+    !setupMode &&
+    !!programStartDate &&
+    differenceInDays(new Date(), new Date(programStartDate)) < 28;
 
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
@@ -511,7 +562,15 @@ const Dashboard = () => {
 
   if (showCheckin && todayEventType) {
     return (
-      <DailyCheckin eventType={todayEventType as EventType} sessionId={sessionId} date={new Date()} onClose={() => setShowCheckin(false)} />
+      <DailyCheckin
+        eventType={todayEventType as EventType}
+        sessionId={sessionId}
+        date={new Date()}
+        onClose={async () => {
+          setShowCheckin(false);
+          await checkTodayCheckin();
+        }}
+      />
     );
   }
 
@@ -614,7 +673,7 @@ const Dashboard = () => {
         )}
 
         {/* Pre-Test Reminder */}
-        {!preTestsDone && !setupMode && programStartDate && (
+        {showPreTestReminder && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
             <div className="flex items-start gap-3">
               <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -654,7 +713,11 @@ const Dashboard = () => {
         )}
 
         {/* Today's Check-in CTA */}
-        {todayEventType ? (
+        {todayEventType && checkinStatusLoading ? (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center">
+            <p className="text-muted-foreground text-sm">Check-in Status wird geladen...</p>
+          </motion.div>
+        ) : todayEventType && !todayCheckinDone ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <button onClick={() => setShowCheckin(true)} className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group">
               <div className="flex items-center justify-between">
@@ -670,6 +733,11 @@ const Dashboard = () => {
                 <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
               </div>
             </button>
+          </motion.div>
+        ) : todayEventType ? (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-6 rounded-2xl bg-primary/10 border border-primary/30 text-center">
+            <p className="font-heading font-semibold text-primary mb-1">Check-in für heute erledigt ✅</p>
+            <p className="text-muted-foreground text-sm">Der nächste Check-in erscheint automatisch morgen.</p>
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center">
