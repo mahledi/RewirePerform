@@ -8,6 +8,7 @@ import {
   Lightbulb, ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -63,6 +64,7 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
 };
 
 const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps) => {
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
@@ -106,6 +108,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     await supabase.from("daily_checkins").upsert(
       {
         session_id: sessionId,
+        user_id: user?.id ?? null,
         date: dateStr,
         event_type: eventType,
         mood_before: moodBefore,
