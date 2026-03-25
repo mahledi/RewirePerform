@@ -108,6 +108,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     await supabase.from("daily_checkins").upsert(
       {
         session_id: sessionId,
+        user_id: user?.id ?? null,
         date: dateStr,
         event_type: eventType,
         mood_before: moodBefore,
