@@ -6,6 +6,7 @@ import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Chec
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
+import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -675,6 +676,9 @@ const Dashboard = () => {
             <p className="text-muted-foreground text-sm">Heute ist kein Eintrag geplant. Genieße deinen freien Tag.</p>
           </motion.div>
         )}
+
+        {/* Science Bite */}
+        <ScienceBite />
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-8">
