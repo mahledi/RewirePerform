@@ -91,6 +91,8 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
   const filledDays = localEvents.size;
 
+  const { user } = useAuth();
+
   const handleSave = async () => {
     if (filledDays < 7) return;
     setSaving(true);
@@ -98,6 +100,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
     // Save calendar events
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
       session_id: sessionId,
+      user_id: user?.id || null,
       date,
       event_type: type,
       title: eventConfig[type].label,
