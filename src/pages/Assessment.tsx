@@ -38,7 +38,14 @@ const Assessment = () => {
   const [preResults, setPreResults] = useState<SavedResult[]>([]);
   const [postResults, setPostResults] = useState<SavedResult[]>([]);
 
-  const sessionId = localStorage.getItem("mindgame_session_id") || crypto.randomUUID();
+  const sessionId = (() => {
+    let id = localStorage.getItem("mindgame_session_id");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("mindgame_session_id", id);
+    }
+    return id;
+  })();
   const isSequentialMode = mode !== null;
 
   // Load comparison data for post mode
