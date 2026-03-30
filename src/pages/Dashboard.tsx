@@ -533,7 +533,11 @@ const Dashboard = () => {
       .from("calendar_events")
       .insert({ session_id: sessionId, user_id: user?.id || null, date: dateStr, event_type: newEventType, title: newEventTitle || null })
       .select().single();
-    if (!error && data) {
+    if (error) {
+      toast.error("Fehler beim Hinzufügen des Events.");
+      return;
+    }
+    if (data) {
       setEvents((prev) => [...prev, data as CalendarEvent]);
       setShowAddEvent(false);
       setNewEventTitle("");
