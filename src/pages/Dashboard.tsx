@@ -529,14 +529,37 @@ const Dashboard = () => {
     toast.info("KI passt Aufgaben an deinen Kalender an...");
 
     try {
-      // Update program settings
-      await supabase.from("program_settings").upsert({
-        session_id: sessionId,
-        user_id: user?.id || null,
-        competition_date: competitionDate || null,
-        competition_name: competitionName || null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "session_id" });
+      // Update program settings — check-then-update/insert for authenticated users
+      if (user?.id) {
+        const { data: existing } = await supabase
+          .from("program_settings")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase.from("program_settings").update({
+            competition_date: competitionDate || null,
+            competition_name: competitionName || null,
+            updated_at: new Date().toISOString(),
+          }).eq("id", existing.id);
+        } else {
+          await supabase.from("program_settings").insert({
+            session_id: sessionId,
+            user_id: user.id,
+            competition_date: competitionDate || null,
+            competition_name: competitionName || null,
+          });
+        }
+      } else {
+        await supabase.from("program_settings").upsert({
+          session_id: sessionId,
+          user_id: null,
+          competition_date: competitionDate || null,
+          competition_name: competitionName || null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "session_id" });
+      }
 
       const { data, error } = await supabase.functions.invoke("adapt-program", {
         body: {
@@ -550,19 +573,30 @@ const Dashboard = () => {
       if (error) throw error;
 
       if (data?.daily_plans) {
-        const taskUpserts = data.daily_plans.map((plan: any) => ({
+        // Delete old tasks, insert fresh for authenticated users
+        if (user?.id) {
+          await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
+        }
+
+        const taskInserts = data.daily_plans.map((plan: any) => ({
           session_id: sessionId,
           user_id: user?.id || null,
           date: plan.date,
           event_type: plan.event_type,
           tasks: plan.tasks,
         }));
-        await supabase.from("personalized_tasks").upsert(taskUpserts, { onConflict: "session_id,date" });
-        toast.success("Aufgaben wurden angepasst!");
+
+        const { error: insertError } = await supabase.from("personalized_tasks").insert(taskInserts);
+        if (insertError) {
+          console.error("Task save error:", insertError);
+          toast.warning("Aufgaben generiert, aber Speichern fehlgeschlagen.");
+        } else {
+          toast.success("Aufgaben wurden angepasst!");
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Sync error:", err);
-      toast.error("Fehler beim Synchronisieren der Aufgaben.");
+      toast.error(`Fehler beim Synchronisieren: ${err?.message || "Unbekannter Fehler"}`);
     }
     setSyncing(false);
     setShowSettings(false);
