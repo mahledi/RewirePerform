@@ -83,12 +83,18 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
 
   const loadPersonalizedTasks = async () => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const { data } = await supabase
+    let q = supabase
       .from("personalized_tasks")
       .select("tasks")
-      .eq("session_id", sessionId)
-      .eq("date", dateStr)
-      .maybeSingle();
+      .eq("date", dateStr);
+
+    if (user?.id) {
+      q = q.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+    } else {
+      q = q.eq("session_id", sessionId);
+    }
+
+    const { data } = await q.maybeSingle();
 
     if (data?.tasks && Array.isArray(data.tasks) && data.tasks.length > 0) {
       setTasks(data.tasks as unknown as CheckinTask[]);
