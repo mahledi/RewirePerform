@@ -392,11 +392,12 @@ const Dashboard = () => {
 
 
   const checkAssessments = async () => {
-    const { data: settings } = await supabase
-      .from("program_settings")
-      .select("program_start")
-      .eq("session_id", sessionId)
-      .maybeSingle();
+    let settingsQ = supabase.from("program_settings").select("program_start");
+    settingsQ = user?.id
+      ? settingsQ.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`)
+      : settingsQ.eq("session_id", sessionId);
+    const { data: settingsArr } = await settingsQ;
+    const settings = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
     if (settings?.program_start) {
       setProgramStartDate(settings.program_start);
