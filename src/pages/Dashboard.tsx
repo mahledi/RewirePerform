@@ -531,7 +531,7 @@ const Dashboard = () => {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert({ session_id: sessionId, date: dateStr, event_type: newEventType, title: newEventTitle || null })
+      .insert({ session_id: sessionId, user_id: user?.id || null, date: dateStr, event_type: newEventType, title: newEventTitle || null })
       .select().single();
     if (!error && data) {
       setEvents((prev) => [...prev, data as CalendarEvent]);

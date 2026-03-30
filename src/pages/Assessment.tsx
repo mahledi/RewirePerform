@@ -117,16 +117,17 @@ const Assessment = () => {
         // All tests done
         if (mode === "post") {
           // Load all data for comparison
-          const { data: allPre } = await supabase
-            .from("assessments")
-            .select("assessment_type, scores, total_score, timing")
-            .eq("session_id", sessionId)
-            .eq("timing", "pre");
-          const { data: allPost } = await supabase
-            .from("assessments")
-            .select("assessment_type, scores, total_score, timing")
-            .eq("session_id", sessionId)
-            .eq("timing", "post");
+          let preQ = supabase.from("assessments").select("assessment_type, scores, total_score, timing").eq("timing", "pre");
+          let postQ = supabase.from("assessments").select("assessment_type, scores, total_score, timing").eq("timing", "post");
+          if (user?.id) {
+            preQ = preQ.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`);
+            postQ = postQ.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`);
+          } else {
+            preQ = preQ.eq("session_id", sessionId);
+            postQ = postQ.eq("session_id", sessionId);
+          }
+          const { data: allPre } = await preQ;
+          const { data: allPost } = await postQ;
           setPreResults((allPre || []) as SavedResult[]);
           setPostResults((allPost || []) as SavedResult[]);
           setPhase("comparison");
