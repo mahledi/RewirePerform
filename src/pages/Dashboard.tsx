@@ -510,6 +510,7 @@ const Dashboard = () => {
       if (data?.daily_plans) {
         const taskUpserts = data.daily_plans.map((plan: any) => ({
           session_id: sessionId,
+          user_id: user?.id || null,
           date: plan.date,
           event_type: plan.event_type,
           tasks: plan.tasks,
