@@ -56,11 +56,14 @@ const Assessment = () => {
   }, [mode]);
 
   const loadPreResults = async () => {
-    const { data } = await supabase
+    let q = supabase
       .from("assessments")
       .select("assessment_type, scores, total_score, timing")
-      .eq("session_id", sessionId)
       .eq("timing", "pre");
+    q = user?.id
+      ? q.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
+      : q.eq("session_id", sessionId);
+    const { data } = await q;
     if (data) setPreResults(data as SavedResult[]);
   };
 
