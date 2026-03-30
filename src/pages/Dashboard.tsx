@@ -97,7 +97,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
     if (filledDays < 7) return;
     setSaving(true);
 
-    // Save calendar events
+    // Save calendar events — use upsert with user_id-based conflict for authenticated users
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
       session_id: sessionId,
       user_id: user?.id || null,
@@ -105,6 +105,11 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
       event_type: type,
       title: eventConfig[type].label,
     }));
+
+    // For authenticated users, delete old events first then insert fresh
+    if (user?.id) {
+      await supabase.from("calendar_events").delete().eq("user_id", user.id);
+    }
 
     const { data: eventData, error: eventError } = await supabase
       .from("calendar_events")
@@ -117,14 +122,39 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
       return;
     }
 
-    // Save program settings
-    await supabase.from("program_settings").upsert({
-      session_id: sessionId,
-      user_id: user?.id || null,
-      competition_date: competitionDate || null,
-      competition_name: competitionName || null,
-      program_start: format(today, "yyyy-MM-dd"),
-    }, { onConflict: "session_id" });
+    // Save program settings — check-then-update/insert for authenticated users
+    if (user?.id) {
+      const { data: existing } = await supabase
+        .from("program_settings")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase.from("program_settings").update({
+          competition_date: competitionDate || null,
+          competition_name: competitionName || null,
+          program_start: format(today, "yyyy-MM-dd"),
+          updated_at: new Date().toISOString(),
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("program_settings").insert({
+          session_id: sessionId,
+          user_id: user.id,
+          competition_date: competitionDate || null,
+          competition_name: competitionName || null,
+          program_start: format(today, "yyyy-MM-dd"),
+        });
+      }
+    } else {
+      await supabase.from("program_settings").upsert({
+        session_id: sessionId,
+        user_id: null,
+        competition_date: competitionDate || null,
+        competition_name: competitionName || null,
+        program_start: format(today, "yyyy-MM-dd"),
+      }, { onConflict: "session_id" });
+    }
 
     // Generate personalized tasks via AI
     if (analysis && eventData) {
@@ -139,8 +169,15 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
           },
         });
 
-        if (!taskError && taskData?.daily_plans) {
-          // Save personalized tasks to DB
+        if (taskError) {
+          console.error("Task generation error:", taskError);
+          toast.warning(`Aufgaben konnten nicht erstellt werden: ${taskError.message || "Unbekannter Fehler"}`);
+        } else if (taskData?.daily_plans) {
+          // Save personalized tasks — delete old + insert for authenticated users
+          if (user?.id) {
+            await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
+          }
+
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
             session_id: sessionId,
             user_id: user?.id || null,
@@ -149,8 +186,13 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
             tasks: plan.tasks,
           }));
 
-          await supabase.from("personalized_tasks").upsert(taskInserts, { onConflict: "session_id,date" });
-          toast.success("Personalisierte Aufgaben erstellt!");
+          const { error: insertError } = await supabase.from("personalized_tasks").insert(taskInserts);
+          if (insertError) {
+            console.error("Task save error:", insertError);
+            toast.warning("Aufgaben wurden generiert, konnten aber nicht gespeichert werden.");
+          } else {
+            toast.success("Personalisierte Aufgaben erstellt!");
+          }
         }
       } catch (err) {
         console.error("Task generation error:", err);
