@@ -490,6 +490,7 @@ const Dashboard = () => {
       // Update program settings
       await supabase.from("program_settings").upsert({
         session_id: sessionId,
+        user_id: user?.id || null,
         competition_date: competitionDate || null,
         competition_name: competitionName || null,
         updated_at: new Date().toISOString(),
