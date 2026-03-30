@@ -120,6 +120,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
     // Save program settings
     await supabase.from("program_settings").upsert({
       session_id: sessionId,
+      user_id: user?.id || null,
       competition_date: competitionDate || null,
       competition_name: competitionName || null,
       program_start: format(today, "yyyy-MM-dd"),
