@@ -125,10 +125,39 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
       reflection: reflection || null,
     };
 
-    const { error } = await supabase.from("daily_checkins").upsert(
-      payload,
-      { onConflict: "session_id,date" }
-    );
+    // Use user_id+date conflict for authenticated users, session_id+date for anonymous
+    const conflictTarget = user?.id ? "daily_checkins_user_date_unique" : "session_id,date";
+
+    let error: any = null;
+
+    if (user?.id) {
+      // For authenticated users: check if exists, then update or insert
+      const { data: existing } = await supabase
+        .from("daily_checkins")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("date", dateStr)
+        .maybeSingle();
+
+      if (existing) {
+        const { error: updateError } = await supabase
+          .from("daily_checkins")
+          .update(payload)
+          .eq("id", existing.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from("daily_checkins")
+          .insert(payload);
+        error = insertError;
+      }
+    } else {
+      const { error: upsertError } = await supabase.from("daily_checkins").upsert(
+        payload,
+        { onConflict: "session_id,date" }
+      );
+      error = upsertError;
+    }
 
     setSaving(false);
 
