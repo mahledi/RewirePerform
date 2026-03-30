@@ -38,7 +38,14 @@ const Assessment = () => {
   const [preResults, setPreResults] = useState<SavedResult[]>([]);
   const [postResults, setPostResults] = useState<SavedResult[]>([]);
 
-  const sessionId = localStorage.getItem("mindgame_session_id") || crypto.randomUUID();
+  const sessionId = (() => {
+    let id = localStorage.getItem("mindgame_session_id");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("mindgame_session_id", id);
+    }
+    return id;
+  })();
   const isSequentialMode = mode !== null;
 
   // Load comparison data for post mode
@@ -49,11 +56,14 @@ const Assessment = () => {
   }, [mode]);
 
   const loadPreResults = async () => {
-    const { data } = await supabase
+    let q = supabase
       .from("assessments")
       .select("assessment_type, scores, total_score, timing")
-      .eq("session_id", sessionId)
       .eq("timing", "pre");
+    q = user?.id
+      ? q.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
+      : q.eq("session_id", sessionId);
+    const { data } = await q;
     if (data) setPreResults(data as SavedResult[]);
   };
 
@@ -107,16 +117,17 @@ const Assessment = () => {
         // All tests done
         if (mode === "post") {
           // Load all data for comparison
-          const { data: allPre } = await supabase
-            .from("assessments")
-            .select("assessment_type, scores, total_score, timing")
-            .eq("session_id", sessionId)
-            .eq("timing", "pre");
-          const { data: allPost } = await supabase
-            .from("assessments")
-            .select("assessment_type, scores, total_score, timing")
-            .eq("session_id", sessionId)
-            .eq("timing", "post");
+          let preQ = supabase.from("assessments").select("assessment_type, scores, total_score, timing").eq("timing", "pre");
+          let postQ = supabase.from("assessments").select("assessment_type, scores, total_score, timing").eq("timing", "post");
+          if (user?.id) {
+            preQ = preQ.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`);
+            postQ = postQ.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`);
+          } else {
+            preQ = preQ.eq("session_id", sessionId);
+            postQ = postQ.eq("session_id", sessionId);
+          }
+          const { data: allPre } = await preQ;
+          const { data: allPost } = await postQ;
           setPreResults((allPre || []) as SavedResult[]);
           setPostResults((allPost || []) as SavedResult[]);
           setPhase("comparison");

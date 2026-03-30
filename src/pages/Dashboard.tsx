@@ -91,6 +91,8 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
   const filledDays = localEvents.size;
 
+  const { user } = useAuth();
+
   const handleSave = async () => {
     if (filledDays < 7) return;
     setSaving(true);
@@ -98,6 +100,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
     // Save calendar events
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
       session_id: sessionId,
+      user_id: user?.id || null,
       date,
       event_type: type,
       title: eventConfig[type].label,
@@ -117,6 +120,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
     // Save program settings
     await supabase.from("program_settings").upsert({
       session_id: sessionId,
+      user_id: user?.id || null,
       competition_date: competitionDate || null,
       competition_name: competitionName || null,
       program_start: format(today, "yyyy-MM-dd"),
@@ -139,6 +143,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
           // Save personalized tasks to DB
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
             session_id: sessionId,
+            user_id: user?.id || null,
             date: plan.date,
             event_type: plan.event_type,
             tasks: plan.tasks,
@@ -348,10 +353,23 @@ const Dashboard = () => {
   }, []);
 
   const checkSetup = async () => {
-    const [{ data: eventData }, { data: settingsData }] = await Promise.all([
-      supabase.from("calendar_events").select("*").eq("session_id", sessionId),
-      supabase.from("program_settings").select("*").eq("session_id", sessionId).maybeSingle(),
+    // Prefer user_id lookup, fallback to session_id
+    let eventsQuery = supabase.from("calendar_events").select("*");
+    let settingsQuery = supabase.from("program_settings").select("*");
+
+    if (user?.id) {
+      eventsQuery = eventsQuery.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+      settingsQuery = settingsQuery.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+    } else {
+      eventsQuery = eventsQuery.eq("session_id", sessionId);
+      settingsQuery = settingsQuery.eq("session_id", sessionId);
+    }
+
+    const [{ data: eventData }, { data: settingsArr }] = await Promise.all([
+      eventsQuery,
+      settingsQuery,
     ]);
+    const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
@@ -374,11 +392,12 @@ const Dashboard = () => {
 
 
   const checkAssessments = async () => {
-    const { data: settings } = await supabase
-      .from("program_settings")
-      .select("program_start")
-      .eq("session_id", sessionId)
-      .maybeSingle();
+    let settingsQ = supabase.from("program_settings").select("program_start");
+    settingsQ = user?.id
+      ? settingsQ.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`)
+      : settingsQ.eq("session_id", sessionId);
+    const { data: settingsArr } = await settingsQ;
+    const settings = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
     if (settings?.program_start) {
       setProgramStartDate(settings.program_start);
@@ -471,6 +490,7 @@ const Dashboard = () => {
       // Update program settings
       await supabase.from("program_settings").upsert({
         session_id: sessionId,
+        user_id: user?.id || null,
         competition_date: competitionDate || null,
         competition_name: competitionName || null,
         updated_at: new Date().toISOString(),
@@ -490,6 +510,7 @@ const Dashboard = () => {
       if (data?.daily_plans) {
         const taskUpserts = data.daily_plans.map((plan: any) => ({
           session_id: sessionId,
+          user_id: user?.id || null,
           date: plan.date,
           event_type: plan.event_type,
           tasks: plan.tasks,
@@ -510,7 +531,7 @@ const Dashboard = () => {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert({ session_id: sessionId, date: dateStr, event_type: newEventType, title: newEventTitle || null })
+      .insert({ session_id: sessionId, user_id: user?.id || null, date: dateStr, event_type: newEventType, title: newEventTitle || null })
       .select().single();
     if (!error && data) {
       setEvents((prev) => [...prev, data as CalendarEvent]);

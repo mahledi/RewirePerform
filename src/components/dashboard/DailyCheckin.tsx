@@ -105,21 +105,34 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   const saveCheckin = async () => {
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
-    await supabase.from("daily_checkins").upsert(
-      {
-        session_id: sessionId,
-        user_id: user?.id ?? null,
-        date: dateStr,
-        event_type: eventType,
-        mood_before: moodBefore,
-        energy_level: energyLevel,
-        focus_rating: Math.round((completedTasks.length / tasks.length) * 10),
-        tasks_completed: completedTasks as any,
-        reflection: reflection || null,
-      },
+    const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
+    
+    const payload: any = {
+      session_id: sessionId,
+      user_id: user?.id ?? null,
+      date: dateStr,
+      event_type: eventType,
+      mood_before: moodBefore,
+      energy_level: energyLevel,
+      focus_rating: focusRating,
+      tasks_completed: completedTasks as any,
+      reflection: reflection || null,
+    };
+
+    const { error } = await supabase.from("daily_checkins").upsert(
+      payload,
       { onConflict: "session_id,date" }
     );
+
     setSaving(false);
+
+    if (error) {
+      console.error("Checkin save error:", error);
+      const { toast } = await import("sonner");
+      toast.error("Check-in konnte nicht gespeichert werden. Bitte versuche es erneut.");
+      return;
+    }
+
     setStep(4);
   };
 
