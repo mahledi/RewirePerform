@@ -143,6 +143,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
           // Save personalized tasks to DB
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
             session_id: sessionId,
+            user_id: user?.id || null,
             date: plan.date,
             event_type: plan.event_type,
             tasks: plan.tasks,
