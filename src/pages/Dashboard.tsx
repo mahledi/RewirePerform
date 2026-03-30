@@ -353,10 +353,23 @@ const Dashboard = () => {
   }, []);
 
   const checkSetup = async () => {
-    const [{ data: eventData }, { data: settingsData }] = await Promise.all([
-      supabase.from("calendar_events").select("*").eq("session_id", sessionId),
-      supabase.from("program_settings").select("*").eq("session_id", sessionId).maybeSingle(),
+    // Prefer user_id lookup, fallback to session_id
+    let eventsQuery = supabase.from("calendar_events").select("*");
+    let settingsQuery = supabase.from("program_settings").select("*");
+
+    if (user?.id) {
+      eventsQuery = eventsQuery.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+      settingsQuery = settingsQuery.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+    } else {
+      eventsQuery = eventsQuery.eq("session_id", sessionId);
+      settingsQuery = settingsQuery.eq("session_id", sessionId);
+    }
+
+    const [{ data: eventData }, { data: settingsArr }] = await Promise.all([
+      eventsQuery,
+      settingsQuery,
     ]);
+    const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
