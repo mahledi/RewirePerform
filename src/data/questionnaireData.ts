@@ -590,6 +590,52 @@ export const questions: Question[] = [
     depth: "core",
   },
 
+  // ===== DEIN GEHIRN VERSTEHEN (Neurokognition) =====
+  {
+    id: "nc-01",
+    category: "neurocognition",
+    categoryIcon: "🧠",
+    question: "Wenn du einen Fehler machst – wie schnell bemerkst du, dass dein Kopf anfängt zu grübeln?",
+    subtext: "1 = Ich merke es gar nicht, bin einfach schlecht drauf. 10 = Ich bemerke den Gedanken sofort und kann mich lösen.",
+    type: "scale",
+    scaleLabels: ["Merke es nie", "Sofort bewusst"],
+    depth: "deep",
+  },
+  {
+    id: "nc-02",
+    category: "neurocognition",
+    categoryIcon: "🧠",
+    question: "Wie oft ertappst du dich dabei, Risiken im Spiel zu vermeiden, um Fehler zu verhindern?",
+    subtext: "Dein Gehirn schützt dich vor sozialem 'Ausschluss' – auch auf dem Platz. 1 = Nie. 10 = Ständig.",
+    type: "scale",
+    scaleLabels: ["Nie", "Ständig"],
+    depth: "deep",
+  },
+  {
+    id: "nc-03",
+    category: "neurocognition",
+    categoryIcon: "🧠",
+    question: "Beschreibe den typischen Gedanken, der dir nach einem Fehler als erstes durch den Kopf geht.",
+    subtext: "Das ist dein Amygdala-Programm in Aktion. Es gibt kein richtig oder falsch – nur Bewusstsein.",
+    type: "text",
+    placeholder: "Z.B. 'Nicht schon wieder...', 'Alle haben es gesehen...', 'Ich bin nicht gut genug...'",
+    depth: "core",
+  },
+  {
+    id: "nc-04",
+    category: "neurocognition",
+    categoryIcon: "🧠",
+    question: "Wenn du weißt, dass alle zuschauen – spielst du dann eher 'sicher' oder probierst du Neues aus?",
+    subtext: "Dein Gehirn berechnet ständig das soziale Risiko. Das ist evolutionär sinnvoll – aber auf dem Platz oft limitierend.",
+    type: "choice",
+    options: [
+      "Sicher spielen – bloß keinen Fehler machen",
+      "Neues ausprobieren – egal wer zuschaut",
+      "Kommt drauf an – je nach Spielstand und Situation",
+    ],
+    depth: "deep",
+  },
+
   // ===== ATHLETEN-PROFIL (DEEP DIVE) =====
   {
     id: "dp-01",
