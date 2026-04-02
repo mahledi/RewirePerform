@@ -11,6 +11,8 @@ import Questionnaire from "./pages/Questionnaire.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Assessment from "./pages/Assessment.tsx";
 import Coach from "./pages/Coach.tsx";
+import DeepProfile from "./pages/DeepProfile.tsx";
+import Progress from "./pages/Progress.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,12 @@ const App = () => (
             } />
             <Route path="/coach" element={
               <ProtectedRoute><Coach /></ProtectedRoute>
+            } />
+            <Route path="/deep-profile" element={
+              <ProtectedRoute><DeepProfile /></ProtectedRoute>
+            } />
+            <Route path="/progress" element={
+              <ProtectedRoute><Progress /></ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
