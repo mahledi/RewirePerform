@@ -67,13 +67,25 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
     const analyze = async () => {
       try {
-        // Generate session ID
-        const sessionId = crypto.randomUUID();
+        // Use the consistent session ID from localStorage
+        const SESSION_KEY = "mindgame_session_id";
+        let sessionId = localStorage.getItem(SESSION_KEY);
+        if (!sessionId) {
+          sessionId = crypto.randomUUID();
+          localStorage.setItem(SESSION_KEY, sessionId);
+        }
 
-        // Save answers to database
+        // Check if user is logged in
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // Save answers to database with user_id if available
         const { error: insertError } = await supabase
           .from("questionnaire_responses")
-          .insert({ session_id: sessionId, answers: answers as any });
+          .insert({
+            session_id: sessionId,
+            user_id: user?.id || null,
+            answers: answers as any,
+          });
 
         if (insertError) {
           console.error("Error saving answers:", insertError);
@@ -109,6 +121,9 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           .from("questionnaire_responses")
           .update({ analysis: analysisResult as any })
           .eq("session_id", sessionId);
+
+        // Keep localStorage as fallback only
+        localStorage.setItem("mindgame_analysis", JSON.stringify(analysisResult));
       } catch (err) {
         console.error("Analysis error:", err);
         setError(

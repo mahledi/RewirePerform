@@ -387,10 +387,34 @@ const Dashboard = () => {
     REQUIRED_ASSESSMENTS.every((id) => types.has(id));
 
   useEffect(() => {
-    const savedAnalysis = localStorage.getItem("mindgame_analysis");
-    if (savedAnalysis) {
-      try { setAnalysis(JSON.parse(savedAnalysis)); } catch {}
-    }
+    const loadAnalysis = async () => {
+      // Try loading from DB first
+      let query = supabase
+        .from("questionnaire_responses")
+        .select("analysis")
+        .not("analysis", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (user?.id) {
+        query = query.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+      } else {
+        query = query.eq("session_id", sessionId);
+      }
+
+      const { data } = await query;
+      if (data && data.length > 0 && data[0].analysis) {
+        setAnalysis(data[0].analysis as unknown as Analysis);
+      } else {
+        // Fallback to localStorage
+        const savedAnalysis = localStorage.getItem("mindgame_analysis");
+        if (savedAnalysis) {
+          try { setAnalysis(JSON.parse(savedAnalysis)); } catch {}
+        }
+      }
+    };
+
+    loadAnalysis();
     checkSetup();
   }, []);
 

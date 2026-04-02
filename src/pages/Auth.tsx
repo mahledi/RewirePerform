@@ -26,11 +26,39 @@ const Auth = () => {
 
     setLoading(true);
 
+    // Helper to link anonymous session data to the new user_id
+    const linkSessionData = async (userId: string) => {
+      const SESSION_KEY = "mindgame_session_id";
+      const anonSessionId = localStorage.getItem(SESSION_KEY);
+      if (!anonSessionId) return;
+
+      // Link all anonymous rows (where user_id is null) for this session
+      const tables = [
+        "questionnaire_responses",
+        "calendar_events",
+        "daily_checkins",
+        "personalized_tasks",
+        "program_settings",
+        "assessments",
+      ] as const;
+
+      await Promise.all(
+        tables.map((table) =>
+          supabase
+            .from(table)
+            .update({ user_id: userId } as any)
+            .eq("session_id", anonSessionId)
+            .is("user_id", null)
+        )
+      );
+    };
+
     if (isLogin) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
         toast.error(error.message === "Invalid login credentials" ? "Ungültige Anmeldedaten." : error.message);
       } else {
+        await linkSessionData(data.user.id);
         toast.success("Willkommen zurück!");
         // Check role for redirect
         const { data: roleData } = await supabase
