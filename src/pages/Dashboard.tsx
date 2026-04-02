@@ -836,7 +836,75 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-        {analysis && (
+        {/* Deep Profile Baseline Banner */}
+        {!baselineDone && !setupMode && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
+            <div className="flex items-start gap-3">
+              <Microscope className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Baseline erstellen</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Erstelle dein detailliertes Athleten-Profil als Ausgangspunkt – nach 4 Wochen misst du deinen Fortschritt.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/deep-profile?timing=baseline")}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
+                >
+                  <Microscope className="w-4 h-4" />
+                  Baseline starten
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Deep Profile Re-Test Banner */}
+        {baselineDone && !retestDone && postTestDue && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-yellow-400/10 border border-yellow-400/30">
+            <div className="flex items-start gap-3">
+              <TrendingUp className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Re-Test verfügbar!</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Dein 4-Wochen-Programm ist abgeschlossen. Mache den Re-Test und sieh, wie sich dein Mindset verändert hat.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/deep-profile?timing=retest")}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-400 text-background font-heading font-semibold text-sm hover:bg-yellow-300 transition-colors"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Re-Test starten
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Progress Link */}
+        {baselineDone && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+            <button
+              onClick={() => navigate("/progress")}
+              className="w-full p-4 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-heading font-semibold">Dein Fortschritt (Deep Dive)</p>
+                  <p className="text-xs text-muted-foreground">{retestDone ? "Baseline vs. Re-Test ansehen" : "Baseline-Profil ansehen"}</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </motion.div>
+        )}
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
             <div className="flex items-center justify-between">
               <div>
