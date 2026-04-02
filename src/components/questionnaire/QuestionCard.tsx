@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Question } from "@/data/questionnaireData";
+import VoiceInput from "@/components/VoiceInput";
 
 interface QuestionCardProps {
   question: Question;
