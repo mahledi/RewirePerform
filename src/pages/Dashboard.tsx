@@ -905,6 +905,7 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {analysis && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
             <div className="flex items-center justify-between">
               <div>
