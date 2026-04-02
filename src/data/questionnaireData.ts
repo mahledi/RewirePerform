@@ -85,6 +85,13 @@ export const categories: QuestionCategory[] = [
     icon: "🧭",
     intro: "Die besten Athleten der Welt haben eine Philosophie. Ein Glaubenssystem, das sie durch die härtesten Momente trägt. Was ist deines?",
   },
+  {
+    id: "deep_profile",
+    title: "Athleten-Profil (Deep Dive)",
+    description: "Druck, Technik und Erholung – die Details, die den Unterschied machen.",
+    icon: "🔬",
+    intro: "Diese Fragen gehen in die Tiefe deines Athleten-Alltags. Sie helfen uns, dein Profil zu schärfen und dein Programm noch präziser auf dich zuzuschneiden.",
+  },
 ];
 
 export const questions: Question[] = [
