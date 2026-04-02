@@ -584,6 +584,46 @@ export const questions: Question[] = [
   },
 ];
 
+  // ===== ATHLETEN-PROFIL (DEEP DIVE) =====
+  {
+    id: "dp-01",
+    category: "deep_profile",
+    categoryIcon: "🔬",
+    question: "Was ist deine primäre Druckquelle?",
+    subtext: "Wähle alle Quellen, die auf dich zutreffen.",
+    type: "multi",
+    options: [
+      "Trainer / Coaching-Staff",
+      "Eltern / Familie",
+      "Eigener Leistungsdruck",
+      "Konkurrenz / Mitspieler",
+    ],
+    depth: "deep",
+  },
+  {
+    id: "dp-02",
+    category: "deep_profile",
+    categoryIcon: "🔬",
+    question: "Beschreibe eine technische Aktion, die du im Training perfekt beherrschst, die aber im Spiel unter Druck oft misslingt.",
+    subtext: "Sei so spezifisch wie möglich – welche Aktion, in welcher Situation?",
+    type: "text",
+    placeholder: "Z.B. 'Mein erster Kontakt bei hohen Bällen unter Gegnerdruck...'",
+    depth: "core",
+  },
+  {
+    id: "dp-03",
+    category: "deep_profile",
+    categoryIcon: "🔬",
+    question: "Wie lange grübelst du nach einer Niederlage?",
+    subtext: "1 = Ich hake es sofort ab. 10 = Es beschäftigt mich tagelang.",
+    type: "scale",
+    scaleLabels: ["Sofort abgehakt", "Tagelang"],
+    depth: "deep",
+  },
+];
+
+export const deepProfileQuestionIds = ["dp-01", "dp-02", "dp-03"];
+
 export const getQuestionsByCategory = (categoryId: string): Question[] => {
   return questions.filter((q) => q.category === categoryId);
 };
