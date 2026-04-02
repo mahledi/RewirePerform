@@ -86,6 +86,13 @@ export const categories: QuestionCategory[] = [
     intro: "Die besten Athleten der Welt haben eine Philosophie. Ein Glaubenssystem, das sie durch die härtesten Momente trägt. Was ist deines?",
   },
   {
+    id: "neurocognition",
+    title: "Dein Gehirn verstehen",
+    description: "Wie funktioniert dein mentales Betriebssystem?",
+    icon: "🧠",
+    intro: "Dein Gehirn ist kein Gegner – es ist ein Werkzeug. Es schützt dich mit uralten Programmen vor Fehlern, sozialer Ablehnung und Energieverschwendung. Das ist evolutionär genial – aber im Sport oft limitierend. Diese Fragen helfen uns zu verstehen, wie dein 'mentales Betriebssystem' aktuell eingestellt ist.",
+  },
+  {
     id: "deep_profile",
     title: "Athleten-Profil (Deep Dive)",
     description: "Druck, Technik und Erholung – die Details, die den Unterschied machen.",

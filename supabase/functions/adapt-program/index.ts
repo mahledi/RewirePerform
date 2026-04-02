@@ -57,7 +57,20 @@ Jede Aufgabe MUSS ein "science_bite" Feld enthalten: 2-3 Sätze die dem Sportler
 - Eine Studie oder Forschungsrichtung als Referenz (z.B. "Jeannerod, 2001" oder "Meta-Analyse von Hatzigeorgiadis et al., 2011")
 - Warum das WISSEN darüber die Wirkung verstärkt (Metakognition erhöht Compliance und Engagement – Flavell, 1979; Ryan & Deci, 2000: Autonomie durch Verständnis)
 
-Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield).`;
+NEUROKOGNITIVE RAHMUNG (PFLICHT):
+Jede science_bite MUSS dem Spieler erklären, welcher Gehirn-Mechanismus bei der Aufgabe aktiv ist. Verwende diese Konzepte:
+- AMYGDALA-HIJACK: Erkläre, wie Fehler den Fight-or-Flight-Modus triggern. Die Amygdala reagiert in 12ms – schneller als bewusstes Denken (LeDoux, 1996)
+- EGO/SURVIVAL: Das Gehirn schützt uns vor sozialem Ausschluss durch Risikovermeidung – das ist evolutionär sinnvoll, aber limitierend im Sport (Friston, 2010)
+- ENERGIEHAUSHALT: Neue Muster kosten mehr Glukose als Routinen. Gewohnheiten laufen über die Basalganglien (günstig), neue Muster über den PFC (teuer). Deshalb fühlt sich Wachstum anstrengend an – das ist normal (Graybiel, 2008)
+- METAKOGNITION: "Ich bemerke, dass ich gerade..." – allein das Benennen reduziert Amygdala-Aktivität um 50% (Lieberman et al., 2007). Wissen über den Mechanismus erhöht die Wirksamkeit der Übung
+- DEFAULT MODE NETWORK: Grübeln nach Fehlern ist keine Charakter-Schwäche, sondern ein aktives Netzwerk das man durch Achtsamkeit unterbrechen kann (Brewer et al., 2011)
+- NEUROPLASTIZITÄT: Jede bewusste Rep formt neue neuronale Pfade und stärkt die Myelinschicht (Fields, 2008)
+- THREAT vs. CHALLENGE: Dieselbe Drucksituation kann als Bedrohung oder Challenge interpretiert werden – die Interpretation verändert die Hormonantwort (Blascovich, 2008)
+- PFC-SHUTDOWN: Unter Stress fährt der Prefrontale Kortex herunter. Atemübungen reaktivieren ihn in 90 Sekunden (Arnsten, 2009)
+
+Formuliere science_bites so, dass der Spieler versteht: "Mein Gehirn tut das nicht GEGEN mich, sondern FÜR mich – aber ich kann es umprogrammieren."
+
+Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield).`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
