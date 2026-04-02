@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import VoiceInput from "@/components/VoiceInput";
 
 type EventType = "training" | "rest" | "competition";
 
