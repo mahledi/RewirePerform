@@ -381,6 +381,8 @@ const Dashboard = () => {
   const [todayCheckinDone, setTodayCheckinDone] = useState(false);
   const [checkinStatusLoading, setCheckinStatusLoading] = useState(true);
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
+  const [baselineDone, setBaselineDone] = useState(false);
+  const [retestDone, setRetestDone] = useState(false);
   const sessionId = useMemo(() => getSessionId(), []);
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
