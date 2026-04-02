@@ -324,6 +324,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_team_stats: { Args: { team_id_param: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
