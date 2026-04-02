@@ -125,6 +125,33 @@ export type Database = {
         }
         Relationships: []
       }
+      deep_profile_assessments: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          session_id: string
+          timing: string
+          user_id: string | null
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          session_id: string
+          timing: string
+          user_id?: string | null
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          session_id?: string
+          timing?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       personalized_tasks: {
         Row: {
           date: string
