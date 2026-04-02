@@ -529,8 +529,21 @@ const Dashboard = () => {
     setCheckinStatusLoading(false);
   };
 
+  const checkDeepProfile = async () => {
+    let q = supabase.from("deep_profile_assessments").select("timing");
+    if (user?.id) {
+      q = q.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+    } else {
+      q = q.eq("session_id", sessionId);
+    }
+    const { data } = await q;
+    const timings = new Set((data || []).map((d: any) => d.timing));
+    setBaselineDone(timings.has("baseline"));
+    setRetestDone(timings.has("retest"));
+  };
+
   const refreshDashboardStatus = async () => {
-    await Promise.all([checkAssessments(), checkTodayCheckin()]);
+    await Promise.all([checkAssessments(), checkTodayCheckin(), checkDeepProfile()]);
   };
 
   useEffect(() => {
