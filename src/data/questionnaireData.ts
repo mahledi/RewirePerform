@@ -582,7 +582,6 @@ export const questions: Question[] = [
     placeholder: "Der eine Gedanke, der bleibt...",
     depth: "core",
   },
-];
 
   // ===== ATHLETEN-PROFIL (DEEP DIVE) =====
   {
