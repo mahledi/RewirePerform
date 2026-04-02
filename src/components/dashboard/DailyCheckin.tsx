@@ -315,12 +315,17 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
             {step === 3 && (
               <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                 <h2 className="font-heading text-2xl font-bold mb-2">Reflexion</h2>
-                <p className="text-muted-foreground mb-6">Was nimmst du aus heute mit?</p>
+                <p className="text-muted-foreground mb-4">Was nimmst du aus heute mit?</p>
+                <VoiceInput
+                  currentValue={reflection}
+                  onTranscript={(val) => setReflection(val)}
+                  placeholder="Schreibe frei oder sprich ein. Keine Bewertung, nur Beobachtung..."
+                />
                 <textarea
                   value={reflection}
                   onChange={(e) => setReflection(e.target.value)}
                   placeholder="Schreibe frei. Keine Bewertung, nur Beobachtung..."
-                  className="w-full h-40 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full h-40 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </motion.div>
             )}
