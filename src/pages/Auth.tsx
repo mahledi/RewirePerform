@@ -85,6 +85,7 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else if (data.user) {
+        await linkSessionData(data.user.id);
         // Role is auto-assigned via database trigger from user metadata
         // Ensure role also exists client-side (trigger may race)
         await supabase.from("user_roles").insert({
