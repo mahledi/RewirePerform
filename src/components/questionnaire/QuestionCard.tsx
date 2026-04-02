@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Question } from "@/data/questionnaireData";
+import VoiceInput from "@/components/VoiceInput";
 
 interface QuestionCardProps {
   question: Question;
@@ -79,13 +80,20 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
 
         {/* Text input */}
         {question.type === "text" && (
-          <textarea
-            value={textValue}
-            onChange={(e) => handleTextChange(e.target.value)}
-            placeholder={question.placeholder}
-            rows={5}
-            className="w-full mt-6 p-5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none font-body leading-relaxed transition-all"
-          />
+          <div className="mt-6 space-y-3">
+            <VoiceInput
+              currentValue={textValue}
+              onTranscript={(val) => handleTextChange(val)}
+              placeholder={question.placeholder}
+            />
+            <textarea
+              value={textValue}
+              onChange={(e) => handleTextChange(e.target.value)}
+              placeholder={question.placeholder}
+              rows={5}
+              className="w-full p-5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none font-body leading-relaxed transition-all"
+            />
+          </div>
         )}
 
         {/* Single choice */}
