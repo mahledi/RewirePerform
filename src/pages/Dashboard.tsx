@@ -844,7 +844,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Baseline erstellen</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Erstelle dein detailliertes Athleten-Profil als Ausgangspunkt – nach 4 Wochen misst du deinen Fortschritt.
+                  Erstelle dein detailliertes Athleten-Profil als Ausgangspunkt – nach 8 Wochen misst du deinen Fortschritt.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
