@@ -60,7 +60,7 @@ interface CalendarSetupProps {
 
 const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) => {
   const today = startOfDay(new Date());
-  const endDate = addDays(today, 27);
+  const endDate = addDays(today, 55);
   const [currentMonth, setCurrentMonth] = useState(today);
   const [selectedTool, setSelectedTool] = useState<EventType>("training");
   const [localEvents, setLocalEvents] = useState<Map<string, EventType>>(new Map());
@@ -220,11 +220,11 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
       <div className="max-w-2xl mx-auto px-6 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-heading text-2xl md:text-3xl font-bold mb-3">
-            Plane deine nächsten <span className="text-gradient">4 Wochen.</span>
+            Plane deine nächsten <span className="text-gradient">8 Wochen.</span>
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
-            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag.
+            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag – über 4 Phasen hinweg.
           </p>
         </motion.div>
 
@@ -328,7 +328,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
         {/* Progress */}
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
-          <span>{filledDays} / 28 Tage</span>
+          <span>{filledDays} / 56 Tage</span>
           <div className="flex gap-3">
             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" />{Array.from(localEvents.values()).filter(v => v === "training").length}</span>
             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-400" />{Array.from(localEvents.values()).filter(v => v === "rest").length}</span>
@@ -498,7 +498,7 @@ const Dashboard = () => {
       const postDone = hasCompletedAllAssessments(postTypes);
       setPostTestsDone(postDone);
 
-      setPostTestDue(daysSince >= 28 && !postDone);
+      setPostTestDue(daysSince >= 56 && !postDone);
     } else {
       setProgramStartDate(null);
       setPostTestDue(false);
@@ -682,7 +682,7 @@ const Dashboard = () => {
     !preTestsDone &&
     !setupMode &&
     !!programStartDate &&
-    differenceInDays(new Date(), new Date(programStartDate)) < 28;
+    differenceInDays(new Date(), new Date(programStartDate)) < 56;
 
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
@@ -796,7 +796,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Post-Tests fällig!</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 4-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -844,7 +844,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Baseline erstellen</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Erstelle dein detailliertes Athleten-Profil als Ausgangspunkt – nach 4 Wochen misst du deinen Fortschritt.
+                  Erstelle dein detailliertes Athleten-Profil als Ausgangspunkt – nach 8 Wochen misst du deinen Fortschritt.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -868,7 +868,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Re-Test verfügbar!</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 4-Wochen-Programm ist abgeschlossen. Mache den Re-Test und sieh, wie sich dein Mindset verändert hat.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Mache den Re-Test und sieh, wie sich dein Mindset verändert hat.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -905,6 +905,51 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {/* Phase & Progress Indicator */}
+        {programStartDate && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
+            {(() => {
+              const daysSince = differenceInDays(new Date(), new Date(programStartDate)) + 1;
+              const clampedDay = Math.min(Math.max(daysSince, 1), 56);
+              const phase = clampedDay <= 14 ? 1 : clampedDay <= 28 ? 2 : clampedDay <= 42 ? 3 : 4;
+              const phaseNames = ["", "Fundament & Selbstanalyse", "Skill-Erwerb", "Intensivierung & Transfer", "Meisterschaft & Re-Test"];
+              const phaseIcons = ["", "🧠", "🎯", "⚡", "🏆"];
+              const progress = (clampedDay / 56) * 100;
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{phaseIcons[phase]}</span>
+                      <div>
+                        <p className="text-xs text-muted-foreground font-heading">Phase {phase} von 4</p>
+                        <p className="text-sm font-heading font-semibold">{phaseNames[phase]}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Tag {clampedDay} / 56</p>
+                      <p className="text-xs text-muted-foreground">Woche {Math.ceil(clampedDay / 7)} / 8</p>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
+                    <motion.div
+                      className="h-full bg-primary rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <span className={phase === 1 ? "text-primary font-semibold" : ""}>Fundament</span>
+                    <span className={phase === 2 ? "text-primary font-semibold" : ""}>Skills</span>
+                    <span className={phase === 3 ? "text-primary font-semibold" : ""}>Transfer</span>
+                    <span className={phase === 4 ? "text-primary font-semibold" : ""}>Meisterschaft</span>
+                  </div>
+                </>
+              );
+            })()}
+          </motion.div>
+        )}
+
         {analysis && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
             <div className="flex items-center justify-between">
@@ -913,7 +958,7 @@ const Dashboard = () => {
                 <p className="text-3xl font-heading font-bold text-primary">{analysis.mental_score}<span className="text-base text-muted-foreground">/100</span></p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">{competitionName || "4-Wochen-Programm"}</p>
+                <p className="text-xs text-muted-foreground mb-1">{competitionName || "8-Wochen-Programm"}</p>
                 <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten</p>
                 {competitionDate && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
               </div>

@@ -1,0 +1,1 @@
+ALTER TABLE public.program_settings ALTER COLUMN program_weeks SET DEFAULT 8;

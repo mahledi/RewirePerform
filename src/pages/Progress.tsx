@@ -236,7 +236,7 @@ const Progress = () => {
         {/* CTA for re-test if not done */}
         {!retest && (
           <div className="text-center mt-8">
-            <p className="text-xs text-muted-foreground mb-4">Der Re-Test wird nach Ablauf deines 28-Tage-Programms freigeschaltet.</p>
+            <p className="text-xs text-muted-foreground mb-4">Der Re-Test wird nach Ablauf deines 56-Tage-Programms freigeschaltet.</p>
           </div>
         )}
       </div>

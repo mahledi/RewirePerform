@@ -15,7 +15,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { calendarEvents, analysis, competitionDate, competitionName } = await req.json();
+    const { calendarEvents, analysis, competitionDate, competitionName, programStartDate } = await req.json();
 
     if (!calendarEvents || !analysis) {
       return new Response(
@@ -33,6 +33,18 @@ serve(async (req) => {
       ? `\n\nHauptwettkampf: "${competitionName || 'Wettkampf'}" am ${competitionDate}. Alle Aufgaben sollen auf diesen Wettkampf hin periodisiert werden. Je näher der Wettkampf, desto spezifischer und wettkampfnäher die mentalen Aufgaben.`
       : "";
 
+    // Determine day number context for periodization
+    let periodizationContext = "";
+    if (programStartDate) {
+      const start = new Date(programStartDate);
+      const eventDates = calendarEvents.map((e: any) => ({
+        date: e.date,
+        dayNumber: Math.floor((new Date(e.date).getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1,
+      }));
+      const dayRangeInfo = eventDates.map((d: any) => `${d.date} = Tag ${d.dayNumber}`).join(", ");
+      periodizationContext = `\nDie Tage im Kalender entsprechen folgenden Programm-Tagen: ${dayRangeInfo}`;
+    }
+
     const systemPrompt = `Du bist ein erfahrener Sportpsychologe der personalisierte tägliche mentale Trainingsaufgaben erstellt.
 
 Du hast folgende Informationen über den Sportler:
@@ -41,15 +53,47 @@ Du hast folgende Informationen über den Sportler:
 - Entwicklungsfelder: ${analysis.development_areas?.map((d: any) => `${d.title} (${d.priority})`).join(", ") || "keine"}
 - Erkannte Muster: ${analysis.patterns?.map((p: any) => p.title).join(", ") || "keine"}
 ${competitionContext}
+${periodizationContext}
+
+PERIODISIERUNG (8-Wochen / 56-Tage-Programm):
+Das Programm ist in 4 Phasen unterteilt. Passe Schwierigkeit und Komplexität der Aufgaben entsprechend der Phase an:
+
+Phase 1 (Tag 1-14): FUNDAMENT & SELBSTANALYSE
+- Fokus: Identität und Selbstwahrnehmung
+- Aufgaben: Selbstreflexion, Journaling, Werte-Klärung, Ist-Zustand-Analyse
+- Schwierigkeit: Niedrig – Grundlagen legen, Bewusstsein schaffen
+- Neurokognitiver Fokus: Metakognition, Default Mode Network bewusst nutzen
+
+Phase 2 (Tag 15-28): SKILL-ERWERB
+- Fokus: Konkrete mentale Techniken erlernen
+- Aufgaben: Atemtechniken (Box-Breathing, 4-7-8), Visualisierung nach Murphy (2005), Selbstgespräch-Techniken, Progressive Muskelentspannung
+- Schwierigkeit: Mittel – aktives Üben neuer Skills
+- Neurokognitiver Fokus: PFC-Training, Amygdala-Regulation, neue neuronale Pfade anlegen (Neuroplastizität)
+
+Phase 3 (Tag 29-42): INTENSIVIERUNG & TRANSFER
+- Fokus: Gelerntes ins Mannschaftstraining und Wettkampf-Szenarien transferieren
+- Aufgaben: Drucksimulationen, Challenge-Reframing unter Stress, Team-Kommunikation, Visualisierung spezifischer Wettkampfszenarien
+- Schwierigkeit: Hoch – unter Druck anwenden
+- Neurokognitiver Fokus: Threat vs. Challenge Mindset, PFC-Shutdown-Prävention, Amygdala-Hijack erkennen und umlenken
+
+Phase 4 (Tag 43-56): MEISTERSCHAFT & RE-TEST-VORBEREITUNG
+- Fokus: Festigung der "Inner Excellence", Automatisierung der Skills
+- Aufgaben: Eigenständige Routinen ohne Anleitung, Mental-Gameplan für Wettkämpfe erstellen, Mentoring-Elemente (Teamkollegen helfen), Reflexion der Transformation
+- Schwierigkeit: Experte – selbstständige Anwendung, Skills sollen in Basalganglien übergehen
+- Neurokognitiver Fokus: Von PFC zu Basalganglien (Automatisierung), Energiehaushalt optimieren, Selbstwirksamkeit festigen
+
+WICHTIG: Die Schwierigkeit und Komplexität der Aufgaben MUSS über die 8 Wochen progressiv ansteigen. 
+Phase 1 = einfache Reflexionsübungen, Phase 4 = komplexe Anwendungsszenarien unter Druck.
 
 Erstelle für JEDEN Tag im Kalender 3-5 spezifische mentale Aufgaben die:
 1. An den Tagestyp angepasst sind (Training/Ruhe/Wettkampf)
 2. Die Entwicklungsfelder des Sportlers gezielt adressieren
 3. Wissenschaftlich fundiert sind
-4. Aufeinander aufbauen (Progression über die Wochen)
+4. Aufeinander aufbauen (Progression über die Wochen, gemäß der 4-Phasen-Periodisierung)
 5. Bei Wettkampftagen: Aktivierung und Fokussierung
 6. Bei Ruhetagen: Regeneration und Reflexion
 7. Bei Trainingstagen: Mentales Training parallel zum physischen
+8. Der Phase entsprechend in Schwierigkeit und Komplexität angepasst sind
 
 WICHTIG – Science Bite:
 Jede Aufgabe MUSS ein "science_bite" Feld enthalten: 2-3 Sätze die dem Sportler erklären WARUM diese Übung wirkt. Nenne dabei:
@@ -70,7 +114,7 @@ Jede science_bite MUSS dem Spieler erklären, welcher Gehirn-Mechanismus bei der
 
 Formuliere science_bites so, dass der Spieler versteht: "Mein Gehirn tut das nicht GEGEN mich, sondern FÜR mich – aber ich kann es umprogrammieren."
 
-Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield).`;
+Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield), phase (1-4, die aktuelle Programmphase).`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -86,7 +130,7 @@ Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_b
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Hier ist der Kalender des Sportlers:\n\n${calendarSummary}\n\nErstelle für jeden Tag personalisierte mentale Aufgaben.`,
+              content: `Hier ist der Kalender des Sportlers:\n\n${calendarSummary}\n\nErstelle für jeden Tag personalisierte mentale Aufgaben. Beachte die 4-Phasen-Periodisierung und passe die Schwierigkeit entsprechend an.`,
             },
           ],
           tools: [
@@ -94,7 +138,7 @@ Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_b
               type: "function",
               function: {
                 name: "create_daily_tasks",
-                description: "Creates personalized daily mental training tasks for each calendar day",
+                description: "Creates personalized daily mental training tasks for each calendar day with phase-based periodization",
                 parameters: {
                   type: "object",
                   properties: {
@@ -105,6 +149,7 @@ Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_b
                         properties: {
                           date: { type: "string", description: "YYYY-MM-DD format" },
                           event_type: { type: "string" },
+                          phase: { type: "number", description: "Program phase 1-4 based on day number" },
                           tasks: {
                             type: "array",
                             items: {
@@ -115,12 +160,13 @@ Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_b
                                 description: { type: "string" },
                                 science_bite: { type: "string", description: "2-3 sentences explaining WHY this exercise works, with scientific mechanism and study reference" },
                                 icon: { type: "string", enum: ["brain", "eye", "flame", "heart", "target", "wind", "sunrise", "book", "sparkles", "shield"] },
+                                phase: { type: "number", description: "Program phase 1-4" },
                               },
-                              required: ["id", "title", "description", "science_bite", "icon"],
+                              required: ["id", "title", "description", "science_bite", "icon", "phase"],
                             },
                           },
                         },
-                        required: ["date", "event_type", "tasks"],
+                        required: ["date", "event_type", "phase", "tasks"],
                       },
                     },
                   },
