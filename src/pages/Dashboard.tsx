@@ -868,7 +868,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Re-Test verfügbar!</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 4-Wochen-Programm ist abgeschlossen. Mache den Re-Test und sieh, wie sich dein Mindset verändert hat.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Mache den Re-Test und sieh, wie sich dein Mindset verändert hat.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
