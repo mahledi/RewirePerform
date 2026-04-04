@@ -498,7 +498,7 @@ const Dashboard = () => {
       const postDone = hasCompletedAllAssessments(postTypes);
       setPostTestsDone(postDone);
 
-      setPostTestDue(daysSince >= 28 && !postDone);
+      setPostTestDue(daysSince >= 56 && !postDone);
     } else {
       setProgramStartDate(null);
       setPostTestDue(false);
