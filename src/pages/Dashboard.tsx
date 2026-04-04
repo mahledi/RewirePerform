@@ -220,11 +220,11 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
       <div className="max-w-2xl mx-auto px-6 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-heading text-2xl md:text-3xl font-bold mb-3">
-            Plane deine nächsten <span className="text-gradient">4 Wochen.</span>
+            Plane deine nächsten <span className="text-gradient">8 Wochen.</span>
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
-            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag.
+            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag – über 4 Phasen hinweg.
           </p>
         </motion.div>
 
