@@ -905,6 +905,51 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {/* Phase & Progress Indicator */}
+        {programStartDate && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
+            {(() => {
+              const daysSince = differenceInDays(new Date(), new Date(programStartDate)) + 1;
+              const clampedDay = Math.min(Math.max(daysSince, 1), 56);
+              const phase = clampedDay <= 14 ? 1 : clampedDay <= 28 ? 2 : clampedDay <= 42 ? 3 : 4;
+              const phaseNames = ["", "Fundament & Selbstanalyse", "Skill-Erwerb", "Intensivierung & Transfer", "Meisterschaft & Re-Test"];
+              const phaseIcons = ["", "🧠", "🎯", "⚡", "🏆"];
+              const progress = (clampedDay / 56) * 100;
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{phaseIcons[phase]}</span>
+                      <div>
+                        <p className="text-xs text-muted-foreground font-heading">Phase {phase} von 4</p>
+                        <p className="text-sm font-heading font-semibold">{phaseNames[phase]}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Tag {clampedDay} / 56</p>
+                      <p className="text-xs text-muted-foreground">Woche {Math.ceil(clampedDay / 7)} / 8</p>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
+                    <motion.div
+                      className="h-full bg-primary rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <span className={phase === 1 ? "text-primary font-semibold" : ""}>Fundament</span>
+                    <span className={phase === 2 ? "text-primary font-semibold" : ""}>Skills</span>
+                    <span className={phase === 3 ? "text-primary font-semibold" : ""}>Transfer</span>
+                    <span className={phase === 4 ? "text-primary font-semibold" : ""}>Meisterschaft</span>
+                  </div>
+                </>
+              );
+            })()}
+          </motion.div>
+        )}
+
         {analysis && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
             <div className="flex items-center justify-between">
