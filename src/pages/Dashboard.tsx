@@ -682,7 +682,7 @@ const Dashboard = () => {
     !preTestsDone &&
     !setupMode &&
     !!programStartDate &&
-    differenceInDays(new Date(), new Date(programStartDate)) < 28;
+    differenceInDays(new Date(), new Date(programStartDate)) < 56;
 
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
