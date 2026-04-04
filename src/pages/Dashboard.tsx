@@ -328,7 +328,7 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
 
         {/* Progress */}
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-6">
-          <span>{filledDays} / 28 Tage</span>
+          <span>{filledDays} / 56 Tage</span>
           <div className="flex gap-3">
             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-primary" />{Array.from(localEvents.values()).filter(v => v === "training").length}</span>
             <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-400" />{Array.from(localEvents.values()).filter(v => v === "rest").length}</span>
