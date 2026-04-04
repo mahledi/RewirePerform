@@ -60,7 +60,7 @@ interface CalendarSetupProps {
 
 const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) => {
   const today = startOfDay(new Date());
-  const endDate = addDays(today, 27);
+  const endDate = addDays(today, 55);
   const [currentMonth, setCurrentMonth] = useState(today);
   const [selectedTool, setSelectedTool] = useState<EventType>("training");
   const [localEvents, setLocalEvents] = useState<Map<string, EventType>>(new Map());
