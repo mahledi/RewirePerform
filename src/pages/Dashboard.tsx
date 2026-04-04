@@ -913,7 +913,7 @@ const Dashboard = () => {
                 <p className="text-3xl font-heading font-bold text-primary">{analysis.mental_score}<span className="text-base text-muted-foreground">/100</span></p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">{competitionName || "4-Wochen-Programm"}</p>
+                <p className="text-xs text-muted-foreground mb-1">{competitionName || "8-Wochen-Programm"}</p>
                 <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten</p>
                 {competitionDate && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
               </div>
