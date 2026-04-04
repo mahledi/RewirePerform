@@ -796,7 +796,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Post-Tests fällig!</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 4-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
