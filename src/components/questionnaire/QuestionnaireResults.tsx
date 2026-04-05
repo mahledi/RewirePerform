@@ -99,11 +99,16 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           type: q.type,
         }));
 
+        // Extract sport context from answers
+        const sport = answers["sport-01"] as string || null;
+        const position = answers["sport-02"] as string || null;
+        const level = answers["sport-03"] as string || null;
+
         // Call AI analysis edge function
         const { data, error: fnError } = await supabase.functions.invoke(
           "analyze-questionnaire",
           {
-            body: { answers, questions: questionsMeta },
+            body: { answers, questions: questionsMeta, sport, position, level },
           }
         );
 
