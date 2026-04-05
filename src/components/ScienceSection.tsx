@@ -4,23 +4,23 @@ import { BookOpen, FlaskConical, Eye, Repeat } from "lucide-react";
 const principles = [
   {
     icon: FlaskConical,
-    title: "Sportpsychologie",
-    text: "Basierend auf bewährten Methoden der angewandten Sportpsychologie – mentales Training, Selbstregulation und kognitive Restrukturierung.",
+    title: "Neurokognitives Training",
+    text: "PFC-Aktivierung und Amygdala-Regulation: Wir trainieren die Gehirnregionen, die unter Druck über Sieg und Niederlage entscheiden.",
   },
   {
     icon: Eye,
-    title: "Visualisierung",
-    text: "Neurowissenschaftlich belegt: Mentale Simulation aktiviert dieselben neuronalen Netzwerke wie die tatsächliche Ausführung einer Bewegung.",
+    title: "Prämotorische Aktivierung",
+    text: "Visualisierung aktiviert denselben prämotorischen Kortex wie die echte Bewegung – mentale Reps formen reale neuronale Pfade (Jeannerod, 2001).",
   },
   {
     icon: Repeat,
-    title: "Periodisierung",
-    text: "Mentales Training folgt denselben Periodisierungsprinzipien wie physisches Training – abgestimmt auf Wettkampf- und Regenerationsphasen.",
+    title: "Neuroplastische Progression",
+    text: "56 Tage: Von PFC-gesteuertem bewusstem Üben zu automatisierten Routinen in den Basalganglien. Dein Gehirn baut sich physisch um.",
   },
   {
     icon: BookOpen,
-    title: "Growth Mindset",
-    text: "Studien zeigen: Sportler mit lernorientiertem Mindset zeigen nachweislich höhere Leistung unter Druck und schnellere Erholung nach Rückschlägen.",
+    title: "aMCC Willpower-Training",
+    text: "Der Anterior Midcingulate Cortex wächst messbar durch freiwillige Überwindung. Tägliche Challenges machen Disziplin zu einem physischen Muskel.",
   },
 ];
 
