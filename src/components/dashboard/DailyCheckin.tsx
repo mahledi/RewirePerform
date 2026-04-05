@@ -5,7 +5,7 @@ import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
   Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
-  Lightbulb, ChevronDown,
+  Lightbulb, ChevronDown, Clock, MapPin,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,9 @@ interface CheckinTask {
   id: string;
   title: string;
   description: string;
+  steps?: string[];
+  duration?: string;
+  when_to_use?: string;
   science_bite?: string;
   icon: string;
 }
@@ -33,28 +36,21 @@ const iconMap: Record<string, typeof Brain> = {
   wind: Wind, sunrise: Sunrise, book: BookOpen, sparkles: Sparkles, shield: Shield,
 };
 
-// Fallback tasks if no personalized tasks are available
 const fallbackTasks: Record<EventType, CheckinTask[]> = {
   training: [
-    { id: "t-process-goal", title: "Prozess-Ziel setzen", description: "Definiere ein konkretes Prozess-Ziel für heute.", icon: "target" },
-    { id: "t-visualization", title: "Wettkampf-Visualisierung", description: "Visualisiere 3 Minuten lang eine spezifische Wettkampfsituation.", icon: "eye" },
-    { id: "t-situation-scan", title: "Situations-Training", description: "Beobachte bewusst wie du auf Fehler reagierst.", icon: "brain" },
-    { id: "t-energy-check", title: "Energie-Scan", description: "Spüre in deinen Körper: Wo ist Spannung? Wo Leichtigkeit?", icon: "flame" },
-    { id: "t-progress-focus", title: "Fortschritts-Fokus", description: "Heute geht es darum zu LERNEN, nicht zu gewinnen.", icon: "sparkles" },
+    { id: "t-activation", title: "Aktivierungs-Check", description: "Prüfe deinen Zustand und passe ihn an.", steps: ["Schließe die Augen und spüre in deinen Körper.", "Zu nervös? 3 tiefe Atemzüge, Schultern fallen lassen.", "Zu ruhig? 10 Sekunden auf der Stelle bewegen, Körperspannung aufbauen."], duration: "30 Sekunden", when_to_use: "Vor dem Training", icon: "flame" },
+    { id: "t-visualization", title: "Situations-Visualisierung", description: "Stelle dir eine konkrete Trainingssituation vor.", steps: ["Augen schließen.", "Stelle dir 60 Sekunden lang eine spezifische Szene vor.", "Sieh die Farben, hör die Geräusche, spüre die Bewegung."], duration: "2 Minuten", when_to_use: "Vor dem Training", icon: "eye" },
+    { id: "t-reflection", title: "3-Sätze-Reflexion", description: "Schreibe 3 kurze Sätze über dein Training.", steps: ["Was lief heute gut?", "Was war schwierig?", "Was mache ich morgen anders?"], duration: "2 Minuten", when_to_use: "Nach dem Training", icon: "book" },
   ],
   rest: [
-    { id: "r-mindset", title: "Mindset-Reflexion", description: "Schreibe 5 Minuten lang alles auf was dir durch den Kopf geht.", icon: "book" },
-    { id: "r-visualization", title: "Mentales Training", description: "Visualisiere deinen idealen Wettkampf. 5-10 Minuten.", icon: "eye" },
-    { id: "r-breathwork", title: "Atemübung", description: "4-7-8 Atmung: 4 Sek. ein, 7 halten, 8 aus. 5 Durchgänge.", icon: "wind" },
-    { id: "r-gratitude", title: "Dankbarkeits-Praxis", description: "Nenne 3 Dinge in deinem Sport die du schätzt.", icon: "heart" },
-    { id: "r-identity", title: "Identitäts-Übung", description: "Verbringe Zeit mit einer Aktivität die nichts mit Sport zu tun hat.", icon: "sunrise" },
+    { id: "r-breathwork", title: "4-7-8 Atemübung", description: "Beruhige dein Nervensystem mit kontrollierter Atmung.", steps: ["4 Sekunden einatmen.", "7 Sekunden Atem halten.", "8 Sekunden langsam ausatmen.", "5 Durchgänge wiederholen."], duration: "3 Minuten", when_to_use: "Morgens oder abends", icon: "wind" },
+    { id: "r-journaling", title: "Freies Journaling", description: "Schreibe 5 Minuten alles auf, was dir durch den Kopf geht.", steps: ["Timer auf 5 Minuten stellen.", "Schreibe ohne Pause – egal was.", "Nicht bewerten, nur beobachten."], duration: "5 Minuten", when_to_use: "Abends", icon: "book" },
+    { id: "r-gratitude", title: "3 Dinge Dankbarkeit", description: "Nenne 3 konkrete Dinge aus deinem Sport, für die du dankbar bist.", steps: ["Denke an einen Moment der letzten Woche.", "Was hat dich stolz gemacht?", "Schreib oder sprich 3 Dinge laut aus."], duration: "2 Minuten", when_to_use: "Abends vor dem Schlafen", icon: "heart" },
   ],
   competition: [
-    { id: "c-activation", title: "Aktivierungs-Level", description: "Finde dein optimales Erregungsniveau.", icon: "flame" },
-    { id: "c-routine", title: "Pre-Competition Routine", description: "Gehe deine Routine durch. Vertrautheit schafft Vertrauen.", icon: "target" },
-    { id: "c-focus-words", title: "Fokus-Wörter", description: "Wähle 2-3 Wörter die dich heute leiten.", icon: "brain" },
-    { id: "c-external-focus", title: "Externer Fokus", description: "Richte deine Aufmerksamkeit nach außen.", icon: "eye" },
-    { id: "c-acceptance", title: "Akzeptanz-Übung", description: "Löse dich vom Ergebnis. Du bist vorbereitet.", icon: "heart" },
+    { id: "c-activation", title: "Wettkampf-Aktivierung", description: "Bringe dich in den optimalen Zustand.", steps: ["3 tiefe Power-Atemzüge.", "Spanne alle Muskeln 5 Sekunden an, dann loslassen.", "Sage dir: 'Ich bin bereit.'"], duration: "30 Sekunden", when_to_use: "10 Minuten vor dem Start", icon: "flame" },
+    { id: "c-focus", title: "Fokus-Wörter", description: "Wähle 2 Wörter, die dich heute leiten.", steps: ["Wähle 2 Wörter (z.B. 'mutig', 'schnell').", "Wiederhole sie 3x leise.", "Wenn du abgelenkt bist: zurück zu deinen Wörtern."], duration: "30 Sekunden", when_to_use: "Beim Aufwärmen", icon: "target" },
+    { id: "c-reset", title: "Fehler-Reset", description: "Nach einem Fehler sofort zurück in den Fokus.", steps: ["Einmal tief ausatmen.", "Hände kurz schütteln – Fehler abschütteln.", "Blick nach vorne. Nächste Aktion."], duration: "10 Sekunden", when_to_use: "Direkt nach einem Fehler", icon: "brain" },
   ],
 };
 
@@ -74,7 +70,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   const [saving, setSaving] = useState(false);
   const [tasks, setTasks] = useState<CheckinTask[]>(fallbackTasks[eventType]);
   const [loadingTasks, setLoadingTasks] = useState(true);
-  const [expandedScienceBite, setExpandedScienceBite] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<CheckinTask | null>(null);
 
   const config = typeConfig[eventType];
 
@@ -98,22 +94,25 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     const { data } = await q.maybeSingle();
 
     if (data?.tasks && Array.isArray(data.tasks) && data.tasks.length > 0) {
-      setTasks(data.tasks as unknown as CheckinTask[]);
+      // Limit to max 3 tasks
+      const loaded = (data.tasks as unknown as CheckinTask[]).slice(0, 3);
+      setTasks(loaded);
     }
     setLoadingTasks(false);
   };
 
-  const toggleTask = (taskId: string) => {
+  const markTaskComplete = (taskId: string) => {
     setCompletedTasks((prev) =>
-      prev.includes(taskId) ? prev.filter((t) => t !== taskId) : [...prev, taskId]
+      prev.includes(taskId) ? prev : [...prev, taskId]
     );
+    setSelectedTask(null);
   };
 
   const saveCheckin = async () => {
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
-    
+
     const payload: any = {
       session_id: sessionId,
       user_id: user?.id ?? null,
@@ -126,13 +125,9 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
       reflection: reflection || null,
     };
 
-    // Use user_id+date conflict for authenticated users, session_id+date for anonymous
-    const conflictTarget = user?.id ? "daily_checkins_user_date_unique" : "session_id,date";
-
     let error: any = null;
 
     if (user?.id) {
-      // For authenticated users: check if exists, then update or insert
       const { data: existing } = await supabase
         .from("daily_checkins")
         .select("id")
@@ -165,7 +160,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     if (error) {
       console.error("Checkin save error:", error);
       const { toast } = await import("sonner");
-      toast.error("Check-in konnte nicht gespeichert werden. Bitte versuche es erneut.");
+      toast.error("Check-in konnte nicht gespeichert werden.");
       return;
     }
 
@@ -196,11 +191,207 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     </div>
   );
 
+  // ─── Task Detail View ─────────────────────────────────
+  const TaskDetailView = ({ task }: { task: CheckinTask }) => {
+    const IconComp = iconMap[task.icon] || Brain;
+    const isCompleted = completedTasks.includes(task.id);
+    const [showScience, setShowScience] = useState(false);
+
+    return (
+      <motion.div
+        key="task-detail"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -50 }}
+        className="space-y-6"
+      >
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+            <IconComp className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-heading text-2xl font-bold">{task.title}</h2>
+            <p className="text-muted-foreground text-sm mt-1">{task.description}</p>
+          </div>
+        </div>
+
+        {/* Meta: Duration & When */}
+        <div className="grid grid-cols-2 gap-3">
+          {task.duration && (
+            <div className="p-4 rounded-2xl bg-secondary/30 border border-border/30">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Dauer</span>
+              </div>
+              <p className="text-sm font-medium">{task.duration}</p>
+            </div>
+          )}
+          {task.when_to_use && (
+            <div className="p-4 rounded-2xl bg-secondary/30 border border-border/30">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Wann</span>
+              </div>
+              <p className="text-sm font-medium">{task.when_to_use}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Steps */}
+        {task.steps && task.steps.length > 0 && (
+          <div className="p-5 rounded-2xl bg-gradient-card border-glow">
+            <h3 className="text-sm font-heading font-semibold mb-4">So geht's:</h3>
+            <div className="space-y-3">
+              {task.steps.map((s, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-primary">{i + 1}</span>
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">{s}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Science Bite (collapsible) */}
+        {task.science_bite && (
+          <button
+            onClick={() => setShowScience(!showScience)}
+            className={`w-full text-left rounded-2xl transition-all ${
+              showScience
+                ? "bg-accent/20 border border-accent/30 p-5"
+                : "p-4 bg-secondary/20 hover:bg-secondary/30"
+            }`}
+          >
+            <div className="flex items-center gap-2 text-xs font-medium text-primary">
+              <Lightbulb className="w-3.5 h-3.5" />
+              <span>Warum das wirkt</span>
+              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${showScience ? "rotate-180" : ""}`} />
+            </div>
+            {showScience && (
+              <p className="text-xs text-muted-foreground leading-relaxed mt-3">{task.science_bite}</p>
+            )}
+          </button>
+        )}
+
+        {/* Mark Complete Button */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => markTaskComplete(task.id)}
+          disabled={isCompleted}
+          className={`w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
+            isCompleted
+              ? "bg-primary/20 text-primary cursor-default"
+              : "bg-primary text-primary-foreground hover:shadow-glow"
+          }`}
+        >
+          {isCompleted ? (
+            <><Check className="w-5 h-5" /> Erledigt</>
+          ) : (
+            <><Check className="w-5 h-5" /> Als erledigt markieren</>
+          )}
+        </motion.button>
+      </motion.div>
+    );
+  };
+
+  // ─── Task Dashboard (step 2) ──────────────────────────
+  const TaskDashboard = () => {
+    const completedCount = completedTasks.length;
+    const totalCount = tasks.length;
+
+    return (
+      <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-heading text-2xl font-bold">Deine Aufgaben</h2>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10">
+            <span className="text-sm font-bold text-primary">{completedCount}/{totalCount}</span>
+          </div>
+        </div>
+        <p className="text-muted-foreground text-sm mb-1">
+          {loadingTasks ? "Aufgaben werden geladen..." : "Tippe auf eine Aufgabe für Details."}
+        </p>
+
+        {/* Progress bar */}
+        <div className="w-full h-1.5 rounded-full bg-secondary/50 mb-6 overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
+            transition={{ duration: 0.4 }}
+          />
+        </div>
+
+        {loadingTasks ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {tasks.map((task) => {
+              const isCompleted = completedTasks.includes(task.id);
+              const IconComp = iconMap[task.icon] || Brain;
+              return (
+                <button
+                  key={task.id}
+                  onClick={() => !isCompleted && setSelectedTask(task)}
+                  className={`w-full text-left p-4 rounded-2xl transition-all ${
+                    isCompleted
+                      ? "bg-primary/10 ring-1 ring-primary/30 opacity-70"
+                      : "bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      isCompleted ? "bg-primary" : "bg-secondary"
+                    }`}>
+                      {isCompleted ? (
+                        <Check className="w-5 h-5 text-primary-foreground" />
+                      ) : (
+                        <IconComp className="w-5 h-5 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${isCompleted ? "text-primary line-through" : ""}`}>{task.title}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        {task.duration && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />{task.duration}
+                          </span>
+                        )}
+                        {task.when_to_use && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />{task.when_to_use}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {!isCompleted && <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <button onClick={onClose} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={() => {
+              if (selectedTask) { setSelectedTask(null); return; }
+              if (step > 0) { setStep(step - 1); return; }
+              onClose();
+            }}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Zurück</span>
           </button>
@@ -212,141 +403,65 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-start justify-center px-6 py-8 overflow-y-auto">
         <div className="max-w-lg w-full">
           <AnimatePresence mode="wait">
-            {step === 0 && (
-              <motion.div key="mood" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                <h2 className="font-heading text-2xl font-bold mb-2">Wie fühlst du dich?</h2>
-                <p className="text-muted-foreground mb-8">Dein mentaler Zustand vor dem {config.label}.</p>
-                <ScaleSelector value={moodBefore} onChange={setMoodBefore} lowLabel="Schlecht" highLabel="Großartig" />
-              </motion.div>
-            )}
-            {step === 1 && (
-              <motion.div key="energy" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                <h2 className="font-heading text-2xl font-bold mb-2">Dein Energie-Level</h2>
-                <p className="text-muted-foreground mb-8">Wie viel Energie hast du heute?</p>
-                <ScaleSelector value={energyLevel} onChange={setEnergyLevel} lowLabel="Erschöpft" highLabel="Volle Energie" />
-              </motion.div>
-            )}
-            {step === 2 && (
-              <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                <h2 className="font-heading text-2xl font-bold mb-2">Deine Aufgaben</h2>
-                <p className="text-muted-foreground mb-1 text-sm">
-                  {loadingTasks ? "Aufgaben werden geladen..." : "Personalisiert basierend auf deinem Profil."}
-                </p>
-                <p className="text-xs text-primary/60 mb-6">Arbeite diese Aufgaben durch.</p>
-                {loadingTasks ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {tasks.map((task) => {
-                      const isCompleted = completedTasks.includes(task.id);
-                      const IconComp = iconMap[task.icon] || Brain;
-                      const isScienceExpanded = expandedScienceBite === task.id;
-                      return (
-                        <div key={task.id} className="space-y-0">
-                          <button
-                            onClick={() => toggleTask(task.id)}
-                            className={`w-full text-left p-4 rounded-2xl transition-all ${
-                              isCompleted
-                                ? "bg-primary/10 ring-1 ring-primary/30"
-                                : "bg-gradient-card border-glow hover:bg-secondary/50"
-                            } ${isScienceExpanded ? "rounded-b-none" : ""}`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`w-6 h-6 rounded-lg flex items-center justify-center mt-0.5 shrink-0 transition-colors ${
-                                isCompleted ? "bg-primary" : "bg-secondary"
-                              }`}>
-                                {isCompleted ? (
-                                  <Check className="w-3.5 h-3.5 text-primary-foreground" />
-                                ) : (
-                                  <IconComp className="w-3.5 h-3.5 text-muted-foreground" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <p className={`text-sm font-medium mb-1 ${isCompleted ? "text-primary" : ""}`}>{task.title}</p>
-                                <p className="text-xs text-muted-foreground leading-relaxed">{task.description}</p>
-                              </div>
-                            </div>
-                          </button>
-                          {task.science_bite && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedScienceBite(isScienceExpanded ? null : task.id);
-                              }}
-                              className={`w-full text-left transition-all ${
-                                isScienceExpanded
-                                  ? "bg-accent/30 border border-t-0 border-accent/50 rounded-b-2xl p-4"
-                                  : "flex items-center gap-1.5 px-4 py-1.5 text-xs text-primary/70 hover:text-primary"
-                              }`}
-                            >
-                              {isScienceExpanded ? (
-                                <div className="space-y-2">
-                                  <div className="flex items-center gap-2 text-xs font-medium text-primary">
-                                    <Lightbulb className="w-3.5 h-3.5" />
-                                    <span>Warum das wirkt</span>
-                                    <ChevronDown className="w-3 h-3 ml-auto rotate-180" />
-                                  </div>
-                                  <p className="text-xs text-muted-foreground leading-relaxed">{task.science_bite}</p>
-                                  <p className="text-[10px] text-primary/50 italic">
-                                    Wissen verstärkt die Wirkung: Wer versteht warum eine Übung funktioniert, zeigt höhere Compliance und tieferes Engagement (Ryan & Deci, 2000).
-                                  </p>
-                                </div>
-                              ) : (
-                                <>
-                                  <Lightbulb className="w-3 h-3" />
-                                  <span>Warum das wirkt</span>
-                                  <ChevronDown className="w-3 h-3" />
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+            {selectedTask ? (
+              <TaskDetailView task={selectedTask} />
+            ) : (
+              <>
+                {step === 0 && (
+                  <motion.div key="mood" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Wie fühlst du dich?</h2>
+                    <p className="text-muted-foreground mb-8">Dein mentaler Zustand vor dem {config.label}.</p>
+                    <ScaleSelector value={moodBefore} onChange={setMoodBefore} lowLabel="Schlecht" highLabel="Großartig" />
+                  </motion.div>
                 )}
-              </motion.div>
-            )}
-            {step === 3 && (
-              <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                <h2 className="font-heading text-2xl font-bold mb-2">Reflexion</h2>
-                <p className="text-muted-foreground mb-4">Was nimmst du aus heute mit?</p>
-                <VoiceInput
-                  currentValue={reflection}
-                  onTranscript={(val) => setReflection(val)}
-                  placeholder="Schreibe frei oder sprich ein. Keine Bewertung, nur Beobachtung..."
-                />
-                <textarea
-                  value={reflection}
-                  onChange={(e) => setReflection(e.target.value)}
-                  placeholder="Schreibe frei. Keine Bewertung, nur Beobachtung..."
-                  className="w-full h-40 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </motion.div>
-            )}
-            {step === 4 && (
-              <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-                  <Check className="w-10 h-10 text-primary" />
-                </motion.div>
-                <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
-                <p className="text-muted-foreground mb-2">{completedTasks.length} von {tasks.length} Aufgaben erledigt.</p>
-                <p className="text-xs text-muted-foreground mb-8">Konsistenz ist der Schlüssel.</p>
-                <button onClick={onClose} className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all">
-                  Zurück zum Dashboard
-                </button>
-              </motion.div>
+                {step === 1 && (
+                  <motion.div key="energy" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Dein Energie-Level</h2>
+                    <p className="text-muted-foreground mb-8">Wie viel Energie hast du heute?</p>
+                    <ScaleSelector value={energyLevel} onChange={setEnergyLevel} lowLabel="Erschöpft" highLabel="Volle Energie" />
+                  </motion.div>
+                )}
+                {step === 2 && <TaskDashboard />}
+                {step === 3 && (
+                  <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Reflexion</h2>
+                    <p className="text-muted-foreground mb-4">Was nimmst du aus heute mit?</p>
+                    <VoiceInput
+                      currentValue={reflection}
+                      onTranscript={(val) => setReflection(val)}
+                      placeholder="Schreibe frei oder sprich ein..."
+                    />
+                    <textarea
+                      value={reflection}
+                      onChange={(e) => setReflection(e.target.value)}
+                      placeholder="Schreibe frei. Keine Bewertung, nur Beobachtung..."
+                      className="w-full h-40 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </motion.div>
+                )}
+                {step === 4 && (
+                  <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+                      <Check className="w-10 h-10 text-primary" />
+                    </motion.div>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
+                    <p className="text-muted-foreground mb-2">{completedTasks.length} von {tasks.length} Aufgaben erledigt.</p>
+                    <p className="text-xs text-muted-foreground mb-8">Konsistenz ist der Schlüssel.</p>
+                    <button onClick={onClose} className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all">
+                      Zurück zum Dashboard
+                    </button>
+                  </motion.div>
+                )}
+              </>
             )}
           </AnimatePresence>
         </div>
       </div>
 
-      {step < 4 && (
+      {step < 4 && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
