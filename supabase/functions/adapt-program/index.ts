@@ -122,8 +122,18 @@ Jede science_bite MUSS dem Spieler erklären, welcher Gehirn-Mechanismus bei der
 - NEUROPLASTIZITÄT: Jede bewusste Rep formt neue neuronale Pfade und stärkt die Myelinschicht (Fields, 2008)
 - THREAT vs. CHALLENGE: Dieselbe Drucksituation kann als Bedrohung oder Challenge interpretiert werden – die Interpretation verändert die Hormonantwort (Blascovich, 2008)
 - PFC-SHUTDOWN: Unter Stress fährt der Prefrontale Kortex herunter. Atemübungen reaktivieren ihn in 90 Sekunden (Arnsten, 2009)
+- ANTERIOR MIDCINGULATE CORTEX (aMCC): Der "Willpower-Muskel" des Gehirns. Der aMCC wächst PHYSISCH messbar, wenn Menschen freiwillig unangenehme Dinge tun (Parvizi et al., 2013). Er ist bei disziplinierten Menschen, Extremsportlern und "Super-Agern" signifikant größer (Touroutoglou et al., 2020). Jedes Mal wenn du etwas tust, das du NICHT tun willst, wird der aMCC stärker – wie ein Muskel. Er schrumpft bei Vermeidung und Komfortzone.
 
 Formuliere science_bites so, dass der Spieler versteht: "Mein Gehirn tut das nicht GEGEN mich, sondern FÜR mich – aber ich kann es umprogrammieren."
+
+PFLICHT – TÄGLICHE aMCC-CHALLENGE:
+Jeder Tag MUSS eine Aufgabe mit dem icon "flame" enthalten, die den Anterior Midcingulate Cortex trainiert. Diese Aufgabe fordert den Sportler auf, FREIWILLIG etwas Unangenehmes zu tun – etwas, das Überwindung kostet aber machbar ist. 
+Regeln für die aMCC-Challenge:
+1. PERSONALISIERT: Leite aus Sport, Position, Level und Antworten ab, was die Person wahrscheinlich NICHT gerne tut (z.B. ein Stürmer der ungern Defensivarbeit macht, ein introvertierter Spieler der ungern vor der Gruppe spricht)
+2. KONKRET & SOFORT UMSETZBAR: Keine vagen Tipps, sondern "Mach heute X" (z.B. "Dusche heute 30 Sekunden kalt ab", "Räume heute das Trikot eines Mitspielers auf", "Melde dich heute freiwillig für die härteste Übung im Training")
+3. PROGRESSIV: Phase 1 = kleine Überwindungen (kaltes Wasser, extra Wiederholung), Phase 4 = soziale/emotionale Challenges (Führung übernehmen, Fehler öffentlich analysieren)
+4. SCIENCE BITE PFLICHT: Erkläre dass der aMCC PHYSISCH wächst – messbar in MRT-Scans. "Dein Willpower-Muskel im Gehirn wächst gerade. Buchstäblich."
+5. Variiere die Kategorien: körperlich unangenehm (Kälte, extra Aufwand), sozial unangenehm (Initiative ergreifen, Verletzlichkeit zeigen), mental unangenehm (bewusst den schwierigsten Weg wählen)
 
 Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield), phase (1-4, die aktuelle Programmphase).`;
 

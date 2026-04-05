@@ -50,8 +50,9 @@ const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed"
           >
-            KI-gestützte mentale Performance-Begleitung für Sportler. 
-            Personalisiert. Täglich. Wissenschaftlich bewiesen.
+            KI-gestützte neurokognitive Performance-Begleitung. 
+            Wir rewiren die Gehirnregionen, die unter Druck versagen – 
+            wissenschaftlich belegt, sportartspezifisch, täglich.
           </motion.p>
 
           <motion.div
