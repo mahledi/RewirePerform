@@ -159,6 +159,26 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
     // Generate personalized tasks via AI
     if (analysis && eventData) {
       toast.info("KI generiert personalisierte Aufgaben...");
+
+      // Extract sport context from questionnaire answers (stored in localStorage or analysis)
+      let sport: string | null = null;
+      let position: string | null = null;
+      let level: string | null = null;
+      try {
+        const storedAnswers = localStorage.getItem("mindgame_answers");
+        if (storedAnswers) {
+          const parsed = JSON.parse(storedAnswers);
+          sport = parsed["sport-01"] || null;
+          position = parsed["sport-02"] || null;
+          level = parsed["sport-03"] || null;
+        }
+      } catch {}
+      // Also try profile sport as fallback
+      if (!sport && user?.id) {
+        const { data: profile } = await supabase.from("profiles").select("sport").eq("id", user.id).maybeSingle();
+        if (profile?.sport) sport = profile.sport;
+      }
+
       try {
         const { data: taskData, error: taskError } = await supabase.functions.invoke("adapt-program", {
           body: {
@@ -166,6 +186,9 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
             analysis,
             competitionDate: competitionDate || null,
             competitionName: competitionName || null,
+            sport,
+            position,
+            level,
           },
         });
 

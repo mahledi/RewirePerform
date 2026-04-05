@@ -76,6 +76,9 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         }
 
         // Check if user is logged in
+        // Save answers to localStorage so Dashboard can access sport/position/level
+        localStorage.setItem("mindgame_answers", JSON.stringify(answers));
+
         const { data: { user } } = await supabase.auth.getUser();
 
         // Save answers to database with user_id if available
@@ -99,11 +102,16 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           type: q.type,
         }));
 
+        // Extract sport context from answers
+        const sport = answers["sport-01"] as string || null;
+        const position = answers["sport-02"] as string || null;
+        const level = answers["sport-03"] as string || null;
+
         // Call AI analysis edge function
         const { data, error: fnError } = await supabase.functions.invoke(
           "analyze-questionnaire",
           {
-            body: { answers, questions: questionsMeta },
+            body: { answers, questions: questionsMeta, sport, position, level },
           }
         );
 
