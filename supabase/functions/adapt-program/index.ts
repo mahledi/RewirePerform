@@ -96,15 +96,36 @@ Phase 4 (Tag 43-56): MEISTERSCHAFT & RE-TEST-VORBEREITUNG
 WICHTIG: Die Schwierigkeit und Komplexität der Aufgaben MUSS über die 8 Wochen progressiv ansteigen. 
 Phase 1 = einfache Reflexionsübungen, Phase 4 = komplexe Anwendungsszenarien unter Druck.
 
-Erstelle für JEDEN Tag im Kalender 3-5 spezifische mentale Aufgaben die:
-1. An den Tagestyp angepasst sind (Training/Ruhe/Wettkampf)
+Erstelle für JEDEN Tag im Kalender EXAKT 3 mentale Aufgaben (nicht mehr, nicht weniger). Wähle die 3 relevantesten für diesen Tag.
+
+WICHTIG – AUFGABEN MÜSSEN KONKRET UND SOFORT UMSETZBAR SEIN:
+Jede Aufgabe MUSS so formuliert sein, dass ein 14-18 jähriger Sportler sie SOFORT versteht und umsetzen kann.
+
+VERBOTEN (zu abstrakt):
+- "Finde dein optimales Aktivierungslevel"
+- "Fokussiere dich extern"
+- "Akzeptiere das Ergebnis"
+- "Arbeite an deiner Selbstwahrnehmung"
+
+PFLICHT (konkret & actionable):
+- "Atme 3x tief ein und lass die Schultern fallen. Dann spanne 5 Sekunden alle Muskeln an."
+- "Schließe die Augen. Stelle dir 60 Sekunden lang vor, wie du [sportartspezifische Aktion] ausführst. Sieh die Farben, hör die Geräusche."
+- "Schreibe 3 Sätze auf: Was lief heute gut? Was war schwierig? Was mache ich morgen anders?"
+
+Jede Aufgabe MUSS enthalten:
+- duration: Exakte Zeitangabe (z.B. "30 Sekunden", "2 Minuten", "5 Minuten")
+- when_to_use: Wann genau die Aufgabe angewendet werden soll (z.B. "Vor dem Training", "Nach einem Fehler im Spiel", "Abends vor dem Schlafen")
+- steps: Array mit 2-4 konkreten Schritten als kurze Sätze
+
+Die Aufgaben müssen:
+1. An den Tagestyp angepasst sein (Training/Ruhe/Wettkampf)
 2. Die Entwicklungsfelder des Sportlers gezielt adressieren
-3. Wissenschaftlich fundiert sind
+3. Wissenschaftlich fundiert sein
 4. Aufeinander aufbauen (Progression über die Wochen, gemäß der 4-Phasen-Periodisierung)
 5. Bei Wettkampftagen: Aktivierung und Fokussierung
 6. Bei Ruhetagen: Regeneration und Reflexion
 7. Bei Trainingstagen: Mentales Training parallel zum physischen
-8. Der Phase entsprechend in Schwierigkeit und Komplexität angepasst sind
+8. Der Phase entsprechend in Schwierigkeit und Komplexität angepasst sein
 
 WICHTIG – Science Bite:
 Jede Aufgabe MUSS ein "science_bite" Feld enthalten: 2-3 Sätze die dem Sportler erklären WARUM diese Übung wirkt. Nenne dabei:
@@ -135,7 +156,9 @@ Regeln für die aMCC-Challenge:
 4. SCIENCE BITE PFLICHT: Erkläre dass der aMCC PHYSISCH wächst – messbar in MRT-Scans. "Dein Willpower-Muskel im Gehirn wächst gerade. Buchstäblich."
 5. Variiere die Kategorien: körperlich unangenehm (Kälte, extra Aufwand), sozial unangenehm (Initiative ergreifen, Verletzlichkeit zeigen), mental unangenehm (bewusst den schwierigsten Weg wählen)
 
-Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield), phase (1-4, die aktuelle Programmphase).`;
+Jede Aufgabe hat: title (kurz, max 5 Wörter), description (2-3 Sätze, konkrete Anleitung die ein 14-Jähriger versteht), steps (Array mit 2-4 konkreten Einzelschritten), duration (exakte Zeitangabe wie "30 Sekunden" oder "2 Minuten"), when_to_use (wann genau anwenden, z.B. "Vor dem Training"), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield), phase (1-4, die aktuelle Programmphase).
+
+WICHTIG: Generiere EXAKT 3 Aufgaben pro Tag. Nicht 4, nicht 5 – genau 3.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -173,17 +196,21 @@ Jede Aufgabe hat: title, description (2-3 Sätze, konkrete Anleitung), science_b
                           phase: { type: "number", description: "Program phase 1-4 based on day number" },
                           tasks: {
                             type: "array",
+                            maxItems: 3,
                             items: {
                               type: "object",
                               properties: {
                                 id: { type: "string" },
-                                title: { type: "string" },
-                                description: { type: "string" },
+                                title: { type: "string", description: "Max 5 words, concise" },
+                                description: { type: "string", description: "2-3 sentences, concrete instructions a 14-year-old understands" },
+                                steps: { type: "array", items: { type: "string" }, description: "2-4 concrete action steps" },
+                                duration: { type: "string", description: "Exact time, e.g. '30 Sekunden', '2 Minuten'" },
+                                when_to_use: { type: "string", description: "When to apply, e.g. 'Vor dem Training', 'Nach einem Fehler'" },
                                 science_bite: { type: "string", description: "2-3 sentences explaining WHY this exercise works, with scientific mechanism and study reference" },
                                 icon: { type: "string", enum: ["brain", "eye", "flame", "heart", "target", "wind", "sunrise", "book", "sparkles", "shield"] },
                                 phase: { type: "number", description: "Program phase 1-4" },
                               },
-                              required: ["id", "title", "description", "science_bite", "icon", "phase"],
+                              required: ["id", "title", "description", "steps", "duration", "when_to_use", "science_bite", "icon", "phase"],
                             },
                           },
                         },
