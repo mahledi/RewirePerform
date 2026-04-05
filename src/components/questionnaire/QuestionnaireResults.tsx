@@ -76,6 +76,9 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         }
 
         // Check if user is logged in
+        // Save answers to localStorage so Dashboard can access sport/position/level
+        localStorage.setItem("mindgame_answers", JSON.stringify(answers));
+
         const { data: { user } } = await supabase.auth.getUser();
 
         // Save answers to database with user_id if available

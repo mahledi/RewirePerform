@@ -731,7 +731,7 @@ export const questions: Question[] = [
   },
 ];
 
-export const deepProfileQuestionIds = ["dp-01", "dp-02", "dp-03"];
+export const deepProfileQuestionIds = ["dp-01", "dp-02", "dp-03", "dp-04"];
 
 export const getQuestionsByCategory = (categoryId: string): Question[] => {
   return questions.filter((q) => q.category === categoryId);
