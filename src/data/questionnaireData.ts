@@ -102,6 +102,53 @@ export const categories: QuestionCategory[] = [
 ];
 
 export const questions: Question[] = [
+  // ===== SPORTART & POSITION =====
+  {
+    id: "sport-01",
+    category: "identity",
+    categoryIcon: "🪞",
+    question: "Welchen Sport betreibst du?",
+    subtext: "Wähle deine Sportart – dies beeinflusst alle weiteren Inhalte.",
+    type: "choice",
+    options: [
+      "Fußball",
+      "American Football",
+      "Basketball",
+      "Handball",
+      "Eishockey",
+      "Tennis",
+      "Leichtathletik",
+      "Schwimmen",
+      "Andere Sportart",
+    ],
+    depth: "surface",
+  },
+  {
+    id: "sport-02",
+    category: "identity",
+    categoryIcon: "🪞",
+    question: "Welche Position spielst du?",
+    subtext: "Sei so spezifisch wie möglich – z.B. 'Innenverteidiger', 'Quarterback', 'Point Guard'.",
+    type: "text",
+    placeholder: "Z.B. Torwart, Linebacker, Stürmer, Mittelfeldspieler...",
+    depth: "surface",
+  },
+  {
+    id: "sport-03",
+    category: "identity",
+    categoryIcon: "🪞",
+    question: "Auf welchem Level spielst du aktuell?",
+    type: "choice",
+    options: [
+      "Jugend / Nachwuchs",
+      "Amateur / Kreisliga",
+      "Semi-Professionell / Oberliga+",
+      "Professionell / Vollzeit",
+      "College / University (USA)",
+    ],
+    depth: "surface",
+  },
+
   // ===== IDENTITÄT & SELBSTBILD =====
   {
     id: "id-01",
@@ -671,6 +718,16 @@ export const questions: Question[] = [
     type: "scale",
     scaleLabels: ["Sofort abgehakt", "Tagelang"],
     depth: "deep",
+  },
+  {
+    id: "dp-04",
+    category: "deep_profile",
+    categoryIcon: "🔬",
+    question: "Beschreibe die häufigste Drucksituation in deinem Sport – was passiert in dem Moment in dir?",
+    subtext: "Z.B. Elfmeter, 4th Down, Freiwurf, Matchball. Was denkst und fühlst du in genau diesem Moment?",
+    type: "text",
+    placeholder: "Beschreibe die Situation und deine innere Reaktion so detailliert wie möglich...",
+    depth: "core",
   },
 ];
 

@@ -17,7 +17,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const { answers, questions } = await req.json();
+    const { answers, questions, sport, position, level } = await req.json();
 
     if (!answers || !questions) {
       return new Response(
@@ -33,7 +33,21 @@ serve(async (req) => {
       return `[${q.category}] ${q.question}\nAntwort: ${answerText}`;
     }).join("\n\n");
 
-    const systemPrompt = `Du bist ein erfahrener Sportpsychologe mit Expertise in Neurowissenschaften, Verhaltenspsychologie und mentalem Performance-Training. Du analysierst die Fragebogen-Antworten eines Sportlers und erstellst ein umfassendes mentales Profil.
+    // Build sport-specific context
+    const sportContext = sport ? `\n\nSPORTART-KONTEXT:\nDer Athlet betreibt: ${sport}${position ? `, Position: ${position}` : ""}${level ? `, Level: ${level}` : ""}.
+
+SPORTART-ADAPTION (PFLICHT):
+Passe ALLE Szenarien, Visualisierungen, Beispiele und Empfehlungen an die spezifische Sportart und Position an:
+- Fußball: Elfmeter, Ecken, Pressing, Zweikämpfe, Fehlpass-Recovery, Positionsspezifisch (Torwart: 1v1, Abwehr: Kopfballduell, Sturm: Abschluss unter Druck)
+- American Football: 4th Down, Red Zone, Audibles, Coverage-Reads, Snap Count, Positionsspezifisch (QB: Pocket Presence, WR: Route-Running unter Coverage, DB: Ball-Hawk Mentalität, LB: Pre-Snap Reads)
+- Basketball: Freiwurf-Routine, Crunch-Time, Pick-and-Roll Entscheidungen
+- Handball: 7-Meter, Überzahl-Unterzahl, Tempogegenstöße
+- Tennis: Breakball, Tiebreak, Service-Games
+- Andere Sportarten: Leite passende Szenarien aus den Antworten und der Position ab
+
+Die Analyse muss sich anfühlen, als wäre sie von einem Sportpsychologen geschrieben, der diese Sportart und Position tief versteht.` : "";
+
+    const systemPrompt = `Du bist ein erfahrener Sportpsychologe mit Expertise in Neurowissenschaften, Verhaltenspsychologie und mentalem Performance-Training. Du analysierst die Fragebogen-Antworten eines Sportlers und erstellst ein umfassendes mentales Profil.${sportContext}
 
 Deine Analyse muss auf wissenschaftlichen Prinzipien basieren und folgendes enthalten:
 

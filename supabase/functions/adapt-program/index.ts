@@ -15,7 +15,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { calendarEvents, analysis, competitionDate, competitionName, programStartDate } = await req.json();
+    const { calendarEvents, analysis, competitionDate, competitionName, programStartDate, sport, position, level } = await req.json();
 
     if (!calendarEvents || !analysis) {
       return new Response(
@@ -45,6 +45,17 @@ serve(async (req) => {
       periodizationContext = `\nDie Tage im Kalender entsprechen folgenden Programm-Tagen: ${dayRangeInfo}`;
     }
 
+    // Build sport-specific prompt section
+    const sportAdaptionPrompt = sport ? `\nSPORTART & POSITION: ${sport}${position ? `, ${position}` : ""}${level ? ` (${level})` : ""}
+
+SPORTART-ADAPTION (PFLICHT):
+Passe ALLE Aufgaben, Szenarien, Visualisierungen und Beispiele an die spezifische Sportart und Position an:
+- Fußball: Elfmeter-Visualisierung, Pressing-Kommunikation, Zweikampf-Mindset, Fehlpass-Recovery. Positionsspezifisch: Torwart (1v1-Szenarien, Entscheidungsdruck), Verteidiger (Kopfballduell, Organisationsrolle), Mittelfeld (Spielaufbau unter Druck, Umschaltmomente), Sturm (Abschluss-Mentalität, Torjäger-Instinkt)
+- American Football: 4th Down Entscheidungen, Red Zone Fokus, Audible-Situationen, Two-Minute-Drill. Positionsspezifisch: QB (Pocket Presence, Pre-Snap Reads, Leadership unter Druck), WR (Route-Running Fokus, Contested Catches), RB (Vision, Geduld in der Lücke), Defense (Ball-Hawk Mentalität, Gap Discipline, Tackling Commitment)
+- Andere Sportarten: Leite passende Szenarien aus Sportart, Position und Antworten ab
+
+Jede Aufgabe muss sich anfühlen, als wäre sie GENAU für diese Position in dieser Sportart geschrieben – nicht generisch.\n` : "";
+
     const systemPrompt = `Du bist ein erfahrener Sportpsychologe der personalisierte tägliche mentale Trainingsaufgaben erstellt.
 
 Du hast folgende Informationen über den Sportler:
@@ -52,7 +63,7 @@ Du hast folgende Informationen über den Sportler:
 - Stärken: ${analysis.strengths?.map((s: any) => s.title).join(", ") || "keine"}
 - Entwicklungsfelder: ${analysis.development_areas?.map((d: any) => `${d.title} (${d.priority})`).join(", ") || "keine"}
 - Erkannte Muster: ${analysis.patterns?.map((p: any) => p.title).join(", ") || "keine"}
-${competitionContext}
+${sportAdaptionPrompt}${competitionContext}
 ${periodizationContext}
 
 PERIODISIERUNG (8-Wochen / 56-Tage-Programm):
