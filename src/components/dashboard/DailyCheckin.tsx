@@ -5,7 +5,7 @@ import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
   Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
-  Lightbulb, ChevronDown, Clock, MapPin,
+  Lightbulb, ChevronDown, Clock, MapPin, CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -71,6 +71,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   const [tasks, setTasks] = useState<CheckinTask[]>(fallbackTasks[eventType]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selectedTask, setSelectedTask] = useState<CheckinTask | null>(null);
+  const [readBites, setReadBites] = useState<string[]>([]);
 
   const config = typeConfig[eventType];
 
@@ -164,7 +165,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
       return;
     }
 
-    setStep(4);
+    setStep(5);
   };
 
   const ScaleSelector = ({ value, onChange, lowLabel, highLabel }: { value: number | null; onChange: (v: number) => void; lowLabel: string; highLabel: string }) => (
@@ -298,7 +299,98 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     );
   };
 
-  // ─── Task Dashboard (step 2) ──────────────────────────
+  // ─── Knowledge Bite Card ───────────────────────────────
+  const KnowledgeBiteCard = ({ task, isRead, onRead }: { task: CheckinTask; isRead: boolean; onRead: () => void }) => {
+    const [expanded, setExpanded] = useState(false);
+    const IconComp = iconMap[task.icon] || Brain;
+
+    const handleToggle = () => {
+      setExpanded(!expanded);
+      if (!isRead) onRead();
+    };
+
+    return (
+      <button
+        onClick={handleToggle}
+        className={`w-full text-left rounded-2xl transition-all ${
+          expanded
+            ? "bg-accent/20 border border-accent/30 p-5"
+            : "bg-gradient-card border-glow p-4 hover:bg-secondary/50 active:scale-[0.98]"
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            isRead ? "bg-primary/20" : "bg-secondary"
+          }`}>
+            <IconComp className={`w-5 h-5 ${isRead ? "text-primary" : "text-muted-foreground"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">{task.title}</p>
+            <span className="text-xs text-muted-foreground">Warum das wirkt</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {isRead && <CheckCircle2 className="w-4 h-4 text-primary" />}
+            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </div>
+        </div>
+        {expanded && (
+          <div className="mt-4 pl-[52px]">
+            <p className="text-sm text-foreground leading-relaxed">
+              {task.science_bite || "Diese Übung stärkt deine mentale Fitness."}
+            </p>
+          </div>
+        )}
+      </button>
+    );
+  };
+
+  // ─── Knowledge Step (step 2) ───────────────────────────
+  const KnowledgeStep = () => {
+    const allRead = tasks.every((t) => readBites.includes(t.id));
+
+    return (
+      <motion.div key="knowledge" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+        <div className="flex items-center gap-3 mb-2">
+          <Lightbulb className="w-6 h-6 text-primary" />
+          <h2 className="font-heading text-2xl font-bold">Verstehe, was du trainierst</h2>
+        </div>
+        <p className="text-muted-foreground text-sm mb-6">
+          Bevor du loslegst – hier ist die Wissenschaft hinter deinen heutigen Übungen.
+        </p>
+
+        <div className="space-y-3">
+          {tasks.map((task) => (
+            <KnowledgeBiteCard
+              key={task.id}
+              task={task}
+              isRead={readBites.includes(task.id)}
+              onRead={() => setReadBites((prev) => [...prev, task.id])}
+            />
+          ))}
+        </div>
+
+        <motion.button
+          whileHover={allRead ? { scale: 1.02 } : {}}
+          whileTap={allRead ? { scale: 0.98 } : {}}
+          onClick={() => allRead && setStep(3)}
+          disabled={!allRead}
+          className={`w-full mt-6 flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
+            allRead
+              ? "bg-primary text-primary-foreground hover:shadow-glow"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
+          }`}
+        >
+          {allRead ? (
+            <><Sparkles className="w-5 h-5" /> Bereit für die Übungen</>
+          ) : (
+            <>{readBites.length}/{tasks.length} gelesen</>
+          )}
+        </motion.button>
+      </motion.div>
+    );
+  };
+
+  // ─── Task Dashboard (step 3) ──────────────────────────
   const TaskDashboard = () => {
     const completedCount = completedTasks.length;
     const totalCount = tasks.length;
@@ -380,6 +472,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     );
   };
 
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
@@ -424,8 +517,9 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
                     <ScaleSelector value={energyLevel} onChange={setEnergyLevel} lowLabel="Erschöpft" highLabel="Volle Energie" />
                   </motion.div>
                 )}
-                {step === 2 && <TaskDashboard />}
-                {step === 3 && (
+                {step === 2 && <KnowledgeStep />}
+                {step === 3 && <TaskDashboard />}
+                {step === 4 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Reflexion</h2>
                     <p className="text-muted-foreground mb-4">Was nimmst du aus heute mit?</p>
@@ -442,7 +536,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
                     />
                   </motion.div>
                 )}
-                {step === 4 && (
+                {step === 5 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
@@ -461,7 +555,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         </div>
       </div>
 
-      {step < 4 && !selectedTask && (
+      {step < 5 && step !== 2 && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -469,7 +563,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
               Zurück
             </button>
             <div className="flex gap-1.5">
-              {[0, 1, 2, 3].map((s) => (
+              {[0, 1, 2, 3, 4].map((s) => (
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
@@ -477,10 +571,10 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (step === 3) saveCheckin();
+                if (step === 4) saveCheckin();
                 else if (step === 0 && moodBefore) setStep(1);
                 else if (step === 1 && energyLevel) setStep(2);
-                else if (step === 2) setStep(3);
+                else if (step === 3) setStep(4);
               }}
               disabled={(step === 0 && !moodBefore) || (step === 1 && !energyLevel)}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
@@ -489,7 +583,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 3 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>
