@@ -1,50 +1,56 @@
 
 
-# Analyse-Edge-Function um Inner Excellence erweitern
+# Inner Excellence als Steuerungsdaten in adapt-program integrieren
 
-## Aktuelle Situation
-Der System-Prompt in `analyze-questionnaire/index.ts` enthält keine Erwähnung von Inner Excellence. Die KI analysiert die Antworten zwar (sie werden als Q&A-Paare übergeben), aber ohne explizite Anweisung, die Inner Excellence-Dimensionen gezielt auszuwerten.
+## Ansatz: Kompakte Kontext-Zeile + 1 kurze Leitlinie
+
+Kein eigenes Regelwerk, keine Schwellenwert-Logik. Stattdessen: Die KI bekommt die Scores als Kontext und eine kurze Anweisung, diese Prinzipien in alle Aufgaben einzuweben.
 
 ## Änderungen
 
-**Datei:** `supabase/functions/analyze-questionnaire/index.ts`
+**Datei:** `supabase/functions/adapt-program/index.ts`
 
-### 1. System-Prompt erweitern (Zeile 50-73)
+### 1. Inner Excellence Profil ins ATHLETEN-PROFIL einfügen (Zeile 14-19)
 
-Den Analyse-Auftrag um Inner Excellence-spezifische Dimensionen ergänzen:
+Neue Zeile nach den bestehenden Profil-Daten:
 
-- **Neue Analyse-Dimension** im Prompt: "Inner Excellence Profil" — Bewertung von Präsenz, Growth Mindset, Ego-Freiheit und emotionaler Kontrolle
-- Anweisung, die Inner Excellence Fragen (ie-01 bis ie-25) besonders zu gewichten für:
-  - Growth vs. Result Mindset Score
-  - Präsenz-Level  
-  - Ego-Freiheit Score
-  - Emotionale Regulation
-
-### 2. JSON-Output-Struktur erweitern
-
-Neues Feld `inner_excellence_profile` zum erwarteten JSON hinzufügen:
-
-```json
-"inner_excellence_profile": {
-  "growth_mindset_score": 0-100,
-  "presence_level": "low/medium/high",
-  "ego_freedom_score": 0-100,
-  "emotional_control_score": 0-100,
-  "core_insight": "..."
-}
+```
+- Inner Excellence: Growth Mindset ${growth_mindset_score}/100, Präsenz: ${presence_level}, Ego-Freiheit: ${ego_freedom_score}/100, Emotionskontrolle: ${emotional_control_score}/100
+- Core Insight: ${core_insight}
 ```
 
-### 3. Tool-Schema anpassen (Zeile ~85-150)
+Die Werte werden aus `analysis.inner_excellence_profile` gelesen (mit Fallback-Defaults falls nicht vorhanden).
 
-Das `create_mental_profile` Tool-Schema um die `inner_excellence_profile`-Properties erweitern, damit die KI strukturiert antwortet.
+### 2. Eine kompakte Leitlinie ergänzen (nach den bestehenden REGELN, ~Zeile 70)
 
-### 4. dominant_category aktualisieren
+```
+INNER EXCELLENCE (DURCHGEHEND):
+Die Inner Excellence Scores sind Kern-Prinzipien maximaler Performance. Webe sie natürlich in ALLE Aufgaben ein – nicht als separate Kategorie, sondern als Grundhaltung:
+- Niedrige Scores → Übungen betonen diesen Aspekt stärker (z.B. Prozess-Fokus statt Ergebnis bei niedrigem Growth Mindset, Atemtechniken bei niedriger Emotionskontrolle)
+- Hohe Scores → Nutze sie als Hebel ("Deine Stärke ist Präsenz – baue darauf auf")
+- Der Core Insight ist die tiefste Erkenntnis über den Athleten. Lass ihn die Tonalität und Ausrichtung ALLER Aufgaben beeinflussen.
+```
 
-In der Beschreibung des `dominant_category`-Feldes `inner_excellence` als möglichen Wert ergänzen.
+### 3. Sichere Datenextraktion
+
+Am Anfang von `buildSystemPrompt()` das Inner Excellence Profil sicher auslesen:
+
+```typescript
+const ieProfile = analysis.inner_excellence_profile || {};
+const growthMindset = ieProfile.growth_mindset_score ?? "N/A";
+const presenceLevel = ieProfile.presence_level ?? "N/A";
+const egoFreedom = ieProfile.ego_freedom_score ?? "N/A";
+const emotionalControl = ieProfile.emotional_control_score ?? "N/A";
+const coreInsight = ieProfile.core_insight ?? "Noch nicht ermittelt";
+```
+
+## Ergebnis
+
+Die KI kennt die Inner Excellence Scores und den Core Insight des Athleten. Sie entscheidet selbst, wie sie diese in die täglichen Aufgaben einwebt – ob als Fokus einer Visualisierung, als Framing einer aMCC-Challenge, oder als Tonalität im Science Bite. Keine starre Regellogik, sondern intelligente Steuerung durch Kontext.
 
 ## Betroffene Datei
 
 | Datei | Änderung |
 |---|---|
-| `supabase/functions/analyze-questionnaire/index.ts` | System-Prompt + Tool-Schema um Inner Excellence erweitern |
+| `supabase/functions/adapt-program/index.ts` | `buildSystemPrompt()` um IE-Profil-Daten und eine kurze Leitlinie erweitern |
 
