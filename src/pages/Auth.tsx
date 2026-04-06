@@ -74,6 +74,11 @@ const Auth = () => {
         setLoading(false);
         return;
       }
+      if (!sport) {
+        toast.error("Bitte wähle deine Sportart.");
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -178,14 +183,30 @@ const Auth = () => {
                   className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
                 />
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Sportart (optional)"
-                  value={sport}
-                  onChange={(e) => setSport(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
-                />
+              {/* Sport Selection */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSport("Fußball")}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                    sport === "Fußball"
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                  }`}
+                >
+                  ⚽ Fußball
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSport("American Football")}
+                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                    sport === "American Football"
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                  }`}
+                >
+                  🏈 American Football
+                </button>
               </div>
 
               {/* Team Code */}
