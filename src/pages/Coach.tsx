@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, LogOut, Users, Settings } from "lucide-react";
+import { Brain, LogOut, Users, Settings, Activity } from "lucide-react";
 import TeamOverview from "@/components/coach/TeamOverview";
 import TeamManagement from "@/components/coach/TeamManagement";
+import TeamMentalState from "@/components/coach/TeamMentalState";
 
-type Tab = "overview" | "manage";
+type Tab = "overview" | "mental" | "manage";
 
 interface Team {
   id: string;
