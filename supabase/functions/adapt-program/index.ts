@@ -63,11 +63,15 @@ PFLICHT (konkret):
 ---
 
 SCIENCE BITE (PFLICHT pro Aufgabe):
-2–3 Sätze die erklären WARUM die Übung wirkt. Nenne:
+Erkläre WARUM die Übung wirkt. Nenne:
 - Den neurowissenschaftlichen Mechanismus
 - Eine Studie/Referenz
 Nutze diese Konzepte passend: Amygdala-Hijack (LeDoux, 1996), PFC-Shutdown (Arnsten, 2009), Neuroplastizität (Fields, 2008), Metakognition (Lieberman et al., 2007), aMCC-Wachstum (Parvizi et al., 2013; Touroutoglou et al., 2020), Threat vs Challenge (Blascovich, 2008), Default Mode Network (Brewer et al., 2011), Energiehaushalt/Basalganglien (Graybiel, 2008).
 Ton: "Dein Gehirn tut das nicht GEGEN dich – du kannst es umprogrammieren."
+
+WISSENS-TIEFE (phasenabhängig – STRIKT):
+- Phase 1–2: Science Bite = 4–5 Sätze. Erkläre den Mechanismus so, dass ein 14-Jähriger es versteht UND sich schlauer fühlt. Verwende Analogien ("Stell dir vor, dein Gehirn ist wie ein Muskel...", "Deine Amygdala ist wie ein übereifriger Bodyguard..."). Der Athlet soll VERSTEHEN warum er das macht, bevor er es tut. Das Wissen ist genauso wichtig wie die Übung selbst.
+- Phase 3–4: Science Bite = 2–3 Sätze. Kurz und prägnant – der Athlet kennt die Grundlagen bereits. Fokus auf Vertiefung und neue Nuancen.
 
 ---
 
