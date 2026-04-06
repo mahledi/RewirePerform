@@ -74,6 +74,11 @@ const Auth = () => {
         setLoading(false);
         return;
       }
+      if (!sport) {
+        toast.error("Bitte wähle deine Sportart.");
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
