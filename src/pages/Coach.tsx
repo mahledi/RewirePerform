@@ -129,6 +129,15 @@ const Coach = () => {
               <p className="text-muted-foreground">Erstelle zuerst ein Team unter "Teams".</p>
             </div>
           )
+        ) : tab === "mental" ? (
+          selectedTeam ? (
+            <TeamMentalState teamId={selectedTeam} />
+          ) : (
+            <div className="text-center py-12">
+              <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Erstelle zuerst ein Team unter "Teams".</p>
+            </div>
+          )
         ) : (
           <TeamManagement teams={teams} onTeamCreated={fetchTeams} />
         )}
