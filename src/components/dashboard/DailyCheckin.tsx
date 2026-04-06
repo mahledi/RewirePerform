@@ -469,4 +469,124 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     );
   };
 
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <button
+            onClick={() => {
+              if (selectedTask) { setSelectedTask(null); return; }
+              if (step > 0) { setStep(step - 1); return; }
+              onClose();
+            }}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Zurück</span>
+          </button>
+          <div className="flex items-center gap-2">
+            <config.icon className={`w-4 h-4 ${config.color}`} />
+            <span className="text-sm font-heading font-medium">{config.label}</span>
+          </div>
+          <span className="text-xs text-muted-foreground">{format(date, "d. MMM", { locale: de })}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-start justify-center px-6 py-8 overflow-y-auto">
+        <div className="max-w-lg w-full">
+          <AnimatePresence mode="wait">
+            {selectedTask ? (
+              <TaskDetailView task={selectedTask} />
+            ) : (
+              <>
+                {step === 0 && (
+                  <motion.div key="mood" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Wie fühlst du dich?</h2>
+                    <p className="text-muted-foreground mb-8">Dein mentaler Zustand vor dem {config.label}.</p>
+                    <ScaleSelector value={moodBefore} onChange={setMoodBefore} lowLabel="Schlecht" highLabel="Großartig" />
+                  </motion.div>
+                )}
+                {step === 1 && (
+                  <motion.div key="energy" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Dein Energie-Level</h2>
+                    <p className="text-muted-foreground mb-8">Wie viel Energie hast du heute?</p>
+                    <ScaleSelector value={energyLevel} onChange={setEnergyLevel} lowLabel="Erschöpft" highLabel="Volle Energie" />
+                  </motion.div>
+                )}
+                {step === 2 && <KnowledgeStep />}
+                {step === 3 && <TaskDashboard />}
+                {step === 4 && (
+                  <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Reflexion</h2>
+                    <p className="text-muted-foreground mb-4">Was nimmst du aus heute mit?</p>
+                    <VoiceInput
+                      currentValue={reflection}
+                      onTranscript={(val) => setReflection(val)}
+                      placeholder="Schreibe frei oder sprich ein..."
+                    />
+                    <textarea
+                      value={reflection}
+                      onChange={(e) => setReflection(e.target.value)}
+                      placeholder="Schreibe frei. Keine Bewertung, nur Beobachtung..."
+                      className="w-full h-40 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </motion.div>
+                )}
+                {step === 5 && (
+                  <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
+                      <Check className="w-10 h-10 text-primary" />
+                    </motion.div>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
+                    <p className="text-muted-foreground mb-2">{completedTasks.length} von {tasks.length} Aufgaben erledigt.</p>
+                    <p className="text-xs text-muted-foreground mb-8">Konsistenz ist der Schlüssel.</p>
+                    <button onClick={onClose} className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all">
+                      Zurück zum Dashboard
+                    </button>
+                  </motion.div>
+                )}
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {step < 5 && step !== 2 && !selectedTask && (
+        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              Zurück
+            </button>
+            <div className="flex gap-1.5">
+              {[0, 1, 2, 3, 4].map((s) => (
+                <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
+              ))}
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                if (step === 4) saveCheckin();
+                else if (step === 0 && moodBefore) setStep(1);
+                else if (step === 1 && energyLevel) setStep(2);
+                else if (step === 3) setStep(4);
+              }}
+              disabled={(step === 0 && !moodBefore) || (step === 1 && !energyLevel)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
+                (step === 0 && !moodBefore) || (step === 1 && !energyLevel)
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-primary text-primary-foreground hover:shadow-glow"
+              }`}
+            >
+              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+            </motion.button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default DailyCheckin;
