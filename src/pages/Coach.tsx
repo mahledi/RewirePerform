@@ -71,20 +71,29 @@ const Coach = () => {
         <div className="flex gap-1 bg-secondary/50 rounded-xl p-1">
           <button
             onClick={() => setTab("overview")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
               tab === "overview" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
             }`}
           >
-            <Users className="w-4 h-4" />
+            <Users className="w-3.5 h-3.5" />
             Übersicht
           </button>
           <button
+            onClick={() => setTab("mental")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
+              tab === "mental" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            Mental
+          </button>
+          <button
             onClick={() => setTab("manage")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
               tab === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
             }`}
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-3.5 h-3.5" />
             Teams
           </button>
         </div>
