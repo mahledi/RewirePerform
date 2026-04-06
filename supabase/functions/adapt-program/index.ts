@@ -9,6 +9,14 @@ const corsHeaders = {
 function buildSystemPrompt(analysis: any, sport: string, position: string, level: string, competitionDate: string, competitionName: string, periodizationContext: string) {
   const sportExamples = getSportExamples(sport, position);
 
+  // Inner Excellence Profil sicher auslesen
+  const ieProfile = analysis.inner_excellence_profile || {};
+  const growthMindset = ieProfile.growth_mindset_score ?? "N/A";
+  const presenceLevel = ieProfile.presence_level ?? "N/A";
+  const egoFreedom = ieProfile.ego_freedom_score ?? "N/A";
+  const emotionalControl = ieProfile.emotional_control_score ?? "N/A";
+  const coreInsight = ieProfile.core_insight ?? "Noch nicht ermittelt";
+
   return `Du bist ein Elite-Sportpsychologe. Du schreibst tägliche mentale Trainingsaufgaben für einen Athleten (14–18 Jahre).
 
 ATHLETEN-PROFIL:
@@ -16,6 +24,8 @@ ATHLETEN-PROFIL:
 - Stärken: ${analysis.strengths?.map((s: any) => s.title).join(", ") || "keine"}
 - Entwicklungsfelder: ${analysis.development_areas?.map((d: any) => `${d.title} (${d.priority})`).join(", ") || "keine"}
 - Muster: ${analysis.patterns?.map((p: any) => p.title).join(", ") || "keine"}
+- Inner Excellence: Growth Mindset ${growthMindset}/100, Präsenz: ${presenceLevel}, Ego-Freiheit: ${egoFreedom}/100, Emotionskontrolle: ${emotionalControl}/100
+- Core Insight: ${coreInsight}
 ${sport ? `- Sportart: ${sport}${position ? `, Position: ${position}` : ""}${level ? ` (${level})` : ""}` : ""}
 ${competitionDate ? `\nHAUPTWETTKAMPF: "${competitionName || 'Wettkampf'}" am ${competitionDate}. Periodisiere alle Aufgaben darauf hin.` : ""}
 ${periodizationContext}
@@ -68,6 +78,14 @@ Fordert freiwilliges Unbehagen. Progressiv über Phasen:
 - Phase 3: Soziale Überwindung (Fehler vor Team analysieren, Führung übernehmen bei Übung)
 - Phase 4: Emotionale Challenges (nach Niederlage als Erster positiv vorangehen, unbequemes Feedback geben)
 Science Bite MUSS erwähnen: aMCC wächst physisch messbar bei Überwindung (MRT-Studien).
+
+---
+
+INNER EXCELLENCE (DURCHGEHEND):
+Die Inner Excellence Scores sind Kern-Prinzipien maximaler Performance. Webe sie natürlich in ALLE Aufgaben ein – nicht als separate Kategorie, sondern als Grundhaltung:
+- Niedrige Scores → Übungen betonen diesen Aspekt stärker (z.B. Prozess-Fokus statt Ergebnis bei niedrigem Growth Mindset, Atemtechniken bei niedriger Emotionskontrolle)
+- Hohe Scores → Nutze sie als Hebel ("Deine Stärke ist Präsenz – baue darauf auf")
+- Der Core Insight ist die tiefste Erkenntnis über den Athleten. Lass ihn die Tonalität und Ausrichtung ALLER Aufgaben beeinflussen.
 
 ---
 
