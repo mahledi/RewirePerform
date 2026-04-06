@@ -6,6 +6,401 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function buildSystemPrompt(analysis: any, sport: string, position: string, level: string, competitionDate: string, competitionName: string, periodizationContext: string) {
+  const sportExamples = getSportExamples(sport, position);
+
+  return `Du bist ein Elite-Sportpsychologe. Du schreibst tägliche mentale Trainingsaufgaben für einen Athleten (14–18 Jahre).
+
+ATHLETEN-PROFIL:
+- Mental Score: ${analysis.mental_score}/100
+- Stärken: ${analysis.strengths?.map((s: any) => s.title).join(", ") || "keine"}
+- Entwicklungsfelder: ${analysis.development_areas?.map((d: any) => `${d.title} (${d.priority})`).join(", ") || "keine"}
+- Muster: ${analysis.patterns?.map((p: any) => p.title).join(", ") || "keine"}
+${sport ? `- Sportart: ${sport}${position ? `, Position: ${position}` : ""}${level ? ` (${level})` : ""}` : ""}
+${competitionDate ? `\nHAUPTWETTKAMPF: "${competitionName || 'Wettkampf'}" am ${competitionDate}. Periodisiere alle Aufgaben darauf hin.` : ""}
+${periodizationContext}
+
+---
+
+PHASEN (passe Schwierigkeit an):
+Phase 1 (Tag 1–14): Fundament – Selbstreflexion, Journaling, Bewusstsein schaffen. Einfach.
+Phase 2 (Tag 15–28): Skill-Erwerb – Atemtechniken, Visualisierung, Selbstgespräch. Mittel.
+Phase 3 (Tag 29–42): Transfer – Drucksimulationen, Wettkampfszenarien, Team-Kommunikation. Schwer.
+Phase 4 (Tag 43–56): Meisterschaft – Eigenständige Routinen, Mental-Gameplan, Automatisierung. Experte.
+
+---
+
+REGELN (STRIKT):
+
+1. EXAKT 3 Aufgaben pro Tag. Keine Ausnahme.
+2. Eine Aufgabe MUSS icon "flame" haben = aMCC-Challenge (freiwilliges Unbehagen).
+3. Trainingstag → mentales Training parallel zum physischen. Ruhetag → Regeneration & Reflexion. Wettkampf → Aktivierung & Fokus.
+4. Jede Aufgabe MUSS sofort umsetzbar sein für einen 14-Jährigen.
+
+VERBOTEN (abstrakt):
+- "Finde dein optimales Aktivierungslevel"
+- "Fokussiere dich extern"
+- "Arbeite an deiner Selbstwahrnehmung"
+- "Akzeptiere das Ergebnis"
+- Alles ohne konkrete Handlungsanweisung
+
+PFLICHT (konkret):
+- Exakte Schritte ("Schließe die Augen. Atme 3x ein. Spanne alle Muskeln 5 Sek an.")
+- Zeitangabe ("30 Sekunden", "2 Minuten")
+- Kontext ("Vor dem Training", "Nach einem Fehler im Spiel")
+- Sportart-spezifische Szenarien (KEINE generischen Übungen)
+
+---
+
+SCIENCE BITE (PFLICHT pro Aufgabe):
+2–3 Sätze die erklären WARUM die Übung wirkt. Nenne:
+- Den neurowissenschaftlichen Mechanismus
+- Eine Studie/Referenz
+Nutze diese Konzepte passend: Amygdala-Hijack (LeDoux, 1996), PFC-Shutdown (Arnsten, 2009), Neuroplastizität (Fields, 2008), Metakognition (Lieberman et al., 2007), aMCC-Wachstum (Parvizi et al., 2013; Touroutoglou et al., 2020), Threat vs Challenge (Blascovich, 2008), Default Mode Network (Brewer et al., 2011), Energiehaushalt/Basalganglien (Graybiel, 2008).
+Ton: "Dein Gehirn tut das nicht GEGEN dich – du kannst es umprogrammieren."
+
+---
+
+aMCC-CHALLENGE (flame-icon, 1x pro Tag PFLICHT):
+Fordert freiwilliges Unbehagen. Progressiv über Phasen:
+- Phase 1: Kleine körperliche Überwindung (kalt duschen 15 Sek, 10 extra Liegestütze)
+- Phase 2: Komfortzone verlassen (freiwillig härteste Übung wählen, als Erster eine Übung vormachen)
+- Phase 3: Soziale Überwindung (Fehler vor Team analysieren, Führung übernehmen bei Übung)
+- Phase 4: Emotionale Challenges (nach Niederlage als Erster positiv vorangehen, unbequemes Feedback geben)
+Science Bite MUSS erwähnen: aMCC wächst physisch messbar bei Überwindung (MRT-Studien).
+
+---
+
+${sportExamples}
+
+Jede Aufgabe MUSS sich anfühlen, als wäre sie EXAKT für diese Sportart und Position geschrieben.`;
+}
+
+function getSportExamples(sport: string, position: string): string {
+  const sportLower = (sport || "").toLowerCase();
+
+  if (sportLower.includes("football") && !sportLower.includes("fußball")) {
+    return getAmericanFootballExamples(position);
+  }
+  if (sportLower.includes("fußball") || sportLower.includes("soccer") || sportLower.includes("fussball")) {
+    return getSoccerExamples(position);
+  }
+  return getGenericExamples(sport, position);
+}
+
+function getAmericanFootballExamples(position: string): string {
+  const posLower = (position || "").toLowerCase();
+
+  let positionExample = "";
+
+  if (posLower.includes("quarterback") || posLower.includes("qb")) {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, QB, Phase 2):
+{
+  "title": "Pocket Presence Drill",
+  "description": "Visualisiere 3 verschiedene Pocket-Situationen. Spüre den Druck von außen, sieh die Coverage, triff deine Entscheidung.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge. Stell dich mental in die Pocket.",
+    "Szene 1: Edge Rusher kommt von links – du steppst hoch in die Pocket, Augen bleiben downfield. Du siehst deinen Slot-Receiver über die Mitte breaken. Wirf den Ball mental.",
+    "Szene 2: Cover 2 – beide Safeties tief. Du liest die Linebacker. Der Mike droppt zu spät. Du wirfst den Seam-Ball zwischen die Zonen.",
+    "Szene 3: Blitz von der Weakside. Du erkennst den unblockierten Rusher pre-snap. Du rufst einen Hot-Route Audible. Quick-Release zum Flat."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Team-Training oder Film Study",
+  "science_bite": "Visualisierung aktiviert denselben prämotorischen Kortex wie echte Bewegungen (Jeannerod, 2001). Für QBs ist das besonders wertvoll: Pre-Snap Reads und Progressionen werden in denselben neuronalen Netzwerken verarbeitet, egal ob du sie real oder mental durchgehst. Je öfter du Blitz-Erkennungen mental übst, desto schneller feuern die Synapsen im Ernstfall.",
+  "icon": "eye",
+  "phase": 2
+}
+
+BEISPIEL – aMCC-Challenge (Trainingstag, QB, Phase 2):
+{
+  "title": "Führe die härteste Drill-Gruppe",
+  "description": "Melde dich heute freiwillig, um die anstrengendste Übung im Training zu leiten. Gib dabei laut Pre-Snap Calls und motiviere die Gruppe.",
+  "steps": [
+    "Bevor der Coach die Gruppen einteilt, melde dich für die härteste Drill-Station.",
+    "Übernimm die Führung: Gib klare Ansagen wie im Huddle. Sag jedem wo er hin muss.",
+    "Wenn jemand einen Fehler macht, korrigiere ihn ruhig und bestimmt – nicht genervt.",
+    "Mach als Letzter Schluss. Zeig dass du mehr gibst als verlangt."
+  ],
+  "duration": "Gesamtes Training",
+  "when_to_use": "Zu Beginn des Trainings bei der Gruppeneinteilung",
+  "science_bite": "Dein Anterior Midcingulärer Cortex (aMCC) wächst physisch messbar, wenn du freiwillig Unbequemes tust – das zeigen MRT-Scans (Touroutoglou et al., 2020). Als QB ist Leadership-Überwindung doppelt wertvoll: Du trainierst gleichzeitig deinen Willpower-Muskel und baust die Autorität auf, die du im 4th Quarter brauchst.",
+  "icon": "flame",
+  "phase": 2
+}
+
+BEISPIEL – Perfekte Aufgabe (Ruhetag, QB, Phase 2):
+{
+  "title": "Film-Journaling",
+  "description": "Schau dir 5 Minuten Game Film an und schreibe zu jeder Szene auf, was du pre-snap gelesen hast und was du post-snap anders machen würdest.",
+  "steps": [
+    "Wähle 3-5 Plays aus dem letzten Spiel oder Scrimmage.",
+    "Schreibe zu jedem Play: Was habe ich pre-snap gesehen? (Formation, Coverage-Tip, Blitz-Signal)",
+    "Schreibe: Was war meine Entscheidung und warum? Was würde ich jetzt anders machen?",
+    "Fasse in einem Satz zusammen: Was ist das eine Pattern, das ich am häufigsten übersehe?"
+  ],
+  "duration": "10 Minuten",
+  "when_to_use": "Abends vor dem Schlafen",
+  "science_bite": "Gezielte Selbstreflexion aktiviert den Prefrontalen Kortex und stärkt die Verbindung zu deinem Langzeitgedächtnis (Flavell, 1979). Indem du pre-snap Reads bewusst analysierst, verschiebst du sie vom langsamen bewussten Denken (PFC) in die schnellen Basalganglien – das macht deine Reads im Spiel automatisch und blitzschnell (Graybiel, 2008).",
+  "icon": "book",
+  "phase": 2
+}`;
+  } else if (posLower.includes("wide receiver") || posLower.includes("wr") || posLower.includes("receiver")) {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, WR, Phase 2):
+{
+  "title": "Contested Catch Fokus",
+  "description": "Visualisiere 3 verschiedene Contested-Catch-Situationen. Spüre den Kontakt des DBs, sieh nur den Ball, blende alles andere aus.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Fade-Route in der Red Zone. Der Corner ist an deiner Hüfte. Du trackst den Ball über die Schulter, High-Point, fängst am höchsten Punkt.",
+    "Szene 2: Slant über die Mitte. Du weißt der Safety kommt. Du fokussierst NUR den Ball. Fangen, sichern, DANN Kontakt aufnehmen.",
+    "Szene 3: Back-Shoulder Throw. Du stoppst abrupt, drehst dich zum Ball, der DB fliegt vorbei. Catch and tuck."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Receiving-Drill im Training",
+  "science_bite": "Unter Druck verengt sich dein Aufmerksamkeitsfokus – das nennt man Attentional Narrowing (Easterbrook, 1959). Wenn du mental übst, NUR den Ball zu sehen während ein DB an dir klebt, trainierst du deinen PFC, den relevanten Fokus unter Stress aufrechtzuerhalten statt in den Amygdala-Hijack zu gehen (LeDoux, 1996).",
+  "icon": "eye",
+  "phase": 2
+}
+
+BEISPIEL – aMCC-Challenge (Trainingstag, WR, Phase 2):
+{
+  "title": "Freiwillig Extra-Blocking",
+  "description": "Melde dich heute für 5 zusätzliche Run-Blocking-Reps. Als Receiver ist Blocking unbequem – genau deshalb trainiert es deinen Willpower-Muskel.",
+  "steps": [
+    "Geh nach dem regulären Receiving-Drill zum Run-Game-Coach.",
+    "Frage nach 5 Extra-Blocking-Reps gegen den Starting-DE oder OLB.",
+    "Bei jeder Rep: Volle Intensität. Feet driving, Hände innen, durchschieben.",
+    "Danach kurz reflektieren: Wie hat sich die Überwindung angefühlt?"
+  ],
+  "duration": "5 Minuten",
+  "when_to_use": "Nach dem regulären Receiving-Drill",
+  "science_bite": "Dein aMCC wächst physisch, wenn du freiwillig das tust, was du am wenigsten magst (Parvizi et al., 2013). Für Receiver ist Blocking oft die unbeliebteste Aufgabe – genau das macht es zur perfekten aMCC-Challenge. Der Willpower-Muskel unterscheidet nicht zwischen Sport-Überwindung und Alltags-Disziplin: Er wächst bei beidem.",
+  "icon": "flame",
+  "phase": 2
+}`;
+  } else if (posLower.includes("running back") || posLower.includes("rb")) {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, RB, Phase 2):
+{
+  "title": "Vision & Patience Drill",
+  "description": "Visualisiere 3 verschiedene Run-Plays. Sieh die Lücke sich öffnen, spüre die Geduld, dann den explosiven Cut.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge. Stell dich hinter die O-Line.",
+    "Szene 1: Inside Zone. Du liest den Frontside-A-Gap. Er schließt sich. Du cuttest backside in den B-Gap. Explosion durch die Lücke.",
+    "Szene 2: Counter. Geduldig den Kick-Out-Block abwarten. Nicht zu früh loslaufen. Downhill wenn die Lücke da ist.",
+    "Szene 3: Stretch-Play. Press die Lücke, lies den DE. Er crasht inside – du bouncest outside und beschleunigst an der Sideline."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Lauf-Training",
+  "science_bite": "RB-Vision ist keine reine Athletik – es ist Pattern Recognition im visuellen Kortex (Abernethy, 1991). Je öfter du Lücken-Erkennung mental übst, desto schneller verarbeitet dein Gehirn die Bilder im echten Spiel. Die neuronale Verbindung zwischen Sehen und Reagieren wird durch Visualisierung genauso gestärkt wie durch reale Reps (Jeannerod, 2001).",
+  "icon": "eye",
+  "phase": 2
+}
+
+BEISPIEL – aMCC-Challenge (Trainingstag, RB, Phase 3):
+{
+  "title": "Freiwillig Blitz-Pickup",
+  "description": "Bitte heute den Coach, dich bei 3 Extra-Blitz-Pickup-Reps gegen den Starting-Linebacker einzuteilen. Pass-Pro als RB ist unbequem – perfekt für den aMCC.",
+  "steps": [
+    "Geh zum Coach und frage nach Extra-Pass-Pro-Reps.",
+    "Bei jeder Rep: Lies den Blitzer. Setze den Anker. Volle Intensität.",
+    "Zeig dem QB verbal dass du den Blitz hast: 'Ich hab ihn!'",
+    "Reflektiere kurz: War die Überwindung leichter als erwartet?"
+  ],
+  "duration": "5 Minuten",
+  "when_to_use": "Während des Team-Trainings bei Pass-Plays",
+  "science_bite": "Dein Anterior Midcingulärer Cortex wächst messbar, wenn du dich freiwillig ins Unbequeme begibst (Touroutoglou et al., 2020). Pass-Protection ist für RBs oft die undankbarste Aufgabe – genau deshalb ist sie ein aMCC-Turbo. Jede Rep gegen einen Blitzer stärkt nicht nur deinen Körper, sondern buchstäblich deinen Willpower-Muskel im Gehirn.",
+  "icon": "flame",
+  "phase": 3
+}`;
+  } else if (posLower.includes("defense") || posLower.includes("linebacker") || posLower.includes("lb") || posLower.includes("defensive") || posLower.includes("safety") || posLower.includes("cornerback") || posLower.includes("cb") || posLower.includes("de") || posLower.includes("dt")) {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, Defense, Phase 2):
+{
+  "title": "Ball-Hawk Visualisierung",
+  "description": "Visualisiere 3 Turnover-Situationen. Sieh den QB, lies seine Augen, reagiere auf den Ball.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Du bist in Zone-Coverage. Der QB starrt seinen Primary Receiver an. Du liest die Augen, breakst auf den Ball, Interception.",
+    "Szene 2: Run-Support. Der RB wird getroffen, der Ball ist lose. Du siehst den Fumble bevor alle anderen reagieren. Scoop and Score.",
+    "Szene 3: Screen-Play erkannt. Du liest den Pull des Guards und die passive O-Line. Du schießt in die Flat, triffst den RB beim Catch. Ball loose – Recovery."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Team-Training oder Film Study",
+  "science_bite": "Antizipation im Sport basiert auf Pattern Recognition im visuellen Kortex – nicht auf Reaktionszeit (Abernethy, 1991). Wenn du mental übst, QB-Augen zu lesen und Formations-Tells zu erkennen, baust du neuronale Shortcuts auf die im Spiel automatisch feuern. Das ist der Unterschied zwischen reagieren und antizipieren.",
+  "icon": "eye",
+  "phase": 2
+}
+
+BEISPIEL – aMCC-Challenge (Trainingstag, Defense, Phase 2):
+{
+  "title": "Härtester Tackling-Drill",
+  "description": "Melde dich heute für 3 Extra-Reps im härtesten Tackling-Drill. Wähle den stärksten Ballcarrier als Gegner.",
+  "steps": [
+    "Frage den Coach nach Extra-Reps im Oklahoma-Drill oder 1v1 Tackling.",
+    "Wähle bewusst den größten oder schnellsten Ballcarrier als Gegner.",
+    "Bei jeder Rep: Low pad level, Augen offen, durch den Kontakt durchlaufen.",
+    "Danach reflektieren: Die Überwindung war der eigentliche Gewinn."
+  ],
+  "duration": "5 Minuten",
+  "when_to_use": "Während des Tackling-Drills im Training",
+  "science_bite": "Dein aMCC wächst physisch messbar bei freiwilliger Überwindung – MRT-Scans zeigen das eindeutig (Parvizi et al., 2013). Den härtesten Gegner im Drill zu wählen ist ein Signal an dein Gehirn: Ich wähle den Widerstand. Das unterscheidet Durchschnitts-Spieler von Elite-Spielern – nicht Talent, sondern aMCC-Training.",
+  "icon": "flame",
+  "phase": 2
+}`;
+  } else {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, American Football, Phase 2):
+{
+  "title": "Pre-Snap Read Visualisierung",
+  "description": "Visualisiere 3 verschiedene Pre-Snap-Bilder. Lies Formation, Alignment und mögliche Blitz-Tells.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Die Offense zeht 11-Personnel. Du liest die Formation – wo steht der TE? Strong oder Weak? Welche Tendenz hat das?",
+    "Szene 2: Der Mike-LB cheatet zum A-Gap. Blitz-Tell? Du stellst deinen Assignment-Check: Wer hat die B-Gap?",
+    "Szene 3: Motion vor dem Snap. Was verändert sich? Welche Coverage-Anpassung ist nötig?"
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Training oder Film Study",
+  "science_bite": "Pre-Snap Recognition basiert auf Pattern-Matching im visuellen Kortex (Abernethy, 1991). Je mehr Formationen du mental verarbeitest, desto schneller erkennt dein Gehirn bekannte Bilder im echten Spiel. Das Ziel: Von bewusster Analyse (PFC – langsam, teuer) zu automatischer Erkennung (Basalganglien – schnell, günstig) übergehen (Graybiel, 2008).",
+  "icon": "eye",
+  "phase": 2
+}
+
+BEISPIEL – aMCC-Challenge (Trainingstag, American Football, Phase 2):
+{
+  "title": "Freiwillig Extra-Conditioning",
+  "description": "Mach heute nach dem regulären Training 3 Extra-Sprints. Nicht weil der Coach es sagt – weil DU es entscheidest.",
+  "steps": [
+    "Warte bis das Training offiziell vorbei ist.",
+    "Sage einem Teamkollegen: 'Ich mach noch 3 Sprints. Kommst du mit?'",
+    "Lauf jeden Sprint mit Game-Speed. Kein Jogging.",
+    "Danach kurz reflektieren: Der Moment der Entscheidung war die eigentliche Übung."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Direkt nach dem Training",
+  "science_bite": "Dein Anterior Midcingulärer Cortex (aMCC) wächst physisch messbar, wenn du freiwillig Unangenehmes tust (Touroutoglou et al., 2020). Bei Super-Agern – Menschen die auch im Alter außergewöhnlich diszipliniert sind – ist der aMCC signifikant größer. Jeder freiwillige Sprint nach dem Training ist ein MRT-messbares Upgrade für deinen Willpower-Muskel.",
+  "icon": "flame",
+  "phase": 2
+}`;
+  }
+
+  return `SPORTART-SPEZIFISCHE AUFGABEN – AMERICAN FOOTBALL:
+
+Passe ALLE Aufgaben an American Football und die Position des Athleten an. Nutze echte Fachbegriffe (Pocket, Coverage, Blitz, Route, Gap, Audible, Huddle, Red Zone, 4th Down, Two-Minute-Drill). Jede Aufgabe muss sich anfühlen wie von einem Position Coach geschrieben.
+
+Positionsspezifische Szenarien:
+- QB: Pocket Presence, Pre-Snap Reads, Progressionen, Audibles, Two-Minute-Drill Leadership, Blitz-Erkennung
+- WR: Route-Running Fokus, Contested Catches, Release-Moves, Ball-Tracking unter Kontakt
+- RB: Vision & Patience, Gap-Erkennung, Cut-Entscheidungen, Pass-Protection, Fumble-Prevention
+- TE: Dual-Role-Mindset (Block vs. Route), Red Zone Target, Mismatch-Exploitation
+- OL: Assignment-Clarity, Communication, Combo-Blocks, Pass-Pro Anchor, Nicht-sichtbare-Arbeit-Stolz
+- DL/DE/DT: Pass-Rush Moves, Gap Discipline, Bull-Rush Commitment, Motor/Effort-Plays
+- LB: Read & React, Fill-Entscheidungen, Zone-Drop Tiefe, Blitz-Timing, QB-Augen lesen
+- CB: Press-Technik, Recovery-Speed Mindset, Short-Memory nach Touchdown-erlaubt, Ball-Skills
+- Safety: Pre-Snap Coverage-Kommunikation, Alley-Run-Support, Deep-Half Disziplin, Turnover-Instinkt
+
+${positionExample}
+
+Generiere Aufgaben auf diesem Qualitätslevel. KEINE generischen Aufgaben.`;
+}
+
+function getSoccerExamples(position: string): string {
+  const posLower = (position || "").toLowerCase();
+
+  let positionExample = "";
+
+  if (posLower.includes("torwart") || posLower.includes("keeper") || posLower.includes("goalkeeper") || posLower.includes("tw")) {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, Torwart, Phase 2):
+{
+  "title": "1v1 Visualisierung",
+  "description": "Stelle dir 3 verschiedene 1v1-Situationen vor. Sieh den Stürmer anlaufen, spüre den Rasen, hör den Ball.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Stürmer kommt zentral – du machst dich groß und bleibst stehen bis er schießt.",
+    "Szene 2: Stürmer dribbelt rechts – du gehst raus und verkürzt den Winkel.",
+    "Szene 3: Stürmer lupft – du liest die Körpersprache und bleibst stehen."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Torwarttraining",
+  "science_bite": "Visualisierung aktiviert denselben prämotorischen Kortex wie die echte Bewegung (Jeannerod, 2001). Dein Gehirn kann nicht unterscheiden ob du die Parade wirklich machst oder sie dir nur vorstellst – die neuronalen Verbindungen werden beides Mal stärker.",
+  "icon": "eye",
+  "phase": 2
+}`;
+  } else if (posLower.includes("stürmer") || posLower.includes("striker") || posLower.includes("angriff") || posLower.includes("forward")) {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, Stürmer, Phase 2):
+{
+  "title": "Abschluss-Visualisierung",
+  "description": "Stelle dir 3 Tor-Szenarien vor. Sieh den Ball, spüre den Schuss, hör den Jubel.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Flanke von rechts. Du startest in den Rücken der Abwehr, Kopfball ins lange Eck.",
+    "Szene 2: Konter, 1v1 mit dem Torwart. Du bleibst cool, schaust kurz links, schiebst rechts ein.",
+    "Szene 3: Abpraller im 16er. Alle stehen, du reagierst zuerst. Direktabnahme flach ins Eck."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Abschlusstraining",
+  "science_bite": "Visualisierung aktiviert denselben prämotorischen Kortex wie der echte Schuss (Jeannerod, 2001). Stürmer die mental Torchancen durchspielen, haben eine messbar höhere Conversion-Rate – weil das Gehirn den Bewegungsablauf bereits als 'bekannt' einstuft und schneller ausführt.",
+  "icon": "eye",
+  "phase": 2
+}`;
+  } else {
+    positionExample = `BEISPIEL – Perfekte Aufgabe (Trainingstag, Fußball, Phase 2):
+{
+  "title": "Druck-Spielaufbau",
+  "description": "Visualisiere 3 Situationen unter Pressing. Spüre den Gegner im Rücken, sieh deine Anspielstationen.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Du bekommst den Ball mit dem Rücken zum Gegner-Tor. Gegenspieler presst von hinten. Du drehst dich über die offene Seite auf.",
+    "Szene 2: Doppel-Pressing. Du spielst direkt in den Dritten Mann und startest durch.",
+    "Szene 3: Einwurf unter Druck. Alle zugestellt. Du bietest dich kurz an, lässt prallen, gehst in die Tiefe."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Mannschaftstraining",
+  "science_bite": "Unter Pressing fährt dein PFC herunter und die Amygdala übernimmt – das führt zu panischen Entscheidungen (Arnsten, 2009). Durch Visualisierung trainierst du deinen PFC, auch unter Druck aktiv zu bleiben. Jede mentale Rep stärkt die neuronale Verbindung zwischen Drucksituation und kontrollierter Reaktion.",
+  "icon": "eye",
+  "phase": 2
+}`;
+  }
+
+  return `SPORTART-SPEZIFISCHE AUFGABEN – FUSSBALL:
+
+Passe ALLE Aufgaben an Fußball und die Position des Athleten an. Nutze echte Fachbegriffe (Pressing, Gegenpressing, Doppelpass, Spielverlagerung, Rückraum, Halbräume, Umschaltmoment). Jede Aufgabe muss sich anfühlen wie von einem Mentalcoach mit Fußball-Expertise geschrieben.
+
+Positionsspezifische Szenarien:
+- Torwart: 1v1-Szenarien, Elfmeter-Mentalität, Mitspieler-Coaching, Fehlerfokus-Recovery
+- Verteidiger: Zweikampf-Mindset, Kopfballduell, Organisationsrolle, Aufbau unter Druck
+- Mittelfeld: Spielaufbau unter Pressing, Umschaltmomente, 360°-Scanning, Pressing-Auslöser
+- Sturm: Abschluss-Mentalität, Torjäger-Instinkt, Timing bei Laufwegen, Recovery nach Fehlschuss
+
+${positionExample}
+
+Generiere Aufgaben auf diesem Qualitätslevel. KEINE generischen Aufgaben.`;
+}
+
+function getGenericExamples(sport: string, position: string): string {
+  return `SPORTART-SPEZIFISCHE AUFGABEN – ${(sport || "Sport").toUpperCase()}:
+
+Leite ALLE Aufgaben aus der spezifischen Sportart (${sport || "unbekannt"})${position ? ` und Position (${position})` : ""} ab. 
+Nutze echte Fachbegriffe der Sportart. Jede Aufgabe muss sich anfühlen als wäre sie von einem Experten dieser Sportart geschrieben.
+
+BEISPIEL – Perfekte Aufgabe (Trainingstag, Phase 2):
+{
+  "title": "Wettkampf-Visualisierung",
+  "description": "Stelle dir 3 typische Wettkampfszenarien deiner Sportart vor. Spüre die Bewegung, sieh die Umgebung, hör die Geräusche.",
+  "steps": [
+    "Augen schließen, 3 tiefe Atemzüge.",
+    "Szene 1: Eine typische Drucksituation in deiner Sportart. Du bleibst ruhig und führst deine Technik sauber aus.",
+    "Szene 2: Ein Fehler passiert. Du nutzt den Reset-Trigger (kurz ausatmen, Schultern lockern) und fokussierst auf die nächste Aktion.",
+    "Szene 3: Der entscheidende Moment. Du spürst Druck, aber dein Körper weiß was er tun muss."
+  ],
+  "duration": "3 Minuten",
+  "when_to_use": "Vor dem Training",
+  "science_bite": "Visualisierung aktiviert denselben prämotorischen Kortex wie die echte Bewegung (Jeannerod, 2001). Dein Gehirn unterscheidet nicht zwischen realer und vorgestellter Ausführung – die neuronalen Verbindungen werden in beiden Fällen gestärkt.",
+  "icon": "eye",
+  "phase": 2
+}
+
+Generiere Aufgaben auf diesem Qualitätslevel. KEINE generischen Aufgaben – immer sportartspezifisch.`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -29,11 +424,7 @@ serve(async (req) => {
       `${e.date}: ${e.event_type}${e.title ? ` (${e.title})` : ""}`
     ).join("\n");
 
-    const competitionContext = competitionDate
-      ? `\n\nHauptwettkampf: "${competitionName || 'Wettkampf'}" am ${competitionDate}. Alle Aufgaben sollen auf diesen Wettkampf hin periodisiert werden. Je näher der Wettkampf, desto spezifischer und wettkampfnäher die mentalen Aufgaben.`
-      : "";
-
-    // Determine day number context for periodization
+    // Determine periodization context
     let periodizationContext = "";
     if (programStartDate) {
       const start = new Date(programStartDate);
@@ -42,123 +433,10 @@ serve(async (req) => {
         dayNumber: Math.floor((new Date(e.date).getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1,
       }));
       const dayRangeInfo = eventDates.map((d: any) => `${d.date} = Tag ${d.dayNumber}`).join(", ");
-      periodizationContext = `\nDie Tage im Kalender entsprechen folgenden Programm-Tagen: ${dayRangeInfo}`;
+      periodizationContext = `\nProgramm-Tage: ${dayRangeInfo}`;
     }
 
-    // Build sport-specific prompt section
-    const sportAdaptionPrompt = sport ? `\nSPORTART & POSITION: ${sport}${position ? `, ${position}` : ""}${level ? ` (${level})` : ""}
-
-SPORTART-ADAPTION (PFLICHT):
-Passe ALLE Aufgaben, Szenarien, Visualisierungen und Beispiele an die spezifische Sportart und Position an:
-- Fußball: Elfmeter-Visualisierung, Pressing-Kommunikation, Zweikampf-Mindset, Fehlpass-Recovery. Positionsspezifisch: Torwart (1v1-Szenarien, Entscheidungsdruck), Verteidiger (Kopfballduell, Organisationsrolle), Mittelfeld (Spielaufbau unter Druck, Umschaltmomente), Sturm (Abschluss-Mentalität, Torjäger-Instinkt)
-- American Football: 4th Down Entscheidungen, Red Zone Fokus, Audible-Situationen, Two-Minute-Drill. Positionsspezifisch: QB (Pocket Presence, Pre-Snap Reads, Leadership unter Druck), WR (Route-Running Fokus, Contested Catches), RB (Vision, Geduld in der Lücke), Defense (Ball-Hawk Mentalität, Gap Discipline, Tackling Commitment)
-- Andere Sportarten: Leite passende Szenarien aus Sportart, Position und Antworten ab
-
-Jede Aufgabe muss sich anfühlen, als wäre sie GENAU für diese Position in dieser Sportart geschrieben – nicht generisch.\n` : "";
-
-    const systemPrompt = `Du bist ein erfahrener Sportpsychologe der personalisierte tägliche mentale Trainingsaufgaben erstellt.
-
-Du hast folgende Informationen über den Sportler:
-- Mental Score: ${analysis.mental_score}/100
-- Stärken: ${analysis.strengths?.map((s: any) => s.title).join(", ") || "keine"}
-- Entwicklungsfelder: ${analysis.development_areas?.map((d: any) => `${d.title} (${d.priority})`).join(", ") || "keine"}
-- Erkannte Muster: ${analysis.patterns?.map((p: any) => p.title).join(", ") || "keine"}
-${sportAdaptionPrompt}${competitionContext}
-${periodizationContext}
-
-PERIODISIERUNG (8-Wochen / 56-Tage-Programm):
-Das Programm ist in 4 Phasen unterteilt. Passe Schwierigkeit und Komplexität der Aufgaben entsprechend der Phase an:
-
-Phase 1 (Tag 1-14): FUNDAMENT & SELBSTANALYSE
-- Fokus: Identität und Selbstwahrnehmung
-- Aufgaben: Selbstreflexion, Journaling, Werte-Klärung, Ist-Zustand-Analyse
-- Schwierigkeit: Niedrig – Grundlagen legen, Bewusstsein schaffen
-- Neurokognitiver Fokus: Metakognition, Default Mode Network bewusst nutzen
-
-Phase 2 (Tag 15-28): SKILL-ERWERB
-- Fokus: Konkrete mentale Techniken erlernen
-- Aufgaben: Atemtechniken (Box-Breathing, 4-7-8), Visualisierung nach Murphy (2005), Selbstgespräch-Techniken, Progressive Muskelentspannung
-- Schwierigkeit: Mittel – aktives Üben neuer Skills
-- Neurokognitiver Fokus: PFC-Training, Amygdala-Regulation, neue neuronale Pfade anlegen (Neuroplastizität)
-
-Phase 3 (Tag 29-42): INTENSIVIERUNG & TRANSFER
-- Fokus: Gelerntes ins Mannschaftstraining und Wettkampf-Szenarien transferieren
-- Aufgaben: Drucksimulationen, Challenge-Reframing unter Stress, Team-Kommunikation, Visualisierung spezifischer Wettkampfszenarien
-- Schwierigkeit: Hoch – unter Druck anwenden
-- Neurokognitiver Fokus: Threat vs. Challenge Mindset, PFC-Shutdown-Prävention, Amygdala-Hijack erkennen und umlenken
-
-Phase 4 (Tag 43-56): MEISTERSCHAFT & RE-TEST-VORBEREITUNG
-- Fokus: Festigung der "Inner Excellence", Automatisierung der Skills
-- Aufgaben: Eigenständige Routinen ohne Anleitung, Mental-Gameplan für Wettkämpfe erstellen, Mentoring-Elemente (Teamkollegen helfen), Reflexion der Transformation
-- Schwierigkeit: Experte – selbstständige Anwendung, Skills sollen in Basalganglien übergehen
-- Neurokognitiver Fokus: Von PFC zu Basalganglien (Automatisierung), Energiehaushalt optimieren, Selbstwirksamkeit festigen
-
-WICHTIG: Die Schwierigkeit und Komplexität der Aufgaben MUSS über die 8 Wochen progressiv ansteigen. 
-Phase 1 = einfache Reflexionsübungen, Phase 4 = komplexe Anwendungsszenarien unter Druck.
-
-Erstelle für JEDEN Tag im Kalender EXAKT 3 mentale Aufgaben (nicht mehr, nicht weniger). Wähle die 3 relevantesten für diesen Tag.
-
-WICHTIG – AUFGABEN MÜSSEN KONKRET UND SOFORT UMSETZBAR SEIN:
-Jede Aufgabe MUSS so formuliert sein, dass ein 14-18 jähriger Sportler sie SOFORT versteht und umsetzen kann.
-
-VERBOTEN (zu abstrakt):
-- "Finde dein optimales Aktivierungslevel"
-- "Fokussiere dich extern"
-- "Akzeptiere das Ergebnis"
-- "Arbeite an deiner Selbstwahrnehmung"
-
-PFLICHT (konkret & actionable):
-- "Atme 3x tief ein und lass die Schultern fallen. Dann spanne 5 Sekunden alle Muskeln an."
-- "Schließe die Augen. Stelle dir 60 Sekunden lang vor, wie du [sportartspezifische Aktion] ausführst. Sieh die Farben, hör die Geräusche."
-- "Schreibe 3 Sätze auf: Was lief heute gut? Was war schwierig? Was mache ich morgen anders?"
-
-Jede Aufgabe MUSS enthalten:
-- duration: Exakte Zeitangabe (z.B. "30 Sekunden", "2 Minuten", "5 Minuten")
-- when_to_use: Wann genau die Aufgabe angewendet werden soll (z.B. "Vor dem Training", "Nach einem Fehler im Spiel", "Abends vor dem Schlafen")
-- steps: Array mit 2-4 konkreten Schritten als kurze Sätze
-
-Die Aufgaben müssen:
-1. An den Tagestyp angepasst sein (Training/Ruhe/Wettkampf)
-2. Die Entwicklungsfelder des Sportlers gezielt adressieren
-3. Wissenschaftlich fundiert sein
-4. Aufeinander aufbauen (Progression über die Wochen, gemäß der 4-Phasen-Periodisierung)
-5. Bei Wettkampftagen: Aktivierung und Fokussierung
-6. Bei Ruhetagen: Regeneration und Reflexion
-7. Bei Trainingstagen: Mentales Training parallel zum physischen
-8. Der Phase entsprechend in Schwierigkeit und Komplexität angepasst sein
-
-WICHTIG – Science Bite:
-Jede Aufgabe MUSS ein "science_bite" Feld enthalten: 2-3 Sätze die dem Sportler erklären WARUM diese Übung wirkt. Nenne dabei:
-- Den konkreten neurowissenschaftlichen oder psychologischen Mechanismus (z.B. "Visualisierung aktiviert denselben prämotorischen Kortex wie die echte Bewegung")
-- Eine Studie oder Forschungsrichtung als Referenz (z.B. "Jeannerod, 2001" oder "Meta-Analyse von Hatzigeorgiadis et al., 2011")
-- Warum das WISSEN darüber die Wirkung verstärkt (Metakognition erhöht Compliance und Engagement – Flavell, 1979; Ryan & Deci, 2000: Autonomie durch Verständnis)
-
-NEUROKOGNITIVE RAHMUNG (PFLICHT):
-Jede science_bite MUSS dem Spieler erklären, welcher Gehirn-Mechanismus bei der Aufgabe aktiv ist. Verwende diese Konzepte:
-- AMYGDALA-HIJACK: Erkläre, wie Fehler den Fight-or-Flight-Modus triggern. Die Amygdala reagiert in 12ms – schneller als bewusstes Denken (LeDoux, 1996)
-- EGO/SURVIVAL: Das Gehirn schützt uns vor sozialem Ausschluss durch Risikovermeidung – das ist evolutionär sinnvoll, aber limitierend im Sport (Friston, 2010)
-- ENERGIEHAUSHALT: Neue Muster kosten mehr Glukose als Routinen. Gewohnheiten laufen über die Basalganglien (günstig), neue Muster über den PFC (teuer). Deshalb fühlt sich Wachstum anstrengend an – das ist normal (Graybiel, 2008)
-- METAKOGNITION: "Ich bemerke, dass ich gerade..." – allein das Benennen reduziert Amygdala-Aktivität um 50% (Lieberman et al., 2007). Wissen über den Mechanismus erhöht die Wirksamkeit der Übung
-- DEFAULT MODE NETWORK: Grübeln nach Fehlern ist keine Charakter-Schwäche, sondern ein aktives Netzwerk das man durch Achtsamkeit unterbrechen kann (Brewer et al., 2011)
-- NEUROPLASTIZITÄT: Jede bewusste Rep formt neue neuronale Pfade und stärkt die Myelinschicht (Fields, 2008)
-- THREAT vs. CHALLENGE: Dieselbe Drucksituation kann als Bedrohung oder Challenge interpretiert werden – die Interpretation verändert die Hormonantwort (Blascovich, 2008)
-- PFC-SHUTDOWN: Unter Stress fährt der Prefrontale Kortex herunter. Atemübungen reaktivieren ihn in 90 Sekunden (Arnsten, 2009)
-- ANTERIOR MIDCINGULATE CORTEX (aMCC): Der "Willpower-Muskel" des Gehirns. Der aMCC wächst PHYSISCH messbar, wenn Menschen freiwillig unangenehme Dinge tun (Parvizi et al., 2013). Er ist bei disziplinierten Menschen, Extremsportlern und "Super-Agern" signifikant größer (Touroutoglou et al., 2020). Jedes Mal wenn du etwas tust, das du NICHT tun willst, wird der aMCC stärker – wie ein Muskel. Er schrumpft bei Vermeidung und Komfortzone.
-
-Formuliere science_bites so, dass der Spieler versteht: "Mein Gehirn tut das nicht GEGEN mich, sondern FÜR mich – aber ich kann es umprogrammieren."
-
-PFLICHT – TÄGLICHE aMCC-CHALLENGE:
-Jeder Tag MUSS eine Aufgabe mit dem icon "flame" enthalten, die den Anterior Midcingulate Cortex trainiert. Diese Aufgabe fordert den Sportler auf, FREIWILLIG etwas Unangenehmes zu tun – etwas, das Überwindung kostet aber machbar ist. 
-Regeln für die aMCC-Challenge:
-1. PERSONALISIERT: Leite aus Sport, Position, Level und Antworten ab, was die Person wahrscheinlich NICHT gerne tut (z.B. ein Stürmer der ungern Defensivarbeit macht, ein introvertierter Spieler der ungern vor der Gruppe spricht)
-2. KONKRET & SOFORT UMSETZBAR: Keine vagen Tipps, sondern "Mach heute X" (z.B. "Dusche heute 30 Sekunden kalt ab", "Räume heute das Trikot eines Mitspielers auf", "Melde dich heute freiwillig für die härteste Übung im Training")
-3. PROGRESSIV: Phase 1 = kleine Überwindungen (kaltes Wasser, extra Wiederholung), Phase 4 = soziale/emotionale Challenges (Führung übernehmen, Fehler öffentlich analysieren)
-4. SCIENCE BITE PFLICHT: Erkläre dass der aMCC PHYSISCH wächst – messbar in MRT-Scans. "Dein Willpower-Muskel im Gehirn wächst gerade. Buchstäblich."
-5. Variiere die Kategorien: körperlich unangenehm (Kälte, extra Aufwand), sozial unangenehm (Initiative ergreifen, Verletzlichkeit zeigen), mental unangenehm (bewusst den schwierigsten Weg wählen)
-
-Jede Aufgabe hat: title (kurz, max 5 Wörter), description (2-3 Sätze, konkrete Anleitung die ein 14-Jähriger versteht), steps (Array mit 2-4 konkreten Einzelschritten), duration (exakte Zeitangabe wie "30 Sekunden" oder "2 Minuten"), when_to_use (wann genau anwenden, z.B. "Vor dem Training"), science_bite (2-3 Sätze, wissenschaftliche Erklärung mit neurokognitivem Rahmen), icon (eines von: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield), phase (1-4, die aktuelle Programmphase).
-
-WICHTIG: Generiere EXAKT 3 Aufgaben pro Tag. Nicht 4, nicht 5 – genau 3.`;
+    const systemPrompt = buildSystemPrompt(analysis, sport || "", position || "", level || "", competitionDate || "", competitionName || "", periodizationContext);
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -169,12 +447,12 @@ WICHTIG: Generiere EXAKT 3 Aufgaben pro Tag. Nicht 4, nicht 5 – genau 3.`;
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "google/gemini-2.5-pro",
           messages: [
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Hier ist der Kalender des Sportlers:\n\n${calendarSummary}\n\nErstelle für jeden Tag personalisierte mentale Aufgaben. Beachte die 4-Phasen-Periodisierung und passe die Schwierigkeit entsprechend an.`,
+              content: `Kalender:\n${calendarSummary}\n\nErstelle für jeden Tag exakt 3 personalisierte mentale Aufgaben. Beachte Phase und Tagestyp.`,
             },
           ],
           tools: [
@@ -182,7 +460,7 @@ WICHTIG: Generiere EXAKT 3 Aufgaben pro Tag. Nicht 4, nicht 5 – genau 3.`;
               type: "function",
               function: {
                 name: "create_daily_tasks",
-                description: "Creates personalized daily mental training tasks for each calendar day with phase-based periodization",
+                description: "Creates exactly 3 personalized daily mental training tasks per calendar day",
                 parameters: {
                   type: "object",
                   properties: {
@@ -191,24 +469,25 @@ WICHTIG: Generiere EXAKT 3 Aufgaben pro Tag. Nicht 4, nicht 5 – genau 3.`;
                       items: {
                         type: "object",
                         properties: {
-                          date: { type: "string", description: "YYYY-MM-DD format" },
+                          date: { type: "string", description: "YYYY-MM-DD" },
                           event_type: { type: "string" },
-                          phase: { type: "number", description: "Program phase 1-4 based on day number" },
+                          phase: { type: "number", description: "1-4" },
                           tasks: {
                             type: "array",
+                            minItems: 3,
                             maxItems: 3,
                             items: {
                               type: "object",
                               properties: {
                                 id: { type: "string" },
-                                title: { type: "string", description: "Max 5 words, concise" },
-                                description: { type: "string", description: "2-3 sentences, concrete instructions a 14-year-old understands" },
-                                steps: { type: "array", items: { type: "string" }, description: "2-4 concrete action steps" },
-                                duration: { type: "string", description: "Exact time, e.g. '30 Sekunden', '2 Minuten'" },
-                                when_to_use: { type: "string", description: "When to apply, e.g. 'Vor dem Training', 'Nach einem Fehler'" },
-                                science_bite: { type: "string", description: "2-3 sentences explaining WHY this exercise works, with scientific mechanism and study reference" },
+                                title: { type: "string", description: "Max 5 Wörter" },
+                                description: { type: "string", description: "2-3 Sätze, konkret, für 14-Jährige verständlich" },
+                                steps: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4, description: "Konkrete Handlungsschritte" },
+                                duration: { type: "string", description: "z.B. '30 Sekunden', '3 Minuten'" },
+                                when_to_use: { type: "string", description: "z.B. 'Vor dem Training', 'Nach einem Fehler'" },
+                                science_bite: { type: "string", description: "2-3 Sätze: Mechanismus + Studie + warum es wirkt" },
                                 icon: { type: "string", enum: ["brain", "eye", "flame", "heart", "target", "wind", "sunrise", "book", "sparkles", "shield"] },
-                                phase: { type: "number", description: "Program phase 1-4" },
+                                phase: { type: "number" },
                               },
                               required: ["id", "title", "description", "steps", "duration", "when_to_use", "science_bite", "icon", "phase"],
                             },
@@ -251,6 +530,14 @@ WICHTIG: Generiere EXAKT 3 Aufgaben pro Tag. Nicht 4, nicht 5 – genau 3.`;
     if (!toolCall) throw new Error("No tool call in AI response");
 
     const result = JSON.parse(toolCall.function.arguments);
+
+    // Enforce max 3 tasks per day
+    if (result.daily_plans) {
+      result.daily_plans = result.daily_plans.map((plan: any) => ({
+        ...plan,
+        tasks: (plan.tasks || []).slice(0, 3),
+      }));
+    }
 
     return new Response(JSON.stringify({ daily_plans: result.daily_plans }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
