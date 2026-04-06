@@ -93,6 +93,13 @@ export const categories: QuestionCategory[] = [
     intro: "Dein Gehirn ist kein Gegner – es ist ein Werkzeug. Es schützt dich mit uralten Programmen vor Fehlern, sozialer Ablehnung und Energieverschwendung. Das ist evolutionär genial – aber im Sport oft limitierend. Diese Fragen helfen uns zu verstehen, wie dein 'mentales Betriebssystem' aktuell eingestellt ist.",
   },
   {
+    id: "inner_excellence",
+    title: "Inner Excellence",
+    description: "Die Brücke zwischen Sportpsychologie und Neurowissenschaft.",
+    icon: "✨",
+    intro: "Inner Excellence verbindet Sportpsychologie mit Neurowissenschaft. Präsenz, Growth Mindset und Emotionskontrolle sind psychologische Konzepte, die direkt das Rewiring deines Gehirns auslösen. Diese Fragen zeigen, wie du innerlich tickst – jenseits von Technik und Taktik.",
+  },
+  {
     id: "deep_profile",
     title: "Athleten-Profil (Deep Dive)",
     description: "Druck, Technik und Erholung – die Details, die den Unterschied machen.",
