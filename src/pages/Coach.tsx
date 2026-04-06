@@ -100,7 +100,7 @@ const Coach = () => {
       </div>
 
       {/* Team selector if multiple teams */}
-      {teams.length > 1 && tab === "overview" && (
+      {teams.length > 1 && (tab === "overview" || tab === "mental") && (
         <div className="px-6 mb-4">
           <select
             value={selectedTeam ?? ""}
