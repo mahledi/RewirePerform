@@ -56,6 +56,12 @@ Deine Analyse muss auf wissenschaftlichen Prinzipien basieren und folgendes enth
 3. **Kernmuster**: Tiefere psychologische Muster die du in den Antworten erkennst
 4. **Empfehlungen**: Konkrete, wissenschaftlich fundierte Empfehlungen für die nächsten 4 Wochen
 5. **Tägliche Fokus-Bereiche**: Spezifische Aufgaben für Trainings- und Ruhetage
+6. **Inner Excellence Profil**: Analysiere gezielt die Inner Excellence Fragen (ie-01 bis ie-25) und bewerte folgende Dimensionen:
+   - **Growth Mindset Score** (0-100): Wie stark ist die Wachstumsorientierung vs. Ergebnisorientierung? Basierend auf ie-05, ie-06, ie-07, ie-08, ie-21, ie-23
+   - **Präsenz-Level** (low/medium/high): Wie präsent und im Moment ist der Athlet? Basierend auf ie-03, ie-04, ie-19, ie-20
+   - **Ego-Freiheit Score** (0-100): Wie frei ist der Athlet von externem Validierungsbedürfnis? Basierend auf ie-09, ie-10, ie-11
+   - **Emotionale Kontrolle Score** (0-100): Wie gut reguliert der Athlet Emotionen unter Druck? Basierend auf ie-12, ie-13, ie-17, ie-18, ie-22
+   - **Core Insight**: Eine tiefe Erkenntnis über die psychologische Kernstruktur des Athleten, die Psychologie und Neurowissenschaft verbindet
 
 Antworte auf Deutsch. Sei direkt, wissenschaftlich fundiert aber verständlich. Verwende neurowissenschaftliche und sportpsychologische Fachbegriffe wo angemessen, aber erkläre sie. 
 
@@ -69,7 +75,14 @@ Strukturiere deine Antwort als JSON mit folgender Struktur:
   "training_day_tasks": ["...", "...", "..."],
   "rest_day_tasks": ["...", "...", "..."],
   "mental_score": 0-100,
-  "dominant_category": "..."
+  "dominant_category": "focus/resilience/motivation/confidence/neurocognition/inner_excellence/...",
+  "inner_excellence_profile": {
+    "growth_mindset_score": 0-100,
+    "presence_level": "low/medium/high",
+    "ego_freedom_score": 0-100,
+    "emotional_control_score": 0-100,
+    "core_insight": "..."
+  }
 }`;
 
     const response = await fetch(
@@ -151,12 +164,23 @@ Strukturiere deine Antwort als JSON mit folgender Struktur:
                     training_day_tasks: { type: "array", items: { type: "string" } },
                     rest_day_tasks: { type: "array", items: { type: "string" } },
                     mental_score: { type: "number" },
-                    dominant_category: { type: "string" },
+                    dominant_category: { type: "string", description: "Dominant category: focus, resilience, motivation, confidence, neurocognition, inner_excellence, or other" },
+                    inner_excellence_profile: {
+                      type: "object",
+                      properties: {
+                        growth_mindset_score: { type: "number", description: "0-100 score for growth vs result orientation" },
+                        presence_level: { type: "string", enum: ["low", "medium", "high"], description: "How present the athlete is during performance" },
+                        ego_freedom_score: { type: "number", description: "0-100 score for freedom from external validation" },
+                        emotional_control_score: { type: "number", description: "0-100 score for emotional regulation under pressure" },
+                        core_insight: { type: "string", description: "Deep psychological insight connecting psychology and neuroscience" },
+                      },
+                      required: ["growth_mindset_score", "presence_level", "ego_freedom_score", "emotional_control_score", "core_insight"],
+                    },
                   },
                   required: [
                     "summary", "strengths", "development_areas", "patterns",
                     "recommendations", "training_day_tasks", "rest_day_tasks",
-                    "mental_score", "dominant_category",
+                    "mental_score", "dominant_category", "inner_excellence_profile",
                   ],
                 },
               },
