@@ -299,6 +299,51 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     );
   };
 
+  // ─── Knowledge Bite Card ───────────────────────────────
+  const KnowledgeBiteCard = ({ task, isRead, onRead }: { task: CheckinTask; isRead: boolean; onRead: () => void }) => {
+    const [expanded, setExpanded] = useState(false);
+    const IconComp = iconMap[task.icon] || Brain;
+
+    const handleToggle = () => {
+      setExpanded(!expanded);
+      if (!isRead) onRead();
+    };
+
+    return (
+      <button
+        onClick={handleToggle}
+        className={`w-full text-left rounded-2xl transition-all ${
+          expanded
+            ? "bg-accent/20 border border-accent/30 p-5"
+            : "bg-gradient-card border-glow p-4 hover:bg-secondary/50 active:scale-[0.98]"
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            isRead ? "bg-primary/20" : "bg-secondary"
+          }`}>
+            <IconComp className={`w-5 h-5 ${isRead ? "text-primary" : "text-muted-foreground"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold">{task.title}</p>
+            <span className="text-xs text-muted-foreground">Warum das wirkt</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {isRead && <CheckCircle2 className="w-4 h-4 text-primary" />}
+            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </div>
+        </div>
+        {expanded && (
+          <div className="mt-4 pl-[52px]">
+            <p className="text-sm text-foreground leading-relaxed">
+              {task.science_bite || "Diese Übung stärkt deine mentale Fitness."}
+            </p>
+          </div>
+        )}
+      </button>
+    );
+  };
+
   // ─── Knowledge Step (step 2) ───────────────────────────
   const KnowledgeStep = () => {
     const allRead = tasks.every((t) => readBites.includes(t.id));
@@ -314,56 +359,14 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         </p>
 
         <div className="space-y-3">
-          {tasks.map((task) => {
-            const isRead = readBites.includes(task.id);
-            const IconComp = iconMap[task.icon] || Brain;
-            const [expanded, setExpanded] = useState(false);
-
-            const handleToggle = () => {
-              setExpanded(!expanded);
-              if (!isRead) {
-                setReadBites((prev) => [...prev, task.id]);
-              }
-            };
-
-            return (
-              <button
-                key={task.id}
-                onClick={handleToggle}
-                className={`w-full text-left rounded-2xl transition-all ${
-                  expanded
-                    ? "bg-accent/20 border border-accent/30 p-5"
-                    : "bg-gradient-card border-glow p-4 hover:bg-secondary/50 active:scale-[0.98]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    isRead ? "bg-primary/20" : "bg-secondary"
-                  }`}>
-                    <IconComp className={`w-5 h-5 ${isRead ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{task.title}</p>
-                    <span className="text-xs text-muted-foreground">Warum das wirkt</span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {isRead && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
-                  </div>
-                </div>
-                {expanded && task.science_bite && (
-                  <div className="mt-4 pl-[52px]">
-                    <p className="text-sm text-foreground leading-relaxed">{task.science_bite}</p>
-                  </div>
-                )}
-                {expanded && !task.science_bite && (
-                  <div className="mt-4 pl-[52px]">
-                    <p className="text-sm text-muted-foreground italic">Diese Übung stärkt deine mentale Fitness.</p>
-                  </div>
-                )}
-              </button>
-            );
-          })}
+          {tasks.map((task) => (
+            <KnowledgeBiteCard
+              key={task.id}
+              task={task}
+              isRead={readBites.includes(task.id)}
+              onRead={() => setReadBites((prev) => [...prev, task.id])}
+            />
+          ))}
         </div>
 
         <motion.button
