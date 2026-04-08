@@ -1,49 +1,79 @@
 
 
-# Problem: Personalisierte Aufgaben werden nie gespeichert — Fallback-Tasks statt KI-Tasks
+# Bulletproof Personalization Pipeline
 
-## Diagnose
+## Das Problem
 
-Die `personalized_tasks`-Tabelle ist **komplett leer**. Das bedeutet: `adapt-program` wurde entweder nie erfolgreich aufgerufen, oder die Ergebnisse konnten nicht gespeichert werden. Die Edge Function Logs zeigen **keine einzigen Aufruf** — die Funktion wurde also nie getriggert.
+Die aktuelle Architektur hat mehrere systemische Schwachstellen, die dazu führen, dass Spieler keine personalisierten Aufgaben bekommen. Das betrifft potenziell JEDEN Nutzer — nicht nur einzelne Accounts.
 
-**Ursachen-Kette:**
+### Identifizierte Fehlerquellen (7 Stück)
 
-1. `adapt-program` wird nur in `CalendarSetup.handleSave()` aufgerufen (Dashboard.tsx, Zeile 183)
-2. Der Aufruf hängt davon ab, dass `analysis` vorhanden ist (Zeile 160: `if (analysis && eventData)`)
-3. `analysis` kommt aus der `questionnaire_responses`-Tabelle — aber der einzige Eintrag dort hat `user_id: NULL` und `session_id: 52be3d7a...`
-4. Dein Account (`870240aa-...`) hat eine **andere session_id** (`c7eca1f1-...` oder `8e1aeec9-...`)
-5. **Ergebnis:** Die Questionnaire-Daten werden nie gefunden → `analysis` ist `null` → `adapt-program` wird nie aufgerufen → keine personalisierten Tasks → Fallback-Tasks werden angezeigt
+```text
+Questionnaire ──→ Auth ──→ Dashboard ──→ adapt-program ──→ Daily Tasks
+     ↓                ↓          ↓              ↓               ↓
+  session_id     linkSession   loadAnalysis   null-crash     fallback
+  mismatch       kann fehlschlagen  "broader search"  wenn analysis  statt KI-Tasks
+                                    klaut fremde      fehlt
+                                    Daten (!)
+```
 
-**Zusätzlich:** Dein Profil hat `sport: NULL` — die Sportart wurde nicht gespeichert.
+**Kritisch (Sicherheitslücke):** Dashboard Zeile 444-460 sucht nach IRGENDEINER verwaisten Questionnaire-Response mit `user_id=null`. Bei 300 Spielern bedeutet das: **Spieler B könnte die Analyse von Spieler A übernehmen.**
 
-## Lösung
+**Kritisch (Crash):** `adapt-program` Edge Function liest `analysis.mental_score`, `analysis.strengths` etc. direkt — wenn `analysis` null ist, crashed die Funktion.
 
-### 1. `src/pages/Dashboard.tsx` — Analysis-Laden robuster machen
+**Kritisch (Datenverlust):** Wenn ein Spieler den Fragebogen auf dem Handy macht und sich dann auf einem anderen Gerät einloggt, wird die session_id nie matchen. Die Analyse ist verloren.
 
-- Beim Laden der Analysis nicht nur nach `user_id` suchen, sondern auch nach `session_id` als Fallback
-- Wenn ein authentifizierter User eine Analysis mit `user_id: NULL` hat, diese seinem Account zuordnen (Migration)
-- Fehlermeldung anzeigen wenn keine Analysis gefunden wird, statt still Fallbacks zu nutzen
+---
 
-### 2. `src/pages/Dashboard.tsx` — CalendarSetup: adapt-program auch ohne Analysis aufrufen
+## Lösung: 5 Änderungen
 
-- Wenn keine Analysis vorhanden ist, trotzdem `adapt-program` mit Basis-Daten aufrufen (Sport, Kalender)
-- Alternativ: User zum Fragebogen zurückschicken wenn Analysis fehlt
+### 1. Questionnaire: User-ID sofort verknüpfen
 
-### 3. `src/pages/Dashboard.tsx` — Fehler-Feedback verbessern
+**Datei:** `src/components/questionnaire/QuestionnaireResults.tsx`
 
-- Toast-Nachricht wenn `analysis` nicht gefunden wurde
-- Toast wenn `adapt-program` nicht aufgerufen werden konnte
-- Im Knowledge-Step klar anzeigen: "Personalisierte Aufgaben werden geladen..." statt still Fallbacks zu zeigen
+- Wenn der User eingeloggt ist (was durch ProtectedRoute garantiert sein sollte), wird `user_id` IMMER gesetzt
+- Session-ID bleibt als Backup, aber `user_id` hat Priorität
+- Sport/Position/Level aus Antworten in die `profiles`-Tabelle schreiben
 
-### 4. Session-ID Konsistenz sicherstellen
+### 2. Auth: Session-Linking absichern
 
-- Nach dem Login die `questionnaire_responses` mit der alten `session_id` dem neuen `user_id` zuordnen
-- Gleiches für `calendar_events` (dort funktioniert es bereits — dein User hat Kalender-Einträge)
+**Datei:** `src/pages/Auth.tsx`
+
+- `linkSessionData` nur Rows claimen, die zur eigenen `session_id` gehören (ist bereits so — gut)
+- Nach dem Login/Signup: Prüfen ob `profiles.sport` gesetzt ist. Wenn nicht, aus `questionnaire_responses.answers` nachholen
+
+### 3. Dashboard: Orphaned-Data-Suche entfernen
+
+**Datei:** `src/pages/Dashboard.tsx`
+
+- **Die "broader search" (Zeile 444-460) komplett entfernen** — sie ist eine Sicherheitslücke
+- Analysis nur über `user_id` ODER eigene `session_id` laden — niemals fremde Daten claimen
+- Wenn keine Analysis gefunden wird: **User klar zum Fragebogen zurückschicken**, nicht still Fallbacks nutzen
+- Wenn Analysis da ist aber `personalized_tasks` leer: **automatisch `adapt-program` triggern**
+
+### 4. adapt-program: Null-Safety
+
+**Datei:** `supabase/functions/adapt-program/index.ts`
+
+- Wenn `analysis` null/undefined ist: Minimalprofil generieren (Mental Score 50, keine Stärken/Schwächen)
+- Niemals crashen — immer Tasks zurückgeben, auch wenn nur generische
+
+### 5. DailyCheckin: Klarheit statt stille Fallbacks
+
+**Datei:** `src/components/dashboard/DailyCheckin.tsx`
+
+- Wenn nach dem Laden keine personalisierten Tasks gefunden wurden UND der User eingeloggt ist: Anzeigen "Deine Aufgaben werden generiert..." + automatisch `adapt-program` erneut triggern
+- Fallback-Tasks nur als absolute Notlösung, mit sichtbarem Hinweis
+
+---
 
 ## Betroffene Dateien
 
 | Datei | Änderung |
 |---|---|
-| `src/pages/Dashboard.tsx` | Analysis-Laden: Fallback auf session_id; adapt-program Aufruf robuster; Fehler-Feedback |
-| `src/components/dashboard/DailyCheckin.tsx` | Loading-State statt stille Fallbacks; Fehlermeldung wenn keine KI-Tasks |
+| `src/components/questionnaire/QuestionnaireResults.tsx` | user_id immer setzen wenn eingeloggt; Sport in profiles schreiben |
+| `src/pages/Auth.tsx` | Sport aus Antworten in profiles nachpflegen nach Login |
+| `src/pages/Dashboard.tsx` | Broader-search entfernen; fehlende Analysis → Redirect zum Fragebogen; fehlende Tasks → auto-regenerate |
+| `supabase/functions/adapt-program/index.ts` | Null-safe analysis handling, Minimalprofil als Fallback |
+| `src/components/dashboard/DailyCheckin.tsx` | Auto-regenerate wenn Tasks fehlen; sichtbarer Hinweis bei Fallbacks |
 
