@@ -156,8 +156,11 @@ const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) 
       }, { onConflict: "session_id" });
     }
 
-    // Generate personalized tasks via AI
-    if (analysis && eventData) {
+    // Generate personalized tasks via AI — proceed even without analysis
+    if (eventData) {
+      if (!analysis) {
+        toast.warning("Keine Fragebogen-Analyse gefunden. KI verwendet Basis-Profil.");
+      }
       toast.info("KI generiert personalisierte Aufgaben...");
 
       // Extract sport context from questionnaire answers (stored in localStorage or analysis)
@@ -413,10 +416,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     const loadAnalysis = async () => {
-      // Try loading from DB first
+      // Try loading from DB first — match by user_id or session_id
       let query = supabase
         .from("questionnaire_responses")
-        .select("analysis")
+        .select("id, analysis, user_id")
         .not("analysis", "is", null)
         .order("created_at", { ascending: false })
         .limit(1);
@@ -430,6 +433,38 @@ const Dashboard = () => {
       const { data } = await query;
       if (data && data.length > 0 && data[0].analysis) {
         setAnalysis(data[0].analysis as unknown as Analysis);
+        // Claim orphaned record if user is logged in but record has no user_id
+        if (user?.id && !data[0].user_id) {
+          await supabase
+            .from("questionnaire_responses")
+            .update({ user_id: user.id })
+            .eq("id", data[0].id);
+        }
+      } else if (user?.id) {
+        // Broader search: find ANY orphaned questionnaire with analysis (user_id is null)
+        const { data: orphaned } = await supabase
+          .from("questionnaire_responses")
+          .select("id, analysis")
+          .is("user_id", null)
+          .not("analysis", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (orphaned && orphaned.length > 0 && orphaned[0].analysis) {
+          setAnalysis(orphaned[0].analysis as unknown as Analysis);
+          // Claim it
+          await supabase
+            .from("questionnaire_responses")
+            .update({ user_id: user.id })
+            .eq("id", orphaned[0].id);
+          toast.success("Fragebogen-Daten mit deinem Profil verknüpft.");
+        } else {
+          // Fallback to localStorage
+          const savedAnalysis = localStorage.getItem("mindgame_analysis");
+          if (savedAnalysis) {
+            try { setAnalysis(JSON.parse(savedAnalysis)); } catch {}
+          }
+        }
       } else {
         // Fallback to localStorage
         const savedAnalysis = localStorage.getItem("mindgame_analysis");
