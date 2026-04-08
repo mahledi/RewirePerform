@@ -430,9 +430,20 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           <Lightbulb className="w-6 h-6 text-primary" />
           <h2 className="font-heading text-2xl font-bold">Verstehe, was du trainierst</h2>
         </div>
-        <p className="text-muted-foreground text-sm mb-6">
-          Bevor du loslegst – hier ist die Wissenschaft hinter deinen heutigen Übungen.
-        </p>
+        {regenerating ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Personalisierte Aufgaben werden generiert...</span>
+          </div>
+        ) : usingFallback ? (
+          <p className="text-sm text-yellow-500 mb-6">
+            ⚠ Standard-Aufgaben — personalisierte Aufgaben konnten nicht geladen werden.
+          </p>
+        ) : (
+          <p className="text-muted-foreground text-sm mb-6">
+            Bevor du loslegst – hier ist die Wissenschaft hinter deinen heutigen Übungen.
+          </p>
+        )}
 
         <div className="space-y-3">
           {tasks.map((task) => (
