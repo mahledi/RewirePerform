@@ -336,7 +336,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         {expanded && (
           <div className="mt-4 pl-[52px]">
             <p className="text-sm text-foreground leading-relaxed">
-              {task.science_bite || "Diese Übung stärkt deine mentale Fitness."}
+              {task.science_bite}
             </p>
           </div>
         )}
