@@ -70,8 +70,10 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   const [saving, setSaving] = useState(false);
   const [tasks, setTasks] = useState<CheckinTask[]>(fallbackTasks[eventType]);
   const [loadingTasks, setLoadingTasks] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
   const [selectedTask, setSelectedTask] = useState<CheckinTask | null>(null);
   const [readBites, setReadBites] = useState<string[]>([]);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   const config = typeConfig[eventType];
 
@@ -95,11 +97,85 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     const { data } = await q.maybeSingle();
 
     if (data?.tasks && Array.isArray(data.tasks) && data.tasks.length > 0) {
-      // Limit to max 3 tasks
       const loaded = (data.tasks as unknown as CheckinTask[]).slice(0, 3);
       setTasks(loaded);
+      setUsingFallback(false);
+    } else if (user?.id) {
+      // No personalized tasks found — try to auto-regenerate
+      setUsingFallback(true);
+      await triggerRegeneration();
+    } else {
+      setUsingFallback(true);
     }
     setLoadingTasks(false);
+  };
+
+  const triggerRegeneration = async () => {
+    if (!user?.id || regenerating) return;
+    setRegenerating(true);
+
+    try {
+      // Get analysis
+      const { data: qr } = await supabase
+        .from("questionnaire_responses")
+        .select("analysis")
+        .eq("user_id", user.id)
+        .not("analysis", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Get calendar events
+      const { data: calEvents } = await supabase
+        .from("calendar_events")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (!calEvents || calEvents.length === 0) {
+        setRegenerating(false);
+        return;
+      }
+
+      // Get sport from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("sport, team")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const { data: taskData, error: taskError } = await supabase.functions.invoke("adapt-program", {
+        body: {
+          calendarEvents: calEvents,
+          analysis: qr?.analysis || null,
+          sport: profile?.sport || null,
+          position: profile?.team || null,
+        },
+      });
+
+      if (!taskError && taskData?.daily_plans) {
+        // Save tasks
+        await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
+        const taskInserts = taskData.daily_plans.map((plan: any) => ({
+          session_id: sessionId,
+          user_id: user.id,
+          date: plan.date,
+          event_type: plan.event_type,
+          tasks: plan.tasks,
+        }));
+        await supabase.from("personalized_tasks").insert(taskInserts);
+
+        // Reload today's tasks
+        const dateStr = format(date, "yyyy-MM-dd");
+        const todayPlan = taskData.daily_plans.find((p: any) => p.date === dateStr);
+        if (todayPlan?.tasks) {
+          setTasks((todayPlan.tasks as unknown as CheckinTask[]).slice(0, 3));
+          setUsingFallback(false);
+        }
+      }
+    } catch (err) {
+      console.error("Auto-regeneration failed:", err);
+    }
+    setRegenerating(false);
   };
 
   const markTaskComplete = (taskId: string) => {
