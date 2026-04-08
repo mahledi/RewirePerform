@@ -53,6 +53,38 @@ const Auth = () => {
       );
     };
 
+    // Backfill profile sport from questionnaire answers if profiles.sport is null
+    const backfillProfileSport = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("sport")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (profile && !profile.sport) {
+        // Try to get sport from questionnaire answers
+        const { data: qr } = await supabase
+          .from("questionnaire_responses")
+          .select("answers")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (qr?.answers && typeof qr.answers === "object") {
+          const answers = qr.answers as Record<string, any>;
+          const sport = answers["sport-01"] || null;
+          const position = answers["sport-02"] || null;
+          if (sport) {
+            await supabase
+              .from("profiles")
+              .update({ sport, team: position })
+              .eq("id", userId);
+          }
+        }
+      }
+    };
+
     if (isLogin) {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {

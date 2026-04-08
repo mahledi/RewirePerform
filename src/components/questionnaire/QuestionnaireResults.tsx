@@ -94,12 +94,12 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         }
 
         // Sync sport/position to profiles table if user is logged in
-        const sport = answers["sport-01"] as string || null;
-        const position = answers["sport-02"] as string || null;
-        if (user?.id && sport) {
+        const sportAnswer = answers["sport-01"] as string || null;
+        const positionAnswer = answers["sport-02"] as string || null;
+        if (user?.id && sportAnswer) {
           await supabase
             .from("profiles")
-            .update({ sport, team: position })
+            .update({ sport: sportAnswer, team: positionAnswer })
             .eq("id", user.id);
         }
 
