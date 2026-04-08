@@ -59,6 +59,8 @@ const Auth = () => {
         toast.error(error.message === "Invalid login credentials" ? "Ungültige Anmeldedaten." : error.message);
       } else {
         await linkSessionData(data.user.id);
+        // Backfill profile sport from questionnaire answers if missing
+        await backfillProfileSport(data.user.id);
         toast.success("Willkommen zurück!");
         // Check role for redirect
         const { data: roleData } = await supabase

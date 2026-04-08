@@ -432,14 +432,27 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { calendarEvents, analysis, competitionDate, competitionName, programStartDate, sport, position, level } = await req.json();
+    const { calendarEvents, analysis: rawAnalysis, competitionDate, competitionName, programStartDate, sport, position, level } = await req.json();
 
-    if (!calendarEvents || !analysis) {
+    if (!calendarEvents) {
       return new Response(
-        JSON.stringify({ error: "Missing calendarEvents or analysis" }),
+        JSON.stringify({ error: "Missing calendarEvents" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Null-safe analysis: use minimal profile if analysis is missing
+    const analysis = rawAnalysis || {
+      mental_score: 50,
+      strengths: [],
+      development_areas: [],
+      patterns: [],
+      recommendations: [],
+      training_day_tasks: [],
+      rest_day_tasks: [],
+      dominant_category: "unknown",
+      inner_excellence_profile: {},
+    };
 
     // Build calendar context
     const calendarSummary = calendarEvents.map((e: any) =>

@@ -75,13 +75,12 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           localStorage.setItem(SESSION_KEY, sessionId);
         }
 
-        // Check if user is logged in
         // Save answers to localStorage so Dashboard can access sport/position/level
         localStorage.setItem("mindgame_answers", JSON.stringify(answers));
 
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Save answers to database with user_id if available
+        // Save answers to database with user_id ALWAYS if logged in
         const { error: insertError } = await supabase
           .from("questionnaire_responses")
           .insert({
@@ -92,6 +91,16 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
         if (insertError) {
           console.error("Error saving answers:", insertError);
+        }
+
+        // Sync sport/position to profiles table if user is logged in
+        const sport = answers["sport-01"] as string || null;
+        const position = answers["sport-02"] as string || null;
+        if (user?.id && sport) {
+          await supabase
+            .from("profiles")
+            .update({ sport, team: position })
+            .eq("id", user.id);
         }
 
         // Build questions metadata for the AI
