@@ -1,65 +1,49 @@
 
 
-# Knowledge-First Flow im Daily Check-in
+# Problem: Personalisierte Aufgaben werden nie gespeichert — Fallback-Tasks statt KI-Tasks
 
-## Konzept
+## Diagnose
 
-Neuen Step zwischen Energy (Step 1) und Tasks (Step 2) einfügen: **"Dein Wissen für heute"** — zeigt die Science Bites der heutigen Aufgaben als eigenständige Lern-Sektion, bevor die Übungen freigeschaltet werden.
+Die `personalized_tasks`-Tabelle ist **komplett leer**. Das bedeutet: `adapt-program` wurde entweder nie erfolgreich aufgerufen, oder die Ergebnisse konnten nicht gespeichert werden. Die Edge Function Logs zeigen **keine einzigen Aufruf** — die Funktion wurde also nie getriggert.
 
-## Flow (vorher → nachher)
+**Ursachen-Kette:**
 
-```text
-VORHER:                    NACHHER:
-0. Mood                    0. Mood
-1. Energy                  1. Energy
-2. Tasks                   2. Knowledge (NEU)
-3. Reflection              3. Tasks
-4. Done                    4. Reflection
-                           5. Done
-```
+1. `adapt-program` wird nur in `CalendarSetup.handleSave()` aufgerufen (Dashboard.tsx, Zeile 183)
+2. Der Aufruf hängt davon ab, dass `analysis` vorhanden ist (Zeile 160: `if (analysis && eventData)`)
+3. `analysis` kommt aus der `questionnaire_responses`-Tabelle — aber der einzige Eintrag dort hat `user_id: NULL` und `session_id: 52be3d7a...`
+4. Dein Account (`870240aa-...`) hat eine **andere session_id** (`c7eca1f1-...` oder `8e1aeec9-...`)
+5. **Ergebnis:** Die Questionnaire-Daten werden nie gefunden → `analysis` ist `null` → `adapt-program` wird nie aufgerufen → keine personalisierten Tasks → Fallback-Tasks werden angezeigt
 
-## Änderungen
+**Zusätzlich:** Dein Profil hat `sport: NULL` — die Sportart wurde nicht gespeichert.
 
-### 1. `src/components/dashboard/DailyCheckin.tsx`
+## Lösung
 
-**Step-Logik anpassen** (Steps von 0–4 auf 0–5):
-- Step 2 wird **KnowledgeStep**: Zeigt die Science Bites aller 3 heutigen Aufgaben als Karten (Titel + Neurowissenschaft + Quelle). Kein Aufgaben-Detail, nur das "Warum".
-- Jede Karte muss gelesen/aufgeklappt werden, bevor der "Bereit für die Übungen" Button aktiv wird (einfacher Read-Tracker: alle 3 Karten angetippt = ready).
-- Button-Text: **"Bereit für die Übungen"** statt "Weiter".
-- Step 3 = bisheriger TaskDashboard (war Step 2)
-- Step 4 = Reflection (war Step 3)
-- Step 5 = Done (war Step 4)
-- Bottom-Navigation Dots: 5 statt 4
-- `saveCheckin()` bei Step 4 statt 3 auslösen
+### 1. `src/pages/Dashboard.tsx` — Analysis-Laden robuster machen
 
-**Neue Komponente `KnowledgeStep`** (inline im selben File):
-- Überschrift: "Verstehe, was du trainierst"
-- Untertext: "Bevor du loslegst – hier ist die Wissenschaft hinter deinen heutigen Übungen."
-- 3 aufklappbare Karten, je eine pro Task:
-  - Task-Icon + Titel
-  - `science_bite` Text (prominent, nicht versteckt)
-  - Kleines Checkmark wenn gelesen
-- Wenn alle 3 gelesen → Button "Bereit für die Übungen" wird aktiv (primary color, glow)
+- Beim Laden der Analysis nicht nur nach `user_id` suchen, sondern auch nach `session_id` als Fallback
+- Wenn ein authentifizierter User eine Analysis mit `user_id: NULL` hat, diese seinem Account zuordnen (Migration)
+- Fehlermeldung anzeigen wenn keine Analysis gefunden wird, statt still Fallbacks zu nutzen
 
-### 2. `supabase/functions/adapt-program/index.ts`
+### 2. `src/pages/Dashboard.tsx` — CalendarSetup: adapt-program auch ohne Analysis aufrufen
 
-**Prompt anpassen** — Science Bites ausführlicher machen, besonders in Phase 1+2:
+- Wenn keine Analysis vorhanden ist, trotzdem `adapt-program` mit Basis-Daten aufrufen (Sport, Kalender)
+- Alternativ: User zum Fragebogen zurückschicken wenn Analysis fehlt
 
-Neue Regel nach dem bestehenden SCIENCE BITE Block (~Zeile 65):
-```
-WISSENS-TIEFE (phasenabhängig):
-- Phase 1–2: Science Bite = 4–5 Sätze. Erkläre den Mechanismus so, dass ein 14-Jähriger es versteht UND sich schlauer fühlt. Verwende Analogien ("Stell dir vor, dein Gehirn ist wie..."). Der Athlet soll VERSTEHEN warum er das macht, bevor er es tut.
-- Phase 3–4: Science Bite = 2–3 Sätze. Kurz und prägnant – der Athlet kennt die Grundlagen bereits.
-```
+### 3. `src/pages/Dashboard.tsx` — Fehler-Feedback verbessern
 
-## Ergebnis
+- Toast-Nachricht wenn `analysis` nicht gefunden wurde
+- Toast wenn `adapt-program` nicht aufgerufen werden konnte
+- Im Knowledge-Step klar anzeigen: "Personalisierte Aufgaben werden geladen..." statt still Fallbacks zu zeigen
 
-Der Athlet sieht zuerst die Wissenschaft hinter den Übungen, bestätigt dass er sie verstanden hat, und geht dann erst in die Aufgaben. In Phase 1+2 sind die Erklärungen ausführlicher, in Phase 3+4 kompakter.
+### 4. Session-ID Konsistenz sicherstellen
+
+- Nach dem Login die `questionnaire_responses` mit der alten `session_id` dem neuen `user_id` zuordnen
+- Gleiches für `calendar_events` (dort funktioniert es bereits — dein User hat Kalender-Einträge)
 
 ## Betroffene Dateien
 
 | Datei | Änderung |
 |---|---|
-| `src/components/dashboard/DailyCheckin.tsx` | Neuen Knowledge-Step (Step 2) einfügen, Steps verschieben, KnowledgeStep-Komponente, Navigation anpassen |
-| `supabase/functions/adapt-program/index.ts` | Phasenabhängige Science Bite Tiefe im Prompt ergänzen |
+| `src/pages/Dashboard.tsx` | Analysis-Laden: Fallback auf session_id; adapt-program Aufruf robuster; Fehler-Feedback |
+| `src/components/dashboard/DailyCheckin.tsx` | Loading-State statt stille Fallbacks; Fehlermeldung wenn keine KI-Tasks |
 
