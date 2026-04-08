@@ -440,37 +440,11 @@ const Dashboard = () => {
             .update({ user_id: user.id })
             .eq("id", data[0].id);
         }
-      } else if (user?.id) {
-        // Broader search: find ANY orphaned questionnaire with analysis (user_id is null)
-        const { data: orphaned } = await supabase
-          .from("questionnaire_responses")
-          .select("id, analysis")
-          .is("user_id", null)
-          .not("analysis", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (orphaned && orphaned.length > 0 && orphaned[0].analysis) {
-          setAnalysis(orphaned[0].analysis as unknown as Analysis);
-          // Claim it
-          await supabase
-            .from("questionnaire_responses")
-            .update({ user_id: user.id })
-            .eq("id", orphaned[0].id);
-          toast.success("Fragebogen-Daten mit deinem Profil verknüpft.");
-        } else {
-          // Fallback to localStorage
-          const savedAnalysis = localStorage.getItem("mindgame_analysis");
-          if (savedAnalysis) {
-            try { setAnalysis(JSON.parse(savedAnalysis)); } catch {}
-          }
-        }
       } else {
-        // Fallback to localStorage
-        const savedAnalysis = localStorage.getItem("mindgame_analysis");
-        if (savedAnalysis) {
-          try { setAnalysis(JSON.parse(savedAnalysis)); } catch {}
-        }
+        // No analysis found — redirect to questionnaire
+        toast.error("Keine Analyse gefunden. Bitte fülle den Fragebogen aus.");
+        navigate("/questionnaire");
+        return;
       }
     };
 
