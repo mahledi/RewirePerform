@@ -600,36 +600,26 @@ const Dashboard = () => {
     toast.info("KI passt Aufgaben an deinen Kalender an...");
 
     try {
-      // Update program settings — check-then-update/insert for authenticated users
-      if (user?.id) {
-        const { data: existing } = await supabase
-          .from("program_settings")
-          .select("id")
-          .eq("user_id", user.id)
-          .maybeSingle();
+      // Update program settings for authenticated user
+      const { data: existing } = await supabase
+        .from("program_settings")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
 
-        if (existing) {
-          await supabase.from("program_settings").update({
-            competition_date: competitionDate || null,
-            competition_name: competitionName || null,
-            updated_at: new Date().toISOString(),
-          }).eq("id", existing.id);
-        } else {
-          await supabase.from("program_settings").insert({
-            session_id: sessionId,
-            user_id: user.id,
-            competition_date: competitionDate || null,
-            competition_name: competitionName || null,
-          });
-        }
-      } else {
-        await supabase.from("program_settings").upsert({
-          session_id: sessionId,
-          user_id: null,
+      if (existing) {
+        await supabase.from("program_settings").update({
           competition_date: competitionDate || null,
           competition_name: competitionName || null,
           updated_at: new Date().toISOString(),
-        }, { onConflict: "session_id" });
+        }).eq("id", existing.id);
+      } else {
+        await supabase.from("program_settings").insert({
+          session_id: sessionId,
+          user_id: user!.id,
+          competition_date: competitionDate || null,
+          competition_name: competitionName || null,
+        });
       }
 
       // Load sport context from profile
