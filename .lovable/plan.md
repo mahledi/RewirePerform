@@ -1,60 +1,101 @@
 
 
-# End-to-End Pipeline Audit: Verbleibende Schwachstellen
+# Systemaudit: Verbleibende Bugs die den Launch blockieren
 
-## Aktuelle Situation nach bisherigen Fixes
+## Gefundene Probleme (4 Stück)
 
-Was bereits funktioniert:
-- `adapt-program` hat Null-Safety (Minimalprofil bei fehlender Analyse)
-- Dashboard sucht Analysis per `user_id` ODER `session_id`
-- Auth verlinkt anonyme Session-Daten beim Login
-- DailyCheckin hat Auto-Regeneration
+### BUG 1: Analysis-Update schlägt fehl (KRITISCH)
 
-## Verbleibende systemische Probleme (3 Stück)
+**Datei:** `src/components/questionnaire/QuestionnaireResults.tsx` Zeile 143-144
 
-### Problem 1: Fragebogen ist NICHT geschützt
-
-`/questionnaire` hat **keinen ProtectedRoute-Wrapper** (App.tsx Zeile 30). Das bedeutet:
-- User kann den Fragebogen OHNE Login ausfüllen
-- `user_id` wird `null` gespeichert (QuestionnaireResults.tsx Zeile 88)
-- Wenn der User sich DANACH registriert, hängt die Verknüpfung am `linkSessionData` in Auth.tsx — was nur funktioniert wenn die `session_id` übereinstimmt
-- **Wenn der User den Browser wechselt oder Cookies löscht: Analyse verloren**
-
-**Fix:** Questionnaire hinter `ProtectedRoute` setzen. Der User MUSS eingeloggt sein bevor er den Fragebogen ausfüllt. Dann ist `user_id` immer gesetzt.
-
-### Problem 2: Analysis-Update nutzt nur session_id
-
-QuestionnaireResults.tsx Zeile 136-140:
 ```typescript
-await supabase
-  .from("questionnaire_responses")
-  .update({ analysis: analysisResult })
-  .eq("session_id", sessionId);
+await updateQuery.eq("user_id", userId).order("created_at", { ascending: false }).limit(1);
 ```
 
-Wenn der User eingeloggt ist, sollte das Update per `user_id` erfolgen — nicht per `session_id`. Bei mehreren Einträgen mit der gleichen `session_id` (z.B. nach Neustart des Fragebogens) wird sonst der falsche Eintrag aktualisiert.
+**Problem:** `.order()` und `.limit()` funktionieren NICHT auf `.update()` Queries im Supabase JS Client. Das bedeutet: Die KI-Analyse wird generiert, aber **NICHT in der Datenbank gespeichert**. Der User sieht die Analyse einmalig, aber beim nächsten Dashboard-Besuch ist sie weg → Redirect zum Fragebogen → endlose Schleife.
 
-**Fix:** Wenn `user_id` vorhanden, per `user_id` + neuestem Eintrag updaten. Session_id nur als Fallback.
+**Fix:** Zuerst den neuesten Eintrag per SELECT finden, dann per `.eq("id", row.id)` updaten.
 
-### Problem 3: Dashboard redirect → ungeschützter Fragebogen
+---
 
-Dashboard.tsx Zeile 445-447: Wenn keine Analysis gefunden wird, redirect zu `/questionnaire`. Aber der Questionnaire ist nicht geschützt — der User könnte dort landen ohne Login-Kontext, den Fragebogen ausfüllen, und wieder das gleiche `user_id: null` Problem haben.
+### BUG 2: KI-Sync generiert generische Aufgaben (KRITISCH)
 
-**Fix:** Wird durch Problem 1 automatisch gelöst (ProtectedRoute).
+**Datei:** `src/pages/Dashboard.tsx` Zeile 635-642
+
+```typescript
+// syncTasks — fehlt sport, position, level!
+body: {
+  calendarEvents: events,
+  analysis,
+  competitionDate, competitionName,
+  // ← KEIN sport, position, level!
+}
+```
+
+**Problem:** Wenn ein Spieler den "KI-Sync" Button drückt, werden `sport`, `position` und `level` NICHT an die Edge Function übergeben. Die Aufgaben werden generisch generiert — kein Fußball, kein American Football, keine positionsspezifischen Szenarien. Nur beim initialen Kalender-Setup werden diese Parameter mitgeschickt.
+
+**Fix:** Im `syncTasks` die Sport-Daten aus dem `profiles`-Table laden und an `adapt-program` mitgeben — genau wie es `CalendarSetup` und `DailyCheckin.triggerRegeneration` bereits tun.
+
+---
+
+### BUG 3: Doppelte RLS Policies
+
+**Tabellen:** `questionnaire_responses`, `calendar_events`, `daily_checkins`, `personalized_tasks`, `program_settings`
+
+Jede Tabelle hat DOPPELTE Policies für die gleichen Operationen:
+- "Users can insert own responses" UND "Users insert own questionnaire_responses" (beide INSERT, gleicher Check)
+- "Users can view own responses" UND "Users read own questionnaire_responses" (beide SELECT, gleicher Check)
+
+**Problem:** Doppelte Policies können zu Verwirrung führen und machen Debugging schwieriger. Sie blockieren nicht direkt, aber bei zukünftigen Policy-Änderungen kann das zu Fehlern führen. Kein Showstopper, aber sollte bereinigt werden.
+
+**Fix:** Die duplizierten Policies per Migration entfernen.
+
+---
+
+### BUG 4: `program_settings` upsert ohne unique constraint
+
+**Datei:** `src/pages/Dashboard.tsx` Zeile 626-632
+
+```typescript
+await supabase.from("program_settings").upsert({...}, { onConflict: "session_id" });
+```
+
+**Problem:** Wenn es keinen UNIQUE constraint auf `session_id` in `program_settings` gibt, schlägt das `upsert` fehl. Betrifft nur den anonymen Pfad (der jetzt durch ProtectedRoute nicht mehr erreicht werden sollte), aber der Code existiert noch.
 
 ---
 
 ## Änderungen
 
-### 1. `src/App.tsx`
-- Questionnaire hinter `ProtectedRoute` setzen
+### 1. `src/components/questionnaire/QuestionnaireResults.tsx`
+- Analysis-Update fixen: Zuerst SELECT mit order/limit, dann UPDATE per `id`
 
-### 2. `src/components/questionnaire/QuestionnaireResults.tsx`
-- Analysis-Update: Per `user_id` wenn eingeloggt, per `session_id` nur als Fallback
-- Insert: Sicherstellen dass `user_id` immer gesetzt wird (User ist durch ProtectedRoute garantiert eingeloggt)
+### 2. `src/pages/Dashboard.tsx`
+- `syncTasks`: Sport, Position, Level aus `profiles` laden und an `adapt-program` übergeben
 
-### 3. Kein weiterer Edge Function oder Dashboard-Change nötig
-- adapt-program Null-Safety ist bereits implementiert
-- Dashboard Analysis-Lookup ist bereits robust
-- DailyCheckin Auto-Regeneration funktioniert
+### 3. DB-Migration: Doppelte RLS Policies bereinigen
+- Duplikate pro Tabelle identifizieren und entfernen
+
+### 4. Toter Code aufräumen
+- Anonyme upsert-Pfade entfernen (User ist durch ProtectedRoute immer eingeloggt)
+
+---
+
+## Was funktioniert
+
+Folgende Teile des Systems sind korrekt implementiert und ready:
+
+| Schritt | Status |
+|---|---|
+| Landing Page → Auth Redirect | OK |
+| Registrierung mit Sport + Teamcode | OK |
+| Sport wird in Profil gespeichert (Trigger + Backup) | OK |
+| Questionnaire ist geschützt (ProtectedRoute) | OK |
+| Fragebogen speichert mit user_id | OK |
+| KI-Analyse wird generiert (analyze-questionnaire) | OK |
+| Kalender-Setup schickt Sport an adapt-program | OK |
+| adapt-program hat Null-Safety | OK |
+| DailyCheckin Auto-Regeneration | OK |
+| Coach Dashboard / Team Management | OK |
+| RLS schützt Daten pro User | OK |
+| Pre/Post Assessment Tests | OK |
 
