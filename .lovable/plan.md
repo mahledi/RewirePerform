@@ -1,101 +1,75 @@
 
 
-# Systemaudit: Verbleibende Bugs die den Launch blockieren
+# Neue Seiten: Feedback, Datenschutz, FAQ & App-Installation + Persistent Login
 
-## Gefundene Probleme (4 Stück)
+## Übersicht
 
-### BUG 1: Analysis-Update schlägt fehl (KRITISCH)
+Vier neue Features, die das System für die Mannschaft komplett nutzbar machen:
 
-**Datei:** `src/components/questionnaire/QuestionnaireResults.tsx` Zeile 143-144
-
-```typescript
-await updateQuery.eq("user_id", userId).order("created_at", { ascending: false }).limit(1);
-```
-
-**Problem:** `.order()` und `.limit()` funktionieren NICHT auf `.update()` Queries im Supabase JS Client. Das bedeutet: Die KI-Analyse wird generiert, aber **NICHT in der Datenbank gespeichert**. Der User sieht die Analyse einmalig, aber beim nächsten Dashboard-Besuch ist sie weg → Redirect zum Fragebogen → endlose Schleife.
-
-**Fix:** Zuerst den neuesten Eintrag per SELECT finden, dann per `.eq("id", row.id)` updaten.
-
----
-
-### BUG 2: KI-Sync generiert generische Aufgaben (KRITISCH)
-
-**Datei:** `src/pages/Dashboard.tsx` Zeile 635-642
-
-```typescript
-// syncTasks — fehlt sport, position, level!
-body: {
-  calendarEvents: events,
-  analysis,
-  competitionDate, competitionName,
-  // ← KEIN sport, position, level!
-}
-```
-
-**Problem:** Wenn ein Spieler den "KI-Sync" Button drückt, werden `sport`, `position` und `level` NICHT an die Edge Function übergeben. Die Aufgaben werden generisch generiert — kein Fußball, kein American Football, keine positionsspezifischen Szenarien. Nur beim initialen Kalender-Setup werden diese Parameter mitgeschickt.
-
-**Fix:** Im `syncTasks` die Sport-Daten aus dem `profiles`-Table laden und an `adapt-program` mitgeben — genau wie es `CalendarSetup` und `DailyCheckin.triggerRegeneration` bereits tun.
-
----
-
-### BUG 3: Doppelte RLS Policies
-
-**Tabellen:** `questionnaire_responses`, `calendar_events`, `daily_checkins`, `personalized_tasks`, `program_settings`
-
-Jede Tabelle hat DOPPELTE Policies für die gleichen Operationen:
-- "Users can insert own responses" UND "Users insert own questionnaire_responses" (beide INSERT, gleicher Check)
-- "Users can view own responses" UND "Users read own questionnaire_responses" (beide SELECT, gleicher Check)
-
-**Problem:** Doppelte Policies können zu Verwirrung führen und machen Debugging schwieriger. Sie blockieren nicht direkt, aber bei zukünftigen Policy-Änderungen kann das zu Fehlern führen. Kein Showstopper, aber sollte bereinigt werden.
-
-**Fix:** Die duplizierten Policies per Migration entfernen.
-
----
-
-### BUG 4: `program_settings` upsert ohne unique constraint
-
-**Datei:** `src/pages/Dashboard.tsx` Zeile 626-632
-
-```typescript
-await supabase.from("program_settings").upsert({...}, { onConflict: "session_id" });
-```
-
-**Problem:** Wenn es keinen UNIQUE constraint auf `session_id` in `program_settings` gibt, schlägt das `upsert` fehl. Betrifft nur den anonymen Pfad (der jetzt durch ProtectedRoute nicht mehr erreicht werden sollte), aber der Code existiert noch.
-
----
+1. **Settings/Info-Seite** — Zentrale Anlaufstelle im Dashboard mit: Feedback-Formular, Datenschutz, FAQ, App-Installation-Anleitung
+2. **Persistent Login** — Session bleibt nach Browser-Schließung erhalten (kein erneutes Einloggen)
+3. **Feedback-System** — Spieler können strukturiertes Feedback geben (wird in DB gespeichert)
+4. **Navigation** — Zugang zu allem über das Dashboard (z.B. Settings-Icon)
 
 ## Änderungen
 
-### 1. `src/components/questionnaire/QuestionnaireResults.tsx`
-- Analysis-Update fixen: Zuerst SELECT mit order/limit, dann UPDATE per `id`
+### 1. Neue Seite: `src/pages/Settings.tsx`
+Einzelne übersichtliche Seite mit Accordion-Sektionen:
 
-### 2. `src/pages/Dashboard.tsx`
-- `syncTasks`: Sport, Position, Level aus `profiles` laden und an `adapt-program` übergeben
+**Feedback-Sektion:**
+- Formular mit Typ-Auswahl (Bug, Vorschlag, Allgemein) + Freitext
+- Wird in neuer `feedback` Tabelle gespeichert
+- Bestätigungs-Toast nach Absenden
 
-### 3. DB-Migration: Doppelte RLS Policies bereinigen
-- Duplikate pro Tabelle identifizieren und entfernen
+**Datenschutz-Sektion:**
+- Klare Erklärung was gespeichert wird, wer Zugriff hat
+- Was der Coach sieht vs. nicht sieht
+- Daten-Löschung: Wie man seinen Account löschen kann
+- DSGVO-konform formuliert
 
-### 4. Toter Code aufräumen
-- Anonyme upsert-Pfade entfernen (User ist durch ProtectedRoute immer eingeloggt)
+**FAQ-Sektion (Accordion):**
+- "Was ist MindGame?" — Intention und Ziel
+- "Wie funktioniert das Programm?" — Fragebogen → Analyse → tägliche Aufgaben
+- "Was sind die täglichen Aufgaben?" — Knowledge-First, dann Übung
+- "Wie verändert mich das?" — Wissenschaftliche Grundlage, Neuroplastizität
+- "Sieht mein Coach meine Antworten?" — Nein, nur Aktivitätsstatus
+- "Kann ich meine Daten löschen?" — Ja, Account-Löschung
+- "Wie oft sollte ich das machen?" — Täglich, 10-15 Min
 
----
+**App-Installation-Sektion:**
+- Schritt-für-Schritt Anleitung mit Screenshots-Beschreibung
+- iOS: Safari → Teilen → "Zum Home-Bildschirm"
+- Android: Chrome → Menü → "Zum Startbildschirm hinzufügen"
+- Erklärung dass es wie eine echte App funktioniert
 
-## Was funktioniert
+### 2. DB-Migration: `feedback` Tabelle
+```sql
+CREATE TABLE public.feedback (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  type text NOT NULL DEFAULT 'general',
+  message text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users insert own feedback" ON public.feedback FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users read own feedback" ON public.feedback FOR SELECT USING (auth.uid() = user_id);
+```
 
-Folgende Teile des Systems sind korrekt implementiert und ready:
+### 3. Persistent Login (`src/pages/Auth.tsx`)
+Beim `signInWithPassword` die Option `persistSession: true` ist bereits Standard bei Supabase — aber wir stellen sicher, dass kein Code die Session manuell invalidiert. Keine Code-Änderung nötig, da Supabase standardmäßig die Session in localStorage persistiert und automatisch Refresh-Tokens nutzt.
 
-| Schritt | Status |
+### 4. Route & Navigation
+- `src/App.tsx`: Neue Route `/settings` hinter `ProtectedRoute`
+- `src/pages/Dashboard.tsx`: Settings-Icon (Zahnrad) in der oberen Leiste verlinkt zu `/settings`
+- Back-Button auf Settings-Seite zurück zum Dashboard
+
+## Betroffene Dateien
+
+| Datei | Änderung |
 |---|---|
-| Landing Page → Auth Redirect | OK |
-| Registrierung mit Sport + Teamcode | OK |
-| Sport wird in Profil gespeichert (Trigger + Backup) | OK |
-| Questionnaire ist geschützt (ProtectedRoute) | OK |
-| Fragebogen speichert mit user_id | OK |
-| KI-Analyse wird generiert (analyze-questionnaire) | OK |
-| Kalender-Setup schickt Sport an adapt-program | OK |
-| adapt-program hat Null-Safety | OK |
-| DailyCheckin Auto-Regeneration | OK |
-| Coach Dashboard / Team Management | OK |
-| RLS schützt Daten pro User | OK |
-| Pre/Post Assessment Tests | OK |
+| `src/pages/Settings.tsx` | Neue Seite mit Feedback, Datenschutz, FAQ, App-Install |
+| `src/App.tsx` | Route `/settings` hinzufügen |
+| `src/pages/Dashboard.tsx` | Settings-Icon in Header |
+| DB-Migration | `feedback` Tabelle mit RLS |
 
