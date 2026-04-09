@@ -89,7 +89,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           {/* Category preview */}
           <div className="mb-12">
             <h3 className="font-heading font-semibold text-sm text-muted-foreground uppercase tracking-widest mb-4">
-              9 Bereiche · 42 Fragen
+              12 Bereiche · 78 Fragen
             </h3>
             <div className="flex flex-wrap gap-2">
               {[
@@ -102,6 +102,9 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                 "🌙 Erholung",
                 "🤝 Umfeld",
                 "🧭 Philosophie",
+                "🧠 Neurokognition",
+                "✨ Inner Excellence",
+                "🔬 Deep Profile",
               ].map((cat) => (
                 <span
                   key={cat}
