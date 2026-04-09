@@ -632,12 +632,39 @@ const Dashboard = () => {
         }, { onConflict: "session_id" });
       }
 
+      // Load sport context from profile
+      let sport: string | null = null;
+      let position: string | null = null;
+      let level: string | null = null;
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("sport, team")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (profile) {
+          sport = profile.sport;
+          position = profile.team;
+        }
+        // Try to get level from questionnaire answers
+        const savedAnswers = localStorage.getItem("mindgame_answers");
+        if (savedAnswers) {
+          try {
+            const parsed = JSON.parse(savedAnswers);
+            level = (parsed["sport-03"] as string) || null;
+          } catch {}
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke("adapt-program", {
         body: {
           calendarEvents: events,
           analysis,
           competitionDate: competitionDate || null,
           competitionName: competitionName || null,
+          sport,
+          position,
+          level,
         },
       });
 

@@ -136,14 +136,25 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         setAnalysis(analysisResult);
 
         // Save analysis back to database — prefer user_id match
-        const updateQuery = supabase
-          .from("questionnaire_responses")
-          .update({ analysis: analysisResult as any });
-
         if (userId) {
-          await updateQuery.eq("user_id", userId).order("created_at", { ascending: false }).limit(1);
+          const { data: latestResponse } = await supabase
+            .from("questionnaire_responses")
+            .select("id")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (latestResponse && latestResponse.length > 0) {
+            await supabase
+              .from("questionnaire_responses")
+              .update({ analysis: analysisResult as any })
+              .eq("id", latestResponse[0].id);
+          }
         } else {
-          await updateQuery.eq("session_id", sessionId);
+          await supabase
+            .from("questionnaire_responses")
+            .update({ analysis: analysisResult as any })
+            .eq("session_id", sessionId);
         }
 
         // Keep localStorage as fallback only
