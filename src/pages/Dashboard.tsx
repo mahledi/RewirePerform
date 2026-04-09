@@ -776,7 +776,7 @@ const Dashboard = () => {
             <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Tests">
               <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
             </button>
-            <button onClick={() => setShowSettings(!showSettings)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+            <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Info & Hilfe">
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
