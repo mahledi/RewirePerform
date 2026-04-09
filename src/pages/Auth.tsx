@@ -132,6 +132,11 @@ const Auth = () => {
           role: selectedRole,
         }).then(() => {});
 
+        // Write sport to profiles directly (backup in case trigger doesn't catch it)
+        if (sport && data.user) {
+          await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
+        }
+
         // Join team if code provided
         if (teamCode.trim()) {
           const { data: team } = await supabase
