@@ -561,10 +561,27 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No tool call in AI response");
-
-    const result = JSON.parse(toolCall.function.arguments);
+    const message = data.choices?.[0]?.message;
+    const toolCall = message?.tool_calls?.[0];
+    
+    let result;
+    if (toolCall) {
+      result = JSON.parse(toolCall.function.arguments);
+    } else if (message?.content) {
+      // Fallback: try to parse content directly as JSON
+      console.log("No tool call, attempting content parse fallback");
+      const content = message.content;
+      const jsonMatch = content.match(/\{[\s\S]*"daily_plans"[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        console.error("AI response content:", content.substring(0, 500));
+        throw new Error("No tool call and no parseable JSON in AI response");
+      }
+    } else {
+      console.error("AI response structure:", JSON.stringify(data).substring(0, 500));
+      throw new Error("No usable AI response");
+    }
 
     // Enforce max 3 tasks per day
     if (result.daily_plans) {
