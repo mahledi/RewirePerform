@@ -80,12 +80,14 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Save answers to database with user_id ALWAYS if logged in
+        // User is guaranteed to be logged in (ProtectedRoute)
+        const userId = user?.id || null;
+
         const { error: insertError } = await supabase
           .from("questionnaire_responses")
           .insert({
             session_id: sessionId,
-            user_id: user?.id || null,
+            user_id: userId,
             answers: answers as any,
           });
 
@@ -133,11 +135,16 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         const analysisResult = data.analysis as Analysis;
         setAnalysis(analysisResult);
 
-        // Save analysis back to database
-        await supabase
+        // Save analysis back to database — prefer user_id match
+        const updateQuery = supabase
           .from("questionnaire_responses")
-          .update({ analysis: analysisResult as any })
-          .eq("session_id", sessionId);
+          .update({ analysis: analysisResult as any });
+
+        if (userId) {
+          await updateQuery.eq("user_id", userId).order("created_at", { ascending: false }).limit(1);
+        } else {
+          await updateQuery.eq("session_id", sessionId);
+        }
 
         // Keep localStorage as fallback only
         localStorage.setItem("mindgame_analysis", JSON.stringify(analysisResult));
