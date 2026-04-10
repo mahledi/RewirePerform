@@ -1,75 +1,83 @@
 
 
-# Neue Seiten: Feedback, Datenschutz, FAQ & App-Installation + Persistent Login
+# Plan: Vollständige Projekt-Dokumentation exportieren
 
-## Übersicht
+Ich werde ein umfassendes Textdokument erstellen (`/mnt/documents/MindGame_Projektdokumentation.md`), das ALLES enthält, was ein externes KI-System braucht, um das Projekt vollständig zu verstehen. Hier ist der Inhalt, den ich zusammenstellen werde:
 
-Vier neue Features, die das System für die Mannschaft komplett nutzbar machen:
+## Inhalt der Dokumentation
 
-1. **Settings/Info-Seite** — Zentrale Anlaufstelle im Dashboard mit: Feedback-Formular, Datenschutz, FAQ, App-Installation-Anleitung
-2. **Persistent Login** — Session bleibt nach Browser-Schließung erhalten (kein erneutes Einloggen)
-3. **Feedback-System** — Spieler können strukturiertes Feedback geben (wird in DB gespeichert)
-4. **Navigation** — Zugang zu allem über das Dashboard (z.B. Settings-Icon)
+### 1. Projekt-Übersicht
+- MindGame = wissenschaftlich fundiertes Mentaltraining-Programm für Sportler (14-18 Jahre)
+- 56-Tage / 8-Wochen-Programm in 4 neurokognitiv periodisierten Phasen
+- Dark-Theme Web-App (React/Vite/Tailwind), deutsche UI, Supabase Backend
+- Zwei Rollen: Athlet + Coach
 
-## Änderungen
+### 2. Komplettes Tech-Stack & Design System
+- React 18, Vite 5, TypeScript 5, Tailwind CSS v3, Framer Motion
+- Fonts: Space Grotesk (Headings), Inter (Body)
+- Primary Color: HSL 160 84% 39% (Grün), Dark Background: HSL 220 20% 7%
+- Alle CSS-Variablen und Custom Utilities
 
-### 1. Neue Seite: `src/pages/Settings.tsx`
-Einzelne übersichtliche Seite mit Accordion-Sektionen:
+### 3. Komplettes Datenbank-Schema (alle 11 Tabellen)
+- assessments, calendar_events, daily_checkins, deep_profile_assessments, feedback, personalized_tasks, profiles, program_settings, questionnaire_responses, team_members, teams, user_roles
+- Alle Spalten, Typen, Relationships
+- Enum: app_role (athlete | coach)
+- DB Functions: get_team_stats, get_user_role, has_role
 
-**Feedback-Sektion:**
-- Formular mit Typ-Auswahl (Bug, Vorschlag, Allgemein) + Freitext
-- Wird in neuer `feedback` Tabelle gespeichert
-- Bestätigungs-Toast nach Absenden
+### 4. Alle Seiten & Routing (komplett)
+- `/` Landing Page, `/auth` Login/Signup, `/questionnaire` Fragebogen, `/dashboard` Hauptseite, `/assessment` Wissenschaftliche Tests, `/coach` Trainer-Dashboard, `/deep-profile` Deep Profiling, `/progress` Fortschritt, `/settings` Info & Hilfe
 
-**Datenschutz-Sektion:**
-- Klare Erklärung was gespeichert wird, wer Zugriff hat
-- Was der Coach sieht vs. nicht sieht
-- Daten-Löschung: Wie man seinen Account löschen kann
-- DSGVO-konform formuliert
+### 5. Alle Edge Functions (4 Stück, vollständiger Code)
+- `adapt-program` — KI-Aufgabengenerierung (Gemini Pro, ~600 Zeilen, sportartspezifisch)
+- `analyze-questionnaire` — KI-Fragebogenanalyse (Gemini Flash)
+- `generate-transformation-summary` — Baseline vs. Re-Test Zusammenfassung
+- `team-mental-state` — Aggregierte Team-Statistiken für Coach
 
-**FAQ-Sektion (Accordion):**
-- "Was ist MindGame?" — Intention und Ziel
-- "Wie funktioniert das Programm?" — Fragebogen → Analyse → tägliche Aufgaben
-- "Was sind die täglichen Aufgaben?" — Knowledge-First, dann Übung
-- "Wie verändert mich das?" — Wissenschaftliche Grundlage, Neuroplastizität
-- "Sieht mein Coach meine Antworten?" — Nein, nur Aktivitätsstatus
-- "Kann ich meine Daten löschen?" — Ja, Account-Löschung
-- "Wie oft sollte ich das machen?" — Täglich, 10-15 Min
+### 6. Fragebogen-System (komplett)
+- 12 Kategorien, 78 Fragen (alle IDs, Texte, Typen, Optionen)
+- Kategorien: identity, resilience, focus, emotions, motivation, competition, recovery, environment, philosophy, neurocognition, inner_excellence, deep_profile
+- Deep Profile Question IDs: dp-01 bis dp-04
 
-**App-Installation-Sektion:**
-- Schritt-für-Schritt Anleitung mit Screenshots-Beschreibung
-- iOS: Safari → Teilen → "Zum Home-Bildschirm"
-- Android: Chrome → Menü → "Zum Startbildschirm hinzufügen"
-- Erklärung dass es wie eine echte App funktioniert
+### 7. Wissenschaftliche Assessments (3 validierte Instrumente)
+- CSAI-2R (17 Items, 3 Subskalen)
+- SMTQ (14 Items, 3 Subskalen, reversed Items)
+- Flow-Kurzskala FKS (13 Items, 3 Subskalen)
+- Scoring-Algorithmus
 
-### 2. DB-Migration: `feedback` Tabelle
-```sql
-CREATE TABLE public.feedback (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  type text NOT NULL DEFAULT 'general',
-  message text NOT NULL,
-  created_at timestamptz DEFAULT now()
-);
-ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users insert own feedback" ON public.feedback FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users read own feedback" ON public.feedback FOR SELECT USING (auth.uid() = user_id);
-```
+### 8. Daily Check-in System
+- 5-Step Flow: Mood → Energy → Knowledge Bites → Tasks → Reflection
+- Knowledge-First Prinzip (alle Science Bites lesen vor Aufgabenfreischaltung)
+- 3 Tasks pro Tag (1x aMCC-Challenge mit flame-Icon Pflicht)
+- Auto-Regeneration bei fehlenden personalisierten Tasks
+- Fallback-Tasks für Training/Ruhe/Wettkampf
 
-### 3. Persistent Login (`src/pages/Auth.tsx`)
-Beim `signInWithPassword` die Option `persistSession: true` ist bereits Standard bei Supabase — aber wir stellen sicher, dass kein Code die Session manuell invalidiert. Keine Code-Änderung nötig, da Supabase standardmäßig die Session in localStorage persistiert und automatisch Refresh-Tokens nutzt.
+### 9. aMCC-Training & Aufgabenstruktur
+- Jede Aufgabe: title, description, steps[], duration, when_to_use, science_bite, icon, phase
+- Icons: brain, eye, flame, heart, target, wind, sunrise, book, sparkles, shield
+- Phasenabhängige Komplexität
 
-### 4. Route & Navigation
-- `src/App.tsx`: Neue Route `/settings` hinter `ProtectedRoute`
-- `src/pages/Dashboard.tsx`: Settings-Icon (Zahnrad) in der oberen Leiste verlinkt zu `/settings`
-- Back-Button auf Settings-Seite zurück zum Dashboard
+### 10. Coach/Team-System
+- 6-stellige Zugangscodes (auto-generiert)
+- Privacy: Coach sieht NIE individuelle Antworten/Reflexionen/Stimmung
+- Team Mental State: Aggregierte Energie/Stimmung/Fokus/Resilienz Trends
+- AI Vibe Summary aus anonymisierten Reflexionen
+- Inner Excellence Team-Durchschnitte
 
-## Betroffene Dateien
+### 11. Auth & Rollen
+- Email/Password Auth, Auto-Confirm aktiviert
+- Rollen über user_roles Tabelle (NICHT auf profiles)
+- DB Trigger: auto-assign role aus raw_user_meta_data bei Signup
+- Session-Modell: localStorage session_id + auth user_id (Dual-Support)
 
-| Datei | Änderung |
-|---|---|
-| `src/pages/Settings.tsx` | Neue Seite mit Feedback, Datenschutz, FAQ, App-Install |
-| `src/App.tsx` | Route `/settings` hinzufügen |
-| `src/pages/Dashboard.tsx` | Settings-Icon in Header |
-| DB-Migration | `feedback` Tabelle mit RLS |
+### 12. Personalization Pipeline
+- Fragebogen → KI-Analyse → Calendar Setup → KI-Aufgabengenerierung
+- Inner Excellence Profil: growth_mindset_score, presence_level, ego_freedom_score, emotional_control_score, core_insight
+- Sport/Position/Level-spezifische Aufgaben (American Football mit QB/WR/RB/Defense Beispielen, Fußball mit Torwart/Stürmer Beispielen)
 
+### 13. Alle Komponenten-Dateien (Auflistung + Zweck)
+### 14. Bekannte Patterns & Konventionen
+### 15. Vollständiger Code aller Kernseiten und Edge Functions
+
+## Umsetzung
+
+Ein einzelnes Markdown-Dokument (~150-200KB) mit allem oben Genannten, generiert als `/mnt/documents/MindGame_Projektdokumentation.md`.
