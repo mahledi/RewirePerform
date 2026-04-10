@@ -6,8 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { questions, deepProfileQuestionIds } from "@/data/questionnaireData";
 
-const SESSION_KEY = "mindgame_session_id";
-
 interface ProfileData {
   timing: string;
   answers: Record<string, string | string[] | number>;
@@ -23,8 +21,6 @@ const Progress = () => {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  const sessionId = useMemo(() => localStorage.getItem(SESSION_KEY) || "", []);
-
   const deepQuestions = useMemo(
     () => questions.filter((q) => deepProfileQuestionIds.includes(q.id)),
     []
@@ -35,18 +31,13 @@ const Progress = () => {
   }, []);
 
   const loadProfiles = async () => {
-    let q = supabase
+    if (!user?.id) return;
+    const { data } = await supabase
       .from("deep_profile_assessments")
       .select("timing, answers, created_at")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
-    if (user?.id) {
-      q = q.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
-    } else {
-      q = q.eq("session_id", sessionId);
-    }
-
-    const { data } = await q;
     if (data) {
       const b = data.find((d) => d.timing === "baseline");
       const r = data.find((d) => d.timing === "retest");
@@ -140,7 +131,6 @@ const Progress = () => {
           </p>
         </motion.div>
 
-        {/* AI Summary */}
         {retest && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-card border-glow mb-8">
             <div className="flex items-center gap-2 mb-4">
@@ -158,7 +148,6 @@ const Progress = () => {
           </motion.div>
         )}
 
-        {/* Comparison Cards */}
         <div className="space-y-6">
           {deepQuestions.map((q, i) => {
             const baseAnswer = baseline?.answers[q.id];
@@ -177,7 +166,6 @@ const Progress = () => {
                 <p className="text-sm font-medium mb-4">{q.question}</p>
 
                 <div className={`grid ${retest ? "grid-cols-2 gap-4" : "grid-cols-1"}`}>
-                  {/* Baseline */}
                   <div className="space-y-1">
                     <span className="text-xs font-medium text-primary">Baseline</span>
                     <div className="p-3 rounded-xl bg-secondary/50">
@@ -195,7 +183,6 @@ const Progress = () => {
                     <span className="text-[10px] text-muted-foreground">{baseline?.created_at ? new Date(baseline.created_at).toLocaleDateString("de-DE") : ""}</span>
                   </div>
 
-                  {/* Re-Test */}
                   {retest && (
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
@@ -223,7 +210,6 @@ const Progress = () => {
           })}
         </div>
 
-        {/* Export hint */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8 p-4 rounded-xl bg-secondary/30 border border-border/50">
           <div className="flex items-start gap-3">
             <FileText className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
@@ -233,7 +219,6 @@ const Progress = () => {
           </div>
         </motion.div>
 
-        {/* CTA for re-test if not done */}
         {!retest && (
           <div className="text-center mt-8">
             <p className="text-xs text-muted-foreground mb-4">Der Re-Test wird nach Ablauf deines 56-Tage-Programms freigeschaltet.</p>

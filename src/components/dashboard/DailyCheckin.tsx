@@ -9,13 +9,13 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 
 type EventType = "training" | "rest" | "competition";
 
 interface DailyCheckinProps {
   eventType: EventType;
-  sessionId: string;
   date: Date;
   onClose: () => void;
 }
@@ -60,8 +60,9 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
   competition: { label: "Wettkampftag", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
-const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps) => {
+const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
@@ -77,35 +78,34 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
 
   const config = typeConfig[eventType];
 
+  // Redirect if not logged in
   useEffect(() => {
-    loadPersonalizedTasks();
+    if (!user?.id) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (user?.id) loadPersonalizedTasks();
   }, []);
 
   const loadPersonalizedTasks = async () => {
+    if (!user?.id) return;
     const dateStr = format(date, "yyyy-MM-dd");
-    let q = supabase
+    const { data } = await supabase
       .from("personalized_tasks")
       .select("tasks")
-      .eq("date", dateStr);
-
-    if (user?.id) {
-      q = q.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
-    } else {
-      q = q.eq("session_id", sessionId);
-    }
-
-    const { data } = await q.maybeSingle();
+      .eq("date", dateStr)
+      .eq("user_id", user.id)
+      .maybeSingle();
 
     if (data?.tasks && Array.isArray(data.tasks) && data.tasks.length > 0) {
       const loaded = (data.tasks as unknown as CheckinTask[]).slice(0, 3);
       setTasks(loaded);
       setUsingFallback(false);
-    } else if (user?.id) {
-      // No personalized tasks found — try to auto-regenerate
-      setUsingFallback(true);
-      await triggerRegeneration();
     } else {
       setUsingFallback(true);
+      await triggerRegeneration();
     }
     setLoadingTasks(false);
   };
@@ -115,7 +115,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     setRegenerating(true);
 
     try {
-      // Get analysis
       const { data: qr } = await supabase
         .from("questionnaire_responses")
         .select("analysis")
@@ -125,7 +124,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         .limit(1)
         .maybeSingle();
 
-      // Get calendar events
       const { data: calEvents } = await supabase
         .from("calendar_events")
         .select("*")
@@ -136,7 +134,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         return;
       }
 
-      // Get sport from profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("sport, team")
@@ -153,19 +150,16 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
       });
 
       if (!taskError && taskData?.daily_plans) {
-        // Save tasks — delete old AFTER successful insert
         const taskInserts = taskData.daily_plans.map((plan: any) => ({
-          session_id: sessionId,
+          session_id: user.id,
           user_id: user.id,
           date: plan.date,
           event_type: plan.event_type,
           tasks: plan.tasks,
         }));
-        // Delete old tasks only after new ones are ready
         await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
         await supabase.from("personalized_tasks").insert(taskInserts);
 
-        // Reload today's tasks
         const dateStr = format(date, "yyyy-MM-dd");
         const todayPlan = taskData.daily_plans.find((p: any) => p.date === dateStr);
         if (todayPlan?.tasks) {
@@ -187,13 +181,14 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
   };
 
   const saveCheckin = async () => {
+    if (!user?.id) return;
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
 
     const payload: any = {
-      session_id: sessionId,
-      user_id: user?.id ?? null,
+      session_id: user.id,
+      user_id: user.id,
       date: dateStr,
       event_type: eventType,
       mood_before: moodBefore,
@@ -205,32 +200,24 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
 
     let error: any = null;
 
-    if (user?.id) {
-      const { data: existing } = await supabase
-        .from("daily_checkins")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("date", dateStr)
-        .maybeSingle();
+    const { data: existing } = await supabase
+      .from("daily_checkins")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("date", dateStr)
+      .maybeSingle();
 
-      if (existing) {
-        const { error: updateError } = await supabase
-          .from("daily_checkins")
-          .update(payload)
-          .eq("id", existing.id);
-        error = updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from("daily_checkins")
-          .insert(payload);
-        error = insertError;
-      }
+    if (existing) {
+      const { error: updateError } = await supabase
+        .from("daily_checkins")
+        .update(payload)
+        .eq("id", existing.id);
+      error = updateError;
     } else {
-      const { error: upsertError } = await supabase.from("daily_checkins").upsert(
-        payload,
-        { onConflict: "session_id,date" }
-      );
-      error = upsertError;
+      const { error: insertError } = await supabase
+        .from("daily_checkins")
+        .insert(payload);
+      error = insertError;
     }
 
     setSaving(false);
@@ -283,7 +270,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
         exit={{ opacity: 0, x: -50 }}
         className="space-y-6"
       >
-        {/* Header */}
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
             <IconComp className="w-6 h-6 text-primary" />
@@ -294,7 +280,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           </div>
         </div>
 
-        {/* Meta: Duration & When */}
         <div className="grid grid-cols-2 gap-3">
           {task.duration && (
             <div className="p-4 rounded-2xl bg-secondary/30 border border-border/30">
@@ -316,7 +301,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           )}
         </div>
 
-        {/* Steps */}
         {task.steps && task.steps.length > 0 && (
           <div className="p-5 rounded-2xl bg-gradient-card border-glow">
             <h3 className="text-sm font-heading font-semibold mb-4">So geht's:</h3>
@@ -333,7 +317,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           </div>
         )}
 
-        {/* Science Bite (collapsible) */}
         {task.science_bite && (
           <button
             onClick={() => setShowScience(!showScience)}
@@ -354,7 +337,6 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           </button>
         )}
 
-        {/* Mark Complete Button */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -382,79 +364,88 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
     const IconComp = iconMap[task.icon] || Brain;
 
     const handleToggle = () => {
+      if (!expanded) onRead();
       setExpanded(!expanded);
-      if (!isRead) onRead();
     };
 
     return (
-      <button
-        onClick={handleToggle}
-        className={`w-full text-left rounded-2xl transition-all ${
-          expanded
-            ? "bg-accent/20 border border-accent/30 p-5"
-            : "bg-gradient-card border-glow p-4 hover:bg-secondary/50 active:scale-[0.98]"
+      <motion.div
+        layout
+        className={`rounded-2xl transition-all overflow-hidden ${
+          expanded ? "bg-accent/10 border border-accent/20" : "bg-gradient-card border-glow"
         }`}
       >
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-            isRead ? "bg-primary/20" : "bg-secondary"
+        <button onClick={handleToggle} className="w-full text-left p-4 flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+            isRead ? "bg-primary" : "bg-secondary"
           }`}>
-            <IconComp className={`w-5 h-5 ${isRead ? "text-primary" : "text-muted-foreground"}`} />
+            {isRead ? <CheckCircle2 className="w-5 h-5 text-primary-foreground" /> : <IconComp className="w-5 h-5 text-muted-foreground" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">{task.title}</p>
-            <span className="text-xs text-muted-foreground">Warum das wirkt</span>
+            <p className={`text-sm font-semibold ${isRead ? "text-primary" : ""}`}>{task.title}</p>
+            <p className="text-xs text-muted-foreground truncate">{task.description}</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isRead && <CheckCircle2 className="w-4 h-4 text-primary" />}
-            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
-          </div>
-        </div>
-        {expanded && (
-          <div className="mt-4 pl-[52px]">
-            <p className="text-sm text-foreground leading-relaxed">
-              {task.science_bite}
-            </p>
-          </div>
-        )}
-      </button>
+          <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence>
+          {expanded && task.science_bite && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="px-4 pb-4 pt-0">
+                <div className="flex items-start gap-2 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">{task.science_bite}</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     );
   };
 
-  // ─── Knowledge Step (step 2) ───────────────────────────
+  // ─── Knowledge Step (Step 2) ───────────────────────────
   const KnowledgeStep = () => {
     const allRead = tasks.every((t) => readBites.includes(t.id));
 
     return (
       <motion.div key="knowledge" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-        <div className="flex items-center gap-3 mb-2">
-          <Lightbulb className="w-6 h-6 text-primary" />
-          <h2 className="font-heading text-2xl font-bold">Verstehe, was du trainierst</h2>
-        </div>
-        {regenerating ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Personalisierte Aufgaben werden generiert...</span>
+        <h2 className="font-heading text-2xl font-bold mb-2">Wissen zuerst.</h2>
+        <p className="text-muted-foreground mb-6 text-sm">
+          Lies die wissenschaftlichen Hintergründe deiner heutigen Aufgaben. Erst wenn du alle gelesen hast, werden die Aufgaben freigeschaltet.
+        </p>
+
+        {loadingTasks ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
-        ) : usingFallback ? (
-          <p className="text-sm text-yellow-500 mb-6">
-            ⚠ Standard-Aufgaben — personalisierte Aufgaben konnten nicht geladen werden.
-          </p>
         ) : (
-          <p className="text-muted-foreground text-sm mb-6">
-            Bevor du loslegst – hier ist die Wissenschaft hinter deinen heutigen Übungen.
-          </p>
+          <div className="space-y-3 mb-8">
+            {tasks.map((task) => (
+              <KnowledgeBiteCard
+                key={task.id}
+                task={task}
+                isRead={readBites.includes(task.id)}
+                onRead={() => setReadBites((prev) => prev.includes(task.id) ? prev : [...prev, task.id])}
+              />
+            ))}
+          </div>
         )}
 
-        <div className="space-y-3">
-          {tasks.map((task) => (
-            <KnowledgeBiteCard
-              key={task.id}
-              task={task}
-              isRead={readBites.includes(task.id)}
-              onRead={() => setReadBites((prev) => [...prev, task.id])}
-            />
-          ))}
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+          <span>{readBites.length} / {tasks.length} gelesen</span>
+          {!allRead && <span className="text-primary">Alle lesen um fortzufahren</span>}
+        </div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
+          <motion.div
+            className="h-full bg-primary rounded-full"
+            animate={{ width: `${tasks.length > 0 ? (readBites.length / tasks.length) * 100 : 0}%` }}
+          />
         </div>
 
         <motion.button
@@ -462,23 +453,17 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           whileTap={allRead ? { scale: 0.98 } : {}}
           onClick={() => allRead && setStep(3)}
           disabled={!allRead}
-          className={`w-full mt-6 flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
-            allRead
-              ? "bg-primary text-primary-foreground hover:shadow-glow"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
+          className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
+            allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         >
-          {allRead ? (
-            <><Sparkles className="w-5 h-5" /> Bereit für die Übungen</>
-          ) : (
-            <>{readBites.length}/{tasks.length} gelesen</>
-          )}
+          {allRead ? (<>Aufgaben freischalten <Sparkles className="w-5 h-5" /></>) : (<>Alle Knowledge Bites lesen</>)}
         </motion.button>
       </motion.div>
     );
   };
 
-  // ─── Task Dashboard (step 3) ──────────────────────────
+  // ─── Task Dashboard (Step 3) ──────────────────────────
   const TaskDashboard = () => {
     const completedCount = completedTasks.length;
     const totalCount = tasks.length;
@@ -487,16 +472,21 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-heading text-2xl font-bold">Deine Aufgaben</h2>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10">
-            <span className="text-sm font-bold text-primary">{completedCount}/{totalCount}</span>
-          </div>
+          {usingFallback && (
+            <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-secondary">Standard</span>
+          )}
         </div>
-        <p className="text-muted-foreground text-sm mb-1">
-          {loadingTasks ? "Aufgaben werden geladen..." : "Tippe auf eine Aufgabe für Details."}
-        </p>
+        <p className="text-muted-foreground mb-6 text-sm">Tippe auf eine Aufgabe für die Anleitung.</p>
 
-        {/* Progress bar */}
-        <div className="w-full h-1.5 rounded-full bg-secondary/50 mb-6 overflow-hidden">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+          <span>{completedCount} / {totalCount} erledigt</span>
+          {regenerating && (
+            <span className="flex items-center gap-1 text-primary">
+              <Loader2 className="w-3 h-3 animate-spin" /> Generiert...
+            </span>
+          )}
+        </div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
           <motion.div
             className="h-full rounded-full bg-primary"
             initial={{ width: 0 }}

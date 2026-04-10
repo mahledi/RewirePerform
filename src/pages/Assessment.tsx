@@ -30,25 +30,14 @@ const Assessment = () => {
   const [saving, setSaving] = useState(false);
   const [savedScores, setSavedScores] = useState<{ subscaleScores: Record<string, number>; totalScore: number } | null>(null);
 
-  // Sequential mode state
   const [sequenceIndex, setSequenceIndex] = useState(0);
   const [sequenceResults, setSequenceResults] = useState<SavedResult[]>([]);
 
-  // Comparison data
   const [preResults, setPreResults] = useState<SavedResult[]>([]);
   const [postResults, setPostResults] = useState<SavedResult[]>([]);
 
-  const sessionId = (() => {
-    let id = localStorage.getItem("mindgame_session_id");
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem("mindgame_session_id", id);
-    }
-    return id;
-  })();
   const isSequentialMode = mode !== null;
 
-  // Load comparison data for post mode
   useEffect(() => {
     if (mode === "post") {
       loadPreResults();
@@ -56,14 +45,12 @@ const Assessment = () => {
   }, [mode]);
 
   const loadPreResults = async () => {
-    let q = supabase
+    if (!user?.id) return;
+    const { data } = await supabase
       .from("assessments")
       .select("assessment_type, scores, total_score, timing")
-      .eq("timing", "pre");
-    q = user?.id
-      ? q.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
-      : q.eq("session_id", sessionId);
-    const { data } = await q;
+      .eq("timing", "pre")
+      .eq("user_id", user.id);
     if (data) setPreResults(data as SavedResult[]);
   };
 
@@ -84,15 +71,15 @@ const Assessment = () => {
   };
 
   const finishTest = async () => {
-    if (!selectedTest) return;
+    if (!selectedTest || !user?.id) return;
     setSaving(true);
 
     const scores = calculateScores(selectedTest, answers);
     setSavedScores(scores);
 
     await supabase.from("assessments").insert({
-      user_id: user?.id || null,
-      session_id: sessionId,
+      user_id: user.id,
+      session_id: user.id,
       assessment_type: selectedTest.id,
       timing,
       answers: answers as any,
@@ -114,20 +101,17 @@ const Assessment = () => {
       if (sequenceIndex < allAssessments.length - 1) {
         setPhase("results");
       } else {
-        // All tests done
         if (mode === "post") {
-          // Load all data for comparison
-          let preQ = supabase.from("assessments").select("assessment_type, scores, total_score, timing").eq("timing", "pre");
-          let postQ = supabase.from("assessments").select("assessment_type, scores, total_score, timing").eq("timing", "post");
-          if (user?.id) {
-            preQ = preQ.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`);
-            postQ = postQ.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`);
-          } else {
-            preQ = preQ.eq("session_id", sessionId);
-            postQ = postQ.eq("session_id", sessionId);
-          }
-          const { data: allPre } = await preQ;
-          const { data: allPost } = await postQ;
+          const { data: allPre } = await supabase
+            .from("assessments")
+            .select("assessment_type, scores, total_score, timing")
+            .eq("timing", "pre")
+            .eq("user_id", user.id);
+          const { data: allPost } = await supabase
+            .from("assessments")
+            .select("assessment_type, scores, total_score, timing")
+            .eq("timing", "post")
+            .eq("user_id", user.id);
           setPreResults((allPre || []) as SavedResult[]);
           setPostResults((allPost || []) as SavedResult[]);
           setPhase("comparison");
@@ -409,7 +393,6 @@ const Assessment = () => {
                         const postVal = postScores[sub.id] || 0;
                         const diff = postVal - preVal;
                         const [, max] = test.scaleRange;
-                        // For anxiety scales, decrease is good
                         const isAnxietyScale = sub.id.includes("anxiety") || sub.id.includes("somatic");
                         const isImproved = isAnxietyScale ? diff < 0 : diff > 0;
                         const isDeclined = isAnxietyScale ? diff > 0 : diff < 0;
