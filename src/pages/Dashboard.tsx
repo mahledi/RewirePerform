@@ -592,6 +592,10 @@ const Dashboard = () => {
   }, [setupMode, loading, sessionId, user?.id]);
 
   const syncTasks = async () => {
+    if (!user?.id) {
+      toast.error("Bitte melde dich an um den KI-Sync zu nutzen.");
+      return;
+    }
     if (!analysis) {
       toast.error("Keine Analyse vorhanden. Bitte fülle zuerst den Fragebogen aus.");
       return;
@@ -636,13 +640,16 @@ const Dashboard = () => {
           sport = profile.sport;
           position = profile.team;
         }
-        // Try to get level from questionnaire answers
-        const savedAnswers = localStorage.getItem("mindgame_answers");
-        if (savedAnswers) {
-          try {
-            const parsed = JSON.parse(savedAnswers);
-            level = (parsed["sport-03"] as string) || null;
-          } catch {}
+      // Load level from questionnaire_responses in DB
+        const { data: qAnswers } = await supabase
+          .from("questionnaire_responses")
+          .select("answers")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (qAnswers?.answers) {
+          level = ((qAnswers.answers as Record<string, unknown>)["sport-03"] as string) || null;
         }
       }
 
