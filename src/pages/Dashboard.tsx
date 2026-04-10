@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
@@ -14,7 +14,6 @@ type EventType = "training" | "rest" | "competition";
 
 interface CalendarEvent {
   id: string;
-  session_id: string;
   date: string;
   event_type: EventType;
   title: string | null;
@@ -32,18 +31,8 @@ interface Analysis {
   dominant_category: string;
 }
 
-const SESSION_KEY = "mindgame_session_id";
 const SETUP_DONE_KEY = "mindgame_setup_done";
 const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
-
-function getSessionId(): string {
-  let id = localStorage.getItem(SESSION_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(SESSION_KEY, id);
-  }
-  return id;
-}
 
 const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { label: "Training", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
@@ -53,12 +42,11 @@ const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; col
 
 // ─── Calendar Setup ─────────────────────────────────────
 interface CalendarSetupProps {
-  sessionId: string;
   analysis: Analysis | null;
   onComplete: (events: CalendarEvent[]) => void;
 }
 
-const CalendarSetup = ({ sessionId, analysis, onComplete }: CalendarSetupProps) => {
+const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
   const today = startOfDay(new Date());
   const endDate = addDays(today, 55);
   const [currentMonth, setCurrentMonth] = useState(today);
