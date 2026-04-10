@@ -87,8 +87,8 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
 
     // Save calendar events — use upsert with user_id-based conflict for authenticated users
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
-      session_id: sessionId,
-      user_id: user?.id || null,
+      session_id: user!.id,
+      user_id: user!.id,
       date,
       event_type: type,
       title: eventConfig[type].label,
@@ -127,7 +127,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         }).eq("id", existing.id);
       } else {
         await supabase.from("program_settings").insert({
-          session_id: sessionId,
+          session_id: user!.id,
           user_id: user.id,
           competition_date: competitionDate || null,
           competition_name: competitionName || null,
@@ -136,7 +136,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       }
     } else {
       await supabase.from("program_settings").upsert({
-        session_id: sessionId,
+        session_id: user!.id,
         user_id: null,
         competition_date: competitionDate || null,
         competition_name: competitionName || null,
@@ -193,8 +193,8 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
           }
 
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
-            session_id: sessionId,
-            user_id: user?.id || null,
+            session_id: user!.id,
+            user_id: user!.id,
             date: plan.date,
             event_type: plan.event_type,
             tasks: plan.tasks,
@@ -397,7 +397,7 @@ const Dashboard = () => {
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const [baselineDone, setBaselineDone] = useState(false);
   const [retestDone, setRetestDone] = useState(false);
-  const sessionId = useMemo(() => getSessionId(), []);
+  
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
     REQUIRED_ASSESSMENTS.every((id) => types.has(id));
@@ -413,9 +413,9 @@ const Dashboard = () => {
         .limit(1);
 
       if (user?.id) {
-        query = query.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+        query = query.eq("user_id", user.id);
       } else {
-        query = query.eq("session_id", sessionId);
+        query = query.eq("user_id", user!.id);
       }
 
       const { data } = await query;
@@ -446,11 +446,11 @@ const Dashboard = () => {
     let settingsQuery = supabase.from("program_settings").select("*");
 
     if (user?.id) {
-      eventsQuery = eventsQuery.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
-      settingsQuery = settingsQuery.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+      eventsQuery = eventsQuery.eq("user_id", user.id);
+      settingsQuery = settingsQuery.eq("user_id", user.id);
     } else {
-      eventsQuery = eventsQuery.eq("session_id", sessionId);
-      settingsQuery = settingsQuery.eq("session_id", sessionId);
+      eventsQuery = eventsQuery.eq("user_id", user!.id);
+      settingsQuery = settingsQuery.eq("user_id", user!.id);
     }
 
     const [{ data: eventData }, { data: settingsArr }] = await Promise.all([
@@ -482,8 +482,8 @@ const Dashboard = () => {
   const checkAssessments = async () => {
     let settingsQ = supabase.from("program_settings").select("program_start");
     settingsQ = user?.id
-      ? settingsQ.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`)
-      : settingsQ.eq("session_id", sessionId);
+      ? settingsQ.eq("user_id", user.id)
+      : settingsQ.eq("user_id", user!.id);
     const { data: settingsArr } = await settingsQ;
     const settings = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
@@ -497,8 +497,8 @@ const Dashboard = () => {
         .eq("timing", "pre");
 
       preTestsQuery = user?.id
-        ? preTestsQuery.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
-        : preTestsQuery.eq("session_id", sessionId);
+        ? preTestsQuery.eq("user_id", user.id)
+        : preTestsQuery.eq("user_id", user!.id);
 
       const { data: preTests } = await preTestsQuery;
       const preTypes = new Set((preTests || []).map(t => t.assessment_type));
@@ -510,8 +510,8 @@ const Dashboard = () => {
         .eq("timing", "post");
 
       postTestsQuery = user?.id
-        ? postTestsQuery.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
-        : postTestsQuery.eq("session_id", sessionId);
+        ? postTestsQuery.eq("user_id", user.id)
+        : postTestsQuery.eq("user_id", user!.id);
 
       const { data: postTests } = await postTestsQuery;
       const postTypes = new Set((postTests || []).map(t => t.assessment_type));
@@ -536,8 +536,8 @@ const Dashboard = () => {
       .limit(1);
 
     checkinQuery = user?.id
-      ? checkinQuery.or(`session_id.eq.${sessionId},user_id.eq.${user.id}`)
-      : checkinQuery.eq("session_id", sessionId);
+      ? checkinQuery.eq("user_id", user.id)
+      : checkinQuery.eq("user_id", user!.id);
 
     const { data, error } = await checkinQuery;
     if (error) {
@@ -552,9 +552,9 @@ const Dashboard = () => {
   const checkDeepProfile = async () => {
     let q = supabase.from("deep_profile_assessments").select("timing");
     if (user?.id) {
-      q = q.or(`user_id.eq.${user.id},session_id.eq.${sessionId}`);
+      q = q.eq("user_id", user.id);
     } else {
-      q = q.eq("session_id", sessionId);
+      q = q.eq("user_id", user!.id);
     }
     const { data } = await q;
     const timings = new Set((data || []).map((d: any) => d.timing));
@@ -568,7 +568,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!setupMode && !loading) refreshDashboardStatus();
-  }, [setupMode, loading, sessionId, user?.id]);
+  }, [setupMode, loading, user?.id]);
 
   // Re-check assessments when navigating back to dashboard
   useEffect(() => {
@@ -577,7 +577,7 @@ const Dashboard = () => {
     };
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
-  }, [setupMode, loading, sessionId, user?.id]);
+  }, [setupMode, loading, user?.id]);
 
   const syncTasks = async () => {
     if (!user?.id) {
@@ -607,7 +607,7 @@ const Dashboard = () => {
         }).eq("id", existing.id);
       } else {
         await supabase.from("program_settings").insert({
-          session_id: sessionId,
+          session_id: user!.id,
           user_id: user!.id,
           competition_date: competitionDate || null,
           competition_name: competitionName || null,
@@ -662,8 +662,8 @@ const Dashboard = () => {
         }
 
         const taskInserts = data.daily_plans.map((plan: any) => ({
-          session_id: sessionId,
-          user_id: user?.id || null,
+          session_id: user!.id,
+          user_id: user!.id,
           date: plan.date,
           event_type: plan.event_type,
           tasks: plan.tasks,
@@ -690,7 +690,7 @@ const Dashboard = () => {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert({ session_id: sessionId, user_id: user?.id || null, date: dateStr, event_type: newEventType, title: newEventTitle || null })
+      .insert({ session_id: user!.id, user_id: user!.id, date: dateStr, event_type: newEventType, title: newEventTitle || null })
       .select().single();
     if (error) {
       toast.error("Fehler beim Hinzufügen des Events.");
@@ -741,14 +741,14 @@ const Dashboard = () => {
   }
 
   if (setupMode) {
-    return <CalendarSetup sessionId={sessionId} analysis={analysis} onComplete={handleSetupComplete} />;
+    return <CalendarSetup analysis={analysis} onComplete={handleSetupComplete} />;
   }
 
   if (showCheckin && todayEventType) {
     return (
       <DailyCheckin
         eventType={todayEventType as EventType}
-        sessionId={sessionId}
+        
         date={new Date()}
         onClose={async () => {
           setShowCheckin(false);
