@@ -153,8 +153,7 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
       });
 
       if (!taskError && taskData?.daily_plans) {
-        // Save tasks
-        await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
+        // Save tasks — delete old AFTER successful insert
         const taskInserts = taskData.daily_plans.map((plan: any) => ({
           session_id: sessionId,
           user_id: user.id,
@@ -162,6 +161,8 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
           event_type: plan.event_type,
           tasks: plan.tasks,
         }));
+        // Delete old tasks only after new ones are ready
+        await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
         await supabase.from("personalized_tasks").insert(taskInserts);
 
         // Reload today's tasks
@@ -661,16 +662,16 @@ const DailyCheckin = ({ eventType, sessionId, date, onClose }: DailyCheckinProps
                 if (step === 4) saveCheckin();
                 else if (step === 0 && moodBefore) setStep(1);
                 else if (step === 1 && energyLevel) setStep(2);
-                else if (step === 3) setStep(4);
+                else if (step === 3 && completedTasks.length > 0) setStep(4);
               }}
-              disabled={(step === 0 && !moodBefore) || (step === 1 && !energyLevel)}
+              disabled={(step === 0 && !moodBefore) || (step === 1 && !energyLevel) || (step === 3 && completedTasks.length === 0)}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                (step === 0 && !moodBefore) || (step === 1 && !energyLevel)
+                (step === 0 && !moodBefore) || (step === 1 && !energyLevel) || (step === 3 && completedTasks.length === 0)
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : step === 3 && completedTasks.length === 0 ? (<>Schließe mindestens 1 Aufgabe ab</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>
