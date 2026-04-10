@@ -67,26 +67,19 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
     const analyze = async () => {
       try {
-        // Use the consistent session ID from localStorage
-        const SESSION_KEY = "mindgame_session_id";
-        let sessionId = localStorage.getItem(SESSION_KEY);
-        if (!sessionId) {
-          sessionId = crypto.randomUUID();
-          localStorage.setItem(SESSION_KEY, sessionId);
-        }
-
-        // Save answers to localStorage so Dashboard can access sport/position/level
-        localStorage.setItem("mindgame_answers", JSON.stringify(answers));
-
         const { data: { user } } = await supabase.auth.getUser();
-
-        // User is guaranteed to be logged in (ProtectedRoute)
         const userId = user?.id || null;
+
+        if (!userId) {
+          setError("Bitte melde dich an.");
+          setIsAnalyzing(false);
+          return;
+        }
 
         const { error: insertError } = await supabase
           .from("questionnaire_responses")
           .insert({
-            session_id: sessionId,
+            session_id: userId,
             user_id: userId,
             answers: answers as any,
           });
@@ -95,17 +88,16 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           console.error("Error saving answers:", insertError);
         }
 
-        // Sync sport/position to profiles table if user is logged in
+        // Sync sport/position to profiles table
         const sportAnswer = answers["sport-01"] as string || null;
         const positionAnswer = answers["sport-02"] as string || null;
-        if (user?.id && sportAnswer) {
+        if (sportAnswer) {
           await supabase
             .from("profiles")
             .update({ sport: sportAnswer, team: positionAnswer })
-            .eq("id", user.id);
+            .eq("id", userId);
         }
 
-        // Build questions metadata for the AI
         const questionsMeta = questions.map((q) => ({
           id: q.id,
           category: q.category,
@@ -113,12 +105,10 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           type: q.type,
         }));
 
-        // Extract sport context from answers
         const sport = answers["sport-01"] as string || null;
         const position = answers["sport-02"] as string || null;
         const level = answers["sport-03"] as string || null;
 
-        // Call AI analysis edge function
         const { data, error: fnError } = await supabase.functions.invoke(
           "analyze-questionnaire",
           {
@@ -135,30 +125,20 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         const analysisResult = data.analysis as Analysis;
         setAnalysis(analysisResult);
 
-        // Save analysis back to database — prefer user_id match
-        if (userId) {
-          const { data: latestResponse } = await supabase
-            .from("questionnaire_responses")
-            .select("id")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(1);
+        // Save analysis back to database
+        const { data: latestResponse } = await supabase
+          .from("questionnaire_responses")
+          .select("id")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(1);
 
-          if (latestResponse && latestResponse.length > 0) {
-            await supabase
-              .from("questionnaire_responses")
-              .update({ analysis: analysisResult as any })
-              .eq("id", latestResponse[0].id);
-          }
-        } else {
+        if (latestResponse && latestResponse.length > 0) {
           await supabase
             .from("questionnaire_responses")
             .update({ analysis: analysisResult as any })
-            .eq("session_id", sessionId);
+            .eq("id", latestResponse[0].id);
         }
-
-        // Keep localStorage as fallback only
-        localStorage.setItem("mindgame_analysis", JSON.stringify(analysisResult));
       } catch (err) {
         console.error("Analysis error:", err);
         setError(
@@ -254,7 +234,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          {/* Header */}
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-2 mb-6">
               <div className="px-4 py-2 rounded-full bg-primary/10 border-glow flex items-center gap-2">
@@ -274,7 +253,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </p>
           </div>
 
-          {/* Mental Score */}
           <div className="flex justify-center mb-16">
             <motion.div
               initial={{ scale: 0 }}
@@ -314,7 +292,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </motion.div>
           </div>
 
-          {/* Strengths */}
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <Flame className="w-5 h-5 text-primary" />
@@ -344,7 +321,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </div>
           </div>
 
-          {/* Development Areas */}
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="w-5 h-5 text-primary" />
@@ -381,7 +357,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </div>
           </div>
 
-          {/* Patterns */}
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <Brain className="w-5 h-5 text-primary" />
@@ -404,7 +379,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </div>
           </div>
 
-          {/* Recommendations */}
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <Target className="w-5 h-5 text-primary" />
@@ -431,7 +405,6 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </div>
           </div>
 
-          {/* Daily Tasks */}
           <div className="grid md:grid-cols-2 gap-6 mb-16">
             <div className="p-6 rounded-2xl bg-gradient-card border-glow">
               <div className="flex items-center gap-2 mb-4">
@@ -463,14 +436,11 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             </div>
           </div>
 
-          {/* CTA */}
           <div className="text-center">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                // Save analysis for dashboard to use
-                localStorage.setItem("mindgame_analysis", JSON.stringify(analysis));
                 navigate("/dashboard");
               }}
               className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground hover:shadow-glow transition-all"

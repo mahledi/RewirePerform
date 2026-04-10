@@ -8,8 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-const SESSION_KEY = "mindgame_session_id";
-
 const DeepProfile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -36,20 +34,12 @@ const DeepProfile = () => {
     return true;
   };
 
-  const sessionId = useMemo(() => {
-    let id = localStorage.getItem(SESSION_KEY);
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem(SESSION_KEY, id);
-    }
-    return id;
-  }, []);
-
   const handleSave = async () => {
+    if (!user?.id) return;
     setSaving(true);
     const { error } = await supabase.from("deep_profile_assessments").insert({
-      user_id: user?.id ?? null,
-      session_id: sessionId,
+      user_id: user.id,
+      session_id: user.id,
       timing,
       answers: answers as any,
     });
