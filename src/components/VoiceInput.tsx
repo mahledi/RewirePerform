@@ -113,7 +113,7 @@ const VoiceInput = ({
     pulseIntervalRef.current = setInterval(() => {
       setPulseLevel(Math.random());
     }, 150);
-  }, [language, currentValue, onTranscript, isListening]);
+  }, [language, onTranscript, isListening]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
