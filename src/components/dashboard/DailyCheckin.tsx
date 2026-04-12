@@ -150,7 +150,6 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
       if (!taskError && taskData?.daily_plans) {
         const taskInserts = taskData.daily_plans.map((plan: any) => ({
-          session_id: user.id,
           user_id: user.id,
           date: plan.date,
           event_type: plan.event_type,
@@ -186,8 +185,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
 
     const payload: any = {
-      session_id: user.id,
-      user_id: user.id,
+      user_id: user!.id,
       date: dateStr,
       event_type: eventType,
       mood_before: moodBefore,
