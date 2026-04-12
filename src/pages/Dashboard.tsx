@@ -135,13 +135,9 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         });
       }
     } else {
-      await supabase.from("program_settings").upsert({
-        session_id: user!.id,
-        user_id: null,
-        competition_date: competitionDate || null,
-        competition_name: competitionName || null,
-        program_start: format(today, "yyyy-MM-dd"),
-      }, { onConflict: "session_id" });
+      toast.error("Bitte melde dich an.");
+      setSaving(false);
+      return;
     }
 
     // Generate personalized tasks via AI — proceed even without analysis
@@ -748,7 +744,6 @@ const Dashboard = () => {
     return (
       <DailyCheckin
         eventType={todayEventType as EventType}
-        
         date={new Date()}
         onClose={async () => {
           setShowCheckin(false);
