@@ -79,6 +79,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         const { data: insertedRow, error: insertError } = await supabase
           .from("questionnaire_responses")
           .insert({
+            session_id: user!.id,
             user_id: user!.id,
             answers: answers as any,
           })
