@@ -87,6 +87,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
 
     // Save calendar events — use upsert with user_id-based conflict for authenticated users
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
+      session_id: user!.id,
       user_id: user!.id,
       date,
       event_type: type,
@@ -126,6 +127,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         }).eq("id", existing.id);
       } else {
         await supabase.from("program_settings").insert({
+          session_id: user!.id,
           user_id: user.id,
           competition_date: competitionDate || null,
           competition_name: competitionName || null,
@@ -187,6 +189,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
           }
 
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
+            session_id: user!.id,
             user_id: user!.id,
             date: plan.date,
             event_type: plan.event_type,
