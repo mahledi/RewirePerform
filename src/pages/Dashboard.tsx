@@ -31,7 +31,7 @@ interface Analysis {
   dominant_category: string;
 }
 
-const SETUP_DONE_KEY = "mindgame_setup_done";
+
 const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
 
 const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; color: string; bg: string }> = {
@@ -85,7 +85,6 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
     if (filledDays < 7) return;
     setSaving(true);
 
-    // Save calendar events — use upsert with user_id-based conflict for authenticated users
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
       session_id: user!.id,
       user_id: user!.id,
@@ -94,10 +93,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       title: eventConfig[type].label,
     }));
 
-    // For authenticated users, delete old events first then insert fresh
-    if (user?.id) {
-      await supabase.from("calendar_events").delete().eq("user_id", user.id);
-    }
+    await supabase.from("calendar_events").delete().eq("user_id", user!.id);
 
     const { data: eventData, error: eventError } = await supabase
       .from("calendar_events")
@@ -110,34 +106,27 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       return;
     }
 
-    // Save program settings — check-then-update/insert for authenticated users
-    if (user?.id) {
-      const { data: existing } = await supabase
-        .from("program_settings")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+    const { data: existing } = await supabase
+      .from("program_settings")
+      .select("id")
+      .eq("user_id", user!.id)
+      .maybeSingle();
 
-      if (existing) {
-        await supabase.from("program_settings").update({
-          competition_date: competitionDate || null,
-          competition_name: competitionName || null,
-          program_start: format(today, "yyyy-MM-dd"),
-          updated_at: new Date().toISOString(),
-        }).eq("id", existing.id);
-      } else {
-        await supabase.from("program_settings").insert({
-          session_id: user!.id,
-          user_id: user.id,
-          competition_date: competitionDate || null,
-          competition_name: competitionName || null,
-          program_start: format(today, "yyyy-MM-dd"),
-        });
-      }
+    if (existing) {
+      await supabase.from("program_settings").update({
+        competition_date: competitionDate || null,
+        competition_name: competitionName || null,
+        program_start: format(today, "yyyy-MM-dd"),
+        updated_at: new Date().toISOString(),
+      }).eq("id", existing.id);
     } else {
-      toast.error("Bitte melde dich an.");
-      setSaving(false);
-      return;
+      await supabase.from("program_settings").insert({
+        session_id: user!.id,
+        user_id: user!.id,
+        competition_date: competitionDate || null,
+        competition_name: competitionName || null,
+        program_start: format(today, "yyyy-MM-dd"),
+      });
     }
 
     // Generate personalized tasks via AI — proceed even without analysis
@@ -183,10 +172,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
           console.error("Task generation error:", taskError);
           toast.warning(`Aufgaben konnten nicht erstellt werden: ${taskError.message || "Unbekannter Fehler"}`);
         } else if (taskData?.daily_plans) {
-          // Save personalized tasks — delete old + insert for authenticated users
-          if (user?.id) {
-            await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
-          }
+          await supabase.from("personalized_tasks").delete().eq("user_id", user!.id);
 
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
             session_id: user!.id,
@@ -210,7 +196,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       }
     }
 
-    localStorage.setItem(SETUP_DONE_KEY, "true");
+    
     onComplete(eventData as CalendarEvent[]);
     setSaving(false);
   };
@@ -400,32 +386,17 @@ const Dashboard = () => {
 
   useEffect(() => {
     const loadAnalysis = async () => {
-      // Try loading from DB first — match by user_id or session_id
-      let query = supabase
+      const { data } = await supabase
         .from("questionnaire_responses")
-        .select("id, analysis, user_id")
+        .select("id, analysis")
+        .eq("user_id", user!.id)
         .not("analysis", "is", null)
         .order("created_at", { ascending: false })
         .limit(1);
 
-      if (user?.id) {
-        query = query.eq("user_id", user.id);
-      } else {
-        query = query.eq("user_id", user!.id);
-      }
-
-      const { data } = await query;
       if (data && data.length > 0 && data[0].analysis) {
         setAnalysis(data[0].analysis as unknown as Analysis);
-        // Claim orphaned record if user is logged in but record has no user_id
-        if (user?.id && !data[0].user_id) {
-          await supabase
-            .from("questionnaire_responses")
-            .update({ user_id: user.id })
-            .eq("id", data[0].id);
-        }
       } else {
-        // No analysis found — redirect to questionnaire
         toast.error("Keine Analyse gefunden. Bitte fülle den Fragebogen aus.");
         navigate("/questionnaire");
         return;
@@ -437,17 +408,8 @@ const Dashboard = () => {
   }, []);
 
   const checkSetup = async () => {
-    // Prefer user_id lookup, fallback to session_id
-    let eventsQuery = supabase.from("calendar_events").select("*");
-    let settingsQuery = supabase.from("program_settings").select("*");
-
-    if (user?.id) {
-      eventsQuery = eventsQuery.eq("user_id", user.id);
-      settingsQuery = settingsQuery.eq("user_id", user.id);
-    } else {
-      eventsQuery = eventsQuery.eq("user_id", user!.id);
-      settingsQuery = settingsQuery.eq("user_id", user!.id);
-    }
+    const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
+    const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
 
     const [{ data: eventData }, { data: settingsArr }] = await Promise.all([
       eventsQuery,
@@ -476,40 +438,32 @@ const Dashboard = () => {
 
 
   const checkAssessments = async () => {
-    let settingsQ = supabase.from("program_settings").select("program_start");
-    settingsQ = user?.id
-      ? settingsQ.eq("user_id", user.id)
-      : settingsQ.eq("user_id", user!.id);
-    const { data: settingsArr } = await settingsQ;
+    const { data: settingsArr } = await supabase
+      .from("program_settings")
+      .select("program_start")
+      .eq("user_id", user!.id);
     const settings = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
     if (settings?.program_start) {
       setProgramStartDate(settings.program_start);
       const daysSince = differenceInDays(new Date(), new Date(settings.program_start));
 
-      let preTestsQuery = supabase
+      const { data: preTests } = await supabase
         .from("assessments")
         .select("assessment_type")
-        .eq("timing", "pre");
+        .eq("timing", "pre")
+        .eq("user_id", user!.id);
 
-      preTestsQuery = user?.id
-        ? preTestsQuery.eq("user_id", user.id)
-        : preTestsQuery.eq("user_id", user!.id);
-
-      const { data: preTests } = await preTestsQuery;
       const preTypes = new Set((preTests || []).map(t => t.assessment_type));
       setPreTestsDone(hasCompletedAllAssessments(preTypes));
 
-      let postTestsQuery = supabase
+      const { data: postTests } = await supabase
         .from("assessments")
         .select("assessment_type")
-        .eq("timing", "post");
+        .eq("timing", "post")
+        .eq("user_id", user!.id);
 
-      postTestsQuery = user?.id
-        ? postTestsQuery.eq("user_id", user.id)
-        : postTestsQuery.eq("user_id", user!.id);
-
-      const { data: postTests } = await postTestsQuery;
+      
       const postTypes = new Set((postTests || []).map(t => t.assessment_type));
       const postDone = hasCompletedAllAssessments(postTypes);
       setPostTestsDone(postDone);
@@ -525,15 +479,12 @@ const Dashboard = () => {
     setCheckinStatusLoading(true);
     const today = format(new Date(), "yyyy-MM-dd");
 
-    let checkinQuery = supabase
+    const checkinQuery = supabase
       .from("daily_checkins")
       .select("id")
       .eq("date", today)
+      .eq("user_id", user!.id)
       .limit(1);
-
-    checkinQuery = user?.id
-      ? checkinQuery.eq("user_id", user.id)
-      : checkinQuery.eq("user_id", user!.id);
 
     const { data, error } = await checkinQuery;
     if (error) {
@@ -546,12 +497,7 @@ const Dashboard = () => {
   };
 
   const checkDeepProfile = async () => {
-    let q = supabase.from("deep_profile_assessments").select("timing");
-    if (user?.id) {
-      q = q.eq("user_id", user.id);
-    } else {
-      q = q.eq("user_id", user!.id);
-    }
+    const q = supabase.from("deep_profile_assessments").select("timing").eq("user_id", user!.id);
     const { data } = await q;
     const timings = new Set((data || []).map((d: any) => d.timing));
     setBaselineDone(timings.has("baseline"));
@@ -607,6 +553,7 @@ const Dashboard = () => {
           user_id: user!.id,
           competition_date: competitionDate || null,
           competition_name: competitionName || null,
+          program_start: format(new Date(), "yyyy-MM-dd"),
         });
       }
 
@@ -614,7 +561,7 @@ const Dashboard = () => {
       let sport: string | null = null;
       let position: string | null = null;
       let level: string | null = null;
-      if (user?.id) {
+      {
         const { data: profile } = await supabase
           .from("profiles")
           .select("sport, team")
@@ -653,9 +600,7 @@ const Dashboard = () => {
 
       if (data?.daily_plans) {
         // Delete old tasks, insert fresh for authenticated users
-        if (user?.id) {
-          await supabase.from("personalized_tasks").delete().eq("user_id", user.id);
-        }
+        await supabase.from("personalized_tasks").delete().eq("user_id", user!.id);
 
         const taskInserts = data.daily_plans.map((plan: any) => ({
           session_id: user!.id,
