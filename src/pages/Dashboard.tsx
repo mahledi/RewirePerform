@@ -87,7 +87,6 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
 
     // Save calendar events — use upsert with user_id-based conflict for authenticated users
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
-      session_id: user!.id,
       user_id: user!.id,
       date,
       event_type: type,
@@ -127,7 +126,6 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         }).eq("id", existing.id);
       } else {
         await supabase.from("program_settings").insert({
-          session_id: user!.id,
           user_id: user.id,
           competition_date: competitionDate || null,
           competition_name: competitionName || null,
@@ -135,13 +133,9 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         });
       }
     } else {
-      await supabase.from("program_settings").upsert({
-        session_id: user!.id,
-        user_id: null,
-        competition_date: competitionDate || null,
-        competition_name: competitionName || null,
-        program_start: format(today, "yyyy-MM-dd"),
-      }, { onConflict: "session_id" });
+      toast.error("Bitte melde dich an.");
+      setSaving(false);
+      return;
     }
 
     // Generate personalized tasks via AI — proceed even without analysis
@@ -193,7 +187,6 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
           }
 
           const taskInserts = taskData.daily_plans.map((plan: any) => ({
-            session_id: user!.id,
             user_id: user!.id,
             date: plan.date,
             event_type: plan.event_type,
@@ -748,7 +741,6 @@ const Dashboard = () => {
     return (
       <DailyCheckin
         eventType={todayEventType as EventType}
-        
         date={new Date()}
         onClose={async () => {
           setShowCheckin(false);
