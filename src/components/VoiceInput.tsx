@@ -31,6 +31,12 @@ const VoiceInput = ({
   const [pulseLevel, setPulseLevel] = useState(0);
   const recognitionRef = useRef<any>(null);
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentValueRef = useRef(currentValue);
+
+  // Keep ref in sync with prop
+  useEffect(() => {
+    currentValueRef.current = currentValue;
+  }, [currentValue]);
 
   useEffect(() => {
     const SpeechRecognition = getSpeechRecognition();
