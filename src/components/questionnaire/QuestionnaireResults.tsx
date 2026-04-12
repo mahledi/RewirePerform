@@ -76,13 +76,15 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           return;
         }
 
-        const { error: insertError } = await supabase
+        const { data: insertedRow, error: insertError } = await supabase
           .from("questionnaire_responses")
           .insert({
-            session_id: userId,
-            user_id: userId,
+            session_id: user!.id,
+            user_id: user!.id,
             answers: answers as any,
-          });
+          })
+          .select("id")
+          .single();
 
         if (insertError) {
           console.error("Error saving answers:", insertError);
@@ -125,19 +127,12 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         const analysisResult = data.analysis as Analysis;
         setAnalysis(analysisResult);
 
-        // Save analysis back to database
-        const { data: latestResponse } = await supabase
-          .from("questionnaire_responses")
-          .select("id")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (latestResponse && latestResponse.length > 0) {
+        // Save analysis back to database using the inserted row ID
+        if (insertedRow?.id) {
           await supabase
             .from("questionnaire_responses")
             .update({ analysis: analysisResult as any })
-            .eq("id", latestResponse[0].id);
+            .eq("id", insertedRow.id);
         }
       } catch (err) {
         console.error("Analysis error:", err);
