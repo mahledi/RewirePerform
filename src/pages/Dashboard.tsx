@@ -463,7 +463,7 @@ const Dashboard = () => {
         .eq("timing", "post")
         .eq("user_id", user!.id);
 
-      const { data: postTests } = await postTestsQuery;
+      
       const postTypes = new Set((postTests || []).map(t => t.assessment_type));
       const postDone = hasCompletedAllAssessments(postTypes);
       setPostTestsDone(postDone);
