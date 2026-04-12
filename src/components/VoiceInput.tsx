@@ -31,6 +31,12 @@ const VoiceInput = ({
   const [pulseLevel, setPulseLevel] = useState(0);
   const recognitionRef = useRef<any>(null);
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentValueRef = useRef(currentValue);
+
+  // Keep ref in sync with prop
+  useEffect(() => {
+    currentValueRef.current = currentValue;
+  }, [currentValue]);
 
   useEffect(() => {
     const SpeechRecognition = getSpeechRecognition();
@@ -72,8 +78,9 @@ const VoiceInput = ({
       setInterimText(interim);
 
       if (final) {
-        const separator = currentValue && !currentValue.endsWith(" ") ? " " : "";
-        const newValue = currentValue + separator + final;
+        const cur = currentValueRef.current;
+        const separator = cur && !cur.endsWith(" ") ? " " : "";
+        const newValue = cur + separator + final;
         onTranscript(newValue);
         setInterimText("");
       }
@@ -106,7 +113,7 @@ const VoiceInput = ({
     pulseIntervalRef.current = setInterval(() => {
       setPulseLevel(Math.random());
     }, 150);
-  }, [language, currentValue, onTranscript, isListening]);
+  }, [language, onTranscript, isListening]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
