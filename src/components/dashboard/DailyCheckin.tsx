@@ -92,15 +92,15 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const loadPersonalizedTasks = async () => {
     if (!user?.id) return;
     const dateStr = format(date, "yyyy-MM-dd");
-    const { data } = await supabase
+  const { data } = await supabase
       .from("personalized_tasks")
       .select("tasks")
       .eq("date", dateStr)
       .eq("user_id", user.id)
-      .maybeSingle();
+      .limit(1);
 
-    if (data?.tasks && Array.isArray(data.tasks) && data.tasks.length > 0) {
-      const loaded = (data.tasks as unknown as CheckinTask[]).slice(0, 3);
+    if (data?.[0]?.tasks && Array.isArray(data[0].tasks) && data[0].tasks.length > 0) {
+      const loaded = (data[0].tasks as unknown as CheckinTask[]).slice(0, 3);
       setTasks(loaded);
       setUsingFallback(false);
     } else {
@@ -121,8 +121,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         .eq("user_id", user.id)
         .not("analysis", "is", null)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
 
       const { data: calEvents } = await supabase
         .from("calendar_events")
@@ -143,7 +142,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       const { data: taskData, error: taskError } = await supabase.functions.invoke("adapt-program", {
         body: {
           calendarEvents: calEvents,
-          analysis: qr?.analysis || null,
+          analysis: qr?.[0]?.analysis || null,
           sport: profile?.sport || null,
           position: profile?.team || null,
         },
@@ -194,18 +193,20 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       mood_before: moodBefore,
       energy_level: energyLevel,
       focus_rating: focusRating,
-      tasks_completed: completedTasks as any,
+      tasks_completed: completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id),
       reflection: reflection || null,
     };
 
     let error: any = null;
 
-    const { data: existing } = await supabase
+    const { data: existingRows } = await supabase
       .from("daily_checkins")
       .select("id")
       .eq("user_id", user.id)
       .eq("date", dateStr)
-      .maybeSingle();
+      .limit(1);
+
+    const existing = existingRows?.[0];
 
     if (existing) {
       const { error: updateError } = await supabase
