@@ -100,7 +100,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       .limit(1);
 
     if (data?.[0]?.tasks && Array.isArray(data[0].tasks) && data[0].tasks.length > 0) {
-      const loaded = (data.tasks as unknown as CheckinTask[]).slice(0, 3);
+      const loaded = (data[0].tasks as unknown as CheckinTask[]).slice(0, 3);
       setTasks(loaded);
       setUsingFallback(false);
     } else {
