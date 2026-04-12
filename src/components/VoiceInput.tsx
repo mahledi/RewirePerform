@@ -78,8 +78,9 @@ const VoiceInput = ({
       setInterimText(interim);
 
       if (final) {
-        const separator = currentValue && !currentValue.endsWith(" ") ? " " : "";
-        const newValue = currentValue + separator + final;
+        const cur = currentValueRef.current;
+        const separator = cur && !cur.endsWith(" ") ? " " : "";
+        const newValue = cur + separator + final;
         onTranscript(newValue);
         setInterimText("");
       }
