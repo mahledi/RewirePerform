@@ -944,7 +944,7 @@ const Dashboard = () => {
               <div className="text-right">
                 <p className="text-xs text-muted-foreground mb-1">{competitionName || "8-Wochen-Programm"}</p>
                 <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten</p>
-                {competitionDate && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
+                {competitionDate && !isNaN(new Date(competitionDate).getTime()) && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
               </div>
             </div>
           </motion.div>
