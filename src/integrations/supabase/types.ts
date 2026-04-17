@@ -125,6 +125,45 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_journals: {
+        Row: {
+          answers: Json
+          created_at: string
+          date: string
+          day_number: number | null
+          free_reflection: string | null
+          gratitude: string | null
+          id: string
+          journal_title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          date: string
+          day_number?: number | null
+          free_reflection?: string | null
+          gratitude?: string | null
+          id?: string
+          journal_title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          date?: string
+          day_number?: number | null
+          free_reflection?: string | null
+          gratitude?: string | null
+          id?: string
+          journal_title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       deep_profile_assessments: {
         Row: {
           answers: Json

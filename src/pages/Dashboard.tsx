@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
@@ -129,74 +129,10 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       });
     }
 
-    // Generate personalized tasks via AI — proceed even without analysis
-    if (eventData) {
-      if (!analysis) {
-        toast.warning("Keine Fragebogen-Analyse gefunden. KI verwendet Basis-Profil.");
-      }
-      toast.info("KI generiert personalisierte Aufgaben...");
+    // Tagesinhalte kommen jetzt aus der Matrix-Architektur (src/content/matrixDays.ts).
+    // Keine KI-Generierung mehr beim Setup — Inhalte sind deterministisch.
+    toast.success("Programm gestartet!");
 
-      // Extract sport context from questionnaire answers (stored in localStorage or analysis)
-      let sport: string | null = null;
-      let position: string | null = null;
-      let level: string | null = null;
-      try {
-        const storedAnswers = localStorage.getItem("mindgame_answers");
-        if (storedAnswers) {
-          const parsed = JSON.parse(storedAnswers);
-          sport = parsed["sport-01"] || null;
-          position = parsed["sport-02"] || null;
-          level = parsed["sport-03"] || null;
-        }
-      } catch {}
-      // Also try profile sport as fallback
-      if (!sport && user?.id) {
-        const { data: profile } = await supabase.from("profiles").select("sport").eq("id", user.id).maybeSingle();
-        if (profile?.sport) sport = profile.sport;
-      }
-
-      try {
-        const { data: taskData, error: taskError } = await supabase.functions.invoke("adapt-program", {
-          body: {
-            calendarEvents: eventData,
-            analysis,
-            competitionDate: competitionDate || null,
-            competitionName: competitionName || null,
-            sport,
-            position,
-            level,
-          },
-        });
-
-        if (taskError) {
-          console.error("Task generation error:", taskError);
-          toast.warning(`Aufgaben konnten nicht erstellt werden: ${taskError.message || "Unbekannter Fehler"}`);
-        } else if (taskData?.daily_plans) {
-          await supabase.from("personalized_tasks").delete().eq("user_id", user!.id);
-
-          const taskInserts = taskData.daily_plans.map((plan: any) => ({
-            session_id: user!.id,
-            user_id: user!.id,
-            date: plan.date,
-            event_type: plan.event_type,
-            tasks: plan.tasks,
-          }));
-
-          const { error: insertError } = await supabase.from("personalized_tasks").insert(taskInserts);
-          if (insertError) {
-            console.error("Task save error:", insertError);
-            toast.warning("Aufgaben wurden generiert, konnten aber nicht gespeichert werden.");
-          } else {
-            toast.success("Personalisierte Aufgaben erstellt!");
-          }
-        }
-      } catch (err) {
-        console.error("Task generation error:", err);
-        toast.warning("Aufgaben konnten nicht personalisiert werden. Standardaufgaben werden verwendet.");
-      }
-    }
-
-    
     onComplete(eventData as CalendarEvent[]);
     setSaving(false);
   };
@@ -219,8 +155,8 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
             Plane deine nächsten <span className="text-gradient">8 Wochen.</span>
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
-            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag – über 4 Phasen hinweg.
+          Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
+            Dein 56-Tage-Programm folgt einer festen, neurokognitiven Struktur in 4 Phasen.
           </p>
         </motion.div>
 
@@ -245,14 +181,14 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
               className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-3">Wenn gesetzt, wird das gesamte Programm auf diesen Wettkampf hin periodisiert.</p>
+          <p className="text-xs text-muted-foreground mt-3">Wenn gesetzt, dient dieser Wettkampf als zeitlicher Anker im Programm.</p>
         </motion.div>
 
         {/* Info */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Wähle unten ein Tool und tippe auf die Tage. Du kannst den Kalender später jederzeit anpassen – die KI passt die Aufgaben automatisch an.
+            Wähle unten ein Tool und tippe auf die Tage. Du kannst den Kalender später jederzeit anpassen.
           </p>
         </motion.div>
 
@@ -342,7 +278,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
             filledDays >= 7 ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         >
-          {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />KI erstellt dein Programm...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
+          {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />Programm wird angelegt...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
         </motion.button>
         {filledDays < 7 && (
           <p className="text-xs text-muted-foreground text-center mt-3">Mindestens 7 Tage eintragen.</p>
@@ -523,18 +459,11 @@ const Dashboard = () => {
 
   const syncTasks = async () => {
     if (!user?.id) {
-      toast.error("Bitte melde dich an um den KI-Sync zu nutzen.");
-      return;
-    }
-    if (!analysis) {
-      toast.error("Keine Analyse vorhanden. Bitte fülle zuerst den Fragebogen aus.");
+      toast.error("Bitte melde dich an.");
       return;
     }
     setSyncing(true);
-    toast.info("KI passt Aufgaben an deinen Kalender an...");
-
     try {
-      // Update program settings for authenticated user
       const { data: existing } = await supabase
         .from("program_settings")
         .select("id")
@@ -556,71 +485,10 @@ const Dashboard = () => {
           program_start: format(new Date(), "yyyy-MM-dd"),
         });
       }
-
-      // Load sport context from profile
-      let sport: string | null = null;
-      let position: string | null = null;
-      let level: string | null = null;
-      {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("sport, team")
-          .eq("id", user.id)
-          .maybeSingle();
-        if (profile) {
-          sport = profile.sport;
-          position = profile.team;
-        }
-      // Load level from questionnaire_responses in DB
-        const { data: qAnswers } = await supabase
-          .from("questionnaire_responses")
-          .select("answers")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (qAnswers?.answers) {
-          level = ((qAnswers.answers as Record<string, unknown>)["sport-03"] as string) || null;
-        }
-      }
-
-      const { data, error } = await supabase.functions.invoke("adapt-program", {
-        body: {
-          calendarEvents: events,
-          analysis,
-          competitionDate: competitionDate || null,
-          competitionName: competitionName || null,
-          sport,
-          position,
-          level,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.daily_plans) {
-        // Delete old tasks, insert fresh for authenticated users
-        await supabase.from("personalized_tasks").delete().eq("user_id", user!.id);
-
-        const taskInserts = data.daily_plans.map((plan: any) => ({
-          session_id: user!.id,
-          user_id: user!.id,
-          date: plan.date,
-          event_type: plan.event_type,
-          tasks: plan.tasks,
-        }));
-
-        const { error: insertError } = await supabase.from("personalized_tasks").insert(taskInserts);
-        if (insertError) {
-          console.error("Task save error:", insertError);
-          toast.warning("Aufgaben generiert, aber Speichern fehlgeschlagen.");
-        } else {
-          toast.success("Aufgaben wurden angepasst!");
-        }
-      }
+      toast.success("Programm aktualisiert.");
     } catch (err: any) {
-      console.error("Sync error:", err);
-      toast.error(`Fehler beim Synchronisieren: ${err?.message || "Unbekannter Fehler"}`);
+      console.error("Update error:", err);
+      toast.error(`Fehler: ${err?.message || "Unbekannter Fehler"}`);
     }
     setSyncing(false);
     setShowSettings(false);
@@ -715,12 +583,12 @@ const Dashboard = () => {
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
-              onClick={syncTasks}
-              disabled={syncing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+              onClick={() => navigate("/journal")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+              title="Tagesjournal"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Sync..." : "KI-Sync"}
+              <BookOpen className="w-3.5 h-3.5" />
+              Journal
             </button>
             <button
               onClick={async () => { await signOut(); navigate("/"); }}
