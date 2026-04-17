@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
@@ -459,18 +459,11 @@ const Dashboard = () => {
 
   const syncTasks = async () => {
     if (!user?.id) {
-      toast.error("Bitte melde dich an um den KI-Sync zu nutzen.");
-      return;
-    }
-    if (!analysis) {
-      toast.error("Keine Analyse vorhanden. Bitte fülle zuerst den Fragebogen aus.");
+      toast.error("Bitte melde dich an.");
       return;
     }
     setSyncing(true);
-    toast.info("KI passt Aufgaben an deinen Kalender an...");
-
     try {
-      // Update program settings for authenticated user
       const { data: existing } = await supabase
         .from("program_settings")
         .select("id")
@@ -492,71 +485,10 @@ const Dashboard = () => {
           program_start: format(new Date(), "yyyy-MM-dd"),
         });
       }
-
-      // Load sport context from profile
-      let sport: string | null = null;
-      let position: string | null = null;
-      let level: string | null = null;
-      {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("sport, team")
-          .eq("id", user.id)
-          .maybeSingle();
-        if (profile) {
-          sport = profile.sport;
-          position = profile.team;
-        }
-      // Load level from questionnaire_responses in DB
-        const { data: qAnswers } = await supabase
-          .from("questionnaire_responses")
-          .select("answers")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (qAnswers?.answers) {
-          level = ((qAnswers.answers as Record<string, unknown>)["sport-03"] as string) || null;
-        }
-      }
-
-      const { data, error } = await supabase.functions.invoke("adapt-program", {
-        body: {
-          calendarEvents: events,
-          analysis,
-          competitionDate: competitionDate || null,
-          competitionName: competitionName || null,
-          sport,
-          position,
-          level,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.daily_plans) {
-        // Delete old tasks, insert fresh for authenticated users
-        await supabase.from("personalized_tasks").delete().eq("user_id", user!.id);
-
-        const taskInserts = data.daily_plans.map((plan: any) => ({
-          session_id: user!.id,
-          user_id: user!.id,
-          date: plan.date,
-          event_type: plan.event_type,
-          tasks: plan.tasks,
-        }));
-
-        const { error: insertError } = await supabase.from("personalized_tasks").insert(taskInserts);
-        if (insertError) {
-          console.error("Task save error:", insertError);
-          toast.warning("Aufgaben generiert, aber Speichern fehlgeschlagen.");
-        } else {
-          toast.success("Aufgaben wurden angepasst!");
-        }
-      }
+      toast.success("Programm aktualisiert.");
     } catch (err: any) {
-      console.error("Sync error:", err);
-      toast.error(`Fehler beim Synchronisieren: ${err?.message || "Unbekannter Fehler"}`);
+      console.error("Update error:", err);
+      toast.error(`Fehler: ${err?.message || "Unbekannter Fehler"}`);
     }
     setSyncing(false);
     setShowSettings(false);
@@ -651,12 +583,12 @@ const Dashboard = () => {
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
-              onClick={syncTasks}
-              disabled={syncing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+              onClick={() => navigate("/journal")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+              title="Tagesjournal"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Sync..." : "KI-Sync"}
+              <BookOpen className="w-3.5 h-3.5" />
+              Journal
             </button>
             <button
               onClick={async () => { await signOut(); navigate("/"); }}
