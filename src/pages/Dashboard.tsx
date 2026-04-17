@@ -129,74 +129,10 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       });
     }
 
-    // Generate personalized tasks via AI — proceed even without analysis
-    if (eventData) {
-      if (!analysis) {
-        toast.warning("Keine Fragebogen-Analyse gefunden. KI verwendet Basis-Profil.");
-      }
-      toast.info("KI generiert personalisierte Aufgaben...");
+    // Tagesinhalte kommen jetzt aus der Matrix-Architektur (src/content/matrixDays.ts).
+    // Keine KI-Generierung mehr beim Setup — Inhalte sind deterministisch.
+    toast.success("Programm gestartet!");
 
-      // Extract sport context from questionnaire answers (stored in localStorage or analysis)
-      let sport: string | null = null;
-      let position: string | null = null;
-      let level: string | null = null;
-      try {
-        const storedAnswers = localStorage.getItem("mindgame_answers");
-        if (storedAnswers) {
-          const parsed = JSON.parse(storedAnswers);
-          sport = parsed["sport-01"] || null;
-          position = parsed["sport-02"] || null;
-          level = parsed["sport-03"] || null;
-        }
-      } catch {}
-      // Also try profile sport as fallback
-      if (!sport && user?.id) {
-        const { data: profile } = await supabase.from("profiles").select("sport").eq("id", user.id).maybeSingle();
-        if (profile?.sport) sport = profile.sport;
-      }
-
-      try {
-        const { data: taskData, error: taskError } = await supabase.functions.invoke("adapt-program", {
-          body: {
-            calendarEvents: eventData,
-            analysis,
-            competitionDate: competitionDate || null,
-            competitionName: competitionName || null,
-            sport,
-            position,
-            level,
-          },
-        });
-
-        if (taskError) {
-          console.error("Task generation error:", taskError);
-          toast.warning(`Aufgaben konnten nicht erstellt werden: ${taskError.message || "Unbekannter Fehler"}`);
-        } else if (taskData?.daily_plans) {
-          await supabase.from("personalized_tasks").delete().eq("user_id", user!.id);
-
-          const taskInserts = taskData.daily_plans.map((plan: any) => ({
-            session_id: user!.id,
-            user_id: user!.id,
-            date: plan.date,
-            event_type: plan.event_type,
-            tasks: plan.tasks,
-          }));
-
-          const { error: insertError } = await supabase.from("personalized_tasks").insert(taskInserts);
-          if (insertError) {
-            console.error("Task save error:", insertError);
-            toast.warning("Aufgaben wurden generiert, konnten aber nicht gespeichert werden.");
-          } else {
-            toast.success("Personalisierte Aufgaben erstellt!");
-          }
-        }
-      } catch (err) {
-        console.error("Task generation error:", err);
-        toast.warning("Aufgaben konnten nicht personalisiert werden. Standardaufgaben werden verwendet.");
-      }
-    }
-
-    
     onComplete(eventData as CalendarEvent[]);
     setSaving(false);
   };
@@ -219,8 +155,8 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
             Plane deine nächsten <span className="text-gradient">8 Wochen.</span>
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
-            Die KI erstellt dann personalisierte mentale Aufgaben für jeden Tag – über 4 Phasen hinweg.
+          Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
+            Dein 56-Tage-Programm folgt einer festen, neurokognitiven Struktur in 4 Phasen.
           </p>
         </motion.div>
 
@@ -245,14 +181,14 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
               className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
-          <p className="text-xs text-muted-foreground mt-3">Wenn gesetzt, wird das gesamte Programm auf diesen Wettkampf hin periodisiert.</p>
+          <p className="text-xs text-muted-foreground mt-3">Wenn gesetzt, dient dieser Wettkampf als zeitlicher Anker im Programm.</p>
         </motion.div>
 
         {/* Info */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Wähle unten ein Tool und tippe auf die Tage. Du kannst den Kalender später jederzeit anpassen – die KI passt die Aufgaben automatisch an.
+            Wähle unten ein Tool und tippe auf die Tage. Du kannst den Kalender später jederzeit anpassen.
           </p>
         </motion.div>
 
@@ -342,7 +278,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
             filledDays >= 7 ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         >
-          {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />KI erstellt dein Programm...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
+          {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />Programm wird angelegt...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
         </motion.button>
         {filledDays < 7 && (
           <p className="text-xs text-muted-foreground text-center mt-3">Mindestens 7 Tage eintragen.</p>
