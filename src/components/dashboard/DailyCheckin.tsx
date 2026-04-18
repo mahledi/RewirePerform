@@ -102,6 +102,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
+    const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     const payload: any = {
       user_id: user.id,
@@ -110,7 +111,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       mood_before: moodBefore,
       energy_level: energyLevel,
       focus_rating: focusRating,
-      tasks_completed: completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id),
+      tasks_completed: completedTitles,
       reflection: reflection || null,
     };
 
@@ -134,6 +135,18 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       error = insertError;
     }
 
+    // Persist day completion (orchestration layer)
+    if (assignmentId && resolved) {
+      await upsertCompletion({
+        assignmentId,
+        userId: user.id,
+        dayNumber: resolved.matrix.dayNumber,
+        completedTaskTitles: completedTitles,
+        status: "completed",
+        variantUsed: eventType,
+      });
+    }
+
     setSaving(false);
 
     if (error) {
@@ -143,6 +156,23 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       return;
     }
 
+    setStep(6);
+  };
+
+  const handleComprehensionComplete = async (
+    results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
+  ) => {
+    setComprehensionDone(true);
+    if (assignmentId && resolved && user?.id) {
+      await upsertComprehension({
+        assignmentId,
+        userId: user.id,
+        dayNumber: resolved.matrix.dayNumber,
+        questions: comprehensionQuestions,
+        results,
+        status: "completed",
+      });
+    }
     setStep(5);
   };
 
