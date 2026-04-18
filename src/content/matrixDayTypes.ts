@@ -131,6 +131,26 @@ export interface DailyJournal {
   freeReflectionPrompt?: string;
 }
 
+/**
+ * Multiple-Choice-Verständnisfrage zum Tag.
+ * Pool von 5-8 pro Tag, App wählt 3-5 zufällig aus.
+ */
+export interface ComprehensionOption {
+  id: string; // "a" | "b" | "c" | "d"
+  text: string;
+}
+
+export interface ComprehensionQuestion {
+  id: string;
+  /** Was die Frage prüft: lens | action | mistake | behavior */
+  target: "lens" | "action" | "mistake" | "behavior";
+  stem: string;
+  options: ComprehensionOption[];
+  correctOptionId: string;
+  /** Kurzes Feedback nach Antwort */
+  explanation: string;
+}
+
 export interface DailyContent {
   dayNumber: number;
   scienceBite: {
@@ -147,6 +167,8 @@ export interface DailyContent {
   selfTalkAnchors: SelfTalkAnchor[];
   visualizationCue?: VisualizationCue;
   sportAdaptationHints?: SportAdaptationHint[];
+  /** Pool von 5-8 MC-Fragen, beim Check werden 3-5 zufällig gezogen */
+  comprehensionPool?: ComprehensionQuestion[];
 }
 
 /**
