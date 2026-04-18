@@ -12,9 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
+import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
-import type { CalendarEventType, DailyTask, ResolvedDay } from "@/content/matrixDayTypes";
+import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
+import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
 
@@ -48,6 +50,9 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DailyTask | null>(null);
   const [readBites, setReadBites] = useState<string[]>([]);
+  const [assignmentId, setAssignmentId] = useState<string | null>(null);
+  const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
+  const [comprehensionDone, setComprehensionDone] = useState(false);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -65,18 +70,24 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     if (!user?.id) return;
     setLoadingTasks(true);
 
-    const [{ data: settings }, { data: profile }] = await Promise.all([
-      supabase.from("program_settings").select("program_start").eq("user_id", user.id).maybeSingle(),
-      supabase.from("profiles").select("sport, team").eq("id", user.id).maybeSingle(),
-    ]);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("sport, team")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    const info = getCurrentProgramDay(settings?.program_start ?? null, date);
-    if (info) {
-      const r = resolveDay(info.dayNumber, date, eventType, {
-        sport: profile?.sport ?? null,
-        position: profile?.team ?? null,
-      });
-      setResolved(r);
+    const result = await ensureAssignment({
+      userId: user.id,
+      date,
+      contextType: eventType,
+      sport: profile?.sport ?? null,
+      position: profile?.team ?? null,
+    });
+
+    if (result) {
+      setResolved(result.resolved);
+      setAssignmentId(result.assignment.id);
+      setComprehensionQuestions(drawComprehensionQuestions(result.resolved.matrix.dayNumber, 3));
     }
     setLoadingTasks(false);
   };
@@ -91,6 +102,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
+    const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     const payload: any = {
       user_id: user.id,
@@ -99,7 +111,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       mood_before: moodBefore,
       energy_level: energyLevel,
       focus_rating: focusRating,
-      tasks_completed: completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id),
+      tasks_completed: completedTitles,
       reflection: reflection || null,
     };
 
@@ -123,6 +135,18 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       error = insertError;
     }
 
+    // Persist day completion (orchestration layer)
+    if (assignmentId && resolved) {
+      await upsertCompletion({
+        assignmentId,
+        userId: user.id,
+        dayNumber: resolved.matrix.dayNumber,
+        completedTaskTitles: completedTitles,
+        status: "completed",
+        variantUsed: eventType,
+      });
+    }
+
     setSaving(false);
 
     if (error) {
@@ -132,6 +156,23 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       return;
     }
 
+    setStep(6);
+  };
+
+  const handleComprehensionComplete = async (
+    results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
+  ) => {
+    setComprehensionDone(true);
+    if (assignmentId && resolved && user?.id) {
+      await upsertComprehension({
+        assignmentId,
+        userId: user.id,
+        dayNumber: resolved.matrix.dayNumber,
+        questions: comprehensionQuestions,
+        results,
+        status: "completed",
+      });
+    }
     setStep(5);
   };
 
@@ -379,6 +420,29 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                 {step === 2 && <KnowledgeStep />}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
+                  <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
+                    <p className="text-muted-foreground mb-6 text-sm">
+                      {comprehensionQuestions.length > 0
+                        ? "Drei Fragen zur heutigen Linse. Kein Test — nur Festigung."
+                        : "Heute kein Check verfügbar. Du kannst direkt weitergehen."}
+                    </p>
+                    {comprehensionQuestions.length > 0 ? (
+                      <ComprehensionCheck
+                        questions={comprehensionQuestions}
+                        onComplete={handleComprehensionComplete}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setStep(5)}
+                        className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold"
+                      >
+                        Weiter zur Reflexion
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+                {step === 5 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-4 text-sm">
@@ -397,7 +461,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     />
                   </motion.div>
                 )}
-                {step === 5 && (
+                {step === 6 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
@@ -425,7 +489,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         </div>
       </div>
 
-      {step < 5 && step !== 2 && !selectedTask && (
+      {step < 6 && step !== 2 && step !== 4 && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -433,7 +497,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               Zurück
             </button>
             <div className="flex gap-1.5">
-              {[0, 1, 2, 3, 4].map((s) => (
+              {[0, 1, 2, 3, 4, 5].map((s) => (
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
@@ -441,7 +505,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (step === 4) saveCheckin();
+                if (step === 5) saveCheckin();
                 else if (step === 0 && moodBefore) setStep(1);
                 else if (step === 1 && energyLevel) setStep(2);
                 else if (step === 3 && completedTasks.length > 0) setStep(4);
@@ -453,7 +517,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : step === 3 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 5 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : step === 3 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>

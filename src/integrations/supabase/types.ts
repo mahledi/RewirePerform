@@ -83,6 +83,56 @@ export type Database = {
         }
         Relationships: []
       }
+      comprehension_check_instances: {
+        Row: {
+          assignment_id: string
+          completed_at: string | null
+          correct_count: number | null
+          created_at: string
+          day_number: number
+          generated_questions: Json
+          id: string
+          results: Json
+          status: string
+          total_count: number | null
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          completed_at?: string | null
+          correct_count?: number | null
+          created_at?: string
+          day_number: number
+          generated_questions?: Json
+          id?: string
+          results?: Json
+          status?: string
+          total_count?: number | null
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          completed_at?: string | null
+          correct_count?: number | null
+          created_at?: string
+          day_number?: number
+          generated_questions?: Json
+          id?: string
+          results?: Json
+          status?: string
+          total_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comprehension_check_instances_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: true
+            referencedRelation: "user_day_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_checkins: {
         Row: {
           created_at: string
@@ -390,6 +440,101 @@ export type Database = {
           sport?: string | null
         }
         Relationships: []
+      }
+      user_day_assignments: {
+        Row: {
+          adaptation_summary: Json
+          assigned_day_number: number
+          assignment_reason: Json
+          context_type: string
+          created_at: string
+          date: string
+          generated_payload: Json
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adaptation_summary?: Json
+          assigned_day_number: number
+          assignment_reason?: Json
+          context_type?: string
+          created_at?: string
+          date: string
+          generated_payload?: Json
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adaptation_summary?: Json
+          assigned_day_number?: number
+          assignment_reason?: Json
+          context_type?: string
+          created_at?: string
+          date?: string
+          generated_payload?: Json
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_day_completion: {
+        Row: {
+          assignment_id: string
+          completed_at: string | null
+          completion_status: string
+          created_at: string
+          day_number: number
+          id: string
+          opened_at: string | null
+          task_completion: Json
+          time_spent_seconds: number | null
+          updated_at: string
+          user_id: string
+          variant_used: string | null
+        }
+        Insert: {
+          assignment_id: string
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          day_number: number
+          id?: string
+          opened_at?: string | null
+          task_completion?: Json
+          time_spent_seconds?: number | null
+          updated_at?: string
+          user_id: string
+          variant_used?: string | null
+        }
+        Update: {
+          assignment_id?: string
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          opened_at?: string | null
+          task_completion?: Json
+          time_spent_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+          variant_used?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_day_completion_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: true
+            referencedRelation: "user_day_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
