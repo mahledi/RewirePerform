@@ -85,10 +85,10 @@ export async function ensureAssignment(
       date: dateStr,
       assigned_day_number: info.dayNumber,
       context_type: input.contextType,
-      assignment_reason: { source: "deterministic", program_day: info.dayNumber },
-      adaptation_summary: { sport: input.sport ?? null, position: input.position ?? null },
-      generated_payload: payload,
-    })
+      assignment_reason: { source: "deterministic", program_day: info.dayNumber } as any,
+      adaptation_summary: { sport: input.sport ?? null, position: input.position ?? null } as any,
+      generated_payload: payload as any,
+    } as any)
     .select()
     .single();
 
@@ -151,7 +151,7 @@ export async function upsertComprehension(args: {
     .eq("assignment_id", args.assignmentId)
     .maybeSingle();
 
-  const base = {
+  const base: any = {
     assignment_id: args.assignmentId,
     user_id: args.userId,
     day_number: args.dayNumber,
