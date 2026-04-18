@@ -12,9 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
+import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
-import type { CalendarEventType, DailyTask, ResolvedDay } from "@/content/matrixDayTypes";
+import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
+import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
 
@@ -48,6 +50,9 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DailyTask | null>(null);
   const [readBites, setReadBites] = useState<string[]>([]);
+  const [assignmentId, setAssignmentId] = useState<string | null>(null);
+  const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
+  const [comprehensionDone, setComprehensionDone] = useState(false);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -65,18 +70,24 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     if (!user?.id) return;
     setLoadingTasks(true);
 
-    const [{ data: settings }, { data: profile }] = await Promise.all([
-      supabase.from("program_settings").select("program_start").eq("user_id", user.id).maybeSingle(),
-      supabase.from("profiles").select("sport, team").eq("id", user.id).maybeSingle(),
-    ]);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("sport, team")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    const info = getCurrentProgramDay(settings?.program_start ?? null, date);
-    if (info) {
-      const r = resolveDay(info.dayNumber, date, eventType, {
-        sport: profile?.sport ?? null,
-        position: profile?.team ?? null,
-      });
-      setResolved(r);
+    const result = await ensureAssignment({
+      userId: user.id,
+      date,
+      contextType: eventType,
+      sport: profile?.sport ?? null,
+      position: profile?.team ?? null,
+    });
+
+    if (result) {
+      setResolved(result.resolved);
+      setAssignmentId(result.assignment.id);
+      setComprehensionQuestions(drawComprehensionQuestions(result.resolved.matrix.dayNumber, 3));
     }
     setLoadingTasks(false);
   };
