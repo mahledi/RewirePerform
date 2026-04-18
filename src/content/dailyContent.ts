@@ -82,5 +82,111 @@ export const DAILY_CONTENT: Record<number, DailyContent> = Object.fromEntries(
   ])
 );
 
+// ─────────── Comprehension Pools (per day overrides) ───────────
+// Pflege hier 5-8 Fragen pro Tag ein. App zieht beim Check 3-5 zufällig.
+// Demo: Tag 1.
+const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensionPool"]>> = {
+  1: [
+    {
+      id: "d1-q1",
+      target: "lens",
+      stem: "Worum geht es heute im Kern?",
+      options: [
+        { id: "a", text: "Möglichst viele Aufgaben perfekt erledigen" },
+        { id: "b", text: "Bemerken, wann ich gedanklich abdrifte" },
+        { id: "c", text: "Mich besser motivieren als gestern" },
+        { id: "d", text: "Mit dem Gegner mental konkurrieren" },
+      ],
+      correctOptionId: "b",
+      explanation: "Heute ist die Linse: Präsenz statt Autopilot. Es geht ums Bemerken — nicht um Leistung.",
+    },
+    {
+      id: "d1-q2",
+      target: "action",
+      stem: "Was ist die zentrale Praxis heute?",
+      options: [
+        { id: "a", text: "Wegdriften des Fokus erkennen" },
+        { id: "b", text: "Ergebnisse analysieren" },
+        { id: "c", text: "Selbstgespräche optimieren" },
+        { id: "d", text: "Atmung kontrollieren" },
+      ],
+      correctOptionId: "a",
+      explanation: "Praxisfokus heute: Wegdriften bemerken. Mehr ist heute nicht das Ziel.",
+    },
+    {
+      id: "d1-q3",
+      target: "mistake",
+      stem: "Was wäre heute ein Missverständnis der Aufgabe?",
+      options: [
+        { id: "a", text: "Mich schämen, wenn ich abdrifte" },
+        { id: "b", text: "Neutral bemerken, dass ich abgedriftet bin" },
+        { id: "c", text: "Den Moment des Abdriftens beobachten" },
+        { id: "d", text: "Ohne Bewertung zurückkehren" },
+      ],
+      correctOptionId: "a",
+      explanation: "Bewertung ist nicht Teil der Aufgabe heute. Bemerken reicht.",
+    },
+    {
+      id: "d1-q4",
+      target: "behavior",
+      stem: "Was machst du, wenn du im Training merkst, dass du abgedriftet bist?",
+      options: [
+        { id: "a", text: "Ich ärgere mich kurz und versuche, mich zu konzentrieren" },
+        { id: "b", text: "Ich bemerke es ruhig und kehre zur Aufgabe zurück" },
+        { id: "c", text: "Ich analysiere, warum ich abgedriftet bin" },
+        { id: "d", text: "Ich pushe mich härter" },
+      ],
+      correctOptionId: "b",
+      explanation: "Bemerken + ruhige Rückkehr. Kein Selbstangriff, keine Analyse-Schleife.",
+    },
+    {
+      id: "d1-q5",
+      target: "lens",
+      stem: "Warum ist Bemerken ein eigenständiges Training?",
+      options: [
+        { id: "a", text: "Weil es Konzentration ersetzt" },
+        { id: "b", text: "Weil es die Voraussetzung für jede bewusste Reaktion ist" },
+        { id: "c", text: "Weil es schneller müde macht" },
+        { id: "d", text: "Weil es Gegner verwirrt" },
+      ],
+      correctOptionId: "b",
+      explanation: "Ohne Bemerken keine Wahl. Bemerken ist die Basis aller späteren Schritte im Programm.",
+    },
+    {
+      id: "d1-q6",
+      target: "behavior",
+      stem: "Wie sieht heute ein erfolgreicher Tag aus?",
+      options: [
+        { id: "a", text: "Ich bin nie abgedriftet" },
+        { id: "b", text: "Ich habe mehrere Male bemerkt, dass ich abgedriftet war" },
+        { id: "c", text: "Ich habe maximale Leistung erbracht" },
+        { id: "d", text: "Ich habe alle Aufgaben in Rekordzeit erledigt" },
+      ],
+      correctOptionId: "b",
+      explanation: "Erfolg heute = mehr Bemerken. Nicht weniger Abdriften.",
+    },
+  ],
+};
+
+// Inject pools into DAILY_CONTENT after build.
+for (const [dayStr, pool] of Object.entries(COMPREHENSION_POOLS)) {
+  const n = Number(dayStr);
+  if (DAILY_CONTENT[n]) DAILY_CONTENT[n].comprehensionPool = pool;
+}
+
 export const getDailyContent = (dayNumber: number): DailyContent | null =>
   DAILY_CONTENT[dayNumber] ?? null;
+
+/**
+ * Wählt 3-5 Fragen aus dem Pool (random, deterministisch via seed möglich).
+ * Fallback: leeres Array, wenn kein Pool gepflegt ist.
+ */
+export const drawComprehensionQuestions = (
+  dayNumber: number,
+  count = 3
+): NonNullable<DailyContent["comprehensionPool"]> => {
+  const pool = DAILY_CONTENT[dayNumber]?.comprehensionPool ?? [];
+  if (pool.length === 0) return [];
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+};
