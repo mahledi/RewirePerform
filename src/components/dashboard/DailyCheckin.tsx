@@ -420,6 +420,29 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                 {step === 2 && <KnowledgeStep />}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
+                  <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
+                    <p className="text-muted-foreground mb-6 text-sm">
+                      {comprehensionQuestions.length > 0
+                        ? "Drei Fragen zur heutigen Linse. Kein Test — nur Festigung."
+                        : "Heute kein Check verfügbar. Du kannst direkt weitergehen."}
+                    </p>
+                    {comprehensionQuestions.length > 0 ? (
+                      <ComprehensionCheck
+                        questions={comprehensionQuestions}
+                        onComplete={handleComprehensionComplete}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setStep(5)}
+                        className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold"
+                      >
+                        Weiter zur Reflexion
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+                {step === 5 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-4 text-sm">
@@ -438,7 +461,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     />
                   </motion.div>
                 )}
-                {step === 5 && (
+                {step === 6 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
