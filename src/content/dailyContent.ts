@@ -776,7 +776,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d13-q2", target: "action",
       stem: "Was machst du konkret, wenn ein störender Gedanke auftaucht?",
       options: [
-        { id: "a", text: "Du benennst ihn innerlich (\"Ich habe gerade den Gedanken, dass …") und handelst weiter" },
+        { id: "a", text: "Du benennst ihn innerlich (\"Ich habe gerade den Gedanken, dass …\") und handelst weiter" },
         { id: "b", text: "Du versuchst sofort, ihn loszuwerden" },
         { id: "c", text: "Du diskutierst innerlich gegen ihn an" },
         { id: "d", text: "Du brichst die Aktion ab und sammelst dich" },
@@ -902,10 +902,10 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d16-q3", target: "mistake",
       stem: "Was ist ein Schein-'größerer Grund', der trotzdem Ego ist?",
       options: [
-        { id: "a", text: "\"Ich will, dass das Team sieht, wie wichtig ich bin"" },
-        { id: "b", text: "\"Ich will heute meinem Nebenmann den Rücken freihalten"" },
-        { id: "c", text: "\"Ich will als Team die Defensivarbeit verbessern"" },
-        { id: "d", text: "\"Ich will meinem jüngeren Bruder zeigen, wie man verliert"" },
+        { id: "a", text: "\"Ich will, dass das Team sieht, wie wichtig ich bin\"" },
+        { id: "b", text: "\"Ich will heute meinem Nebenmann den Rücken freihalten\"" },
+        { id: "c", text: "\"Ich will als Team die Defensivarbeit verbessern\"" },
+        { id: "d", text: "\"Ich will meinem jüngeren Bruder zeigen, wie man verliert\"" },
       ],
       correctOptionId: "a",
       explanation: "Sobald der Grund deine Wirkung in den Mittelpunkt stellt, ist er Ego, nicht Sinn.",
@@ -1054,7 +1054,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d20-q3", target: "mistake",
       stem: "Was ist hier die typische Selbstangriff-Form?",
       options: [
-        { id: "a", text: "Innerlich Sätze wie \"Ich bin einfach zu schlecht dafür" zu denken" },
+        { id: "a", text: "Innerlich Sätze wie \"Ich bin einfach zu schlecht dafür\" zu denken" },
         { id: "b", text: "Den Fehler benennen" },
         { id: "c", text: "Nach dem Fehler weiterzuspielen" },
         { id: "d", text: "Sich nach dem Training Notizen zu machen" },
