@@ -116,6 +116,8 @@ export interface DailyTask {
   reframeStep?: ReframeStep;
   /** Lucide-Icon-Name für UI */
   icon?: string;
+  /** Wann der Task aktiv wird — kontextueller Auslöser (Player-Format) */
+  trigger?: string;
 }
 
 export interface JournalQuestion {
@@ -169,6 +171,12 @@ export interface DailyContent {
   sportAdaptationHints?: SportAdaptationHint[];
   /** Pool von 5-8 MC-Fragen, beim Check werden 3-5 zufällig gezogen */
   comprehensionPool?: ComprehensionQuestion[];
+  /** Kontextvarianten (Training / Rest / Match) — Kurzversionen pro Tag */
+  variants?: {
+    training: string;
+    rest: string;
+    match: string;
+  };
 }
 
 /**

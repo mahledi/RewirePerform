@@ -11,6 +11,7 @@
 
 import { MATRIX_DAYS } from "./matrixDays";
 import type { DailyContent, DailyTask, DailyJournal } from "./matrixDayTypes";
+import { PLAYER_DAYS, mapPlayerDayToDailyContent } from "./playerDays";
 
 // ─────────── Generic Placeholder Builder ───────────
 // Wird verwendet, solange finale Tagesinhalte nicht eingepflegt sind.
@@ -2437,6 +2438,17 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
 for (const [dayStr, pool] of Object.entries(COMPREHENSION_POOLS)) {
   const n = Number(dayStr);
   if (DAILY_CONTENT[n]) DAILY_CONTENT[n].comprehensionPool = pool;
+}
+
+// Override with Player-Format days (Maximum-Qualität, snake_case → camelCase).
+// Behält bestehende comprehensionPool-Einträge bei, falls vorhanden.
+for (const playerDay of PLAYER_DAYS) {
+  const mapped = mapPlayerDayToDailyContent(playerDay);
+  const existingPool = DAILY_CONTENT[playerDay.day_id]?.comprehensionPool;
+  DAILY_CONTENT[playerDay.day_id] = {
+    ...mapped,
+    comprehensionPool: existingPool,
+  };
 }
 
 export const getDailyContent = (dayNumber: number): DailyContent | null =>
