@@ -78,6 +78,16 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
         )}
       </button>
 
+      {/* Trigger — Wann der Task aktiv wird */}
+      {task.trigger && (
+        <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
+          <p className="text-[11px] uppercase tracking-widest text-primary mb-1 flex items-center gap-1.5">
+            <Flame className="w-3 h-3" /> Wann aktiv
+          </p>
+          <p className="text-sm text-foreground/90 leading-relaxed">{task.trigger}</p>
+        </div>
+      )}
+
       {/* Concrete Action */}
       <div className="p-5 rounded-2xl bg-gradient-card border-glow">
         <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Konkrete Handlung</p>
