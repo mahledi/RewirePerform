@@ -2342,5 +2342,455 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Übertrage den Tag auf Entscheidungen, Arbeit, Gespräche, Disziplinmomente und alles, bei dem du auf 'innere Freigabe' wartest.",
       match: "Kurzversion: Bremsschleife erkennen → Prüfung stoppen → trotz Zweifel klar handeln."
     }
+  },
+  {
+    day_id: 26,
+    title: "Der Gegner ist kein Urteil über mich",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Fear vs Love / Ego vs Inner Excellence",
+    lens: "Ein starkes Gegenüber ist kein Urteil über mich, sondern ein Reiz, an dem meine Qualität ehrlich geprüft wird.",
+    primary_mechanism: "Opponent Reappraisal",
+    today_trigger: "Sobald du merkst, dass dein System einen Gegner oder ein starkes Gegenüber innerlich größer macht und dich selbst kleiner werden lässt, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Gegner als Selbstbildbedrohung zu Gegner als ehrlicher Prüfung deiner Qualität.",
+    science_bite: "Der Gegner wird oft nicht nur sportlich schwierig, sondern psychologisch problematisch, wenn er dein Selbstbild triggert: Wie wirke ich gegen ihn? Bin ich genug? Was sagt das über mich? Genau dort kippt Gegnerschaft von Prüfung zu Urteil. Heute trainierst du die Gegenrichtung: Der Gegner bleibt stark, aber er wird nicht zu einem inneren Urteil über dich.",
+    tasks: [
+      {
+        id: "d26-t1",
+        title: "Erkenne die Überhöhung",
+        trigger: "Wenn ein Gegner, Konkurrent oder starkes Gegenüber dich innerlich kleiner, vorsichtiger oder hektischer macht",
+        when_to_use: "Bei starken Gegenspielern, Konkurrenzmomenten, Statusmomenten, Vergleich oder sichtbarer Athletik/Aura des Gegenübers",
+        action: "Frag dich kurz: 'Mache ich ihn gerade größer als die Aufgabe?'",
+        why: "Du musst zuerst merken, wann der Gegner nicht nur sportlich relevant, sondern psychologisch überhöht wird.",
+        explanation: "Das Problem ist nicht nur seine Qualität. Das Problem beginnt dort, wo dein System aus dem Gegenüber eine Selbstbildprüfung macht: Ich darf hier nicht exposed werden, ich muss überleben, ich darf mich nicht blamieren.",
+        self_talk: "Überhöhe ich ihn gerade?",
+        micro_reframe: "Ein starker Gegner ist real — aber er muss nicht innerlich übergroß werden.",
+        reframe_step: {
+          trigger: "Der Gegner wirkt innerlich zu groß.",
+          reframe: "Bevor ich reagiere, prüfe ich, ob ich gerade seine Stärke mit einem Urteil über mich vermische.",
+          anchor: "Überhöhe ich ihn gerade?"
+        },
+        system_function: "Threat Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d26-t2",
+        title: "Lies ihn als Prüfung, nicht als Urteil",
+        trigger: "Nachdem du die Überhöhung erkannt hast",
+        when_to_use: "Direkt im Gegnermoment oder kurz davor",
+        action: "Sag dir einmal klar: 'Prüfung, nicht Urteil.'",
+        why: "Tag 26 wird erst stark, wenn der Gegner innerlich neu gelesen wird.",
+        explanation: "Nicht: Er ist nicht stark. Nicht: Ich habe keine Angst. Sondern: Das ist eine echte Prüfung. Dafür trainiere ich. Hier wird Qualität ehrlich sichtbar. Der Gegner bleibt real, aber er wird nicht zu einer Aussage über deinen Wert.",
+        self_talk: "Prüfung, nicht Urteil.",
+        micro_reframe: "Ein Urteil macht klein. Eine Prüfung fordert Qualität.",
+        reframe_step: {
+          trigger: "Ich habe die Überhöhung erkannt.",
+          reframe: "Jetzt lese ich das Gegenüber als Prüfstein statt als Bedrohung meines Bildes.",
+          anchor: "Prüfung, nicht Urteil."
+        },
+        system_function: "Meaning Shift",
+        icon: "RefreshCw"
+      },
+      {
+        id: "d26-t3",
+        title: "Geh sauber in den Kontakt",
+        trigger: "Wenn der reale Kontakt mit dem Gegner da ist",
+        when_to_use: "Im Duell, in direktem Konkurrenzkontakt, im ersten echten Gegnermoment danach",
+        action: "Frag dich: 'Was ist hier meine saubere Kontakt-Handlung?' und tue genau diese.",
+        why: "Die neue Lesart muss direkt Verhalten verändern, sonst bleibt Tag 26 kognitiv.",
+        explanation: "Nicht ausweichen. Nicht imponieren. Nicht überkompensieren. Sondern präsent bleiben, bei deiner Aufgabe bleiben, die Szene spielen, deinen Raum halten, klar kommunizieren und nicht in Schutzlogik kippen.",
+        self_talk: "Sauber in den Kontakt.",
+        micro_reframe: "Ich spiele nicht seine Aura und nicht mein Bild — ich spiele die Szene.",
+        reframe_step: {
+          trigger: "Der Gegnermoment ist da.",
+          reframe: "Jetzt zählt nicht sein Status, sondern meine saubere Kontakt-Handlung.",
+          anchor: "Sauber in den Kontakt."
+        },
+        system_function: "Embodied Contact",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wie habe ich den Gegner heute gelesen?",
+      questions: [
+        { id: "d26-j1", question: "In welchem Moment habe ich heute einen Gegner oder ein starkes Gegenüber innerlich überhöht?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d26-j2", question: "Woran habe ich gemerkt, dass mein System daraus eher ein Urteil über mich gemacht hat?", placeholder: "Was lief innerlich ab?" },
+        { id: "d26-j3", question: "Konnte ich das Gegenüber mindestens einmal als Prüfung statt als Urteil lesen?", placeholder: "Wie hat sich das verändert?" },
+        { id: "d26-j4", question: "Wie sah meine saubere Kontakt-Handlung in diesem Moment aus?", placeholder: "Beschreibe die konkrete Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Konkurrenz- oder Gegnermoment.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark mein Selbstbild noch auf starke Gegenüber reagiert?"
+    },
+    gratitude_prompt: "Welcher Gegnermoment heute hat mir gezeigt, dass Prüfung etwas anderes ist als Urteil?",
+    self_talk_anchors: [
+      { text: "Überhöhe ich ihn gerade?", when: "Wenn das Gegenüber innerlich zu groß wird" },
+      { text: "Prüfung, nicht Urteil.", when: "Wenn du die Lesart korrigierst" },
+      { text: "Sauber in den Kontakt.", when: "Im direkten Gegnermoment" }
+    ],
+    variants: {
+      training: "Nutze direkte Duelle, Konkurrenz, Vergleich und starke Gegenüber als Hauptmaterial.",
+      rest: "Übertrage den Tag auf Konkurrenz, dominante Persönlichkeiten, Vergleich und Statusmomente im Alltag.",
+      match: "Kurzversion: Überhöhung erkennen → Prüfung statt Urteil → sauber in den Kontakt."
+    }
+  },
+  {
+    day_id: 27,
+    title: "Mögliches Scheitern darf die richtige Handlung nicht blockieren",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Growth vs Winning / Learning vs Judgement",
+    lens: "Wenn eine dienliche, entwicklungsrelevante Handlung sichtbar scheitern könnte, ist das kein automatischer Grund, sie zu vermeiden.",
+    primary_mechanism: "Failure-Risk Decoupling",
+    today_trigger: "Sobald du merkst, dass dein System lieber die bildschonende statt die entwicklungsrelevante Handlung wählen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Schutz vor möglichem Misslingen zu offener, dienlicher Handlung trotz sichtbarem Risiko.",
+    science_bite: "Viele Systeme schützen sich nicht vor sinnlosem Risiko, sondern vor sichtbarem Misslingen. Genau dort wird Entwicklung oft begrenzt: nicht weil die Handlung falsch wäre, sondern weil ihr mögliches Scheitern sozial, emotional oder identitär aufgeladen ist. Heute trainierst du nicht, zu scheitern. Du trainierst, das Risiko sichtbaren Scheiterns nicht automatisch über die richtige Handlung zu stellen.",
+    tasks: [
+      {
+        id: "d27-t1",
+        title: "Erkenne die bildschützende Wahl",
+        trigger: "Wenn du zwischen einer sicheren und einer offeneren, entwicklungsrelevanten Handlung stehst",
+        when_to_use: "Bei Verantwortung, Mutmomenten, sichtbaren Entscheidungen, neuen Lösungen, ehrlicher Kommunikation oder echter Initiative",
+        action: "Markiere innerlich: 'Das ist die bildschützende Wahl.'",
+        why: "Bevor du bewusst ein Scheiterrisiko tragen kannst, musst du sehen, wo dein System gerade lieber sein Bild als deine Entwicklung schützt.",
+        explanation: "Weg A wirkt sauberer, kontrollierter, weniger sichtbar, weniger peinlich. Weg B ist offener, echter, entwicklungsrelevanter und hat reale Chance, nicht sofort zu klappen. Genau dort liegt Tag 27.",
+        self_talk: "Das ist die bildschützende Wahl.",
+        micro_reframe: "Nicht alles, was sicher aussieht, dient heute wirklich meiner Entwicklung.",
+        reframe_step: {
+          trigger: "Ich spüre zwei Wege: sicherer oder offener.",
+          reframe: "Bevor ich automatisch Sicherheit wähle, mache ich die bildschützende Wahl sichtbar.",
+          anchor: "Das ist die bildschützende Wahl."
+        },
+        system_function: "Protection Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d27-t2",
+        title: "Wähle die dienliche offene Handlung",
+        trigger: "Nachdem dir die bildschützende Wahl klar geworden ist",
+        when_to_use: "Direkt vor der relevanten Handlung",
+        action: "Frag dich: 'Welche Handlung dient mehr, auch wenn sie scheitern könnte?' und wähle genau diese.",
+        why: "Hier liegt die Umcodierung: nicht nur erkennen, sondern anders wählen.",
+        explanation: "Heute geht es nicht um blindes Risiko, Show oder Chaos. Es geht um die Handlung, die der Situation und deiner Entwicklung dient — auch wenn sie sichtbar scheitern könnte.",
+        self_talk: "Offen handeln.",
+        micro_reframe: "Entwicklung braucht heute nicht perfekte Sicherheit, sondern die richtige offene Handlung.",
+        reframe_step: {
+          trigger: "Ich kenne die bildschützende und die dienliche Option.",
+          reframe: "Jetzt wähle ich nicht, was mein Bild schützt, sondern was mehr dient.",
+          anchor: "Offen handeln."
+        },
+        system_function: "Open Choice",
+        icon: "StepForward"
+      },
+      {
+        id: "d27-t3",
+        title: "Trag das mögliche Misslingen sauber",
+        trigger: "Wenn du die offene Handlung gewählt hast und sofort Angst, Schutz oder Nachbewertung auftaucht",
+        when_to_use: "Direkt während oder nach der offenen Handlung",
+        action: "Bleib bei der Handlung, ohne ihr mögliches Misslingen sofort zum Urteil über dich zu machen.",
+        why: "Tag 27 wird erst vollständig, wenn sichtbares Risiko nicht sofort wieder ins Selbstbild kippt.",
+        explanation: "Du musst nicht cool oder angstfrei sein. Du sollst nur die richtige Handlung setzen und ihr mögliches Misslingen nicht sofort identitär aufblasen.",
+        self_talk: "Nicht schützen. Dienen.",
+        micro_reframe: "Mögliches Misslingen macht die Handlung nicht falsch, wenn sie dienlich und entwicklungsrelevant ist.",
+        reframe_step: {
+          trigger: "Die offene Handlung fühlt sich riskant oder exponiert an.",
+          reframe: "Jetzt halte ich sie nicht nur aus — ich trage sie sauber, ohne sie sofort gegen mich zu verwenden.",
+          anchor: "Nicht schützen. Dienen."
+        },
+        system_function: "Failure-Risk Tolerance",
+        icon: "Unlock"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute offene Handlung über Bildschutz gestellt?",
+      questions: [
+        { id: "d27-j1", question: "In welcher Situation wollte mein System heute lieber die sichere, bildschonende Handlung wählen?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d27-j2", question: "Welche offenere, dienlichere Handlung war dort möglich?", placeholder: "Was wäre die entwicklungsrelevante Handlung gewesen?" },
+        { id: "d27-j3", question: "Konnte ich diese offene Handlung heute mindestens einmal wirklich wählen?", placeholder: "Wie sah das aus?" },
+        { id: "d27-j4", question: "Wie hat mein System auf das mögliche sichtbare Misslingen reagiert?", placeholder: "Was war innerlich spürbar?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem offenes Handeln riskant wirkte.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark ich Entwicklung noch an Bildschutz und Misslingensvermeidung knüpfe?"
+    },
+    gratitude_prompt: "Welche offene Handlung heute war vielleicht wichtiger als ihr möglicher Ausgang?",
+    self_talk_anchors: [
+      { text: "Das ist die bildschützende Wahl.", when: "Wenn Sicherheit zu attraktiv wirkt" },
+      { text: "Offen handeln.", when: "Wenn du die dienliche Option wählst" },
+      { text: "Nicht schützen. Dienen.", when: "Wenn das Risiko sichtbar wird" }
+    ],
+    variants: {
+      training: "Nutze Verantwortung, sichtbare Entscheidungen, Initiative, Kommunikation und Mutmomente als Material.",
+      rest: "Übertrage den Tag auf Gespräche, Entscheidungen, Sichtbarkeit, ehrliche Schritte und alles, was du lieber aus Bildschutz vermeiden würdest.",
+      match: "Kurzversion: bildschützende Wahl erkennen → dienliche offene Handlung wählen → mögliches Misslingen sauber tragen."
+    }
+  },
+  {
+    day_id: 28,
+    title: "Unfairness darf nicht mein inneres Zentrum übernehmen",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Control vs Non-Control / Process Stability",
+    lens: "Auch wenn etwas unfair oder gegen mich läuft, bleibt meine Funktion größer als mein Protest dagegen.",
+    primary_mechanism: "Protest Regulation Under Non-Control",
+    today_trigger: "Sobald etwas klar gegen dich läuft und dein System innerlich in Protest, Frust oder Opfermodus gehen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Unfairness als Hauptgeschichte zu Funktion trotz Unfairness.",
+    science_bite: "Wettkämpfe kippen oft nicht nur an Fehlern, sondern daran, dass äußere Unfairness innerlich zu groß wird. Schiri-Entscheidungen, Bedingungen, Rollen, Timing, Verhalten anderer oder Pechmomente können real sein. Das Problem entsteht oft dann, wenn dein inneres System daraus die Hauptgeschichte macht. Dann wird deine Funktion kleiner als dein Protest. Heute trainierst du nicht, Unfairness gutzufinden — sondern deine Funktion größer zu halten als den inneren Kampf dagegen. ",
+    tasks: [
+      {
+        id: "d28-t1",
+        title: "Erkenne den Protestmodus",
+        trigger: "Wenn etwas unfair, gegen dich oder störend läuft und dein System sofort innerlich dagegen kämpft",
+        when_to_use: "Bei Calls, Rollen, Fehlern anderer, Bedingungen, Pechmomenten, Spielverlauf oder ungerechter Dynamik",
+        action: "Frag dich kurz: 'Bin ich gerade noch in Funktion — oder schon im Protestmodus?'",
+        why: "Bevor du Unfairness regulieren kannst, musst du merken, wann dein System nicht nur Schwieriges registriert, sondern innerlich in Protest kippt.",
+        explanation: "Die entscheidende Frage ist heute nicht nur: War das unfair? Sondern: Hat das Ereignis gerade die Mitte meines Systems übernommen?",
+        self_talk: "Protestmodus?",
+        micro_reframe: "Das Ereignis ist real — aber es muss nicht mein ganzes inneres Zentrum werden.",
+        reframe_step: {
+          trigger: "Etwas läuft klar gegen mich.",
+          reframe: "Bevor ich komplett einsteige, prüfe ich, ob ich schon im Protestmodus bin.",
+          anchor: "Protestmodus?"
+        },
+        system_function: "Protest Awareness",
+        icon: "AlertTriangle"
+      },
+      {
+        id: "d28-t2",
+        title: "Hol die Funktion nach vorne",
+        trigger: "Nachdem du den Protestmodus erkannt hast",
+        when_to_use: "Direkt danach, bevor Frustschleife oder Opfermodus weiterläuft",
+        action: "Frag dich: 'Was liegt trotz allem noch bei mir?' und hole genau das nach vorne.",
+        why: "Die Umcodierung gelingt nur, wenn das, was noch bei dir liegt, größer bleibt als der Kampf gegen das, was nicht bei dir liegt.",
+        explanation: "Nicht alles ist verloren, nur weil etwas unfair ist. Deine Funktion kann trotzdem noch an Haltung, Kommunikation, Präsenz, Prozess, nächster Aktion oder Kontakt hängen. Genau das muss heute wieder nach vorne.",
+        self_talk: "Was liegt noch bei mir?",
+        micro_reframe: "Auch unter Unfairness bleibt oft noch genug bei mir, um funktional zu bleiben.",
+        reframe_step: {
+          trigger: "Ich habe den Protestmodus erkannt.",
+          reframe: "Jetzt hole ich das Steuerbare wieder vor das Unverfügbare.",
+          anchor: "Was liegt noch bei mir?"
+        },
+        system_function: "Function Recovery",
+        icon: "LocateFixed"
+      },
+      {
+        id: "d28-t3",
+        title: "Spiele die nächste funktionale Sache",
+        trigger: "Wenn du das Steuerbare wieder etwas klarer vor dir hast",
+        when_to_use: "In der direkt nächsten Szene",
+        action: "Setze nur die nächste funktionale Handlung, statt weiter gegen das Ereignis zu kämpfen.",
+        why: "Tag 28 wird erst real, wenn Funktion praktisch größer bleibt als Protest.",
+        explanation: "Nicht die ganze Situation retten. Nicht Gerechtigkeit herstellen. Nicht innerlich alles lösen. Nur die nächste funktionale Sache spielen: Präsenz, Kommunikation, Kontakt, Prozess, Haltung, Entscheidung.",
+        self_talk: "Funktion vor Protest.",
+        micro_reframe: "Ich verliere mehr an die Frustschleife als an das Ereignis selbst, wenn ich meine Funktion aufgebe.",
+        reframe_step: {
+          trigger: "Ich sehe wieder, was bei mir liegt.",
+          reframe: "Jetzt spiele ich die nächste funktionale Sache statt weiter innerlich zu kämpfen.",
+          anchor: "Funktion vor Protest."
+        },
+        system_function: "Functional Continuation",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo wurde Unfairness heute größer als meine Funktion — und wo nicht?",
+      questions: [
+        { id: "d28-j1", question: "Welche Situation ist heute klar gegen mich oder unfair gelaufen?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d28-j2", question: "Woran habe ich gemerkt, dass mein System in Protestmodus oder Frustschleife kippt?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d28-j3", question: "Was lag trotz allem noch bei mir?", placeholder: "Was war noch steuerbar?" },
+        { id: "d28-j4", question: "Welche nächste funktionale Handlung habe ich dann gespielt?", placeholder: "Beschreibe die konkrete Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer unfairen oder gegen dich laufenden Situation.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie schnell äußeres Chaos mein inneres Zentrum übernimmt?"
+    },
+    gratitude_prompt: "Welche gegen mich laufende Situation heute hat mir gezeigt, dass Funktion größer bleiben kann als Protest?",
+    self_talk_anchors: [
+      { text: "Protestmodus?", when: "Wenn etwas unfair oder gegen dich läuft" },
+      { text: "Was liegt noch bei mir?", when: "Wenn du Funktion zurückholen willst" },
+      { text: "Funktion vor Protest.", when: "In der nächsten funktionalen Handlung" }
+    ],
+    variants: {
+      training: "Nutze Rollen, Fehler anderer, Bedingungen, Unterbrechungen und ungerechte Dynamiken als Material.",
+      rest: "Übertrage den Tag auf Unfairness, Verzögerung, äußere Umstände, andere Menschen und Situationen, in denen du schnell ins innere Kämpfen kippst.",
+      match: "Kurzversion: Protestmodus erkennen → Steuerbares nach vorne holen → Funktion vor Protest."
+    }
+  },
+  {
+    day_id: 29,
+    title: "Wenn es zählt, bleibe ich meine Version",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Identity vs Pressure",
+    lens: "Wenn es zählt, darf ich nicht in eine kleinere Version von mir kippen.",
+    primary_mechanism: "Identity Stability Under Pressure",
+    today_trigger: "Sobald eine Situation Bedeutung bekommt und dein System kleiner, enger oder weniger wie deine gewählte Version werden will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Relevanz = kleinere Version zu Relevanz = gleiche Identitätsrichtung unter Last.",
+    science_bite: "Druck verändert oft nicht nur Fokus, sondern Version. Viele Systeme werden in bedeutenden Momenten kleiner: vorsichtiger, stiller, weniger klar, weniger offen, weniger mutig. Nicht weil Fähigkeit plötzlich weg ist, sondern weil Relevanz die Identitätslinie verzieht. Heute trainierst du, dass Bedeutung nicht automatisch deine Version schrumpfen muss. ",
+    tasks: [
+      {
+        id: "d29-t1",
+        title: "Erkenne die kleinere Version",
+        trigger: "Wenn eine Situation plötzlich zählt und du merkst, dass dein Verhalten enger, kleiner oder vorsichtiger wird",
+        when_to_use: "Bei Druckszenen, Beobachtung, Relevanz, Verantwortung, Matchnähe oder sichtbaren Situationen",
+        action: "Frag dich kurz: 'Werde ich hier gerade zu einer kleineren Version von mir?'",
+        why: "Du kannst Relevanz nur anders tragen, wenn du merkst, wie sie deine Version verzerren will.",
+        explanation: "Die kleinere Version ist oft nicht dramatisch. Sie ist einfach weniger du: weniger präsent, weniger mutig, weniger offen, weniger klar, weniger aktiv. Genau diese Schrumpfung soll heute sichtbar werden.",
+        self_talk: "Kleinere Version?",
+        micro_reframe: "Druck will mich oft nicht nur stressen, sondern schrumpfen.",
+        reframe_step: {
+          trigger: "Die Situation bekommt Bedeutung und ich werde enger.",
+          reframe: "Bevor ich mich verliere, prüfe ich, ob ich gerade in eine kleinere Version kippe.",
+          anchor: "Kleinere Version?"
+        },
+        system_function: "Identity Threat Awareness",
+        icon: "Search"
+      },
+      {
+        id: "d29-t2",
+        title: "Erinnere deine Richtung",
+        trigger: "Nachdem dir klar geworden ist, dass du kleiner wirst",
+        when_to_use: "Direkt danach, bevor die Szene dich weiter schrumpft",
+        action: "Frag dich: 'Welche Version von mir will ich hier trotzdem sein?'",
+        why: "Relevanz muss an Richtung gebunden werden, nicht an alte Schutzmuster.",
+        explanation: "Nicht perfekt. Nicht heldenhaft. Nur wieder dieselbe Richtung: präsent, klar, mutig, sauber, offen, dienlich, prozessorientiert. Tag 29 will, dass deine Version auch unter Bedeutung wieder auftaucht.",
+        self_talk: "Welche Version bin ich hier?",
+        micro_reframe: "Wenn es zählt, brauche ich nicht eine neue Maske — ich brauche Rückkehr zu meiner Richtung.",
+        reframe_step: {
+          trigger: "Ich sehe die kleinere Version.",
+          reframe: "Jetzt erinnere ich nicht den Ausgang, sondern meine Richtung.",
+          anchor: "Welche Version bin ich hier?"
+        },
+        system_function: "Identity Recall",
+        icon: "Compass"
+      },
+      {
+        id: "d29-t3",
+        title: "Zeig die Version in einer Handlung",
+        trigger: "Wenn dir die gewünschte Version wieder klarer ist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Setze eine konkrete Handlung, die zeigt, dass du nicht in die kleinere Version gekippt bist.",
+        why: "Tag 29 wird erst real, wenn Identität unter Druck im Verhalten sichtbar bleibt.",
+        explanation: "Das kann sein: wieder anbieten, klar sprechen, offen bleiben, den Kontakt nehmen, präsent im Prozess bleiben, nicht kleiner werden, Verantwortung nicht abgeben. Nicht die ganze Identität retten — nur die nächste echte Handlung setzen.",
+        self_talk: "Zeig die Version.",
+        micro_reframe: "Ich halte meine Richtung nicht durch Gefühl, sondern durch Handlung.",
+        reframe_step: {
+          trigger: "Meine Richtung ist wieder klarer.",
+          reframe: "Jetzt zeige ich sie in der nächsten sichtbaren Handlung.",
+          anchor: "Zeig die Version."
+        },
+        system_function: "Embodied Identity",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo wollte Relevanz mich heute kleiner machen?",
+      questions: [
+        { id: "d29-j1", question: "In welcher Situation wurde heute besonders spürbar, dass es zählt?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d29-j2", question: "Woran habe ich gemerkt, dass ich in eine kleinere Version kippen wollte?", placeholder: "Wie zeigte sich das?" },
+        { id: "d29-j3", question: "Welche Version von mir wollte ich in dieser Situation trotzdem sein?", placeholder: "Formuliere sie so klar wie möglich." },
+        { id: "d29-j4", question: "Welche Handlung hat gezeigt, dass ich diese Richtung nicht ganz verloren habe?", placeholder: "Beschreibe die konkrete Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem Bedeutung hoch war.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark Relevanz mein Verhalten und meine Version bisher verkleinert?"
+    },
+    gratitude_prompt: "Welche Drucksituation heute hat mir gezeigt, dass ich meine Richtung auch unter Bedeutung halten kann?",
+    self_talk_anchors: [
+      { text: "Kleinere Version?", when: "Wenn du unter Relevanz enger wirst" },
+      { text: "Welche Version bin ich hier?", when: "Wenn du deine Richtung erinnern willst" },
+      { text: "Zeig die Version.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze sichtbare, bedeutende, druckvolle oder evaluierte Situationen als Material.",
+      rest: "Übertrage den Tag auf Gespräche, Entscheidungen, Verantwortung, Auftritte und Momente, in denen du dich kleiner machst, sobald etwas zählt.",
+      match: "Kurzversion: kleinere Version erkennen → Richtung erinnern → Version in Handlung zeigen."
+    }
+  },
+  {
+    day_id: 30,
+    title: "Wenn der Ausgang groß wird, bleibt mein Arbeitsort im Prozess",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Process vs Result",
+    lens: "Wenn der Ausgang psychologisch groß wird, muss ich nicht alles retten — ich brauche meinen Arbeitsort.",
+    primary_mechanism: "Process Stability Under Outcome Pressure",
+    today_trigger: "Sobald der Ausgang, die Bedeutung oder die Konsequenz einer Situation deinen Kopf psychologisch zieht, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Ausgangs-Zug zu Prozessanker und nächster Prozesshandlung.",
+    science_bite: "Ergebnisdruck zerstört oft nicht nur Fokus, sondern macht Handlung zu groß. Dann will dein System alles retten, alles entscheiden, alles kontrollieren. Genau dadurch verliert es den eigentlichen Arbeitsort. Heute trainierst du deshalb nicht, den Ausgang wegzureden, sondern deinen Prozessanker wieder nach vorne zu holen und nur die nächste saubere Prozesshandlung zu spielen. ",
+    tasks: [
+      {
+        id: "d30-t1",
+        title: "Erkenne den Ausgangs-Zug",
+        trigger: "Wenn eine Situation plötzlich sehr viel bedeutet und dein Kopf stärker beim Ausgang als bei der Aktion lebt",
+        when_to_use: "Bei Relevanz, Druck, Bewertung, entscheidenden Szenen, sichtbaren Konsequenzen oder innerem Kontrollwunsch",
+        action: "Frag dich kurz: 'Bin ich gerade beim Ausgang — oder bei der Aktion?'",
+        why: "Tag 30 beginnt damit, Ergebnisdruck als Aufmerksamkeitsproblem sichtbar zu machen.",
+        explanation: "Sobald dein System den Ausgang psychologisch groß macht, will es oft sichern, erzwingen oder kontrollieren. Genau dieser Zug muss heute zuerst sichtbar werden.",
+        self_talk: "Ausgang oder Aktion?",
+        micro_reframe: "Wenn der Ausgang groß wird, verliere ich oft nicht Fähigkeit, sondern meinen Arbeitsort.",
+        reframe_step: {
+          trigger: "Die Szene wird innerlich groß und bedeutungsvoll.",
+          reframe: "Bevor ich retten oder sichern will, prüfe ich zuerst meinen Aufmerksamkeitsort.",
+          anchor: "Ausgang oder Aktion?"
+        },
+        system_function: "Outcome Pressure Awareness",
+        icon: "Goal"
+      },
+      {
+        id: "d30-t2",
+        title: "Hol deinen Prozessanker zurück",
+        trigger: "Nachdem du den Ausgangs-Zug erkannt hast",
+        when_to_use: "Direkt danach, bevor dein Kopf weiter in Kontrolle, Sicherung oder Erzwingen geht",
+        action: "Bring bewusst deinen Prozessanker wieder nach vorne.",
+        why: "Ergebnisdruck wird praktisch nur dann regulierbar, wenn du wieder einen klaren Arbeitsort hast.",
+        explanation: "Nicht alles lösen. Nicht die ganze Szene gewinnen. Nicht das komplette Ergebnis tragen. Nur deinen Prozessanker wieder nach vorne holen: Kontakt, Kommunikation, Haltung, Laufweg, Timing, Präsenz, technischer Fokus oder deine nächste klare Aufgabe.",
+        self_talk: "Zurück an meinen Arbeitsort.",
+        micro_reframe: "Wenn der Ausgang zieht, brauche ich nicht mehr Druck — ich brauche meinen Anker.",
+        reframe_step: {
+          trigger: "Ich habe den Ausgangs-Zug erkannt.",
+          reframe: "Jetzt bringe ich meinen Prozesspunkt wieder vor den Ausgang.",
+          anchor: "Zurück an meinen Arbeitsort."
+        },
+        system_function: "Anchor Recovery",
+        icon: "LocateFixed"
+      },
+      {
+        id: "d30-t3",
+        title: "Spiele nur die nächste Prozesshandlung",
+        trigger: "Wenn dein Prozessanker wieder vorne ist",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Frag dich: 'Was ist jetzt nur meine nächste Prozesshandlung?' und tue genau diese.",
+        why: "Ergebnisdruck macht Handlung oft zu groß. Tag 30 macht sie wieder spielbar.",
+        explanation: "Nicht die nächste große, nicht die endgültige, nicht die perfekte — nur die nächste, die wirklich bei dir liegt. Genau das schützt Leistung unter Ergebnisdruck am stärksten.",
+        self_talk: "Nur die nächste.",
+        micro_reframe: "Ich muss nicht den ganzen Ausgang lösen. Ich muss nur meine nächste Prozesshandlung spielen.",
+        reframe_step: {
+          trigger: "Mein Anker ist wieder vorne.",
+          reframe: "Jetzt mache ich die Handlung wieder klein genug, damit sie wirklich spielbar wird.",
+          anchor: "Nur die nächste."
+        },
+        system_function: "Process Playability",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo war mein Arbeitsort, als der Ausgang groß wurde?",
+      questions: [
+        { id: "d30-j1", question: "In welchem Moment war der Ausgang heute am größten in meinem Kopf?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d30-j2", question: "Woran habe ich gemerkt, dass mein System sichern, erzwingen oder kontrollieren wollte?", placeholder: "Wie zeigte sich das innerlich oder im Verhalten?" },
+        { id: "d30-j3", question: "Welchen Prozessanker habe ich bewusst wieder nach vorne geholt?", placeholder: "Was war dein Arbeitsort?" },
+        { id: "d30-j4", question: "Welche nächste Prozesshandlung habe ich dann gespielt?", placeholder: "Beschreibe die konkrete Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 Sache, die heute viel Bedeutung hatte, 1 Sache, bei der der Ausgang an dir gezogen hat, und 1 Sache, die dir gezeigt hat, dass Prozess unter Druck ein echter Halt sein kann.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stabil mein Arbeitsort schon unter Ergebnisdruck ist?"
+    },
+    gratitude_prompt: "Welche bedeutungsvolle Situation heute hat mir gezeigt, dass Prozess unter Druck ein echter Halt sein kann?",
+    self_talk_anchors: [
+      { text: "Ausgang oder Aktion?", when: "Wenn der Ausgang psychologisch zieht" },
+      { text: "Zurück an meinen Arbeitsort.", when: "Wenn du deinen Prozessanker zurückholst" },
+      { text: "Nur die nächste.", when: "Wenn du die Handlung wieder spielbar machst" }
+    ],
+    variants: {
+      training: "Nutze druckvolle, bewertete oder bedeutungsvolle Szenen als Material.",
+      rest: "Übertrage den Tag auf Zukunftsdenken, Konsequenzen, Leistungsgrübeln und Alltagssituationen, in denen der Ausgang zu groß wird.",
+      match: "Kurzversion: Ausgangs-Zug erkennen → Prozessanker zurückholen → nur die nächste Prozesshandlung."
+    }
   }
 ];
