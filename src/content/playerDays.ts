@@ -1893,4 +1893,454 @@ export const PLAYER_DAYS: PlayerDay[] = [
       match: "Kurzversion: Fehler von Urteil trennen → nur Information behalten → ohne Selbstangriff weiter."
     }
   },
+  {
+    day_id: 21,
+    title: "Team vor Selbstbild",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Ego vs Inner Excellence",
+    lens: "Ich kann Aufmerksamkeit aus Bildschutz lösen und auf das richten, was die Situation oder das Team wirklich braucht.",
+    primary_mechanism: "Prosocial Attention Shift",
+    today_trigger: "Sobald du merkst, dass du gerade eher dein Bild schützt als der Situation oder dem Team zu dienen, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von bildschützendem Handeln zu dienlichem Handeln.",
+    science_bite: "Unter Druck, Bewertung oder Unsicherheit wird Aufmerksamkeit oft stark selbstbezogen: Wie wirke ich? Was sagt das über mich? Wie komme ich rüber? Genau dieser Bildschutz macht Verhalten oft enger, künstlicher oder defensiver. Heute trainierst du die Gegenrichtung: Aufmerksamkeit weg vom Bild, hin zu dem, was die Situation, das Team oder die Aufgabe wirklich braucht.",
+    tasks: [
+      {
+        id: "d21-t1",
+        title: "Erkenne den Bildschutz",
+        trigger: "Wenn du merkst, dass es dir gerade stark um Wirkung, Status, Verteidigung oder Selbstschutz geht",
+        when_to_use: "Bei Fehlern, Kritik, Vergleich, Verantwortung, Beobachtung oder sozialen Druckmomenten",
+        action: "Frag dich kurz: 'Schütze ich gerade mein Bild — oder diene ich der Situation?'",
+        why: "Du kannst Teamorientierung erst praktisch wählen, wenn der Bildschutz sichtbar wird.",
+        explanation: "Tag 21 ist nicht moralisch. Es geht nicht darum, nett zu sein. Es geht darum zu erkennen, wann dein Verhalten stärker vom eigenen Bild als von echter Aufgabe oder Beitrag gesteuert ist.",
+        self_talk: "Bild oder Beitrag?",
+        micro_reframe: "Nicht jede Spannung ist Teamverantwortung — oft ist sie Bildschutz.",
+        reframe_step: {
+          trigger: "Ich merke starken Selbstfokus oder Beweisdrang.",
+          reframe: "Bevor ich handle, kläre ich: Geht es mir gerade mehr um mein Bild oder um die Sache?",
+          anchor: "Bild oder Beitrag?"
+        },
+        system_function: "Image Protection Awareness",
+        icon: "UserRound"
+      },
+      {
+        id: "d21-t2",
+        title: "Frag nach dem, was gebraucht wird",
+        trigger: "Nachdem du Bildschutz erkannt hast",
+        when_to_use: "Direkt im Anschluss, bevor du in alte Schutzreaktionen gehst",
+        action: "Frag dich: 'Was braucht die Situation oder das Team gerade wirklich von mir?'",
+        why: "Der Wechsel von Selbstbild zu Beitrag braucht einen klaren neuen Aufmerksamkeitsort.",
+        explanation: "Vielleicht braucht es Präsenz. Vielleicht Kommunikation. Vielleicht Hilfe. Vielleicht Mut. Vielleicht Ruhe. Vielleicht eine saubere kleine Handlung. Heute trainierst du, nicht primär vom Ich aus zu denken.",
+        self_talk: "Was wird hier gebraucht?",
+        micro_reframe: "Wenn ich auf Beitrag statt Bild gehe, wird Verhalten oft freier und klarer.",
+        reframe_step: {
+          trigger: "Ich habe Bildschutz erkannt.",
+          reframe: "Jetzt richte ich meine Aufmerksamkeit auf das, was wirklich gebraucht wird.",
+          anchor: "Was wird hier gebraucht?"
+        },
+        system_function: "Contribution Redirect",
+        icon: "Handshake"
+      },
+      {
+        id: "d21-t3",
+        title: "Handle dienlich statt bildschützend",
+        trigger: "Wenn du zwischen dienlicher und bildschützender Handlung wählen kannst",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Setze bewusst die Handlung, die der Situation oder dem Team dient — auch wenn sie weniger gut für dein Bild wäre.",
+        why: "Tag 21 wird erst real, wenn Team-/Situationsfokus Verhalten übernimmt.",
+        explanation: "Das kann heißen: klar sprechen, Hilfe geben, Verantwortung übernehmen, eine Korrektur annehmen, präsent bleiben, dich nicht kleiner machen, ehrlich statt cool sein. Nicht fürs Bild. Für die Sache.",
+        self_talk: "Dienlich handeln.",
+        micro_reframe: "Beitrag macht oft freier als Bildschutz.",
+        reframe_step: {
+          trigger: "Ich könnte jetzt mein Bild schützen oder der Sache dienen.",
+          reframe: "Heute wähle ich bewusst die dienlichere Handlung.",
+          anchor: "Dienlich handeln."
+        },
+        system_function: "Service Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann ging es heute um mein Bild — und wann um das, was gebraucht wurde?",
+      questions: [
+        { id: "d21-j1", question: "In welchen Momenten habe ich heute eher mein Bild geschützt als der Situation oder dem Team gedient?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d21-j2", question: "Was wurde in dieser Situation wirklich gebraucht?", placeholder: "Präsenz, Hilfe, Mut, Klarheit, Kommunikation ..." },
+        { id: "d21-j3", question: "Konnte ich heute mindestens einmal sichtbar dienlicher statt bildschützend handeln?", placeholder: "Wie sah das konkret aus?" },
+        { id: "d21-j4", question: "Was zeigt mir das darüber, wie oft mein Verhalten noch an Bildschutz statt an Beitrag hängt?", placeholder: "Formuliere den Kern möglichst klar." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 Sache, die dir selbst geholfen hat, 1 Sache, bei der jemand anders wichtig war, und 1 Sache, die dir gezeigt hat, dass Beitrag oft freier macht als Bildschutz.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag über mein Verhältnis von Bildschutz, Beitrag und echter Exzellenz?"
+    },
+    gratitude_prompt: "Welche Situation heute hat mir gezeigt, dass dienliches Handeln oft freier macht als Selbstschutz?",
+    self_talk_anchors: [
+      { text: "Bild oder Beitrag?", when: "Wenn Selbstfokus oder Bildschutz hochgeht" },
+      { text: "Was wird hier gebraucht?", when: "Wenn du Aufmerksamkeit auf Beitrag richten willst" },
+      { text: "Dienlich handeln.", when: "In der direkt nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze Vergleich, Beobachtung, Verantwortung, Unsicherheit und Fehler als Hauptmaterial.",
+      rest: "Übertrage den Tag auf Gespräche, Familie, Freunde, Arbeit und Alltagssituationen, in denen du eher auf Wirkung als auf Beitrag gehst.",
+      match: "Kurzversion: Bildschutz erkennen → was wird gebraucht? → dienlich handeln."
+    }
+  },
+  {
+    day_id: 22,
+    title: "Prozess als Heimat",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Process vs Result",
+    lens: "Wenn alles enger, lauter oder wichtiger wird, brauche ich einen verlässlichen Ort zum Arbeiten. Dieser Ort ist mein Prozess.",
+    primary_mechanism: "Process Anchoring",
+    today_trigger: "Sobald Druck, Drift, Bildschutz oder Ergebnisgedanken dich aus der Aufgabe ziehen, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von diffusem Reagieren zu einem klaren, verlässlichen Prozessanker als Arbeitsort.",
+    science_bite: "Es reicht nicht, Ergebnisbindung nur zu erkennen. Dein System braucht einen stabilen Ort, an den es immer wieder zurück kann. Genau das ist heute der Prozess: kein großes Konzept, sondern ein konkreter, steuerbarer und verhaltensnaher Aufmerksamkeitsanker. Wenn alles lauter wird, brauchst du nicht mehr Gefühl oder mehr Härte — du brauchst einen klaren Ort zum Arbeiten. ",
+    tasks: [
+      {
+        id: "d22-t1",
+        title: "Lege deinen Prozessanker fest",
+        trigger: "Vor dem Training, vor einer Einheit oder vor einer Phase, die Bedeutung bekommen könnte",
+        when_to_use: "Zu Beginn des Tages, vor Drills, vor Scrimmage, vor Matchphasen oder vor Belastungsblöcken",
+        action: "Bestimme genau einen klaren Prozessanker, auf den du heute immer wieder zurückkommst.",
+        why: "Ein Prozessanker macht Prozessdenken konkret und handhabbar.",
+        explanation: "Nicht fünf Ziele gleichzeitig. Nicht diffuse Konzentration. Sondern ein klarer Aufmerksamkeitsort: erster Kontakt, klare Kommunikation, aktiver Laufweg, saubere Körperhaltung, Timing, Prozesspunkt, Präsenz in der ersten Aktion.",
+        self_talk: "Hier arbeite ich.",
+        micro_reframe: "Prozess ist heute nicht Theorie, sondern mein klarer Arbeitsort.",
+        reframe_step: {
+          trigger: "Der Tag oder Block startet.",
+          reframe: "Bevor es lauter wird, lege ich fest, wohin ich immer wieder zurückkann.",
+          anchor: "Hier arbeite ich."
+        },
+        system_function: "Anchor Definition",
+        icon: "Target"
+      },
+      {
+        id: "d22-t2",
+        title: "Kehre an den Arbeitsort zurück",
+        trigger: "Wenn Drift, Ergebnisdenken, Bildschutz oder Druck hochgehen",
+        when_to_use: "Mitten in der Einheit, nach Fehlern, bei Lautstärke, bei innerem Kippen",
+        action: "Bring deine Aufmerksamkeit sofort zurück an deinen definierten Prozessanker.",
+        why: "Der Prozessanker ist nur dann wertvoll, wenn er in echten Belastungsmomenten nutzbar bleibt.",
+        explanation: "Heute trainierst du nicht nur, dass Prozess wichtig ist, sondern dass dein System einen Ort hat, an den es unter Last wirklich zurückkehren kann.",
+        self_talk: "Zurück an den Arbeitsort.",
+        micro_reframe: "Wenn alles wichtiger wird, brauche ich nicht mehr Denken — ich brauche meinen Arbeitsort.",
+        reframe_step: {
+          trigger: "Ich werde enger, lauter oder ziehe weg.",
+          reframe: "Jetzt gehe ich nicht in Verlauf oder Ergebnis, sondern zurück an meinen klaren Prozesspunkt.",
+          anchor: "Zurück an den Arbeitsort."
+        },
+        system_function: "Anchor Return",
+        icon: "LocateFixed"
+      },
+      {
+        id: "d22-t3",
+        title: "Arbeite von dort aus weiter",
+        trigger: "Nachdem du an den Prozessanker zurückgekehrt bist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Zeige den Anker sofort in einer klaren, sauberen Handlung.",
+        why: "Prozess wird erst stabil, wenn der Anker nicht nur gedacht, sondern im Verhalten sichtbar wird.",
+        explanation: "Es reicht nicht, innerlich zu sagen, was dein Prozess ist. Heute soll dieser Arbeitsort in deiner nächsten Szene sichtbar werden: klarer Kontakt, saubere Kommunikation, Präsenz, Struktur, Rhythmus, Haltung.",
+        self_talk: "Arbeite von hier.",
+        micro_reframe: "Der Prozessanker ist erst real, wenn ich von dort aus handle.",
+        reframe_step: {
+          trigger: "Ich bin am Anker zurück.",
+          reframe: "Jetzt arbeite ich von dort aus sichtbar weiter.",
+          anchor: "Arbeite von hier."
+        },
+        system_function: "Anchor Embodiment",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo war heute mein Arbeitsort — und wann habe ich ihn verloren?",
+      questions: [
+        { id: "d22-j1", question: "Was war heute mein klarer Prozessanker?", placeholder: "Benenne ihn so konkret wie möglich." },
+        { id: "d22-j2", question: "In welchen Momenten hat mein System diesen Arbeitsort besonders leicht verloren?", placeholder: "Druck, Fehler, Drift, Bildschutz, Ergebnisgedanken ..." },
+        { id: "d22-j3", question: "Konnte ich heute mindestens einmal bewusst an meinen Arbeitsort zurückkehren?", placeholder: "Wie sah diese Rückkehr aus?" },
+        { id: "d22-j4", question: "Was zeigt mir das darüber, wie verlässlich Prozess für mich schon als Heimat werden kann?", placeholder: "Formuliere den Kern möglichst klar." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem dein Prozessanker dich zurückgebracht hat.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag über meinen Arbeitsort unter Last, Bedeutung und Drift?"
+    },
+    gratitude_prompt: "Welcher Moment heute hat mir gezeigt, dass ich einen Ort habe, an den ich immer wieder zurück kann?",
+    self_talk_anchors: [
+      { text: "Hier arbeite ich.", when: "Wenn du deinen Prozessanker festlegst" },
+      { text: "Zurück an den Arbeitsort.", when: "Wenn Drift oder Druck dich rausziehen" },
+      { text: "Arbeite von hier.", when: "In der direkt nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze Drills, Belastungsblöcke, Fehlerphasen, Scrimmage und Beobachtung als Material.",
+      rest: "Übertrage den Tag auf Arbeit, Studium, Gespräche, Fokusblöcke und Alltagssituationen mit Drift und innerem Lärm.",
+      match: "Kurzversion: Anker festlegen → zurück an den Arbeitsort → von dort handeln."
+    }
+  },
+  {
+    day_id: 23,
+    title: "Zustandsweite statt Defizitmodus",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Gratitude vs Anxiety",
+    lens: "Ein enger Zustand nimmt mir nicht nur Leichtigkeit, sondern auch Handlungsraum. Ich kann Weite wiederherstellen.",
+    primary_mechanism: "State Broadening",
+    today_trigger: "Sobald dein System fast nur noch auf Problem, Fehler, Mangel, Unsicherheit oder Druck schaut, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Defizitdominanz zu Zustandsweite und Handlung aus mehr innerem Raum.",
+    science_bite: "Ein enger Zustand nimmt dir oft mehr als nur gute Laune — er nimmt dir Handlungsraum. Wenn dein System unter Druck, Frust oder Defizitfokus steht, schaut es oft fast nur noch auf Problem, Fehler, Mangel oder Unsicherheit. Das kostet Überblick, Präzision, Entscheidungsfreiheit und Zugang zu dem, was trotzdem noch tragend oder nutzbar ist. Dankbarkeit ist hier deshalb nicht bloß ein nettes Gefühl, sondern eine Form von Zustandsöffnung.",
+    tasks: [
+      {
+        id: "d23-t1",
+        title: "Erkenne die Defizitdominanz",
+        trigger: "Wenn dein System fast nur noch am Problem klebt",
+        when_to_use: "Bei Fehlern, Frust, Müdigkeit, Vergleich, Unsicherheit, engem Druck oder dem Gefühl, dass etwas fehlt",
+        action: "Markiere den Zustand einmal innerlich mit: 'Defizitmodus.'",
+        why: "Bevor du deinen Zustand öffnen kannst, musst du merken, wann dein System gerade fast nur noch Mangel, Fehler oder Druck sieht.",
+        explanation: "Die Frage des Tages ist nicht: 'Was ist gerade falsch?' Sondern: 'Ist mein System gerade so eng geworden, dass es fast nur noch das Falsche sieht?' Genau diesen Unterschied machst du heute sichtbar.",
+        self_talk: "Defizitmodus.",
+        micro_reframe: "Nicht nur das Problem ist da — mein System ist gerade auch enger geworden.",
+        reframe_step: {
+          trigger: "Ich klebe innerlich fast nur noch am Falschen.",
+          reframe: "Bevor ich weiter reagiere, markiere ich erst die Enge meines Zustands.",
+          anchor: "Defizitmodus."
+        },
+        system_function: "State Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d23-t2",
+        title: "Hol Weite ins System",
+        trigger: "Direkt nachdem du den Defizitmodus erkannt hast",
+        when_to_use: "Wenn du merkst, dass du fast nur noch Mangel oder Problem siehst",
+        action: "Benenne bewusst 2–3 Dinge, die trotzdem tragend, nutzbar oder vorhanden sind.",
+        why: "Der Tag will dein System nicht vom Problem wegreden, sondern wieder öffnen.",
+        explanation: "Du tust nicht so, als gäbe es kein Problem. Du sorgst nur dafür, dass dein System nicht so eng wird, dass es fast nur noch das Problem sehen kann. Genau das schafft wieder Raum für Handlung.",
+        self_talk: "Es ist mehr da.",
+        micro_reframe: "Weite heißt heute nicht Schönreden, sondern mehr sehen als nur Mangel.",
+        reframe_step: {
+          trigger: "Ich habe Defizitdominanz erkannt.",
+          reframe: "Jetzt hole ich bewusst wieder Tragendes und Nutzbares mit ins Bild.",
+          anchor: "Es ist mehr da."
+        },
+        system_function: "State Opening",
+        icon: "Expand"
+      },
+      {
+        id: "d23-t3",
+        title: "Handle aus Weite",
+        trigger: "Nachdem dein Zustand wieder etwas offener geworden ist",
+        when_to_use: "In der direkt nächsten Szene oder Handlung",
+        action: "Setze die nächste Handlung aus mehr Weite statt aus engem Defizitfokus.",
+        why: "Zustandsöffnung soll sich nicht nur besser anfühlen, sondern Verhalten wieder freier und präziser machen.",
+        explanation: "Wenn dein System weiter wird, werden oft auch Wahrnehmung, Entscheidung und Ausführung sauberer. Genau diese Übersetzung trainierst du heute.",
+        self_talk: "Aus Weite handeln.",
+        micro_reframe: "Mein Zustand darf wieder größer werden als nur das Problem.",
+        reframe_step: {
+          trigger: "Ich habe wieder mehr im Blick.",
+          reframe: "Jetzt gehe ich mit mehr Handlungsraum in die nächste Szene.",
+          anchor: "Aus Weite handeln."
+        },
+        system_function: "Broadened Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo war mein System heute eng — und wo wieder weiter?",
+      questions: [
+        { id: "d23-j1", question: "In welchen Momenten war mein System heute besonders stark im Defizitmodus?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d23-j2", question: "Was habe ich bewusst wieder mit ins Bild geholt?", placeholder: "Welche 2–3 Dinge waren trotzdem tragend oder nutzbar?" },
+        { id: "d23-j3", question: "Hat sich mein Zustand dadurch verändert?", placeholder: "Wenn ja: wie?" },
+        { id: "d23-j4", question: "Wie hat sich meine nächste Handlung verändert, als wieder mehr Weite da war?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem engen oder schwierigen Moment.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark Defizitdominanz mein Handeln verengt — und wie Weite wieder zurückkommen kann?"
+    },
+    gratitude_prompt: "Welche Situation heute hat mir gezeigt, dass mein Zustand mehr sehen kann als nur das Problem?",
+    self_talk_anchors: [
+      { text: "Defizitmodus.", when: "Wenn dein System fast nur noch Mangel sieht" },
+      { text: "Es ist mehr da.", when: "Wenn du Weite wiederherstellst" },
+      { text: "Aus Weite handeln.", when: "In der direkt nächsten Szene" }
+    ],
+    variants: {
+      training: "Nutze Fehler, Frust, Müdigkeit, Vergleich, Unsicherheit und enge Druckmomente als Material.",
+      rest: "Übertrage den Tag auf Grübeln, Alltagsspannung, Vergleich, Mangelblick und innere Enge.",
+      match: "Kurzversion: Defizitmodus erkennen → Weite öffnen → aus Weite weiterhandeln."
+    }
+  },
+  {
+    day_id: 24,
+    title: "Arbeite auch ohne Zugkraft",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Confidence vs State Independence",
+    lens: "Mein Verhalten darf nicht sofort einbrechen, nur weil mein innerer Zustand heute wenig Zug hat.",
+    primary_mechanism: "State-Independent Work Capacity",
+    today_trigger: "Sobald du merkst, dass dein System gerade wenig Zug, Lust oder innere Bereitschaft hat und automatisch schlechter arbeiten will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von zustandsabhängiger Arbeit zu kleiner, sauberer Arbeitsfähigkeit trotz Trägheit.",
+    science_bite: "Ein reifes System arbeitet nicht nur, wenn es Lust hat. Viele Menschen verwechseln Bereitschaft mit Fähigkeit. Wenn Energie, Lust oder innerer Zug fehlen, sinken oft sofort Fokus, Präzision und Arbeitsqualität. Das ist verständlich, aber problematisch. Stabilität entsteht anders: Niedrige Motivation ist ein Zustand — kein Urteil darüber, was jetzt noch möglich ist. Heute trainierst du deshalb nicht, dich besser zu fühlen, sondern trotz geringer innerer Zugkraft arbeitsfähig zu bleiben. ",
+    tasks: [
+      {
+        id: "d24-t1",
+        title: "Erkenne die innere Trägheit",
+        trigger: "Wenn innerlich Sätze auftauchen wie 'Ich habe gerade keine Lust', 'Es fühlt sich schwer an' oder 'Ich will eher raus als rein'",
+        when_to_use: "An trägen Trainingstagen, bei innerem Widerstand, im Alltag bei Disziplinmomenten oder vor unangenehmen Aufgaben",
+        action: "Markiere den Zustand einmal präzise: 'Trägheit ist da.'",
+        why: "Bevor Verhalten vom Zustand entkoppelt werden kann, musst du merken, wann dein System gerade auf 'heute nicht' schaltet.",
+        explanation: "Das ist kein Charakterfehler und kein Grund zur Dramatik. Es ist einfach ein Zustand, den viele Systeme sofort mit schlechterer Arbeit verknüpfen. Heute erkennst du ihn früh, statt ihm blind zu folgen.",
+        self_talk: "Trägheit ist da.",
+        micro_reframe: "Ein niedriger Zustand ist nicht automatisch ein Urteil über meine Fähigkeit zu arbeiten.",
+        reframe_step: {
+          trigger: "Ich merke geringen Zug oder inneren Widerstand.",
+          reframe: "Bevor ich nachgebe oder dramatisiere, benenne ich nur den Zustand.",
+          anchor: "Trägheit ist da."
+        },
+        system_function: "State Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d24-t2",
+        title: "Nicht verhandeln — an den Anker",
+        trigger: "Direkt nachdem du die Trägheit erkannt hast",
+        when_to_use: "Sofort danach, bevor du auf bessere Stimmung, Motivation oder innere Freigabe wartest",
+        action: "Geh direkt an deinen heutigen Prozessanker zurück. Ohne Diskussion.",
+        why: "Hier liegt die eigentliche Umcodierung: Anker zuerst, nicht Stimmung zuerst.",
+        explanation: "Viele Systeme bleiben genau hier hängen: noch kurz warten, erst Motivation finden, erst besser reinkommen. Heute trainierst du das Gegenteil: nicht verhandeln, sondern zurück an eine kleine, konkrete Arbeitsstruktur.",
+        self_talk: "An den Anker.",
+        micro_reframe: "Ich muss mich nicht erst besser fühlen, um an meinen Arbeitsort zurückzugehen.",
+        reframe_step: {
+          trigger: "Ich habe Trägheit erkannt.",
+          reframe: "Jetzt gehe ich nicht in Verhandlung, sondern direkt zurück an meinen Arbeitsort.",
+          anchor: "An den Anker."
+        },
+        system_function: "State Decoupling",
+        icon: "LocateFixed"
+      },
+      {
+        id: "d24-t3",
+        title: "Arbeite klein, nicht dramatisch",
+        trigger: "Wenn dein Kopf an trägen Tagen alles zu groß macht oder sofort perfekten Zustand will",
+        when_to_use: "Nach der Rückkehr an den Prozessanker",
+        action: "Reduziere deinen Fokus immer wieder auf eine klare, saubere nächste Handlung.",
+        why: "An trägen Tagen ist der häufigste Fehler, zu groß zu denken und dann innerlich zusammenzufallen.",
+        explanation: "Heute geht es nicht darum, plötzlich maximal zu performen. Es geht darum, klein, klar und sauber weiterzuarbeiten: der nächste Kontakt, die nächste Kommunikation, der nächste Laufweg, die nächste technisch saubere Wiederholung.",
+        self_talk: "Nur die nächste saubere Sache.",
+        micro_reframe: "Stabilität entsteht heute nicht durch großen Push, sondern durch kleine saubere Fortsetzung.",
+        reframe_step: {
+          trigger: "Ich denke zu groß oder falle innerlich zusammen.",
+          reframe: "Ich reduziere wieder auf die nächste saubere Sache.",
+          anchor: "Nur die nächste saubere Sache."
+        },
+        system_function: "Small Work Continuation",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wie habe ich gearbeitet, als mein System nicht ziehen wollte?",
+      questions: [
+        { id: "d24-j1", question: "In welchem Moment war meine innere Trägheit heute am stärksten?", placeholder: "Beschreibe die Situation." },
+        { id: "d24-j2", question: "Woran habe ich gemerkt, dass mein Zustand meine Arbeitsqualität runterziehen wollte?", placeholder: "Wie zeigte sich das konkret?" },
+        { id: "d24-j3", question: "Konnte ich heute trotzdem direkt an meinen Prozessanker zurückgehen?", placeholder: "Wie sah das aus?" },
+        { id: "d24-j4", question: "Wann ist es mir gelungen, klein, aber sauber weiterzuarbeiten?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 Sache, die schwer war, 1 Sache, die du trotzdem sauber gemacht hast, und 1 Sache, die dir gezeigt hat, dass Stabilität wichtiger ist als perfekter Zustand.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark mein Verhalten noch an Lust, Energie oder innerer Zugkraft hängt?"
+    },
+    gratitude_prompt: "Welche schwere Situation heute hat mir gezeigt, dass ich auch ohne perfekten Zustand sauber arbeiten kann?",
+    self_talk_anchors: [
+      { text: "Trägheit ist da.", when: "Wenn wenig Zug oder Lust da ist" },
+      { text: "An den Anker.", when: "Wenn du nicht verhandeln willst" },
+      { text: "Nur die nächste saubere Sache.", when: "Wenn du klein und stabil weiterarbeiten willst" }
+    ],
+    variants: {
+      training: "Nutze träge Tage, innere Widerstände, Müdigkeit und 'heute nicht'-Momente als Material.",
+      rest: "Übertrage den Tag auf Studium, Arbeit, Routinen, Gespräche und Dinge, die du beginnen musst, obwohl es innerlich nicht zieht.",
+      match: "Kurzversion: Trägheit erkennen → an den Anker → nur die nächste saubere Sache."
+    }
+  },
+  {
+    day_id: 25,
+    title: "Handle auch ohne innere Freigabe",
+    phase: "Phase II — Umcodieren",
+    week: 4,
+    line: "Confidence vs Self-Doubt",
+    lens: "Zweifel darf auftauchen — aber ich brauche seine Zustimmung nicht, um eine klare Handlung zu setzen.",
+    primary_mechanism: "Action Without Inner Permission",
+    today_trigger: "Sobald Zweifel auftaucht und dein System in Prüfung, Warten oder kleineres Handeln kippt, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Zweifel als Erlaubnisinstanz zu Handlung trotz Zweifel.",
+    science_bite: "Zweifel ist oft nicht das Problem — das Warten auf Sicherheit ist das Problem. Viele Systeme behandeln Zweifel wie eine innere Freigabeinstanz: erst sicherer fühlen, erst nochmal prüfen, erst innere Zustimmung bekommen. Genau dadurch wird Handlung kleiner, später oder gar nicht gesetzt. Heute trainierst du eine härtere und reifere Form von Confidence: Zweifel darf da sein, ohne dass er das letzte Wort über die Handlung bekommt. ",
+    tasks: [
+      {
+        id: "d25-t1",
+        title: "Erkenne die Bremsschleife",
+        trigger: "Wenn Zweifel auftaucht und dein Kopf sofort prüfen, warten, absichern oder verzögern will",
+        when_to_use: "Vor wichtigen Handlungen, unter Beobachtung, bei Verantwortung, nach Fehlern oder wenn innere Unsicherheit hochgeht",
+        action: "Frag dich einmal klar: 'Ist hier gerade Zweifel da — oder warte ich schon auf Freigabe?'",
+        why: "Tag 25 muss zuerst sichtbar machen, dass nicht nur Zweifel bremst, sondern das Warten auf Sicherheit.",
+        explanation: "Oft fühlt sich diese Schleife logisch an: nur kurz prüfen, noch etwas sicherer werden, noch kurz warten. Funktional ist sie aber oft eine Bremsschleife, die Handlung kleiner, später oder gar nicht gesetzt werden lässt.",
+        self_talk: "Zweifel oder Freigabe-Warten?",
+        micro_reframe: "Das Problem ist oft nicht der Zweifel selbst, sondern dass ich ihn wie eine Erlaubnisinstanz behandle.",
+        reframe_step: {
+          trigger: "Zweifel taucht auf und mein Kopf will prüfen oder warten.",
+          reframe: "Bevor ich weiter bremse, unterscheide ich Zweifel von Freigabe-Warten.",
+          anchor: "Zweifel oder Freigabe-Warten?"
+        },
+        system_function: "Brake Awareness",
+        icon: "PauseCircle"
+      },
+      {
+        id: "d25-t2",
+        title: "Stopp die innere Prüfung",
+        trigger: "Nachdem du erkannt hast, dass dein System auf innere Freigabe wartet",
+        when_to_use: "Direkt danach, bevor die Schleife länger wird",
+        action: "Beende die zusätzliche Prüfung und wähle eine klare, kleine, funktionale Handlung.",
+        why: "Die eigentliche Umcodierung von Tag 25 ist nicht Zweifel wegzumachen, sondern die Bremsschleife zu stoppen.",
+        explanation: "Du brauchst heute nicht völlige Ruhe, keine perfekte Sicherheit und keine maximale Souveränität. Du brauchst nur die Bereitschaft, die zusätzliche Prüfung nicht weiterzufüttern und trotzdem klar zu handeln.",
+        self_talk: "Nicht weiter prüfen.",
+        micro_reframe: "Zweifel darf da sein. Er muss nicht verschwinden, damit ich handeln kann.",
+        reframe_step: {
+          trigger: "Ich merke, dass ich auf innere Freigabe warte.",
+          reframe: "Jetzt stoppe ich die zusätzliche Prüfung und gehe in eine klare Handlung.",
+          anchor: "Nicht weiter prüfen."
+        },
+        system_function: "Brake Stop",
+        icon: "Ban"
+      },
+      {
+        id: "d25-t3",
+        title: "Setze die klare Handlung trotzdem",
+        trigger: "Nachdem du die Bremsschleife gestoppt hast",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Setze eine klare, saubere Handlung, auch wenn Zweifel noch spürbar da ist.",
+        why: "Confidence wird hier verhaltenswirksam: nicht trotz Zweifel perfekt sein, sondern trotz Zweifel klar handeln.",
+        explanation: "Das kann heißen: Verantwortung nehmen, sprechen, fordern, im Prozess bleiben, in der Szene bleiben, eine Entscheidung setzen, präsent handeln. Nicht warten, bis du dich vollständig freigegeben fühlst.",
+        self_talk: "Trotz Zweifel klar.",
+        micro_reframe: "Ich brauche nicht die Zustimmung meines Zweifels, um eine saubere Handlung zu setzen.",
+        reframe_step: {
+          trigger: "Die Prüfung ist gestoppt, aber Zweifel ist noch da.",
+          reframe: "Jetzt handle ich klar, ohne auf völlige innere Freigabe zu warten.",
+          anchor: "Trotz Zweifel klar."
+        },
+        system_function: "Confidence Action",
+        icon: "PlayCircle"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute auf innere Freigabe gewartet — und wo trotzdem gehandelt?",
+      questions: [
+        { id: "d25-j1", question: "In welchen Momenten war heute Zweifel da — und mein System wollte sofort prüfen, warten oder absichern?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d25-j2", question: "Woran habe ich gemerkt, dass Zweifel schon zur Bremsschleife geworden ist?", placeholder: "Wie zeigte sich das?" },
+        { id: "d25-j3", question: "Konnte ich heute die zusätzliche Prüfung stoppen und trotzdem klar handeln?", placeholder: "Wie sah das konkret aus?" },
+        { id: "d25-j4", question: "Was zeigt mir das darüber, wie sehr ich bisher auf innere Freigabe durch Sicherheit gewartet habe?", placeholder: "Formuliere den Kern möglichst klar." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem du trotz Zweifel gehandelt hast.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie Confidence und Zweifel bei mir bisher zusammenarbeiten?"
+    },
+    gratitude_prompt: "Welche Handlung heute war ein echter Confidence-Schritt, obwohl Zweifel noch da war?",
+    self_talk_anchors: [
+      { text: "Zweifel oder Freigabe-Warten?", when: "Wenn dein Kopf in Prüfung kippt" },
+      { text: "Nicht weiter prüfen.", when: "Wenn du die Bremsschleife stoppst" },
+      { text: "Trotz Zweifel klar.", when: "Wenn du die Handlung setzt" }
+    ],
+    variants: {
+      training: "Nutze Verantwortung, Druckmomente, Fehlerfolgen, Beobachtung und Unsicherheit als Hauptmaterial.",
+      rest: "Übertrage den Tag auf Entscheidungen, Arbeit, Gespräche, Disziplinmomente und alles, bei dem du auf 'innere Freigabe' wartest.",
+      match: "Kurzversion: Bremsschleife erkennen → Prüfung stoppen → trotz Zweifel klar handeln."
+    }
+  }
 ];
