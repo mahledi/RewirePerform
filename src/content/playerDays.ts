@@ -1440,6 +1440,456 @@ export const PLAYER_DAYS: PlayerDay[] = [
       training: "Nutze Fehler, Ergebnisdenken, Druck, innere Kommentare und Spannungsmomente als Material für aktive Rückkehr.",
       rest: "Übertrage den Tag auf Handy, Gespräche, Grübeln, Unruhe und Alltagssituationen, in denen dein Kopf weggeht.",
       match: "Kurzversion: Verlust früher merken → Rückkehrsignal setzen → Rückkehr in Handlung zeigen.",
+  },
+  // ─────────── DAYS 16–20 (Phase II — Umcodieren, Maximum-Qualität) ───────────
+  {
+    day_id: 16,
+    title: "Handle für etwas Größeres",
+    phase: "Phase II — Umcodieren",
+    week: 3,
+    line: "Fear vs Love / Purpose",
+    lens: "Ich kann aus einem größeren Grund handeln statt nur aus Schutz, Beweis oder Angst.",
+    primary_mechanism: "Meaning-Based Motivation Shift",
+    today_trigger: "Sobald du merkst, dass du gerade vor allem aus Schutz, Beweis, Angst oder Bildsicherung handelst, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Selbstschutz zu größerem Grund — und von enger Motivation zu dienlicher Motivation.",
+    science_bite: "Motivation ist nicht nur Energie, sondern auch Richtung. Viele Handlungen wirken stark, werden aber innerlich von Schutz gesteuert: nicht versagen, nicht schwach aussehen, nicht verlieren, nicht negativ auffallen. Heute trainierst du einen anderen Motor: Handlung aus einem größeren Grund. Nicht weil das schöner klingt, sondern weil dein System unter Bedeutung oft weiter, klarer und stabiler handelt.",
+    tasks: [
+      {
+        id: "d16-t1",
+        title: "Erkenne den Schutzmotor",
+        trigger: "Wenn du merkst, dass du stark von Angst, Beweisdrang, Bewertung oder Bildschutz gesteuert bist",
+        when_to_use: "Vor wichtigen Szenen, bei Beobachtung, nach Fehlern, bei Unsicherheit oder wenn du dich absichern willst",
+        action: "Frag dich kurz: 'Handle ich gerade aus Schutz — oder aus etwas Größerem?'",
+        why: "Du kannst deine Motivationsrichtung erst ändern, wenn du den alten Motor klar erkennst.",
+        explanation: "Schutz kann sehr unterschiedlich aussehen: vorsichtiger werden, Recht behalten wollen, sich klein machen, nichts riskieren, auf Wirkung spielen, Kontrolle erzwingen oder einfach nur Schaden vermeiden wollen. Heute machst du diesen Motor sichtbar.",
+        self_talk: "Schutz oder größerer Grund?",
+        micro_reframe: "Nicht jede starke Spannung ist echter Antrieb — oft ist sie nur Schutzlogik.",
+        reframe_step: {
+          trigger: "Ich spüre starken inneren Druck oder Beweisdrang.",
+          reframe: "Bevor ich handle, prüfe ich, aus welchem Motor ich gerade gehe.",
+          anchor: "Schutz oder größerer Grund?"
+        },
+        system_function: "Motivation Awareness",
+        icon: "Search"
+      },
+      {
+        id: "d16-t2",
+        title: "Finde deinen größeren Grund",
+        trigger: "Nachdem du bemerkt hast, dass dein System gerade eher aus Schutz handelt",
+        when_to_use: "Direkt vor einer Handlung, in der du Motivation neu ausrichten willst",
+        action: "Frag dich: 'Wofür spiele ich hier gerade wirklich?' und formuliere einen größeren Grund.",
+        why: "Meaning wird nur dann wirksam, wenn es konkret und situativ spürbar wird.",
+        explanation: "Ein größerer Grund kann sein: Beitrag, Team, Wahrheit, Wachstum, saubere Ausführung, Verantwortung, Demut, Dienst an der Sache. Nicht abstrakt. Nicht romantisch. Sondern als echter neuer Bezugspunkt in der Situation.",
+        self_talk: "Wofür spiele ich gerade wirklich?",
+        micro_reframe: "Wenn mein Grund größer wird, muss mein Verhalten nicht mehr nur Schutz sein.",
+        reframe_step: {
+          trigger: "Ich habe den Schutzmotor erkannt.",
+          reframe: "Jetzt richte ich mein Handeln bewusst an etwas Größerem aus.",
+          anchor: "Wofür spiele ich gerade wirklich?"
+        },
+        system_function: "Meaning Activation",
+        icon: "Compass"
+      },
+      {
+        id: "d16-t3",
+        title: "Handle aus Dienst statt aus Beweis",
+        trigger: "Wenn du deinen größeren Grund klarer vor dir hast",
+        when_to_use: "In der direkt nächsten relevanten Handlung",
+        action: "Setze eine Handlung, die der Sache dient — nicht nur deinem Schutz oder Beweis.",
+        why: "Der Tag soll Meaning nicht nur denken, sondern direkt im Verhalten verkörpern.",
+        explanation: "Das kann heißen: klar kommunizieren, Verantwortung übernehmen, wieder anbieten, mutig aber sauber handeln, ehrlich bleiben, helfen, präsent bleiben. Wichtig ist: nicht für Bild, sondern für Beitrag.",
+        self_talk: "Aus Dienst handeln.",
+        micro_reframe: "Mein Verhalten darf heute der Sache dienen, nicht nur meinem Schutz.",
+        reframe_step: {
+          trigger: "Ich kenne meinen größeren Grund.",
+          reframe: "Jetzt übersetze ich ihn in eine sichtbare Handlung.",
+          anchor: "Aus Dienst handeln."
+        },
+        system_function: "Meaning Translation",
+        icon: "Handshake"
+      }
+    ],
+    journal: {
+      title: "Wofür habe ich heute wirklich gehandelt?",
+      questions: [
+        { id: "d16-j1", question: "In welchen Momenten war mein Handeln heute eher von Schutz, Beweis oder Angst gesteuert?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d16-j2", question: "Welcher größere Grund war in dieser Situation möglich?", placeholder: "Team, Beitrag, Wahrheit, Wachstum, Verantwortung ..." },
+        { id: "d16-j3", question: "Konnte ich heute mindestens einmal spürbar aus diesem größeren Grund handeln?", placeholder: "Wie sah das konkret aus?" },
+        { id: "d16-j4", question: "Was zeigt mir das darüber, wofür ich unter Druck oder Bedeutung bisher wirklich spiele?", placeholder: "Formuliere den Kern möglichst klar." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem du deinen Grund neu ausgerichtet hast.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie sehr Schutz oder Beitrag bisher mein Verhalten bestimmen?"
     },
+    gratitude_prompt: "Welche Handlung heute hat mir gezeigt, dass ich aus etwas Größerem als Schutz handeln kann?",
+    self_talk_anchors: [
+      { text: "Schutz oder größerer Grund?", when: "Wenn du innerlich eng oder beweisgetrieben wirst" },
+      { text: "Wofür spiele ich gerade wirklich?", when: "Wenn du deinen Motor neu ausrichtest" },
+      { text: "Aus Dienst handeln.", when: "In der direkt nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze Beobachtung, Fehler, Beweisdrang, Unsicherheit und Verantwortungssituationen als Material.",
+      rest: "Übertrage den Tag auf Gespräche, Entscheidungen, Disziplin, Arbeit und Situationen, in denen du dich schützen oder absichern willst.",
+      match: "Kurzversion: Schutzmotor erkennen → größeren Grund finden → aus Dienst handeln."
+    }
+  },
+  {
+    day_id: 17,
+    title: "Beweise formen Selbstbild",
+    phase: "Phase II — Umcodieren",
+    week: 3,
+    line: "Identity vs Performance",
+    lens: "Was ich wiederholt tue, wird für mein System zu einem Beweis darüber, wer ich bin.",
+    primary_mechanism: "Identity Encoding Through Repeated Evidence",
+    today_trigger: "Sobald du merkst, dass dein altes Selbstbild still im Hintergrund mitläuft und deine Handlung begrenzt, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von altem Selbstbild zu bewusst gesammelten Beweisen für eine neue Version von dir.",
+    science_bite: "Selbstbild entsteht nicht nur durch Gedanken über dich, sondern auch durch gespeicherte Verhaltensbeweise. Wenn dein System wiederholt erlebt: Ich werde nach Fehlern klein, ich ziehe mich unter Druck zurück, ich übernehme keine Verantwortung, dann wird genau das zu einem stillen inneren Bild von dir. Heute arbeitest du an der Gegenrichtung: kleine Beweise bewusst setzen und als Identitätsmaterial ernst nehmen.",
+    tasks: [
+      {
+        id: "d17-t1",
+        title: "Erkenne das alte Bild",
+        trigger: "Wenn du innerlich schon zu wissen glaubst, wie du in einer Situation 'eben bist'",
+        when_to_use: "Vor Drucksituationen, bei Unsicherheit, nach Fehlern, bei Verantwortung, wenn alte Sätze auftauchen",
+        action: "Frag dich: 'Welches alte Bild von mir läuft hier gerade mit?'",
+        why: "Du kannst neue Beweise nur bewusst setzen, wenn dir klar wird, gegen welches alte Selbstbild du gerade arbeitest.",
+        explanation: "Das alte Bild klingt oft still und vertraut: 'Ich bin halt nicht so stabil', 'Ich ziehe mich da eher zurück', 'Ich bin nicht der Typ für Verantwortung'. Heute machst du diese stillen Identitätssätze sichtbar.",
+        self_talk: "Welches alte Bild läuft hier mit?",
+        micro_reframe: "Nicht nur die Situation ist da — auch mein altes inneres Bild von mir läuft mit.",
+        reframe_step: {
+          trigger: "Ich merke, dass ich mich innerlich schon eingeordnet habe.",
+          reframe: "Bevor ich handle, mache ich das alte Bild sichtbar.",
+          anchor: "Welches alte Bild läuft hier mit?"
+        },
+        system_function: "Identity Awareness",
+        icon: "Mirror"
+      },
+      {
+        id: "d17-t2",
+        title: "Setze einen neuen Beweis",
+        trigger: "Nachdem dir klarer geworden ist, welches alte Bild gerade mitläuft",
+        when_to_use: "In der direkt nächsten passenden Handlung",
+        action: "Wähle bewusst eine kleine Handlung, die der alten Version widerspricht und die neue Richtung belegt.",
+        why: "Identität ändert sich nicht durch Wunsch, sondern durch wiederholte verhaltensbezogene Evidenz.",
+        explanation: "Nicht riesig. Nicht künstlich heroisch. Sondern konkret: wieder anbieten, offen bleiben, Verantwortung nehmen, nach Fehlern präsent bleiben, klar sprechen, nicht kleiner werden, im Prozess bleiben.",
+        self_talk: "Setz den Beweis.",
+        micro_reframe: "Ich brauche heute keinen großen Beweis — nur einen echten.",
+        reframe_step: {
+          trigger: "Das alte Bild ist sichtbar.",
+          reframe: "Jetzt setze ich bewusst eine kleine Handlung, die ihm widerspricht.",
+          anchor: "Setz den Beweis."
+        },
+        system_function: "Evidence Creation",
+        icon: "PlusCircle"
+      },
+      {
+        id: "d17-t3",
+        title: "Speichere die Handlung als Beweis",
+        trigger: "Direkt nachdem du die neue Handlung gesetzt hast",
+        when_to_use: "Sofort nach der konkreten Verhaltensaktion",
+        action: "Markiere innerlich bewusst: 'Das zählt als Beweis.'",
+        why: "Viele neue Handlungen verpuffen, weil sie innerlich nicht als Identitäts-Evidenz gespeichert werden.",
+        explanation: "Alte Beweise werden oft automatisch erinnert. Neue Beweise werden häufig übersehen, weil sie unspektakulär wirken. Heute lernst du, kleine echte Handlungen ernst zu nehmen.",
+        self_talk: "Das zählt als Beweis.",
+        micro_reframe: "Selbstbild verschiebt sich nicht nur durch Einsicht, sondern durch gespeicherte Handlung.",
+        reframe_step: {
+          trigger: "Ich habe die neue Handlung gesetzt.",
+          reframe: "Jetzt mache ich sie bewusst zu Identitätsmaterial.",
+          anchor: "Das zählt als Beweis."
+        },
+        system_function: "Evidence Encoding",
+        icon: "BadgeCheck"
+      }
+    ],
+    journal: {
+      title: "Welche Beweise habe ich heute für mein Selbstbild gesammelt?",
+      questions: [
+        { id: "d17-j1", question: "Welches alte Bild von mir lief heute in einer Situation besonders stark mit?", placeholder: "Beschreibe den Satz oder das Gefühl dahinter." },
+        { id: "d17-j2", question: "Welche kleine Handlung habe ich gesetzt, die diesem alten Bild widersprochen hat?", placeholder: "Was war dein konkreter Beweis?" },
+        { id: "d17-j3", question: "Habe ich diese Handlung innerlich wirklich als Beweis ernst genommen?", placeholder: "Wenn nicht: warum nicht?" },
+        { id: "d17-j4", question: "Was zeigt mir das darüber, welches Selbstbild ich gerade beginne neu zu bauen?", placeholder: "Formuliere die neue Richtung möglichst klar." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer kleinen Handlung, die größer war als sie zuerst wirkte.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, welche Beweise ich bisher gesammelt habe — und welche ich ab heute bewusst setze?"
+    },
+    gratitude_prompt: "Welche kleine Handlung heute war vielleicht ein größerer Beweis für mein Selbstbild, als sie zuerst aussah?",
+    self_talk_anchors: [
+      { text: "Welches alte Bild läuft hier mit?", when: "Wenn du dich innerlich schon eingeordnet hast" },
+      { text: "Setz den Beweis.", when: "Wenn du die neue Handlung wählst" },
+      { text: "Das zählt als Beweis.", when: "Direkt nach der Handlung" }
+    ],
+    variants: {
+      training: "Nutze Druck, Fehler, Unsicherheit, Verantwortung und Rollenmomente als Material.",
+      rest: "Übertrage den Tag auf Gespräche, Disziplin, Auftreten, Entscheidungen und Alltagssituationen, in denen ein altes Bild von dir mitläuft.",
+      match: "Kurzversion: altes Bild sehen → kleinen Gegenbeweis setzen → Handlung bewusst speichern."
+    }
+  },
+  {
+    day_id: 18,
+    title: "Echtes Wachstum wird oft zuerst unsicher",
+    phase: "Phase II — Umcodieren",
+    week: 3,
+    line: "Growth vs Winning",
+    lens: "Unsicherheit ist nicht automatisch Bedrohung — sie kann ein bewusster Entwicklungsreiz sein.",
+    primary_mechanism: "Growth Through Chosen Friction",
+    today_trigger: "Sobald du merkst, dass dein System lieber im Vertrauten bleiben will, statt in einen relevanten Entwicklungsreiz hineinzugehen, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Sicherheitsfixierung zu bewusst betretenem Wachstumsraum.",
+    science_bite: "Wachstum fühlt sich oft nicht zuerst gut, sauber oder sicher an. Es beginnt häufig dort, wo dein bisheriges System kurz keine Routine hat: neue Verantwortung, sichtbarer werden, ungewohnte Reaktion, ehrlicheres Verhalten, mutigerer Schritt. Genau deshalb wirkt echter Lernraum oft unsicher. Heute trainierst du, diese Unsicherheit nicht automatisch als Rückschritt oder Gefahr zu lesen, sondern als möglichen Entwicklungsreiz.",
+    tasks: [
+      {
+        id: "d18-t1",
+        title: "Finde die echte Wachstumsstelle",
+        trigger: "Wenn du merkst, dass etwas relevant wäre, dein System aber lieber im Sicheren bleiben will",
+        when_to_use: "Bei Verantwortung, in neuen Rollen, bei sichtbaren Situationen, in Reaktion auf Fehler, in Kommunikation oder Mutmomenten",
+        action: "Frag dich: 'Wo ist heute meine echte Wachstumsstelle?'",
+        why: "Growth wird nur dann real, wenn du den relevanten Entwicklungsreiz findest statt nur allgemein 'mutig' sein zu wollen.",
+        explanation: "Nicht Chaos suchen. Nicht irgendetwas Schwieriges machen. Sondern die Stelle finden, an der dein altes System gerade lieber sicher bleiben würde — obwohl dort echter Lernraum wäre.",
+        self_talk: "Wo ist heute meine echte Wachstumsstelle?",
+        micro_reframe: "Wachstum beginnt oft genau dort, wo mein altes System lieber sicher bleiben will.",
+        reframe_step: {
+          trigger: "Ich spüre Zug ins Vertraute.",
+          reframe: "Bevor ich im Sicheren bleibe, suche ich die relevante Wachstumsstelle.",
+          anchor: "Wo ist heute meine echte Wachstumsstelle?"
+        },
+        system_function: "Growth Targeting",
+        icon: "Search"
+      },
+      {
+        id: "d18-t2",
+        title: "Betritt den Reiz bewusst",
+        trigger: "Nachdem du die Wachstumsstelle gefunden hast",
+        when_to_use: "In der direkt nächsten passenden Situation",
+        action: "Geh bewusst in diesen Reiz hinein, statt ihn automatisch zu umgehen.",
+        why: "Tag 18 soll Unsicherheit nicht nur neu lesen, sondern in Handlung übersetzen.",
+        explanation: "Das kann heißen: Verantwortung nehmen, sichtbar werden, nach Fehlern nicht kleiner werden, klar kommunizieren, nicht in Routine fliehen, in einer schwierigen Situation präsent bleiben. Nicht heroisch — aber bewusst.",
+        self_talk: "Geh hinein.",
+        micro_reframe: "Unsicherheit ist hier gerade nicht automatisch Rückschritt, sondern möglicher Entwicklungsreiz.",
+        reframe_step: {
+          trigger: "Ich kenne die Wachstumsstelle.",
+          reframe: "Jetzt betrete ich sie bewusst, statt sie nur zu verstehen.",
+          anchor: "Geh hinein."
+        },
+        system_function: "Growth Entry",
+        icon: "StepForward"
+      },
+      {
+        id: "d18-t3",
+        title: "Schließe die Unsicherheit nicht sofort",
+        trigger: "Wenn dein System den Reiz sofort mit Schutz, Urteil oder Rückzug wieder schließen will",
+        when_to_use: "Direkt im oder nach dem Wachstumsmoment",
+        action: "Bleib kurz offen genug, dass Lernen weiter möglich bleibt.",
+        why: "Der eigentliche Bruch passiert nicht nur beim Hineingehen, sondern beim Nicht-sofort-Zuschließen.",
+        explanation: "Viele Spieler betreten kurz den Reiz und ziehen sich beim ersten unangenehmen Signal sofort wieder zusammen. Heute trainierst du, die Unsicherheit nicht sofort mit Schutz, Rettung oder Urteil zu verschließen.",
+        self_talk: "Offen lassen.",
+        micro_reframe: "Ich muss die Unsicherheit nicht sofort schließen, nur weil sie sich spürbar anfühlt.",
+        reframe_step: {
+          trigger: "Der Reiz wird unangenehm und mein System will sofort zu.",
+          reframe: "Ich halte den Lernraum einen Moment länger offen.",
+          anchor: "Offen lassen."
+        },
+        system_function: "Learning Space Protection",
+        icon: "Unlock"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute echtes Wachstum nicht vermieden?",
+      questions: [
+        { id: "d18-j1", question: "Welche Wachstumsstelle habe ich heute bewusst gewählt?", placeholder: "Beschreibe die konkrete Stelle." },
+        { id: "d18-j2", question: "Was daran hat mein System unsicher oder schutzorientiert werden lassen wollen?", placeholder: "Wie hat sich das gezeigt?" },
+        { id: "d18-j3", question: "Konnte ich heute sichtbar in diesen Reiz hineingehen?", placeholder: "Wie sah das konkret aus?" },
+        { id: "d18-j4", question: "Wo wollte mein Kopf die Unsicherheit sofort wieder schließen, retten oder bewerten?", placeholder: "Beschreibe den Moment." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 sichere, 1 unsichere und 1 erkenntnisreiche Sache.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie mein System aktuell auf Wachstum und Unsicherheit reagiert?"
+    },
+    gratitude_prompt: "Welche unsichere Situation heute war vielleicht genau der Entwicklungsreiz, den ich gebraucht habe?",
+    self_talk_anchors: [
+      { text: "Wo ist heute meine echte Wachstumsstelle?", when: "Wenn du im Vertrauten bleiben willst" },
+      { text: "Geh hinein.", when: "Wenn du den Reiz bewusst betrittst" },
+      { text: "Offen lassen.", when: "Wenn dein System die Unsicherheit sofort schließen will" }
+    ],
+    variants: {
+      training: "Nutze Verantwortung, neue Rollen, sichtbare Situationen, Kommunikation, Präsenz und Mutmomente als Material.",
+      rest: "Übertrage den Tag auf unangenehme Gespräche, Disziplinmomente, Verantwortungsübernahme, Sichtbarkeit und das Verlassen vertrauter Routinen.",
+      match: "Kurzversion: Wachstumsstelle finden → bewusst betreten → nicht sofort wieder schließen."
+    }
+  },
+  {
+    day_id: 19,
+    title: "Nicht kontrollierbar heißt nicht bedrohlich",
+    phase: "Phase II — Umcodieren",
+    week: 3,
+    line: "Control vs Non-Control",
+    lens: "Nicht alles, was ich nicht kontrollieren kann, muss innerlich größer oder bedrohlicher gemacht werden.",
+    primary_mechanism: "Threat Decoupling From Non-Control",
+    today_trigger: "Sobald etwas unkontrollierbar ist und dein System es innerlich sofort als größer, gefährlicher oder belastender macht, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Nicht-Kontrolle = Bedrohung zu Nicht-Kontrolle = Realität, die nicht unnötig aufgeladen werden muss.",
+    science_bite: "Etwas nicht kontrollieren zu können ist nicht automatisch dasselbe wie Bedrohung. Viele Systeme koppeln diese beiden Dinge aber sofort: unkontrollierbar = schlecht, gefährlich, unfair, belastend, gegen mich. Genau dadurch wird Nicht-Kontrolle größer als nötig. Heute trennst du beides: Realität anerkennen, ohne sie innerlich unnötig aufzublasen.",
+    tasks: [
+      {
+        id: "d19-t1",
+        title: "Erkenne die Aufladung",
+        trigger: "Wenn etwas gerade nicht in deiner Kontrolle liegt und dein System es sofort größer, schwerer oder bedrohlicher macht",
+        when_to_use: "Bei äußeren Umständen, Entscheidungen anderer, Spielverlauf, Fehlern anderer, Rolle, Timing, Unfairness oder Unsicherheit",
+        action: "Frag dich: 'Ist das gerade nur nicht kontrollierbar — oder mache ich es schon zu Bedrohung?'",
+        why: "Du musst zuerst sehen, dass Nicht-Kontrolle und Bedrohung oft automatisch zusammengeschoben werden.",
+        explanation: "Das Problem ist heute nicht nur die Realität selbst. Das Problem ist die innere Aufladung: 'Das darf nicht sein', 'So kann ich nicht arbeiten', 'Das ist jetzt gefährlich für alles'. Genau diese Vergrößerung soll sichtbar werden.",
+        self_talk: "Nicht kontrollierbar — oder schon Bedrohung?",
+        micro_reframe: "Nicht alles, was ich nicht steuern kann, muss innerlich sofort größer werden.",
+        reframe_step: {
+          trigger: "Etwas liegt gerade nicht bei mir.",
+          reframe: "Bevor ich es innerlich auflade, prüfe ich, was ich gerade zusätzlich daraus mache.",
+          anchor: "Nicht kontrollierbar — oder schon Bedrohung?"
+        },
+        system_function: "Threat Awareness",
+        icon: "AlertTriangle"
+      },
+      {
+        id: "d19-t2",
+        title: "Benenn nur die Realität",
+        trigger: "Nachdem du die innere Aufladung erkannt hast",
+        when_to_use: "Direkt in der Situation, bevor du weiter in Ärger, Widerstand oder Bedrohung kippst",
+        action: "Formuliere für dich nur nüchtern, was gerade real ist — ohne Zusatzaufladung.",
+        why: "Der Tag will den Unterschied zwischen Realität und Bedrohungszuschreibung trainieren.",
+        explanation: "Zum Beispiel nicht: 'Das ist katastrophal.' Sondern: 'Der Schiri entscheidet gerade anders.' Nicht: 'Ich bin ausgeliefert.' Sondern: 'Das liegt gerade nicht in meiner Hand.' Du musst die Realität nicht schönreden — nur nicht unnötig aufblasen.",
+        self_talk: "Das ist die Realität.",
+        micro_reframe: "Klar sehen ist stärker als innerlich aufblasen.",
+        reframe_step: {
+          trigger: "Ich habe die Aufladung bemerkt.",
+          reframe: "Jetzt benenne ich nur die Realität — nicht die ganze Geschichte darum herum.",
+          anchor: "Das ist die Realität."
+        },
+        system_function: "Reality Naming",
+        icon: "Scan"
+      },
+      {
+        id: "d19-t3",
+        title: "Geh ohne Zusatzbedrohung weiter",
+        trigger: "Nachdem du die Realität klar benannt hast",
+        when_to_use: "In der direkt nächsten Handlung oder Entscheidung",
+        action: "Binde dich wieder an das Steuerbare, ohne die Situation innerlich weiter aufzublasen.",
+        why: "Nicht-Kontrolle wird praktisch entkoppelt, wenn du trotz Realität ohne Zusatzbedrohung weiterarbeiten kannst.",
+        explanation: "Heute geht es nicht darum, alles locker zu nehmen. Es geht darum, die Situation nicht größer zu machen, als sie schon ist, und trotzdem funktional weiterzuhandeln.",
+        self_talk: "Keine Zusatzbedrohung.",
+        micro_reframe: "Die Realität ist schon da. Ich muss sie nicht noch innerlich vergrößern.",
+        reframe_step: {
+          trigger: "Ich habe Realität und Aufladung getrennt.",
+          reframe: "Jetzt gehe ich ohne zusätzliche innere Bedrohungsaufladung weiter.",
+          anchor: "Keine Zusatzbedrohung."
+        },
+        system_function: "Decoupled Continuation",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute Nicht-Kontrolle unnötig bedrohlich gemacht?",
+      questions: [
+        { id: "d19-j1", question: "Welche Situation war heute nicht in meiner Kontrolle?", placeholder: "Beschreibe sie konkret." },
+        { id: "d19-j2", question: "Wie hat mein System sie innerlich größer oder bedrohlicher gemacht, als sie schon war?", placeholder: "Welche Zusatzaufladung war da?" },
+        { id: "d19-j3", question: "Konnte ich heute Realität und Bedrohungsaufladung unterscheiden?", placeholder: "Wie sah das konkret aus?" },
+        { id: "d19-j4", question: "Wie habe ich mich danach wieder an das Steuerbare gebunden, ohne weiter innerlich aufzublasen?", placeholder: "Was war dein nächster funktionaler Schritt?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Situation, die nicht in deiner Kontrolle lag.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie schnell mein System Nicht-Kontrolle in Bedrohung verwandelt?"
+    },
+    gratitude_prompt: "Welche unkontrollierbare Situation heute hätte ich innerlich größer machen können — und was hat mir geholfen, es nicht zu tun?",
+    self_talk_anchors: [
+      { text: "Nicht kontrollierbar — oder schon Bedrohung?", when: "Wenn etwas nicht bei dir liegt" },
+      { text: "Das ist die Realität.", when: "Wenn du nur klar benennen willst, was ist" },
+      { text: "Keine Zusatzbedrohung.", when: "Wenn du funktional weitergehen willst" }
+    ],
+    variants: {
+      training: "Nutze äußere Umstände, Entscheidungen anderer, Spielverlauf, Unfairness und Timing als Material.",
+      rest: "Übertrage den Tag auf Planänderungen, Menschen, äußere Umstände, Wartezeiten, Frust und Unverfügbares im Alltag.",
+      match: "Kurzversion: Aufladung erkennen → Realität benennen → ohne Zusatzbedrohung weiterarbeiten."
+    }
+  },
+  {
+    day_id: 20,
+    title: "Ein Fehler muss kein Angriff auf mich werden",
+    phase: "Phase II — Umcodieren",
+    week: 3,
+    line: "Learning vs Judgement",
+    lens: "Ein Fehler kann Information bleiben, statt sofort zu Urteil, Abwertung und Selbstangriff zu werden.",
+    primary_mechanism: "Error Processing Without Self-Attack",
+    today_trigger: "Sobald ein Fehler passiert und dein System sofort beginnt, mehr daraus zu machen als nur Information, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Fehler = Angriff auf mich zu Fehler = Information für die nächste Handlung.",
+    science_bite: "Ein Fehler liefert zuerst Information: etwas war unpräzise, zu spät, falsch gelesen oder unsauber umgesetzt. Viele Systeme hören dort aber nicht auf. Sie machen sofort mehr daraus: Urteil, Scham, Abwertung, Zweifel, Selbstangriff. Genau das macht den Fehler oft größer als nötig, weil du dann nicht nur mit der Situation kämpfst, sondern zusätzlich mit dir selbst.",
+    tasks: [
+      {
+        id: "d20-t1",
+        title: "Trenn Fehler von Urteil",
+        trigger: "Wenn dir etwas misslingt und dein Kopf sofort eine härtere Geschichte daraus macht",
+        when_to_use: "Direkt nach Fehlern, Unsicherheiten, technischen Missmomenten oder falsch gelesenen Situationen",
+        action: "Frag dich einmal: 'Was ist hier der Fehler — und was ist schon Urteil?'",
+        why: "Bevor Selbstangriff gestoppt werden kann, muss sichtbar werden, dass Fehler und Urteil nicht dasselbe sind.",
+        explanation: "Es macht einen Unterschied, ob du siehst: 'Der Pass war zu ungenau' oder ob dein System sofort macht: 'Ich bin heute schlecht.' Heute trennst du Information von dem, was dein Kopf zusätzlich daraus baut.",
+        self_talk: "Fehler, nicht Urteil.",
+        micro_reframe: "Nicht alles, was mein Kopf nach dem Fehler hinzufügt, gehört wirklich zum Fehler selbst.",
+        reframe_step: {
+          trigger: "Ein Fehler passiert und mein Kopf wird sofort hart.",
+          reframe: "Bevor ich mich angreife, trenne ich erst Information von Urteil.",
+          anchor: "Fehler, nicht Urteil."
+        },
+        system_function: "Judgement Separation",
+        icon: "Scissors"
+      },
+      {
+        id: "d20-t2",
+        title: "Benenn nur die Information",
+        trigger: "Nachdem du Fehler und Urteil etwas klarer getrennt hast",
+        when_to_use: "Direkt danach, bevor dein System weiter in Zweifel oder Abwertung kippt",
+        action: "Formuliere nur die nützliche Information, die für die nächste Handlung relevant ist.",
+        why: "Der Tag soll nicht nur Selbstangriff stoppen, sondern saubere Fehlerverarbeitung trainieren.",
+        explanation: "Nicht: 'Ich kann das nicht.' Sondern: 'Zu spät reagiert.' Nicht: 'Heute bin ich raus.' Sondern: 'Kontakt war unsauber.' Du hältst nur das fest, was für die nächste Szene brauchbar ist.",
+        self_talk: "Nur die Information.",
+        micro_reframe: "Ein Fehler wird kleiner und brauchbarer, wenn ich nur behalte, was für die nächste Handlung nützlich ist.",
+        reframe_step: {
+          trigger: "Ich habe Urteil und Fehler etwas getrennt.",
+          reframe: "Jetzt behalte ich nur das, was ich für die nächste Handlung wirklich brauche.",
+          anchor: "Nur die Information."
+        },
+        system_function: "Informational Processing",
+        icon: "Filter"
+      },
+      {
+        id: "d20-t3",
+        title: "Geh ohne Selbstangriff weiter",
+        trigger: "Wenn dein System nach dem Fehler weiter in Abwertung, Scham oder Zweifel gehen will",
+        when_to_use: "In der direkt nächsten Szene oder Handlung nach dem Fehler",
+        action: "Setze die nächste saubere Handlung, ohne dich innerlich zusätzlich anzugreifen.",
+        why: "Tag 20 soll Fehlerverarbeitung nicht nur mental, sondern sichtbar im Verhalten verändern.",
+        explanation: "Es geht nicht darum, Fehler gutzufinden. Es geht darum, nicht zusätzlich gegen dich selbst zu spielen. Präsenz, Kommunikation, nächste Aktion, Haltung, saubere Rückkehr — ohne den Fehler als Angriff auf dich weiterzutragen.",
+        self_talk: "Weiter ohne Angriff.",
+        micro_reframe: "Ich kann den Fehler klar sehen, ohne ihn gegen mich zu verwenden.",
+        reframe_step: {
+          trigger: "Der Fehler ist passiert und mein System will weiter auf mich losgehen.",
+          reframe: "Ich nehme die Information mit, aber ich gehe ohne zusätzlichen Selbstangriff weiter.",
+          anchor: "Weiter ohne Angriff."
+        },
+        system_function: "Clean Continuation",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute Fehler klarer gesehen, ohne mich direkt anzugreifen?",
+      questions: [
+        { id: "d20-j1", question: "In welcher Situation habe ich heute Fehler und Urteil am klarsten voneinander unterscheiden können?", placeholder: "Beschreibe die Szene." },
+        { id: "d20-j2", question: "Was war der eigentliche Fehler — und was war schon Urteil oder Selbstangriff?", placeholder: "Schreibe beides möglichst getrennt auf." },
+        { id: "d20-j3", question: "Welche nützliche Information konnte ich aus dem Fehler behalten?", placeholder: "Was war für die nächste Handlung relevant?" },
+        { id: "d20-j4", question: "Wie hat es sich auf meine nächste Szene ausgewirkt, nicht zusätzlich gegen mich zu gehen?", placeholder: "Was war spürbar anders?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Fehler-Situation, in der du klarer und fairer mit dir geblieben bist.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie oft Fehler bei mir zu Urteil statt zu Information werden?"
+    },
+    gratitude_prompt: "Welche Fehler-Situation heute hat mir gezeigt, dass ich klar sehen kann, ohne mich sofort anzugreifen?",
+    self_talk_anchors: [
+      { text: "Fehler, nicht Urteil.", when: "Direkt nach einem Fehler" },
+      { text: "Nur die Information.", when: "Wenn du das Nützliche extrahierst" },
+      { text: "Weiter ohne Angriff.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze technische Fehler, falsche Entscheidungen, Timing-Fehler und Missmomente als Hauptmaterial.",
+      rest: "Übertrage den Tag auf Missgeschicke, peinliche Situationen, Selbstkritik, Arbeitsfehler und Alltagspannen.",
+      match: "Kurzversion: Fehler von Urteil trennen → nur Information behalten → ohne Selbstangriff weiter."
+    }
   },
 ];
