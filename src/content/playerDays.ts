@@ -1440,6 +1440,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       training: "Nutze Fehler, Ergebnisdenken, Druck, innere Kommentare und Spannungsmomente als Material für aktive Rückkehr.",
       rest: "Übertrage den Tag auf Handy, Gespräche, Grübeln, Unruhe und Alltagssituationen, in denen dein Kopf weggeht.",
       match: "Kurzversion: Verlust früher merken → Rückkehrsignal setzen → Rückkehr in Handlung zeigen.",
+    },
   },
   // ─────────── DAYS 16–20 (Phase II — Umcodieren, Maximum-Qualität) ───────────
   {
