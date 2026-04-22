@@ -3692,5 +3692,185 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Übertragbar auf Entscheidungen, Gespräche, Leistungen und Situationen, in denen Konsequenzen groß wirken und dein System nur noch Schaden vermeiden will.",
       match: "Kurzversion: Lernschrumpfung erkennen → saubere offene Handlung zurückholen → trotz Druck offen handeln."
     }
+  },
+  {
+    day_id: 41,
+    title: "Identität trotz Fehlern",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Identity vs Performance / Confidence Stability",
+    lens: "Auch wenn meine aktuelle Ausführung unperfekt ist, muss mein System daraus nicht sofort eine Wahrheit über mein Selbst machen.",
+    primary_mechanism: "Identity Stability under Imperfection",
+    today_trigger: "Sobald du merkst, dass eine unperfekte Phase, mehrere schwächere Momente oder sichtbare Fehler dein Selbstbild mitschieben wollen, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Imperfektion = Identitätsbeweis zu Imperfektion = Momentinformation bei stabilem Selbstkern.",
+    science_bite: "Ein einzelner Fehler ist oft noch nicht das Tiefste. Schwieriger wird es, wenn eine Phase unklar, schwach oder sichtbar unperfekt wird. Dann macht das System häufig mehr daraus als nur eine Leistungswelle: Es liest daraus etwas über das Selbst. Genau dort greift Tag 41 ein. Imperfektion darf Information über den Moment liefern, aber kein automatischer Beweis gegen Identität werden. ",
+    tasks: [
+      {
+        id: "d41-t1",
+        title: "Erkenne die Globalisierung",
+        trigger: "Wenn mehrere unsaubere Momente oder eine schwächere Phase innerlich sofort 'mehr als nur Leistung' werden",
+        when_to_use: "Bei unsauberen Blöcken, sichtbaren Fehlern, schwächerer Einheit, unklarem Spielgefühl oder wenn du dich gerade nicht auf deinem Niveau fühlst",
+        action: "Frag dich kurz: 'Lese ich gerade einen Moment — oder schon mich selbst?'",
+        why: "Tag 41 beginnt dort, wo Imperfektion nicht mehr nur Situation bleibt, sondern Identitätsmaterial wird.",
+        explanation: "Viele Systeme globalisieren schnell: nicht 'die Phase ist gerade unsauber', sondern 'ich bin heute nicht gut', 'ich verliere mich gerade', 'so bin ich wohl'. Genau diese Globalisierung soll heute sichtbar werden.",
+        self_talk: "Moment oder ich?",
+        micro_reframe: "Eine unperfekte Phase ist noch kein Beweis gegen meinen Kern.",
+        reframe_step: {
+          trigger: "Mehrere Dinge laufen gerade nicht sauber.",
+          reframe: "Bevor ich mich selbst mitschiebe, prüfe ich, ob ich gerade Leistung globalisiere.",
+          anchor: "Moment oder ich?"
+        },
+        system_function: "Identity Collapse Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d41-t2",
+        title: "Hol den Selbstkern zurück",
+        trigger: "Nachdem du die Globalisierung erkannt hast",
+        when_to_use: "Direkt in der unperfekten Phase, bevor dein Verhalten weiter aus Makel reagiert",
+        action: "Sag dir klar: 'Unperfekt ist gerade die Ausführung — nicht mein Kern.'",
+        why: "Tag 41 wirkt nur, wenn du Identität wieder vom aktuellen Leistungsbild trennst.",
+        explanation: "Das ist kein positives Zureden. Es ist eine präzise Trennung: Die aktuelle Ausführung kann schwach, unsauber oder brüchig sein. Aber dein Selbstkern muss deshalb nicht mitkippen.",
+        self_talk: "Kern bleibt.",
+        micro_reframe: "Ich darf gerade unvollständig sein, ohne mich innerlich zu verlieren.",
+        reframe_step: {
+          trigger: "Ich merke, dass mein Selbstbild mitkippen will.",
+          reframe: "Jetzt führe ich Identität und Ausführung bewusst wieder auseinander.",
+          anchor: "Kern bleibt."
+        },
+        system_function: "Identity Re-Stabilization",
+        icon: "Compass"
+      },
+      {
+        id: "d41-t3",
+        title: "Reagiere nicht aus dem Makel",
+        trigger: "Wenn dein System aus Unsicherheit, Scham, kleinerem Selbstgefühl oder Makelreaktion handeln will",
+        when_to_use: "In der direkt nächsten Szene nach einer schwächeren Phase",
+        action: "Setze die nächste saubere Handlung nicht aus Makelgefühl, sondern aus deinem Kern.",
+        why: "Tag 41 wird erst praktisch, wenn Imperfektion nicht mehr automatisch deine Verhaltensrichtung bestimmt.",
+        explanation: "Nicht retten. Nicht kompensieren. Nicht überziehen. Nicht kleiner werden. Sondern die nächste saubere, ruhige, funktionale Handlung setzen, ohne aus dem Gefühl 'mit mir stimmt gerade etwas nicht' zu reagieren.",
+        self_talk: "Nicht aus dem Makel.",
+        micro_reframe: "Meine nächste Handlung muss nicht mein Selbst reparieren, sondern nur sauber bleiben.",
+        reframe_step: {
+          trigger: "Ich will gerade aus kleinerem Selbstgefühl reagieren.",
+          reframe: "Jetzt gehe ich nicht aus Makel, sondern aus Kern in die nächste Szene.",
+          anchor: "Nicht aus dem Makel."
+        },
+        system_function: "Behavior from Identity Core",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann wurde Imperfektion heute zu viel über mich — und wann nicht?",
+      questions: [
+        { id: "d41-j1", question: "In welcher unperfekten Phase wollte mein System heute am stärksten mehr daraus machen als nur einen Moment?", placeholder: "Beschreibe die Szene oder Phase konkret." },
+        { id: "d41-j2", question: "Woran habe ich gemerkt, dass mein Selbstbild mitkippen wollte?", placeholder: "Welche inneren Sätze oder Reaktionen waren da?" },
+        { id: "d41-j3", question: "Konnte ich heute meinen Selbstkern mindestens einmal bewusst zurückholen?", placeholder: "Wie sah das aus?" },
+        { id: "d41-j4", question: "Wie hat sich meine nächste Handlung verändert, als ich nicht aus dem Makel reagiert habe?", placeholder: "Beschreibe die konkrete Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, die heute unperfekt war, 1 Sache, die trotzdem an dir stabil geblieben ist, und 1 Sache, die dir gezeigt hat, dass Identität größer sein kann als aktuelle Ausführung.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark mein System Imperfektion noch mit Identität verwechselt?"
+    },
+    gratitude_prompt: "Welche unperfekte Situation heute hat mir gezeigt, dass mein Kern größer bleiben kann als meine aktuelle Ausführung?",
+    self_talk_anchors: [
+      { text: "Moment oder ich?", when: "Wenn Imperfektion innerlich groß wird" },
+      { text: "Kern bleibt.", when: "Wenn du Identität stabilisierst" },
+      { text: "Nicht aus dem Makel.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei unsauberen Blöcken, schwächerer Einheit, sichtbaren Fehlern und Phasen, in denen du dich nicht auf deinem Niveau fühlst.",
+      rest: "Sehr gut übertragbar auf ineffiziente Tage, schlechte Gespräche, mangelhafte Disziplin, unklaren Kopf und unperfekten Alltag.",
+      match: "Kurzversion: Globalisierung erkennen → Selbstkern zurückholen → nicht aus dem Makel reagieren."
+    }
+  },
+  {
+    day_id: 45,
+    title: "Dankbarkeit ohne Anlass",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Gratitude vs Anxiety",
+    lens: "Mein System muss nicht auf etwas Gutes warten, um weiter, tragfähiger und offener zu werden.",
+    primary_mechanism: "Baseline State Broadening",
+    today_trigger: "Sobald du merkst, dass dein System für Weite, Tragfähigkeit oder Offenheit erst einen äußeren Anlass will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Weite als Reaktion auf gute Umstände zu Weite als beginnende Grundverfügbarkeit.",
+    science_bite: "Bisher kam Gratitude oft als Antwort: auf Enge, Schwierigkeit, Mangel oder Belastung. Tag 45 ist reifer. Die Frage ist jetzt: Muss mein System auf etwas Gutes warten, um weiter, offener und tragfähiger zu werden? Oder kann es diese Qualität auch ohne besonderen Anlass beginnen zu tragen? Genau das ist heute gemeint: Weite ohne äußere Erlaubnis.",
+    tasks: [
+      {
+        id: "d45-t1",
+        title: "Erkenne die Anlass-Abhängigkeit",
+        trigger: "Wenn dein System innerlich so funktioniert, als dürfte es nur bei guten Umständen offen oder dankbar werden",
+        when_to_use: "Im Alltag, im Training, in neutralen Phasen, in unspektakulären Momenten oder wenn nichts Besonderes passiert",
+        action: "Frag dich kurz: 'Warte ich gerade auf einen Anlass für Weite?'",
+        why: "Tag 45 beginnt dort, wo Weite noch zu stark an äußere Erlaubnis gekoppelt ist.",
+        explanation: "Nicht nur Enge ist heute relevant. Auch neutrale oder unspektakuläre Zustände können eng bleiben, weil das System für Offenheit immer erst ein gutes Ereignis, Erfolg, Ruhe oder Erleichterung will.",
+        self_talk: "Brauche ich gerade einen Anlass?",
+        micro_reframe: "Weite muss nicht erst von außen freigeschaltet werden.",
+        reframe_step: {
+          trigger: "Ich merke, dass mein System auf etwas Gutes, Leichtes oder Besonderes wartet.",
+          reframe: "Bevor ich weiter auf äußere Erlaubnis warte, mache ich diese Abhängigkeit sichtbar.",
+          anchor: "Brauche ich gerade einen Anlass?"
+        },
+        system_function: "State Dependency Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d45-t2",
+        title: "Öffne Weite ohne Grund",
+        trigger: "Nachdem du Anlass-Abhängigkeit erkannt hast",
+        when_to_use: "Direkt danach, auch in ganz normalen oder neutralen Momenten",
+        action: "Hol bewusst 2–3 Dinge in dein System, die schon da, tragfähig, echt oder wertvoll sind — ohne dass erst etwas Besonderes passiert sein muss.",
+        why: "Tag 45 soll Gratitude aus der Reaktionslogik in Richtung Grundverfügbarkeit verschieben.",
+        explanation: "Nicht schönreden. Nicht künstlich positiv werden. Sondern üben, dass dein System Offenheit nicht erst verdient oder geschenkt bekommen muss. Weite kann heute auch im Normalen beginnen.",
+        self_talk: "Weite jetzt.",
+        micro_reframe: "Offenheit ist nicht nur eine Antwort auf Positives — sie kann auch ein bewusster Startpunkt sein.",
+        reframe_step: {
+          trigger: "Ich habe Anlass-Abhängigkeit erkannt.",
+          reframe: "Jetzt öffne ich Weite nicht als Reaktion, sondern als bewusste Grundbewegung.",
+          anchor: "Weite jetzt."
+        },
+        system_function: "Baseline Opening",
+        icon: "Expand"
+      },
+      {
+        id: "d45-t3",
+        title: "Handle aus dieser Grundweite",
+        trigger: "Wenn dein System etwas offener und tragfähiger geworden ist",
+        when_to_use: "In der direkt nächsten Handlung oder Begegnung",
+        action: "Setze die nächste Handlung aus dieser Grundweite, nicht erst nach weiterem 'guten Grund'.",
+        why: "Tag 45 wird erst real, wenn Weite nicht nur innerlich gespürt, sondern im Verhalten getragen wird.",
+        explanation: "Nicht heroisch. Nicht groß. Einfach spürbar weniger eng, weniger mangelgetrieben, weniger auf äußere Erlaubnis wartend. Mehr Tragfähigkeit, Offenheit und stille Verfügbarkeit.",
+        self_talk: "Aus Grundweite.",
+        micro_reframe: "Mein System darf heute weiter sein, auch wenn nichts Besonderes passiert ist.",
+        reframe_step: {
+          trigger: "Ich habe Weite ohne Anlass geöffnet.",
+          reframe: "Jetzt trage ich diese Qualität auch in meiner nächsten Handlung weiter.",
+          anchor: "Aus Grundweite."
+        },
+        system_function: "Embodied Baseline Openness",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo brauchte ich heute noch einen Anlass für Weite — und wo nicht mehr?",
+      questions: [
+        { id: "d45-j1", question: "In welchen Momenten war mein System heute noch stark auf äußere Erlaubnis für Offenheit oder Dankbarkeit angewiesen?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d45-j2", question: "Was habe ich bewusst mit hineingeholt, obwohl nichts Besonderes passiert war?", placeholder: "Welche Dinge waren trotzdem schon da?" },
+        { id: "d45-j3", question: "Wie hat sich mein Zustand verändert, als ich Weite nicht erst an einen Anlass geknüpft habe?", placeholder: "Was war spürbar anders?" },
+        { id: "d45-j4", question: "Wie sah meine nächste Handlung aus, als Weite nicht nur Reaktion, sondern Grundbewegung wurde?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache ohne besonderen Anlass, 1 Sache aus einem ganz normalen Moment und 1 Sache, die dir gezeigt hat, dass Weite nicht erst von außen erlaubt werden muss.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie sehr mein System Offenheit und Tragfähigkeit noch an äußere Bedingungen knüpft?"
+    },
+    gratitude_prompt: "Welche ganz normale Situation heute hat mir gezeigt, dass Weite auch ohne besonderen Anlass möglich ist?",
+    self_talk_anchors: [
+      { text: "Brauche ich gerade einen Anlass?", when: "Wenn dein System auf äußere Freigabe wartet" },
+      { text: "Weite jetzt.", when: "Wenn du Grundweite bewusst öffnest" },
+      { text: "Aus Grundweite.", when: "Wenn du die nächste Handlung trägst" }
+    ],
+    variants: {
+      training: "Ideal in neutralen Phasen, normalen Einheiten, unspektakulären Momenten oder wenn nichts 'Besonderes' passiert, aber dein System trotzdem offen bleiben soll.",
+      rest: "Sehr gut übertragbar auf normalen Alltag, Routine, stille Momente, Arbeit, Spaziergang, Gespräche und neutrale Zeitfenster ohne speziellen Anlass.",
+      match: "Kurzversion: Anlass-Abhängigkeit erkennen → Weite ohne Grund öffnen → aus Grundweite handeln."
+    }
   }
 ];
