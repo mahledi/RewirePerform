@@ -2792,5 +2792,455 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Übertrage den Tag auf Zukunftsdenken, Konsequenzen, Leistungsgrübeln und Alltagssituationen, in denen der Ausgang zu groß wird.",
       match: "Kurzversion: Ausgangs-Zug erkennen → Prozessanker zurückholen → nur die nächste Prozesshandlung."
     }
+  },
+  {
+    day_id: 31,
+    title: "Nach Fehler nicht ins Ich kippen",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Learning vs Judgement / Identity Stability",
+    lens: "Ein Fehler unter Druck darf Information bleiben, statt sofort auf mein Selbst überzuspringen.",
+    primary_mechanism: "Error-to-Self Decoupling",
+    today_trigger: "Sobald dir in einer relevanten oder druckvollen Situation etwas misslingt und dein System es sofort auf dich selbst bezieht, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Fehler = Ich zu Fehler = Information plus funktionale Rückkehr.",
+    science_bite: "Unter Druck wird ein Fehler oft nicht nur als misslungene Handlung erlebt. Er springt schnell auf das Selbst: Was sagt das über mich? Bin ich raus? Jetzt sehen es alle. Genau dadurch wird aus einer Handlungspanne ein Identitätsangriff. Heute trainierst du, Fehler klar zu sehen, ohne dass er sofort dein Selbstbild übernimmt. ",
+    tasks: [
+      {
+        id: "d31-t1",
+        title: "Erkenne den Ich-Sprung",
+        trigger: "Wenn dir unter Druck etwas misslingt und sofort Sätze auftauchen, die mehr über dich als über die Handlung sagen",
+        when_to_use: "Nach Fehlpass, technischer Unsicherheit, falscher Entscheidung, verpasster Chance oder sichtbarem Fehler in relevanter Szene",
+        action: "Frag dich kurz: 'Bleibt der Fehler gerade bei der Handlung — oder springt er schon auf mich?'",
+        why: "Du musst zuerst sichtbar machen, wann der Fehler nicht mehr nur Fehler bleibt, sondern identitär aufgeladen wird.",
+        explanation: "Genau dieser Sprung ist der Kern von Tag 31. Nicht nur: etwas lief schief. Sondern: mein System macht sofort mehr daraus — über mich, meinen Wert, meine Stabilität oder meine Zugehörigkeit.",
+        self_talk: "Handlung oder Ich?",
+        micro_reframe: "Der Fehler ist real. Der Ich-Angriff ist die zweite Schicht.",
+        reframe_step: {
+          trigger: "Etwas misslingt und mein System wird sofort persönlich.",
+          reframe: "Bevor ich komplett hineinkippe, prüfe ich, ob der Fehler gerade von der Handlung auf mein Selbst springt.",
+          anchor: "Handlung oder Ich?"
+        },
+        system_function: "Identity Attack Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d31-t2",
+        title: "Halte ihn bei der Handlung",
+        trigger: "Nachdem du den Ich-Sprung erkannt hast",
+        when_to_use: "Direkt im Moment nach dem Fehler, bevor sich Enge, Rückzug oder Hektik weiter aufbauen",
+        action: "Formuliere für dich nur die Handlungsinformation: Was genau war unsauber, zu spät, falsch gelesen oder schlecht ausgeführt?",
+        why: "Tag 31 wird erst wirksam, wenn du den Fehler wieder an die Ebene bindest, auf die er wirklich gehört.",
+        explanation: "Nicht 'ich bin schlecht'. Sondern: zu spät, unklar, unsauber, falscher Winkel, schlechter Kontakt, falsches Timing. Du hältst den Fehler dort, wo er bearbeitbar bleibt.",
+        self_talk: "Nur die Handlung.",
+        micro_reframe: "Wenn ich beim Konkreten bleibe, wird der Fehler wieder arbeitsfähig.",
+        reframe_step: {
+          trigger: "Ich habe den Ich-Sprung erkannt.",
+          reframe: "Jetzt führe ich den Fehler zurück an die Handlungsebene.",
+          anchor: "Nur die Handlung."
+        },
+        system_function: "Error Localization",
+        icon: "Target"
+      },
+      {
+        id: "d31-t3",
+        title: "Geh funktional zurück",
+        trigger: "Wenn die Handlungsinformation wieder klarer ist",
+        when_to_use: "In der direkt nächsten Szene nach dem Fehler",
+        action: "Setze eine funktionale Rückkehrhandlung, ohne den Fehler weiter als Ich-Urteil mitzuschleppen.",
+        why: "Der Tag soll Fehler unter Druck nicht nur entschärfen, sondern die Rückkehr sauber organisieren.",
+        explanation: "Nicht perfekt kompensieren. Nicht retten. Nicht innerlich Buße tun. Sondern präsent zurückgehen: anbieten, kommunizieren, Position halten, Prozesspunkt spielen, in der Szene bleiben.",
+        self_talk: "Zurück in Funktion.",
+        micro_reframe: "Mein nächster Schritt muss nicht mein Selbst retten, sondern nur meine Funktion wieder aufnehmen.",
+        reframe_step: {
+          trigger: "Die Information ist klarer und der Ich-Angriff schwächer.",
+          reframe: "Jetzt gehe ich nicht in Selbstschutz, sondern zurück in funktionales Handeln.",
+          anchor: "Zurück in Funktion."
+        },
+        system_function: "Functional Return",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann ist ein Fehler heute auf mein Ich gesprungen — und wann nicht?",
+      questions: [
+        { id: "d31-j1", question: "In welcher druckvollen Szene ist heute ein Fehler am stärksten auf mein Selbst übergesprungen?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d31-j2", question: "Woran habe ich gemerkt, dass mein System mehr daraus macht als nur Handlungsinformation?", placeholder: "Welche inneren Sätze oder Reaktionen waren da?" },
+        { id: "d31-j3", question: "Konnte ich den Fehler mindestens einmal wieder an der Handlungsebene festmachen?", placeholder: "Was war dann die konkrete Information?" },
+        { id: "d31-j4", question: "Wie sah meine funktionale Rückkehr aus, ohne dass ich weiter ins Ich gekippt bin?", placeholder: "Beschreibe die nächste Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Fehler-Situation unter Druck.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie schnell mein System Fehler noch in Selbstbezug übersetzt?"
+    },
+    gratitude_prompt: "Welche Fehler-Situation heute hat mir gezeigt, dass ich mich nicht automatisch mit dem Misslingen identifizieren muss?",
+    self_talk_anchors: [
+      { text: "Handlung oder Ich?", when: "Direkt nach einem Fehler unter Druck" },
+      { text: "Nur die Handlung.", when: "Wenn du die Information zurückholst" },
+      { text: "Zurück in Funktion.", when: "In der nächsten Rückkehrhandlung" }
+    ],
+    variants: {
+      training: "Nutze sichtbare Fehler in relevanten Szenen, kleinen Wettbewerben, Scrimmage oder Bewertungsmomenten als Material.",
+      rest: "Übertrage den Tag auf peinliche Momente, Fehler in Gesprächen, Arbeits-/Studiumsfehler und Alltagssituationen, in denen Misslingen schnell persönlich wird.",
+      match: "Kurzversion: Ich-Sprung erkennen → Fehler an Handlung halten → funktional zurück."
+    }
+  },
+  {
+    day_id: 32,
+    title: "Unter Bewertung bleibe ich im Lernsystem",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Learning vs Judgement / Social Pressure",
+    lens: "Fremde Bewertung muss mich nicht aus Lernen in Schutz oder Urteil kippen.",
+    primary_mechanism: "Learning Stability Under Evaluation",
+    today_trigger: "Sobald du merkst, dass Beobachtung, Bewertung oder soziale Sichtbarkeit dein System enger, künstlicher oder defensiver macht, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Bewertung = Schutzmodus zu Bewertung = Lernkontext, in dem ich funktional bleiben kann.",
+    science_bite: "Unter fremder Bewertung wird Lernen oft instabil. Das System schaltet von offenem Arbeiten auf Bildschutz, Korrekturvermeidung, künstliche Sicherheit oder inneres Urteil. Genau dadurch wird die soziale Situation größer als die eigentliche Aufgabe. Heute trainierst du, unter Bewertung im Lernsystem zu bleiben, statt in Schutz und Selbstbezug zu kippen. ",
+    tasks: [
+      {
+        id: "d32-t1",
+        title: "Erkenne den Bewertungszug",
+        trigger: "Wenn Beobachtung, Vergleich, Korrektur oder Sichtbarkeit dein Verhalten enger macht",
+        when_to_use: "Bei Coach-Feedback, Publikum, Mitspielern, Bewertungsszenen, Konkurrenz oder sichtbaren Fehlern",
+        action: "Frag dich kurz: 'Bin ich noch im Lernen — oder schon im Bildschutz?'",
+        why: "Du musst zuerst sichtbar machen, wann soziale Bewertung deine innere Arbeitsweise kippt.",
+        explanation: "Das Problem ist nicht nur, dass andere da sind. Das Problem beginnt dort, wo ihre Sicht innerlich größer wird als deine Aufgabe und dein Lernen.",
+        self_talk: "Lernen oder Bildschutz?",
+        micro_reframe: "Bewertung wird dann gefährlich, wenn sie mein inneres System vom Lernen abzieht.",
+        reframe_step: {
+          trigger: "Ich werde unter Blicken oder Bewertung enger.",
+          reframe: "Bevor ich reagiere, prüfe ich, ob ich noch im Lernsystem bin.",
+          anchor: "Lernen oder Bildschutz?"
+        },
+        system_function: "Social Pressure Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d32-t2",
+        title: "Hol die Aufgabe zurück",
+        trigger: "Nachdem du Bildschutz unter Bewertung erkannt hast",
+        when_to_use: "Direkt in der sozialen oder bewerteten Situation",
+        action: "Frag dich: 'Was ist hier meine echte Lernaufgabe?' und richte dich daran aus.",
+        why: "Unter Bewertung braucht dein System einen klaren Lernort, sonst zieht es automatisch Richtung Wirkung und Schutz.",
+        explanation: "Vielleicht ist es Technik. Vielleicht Kontakt. Vielleicht Präsenz. Vielleicht Korrekturannahme. Vielleicht eine mutige Wiederholung. Die Bewertung bleibt da, aber die Aufgabe wird wieder größer.",
+        self_talk: "Was ist hier meine Lernaufgabe?",
+        micro_reframe: "Bewertung darf da sein, ohne dass sie mein Lernen ersetzt.",
+        reframe_step: {
+          trigger: "Ich habe Bildschutz erkannt.",
+          reframe: "Jetzt mache ich meine Lernaufgabe wieder größer als die soziale Spannung.",
+          anchor: "Was ist hier meine Lernaufgabe?"
+        },
+        system_function: "Learning Redirect",
+        icon: "Target"
+      },
+      {
+        id: "d32-t3",
+        title: "Bleib offen statt künstlich",
+        trigger: "Wenn du unter Bewertung lieber kontrollierter, glatter oder unsichtbarer werden willst",
+        when_to_use: "In der direkt nächsten Wiederholung oder Szene",
+        action: "Setze eine offene, ehrliche, lernfähige Handlung statt eine künstlich abgesicherte.",
+        why: "Tag 32 wird erst real, wenn Lernen unter Bewertung sichtbar offen bleibt.",
+        explanation: "Das kann heißen: Korrektur wirklich annehmen, offen wiederholen, nicht safe gehen, nicht spielen, als wäre alles schon stabil, sondern weiter sauber arbeiten. Nicht für Wirkung. Für Lernen.",
+        self_talk: "Offen bleiben.",
+        micro_reframe: "Unter Bewertung wird mein System reifer, wenn es offen statt künstlich sauber bleibt.",
+        reframe_step: {
+          trigger: "Ich will mich unter Bewertung glätten oder absichern.",
+          reframe: "Jetzt bleibe ich im Lernsystem und halte Offenheit höher als Wirkungsschutz.",
+          anchor: "Offen bleiben."
+        },
+        system_function: "Learning Openness",
+        icon: "Unlock"
+      }
+    ],
+    journal: {
+      title: "Wie habe ich unter Bewertung im Lernsystem geblieben — oder nicht?",
+      questions: [
+        { id: "d32-j1", question: "In welcher Situation hat Bewertung oder Sichtbarkeit mein Verhalten heute am stärksten verändert?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d32-j2", question: "Woran habe ich gemerkt, dass mein System eher in Bildschutz als in Lernen gehen wollte?", placeholder: "Was war innerlich oder im Verhalten spürbar?" },
+        { id: "d32-j3", question: "Was war in dieser Situation meine eigentliche Lernaufgabe?", placeholder: "Formuliere sie klar." },
+        { id: "d32-j4", question: "Konnte ich heute unter Bewertung mindestens einmal offen statt künstlich handeln?", placeholder: "Wie sah das konkret aus?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Situation, in der du beobachtet oder bewertet wurdest.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark soziale Bewertung mein Lernen noch verzieht?"
+    },
+    gratitude_prompt: "Welche Bewertungssituation heute hat mir gezeigt, dass Offenheit stärker sein kann als Bildschutz?",
+    self_talk_anchors: [
+      { text: "Lernen oder Bildschutz?", when: "Wenn soziale Sichtbarkeit hochgeht" },
+      { text: "Was ist hier meine Lernaufgabe?", when: "Wenn du die Aufgabe zurückholen willst" },
+      { text: "Offen bleiben.", when: "Wenn du nicht künstlich werden willst" }
+    ],
+    variants: {
+      training: "Nutze Coach-Feedback, Mitspieler, Konkurrenz, Scrimmage, Korrekturen und sichtbare Fehler als Material.",
+      rest: "Übertrage den Tag auf Gespräche, Arbeits-/Uni-Kontexte, soziale Situationen, Kritik und alles, bei dem du unter Blicken enger wirst.",
+      match: "Kurzversion: Bewertungszug erkennen → Lernaufgabe zurückholen → offen statt künstlich."
+    }
+  },
+  {
+    day_id: 33,
+    title: "Ein alter Reflex darf auftauchen — aber er muss mich nicht mehr steuern",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Habit Break / Control vs Confidence",
+    lens: "Ein alter Leistungsreflex ist noch nicht mein Verhalten. Ich kann ihn stoppen und ersetzen.",
+    primary_mechanism: "Response Inhibition + Replacement",
+    today_trigger: "Sobald ein alter automatischer Reflex unter Last auftaucht und dein Verhalten sofort in die alte Schleife ziehen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Reflex = Ausführung zu Reflex = unterbrechen und bewusst ersetzen.",
+    science_bite: "Viele Muster bleiben nicht bestehen, weil du sie nicht verstehst, sondern weil sie unter Last reflexhaft schneller werden als deine bewusste Steuerung. Genau deshalb reicht Einsicht irgendwann nicht mehr. Tag 33 trainiert etwas Konkreteres: Ein alter Reflex taucht auf, die erste Ausführung wird gestoppt, und eine vorbereitete Alternative wird eingesetzt. Das ist kein Denken über Veränderung, sondern echter Schleifenbruch. ",
+    tasks: [
+      {
+        id: "d33-t1",
+        title: "Wähle einen alten Reflex",
+        trigger: "Vor dem Training oder vor einer relevanten Phase, in der du weißt, dass ein bestimmter alter Reflex oft kommt",
+        when_to_use: "Vor Scrimmage, Druckphasen, Fehlerketten, Bewertungsszenen oder alltäglichen Schleifen",
+        action: "Lege genau einen Reflex fest, den du heute unterbrechen willst.",
+        why: "Tag 33 wird nur stark, wenn er nicht allgemein bleibt, sondern genau einen konkreten Reflex bearbeitet.",
+        explanation: "Zum Beispiel: hektisch werden, kleiner werden, safe gehen, meckern, rausgehen, still werden, Handyflucht, Rückzug, Prokrastination, Selbstkritik. Nicht alles gleichzeitig. Ein Reflex.",
+        self_talk: "Heute stoppe ich diesen Reflex.",
+        micro_reframe: "Veränderung wird heute nicht allgemein, sondern konkret und verhaltensnah.",
+        reframe_step: {
+          trigger: "Der Tag startet.",
+          reframe: "Bevor Last kommt, lege ich genau einen alten Reflex fest, den ich heute nicht automatisch leben werde.",
+          anchor: "Heute stoppe ich diesen Reflex."
+        },
+        system_function: "Reflex Targeting",
+        icon: "Target"
+      },
+      {
+        id: "d33-t2",
+        title: "Stoppe die erste Ausführung",
+        trigger: "Sobald der alte Reflex auftaucht und dein Körper oder Verhalten schon in ihn hineinwill",
+        when_to_use: "Im ersten Moment der Schleife, bevor sie voll läuft",
+        action: "Unterbrich die erste Ausführung bewusst mit einem klaren Stoppsignal.",
+        why: "Der eigentliche Hebel liegt nicht erst später in der Schleife, sondern so früh wie möglich.",
+        explanation: "Tag 33 ist behavior-first. Nicht diskutieren, nicht moralisch bewerten, nicht hoffen, dass der Reflex weggeht. Früh stoppen: Körper, Stimme, Blick, Handlungstendenz, Bewegung.",
+        self_talk: "Stopp.",
+        micro_reframe: "Der Reflex darf auftauchen. Aber er ist noch nicht mein Verhalten.",
+        reframe_step: {
+          trigger: "Ich merke die alte Schleife in mir anlaufen.",
+          reframe: "Bevor sie übernimmt, setze ich eine klare Unterbrechung.",
+          anchor: "Stopp."
+        },
+        system_function: "Response Inhibition",
+        icon: "Ban"
+      },
+      {
+        id: "d33-t3",
+        title: "Setze die Ersatzhandlung",
+        trigger: "Direkt nach dem Stoppsignal",
+        when_to_use: "In derselben Szene, unmittelbar nach der Unterbrechung",
+        action: "Setze die vorher festgelegte Alternative bewusst an die Stelle des alten Reflexes.",
+        why: "Unterbrechung allein reicht selten. Das System braucht eine neue, konkrete Verhaltensspur.",
+        explanation: "Wenn der alte Reflex klein machen will, wird die Ersatzhandlung offen bleiben. Wenn er safe machen will, wird sie die saubere mutige Handlung. Wenn er meckern will, wird sie klare Kommunikation. Nicht improvisieren. Ersetzen.",
+        self_talk: "Ersatz jetzt.",
+        micro_reframe: "Rewiring wird heute praktisch, wenn ich nicht nur stoppe, sondern ersetze.",
+        reframe_step: {
+          trigger: "Der Reflex ist gestoppt.",
+          reframe: "Jetzt setze ich nicht Leere, sondern eine klare Alternative.",
+          anchor: "Ersatz jetzt."
+        },
+        system_function: "Replacement Behavior",
+        icon: "RefreshCw"
+      }
+    ],
+    journal: {
+      title: "Welchen alten Reflex habe ich heute gestoppt — und wodurch ersetzt?",
+      questions: [
+        { id: "d33-j1", question: "Welchen alten Reflex habe ich mir heute vorgenommen?", placeholder: "Benenne ihn so konkret wie möglich." },
+        { id: "d33-j2", question: "In welcher Szene ist er heute am deutlichsten aufgetaucht?", placeholder: "Beschreibe die Situation." },
+        { id: "d33-j3", question: "Konnte ich die erste Ausführung stoppen?", placeholder: "Wenn ja: wie? Wenn nein: wann war ich zu spät?" },
+        { id: "d33-j4", question: "Welche Ersatzhandlung habe ich gesetzt — oder hätte ich setzen müssen?", placeholder: "Beschreibe die Alternative." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Situation, in der ein alter Reflex sichtbar wurde.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie viel Handlungshoheit ich unter Last schon zurückholen kann?"
+    },
+    gratitude_prompt: "Welcher Moment heute hat mir gezeigt, dass ein alter Reflex nicht automatisch mein Verhalten bleiben muss?",
+    self_talk_anchors: [
+      { text: "Heute stoppe ich diesen Reflex.", when: "Bevor Last kommt" },
+      { text: "Stopp.", when: "Im ersten Reflexmoment" },
+      { text: "Ersatz jetzt.", when: "Direkt nach der Unterbrechung" }
+    ],
+    variants: {
+      training: "Ideal: einen häufigen Leistungsreflex wählen, erste Ausführung stoppen, Ersatzhandlung einsetzen.",
+      rest: "Sehr gut übertragbar auf Prokrastination, Reizbarkeit, Rückzug, Selbstkritik, Handyflucht und Vermeidung unangenehmer Gespräche.",
+      match: "Kurzversion: Wettkampfreflex wählen → erste Ausführung stoppen → klare Ersatzhandlung."
+    }
+  },
+  {
+    day_id: 34,
+    title: "Auch unter Belastungsstau kann ich meinem System wieder Tragfähigkeit geben",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Gratitude vs Anxiety / Recovery Under Load",
+    lens: "Wenn Belastung sich stapelt, muss mein System nicht immer enger werden. Ich kann ihm gezielt wieder etwas Tragfähigkeit zurückgeben.",
+    primary_mechanism: "Recovery Restoration Under Accumulated Load",
+    today_trigger: "Sobald du merkst, dass Belastung sich aufstapelt und dein System immer enger, härter oder defizitdominanter wird, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Belastungsstau = weitere Verengung zu Belastungsstau = bewusste Recovery-Rückgabe.",
+    science_bite: "Nicht jede Belastung ist ein einzelner harter Moment. Oft entsteht Instabilität dadurch, dass Reibung sich stapelt: Fehler, Bewertung, Druck, Müdigkeit, soziale Spannung, mehrere kleine Stressoren. Dann wird das System oft zunehmend enger, härter, reizbarer und defizitdominanter. Tag 34 trainiert deshalb nicht Motivation, sondern Recovery-Funktion: deinem System wieder etwas Tragfähigkeit zurückgeben, bevor es noch weiter verdichtet. ",
+    tasks: [
+      {
+        id: "d34-t1",
+        title: "Erkenne den Belastungsstau",
+        trigger: "Wenn du merkst, dass nicht nur ein einzelner Reiz da ist, sondern sich mehrere Dinge innerlich aufeinander stapeln",
+        when_to_use: "Bei Fehlerketten, Müdigkeit, gereizten Phasen, mehreren kleinen Störungen, sozialem Druck oder innerem Überhang",
+        action: "Markiere klar: 'Belastungsstau.'",
+        why: "Du musst zuerst unterscheiden, ob du gerade auf ein Ereignis reagierst oder ob dein ganzes System schon unter kumulierter Last läuft.",
+        explanation: "Genau das ist heute der Punkt: Nicht nur 'es ist gerade schwierig', sondern 'es stapelt sich'. Diese Einsicht schützt davor, zusätzliche Härte mit Stärke zu verwechseln.",
+        self_talk: "Belastungsstau.",
+        micro_reframe: "Mein System ist gerade nicht nur gereizt — es ist schon unter aufgestauter Last.",
+        reframe_step: {
+          trigger: "Ich merke, dass vieles gleichzeitig oder nacheinander in mir hängen bleibt.",
+          reframe: "Bevor ich noch enger werde, erkenne ich den Stau als Zustand.",
+          anchor: "Belastungsstau."
+        },
+        system_function: "Load Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d34-t2",
+        title: "Gib dem System wieder etwas Tragfähigkeit",
+        trigger: "Nachdem du den Belastungsstau erkannt hast",
+        when_to_use: "Direkt danach, bevor dein System weiter verhärtet",
+        action: "Hol bewusst 2–3 Dinge nach vorne, die Tragfähigkeit, Weite oder Stabilität zurückgeben.",
+        why: "Recovery unter Last braucht konkrete Rückgabe, nicht nur die Hoffnung, dass es schon wieder weggeht.",
+        explanation: "Das kann Atem, Tempo, Perspektive, Dankbarkeit, etwas Tragendes, etwas Reales, etwas Verlässliches oder etwas bereits Vorhandenes sein. Es geht nicht darum, Last zu leugnen, sondern Tragfähigkeit wieder minimal zu erhöhen.",
+        self_talk: "Gib Stabilität zurück.",
+        micro_reframe: "Recovery heißt heute nicht Flucht, sondern meinem System wieder etwas Tragen zu ermöglichen.",
+        reframe_step: {
+          trigger: "Ich habe den Belastungsstau erkannt.",
+          reframe: "Jetzt hole ich bewusst wieder etwas Tragfähigkeit in mein System.",
+          anchor: "Gib Stabilität zurück."
+        },
+        system_function: "Recovery Activation",
+        icon: "HeartPulse"
+      },
+      {
+        id: "d34-t3",
+        title: "Handle wieder aus etwas mehr Weite",
+        trigger: "Wenn dein System etwas tragfähiger geworden ist",
+        when_to_use: "In der direkt nächsten relevanten Handlung",
+        action: "Setze die nächste Szene nicht aus weiterem inneren Stau, sondern aus etwas mehr Weite und Tragfähigkeit.",
+        why: "Recovery muss in Verhalten übersetzt werden, sonst bleibt sie nur ein innerer Gedanke.",
+        explanation: "Nicht alles lösen. Nicht sofort perfekt stabil sein. Nur die nächste Handlung aus etwas weniger innerer Verdichtung spielen.",
+        self_talk: "Aus Tragfähigkeit weiter.",
+        micro_reframe: "Auch unter Last kann mein nächster Schritt aus mehr Weite als nur aus Stau kommen.",
+        reframe_step: {
+          trigger: "Mein System hat minimal wieder Raum.",
+          reframe: "Jetzt setze ich die nächste Handlung aus mehr Tragfähigkeit statt aus weiterer Enge.",
+          anchor: "Aus Tragfähigkeit weiter."
+        },
+        system_function: "Recovered Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo war heute Belastungsstau — und wie habe ich meinem System wieder Tragfähigkeit gegeben?",
+      questions: [
+        { id: "d34-j1", question: "Woran habe ich heute am klarsten gemerkt, dass Belastung sich gestapelt hat?", placeholder: "Beschreibe die Situation oder Abfolge." },
+        { id: "d34-j2", question: "Was hat mein System dadurch enger, härter oder defizitdominanter gemacht?", placeholder: "Wie war der Zustand?" },
+        { id: "d34-j3", question: "Welche 2–3 Dinge haben meinem System wieder etwas Tragfähigkeit gegeben?", placeholder: "Was hat wirklich geholfen?" },
+        { id: "d34-j4", question: "Wie hat sich meine nächste Handlung verändert, als wieder etwas mehr Raum da war?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Phase, in der sich Belastung gestapelt hat.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie ich auf laufende Belastung reagiere — und wie Recovery für mich unter echter Last aussehen kann?"
+    },
+    gratitude_prompt: "Welche kleine Sache heute hat meinem System wieder mehr Tragfähigkeit gegeben, obwohl die Belastung noch da war?",
+    self_talk_anchors: [
+      { text: "Belastungsstau.", when: "Wenn du merkst, dass sich Last stapelt" },
+      { text: "Gib Stabilität zurück.", when: "Wenn du Recovery bewusst aktivierst" },
+      { text: "Aus Tragfähigkeit weiter.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze Fehlerketten, Müdigkeit, soziale Spannung, mehrere kleine Friktionen und innere Reizbarkeit als Material.",
+      rest: "Übertrage den Tag auf To-dos, Familien-/Sozialdynamik, Alltagsspannung, mentale Überladung und sich stapelnde Kleinstressoren.",
+      match: "Kurzversion: Belastungsstau erkennen → Tragfähigkeit zurückgeben → aus mehr Weite weiter."
+    }
+  },
+  {
+    day_id: 35,
+    title: "Ich kann Verantwortung sichtbar übernehmen",
+    phase: "Phase III — Transfer und Druck",
+    week: 5,
+    line: "Confidence / Leadership / Identity",
+    lens: "Verantwortung unter sozialem Risiko ist kein Sonderfall — sie ist trainierbares Verhalten.",
+    primary_mechanism: "Visible Responsibility Under Social Risk",
+    today_trigger: "Sobald eine Situation nach Initiative, Ordnung, Kommunikation oder sichtbarer Präsenz ruft und dein System lieber auf Rückzug oder Abwarten gehen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von stiller Selbstverwaltung zu sichtbarer Verantwortung für die Situation.",
+    science_bite: "Viele Spieler können sich innerlich gut sortieren, bleiben aber äußerlich passiv, sobald Verantwortung sichtbar wird. Der Grund ist oft nicht fehlendes Wissen, sondern soziales Risiko: sich zeigen, hörbar werden, etwas tragen, Initiative setzen, falsch liegen können. Heute trainierst du deshalb nicht nur Stabilität in dir, sondern Verantwortung nach außen. Genau das macht Führung trainierbar. ",
+    tasks: [
+      {
+        id: "d35-t1",
+        title: "Erkenne die Warteschleife",
+        trigger: "Wenn du merkst, dass eigentlich etwas von dir gebraucht wäre, dein System aber lieber wartet, hofft oder sich zurückhält",
+        when_to_use: "Bei Unordnung, fehlender Kommunikation, Unsicherheit im Team, offenen Situationen oder sichtbarem Bedarf nach Initiative",
+        action: "Frag dich kurz: 'Warte ich gerade — obwohl etwas von mir gebraucht wäre?'",
+        why: "Tag 35 beginnt damit, die stille Passivität sichtbar zu machen, die sich oft als Vernunft tarnt.",
+        explanation: "Nicht jede Ruhe ist Stärke. Manchmal ist sie nur sozial vorsichtige Unsichtbarkeit. Heute geht es darum, die Warteschleife zu erkennen, bevor sie wieder dein Standard wird.",
+        self_talk: "Warte ich gerade?",
+        micro_reframe: "Manchmal braucht eine Situation nicht mehr Analyse, sondern sichtbare Verantwortung.",
+        reframe_step: {
+          trigger: "Ich merke Bedarf, halte mich aber zurück.",
+          reframe: "Bevor ich weiter warte, prüfe ich, ob ich gerade nur sozial vorsichtig werde.",
+          anchor: "Warte ich gerade?"
+        },
+        system_function: "Passivity Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d35-t2",
+        title: "Definiere die Verantwortung",
+        trigger: "Nachdem du die Warteschleife erkannt hast",
+        when_to_use: "Direkt im Moment, bevor du Initiative setzt",
+        action: "Frag dich: 'Was ist hier gerade meine sichtbarste sinnvolle Verantwortung?'",
+        why: "Verantwortung wird trainierbar, wenn sie konkret und verhaltensnah formuliert wird.",
+        explanation: "Nicht groß denken. Vielleicht ist es nur eine klare Ansage, ein Fokuspunkt, eine Ordnungshandlung, Präsenz für andere, Initiative im Kontakt oder eine stabilisierende Kommunikation. Tag 35 braucht keine Heldenrolle, sondern sichtbare Verantwortungsnahme.",
+        self_talk: "Was trage ich hier?",
+        micro_reframe: "Verantwortung ist heute nicht Größe, sondern sichtbare Dienlichkeit.",
+        reframe_step: {
+          trigger: "Ich habe die Warteschleife erkannt.",
+          reframe: "Jetzt mache ich konkret, was hier sichtbar von mir getragen werden kann.",
+          anchor: "Was trage ich hier?"
+        },
+        system_function: "Responsibility Clarification",
+        icon: "Compass"
+      },
+      {
+        id: "d35-t3",
+        title: "Setze sie sichtbar",
+        trigger: "Wenn dir klar ist, was du tragen willst",
+        when_to_use: "In der direkt nächsten Szene",
+        action: "Setze die Verantwortung hörbar, sichtbar oder spürbar — nicht nur innerlich.",
+        why: "Tag 35 wird erst real, wenn Verantwortung nach außen geht und nicht nur ein inneres Vorhaben bleibt.",
+        explanation: "Sprich. Ordne. Biete dich an. Setze einen Fokus. Trag eine Situation. Sei sichtbar stabilisierend. Nicht, um stark zu wirken, sondern weil die Situation gerade Führung braucht.",
+        self_talk: "Sichtbar tragen.",
+        micro_reframe: "Verantwortung unter sozialem Risiko ist kein Persönlichkeitsmerkmal, sondern trainierbare Handlung.",
+        reframe_step: {
+          trigger: "Ich kenne meine Verantwortung.",
+          reframe: "Jetzt bleibt sie nicht in mir — ich setze sie sichtbar in die Situation.",
+          anchor: "Sichtbar tragen."
+        },
+        system_function: "Visible Leadership Action",
+        icon: "Megaphone"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute Verantwortung sichtbar übernommen — oder vermieden?",
+      questions: [
+        { id: "d35-j1", question: "In welcher Situation war heute sichtbar etwas von mir gebraucht?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d35-j2", question: "Woran habe ich gemerkt, dass mein System lieber warten oder unsichtbar bleiben wollte?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d35-j3", question: "Was war dort meine sinnvollste sichtbare Verantwortung?", placeholder: "Formuliere sie klar." },
+        { id: "d35-j4", question: "Konnte ich sie heute hörbar, sichtbar oder spürbar setzen?", placeholder: "Wie sah das konkret aus?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem Verantwortung sozial riskant war.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark ich Verantwortung bisher von innerer Sicherheit oder sozialer Freigabe abhängig gemacht habe?"
+    },
+    gratitude_prompt: "Welche Situation heute hat mir gezeigt, dass sichtbare Verantwortung trainierbar ist?",
+    self_talk_anchors: [
+      { text: "Warte ich gerade?", when: "Wenn du dich zurückhältst" },
+      { text: "Was trage ich hier?", when: "Wenn du Verantwortung konkret machst" },
+      { text: "Sichtbar tragen.", when: "Wenn du sie nach außen setzt" }
+    ],
+    variants: {
+      training: "Ideal: Kommunikation, Ordnung, Initiative, Stabilität für andere, Fokus setzen, dich sichtbar anbieten.",
+      rest: "Sehr gut übertragbar auf Gespräche initiieren, Verantwortung organisieren, etwas klären und nicht warten, bis andere handeln.",
+      match: "Kurzversion: Warteschleife erkennen → Verantwortung definieren → sichtbar tragen."
+    }
   }
 ];
