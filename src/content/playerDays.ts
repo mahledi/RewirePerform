@@ -3242,5 +3242,455 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Sehr gut übertragbar auf Gespräche initiieren, Verantwortung organisieren, etwas klären und nicht warten, bis andere handeln.",
       match: "Kurzversion: Warteschleife erkennen → Verantwortung definieren → sichtbar tragen."
     }
+  },
+  {
+    day_id: 36,
+    title: "Auch im Chaos kann ich einen Kern halten",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Presence under Chaos",
+    lens: "Wenn viele Dinge gleichzeitig an mir ziehen, brauche ich nicht alles zu lösen — ich brauche meinen Kern.",
+    primary_mechanism: "Attentional Core Recovery",
+    today_trigger: "Sobald viele Reize gleichzeitig an dir ziehen und dein System auf alles zugleich springen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Streuung zu Kern — und von Reizdichte zu Priorität.",
+    science_bite: "Chaos zerstört Aufmerksamkeit oft nicht, weil es groß ist, sondern weil dein System seine Priorität verliert. Wenn viele Dinge gleichzeitig passieren, reagiert es schnell mit Streuung: dies auch, das auch, nichts verpassen, alles gleichzeitig kontrollieren. Genau dadurch wird Aufmerksamkeit schwach. Präsenz im Chaos bedeutet heute nicht Ruhe, sondern einen funktionalen Kern trotz Reizdichte zu halten. ",
+    tasks: [
+      {
+        id: "d36-t1",
+        title: "Erkenne die Streuung",
+        trigger: "Wenn viel gleichzeitig passiert und dein Kopf überall gleichzeitig sein will",
+        when_to_use: "Bei Scrimmage, lauten Phasen, Fehlerketten, hektischen Drillformen, mehreren Reizen, To-dos, Nachrichten oder mentalem Lärm",
+        action: "Markiere innerlich einmal klar: 'Streuung.'",
+        why: "Bevor du Aufmerksamkeit bündeln kannst, musst du merken, wann dein System gerade auf alles gleichzeitig springt.",
+        explanation: "Tag 36 fragt nicht, ob Chaos da ist. Es fragt, ob dein System im Chaos seine Priorität verliert. Genau diese Streuung machst du heute sichtbar.",
+        self_talk: "Streuung.",
+        micro_reframe: "Nicht das Chaos selbst zerstört meinen Fokus — sondern dass mein System seinen Kern verliert.",
+        reframe_step: {
+          trigger: "Alles zieht gleichzeitig an mir.",
+          reframe: "Bevor ich weiter alles gleichzeitig lösen will, erkenne ich die Streuung als Zustand.",
+          anchor: "Streuung."
+        },
+        system_function: "Chaos Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d36-t2",
+        title: "Hol den Kern zurück",
+        trigger: "Direkt nachdem du die Streuung erkannt hast",
+        when_to_use: "Sofort, bevor dein System weiter in Reizsprünge kippt",
+        action: "Frag dich: 'Was ist gerade mein Kern?' und wähle genau einen funktionalen Fokuspunkt.",
+        why: "Chaos wird erst handhabbar, wenn dein System wieder einen klaren Arbeitskern hat.",
+        explanation: "Nicht fünf Dinge. Nicht alles retten. Ein Kern: der Ball, dein Gegenspieler, der erste Kontakt, deine Kommunikation, deine Haltung, dein Prozessanker, die nächste Aktion.",
+        self_talk: "Was ist mein Kern?",
+        micro_reframe: "Ich brauche heute nicht Ordnung überall — ich brauche Priorität an einem Punkt.",
+        reframe_step: {
+          trigger: "Ich habe die Streuung erkannt.",
+          reframe: "Jetzt hole ich nicht alles zurück, sondern nur den einen Kern, aus dem ich arbeiten kann.",
+          anchor: "Was ist mein Kern?"
+        },
+        system_function: "Core Recovery",
+        icon: "LocateFixed"
+      },
+      {
+        id: "d36-t3",
+        title: "Handle aus dem Kern",
+        trigger: "Wenn dein Kern wieder etwas klarer ist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Setze die nächste saubere Handlung nur aus diesem Kern heraus.",
+        why: "Tag 36 wird erst praktisch, wenn Bündelung sofort in Handlung übersetzt wird.",
+        explanation: "Nicht alles gleichzeitig lösen. Nicht das Chaos bekämpfen. Nur die nächste saubere Handlung aus deinem Kern spielen.",
+        self_talk: "Nur aus dem Kern.",
+        micro_reframe: "Präsenz im Chaos heißt heute nicht Ruhe, sondern Priorität plus Handlung.",
+        reframe_step: {
+          trigger: "Mein Kern ist wieder da.",
+          reframe: "Jetzt spiele ich nicht das ganze Chaos, sondern nur die nächste saubere Handlung aus dem Kern.",
+          anchor: "Nur aus dem Kern."
+        },
+        system_function: "Core-Based Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo ist mein System heute breit geworden — und wo hatte ich wieder einen Kern?",
+      questions: [
+        { id: "d36-j1", question: "In welchem Moment war heute die Reizdichte oder das Chaos am höchsten?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d36-j2", question: "Woran habe ich gemerkt, dass meine Aufmerksamkeit in Streuung gekippt ist?", placeholder: "Was war innerlich oder äußerlich spürbar?" },
+        { id: "d36-j3", question: "Welchen Kern habe ich bewusst zurückgeholt?", placeholder: "Was war dein funktionaler Fokuspunkt?" },
+        { id: "d36-j4", question: "Wie gut ist es mir gelungen, aus diesem Kern die nächste saubere Handlung zu setzen?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 Sache, die chaotisch war, 1 Sache, die dir wieder Kern gegeben hat, und 1 Sache, die dir gezeigt hat, dass Präsenz im Chaos Priorität bedeutet.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stabil mein Kern schon unter Reizdichte ist?"
+    },
+    gratitude_prompt: "Welche chaotische Situation heute hat mir gezeigt, dass ich nicht alles lösen muss, um arbeitsfähig zu bleiben?",
+    self_talk_anchors: [
+      { text: "Streuung.", when: "Wenn alles gleichzeitig zieht" },
+      { text: "Was ist mein Kern?", when: "Wenn du Priorität zurückholen willst" },
+      { text: "Nur aus dem Kern.", when: "In der nächsten sauberen Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei Scrimmage, lauten Phasen, schnellen Wechseln, Fehlerketten und mehreren Reizen gleichzeitig.",
+      rest: "Übertragbar auf To-dos, Nachrichten, Handy, Gespräche, Geräusche und mentalen Lärm.",
+      match: "Kurzversion: Streuung erkennen → Kern zurückholen → nur aus dem Kern spielen."
+    }
+  },
+  {
+    day_id: 37,
+    title: "Unfaire Reibung darf ich nicht weiter füttern",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Control vs Non-Control / Emotional Regulation",
+    lens: "Ein nerviger oder unfairer Trigger muss nicht zu einer zweiten inneren Welle werden.",
+    primary_mechanism: "Emotional Non-Feeding",
+    today_trigger: "Sobald ein unfairer, nerviger oder störender Moment eine zweite innere Welle in dir aufbauen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Reibung plus Zusatzaufladung zu Reibung ohne Weiterfüttern.",
+    science_bite: "Unfaire Reibung wird oft nicht nur durch das Ereignis groß, sondern durch die zweite Welle danach: nochmal drüber nachdenken, innerlich diskutieren, weiter aufladen, in der Story bleiben. Genau diese zweite Welle macht Frustketten lang und leistungsrelevant. Tag 37 trainiert nicht, nichts zu fühlen — sondern Reibung nicht weiter zu füttern. ",
+    tasks: [
+      {
+        id: "d37-t1",
+        title: "Erkenne die zweite Welle",
+        trigger: "Wenn ein nerviger oder unfairer Moment passiert und dein System nicht nur reagiert, sondern weiter auflädt",
+        when_to_use: "Bei nervigen Calls, Mitspielerfehlern, Störungen, Unfairness, nerviger Dynamik, Planänderungen oder Alltagstriggern",
+        action: "Frag dich kurz: 'Ist das gerade noch das Ereignis — oder schon meine zweite Welle?'",
+        why: "Du musst zuerst erkennen, wann Reibung nicht nur da ist, sondern innerlich weiter verstärkt wird.",
+        explanation: "Die zweite Welle ist oft subtil: gedanklich weiterhängen, innerlich weiter argumentieren, den Trigger größer machen, ihn mit Story aufladen. Genau das machst du heute sichtbar.",
+        self_talk: "Zweite Welle?",
+        micro_reframe: "Der Trigger ist real. Die zweite Welle ist das, was mein System zusätzlich daraus macht.",
+        reframe_step: {
+          trigger: "Etwas nervt oder läuft unfair.",
+          reframe: "Bevor ich weiter in der Story bleibe, prüfe ich, ob mein System schon eine zweite Welle baut.",
+          anchor: "Zweite Welle?"
+        },
+        system_function: "Emotional Amplification Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d37-t2",
+        title: "Hör auf, ihn weiter zu füttern",
+        trigger: "Nachdem du die zweite Welle erkannt hast",
+        when_to_use: "Direkt danach, bevor der Trigger weiter an Größe gewinnt",
+        action: "Sag dir einmal klar: 'Nicht weiter füttern.'",
+        why: "Der eigentliche Hebel liegt nicht im Ausdiskutieren, sondern im frühen Nicht-Weiterladen.",
+        explanation: "Nicht unterdrücken. Nicht wegdrücken. Nur nicht weiter Energie hineinstecken. Kein weiteres inneres Diskutieren, kein zusätzliches Aufblasen, kein weiteres Story-Bauen.",
+        self_talk: "Nicht weiter füttern.",
+        micro_reframe: "Gelassenheit heißt heute nicht Gleichgültigkeit, sondern weniger Nachladung.",
+        reframe_step: {
+          trigger: "Ich habe die zweite Welle erkannt.",
+          reframe: "Jetzt stoppe ich nicht das Gefühl, sondern das Weiterfüttern.",
+          anchor: "Nicht weiter füttern."
+        },
+        system_function: "Feeding Stop",
+        icon: "Ban"
+      },
+      {
+        id: "d37-t3",
+        title: "Werde wieder funktional flach",
+        trigger: "Wenn du aufgehört hast weiter zu füttern",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Frag dich: 'Wie sieht meine nächste funktionale Version aus?' und setze genau diese.",
+        why: "Tag 37 koppelt Gelassenheit direkt an Verhalten statt an Theorie.",
+        explanation: "Funktional flach heißt nicht gleichgültig. Es heißt: weniger aufgeladen, weniger in der Story, wieder mehr bei Aufgabe, Körper, Prozessanker, Kommunikation und nächster Szene.",
+        self_talk: "Funktional flach.",
+        micro_reframe: "Die Reibung muss nicht mehr mein ganzes System bestimmen.",
+        reframe_step: {
+          trigger: "Die zweite Welle läuft nicht weiter.",
+          reframe: "Jetzt werde ich nicht stumpf, sondern wieder funktional und klar.",
+          anchor: "Funktional flach."
+        },
+        system_function: "Functional Flattening",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann habe ich heute Reibung weitergefüttert — und wann nicht mehr?",
+      questions: [
+        { id: "d37-j1", question: "Welcher nervige, unfaire oder störende Moment hat heute die stärkste Reibung in mir ausgelöst?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d37-j2", question: "Woran habe ich gemerkt, dass mein System eine zweite Welle aufgebaut hat?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d37-j3", question: "Konnte ich heute mindestens einmal klar aufhören, den Trigger weiter zu füttern?", placeholder: "Wie sah das aus?" },
+        { id: "d37-j4", question: "Wie habe ich meine nächste funktionale Version wiedergefunden?", placeholder: "Beschreibe die nächste Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 Sache, die gestört hat, 1 Sache, die dich wieder tragfähiger gemacht hat, und 1 Sache, die dir gezeigt hat, dass Gelassenheit weniger Nachfüttern bedeutet.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie sehr mein System Frust noch verlängert, statt ihn abflachen zu lassen?"
+    },
+    gratitude_prompt: "Welche Störung heute hat mir gezeigt, dass ich nicht alles weiterfüttern muss, was mich triggert?",
+    self_talk_anchors: [
+      { text: "Zweite Welle?", when: "Wenn Reibung innerlich größer wird" },
+      { text: "Nicht weiter füttern.", when: "Wenn du die Nachladung stoppst" },
+      { text: "Funktional flach.", when: "In der nächsten funktionalen Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei nervigen Calls, Mitspielerfehlern, störender Dynamik und Reibung, die sonst hängen bleibt.",
+      rest: "Sehr gut übertragbar auf kleine Ungerechtigkeiten, Wartezeiten, nervige Menschen, Planänderungen und Alltag, der nicht nach deinem Kopf läuft.",
+      match: "Kurzversion: zweite Welle erkennen → nicht weiter füttern → funktional flach werden."
+    }
+  },
+  {
+    day_id: 38,
+    title: "Angriff statt Schutz",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Fear vs Love / Growth vs Winning",
+    lens: "Wenn mein System sich schützen will, kann ich bewusst wieder eine vorwärtsgerichtete, dienliche Handlung wählen.",
+    primary_mechanism: "Challenge Orientation",
+    today_trigger: "Sobald unter Druck, Reibung, Bewertung oder Gegnerkontakt dein System in Schutzlogik hängenbleibt, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Schutzorientierung zu Vorwärtsbewegung.",
+    science_bite: "Schutzorientierung zeigt sich oft nicht dramatisch, sondern funktional zu klein: safe gehen, warten, sich verstecken, nur noch reagieren, nur noch keinen Schaden machen wollen. Tag 38 trainiert nicht Aggression, sondern Handlungsrichtung: nicht 'Wie vermeide ich Schaden?', sondern 'Wie gehe ich hier aktiv und sauber rein?'. Genau das ist Challenge Orientation. ",
+    tasks: [
+      {
+        id: "d38-t1",
+        title: "Erkenne die Schutzlogik",
+        trigger: "Wenn eine Situation eng wird und dein System kleiner, sicherer, defensiver oder versteckter handeln will",
+        when_to_use: "Bei starkem Gegner, nach Fehlern, unter Bewertung, bei Reibung, in Druckmomenten oder wenn du Raum nicht mehr aktiv nimmst",
+        action: "Frag dich kurz: 'Schütze ich mich gerade — oder spiele ich die Aufgabe?'",
+        why: "Du musst Schutz als Hauptlogik der Handlung sichtbar machen, bevor du sie verschieben kannst.",
+        explanation: "Das Problem ist heute nicht nur Angst. Das Problem ist, wenn Schutz zum Steuerzentrum deiner Handlung wird.",
+        self_talk: "Schutz oder Aufgabe?",
+        micro_reframe: "Auch wenn Schutzimpulse da sind, muss Schutz nicht meine Hauptrichtung bleiben.",
+        reframe_step: {
+          trigger: "Ich werde kleiner, sicherer oder reaktiver.",
+          reframe: "Bevor ich dort hängenbleibe, prüfe ich meine aktuelle Handlungsrichtung.",
+          anchor: "Schutz oder Aufgabe?"
+        },
+        system_function: "Protection Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d38-t2",
+        title: "Hol die Vorwärtsrichtung zurück",
+        trigger: "Nachdem du Schutzlogik erkannt hast",
+        when_to_use: "Direkt vor der nächsten relevanten Handlung",
+        action: "Frag dich: 'Wie gehe ich hier aktiv und sauber rein?'",
+        why: "Tag 38 verschiebt nicht Gefühl, sondern Richtung.",
+        explanation: "Nicht überrennen. Nicht riskant um jeden Preis. Sondern wieder offen in Kontakt mit der Situation gehen: Initiative, Kontakt, Raum nehmen, klare Vorwärtsbewegung.",
+        self_talk: "Aktiv und sauber rein.",
+        micro_reframe: "Stabilisierung reicht heute nicht — mein System darf wieder nach vorne handeln.",
+        reframe_step: {
+          trigger: "Ich habe Schutzlogik erkannt.",
+          reframe: "Jetzt ändere ich nicht alles, sondern nur die Richtung: wieder nach vorne.",
+          anchor: "Aktiv und sauber rein."
+        },
+        system_function: "Direction Shift",
+        icon: "StepForward"
+      },
+      {
+        id: "d38-t3",
+        title: "Setze die Vorwärtshandlung",
+        trigger: "Wenn die Richtung klarer geworden ist",
+        when_to_use: "In der direkt nächsten Szene",
+        action: "Setze eine sichtbare, dienliche Vorwärtshandlung statt in Schutz hängen zu bleiben.",
+        why: "Tag 38 wird erst real, wenn Vorwärtsbewegung im Verhalten auftaucht.",
+        explanation: "Das kann heißen: Raum nehmen, Kontakt suchen, wieder anbieten, mutiger kommunizieren, in die Situation hineingehen, nicht warten, nicht safe verschwinden.",
+        self_talk: "Nach vorne.",
+        micro_reframe: "Auch unter Druck kann meine nächste Handlung wieder Richtung Aufgabe statt Richtung Schutz gehen.",
+        reframe_step: {
+          trigger: "Meine Vorwärtsrichtung ist wieder da.",
+          reframe: "Jetzt zeige ich sie in einer sichtbaren, sauberen Handlung.",
+          anchor: "Nach vorne."
+        },
+        system_function: "Forward Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo hat Schutz heute meine Handlung bestimmt — und wo nicht mehr?",
+      questions: [
+        { id: "d38-j1", question: "In welcher Situation war meine Schutzlogik heute am stärksten?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d38-j2", question: "Woran habe ich gemerkt, dass mein Verhalten eher defensiv als dienlich wurde?", placeholder: "Was war innerlich oder äußerlich spürbar?" },
+        { id: "d38-j3", question: "Wie habe ich die Vorwärtsrichtung wieder zurückgeholt?", placeholder: "Was war dein innerer Shift?" },
+        { id: "d38-j4", question: "Welche Vorwärtshandlung habe ich dann konkret gesetzt?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem dein System wieder nach vorne gegangen ist.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark Schutz noch meine Handlungsrichtung bestimmt?"
+    },
+    gratitude_prompt: "Welche Szene heute hat mir gezeigt, dass Stabilität erst dann komplett wird, wenn ich wieder nach vorne handle?",
+    self_talk_anchors: [
+      { text: "Schutz oder Aufgabe?", when: "Wenn du defensiv wirst" },
+      { text: "Aktiv und sauber rein.", when: "Wenn du die Richtung zurückholst" },
+      { text: "Nach vorne.", when: "In der sichtbaren Vorwärtshandlung" }
+    ],
+    variants: {
+      training: "Ideal bei Gegnerdruck, Reibung, Bewertung, Fehlern und Situationen, in denen du Raum nicht mehr aktiv nimmst.",
+      rest: "Übertragbar auf Gespräche, Konflikte, unangenehme Aufgaben, soziale Spannung und Alltagssituationen, in denen du lieber ausweichst oder klein wirst.",
+      match: "Kurzversion: Schutzlogik erkennen → Vorwärtsrichtung zurückholen → nach vorne handeln."
+    }
+  },
+  {
+    day_id: 39,
+    title: "Mein Standard darf größer bleiben als das aktuelle Momentum",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Process vs Result / State Stability",
+    lens: "Der Verlauf darf Stimmung machen, aber nicht mein ganzes System steuern.",
+    primary_mechanism: "Momentum Decoupling",
+    today_trigger: "Sobald eine Serie, ein Lauf, mehrere gute oder schlechte Aktionen oder Teamenergie stark an deinem Zustand ziehen, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Momentum-Zug zu Standard-Rückkehr.",
+    science_bite: "Verlaufsmomentum wird psychologisch dann gefährlich, wenn dein System daraus sofort eine größere Geschichte macht: jetzt läuft's, jetzt kippt's, jetzt ist alles gegen mich, jetzt muss ich retten. Genau dadurch wird Zustand abhängig vom letzten Verlauf statt vom eigenen Standard. Tag 39 trainiert deshalb keine Emotionslosigkeit, sondern ruhige Konstanz gegenüber Momentum. ",
+    tasks: [
+      {
+        id: "d39-t1",
+        title: "Erkenne den Momentum-Zug",
+        trigger: "Wenn mehrere gelungene oder misslungene Aktionen, Runs oder Teamenergie stark an deinem Zustand ziehen",
+        when_to_use: "In Scrimmage, Serien, Läufen, Hoch-/Tiefphasen, Teamdynamik oder wenn ein Tag stark gut oder schlecht kippt",
+        action: "Frag dich kurz: 'Zieht mich gerade der Verlauf — oder spiele ich noch meinen Standard?'",
+        why: "Du musst zuerst sichtbar machen, wann der Verlauf mehr Macht bekommt als dein eigener Standard.",
+        explanation: "Momentum ist nicht nur Spielverlauf. Es ist der Zug, aus dem Verlauf sofort eine Geschichte über alles zu machen.",
+        self_talk: "Verlauf oder Standard?",
+        micro_reframe: "Der Verlauf ist real, aber er muss nicht mein inneres Zentrum werden.",
+        reframe_step: {
+          trigger: "Eine Serie oder Dynamik zieht an meinem Zustand.",
+          reframe: "Bevor ich mitsurfe oder dagegenkämpfe, prüfe ich: Wer führt gerade — der Verlauf oder mein Standard?",
+          anchor: "Verlauf oder Standard?"
+        },
+        system_function: "Momentum Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d39-t2",
+        title: "Hol den Standard zurück",
+        trigger: "Nachdem du den Momentum-Zug erkannt hast",
+        when_to_use: "Direkt danach, bevor du weiter im Verlauf surfst oder gegen ihn kämpfst",
+        action: "Frag dich: 'Was ist jetzt mein Standard?' und hole genau diesen zurück.",
+        why: "Standard ist der Gegenpol zu verlaufsabhängiger Identität und verlaufsabhängigem Zustand.",
+        explanation: "Dein Standard ist nicht der perfekte Zustand. Dein Standard ist deine verlässliche Art zu arbeiten: Prozessanker, Haltung, Kommunikation, Präsenz, Kontakt, nächste saubere Szene.",
+        self_talk: "Hol den Standard zurück.",
+        micro_reframe: "Mein Standard darf größer bleiben als das, was gerade kurz läuft.",
+        reframe_step: {
+          trigger: "Ich habe den Momentum-Zug erkannt.",
+          reframe: "Jetzt mache ich nicht den Verlauf größer, sondern meinen Standard wieder klarer.",
+          anchor: "Hol den Standard zurück."
+        },
+        system_function: "Standard Recovery",
+        icon: "LocateFixed"
+      },
+      {
+        id: "d39-t3",
+        title: "Spiel die nächste Szene neutral sauber",
+        trigger: "Wenn dein Standard wieder etwas klarer ist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Spiele die nächste Szene neutral sauber — nicht auf dem Verlauf surfend und nicht gegen ihn kämpfend.",
+        why: "Tag 39 wird erst real, wenn Standard die nächste Szene wieder übernimmt.",
+        explanation: "Nicht extra hart, nicht extra locker, nicht aus der Story des Laufs. Einfach neutral sauber. Genau das macht Stabilität unter Momentum praktisch.",
+        self_talk: "Neutral sauber.",
+        micro_reframe: "Stabilität ist heute nicht Gleichgültigkeit, sondern Konstanz gegenüber dem Verlauf.",
+        reframe_step: {
+          trigger: "Mein Standard ist wieder vorne.",
+          reframe: "Jetzt spiele ich die nächste Szene nicht aus Momentum, sondern neutral sauber.",
+          anchor: "Neutral sauber."
+        },
+        system_function: "Neutral Continuation",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann hat mich der Verlauf heute gezogen — und wann nicht mehr?",
+      questions: [
+        { id: "d39-j1", question: "In welchem Moment hat der Verlauf heute am stärksten an meinem Zustand gezogen?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d39-j2", question: "Woran habe ich gemerkt, dass mein System daraus eine größere Geschichte machen wollte?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d39-j3", question: "Welchen Standard habe ich bewusst zurückgeholt?", placeholder: "Was war dein Standard in dieser Situation?" },
+        { id: "d39-j4", question: "Wie gut ist es mir gelungen, die nächste Szene neutral sauber zu spielen?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — mindestens 1 Sache, die gut lief, 1 Sache, die gegen dich lief, und 1 Sache, die dir gezeigt hat, dass Stabilität Konstanz gegenüber dem Verlauf bedeutet.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie abhängig mein System noch vom Momentum des Verlaufs ist?"
+    },
+    gratitude_prompt: "Welche Dynamik heute hat mir gezeigt, dass mein Standard größer bleiben kann als das aktuelle Momentum?",
+    self_talk_anchors: [
+      { text: "Verlauf oder Standard?", when: "Wenn Momentum an dir zieht" },
+      { text: "Hol den Standard zurück.", when: "Wenn du Rückkehr einleitest" },
+      { text: "Neutral sauber.", when: "In der nächsten Szene" }
+    ],
+    variants: {
+      training: "Ideal bei Scrimmage, Serien, Runs, mehreren gelungenen oder misslungenen Aktionen und Teamenergie, die hoch oder runter zieht.",
+      rest: "Übertragbar auf Tage, die gut oder schlecht laufen und deinen ganzen Zustand färben wollen.",
+      match: "Kurzversion: Momentum-Zug erkennen → Standard zurückholen → nächste Szene neutral sauber spielen."
+    }
+  },
+  {
+    day_id: 40,
+    title: "Auch wenn das Ergebnis groß wird, darf Wachstum offen bleiben",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Growth vs Winning under Pressure",
+    lens: "Wenn das Ergebnis psychologisch groß wird, darf mein System nicht komplett in Schadensvermeidung kippen.",
+    primary_mechanism: "Growth Preservation Under Outcome Relevance",
+    today_trigger: "Sobald Ergebnisrelevanz groß wird und dein System nur noch absichern, retten oder Schaden vermeiden will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Ergebnisdruck = Lernschrumpfung zu Ergebnisdruck = offenes Wachstum trotz Relevanz.",
+    science_bite: "Wenn Ergebnisdruck groß wird, schrumpft Lernen oft zuerst. Das System wird enger, will weniger offen ausprobieren, weniger ehrlich reagieren, weniger Entwicklung zulassen — Hauptsache kein Schaden. Genau das ist der subtile Leistungsbruch von Tag 40. Heute trainierst du nicht, Ergebnisbedeutung wegzureden, sondern Wachstum unter Ergebnisrelevanz offen zu halten. ",
+    tasks: [
+      {
+        id: "d40-t1",
+        title: "Erkenne die Lernschrumpfung",
+        trigger: "Wenn das Ergebnis groß wird und du merkst, dass dein System plötzlich enger, vorsichtiger oder nur noch schadenvermeidend arbeitet",
+        when_to_use: "Bei Punkten, Bewertung, Konsequenzen, sichtbaren Ergebnissen, Matchrelevanz oder Situationen, die 'zählen'",
+        action: "Frag dich kurz: 'Wird hier gerade nur noch Schaden vermieden — oder bleibt Wachstum noch offen?'",
+        why: "Du musst zuerst sichtbar machen, dass Ergebnisdruck nicht nur Spannung erzeugt, sondern oft Lernen und Offenheit verkleinert.",
+        explanation: "Tag 40 greift nicht den Ausgang an, sondern die Lernschrumpfung darunter. Genau dort kippt Entwicklung oft zuerst.",
+        self_talk: "Wachstum noch offen?",
+        micro_reframe: "Wenn Ergebnis groß wird, wird mein System oft zuerst klein im Lernen.",
+        reframe_step: {
+          trigger: "Die Szene zählt und mein System will nur noch sichern.",
+          reframe: "Bevor ich komplett in Schadensvermeidung kippe, prüfe ich, ob Wachstum noch offen ist.",
+          anchor: "Wachstum noch offen?"
+        },
+        system_function: "Growth Constriction Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d40-t2",
+        title: "Hol die Wachstumslogik rein",
+        trigger: "Nachdem du die Lernschrumpfung erkannt hast",
+        when_to_use: "Direkt in der relevanten Situation, bevor du weiter enger wirst",
+        action: "Frag dich: 'Wie sieht hier die saubere, offene, entwicklungsfähige Handlung aus?'",
+        why: "Der Tag wird erst stark, wenn Entwicklung auch unter Ergebnisdruck wieder eine reale Option wird.",
+        explanation: "Nicht alles offenlassen, nicht blind riskieren. Sondern prüfen: Was wäre hier die saubere Handlung, die nicht nur Schaden vermeidet, sondern weiter echte Qualität und Entwicklung trägt?",
+        self_talk: "Sauber und offen.",
+        micro_reframe: "Ergebnisdruck muss meine Handlungsqualität nicht auf bloße Schadensvermeidung schrumpfen lassen.",
+        reframe_step: {
+          trigger: "Ich habe Lernschrumpfung erkannt.",
+          reframe: "Jetzt hole ich wieder eine saubere offene Handlung als echte Option ins System.",
+          anchor: "Sauber und offen."
+        },
+        system_function: "Growth Reopening",
+        icon: "Unlock"
+      },
+      {
+        id: "d40-t3",
+        title: "Handle wachstumsfähig trotz Druck",
+        trigger: "Wenn die offene saubere Handlung wieder sichtbarer ist",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Setze die Handlung, die Qualität und Entwicklung offen hält, statt nur auf Schadensvermeidung zu gehen.",
+        why: "Tag 40 endet nicht bei Mindset, sondern bei Verhalten unter Ergebnisrelevanz.",
+        explanation: "Das kann heißen: weiter ehrlich spielen, nicht künstlich safe werden, im Prozess bleiben, wieder Kontakt nehmen, die Aufgabe nicht kleiner machen, trotz Bedeutung offen und sauber handeln.",
+        self_talk: "Trotz Druck offen.",
+        micro_reframe: "Wenn das Ergebnis groß wird, zeigt sich Reife darin, dass Wachstum nicht sofort verschlossen wird.",
+        reframe_step: {
+          trigger: "Die Szene zählt und ich kenne die offene saubere Handlung.",
+          reframe: "Jetzt setze ich nicht nur eine sichere, sondern eine wachstumsfähige Handlung.",
+          anchor: "Trotz Druck offen."
+        },
+        system_function: "Growth-Preserving Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo ist mein Lernen heute unter Ergebnisdruck geschrumpft — und wo nicht?",
+      questions: [
+        { id: "d40-j1", question: "In welcher Situation war das Ergebnis heute psychologisch besonders groß?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d40-j2", question: "Woran habe ich gemerkt, dass mein System nur noch Schaden vermeiden wollte?", placeholder: "Was wurde enger?" },
+        { id: "d40-j3", question: "Welche offene, saubere, entwicklungsfähige Handlung war dort trotzdem möglich?", placeholder: "Formuliere sie klar." },
+        { id: "d40-j4", question: "Konnte ich sie heute mindestens einmal trotz Ergebnisdruck setzen?", placeholder: "Wie sah das konkret aus?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Situation, in der Ergebnisdruck groß war.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie schnell mein System unter Ergebnisrelevanz Lernen und Offenheit schrumpfen lässt?"
+    },
+    gratitude_prompt: "Welche druckvolle Situation heute hat mir gezeigt, dass Wachstum auch dann offen bleiben kann, wenn das Ergebnis groß wird?",
+    self_talk_anchors: [
+      { text: "Wachstum noch offen?", when: "Wenn das Ergebnis psychologisch groß wird" },
+      { text: "Sauber und offen.", when: "Wenn du die Wachstumslogik zurückholst" },
+      { text: "Trotz Druck offen.", when: "In der nächsten relevanten Handlung" }
+    ],
+    variants: {
+      training: "Nutze bewertete, relevante, sichtbare oder wettkampfähnliche Situationen als Material.",
+      rest: "Übertragbar auf Entscheidungen, Gespräche, Leistungen und Situationen, in denen Konsequenzen groß wirken und dein System nur noch Schaden vermeiden will.",
+      match: "Kurzversion: Lernschrumpfung erkennen → saubere offene Handlung zurückholen → trotz Druck offen handeln."
+    }
   }
 ];
