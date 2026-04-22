@@ -4142,5 +4142,455 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Perfekt in ganz normalen Momenten: auf dem Weg, in Pause, im neutralen Tagesmoment, bei etwas Unspektakulärem. Genau dort trainierst du Weite ohne besonderen Anlass.",
       match: "Nutze gute Szene oder Ruhe, aber vor allem: warte nicht auf Anlass. Öffne Weite auch mitten im normalen Verlauf."
     }
+  },
+  {
+    day_id: 46,
+    title: "Urteil verliert Macht",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Learning vs Judgement",
+    lens: "Urteil darf auftauchen, ohne sich tief in Zustand, Verhalten und Selbstbild einzugraben.",
+    primary_mechanism: "Reduced Fusion with Judgement",
+    today_trigger: "Sobald ein inneres oder äußeres Urteil auftaucht und dein System es zu tief einsickern lassen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Urteil mit hoher Autorität zu Urteil mit weniger Eindringtiefe und weniger Steuerkraft.",
+    science_bite: "Das Problem ist nicht nur, dass Urteil auftaucht. Das Problem beginnt dort, wo es zu tief eindringt: Stimmung kippt, Präsenz sinkt, Aufgabe wird kleiner, Selbstzweifel werden größer und Verhalten folgt Urteil statt Standard. Heute trainierst du deshalb nicht, Urteil wegzumachen, sondern seine Macht zu reduzieren.",
+    tasks: [
+      {
+        id: "d46-t1",
+        title: "Erkenne das Eindringen",
+        trigger: "Wenn ein Urteil auftaucht und du merkst, dass es mehr als nur ein Kommentar wird",
+        when_to_use: "Bei Vergleich, Blicken, Kommentaren, Fehlern, Korrektur, eigenem harten Gedanken oder sozialer Bewertung",
+        action: "Frag dich kurz: 'Taucht da gerade ein Urteil auf — oder dringt es schon in mich ein?'",
+        why: "Bevor Urteil weniger Macht bekommt, musst du merken, wann es von Oberfläche zu Steuerkraft wird.",
+        explanation: "Nicht jedes Urteil ist gleich problematisch. Problematisch wird es dann, wenn es nicht nur auftaucht, sondern Stimmung, Verhalten und Selbstbild mitschiebt.",
+        self_talk: "Wie tief geht das gerade?",
+        micro_reframe: "Urteil taucht oft schnell auf. Entscheidend ist, ob ich es tief eindringen lasse.",
+        reframe_step: {
+          trigger: "Ein Urteil oder kritischer Satz taucht auf.",
+          reframe: "Bevor ich hineinkippe, prüfe ich seine aktuelle Eindringtiefe.",
+          anchor: "Wie tief geht das gerade?"
+        },
+        system_function: "Judgement Depth Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d46-t2",
+        title: "Halte Urteil oberflächlicher",
+        trigger: "Nachdem du gemerkt hast, dass Urteil gerade tief werden will",
+        when_to_use: "Direkt im Urteils-Moment",
+        action: "Sag dir einmal ruhig: 'Da ist Urteil.' und lass es auf Kommentar-Ebene statt auf Identitäts-Ebene.",
+        why: "Tag 46 wird stark, wenn Urteil nicht mehr sofort bis ins Selbst durchregiert.",
+        explanation: "Es geht nicht darum, Urteil wegzudiskutieren. Es geht darum, es weniger tief werden zu lassen: nicht komplett glauben, nicht verkörpern, nicht als Wahrheit über dich behandeln.",
+        self_talk: "Da ist Urteil.",
+        micro_reframe: "Urteil muss nicht sofort tief werden, nur weil es auftaucht.",
+        reframe_step: {
+          trigger: "Ich spüre, dass Urteil tiefer einsickert.",
+          reframe: "Jetzt halte ich es wieder näher an der Oberfläche.",
+          anchor: "Da ist Urteil."
+        },
+        system_function: "Judgement Defusion",
+        icon: "Shield"
+      },
+      {
+        id: "d46-t3",
+        title: "Bleib bei Standard und Aufgabe",
+        trigger: "Wenn Urteil da ist, aber du wieder Handlungshoheit brauchst",
+        when_to_use: "In der direkt nächsten Szene",
+        action: "Binde dein Verhalten bewusst wieder an Standard und Aufgabe statt an das Urteil.",
+        why: "Urteil verliert Macht erst dann wirklich, wenn Verhalten nicht mehr automatisch ihm folgt.",
+        explanation: "Nicht gegen das Urteil kämpfen. Nicht extra beweisen. Nicht kompensieren. Nur wieder an Standard, Prozess, Haltung, Präsenz und nächste Aufgabe binden.",
+        self_talk: "Standard vor Urteil.",
+        micro_reframe: "Mein Verhalten muss nicht dem Urteil folgen, nur weil es da ist.",
+        reframe_step: {
+          trigger: "Urteil ist da, aber ich will wieder sauber handeln.",
+          reframe: "Jetzt gehe ich nicht in Urteil, sondern zurück zu Standard und Aufgabe.",
+          anchor: "Standard vor Urteil."
+        },
+        system_function: "Behavioral De-coupling",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann hatte Urteil heute weniger Macht?",
+      questions: [
+        { id: "d46-j1", question: "Welches Urteil hat heute am stärksten versucht, tief in Zustand oder Selbstbild einzudringen?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d46-j2", question: "Woran habe ich gemerkt, dass es mehr als nur ein Kommentar werden wollte?", placeholder: "Was war innerlich oder im Verhalten spürbar?" },
+        { id: "d46-j3", question: "Konnte ich Urteil heute mindestens einmal oberflächlicher halten?", placeholder: "Wie sah das aus?" },
+        { id: "d46-j4", question: "Wie hat sich meine nächste Handlung verändert, als Urteil weniger Macht bekam?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einem Moment, in dem Urteil da war, aber weniger regiert hat.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie sehr Urteil mein System noch steuert — und wo seine Macht schon kleiner wird?"
+    },
+    gratitude_prompt: "Welche Urteilssituation heute hat mir gezeigt, dass Kritik nicht automatisch tief in mich eindringen muss?",
+    self_talk_anchors: [
+      { text: "Wie tief geht das gerade?", when: "Wenn Urteil auftaucht" },
+      { text: "Da ist Urteil.", when: "Wenn du es oberflächlicher halten willst" },
+      { text: "Standard vor Urteil.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Nutze Blicke, Kommentare, Fehler, Korrekturen, Vergleich und inneres Urteil als Hauptmaterial.",
+      rest: "Übertragbar auf Gespräche, Social Media, Arbeit ohne Rückmeldung, Selbstkritik und normale Alltagsbewertung.",
+      match: "Kurzversion: Eindringtiefe merken → Urteil oberflächlicher halten → Standard vor Urteil."
+    }
+  },
+  {
+    day_id: 47,
+    title: "Sicherheit wird ruhiger",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Confidence vs Self-Doubt",
+    lens: "Ich kann sicher sein, ohne mich dafür aufzuladen oder beweisen zu müssen.",
+    primary_mechanism: "Calmer Confidence Availability",
+    today_trigger: "Sobald eine sichtbare, relevante oder druckvolle Szene auftaucht, in der dein System sonst Sicherheit performen würde, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Sicherheit mit Zusatz zu ruhiger, weniger beweisabhängiger Verfügbarkeit.",
+    science_bite: "Sicherheit wird oft unnötig laut: geladen, leicht nervös, etwas überdreht, beweisend, nicht ganz stabil. Das Problem ist nicht Stärke. Das Problem ist, dass Sicherheit zu abhängig von Aktivierung und Beweis bleibt. Heute trainierst du deshalb keine neue Stärke, sondern ruhigere Sicherheit.",
+    tasks: [
+      {
+        id: "d47-t1",
+        title: "Erkenne den Zusatz",
+        trigger: "Wenn du in einer sichtbaren oder relevanten Szene merkst, dass dein System Sicherheit extra herstellen oder performen will",
+        when_to_use: "Bei Führungsmoment, Konkurrenz, relevanter Aktion, guter Phase, Druckmoment oder sozial sichtbarer Verantwortung",
+        action: "Frag dich kurz: 'Ist hier gerade Sicherheit da — oder viel Zusatz um Sicherheit herum?'",
+        why: "Du musst zuerst sichtbar machen, wann Confidence unnötig aufgeladen statt ruhig getragen wird.",
+        explanation: "Zusatz heißt: mehr Hype, mehr Beweis, mehr Lautstärke, mehr innere Aktivierung als nötig. Genau das soll heute auffallen.",
+        self_talk: "Sicherheit oder Zusatz?",
+        micro_reframe: "Mehr Energie ist nicht automatisch mehr echte Sicherheit.",
+        reframe_step: {
+          trigger: "Eine starke oder relevante Szene ist da.",
+          reframe: "Bevor ich Sicherheit spiele, prüfe ich, ob ich gerade viel Zusatz baue.",
+          anchor: "Sicherheit oder Zusatz?"
+        },
+        system_function: "Added Activation Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d47-t2",
+        title: "Nimm den Zusatz raus",
+        trigger: "Nachdem du gemerkt hast, dass du Sicherheit gerade auflädst",
+        when_to_use: "Direkt im Moment, bevor die Szene weiterläuft",
+        action: "Lass bewusst etwas Hype, Beweiszug oder innere Überladung weg.",
+        why: "Tag 47 codiert Sicherheit nicht lauter, sondern ruhiger.",
+        explanation: "Nicht kleiner werden. Nicht schwächer werden. Nur weniger Zusatz: weniger inneres Aufputschen, weniger Wirkungsmachen, weniger beweisendes Verhalten.",
+        self_talk: "Weniger Zusatz.",
+        micro_reframe: "Ruhige Sicherheit ist oft stabiler als aufgeladene Sicherheit.",
+        reframe_step: {
+          trigger: "Ich habe viel Zusatz erkannt.",
+          reframe: "Jetzt muss ich nichts größer machen. Ich lasse bewusst etwas weg.",
+          anchor: "Weniger Zusatz."
+        },
+        system_function: "Confidence Quieting",
+        icon: "Wind"
+      },
+      {
+        id: "d47-t3",
+        title: "Setz ruhige Qualität",
+        trigger: "Wenn weniger Zusatz da ist und die Handlung wieder klarer wird",
+        when_to_use: "In der direkt nächsten relevanten Handlung",
+        action: "Setze die Qualität klar, ruhig und ohne Extra-Beweis.",
+        why: "Der Tag wird erst real, wenn Sicherheit sichtbar bleibt, aber leiser getragen wird.",
+        explanation: "Nicht klein. Nicht weich. Nicht abwartend. Einfach klar, ruhig, verfügbar und nicht beweisend.",
+        self_talk: "Ruhig klar.",
+        micro_reframe: "Ich kann Qualität setzen, ohne sie mit Hype oder Beweis zu überladen.",
+        reframe_step: {
+          trigger: "Zusatz ist reduziert und Handlung ist wieder da.",
+          reframe: "Jetzt setze ich Qualität ohne unnötige Aufladung.",
+          anchor: "Ruhig klar."
+        },
+        system_function: "Quiet Embodied Confidence",
+        icon: "BadgeCheck"
+      }
+    ],
+    journal: {
+      title: "Wo wurde Sicherheit heute ruhiger?",
+      questions: [
+        { id: "d47-j1", question: "In welcher sichtbaren oder relevanten Szene wollte mein System heute Sicherheit aufladen oder performen?", placeholder: "Beschreibe die Situation." },
+        { id: "d47-j2", question: "Woran habe ich den Zusatz erkannt?", placeholder: "Hype, Beweiszug, Aktivierung, Lautheit ..." },
+        { id: "d47-j3", question: "Konnte ich heute bewusst etwas Zusatz rausnehmen?", placeholder: "Wie sah das konkret aus?" },
+        { id: "d47-j4", question: "Wie hat sich meine nächste Handlung verändert, als Sicherheit ruhiger wurde?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Szene, in der du Qualität gesetzt hast, ohne dich aufzublasen.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie sehr meine Sicherheit bisher noch Zusatz, Hype oder Beweis gebraucht hat?"
+    },
+    gratitude_prompt: "Welche Szene heute hat mir gezeigt, dass ruhige Sicherheit oft stärker ist als aufgeladene?",
+    self_talk_anchors: [
+      { text: "Sicherheit oder Zusatz?", when: "Wenn die Szene relevant wird" },
+      { text: "Weniger Zusatz.", when: "Wenn du die Aufladung reduzierst" },
+      { text: "Ruhig klar.", when: "In der sichtbaren Qualitäts-Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei Konkurrenz, sichtbaren Aktionen, guter Phase, Druckmoment oder Führungsmoment.",
+      rest: "Übertragbar auf Gespräche, Arbeit ohne Rückmeldung, neutrale Tage und Situationen, in denen du sonst Sicherheit performen würdest.",
+      match: "Kurzversion: Zusatz erkennen → Zusatz rausnehmen → ruhige Qualität setzen."
+    }
+  },
+  {
+    day_id: 48,
+    title: "Akzeptanz wird stark",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Control vs Non-Control",
+    lens: "Wenn etwas nicht bei mir liegt, muss ich keine zusätzliche Gegenspannung bauen. Ich kann Kraft sparen und aus dem Verfügbaren stark weiterhandeln.",
+    primary_mechanism: "Embodied Acceptance Strength",
+    today_trigger: "Sobald etwas offen, unfair, unvollkommen oder nicht kontrollierbar bleibt und dein System dagegen weiterkämpfen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Nicht-Kontrolle mit Gegenkraft zu Nicht-Kontrolle mit ruhiger Stärke und Kraftökonomie.",
+    science_bite: "Viele Menschen erleben Akzeptanz wie ein Nachgeben. Das ist oft nur deshalb so, weil sie Akzeptanz mit Passivität verwechseln. In Wahrheit verliert ein System oft am meisten Kraft nicht an das Problem selbst, sondern an die zusätzliche Gegenspannung: inneres Dagegensein, ständiges 'es müsste anders sein', versteckter Kampf gegen die Realität. Heute trainierst du deshalb nicht, alles okay zu finden. Du trainierst, keine unnötige Kraft mehr an das zu verlieren, was gerade nicht in deiner Hand liegt. Das ist keine Schwäche. Das ist Effizienz in ihrer reifen Form.",
+    tasks: [
+      {
+        id: "d48-t1",
+        title: "Erkenne die Gegenspannung",
+        trigger: "Wenn etwas nicht nach Plan läuft und du merkst, dass dein System innerlich dagegenhält",
+        when_to_use: "Bei Unfairness, offenen Situationen, Planbruch, Dingen bei anderen, Unvollkommenheit oder nicht mehr korrigierbaren Momenten",
+        action: "Frag dich kurz: 'Ist hier nur ein Problem — oder baue ich gerade zusätzlich Gegenspannung dagegen auf?'",
+        why: "Bevor Akzeptanz als Stärke wirken kann, musst du merken, wann dein System gerade unnötige Gegenkraft aufbaut.",
+        explanation: "Achte auf Momente, in denen etwas nicht steuerbar, nicht ideal, nicht fair, nicht rückgängig oder nicht nach deinem Plan ist. Genau dort wird sichtbar, ob nur Realität da ist — oder ob dein System zusätzlich verhärtet.",
+        self_talk: "Schon Gegenspannung?",
+        micro_reframe: "Nicht-Kontrolle allein macht mich nicht klein — oft macht es erst meine Gegenkraft dazu.",
+        reframe_step: {
+          trigger: "Etwas bleibt offen, unfair oder nicht bei mir.",
+          reframe: "Bevor ich weiter dagegenhalte, prüfe ich, wie viel Zusatzspannung ich schon gebaut habe.",
+          anchor: "Schon Gegenspannung?"
+        },
+        system_function: "Resistance Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d48-t2",
+        title: "Nimm Kraft aus dem Widerstand",
+        trigger: "Nachdem du Gegenspannung erkannt hast",
+        when_to_use: "Direkt danach, bevor du weiter verkrampfst",
+        action: "Lass bewusst einen Teil der Gegenkraft raus, ohne die Situation schönzureden.",
+        why: "Tag 48 codiert Akzeptanz nicht als Passivität, sondern als Kraftökonomie.",
+        explanation: "Du gibst nicht auf. Du wirst nicht weich. Du verschwendest nur weniger Kraft an etwas, das gerade nicht verfügbar ist. Genau das macht dich stärker und flüssiger.",
+        self_talk: "Weniger Gegenkraft.",
+        micro_reframe: "Stärke ist heute nicht mehr Kampf gegen das Unverfügbare, sondern Verfügbarkeit im Verfügbaren.",
+        reframe_step: {
+          trigger: "Ich habe Gegenspannung erkannt.",
+          reframe: "Jetzt nehme ich bewusst Kraft aus dem Widerstand, ohne die Realität zu leugnen.",
+          anchor: "Weniger Gegenkraft."
+        },
+        system_function: "Strength Economy",
+        icon: "Shield"
+      },
+      {
+        id: "d48-t3",
+        title: "Handle stark aus dem Verfügbaren",
+        trigger: "Wenn weniger Gegenkraft da ist und du wieder arbeitsfähiger wirst",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Frag dich: 'Was ist hier aus dem Verfügbaren stark möglich?' und setze genau das.",
+        why: "Akzeptanz wird erst stark, wenn sie nicht in Leere endet, sondern in handlungsfähiger Ruhe.",
+        explanation: "Nicht alles lösen. Nicht das Unfaire drehen. Nicht offene Schleifen schließen. Sondern Kraft sparen und aus dem, was da ist, stark und präsent weiterhandeln.",
+        self_talk: "Stark aus dem Verfügbaren.",
+        micro_reframe: "Wenn ich weniger an Nicht-Kontrolle verliere, habe ich mehr Stärke für das, was wirklich bei mir liegt.",
+        reframe_step: {
+          trigger: "Widerstand hat etwas weniger Kraft.",
+          reframe: "Jetzt richte ich meine Stärke auf das, was wirklich da und verfügbar ist.",
+          anchor: "Stark aus dem Verfügbaren."
+        },
+        system_function: "Embodied Availability",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute Kraft an Nicht-Kontrolle verloren — und wo nicht mehr?",
+      questions: [
+        { id: "d48-j1", question: "Welche offene, unfaire oder nicht kontrollierbare Situation hat heute am meisten Gegenspannung in mir ausgelöst?", placeholder: "Beschreibe die Situation." },
+        { id: "d48-j2", question: "Woran habe ich gemerkt, dass mein System zusätzliche Gegenkraft gebaut hat?", placeholder: "Was war im Körper, Fokus oder Verhalten spürbar?" },
+        { id: "d48-j3", question: "Konnte ich heute bewusst Kraft aus dem Widerstand nehmen?", placeholder: "Wie sah das aus?" },
+        { id: "d48-j4", question: "Was war aus dem Verfügbaren stark möglich, als weniger Gegenkraft da war?", placeholder: "Beschreibe die nächste Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist — auch etwas aus einer Situation, die nicht nach deinem Plan lief.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie stark mein System noch Kraft an Nicht-Kontrolle verliert — und wo Akzeptanz schon verkörperter wird?"
+    },
+    gratitude_prompt: "Welche unkontrollierbare Situation heute hat mir gezeigt, dass Akzeptanz auch eine Form von Stärke sein kann?",
+    self_talk_anchors: [
+      { text: "Schon Gegenspannung?", when: "Wenn Nicht-Kontrolle da ist" },
+      { text: "Weniger Gegenkraft.", when: "Wenn du Widerstand reduzierst" },
+      { text: "Stark aus dem Verfügbaren.", when: "In der nächsten starken Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei Unfairness, offenen Situationen, Planbruch, Dingen bei anderen und unperfekt bleibenden Sequenzen.",
+      rest: "Sehr gut übertragbar auf offene Schleifen, Wartezeiten, nicht korrigierbare Dinge, Menschen, Bedingungen und Alltag, der anders läuft als geplant.",
+      match: "Kurzversion: Gegenspannung erkennen → Gegenkraft rausnehmen → stark aus dem Verfügbaren handeln."
+    }
+  },
+  {
+    day_id: 49,
+    title: "Präsenz ist Teil von mir",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Presence / Identity",
+    lens: "Präsenz ist nicht nur etwas, das ich anwende — sie wird mehr und mehr Teil meiner Art zu sein.",
+    primary_mechanism: "Identity-coupled Presence",
+    today_trigger: "Sobald dein Kopf kurz zieht, springt oder weg will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Rückkehr als Methode zu Präsenz als identitätsnäherer Grundverfügbarkeit.",
+    science_bite: "Tag 49 ist klar von Tag 1, 15, 22, 36 und 43 getrennt: früher ging es darum, Präsenz zu bemerken, zurückzuholen, im Chaos zu bündeln oder als Standard kürzer werden zu lassen. Jetzt wird Präsenz identitätsnäher. Das bedeutet nicht, dass kein Drift mehr auftaucht. Es bedeutet, dass dein System immer weniger wie ein Fremdkörper zu seiner Aufgabe zurückkehrt — und immer mehr so, als wäre Verfügbarkeit Teil deiner Art zu sein.",
+    tasks: [
+      {
+        id: "d49-t1",
+        title: "Erkenne den Zug ohne Drama",
+        trigger: "Wenn dein Kopf kurz in Bewertung, Zukunft, Verlauf oder inneres Material zieht",
+        when_to_use: "Im Training, im Alltag, im Gespräch, in Mikro-Drifts oder kurzen mentalen Zügen",
+        action: "Nimm den Zug kurz wahr, ohne daraus ein Problem zu machen.",
+        why: "Präsenz als Teil von dir beginnt dort, wo Drift weniger Ereignischarakter bekommt.",
+        explanation: "Du musst heute nicht mehr jedes Wegkippen wie einen Fokusbruch behandeln. Kurz merken, nicht aufblasen, nicht extra erschrecken.",
+        self_talk: "Kurz gezogen.",
+        micro_reframe: "Drift verliert an Drama, wenn Präsenz weniger Technik und mehr Grundverfügbarkeit wird.",
+        reframe_step: {
+          trigger: "Mein Kopf zieht kurz weg.",
+          reframe: "Ich mache daraus kein großes Thema. Ich erkenne nur kurz den Zug.",
+          anchor: "Kurz gezogen."
+        },
+        system_function: "Low-Drama Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d49-t2",
+        title: "Gehe zurück wie zu dir selbst",
+        trigger: "Direkt nachdem du den Zug erkannt hast",
+        when_to_use: "Sofort, ohne große Reset-Inszenierung",
+        action: "Geh direkt zurück an Aufgabe, Prozess oder Szene, so als würdest du an einen vertrauten Ort zurückgehen.",
+        why: "Der Unterschied von Tag 49 ist nicht nur schnellere Rückkehr, sondern vertrautere Rückkehr.",
+        explanation: "Nicht mehr wie: 'Ich muss mich wieder herstellen.' Sondern eher wie: 'Da bin ich wieder.' Präsenz wird weniger Reparatur und mehr Wiederanbindung an etwas, das dir innerlich bekannt ist.",
+        self_talk: "Wieder hier.",
+        micro_reframe: "Präsenz darf sich heute vertrauter und identitätsnäher anfühlen als früher.",
+        reframe_step: {
+          trigger: "Ich habe den Zug erkannt.",
+          reframe: "Jetzt gehe ich nicht in Technik, sondern zurück an einen vertrauten inneren Ort.",
+          anchor: "Wieder hier."
+        },
+        system_function: "Identity-Coupled Return",
+        icon: "RotateCcw"
+      },
+      {
+        id: "d49-t3",
+        title: "Handle aus Verfügbarkeit",
+        trigger: "Wenn du wieder mehr bei dir und bei der Aufgabe bist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Setze die nächste Handlung aus stiller Verfügbarkeit statt aus extra mentalem Aufwand.",
+        why: "Tag 49 wird erst real, wenn Präsenz nicht nur zurückkommt, sondern selbstverständlichere Handlung trägt.",
+        explanation: "Nicht künstlich fokussiert. Nicht extra angespannt. Nicht motivierend überhöht. Einfach verfügbar, ruhig, bei der Aufgabe und handlungsbereit.",
+        self_talk: "Aus Verfügbarkeit.",
+        micro_reframe: "Ich muss mich nicht dauernd neu produzieren, wenn Verfügbarkeit schon mehr Teil von mir geworden ist.",
+        reframe_step: {
+          trigger: "Ich bin wieder mehr da.",
+          reframe: "Jetzt handle ich nicht mit großem Extra, sondern aus stiller Verfügbarkeit.",
+          anchor: "Aus Verfügbarkeit."
+        },
+        system_function: "Embodied Availability",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wann hat sich Präsenz heute schon mehr wie Teil von mir angefühlt?",
+      questions: [
+        { id: "d49-j1", question: "In welchen Situationen hat mein Kopf heute kurz gezogen oder weggesprungen?", placeholder: "Beschreibe die Situationen." },
+        { id: "d49-j2", question: "Woran habe ich gemerkt, dass ich daraus weniger Drama gemacht habe als früher?", placeholder: "Was war anders?" },
+        { id: "d49-j3", question: "Wie hat sich die Rückkehr heute angefühlt, wenn sie vertrauter oder natürlicher war?", placeholder: "Beschreibe die Qualität der Rückkehr." },
+        { id: "d49-j4", question: "Wo habe ich heute aus stiller Verfügbarkeit statt aus extra mentalem Aufwand gehandelt?", placeholder: "Welche Szene war dafür ein gutes Beispiel?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, bei der du heute kurz weg warst, 1 Sache, bei der du schneller zurück warst als früher, und 1 Sache, die dir heute gezeigt hat, dass Wiederholung langsam Identität formen kann.",
+      free_reflection_prompt: "Was zeigt mir das darüber, ob Präsenz für mich langsam Teil meiner Art zu sein wird?"
+    },
+    gratitude_prompt: "Welche kurze Drift-Situation heute hat mir gezeigt, dass Rückkehr natürlicher geworden ist?",
+    self_talk_anchors: [
+      { text: "Kurz gezogen.", when: "Wenn dein Kopf weg will" },
+      { text: "Wieder hier.", when: "Wenn du zurückgehst" },
+      { text: "Aus Verfügbarkeit.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Ideal in Übergängen, Drifts, relevanten Szenen, kurzen Druckmomenten und Rückkehr in Prozess und Aufgabe.",
+      rest: "Sehr stark bei Arbeit, Handyimpulsen, Gesprächen, Szenenwechseln und normalen Alltagsdrifts.",
+      match: "Kurzversion: kurze Rückkehrmomente bewusst lesen → Präsenz nicht als Ausnahme sehen → nächste Szene aus dem neuen Muster spielen."
+    }
+  },
+  {
+    day_id: 50,
+    title: "Prozess wird Heimat",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Process vs Result",
+    lens: "Außen darf wahrgenommen werden — aber mein innerer Wohnort bleibt im Prozess.",
+    primary_mechanism: "Process-as-Home Integration",
+    today_trigger: "Sobald reale Züge nach außen auftreten — Ergebnisdruck, Fehler, Lob, Bewertung, Momentum, Chaos, Gegner, Unfairness oder Vergleich — ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Prozess als Werkzeug zu Prozess als innerem Ort, zu dem du immer wieder zurückwohnst.",
+    science_bite: "Tag 50 nimmt die Prozesslinie in ihre reifste Form: Prozess nicht mehr nur als Technik oder Anker nutzen, sondern als inneren Grundort verkörpern, der unter allem bestehen bleibt. Du nimmst außen wahr, aber du wohnst nicht dort. Dein innerer Ort bleibt in Aufgabe, Standard, Handlungsqualität und dem, was wirklich bei dir liegt.",
+    tasks: [
+      {
+        id: "d50-t1",
+        title: "Erkenne, wo du gerade wohnst",
+        trigger: "Wenn äußere Züge stark werden und dein System nach außen zieht",
+        when_to_use: "Vor Wiederholungen, vor relevanten Szenen, nach guter oder schlechter Aktion, bei Übergängen und immer dann, wenn Außen groß wird",
+        action: "Frag dich kurz: 'Wo wohne ich gerade — außen oder im Prozess?'",
+        why: "Tag 50 braucht zuerst Ortsbewusstsein: nicht nur, was ich denke, sondern wo mein innerer Wohnort gerade ist.",
+        explanation: "Außen wahrnehmen ist nicht falsch. Problematisch wird es dann, wenn dein System dort wohnen bleibt: im Ergebnis, im Fehler, im Lob, im Urteil, im Vergleich, im Gegner, in der Dynamik.",
+        self_talk: "Wo wohne ich gerade?",
+        micro_reframe: "Ich darf Außen sehen, ohne dort innerlich wohnen zu bleiben.",
+        reframe_step: {
+          trigger: "Außen zieht stark an mir.",
+          reframe: "Bevor ich weiter mitgehe, prüfe ich meinen aktuellen inneren Ort.",
+          anchor: "Wo wohne ich gerade?"
+        },
+        system_function: "Inner Location Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d50-t2",
+        title: "Zieh zurück in deinen Wohnort",
+        trigger: "Nachdem du gemerkt hast, dass dein innerer Ort nach außen gezogen ist",
+        when_to_use: "Direkt danach, ohne viel Diskussion",
+        action: "Bring dich bewusst zurück in Prozess, Aufgabe, Standard und das, was wirklich bei dir liegt.",
+        why: "Der Kern von Tag 50 ist nicht nur Rückkehr, sondern Rückkehr in einen tieferen inneren Wohnort.",
+        explanation: "Nicht im Außen wohnen. Nicht im Urteil wohnen. Nicht im Gegner wohnen. Nicht im Momentum wohnen. Nur wahrnehmen — und zurück in Aufgabe, Standard, Prozesspunkt, nächste saubere Handlung.",
+        self_talk: "Zurück nach Hause.",
+        micro_reframe: "Prozess ist heute nicht nur mein Werkzeug, sondern mein innerer Ort.",
+        reframe_step: {
+          trigger: "Ich habe gemerkt, dass ich außen wohne.",
+          reframe: "Jetzt ziehe ich meinen inneren Ort bewusst zurück in Prozess und Standard.",
+          anchor: "Zurück nach Hause."
+        },
+        system_function: "Process Home Return",
+        icon: "Home"
+      },
+      {
+        id: "d50-t3",
+        title: "Lebe die nächste Szene von dort",
+        trigger: "Wenn du wieder mehr im Prozess wohnst",
+        when_to_use: "In der direkt nächsten relevanten Handlung",
+        action: "Spiele die nächste Szene so, dass sichtbar wird: Mein Ort ist im Prozess, nicht im Außen.",
+        why: "Tag 50 wird erst real, wenn Prozess nicht nur gedacht, sondern als Grundort gelebt wird.",
+        explanation: "Nicht als Technik, nicht als Notfallmaßnahme, sondern als Basis: Aufgabe spielen, Handlung sauber halten, Standard tragen, Außen wahrnehmen, aber dort nicht leben.",
+        self_talk: "Von hier leben.",
+        micro_reframe: "Wenn mein innerer Ort im Prozess bleibt, wird Außen weniger regierend.",
+        reframe_step: {
+          trigger: "Ich bin wieder mehr im Prozess.",
+          reframe: "Jetzt trage ich diesen Wohnort auch in die nächste Szene.",
+          anchor: "Von hier leben."
+        },
+        system_function: "Embodied Process Living",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo habe ich heute gewohnt — und wohin bin ich zurückgegangen?",
+      questions: [
+        { id: "d50-j1", question: "Welche äußeren Züge waren heute am stärksten?", placeholder: "Ergebnis, Fehler, Lob, Bewertung, Momentum, Gegner, Vergleich ..." },
+        { id: "d50-j2", question: "Woran habe ich gemerkt, dass mein System dort innerlich wohnen geblieben ist?", placeholder: "Was war spürbar?" },
+        { id: "d50-j3", question: "Wie habe ich mich bewusst zurück in Prozess, Standard und Aufgabe geholt?", placeholder: "Beschreibe den Shift." },
+        { id: "d50-j4", question: "Welche Szene heute hat mir am klarsten gezeigt, dass Prozess mehr und mehr mein innerer Wohnort wird?", placeholder: "Beschreibe die Szene." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, die stark nach außen gezogen hat, 1 Sache, die dich wieder in deinen Wohnort gebracht hat, und 1 Sache, die dir gezeigt hat, dass Prozess mehr als ein Werkzeug sein kann.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wo mein System unter echten Zügen noch wohnt — und wie oft Prozess schon wie Heimat wirkt?"
+    },
+    gratitude_prompt: "Welche starke äußere Situation heute hat mir gezeigt, dass ich Außen wahrnehmen kann, ohne dort wohnen zu bleiben?",
+    self_talk_anchors: [
+      { text: "Wo wohne ich gerade?", when: "Wenn Außen stark zieht" },
+      { text: "Zurück nach Hause.", when: "Wenn du in Prozess zurückgehst" },
+      { text: "Von hier leben.", when: "Wenn du die nächste Szene aus Prozess trägst" }
+    ],
+    variants: {
+      training: "Ideal bei Ergebnisdruck, Fehlern, Lob, Bewertung, Momentum, Chaos, Gegner, Unfairness und Vergleich.",
+      rest: "Sehr stark bei Arbeit, Gespräch, Handyimpuls, Planänderung, Ergebnisorientierung und kleinen Reizmomenten im Alltag.",
+      match: "Kurzversion: Wohnort prüfen → in Prozess zurück → nächste Szene von dort leben."
+    }
   }
 ];
