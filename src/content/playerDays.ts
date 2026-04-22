@@ -3695,15 +3695,15 @@ export const PLAYER_DAYS: PlayerDay[] = [
   },
   {
     day_id: 41,
-    title: "Identität trotz Fehlern",
+    title: "Auch wenn meine Ausführung unperfekt ist, muss mein Selbstkern nicht mitkippen",
     phase: "Phase III — Transfer und Druck",
     week: 6,
-    line: "Identity vs Performance / Confidence Stability",
-    lens: "Auch wenn meine aktuelle Ausführung unperfekt ist, muss mein System daraus nicht sofort eine Wahrheit über mein Selbst machen.",
-    primary_mechanism: "Identity Stability under Imperfection",
+    line: "Identity vs Performance",
+    lens: "Unperfektion in meiner Leistung ist nicht automatisch ein Urteil über mich.",
+    primary_mechanism: "Identity Stability Under Imperfection",
     today_trigger: "Sobald du merkst, dass eine unperfekte Phase, mehrere schwächere Momente oder sichtbare Fehler dein Selbstbild mitschieben wollen, ist der Tag aktiv.",
-    core_shift: "Heute verschiebst du dich von Imperfektion = Identitätsbeweis zu Imperfektion = Momentinformation bei stabilem Selbstkern.",
-    science_bite: "Ein einzelner Fehler ist oft noch nicht das Tiefste. Schwieriger wird es, wenn eine Phase unklar, schwach oder sichtbar unperfekt wird. Dann macht das System häufig mehr daraus als nur eine Leistungswelle: Es liest daraus etwas über das Selbst. Genau dort greift Tag 41 ein. Imperfektion darf Information über den Moment liefern, aber kein automatischer Beweis gegen Identität werden. ",
+    core_shift: "Heute verschiebst du dich von Imperfektion = etwas stimmt mit mir nicht zu Imperfektion = Momentinformation bei stabilem Selbstkern.",
+    science_bite: "Eine unperfekte Phase ist psychologisch oft schwerer als ein einzelner Fehler. Warum? Weil dein System daraus schnell mehr macht als nur eine unsaubere Ausführung. Es liest daraus etwas über dich: über dein Niveau, deine Stabilität, deinen Wert oder deine Zugehörigkeit. Genau dort wird Leistung persönlich. Tag 41 greift nicht die Unperfektion an, sondern die falsche Schlussfolgerung darunter. Deine Ausführung darf heute unvollständig sein, ohne dass dein Selbstkern mitkippen muss.",
     tasks: [
       {
         id: "d41-t1",
@@ -3773,14 +3773,284 @@ export const PLAYER_DAYS: PlayerDay[] = [
     },
     gratitude_prompt: "Welche unperfekte Situation heute hat mir gezeigt, dass mein Kern größer bleiben kann als meine aktuelle Ausführung?",
     self_talk_anchors: [
-      { text: "Moment oder ich?", when: "Wenn Imperfektion innerlich groß wird" },
+      { text: "Moment oder ich?", when: "Wenn Unperfektion innerlich groß wird" },
       { text: "Kern bleibt.", when: "Wenn du Identität stabilisierst" },
       { text: "Nicht aus dem Makel.", when: "In der nächsten Handlung" }
     ],
     variants: {
       training: "Ideal bei unsauberen Blöcken, schwächerer Einheit, sichtbaren Fehlern und Phasen, in denen du dich nicht auf deinem Niveau fühlst.",
-      rest: "Sehr gut übertragbar auf ineffiziente Tage, schlechte Gespräche, mangelhafte Disziplin, unklaren Kopf und unperfekten Alltag.",
-      match: "Kurzversion: Globalisierung erkennen → Selbstkern zurückholen → nicht aus dem Makel reagieren."
+      rest: "Sehr gut übertragbar auf ineffizienten Tag, schlechtes Gespräch, mangelnde Disziplin, unklaren Kopf oder unperfekten Alltag.",
+      match: "Maximal relevant bei Fehler oder schwacher Phase: Globalisierung erkennen, Selbstkern zurückholen, nicht aus dem Makel reagieren."
+    }
+  },
+  {
+    day_id: 42,
+    title: "Unter Last ehrlich sehen, was schon trägt",
+    phase: "Phase III — Transfer und Druck",
+    week: 6,
+    line: "Consolidation Check",
+    lens: "Druck zeigt nicht meinen Wert — Druck zeigt, was schon konsolidiert ist und was noch zuerst kippt.",
+    primary_mechanism: "Consolidation Check Under Load",
+    today_trigger: "Sobald echte Last da ist — oder du bewusst einen kleinen Last-Check setzt — ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Druck als Urteil zu Druck als ehrlichem Sichtbarmacher.",
+    science_bite: "Unter Last zeigt sich weniger, was du theoretisch weißt — sondern was dein System schon zuverlässig tragen kann. In ruhigen Momenten fühlen sich viele Linien klar an: Präsenz, Prozess, Vertrauen, Lernen, Identität. Unter Druck wird sichtbar, was davon schon trägt, was noch sofort kippt, was du noch bewusst halten musst und was schon fast automatisch da ist. Genau deshalb ist Druck heute nicht dein Richter, sondern dein Sichtbarmacher.",
+    tasks: [
+      {
+        id: "d42-t1",
+        title: "Setz oder erkenne einen Lastblock",
+        trigger: "Wenn natürliche Last da ist — oder wenn du bewusst einen kleinen Belastungsblock setzen kannst",
+        when_to_use: "Bei Scrimmage, Match, hartem Trainingsblock, sichtbarer Bewertung, mehreren Druckfaktoren gleichzeitig, chaotischer fordernder Phase oder einem fokussierten Belastungsblock im Alltag",
+        action: "Geh bewusst in einen Lastblock, der echt genug ist, dass dein System real reagieren muss.",
+        why: "Bevor du etwas über Konsolidierung lesen kannst, brauchst du eine reale Belastungssituation.",
+        explanation: "Der Tag darf nicht vom Zufall abhängen. Wenn keine natürliche Last kommt, erzeugst du einen ehrlichen kleinen Check: drei relevante Wiederholungen, eine sichtbare Serie, ein Fokusblock mit Druck, ein unangenehmes Gespräch, mehrere Anforderungen nacheinander. Nicht künstlich maximal hart. Nur echt genug.",
+        self_talk: "Jetzt wird sichtbar.",
+        micro_reframe: "Heute geht es nicht darum, gut auszusehen — sondern ehrlich zu sehen, was unter Last schon trägt.",
+        reframe_step: {
+          trigger: "Es gibt natürliche Last oder ich kann sie bewusst setzen.",
+          reframe: "Ich nutze diese Last nicht für Urteil, sondern als reale Prüfgrundlage.",
+          anchor: "Jetzt wird sichtbar."
+        },
+        system_function: "Load Initiation",
+        icon: "Flame"
+      },
+      {
+        id: "d42-t2",
+        title: "Lies ehrlich, was hält und was kippt",
+        trigger: "Wenn du im oder nach dem Lastblock merkst, wie dein System reagiert",
+        when_to_use: "Direkt im Belastungsblock oder direkt danach",
+        action: "Frag dich: 'Was bleibt erreichbar? Was kippt zuerst?'",
+        why: "Die Mitte von Tag 42 ist nicht Testen um des Testens willen, sondern ehrliche Systemdiagnostik unter Last.",
+        explanation: "Nicht urteilen. Nicht dramatisieren. Nicht retten. Nur lesen: Bleiben Präsenz, Prozess, Offenheit, Identität, Kommunikation, Wachstum? Oder zerfallen sie schnell? Das ist heute nützliche Information.",
+        self_talk: "Was hält? Was kippt?",
+        micro_reframe: "Druck ist heute kein Urteil, sondern ein ehrlicher Sichtbarmacher.",
+        reframe_step: {
+          trigger: "Ich bin unter Last oder komme gerade daraus.",
+          reframe: "Jetzt lese ich nicht mein Ego, sondern mein System.",
+          anchor: "Was hält? Was kippt?"
+        },
+        system_function: "Honest Reading",
+        icon: "Scan"
+      },
+      {
+        id: "d42-t3",
+        title: "Trag einen Kern bewusst nochmal",
+        trigger: "Wenn dir klarer geworden ist, was unter Last schon trägt",
+        when_to_use: "In der nächsten relevanten Sequenz nach dem Lesen",
+        action: "Frag dich: 'Welchen Kern kann ich unter Last bewusst nochmal tragen?' und geh genau damit in die nächste Sequenz.",
+        why: "Tag 42 soll nicht nur Defizite sichtbar machen, sondern Stabilität bewusst bestätigen.",
+        explanation: "Es geht darum, das Tragende nicht nur zu bemerken, sondern aktiv zu bestätigen. Dadurch wird der Tag nicht defizitlastig, sondern stärkt den Übergang in Verkörperung.",
+        self_talk: "Das bleibt.",
+        micro_reframe: "Ich lese heute nicht nur, was fehlt, sondern bestätige bewusst, was schon trägt.",
+        reframe_step: {
+          trigger: "Ich habe unter Last etwas Tragendes erkannt.",
+          reframe: "Jetzt trage ich diesen Kern bewusst nochmal und bestätige seine Stabilität.",
+          anchor: "Das bleibt."
+        },
+        system_function: "Core Confirmation",
+        icon: "BadgeCheck"
+      }
+    ],
+    journal: {
+      title: "Was bleibt in mir, wenn Druck steigt?",
+      questions: [
+        { id: "d42-j1", question: "Welcher Lastblock war heute am ehrlichsten für mein System — natürlich oder bewusst erzeugt?", placeholder: "Beschreibe die Situation oder Sequenz konkret." },
+        { id: "d42-j2", question: "Was hat unter dieser Last spürbar gehalten?", placeholder: "Welche Linien oder Qualitäten blieben erreichbar?" },
+        { id: "d42-j3", question: "Was ist zuerst gekippt oder brüchig geworden?", placeholder: "Was zerfällt noch zu schnell?" },
+        { id: "d42-j4", question: "Welchen Kern habe ich bewusst ein zweites Mal getragen?", placeholder: "Beschreibe die konkrete Bestätigung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, die heute Last erzeugt hat, 1 Sache, die überraschend stabil geblieben ist, und 1 Sache, die dir gezeigt hat, dass Druck nicht nur testet, sondern sichtbar macht, was schon wirklich da ist.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, was in mir schon konsolidiert ist — und was noch schneller Unterstützung braucht?"
+    },
+    gratitude_prompt: "Welche Last heute hat mir ehrlich gezeigt, was in mir schon trägt?",
+    self_talk_anchors: [
+      { text: "Jetzt wird sichtbar.", when: "Wenn du in den Lastblock gehst" },
+      { text: "Was hält? Was kippt?", when: "Wenn du ehrlich liest" },
+      { text: "Das bleibt.", when: "Wenn du einen Kern bewusst bestätigst" }
+    ],
+    variants: {
+      training: "Ideal bei Scrimmage, Match, hartem Trainingsblock, sichtbarer Bewertung oder mehreren Druckfaktoren gleichzeitig.",
+      rest: "Sehr gut übertragbar auf fokussierten Arbeitsblock, unangenehmes Gespräch, mehrere Anforderungen nacheinander oder sichtbare Aufgabe mit Druck.",
+      match: "Kurzversion: Last nutzen → ehrlich lesen → einen Kern bewusst nochmal tragen."
+    }
+  },
+  {
+    day_id: 43,
+    title: "Präsenz wird Standard",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Presence",
+    lens: "Präsenz soll nicht nur Technik sein — sie soll anfangen, mein normalerer Zustand zu werden.",
+    primary_mechanism: "Reduced Friction Return",
+    today_trigger: "Sobald kurze Drifts, kleine Reizmomente oder innere Züge auftauchen, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Präsenz lernen zu Präsenz normalisieren.",
+    science_bite: "Früher ging es darum, Autopilot zu erkennen, Aufmerksamkeit bewusst zurückzuholen, den Prozess als Arbeitsort zu definieren oder Fokus im Chaos zu bündeln. Tag 43 ist anders: Jetzt soll Rückkehr weniger Reibung brauchen. Nicht jeder Drift wird noch zu einem Event. Nicht jede Rückkehr wird noch zu einer Technik. Präsenz beginnt Standard zu werden, wenn dein System kürzer weg ist, schneller zurückkommt und dafür weniger inneres Theater braucht.",
+    tasks: [
+      {
+        id: "d43-t1",
+        title: "Mach den Drift kleiner",
+        trigger: "Wenn du kurz wegziehst, kurz kommentierst oder kurz in etwas hängen willst",
+        when_to_use: "Bei Übergängen, kurzen Drifts, kleinen Reizmomenten, nächster Wiederholung, nächster Szene oder Alltags-Mikroablenkung",
+        action: "Nimm den Drift kurz wahr, ohne ihn groß zu machen.",
+        why: "Tag 43 beginnt damit, Drift nicht mehr unnötig zu dramatisieren.",
+        explanation: "Du musst heute nicht mehr jeden kleinen Fokusverlust wie ein Problem behandeln. Kurz merken, nicht aufblasen, nicht analysieren, nicht daraus eine Geschichte machen.",
+        self_talk: "Kurz weg.",
+        micro_reframe: "Präsenz wird standardnäher, wenn kleine Drifts kleiner bleiben.",
+        reframe_step: {
+          trigger: "Mein Kopf zieht kurz weg.",
+          reframe: "Ich mache daraus kein großes Thema. Ich erkenne es nur kurz.",
+          anchor: "Kurz weg."
+        },
+        system_function: "Micro-Drift Reduction",
+        icon: "Eye"
+      },
+      {
+        id: "d43-t2",
+        title: "Geh direkt zurück",
+        trigger: "Direkt nachdem du den kurzen Drift bemerkt hast",
+        when_to_use: "Sofort, ohne große innere Rückkehr-Inszenierung",
+        action: "Bring dich direkt an die nächste Aufgabe zurück.",
+        why: "Der Unterschied zu früheren Präsenz-Tagen ist hier die Kürze der Rückkehr.",
+        explanation: "Nicht neu aufbauen. Nicht erst sammeln. Nicht Motivationssatz. Direkt zurück: nächste Wiederholung, nächste Szene, nächste Bewegung, nächste Kommunikation.",
+        self_talk: "Direkt zurück.",
+        micro_reframe: "Je weniger Umweg ich brauche, desto mehr wird Präsenz Standard statt Technik.",
+        reframe_step: {
+          trigger: "Ich habe den Drift bemerkt.",
+          reframe: "Jetzt gehe ich nicht in Rückkehr-Theorie, sondern direkt an die Aufgabe zurück.",
+          anchor: "Direkt zurück."
+        },
+        system_function: "Fast Return",
+        icon: "RotateCcw"
+      },
+      {
+        id: "d43-t3",
+        title: "Lass die nächste Szene normal sein",
+        trigger: "Wenn du wieder zurück bist",
+        when_to_use: "In der direkt nächsten Szene",
+        action: "Spiele die nächste Szene normal, nicht als Wiedergutmachung.",
+        why: "Präsenz wird erst Standard, wenn Rückkehr nicht ständig Sonderstatus bekommt.",
+        explanation: "Nicht extra fokussiert wirken. Nicht kompensieren. Nicht 'jetzt muss es wieder stimmen'. Einfach normal da sein und die Szene spielen.",
+        self_talk: "Einfach da.",
+        micro_reframe: "Verfügbarkeit wird Standard, wenn Rückkehr nicht ständig dramatisiert oder repariert wird.",
+        reframe_step: {
+          trigger: "Ich bin wieder bei der Aufgabe.",
+          reframe: "Jetzt mache ich aus der Rückkehr keinen Sondermoment, sondern spiele einfach normal weiter.",
+          anchor: "Einfach da."
+        },
+        system_function: "Normalized Presence",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo war Rückkehr heute schon kürzer und normaler?",
+      questions: [
+        { id: "d43-j1", question: "In welchen Momenten bin ich heute kurz von der Aufgabe weggekippt?", placeholder: "Beschreibe die Situationen." },
+        { id: "d43-j2", question: "Woran habe ich gemerkt, dass ich den Drift kleiner gemacht habe als früher?", placeholder: "Was war anders?" },
+        { id: "d43-j3", question: "Wie schnell bin ich heute zurück in die Aufgabe gegangen?", placeholder: "Beschreibe die Rückkehr." },
+        { id: "d43-j4", question: "Wo habe ich heute eine nächste Szene einfach normal gespielt, statt Rückkehr groß zu machen?", placeholder: "Welche Szene war dafür ein gutes Beispiel?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, bei der du kurz weg warst, 1 Sache, bei der du direkt zurückgegangen bist, und 1 Sache, die dir gezeigt hat, dass Präsenz nicht nur Technik, sondern Standard werden kann.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, ob Präsenz für mich langsam normaler statt künstlicher wird?"
+    },
+    gratitude_prompt: "Welche kleine Drift-Situation heute hat mir gezeigt, dass Rückkehr nicht mehr so viel Reibung braucht wie früher?",
+    self_talk_anchors: [
+      { text: "Kurz weg.", when: "Wenn du den Mikro-Drift bemerkst" },
+      { text: "Direkt zurück.", when: "Wenn du ohne Umweg gehst" },
+      { text: "Einfach da.", when: "Wenn du die nächste Szene normal spielst" }
+    ],
+    variants: {
+      training: "Ideal bei Übergängen, kurzen Drifts, kleinen Reizmomenten, nächster Wiederholung und nächster Szene.",
+      rest: "Sehr gut übertragbar auf Handyzug, Aufgabenwechsel, Gespräch, kurzen inneren Drift und Alltag ohne große Dramatik.",
+      match: "Hier enger: nicht jede Szene analysieren, nicht an Vergangenem hängen, direkt zurück zur nächsten Aufgabe."
+    }
+  },
+  {
+    day_id: 44,
+    title: "Demut in Stärke",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 7,
+    line: "Ego vs Inner Excellence",
+    lens: "Stärke kann klar und sichtbar sein, ohne wieder selbstbezogen zu werden.",
+    primary_mechanism: "Strength Without Self-Return",
+    today_trigger: "Sobald du in einer guten Phase, in Einfluss, in Lob oder in sichtbarer Stärke bist und dein System das wieder auf dein Selbst zurückbiegen will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Stärke als Selbstbeweis zu Stärke als stille, saubere, dienliche Qualität.",
+    science_bite: "Früher war Ego oft sichtbar als Bildschutz, Beeindruckenwollen oder Wirkung statt Qualität. In Phase IV kommt Ego subtiler zurück: als stille Selbstwichtigkeit, als Wunsch, dass Stärke gesehen wird, als unnötige Dominanz, als Bedürfnis, Einfluss zu markieren, oder als Rückführung von Qualität auf das eigene Ich. Tag 44 trainiert deshalb keine schwächere Stärke, sondern eine reifere: klar, sichtbar, wirksam — aber nicht selbstdrehend.",
+    tasks: [
+      {
+        id: "d44-t1",
+        title: "Erkenne, wann Stärke auf dich zurückgebogen wird",
+        trigger: "Wenn du Einfluss, Lob, gute Phase oder sichtbare Qualität hast und merkst, dass dein System daraus mehr Selbst macht",
+        when_to_use: "Bei Lob, guter Phase, Führungsmoment, sichtbarer Qualität, klarer Verantwortung oder Momenten von Einfluss",
+        action: "Frag dich kurz: 'Dient diese Stärke gerade noch der Sache — oder biegt sie sich schon auf mich zurück?'",
+        why: "Tag 44 beginnt dort, wo Stärke wieder selbstbezogen wird, obwohl sie eigentlich sauber sein könnte.",
+        explanation: "Es geht nicht darum, Stärke klein zu machen. Es geht darum, den Moment zu erkennen, in dem Qualität nicht mehr nur getragen, sondern wieder auf das eigene Ich zurückgebogen wird.",
+        self_talk: "Sache oder ich?",
+        micro_reframe: "Stärke verliert Reife, wenn sie wieder mehr um mich als um die Sache kreist.",
+        reframe_step: {
+          trigger: "Ich merke Einfluss, Stärke oder gute Phase.",
+          reframe: "Bevor ich mich darin innerlich zu sehr drehe, prüfe ich ihre Richtung.",
+          anchor: "Sache oder ich?"
+        },
+        system_function: "Self-Return Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d44-t2",
+        title: "Richte Stärke wieder auf Dienst aus",
+        trigger: "Nachdem du die Rückbiegung erkannt hast",
+        when_to_use: "Direkt im starken Moment",
+        action: "Frag dich: 'Wofür dient diese Stärke gerade?' und richte sie bewusst auf Aufgabe, Qualität oder Beitrag aus.",
+        why: "Demut in Stärke heißt nicht weniger Stärke, sondern klarere Richtung von Stärke.",
+        explanation: "Nicht klein machen. Nicht bescheiden spielen. Nicht dich dämpfen. Sondern deine Stärke wieder an Aufgabe, Verantwortung, Qualität, Team oder Wahrheit der Situation binden.",
+        self_talk: "Wofür dient das?",
+        micro_reframe: "Reife Stärke richtet sich an der Sache aus, nicht am Selbstbeweis.",
+        reframe_step: {
+          trigger: "Ich habe gemerkt, dass Stärke zurück auf mich kippt.",
+          reframe: "Jetzt gebe ich ihr wieder eine klare Richtung nach außen: Dienst statt Selbstbezug.",
+          anchor: "Wofür dient das?"
+        },
+        system_function: "Strength Reorientation",
+        icon: "Compass"
+      },
+      {
+        id: "d44-t3",
+        title: "Setz stille Qualität",
+        trigger: "Wenn du in einem sichtbaren starken Moment handelst",
+        when_to_use: "In mindestens einem klaren Einflussmoment heute",
+        action: "Setze Stärke klar, ruhig, sichtbar und sauber — ohne sie unnötig aufzublasen.",
+        why: "Tag 44 wird erst real, wenn Stärke wirksam bleibt, ohne wieder Show oder Selbstdrehung zu brauchen.",
+        explanation: "Stille Qualität ist keine Unsichtbarkeit. Es ist echte Stärke ohne Extra-Kommentar, unnötige Dominanz, Selbstinszenierung oder inneres 'schaut her'.",
+        self_talk: "Sauber stark.",
+        micro_reframe: "Ich kann deutlich sein, ohne dass Stärke wieder zum Selbstprojekt wird.",
+        reframe_step: {
+          trigger: "Ein starker oder einflussreicher Moment ist da.",
+          reframe: "Jetzt setze ich Qualität klar und sichtbar, aber ohne sie aufzublasen.",
+          anchor: "Sauber stark."
+        },
+        system_function: "Embodied Humble Strength",
+        icon: "BadgeCheck"
+      }
+    ],
+    journal: {
+      title: "Wo war meine Stärke heute sauber — und wo wollte sie wieder auf mich zurück?",
+      questions: [
+        { id: "d44-j1", question: "In welchem Moment war ich heute am stärksten, klarsten oder einflussreichsten?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d44-j2", question: "Woran habe ich gemerkt, dass mein System diese Stärke wieder auf mich zurückbiegen wollte?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d44-j3", question: "Wie habe ich meine Stärke wieder auf Aufgabe, Qualität oder Dienst ausgerichtet?", placeholder: "Was war dein innerer Shift?" },
+        { id: "d44-j4", question: "Wo ist es mir gelungen, stille Qualität statt Show zu setzen?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, in der heute Stärke da war, 1 Sache, in der Ego sie fast auf dich gezogen hätte, und 1 Sache, die dir gezeigt hat, dass Demut nicht Schwäche, sondern Richtung von Stärke ist.",
+      free_reflection_prompt: "Was zeigt mir das darüber, wie reif mein System inzwischen mit eigener Stärke umgeht?"
+    },
+    gratitude_prompt: "Welche starke Szene heute hat mir gezeigt, dass Einfluss nicht automatisch Selbstbeweis werden muss?",
+    self_talk_anchors: [
+      { text: "Sache oder ich?", when: "Wenn Stärke wieder auf dich zurück will" },
+      { text: "Wofür dient das?", when: "Wenn du Stärke neu ausrichtest" },
+      { text: "Sauber stark.", when: "Wenn du stille Qualität setzt" }
+    ],
+    variants: {
+      training: "Ideal bei Lob, guter Phase, Führungsmoment, sichtbarer Qualität, klarer Verantwortung und Momenten von Einfluss.",
+      rest: "Sehr gut übertragbar auf Recht haben, kompetenter sein, führen können, etwas besser wissen oder Einfluss in Gespräch und Alltag haben.",
+      match: "Sehr stark bei guter Szene, Momentum, sichtbarem Einfluss, Verantwortung: nicht showen, nicht aufblasen, sauber bleiben."
     }
   },
   {
@@ -3789,20 +4059,20 @@ export const PLAYER_DAYS: PlayerDay[] = [
     phase: "Phase IV — Verkörperung und Identität",
     week: 7,
     line: "Gratitude vs Anxiety",
-    lens: "Mein System muss nicht auf etwas Gutes warten, um weiter, tragfähiger und offener zu werden.",
-    primary_mechanism: "Baseline State Broadening",
-    today_trigger: "Sobald du merkst, dass dein System für Weite, Tragfähigkeit oder Offenheit erst einen äußeren Anlass will, ist der Tag aktiv.",
-    core_shift: "Heute verschiebst du dich von Weite als Reaktion auf gute Umstände zu Weite als beginnende Grundverfügbarkeit.",
-    science_bite: "Bisher kam Gratitude oft als Antwort: auf Enge, Schwierigkeit, Mangel oder Belastung. Tag 45 ist reifer. Die Frage ist jetzt: Muss mein System auf etwas Gutes warten, um weiter, offener und tragfähiger zu werden? Oder kann es diese Qualität auch ohne besonderen Anlass beginnen zu tragen? Genau das ist heute gemeint: Weite ohne äußere Erlaubnis.",
+    lens: "Mein System muss nicht auf etwas Gutes warten, um weit, tragfähig und offen zu werden.",
+    primary_mechanism: "Baseline Gratitude Availability",
+    today_trigger: "Sobald du merkst, dass dein System für Weite, Offenheit oder Tragfähigkeit erst einen äußeren Anlass will, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Weite als Reaktion zu Weite als beginnender Grundverfügbarkeit.",
+    science_bite: "Bisher war Gratitude oft Antwort: auf Schwierigkeit, auf Belastung oder auf etwas Positives. Tag 45 ist reifer. Jetzt geht es um die Frage: Muss mein System auf etwas Gutes warten, um weit, tragfähig und offen zu werden? Oder kann es diese Qualität auch ohne besonderen Auslöser beginnen zu tragen? Wenn Weite nur auf Anlass kommt, bleibt dein Zustand zu abhängig von Output, Entlastung oder positiven Ereignissen. Heute trainierst du deshalb Weite ohne äußere Erlaubnis.",
     tasks: [
       {
         id: "d45-t1",
         title: "Erkenne die Anlass-Abhängigkeit",
-        trigger: "Wenn dein System innerlich so funktioniert, als dürfte es nur bei guten Umständen offen oder dankbar werden",
-        when_to_use: "Im Alltag, im Training, in neutralen Phasen, in unspektakulären Momenten oder wenn nichts Besonderes passiert",
+        trigger: "Wenn dein System innerlich so funktioniert, als dürfte es nur bei guten Umständen offen oder weit werden",
+        when_to_use: "In neutralen Phasen, normalen Momenten, Pausen, auf dem Weg, beim Wasserholen, vor einer Wiederholung, im Alltag oder wenn nichts Besonderes passiert",
         action: "Frag dich kurz: 'Warte ich gerade auf einen Anlass für Weite?'",
-        why: "Tag 45 beginnt dort, wo Weite noch zu stark an äußere Erlaubnis gekoppelt ist.",
-        explanation: "Nicht nur Enge ist heute relevant. Auch neutrale oder unspektakuläre Zustände können eng bleiben, weil das System für Offenheit immer erst ein gutes Ereignis, Erfolg, Ruhe oder Erleichterung will.",
+        why: "Tag 45 beginnt dort, wo Offenheit noch zu stark an äußere Erlaubnis gekoppelt ist.",
+        explanation: "Es geht heute nicht nur um Enge. Es geht um die stille Abhängigkeit darunter: Erst wenn etwas Schönes passiert, erst wenn es leichter wird, erst wenn ich mich besser fühle, darf Weite kommen. Genau das wird heute sichtbar.",
         self_talk: "Brauche ich gerade einen Anlass?",
         micro_reframe: "Weite muss nicht erst von außen freigeschaltet werden.",
         reframe_step: {
@@ -3819,7 +4089,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         trigger: "Nachdem du Anlass-Abhängigkeit erkannt hast",
         when_to_use: "Direkt danach, auch in ganz normalen oder neutralen Momenten",
         action: "Hol bewusst 2–3 Dinge in dein System, die schon da, tragfähig, echt oder wertvoll sind — ohne dass erst etwas Besonderes passiert sein muss.",
-        why: "Tag 45 soll Gratitude aus der Reaktionslogik in Richtung Grundverfügbarkeit verschieben.",
+        why: "Tag 45 verschiebt Gratitude aus der Reaktionslogik in Richtung Grundverfügbarkeit.",
         explanation: "Nicht schönreden. Nicht künstlich positiv werden. Sondern üben, dass dein System Offenheit nicht erst verdient oder geschenkt bekommen muss. Weite kann heute auch im Normalen beginnen.",
         self_talk: "Weite jetzt.",
         micro_reframe: "Offenheit ist nicht nur eine Antwort auf Positives — sie kann auch ein bewusster Startpunkt sein.",
@@ -3868,9 +4138,9 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Aus Grundweite.", when: "Wenn du die nächste Handlung trägst" }
     ],
     variants: {
-      training: "Ideal in neutralen Phasen, normalen Einheiten, unspektakulären Momenten oder wenn nichts 'Besonderes' passiert, aber dein System trotzdem offen bleiben soll.",
-      rest: "Sehr gut übertragbar auf normalen Alltag, Routine, stille Momente, Arbeit, Spaziergang, Gespräche und neutrale Zeitfenster ohne speziellen Anlass.",
-      match: "Kurzversion: Anlass-Abhängigkeit erkennen → Weite ohne Grund öffnen → aus Grundweite handeln."
+      training: "Ideal bei guten Szenen, leichten Phasen, schönen Momenten, Unterstützung oder Ruhe — aber nicht nur deshalb. Auch in neutralen Momenten trainierbar.",
+      rest: "Perfekt in ganz normalen Momenten: auf dem Weg, in Pause, im neutralen Tagesmoment, bei etwas Unspektakulärem. Genau dort trainierst du Weite ohne besonderen Anlass.",
+      match: "Nutze gute Szene oder Ruhe, aber vor allem: warte nicht auf Anlass. Öffne Weite auch mitten im normalen Verlauf."
     }
   }
 ];
