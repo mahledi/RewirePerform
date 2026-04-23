@@ -105,6 +105,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     const payload: any = {
+      session_id: user.id,
       user_id: user.id,
       date: dateStr,
       event_type: eventType,
