@@ -5042,6 +5042,98 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Sehr stark bei Arbeit mit Sorgfalt, präziser Entscheidung, Gespräch mit echter Präsenz oder etwas ordentlich und ernsthaft tun, ohne es fürs Bild zu tun.",
       match: "Hier maximal relevant: Qualität hoch halten, kein Showzug, kein Beweisdrang, nicht fürs Bild spielen, Exzellenz direkt an Aufgabe binden."
     }
+  },
+  {
+    day_id: 56,
+    title: "Ich bin nicht hier, um zu beweisen — ich bin hier, um zu werden",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Integrated System Identity",
+    lens: "Heute geht es nicht mehr darum, welche einzelne Linie ich trainiere, sondern aus welchem Gesamtsystem ich handle.",
+    primary_mechanism: "Integrated Identity-Based Action",
+    today_trigger: "Sobald heute Druck, Fehler, Bewertung, gute Phase, schlechte Phase, Unsicherheit, Chaos, Verantwortung, Frust oder sichtbare Leistung auftauchen — oder du bewusst einen kleinen Integrationsblock setzt — ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von triggerabhängigen Teilversionen zu einer integrierten Gesamtform.",
+    science_bite: "Reife zeigt sich nicht daran, dass ein System viele gute Werkzeuge kennt, sondern daran, dass es unter unterschiedlichen Triggern aus demselben inneren Kern handeln kann. Ein unreiferes System bringt je nach Trigger oft eine andere Version hervor: unter Druck enger, nach Fehlern härter, unter Bewertung kleiner, bei Erfolg egohafter, unter Unsicherheit zweifelnder, ohne Bestätigung unsicherer. Ein reiferes System wird kohärenter. Das heißt nicht perfekt, emotionslos oder immer gleich. Es heißt: Unterschiedliche Situationen zerteilen dich weniger in unterschiedliche Versionen. Heute trainierst du deshalb keine neue Fähigkeit. Du trainierst, dass dein System als Ganzes zusammenhält.",
+    tasks: [
+      {
+        id: "d56-t1",
+        title: "Erkenne den alten Modus",
+        trigger: "Wenn ein realer Trigger auftaucht oder du bewusst einen kleinen relevanten Integrationsblock setzt",
+        when_to_use: "Bei Druck, Fehlernähe, Verantwortung, Reibung, sichtbarer Szene, Gespräch, Arbeit, Entscheidung oder Alltag mit Zug nach außen",
+        action: "Frag dich kurz: 'In welchen alten Teilmodus will mich diese Situation gerade ziehen?'",
+        why: "Tag 56 beginnt nicht mit Technik, sondern mit Gesamtbewusstsein: Was wäre hier mein altes Fragment?",
+        explanation: "Nicht mehr nur: Bin ich präsent? Bin ich sicher? Bin ich prozessorientiert? Sondern: Welche alte Teilversion will hier auftauchen — Schutz, Beweis, Rettung, Ego, Zweifel, Enge, Reizbarkeit, Bildfokus, Rückzug? Du machst sichtbar, was dich früher je nach Trigger aufgespalten hat.",
+        self_talk: "Welcher alte Modus zieht gerade?",
+        micro_reframe: "Heute ist nicht die Frage, welcher Trigger da ist — sondern ob er mich wieder in einen alten Teilmodus zerlegt.",
+        reframe_step: {
+          trigger: "Eine relevante oder reibende Situation ist da.",
+          reframe: "Bevor ich reagiere, lese ich erst, in welche alte Teilversion mich dieser Trigger ziehen will.",
+          anchor: "Welcher alte Modus zieht gerade?"
+        },
+        system_function: "Integrated Trigger Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d56-t2",
+        title: "Hol den Kern zurück",
+        trigger: "Nachdem du den alten Teilmodus erkannt hast",
+        when_to_use: "Direkt danach, bevor du triggerweise statt integrationsweise handelst",
+        action: "Frag dich: 'Was ist hier mein integrierter Kern?' und richte dich daran aus.",
+        why: "Tag 56 lebt davon, dass du nicht einzelne Tools sammelst, sondern einen gemeinsamen inneren Kern zurückholst.",
+        explanation: "Dein integrierter Kern ist nicht ein Satz und nicht ein Mood. Er ist die verdichtete Form aus allem, was die 56 Tage aufgebaut haben: Prozess statt Außen, Beitrag statt Schutz, Wachstum statt Vermeidung, Qualität ohne Ego, Stabilität ohne frischen Beweis, Präsenz ohne Drama. Heute geht es darum, daraus wieder zu handeln — als Einheit.",
+        self_talk: "Kern zurück.",
+        micro_reframe: "Ich muss heute nicht toolsammeln. Ich muss meinen Kern zurückholen.",
+        reframe_step: {
+          trigger: "Der alte Modus ist sichtbar geworden.",
+          reframe: "Jetzt gehe ich nicht linienweise, sondern aus dem verdichteten Kern zurück in die Situation.",
+          anchor: "Kern zurück."
+        },
+        system_function: "Integrated Core Recovery",
+        icon: "Compass"
+      },
+      {
+        id: "d56-t3",
+        title: "Setze die ganze Handlung",
+        trigger: "Wenn dein Kern wieder klarer vorne ist",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Setze eine ganze Handlung: nicht schützen, nicht beweisen, nicht retten, nicht egoisieren — sondern als Gesamtform handeln.",
+        why: "Der Abschluss wird erst real, wenn nicht nur der Kern gedacht, sondern in einer ganzen Handlung sichtbar wird.",
+        explanation: "Heute geht es nicht um kleine Tool-Anwendung, sondern um Form. Wieder anbieten. Klar kommunizieren. Die Aktion fordern. In der Szene bleiben statt auszuweichen. Aktiv präsent bleiben statt innerlich rauszugehen. Qualität hoch halten, ohne Showzug. Verantwortung tragen, ohne Selbstinszenierung. Genau dort wird sichtbar, dass das System nicht mehr aus Einzelteilen besteht.",
+        self_talk: "Ganz handeln.",
+        micro_reframe: "Heute beweise ich nichts. Ich werde sichtbar in der Form, die ich aufgebaut habe.",
+        reframe_step: {
+          trigger: "Mein Kern ist wieder da.",
+          reframe: "Jetzt setze ich nicht eine Technik, sondern eine ganze, integrierte Handlung.",
+          anchor: "Ganz handeln."
+        },
+        system_function: "Integrated Action Expression",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Aus welchem Gesamtsystem habe ich heute gelebt?",
+      questions: [
+        { id: "d56-j1", question: "Welche reale Situation oder welcher bewusst gesetzte Integrationsblock hat heute mein System am ehrlichsten geprüft?", placeholder: "Beschreibe die Szene oder Sequenz konkret." },
+        { id: "d56-j2", question: "Welcher alte Teilmodus wollte dort zuerst auftauchen?", placeholder: "Schutz, Beweis, Rettung, Ego, Zweifel, Enge, Rückzug ..." },
+        { id: "d56-j3", question: "Wie habe ich meinen integrierten Kern zurückgeholt?", placeholder: "Was hat mir geholfen, wieder aus dem Gesamtsystem zu handeln?" },
+        { id: "d56-j4", question: "Welche ganze Handlung hat heute gezeigt, dass mein System nicht mehr nur aus einzelnen Tools besteht?", placeholder: "Beschreibe die konkrete Handlung." },
+        { id: "d56-j5", question: "Was zeigt mir dieser Tag darüber, wer ich werde, wenn das System als Einheit trägt?", placeholder: "Formuliere es klar und ohne Pathos." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens: 1 Sache, die heute wirklich etwas in dir gefordert hat, 1 Sache, bei der ein alter Modus fast übernommen hätte, und 1 Sache, die dir heute gezeigt hat, dass dein System nicht mehr nur aus einzelnen Tools besteht, sondern langsam eine Form bekommt.",
+      free_reflection_prompt: "Was ist heute nicht nur trainiert worden — sondern als Form in mir sichtbar geworden?"
+    },
+    gratitude_prompt: "Welche Situation heute hat mir gezeigt, dass ich nicht mehr nur mit einzelnen Tools reagiere, sondern aus einer Form handle?",
+    self_talk_anchors: [
+      { text: "Welcher alte Modus zieht gerade?", when: "Wenn ein relevanter Trigger auftaucht" },
+      { text: "Kern zurück.", when: "Wenn du integrationsweise statt triggerweise handeln willst" },
+      { text: "Ganz handeln.", when: "In der nächsten sichtbaren Gesamt-Handlung" }
+    ],
+    variants: {
+      training: "Ideal: ein relevanter Block, eine sichtbare Szene, ein Mix aus Druck, Fehlernähe, Verantwortung oder Reibung — genau dort nicht toolsammeln, sondern ganz handeln.",
+      rest: "Sehr stark in Gespräch, Arbeit, Entscheidung, Reibung, Unsicherheit und Alltag mit Zug nach außen. Hier wird klar: Das System ist nicht nur für Sport gebaut. Es ist eine Form des Handelns.",
+      match: "Hier maximal stark: alten Modus erkennen, Kern zurückholen, ganze Handlung setzen. Nicht schützen. Nicht beweisen. Nicht retten. Nicht egoisieren. Sondern werden."
+    }
   }
+
 
 ];
