@@ -155,7 +155,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       return;
     }
 
-    setStep(4);
+    setStep(5);
   };
 
   const handleComprehensionComplete = async (
@@ -172,7 +172,58 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         status: "completed",
       });
     }
-    setStep(3);
+    setStep(4);
+  };
+
+  const ScienceBiteIntro = () => {
+    const bite = resolved?.content.scienceBite.fact ?? "";
+    const [headline, ...body] = bite.split("\n\n").filter(Boolean);
+
+    return (
+      <motion.div
+        key="science-intro"
+        initial={{ opacity: 0, scale: 0.96, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: -16 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="min-h-[calc(100vh-11rem)] flex flex-col justify-center"
+      >
+        {loadingTasks ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+        ) : (
+          <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
+            <div className="p-5 border-b border-border/50 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Science Bite</p>
+                <h2 className="font-heading text-2xl font-bold leading-tight">{headline}</h2>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                <Brain className="w-5 h-5 text-primary" />
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {body.map((paragraph, index) => (
+                <p key={index} className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+
+            <div className="p-5 pt-0">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setStep(1)}
+                className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
+              >
+                Verstanden <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    );
   };
 
   // ─── Knowledge Bite Card (Science Bite + Why per Task) ───
@@ -266,7 +317,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         <motion.button
           whileHover={allRead ? { scale: 1.02 } : {}}
           whileTap={allRead ? { scale: 0.98 } : {}}
-          onClick={() => allRead && setStep(1)}
+          onClick={() => allRead && setStep(2)}
           disabled={!allRead}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
             allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
@@ -378,9 +429,10 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               />
             ) : (
               <>
-                {step === 0 && <KnowledgeStep />}
-                {step === 1 && <TaskDashboard />}
-                {step === 2 && (
+                {step === 0 && <ScienceBiteIntro />}
+                {step === 1 && <KnowledgeStep />}
+                {step === 2 && <TaskDashboard />}
+                {step === 3 && (
                   <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
                     <p className="text-muted-foreground mb-6 text-sm">
@@ -395,7 +447,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                       />
                     ) : (
                       <button
-                        onClick={() => setStep(3)}
+                        onClick={() => setStep(4)}
                         className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold"
                       >
                         Weiter zur Reflexion
@@ -403,7 +455,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     )}
                   </motion.div>
                 )}
-                {step === 3 && (
+                {step === 4 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-4 text-sm">
@@ -422,7 +474,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     />
                   </motion.div>
                 )}
-                {step === 4 && (
+                {step === 5 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
@@ -450,7 +502,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         </div>
       </div>
 
-      {step < 4 && step !== 0 && step !== 2 && !selectedTask && (
+      {step < 5 && step !== 0 && step !== 1 && step !== 3 && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -458,7 +510,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               Zurück
             </button>
             <div className="flex gap-1.5">
-              {[0, 1, 2, 3].map((s) => (
+              {[0, 1, 2, 3, 4].map((s) => (
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
@@ -466,17 +518,17 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (step === 3) saveCheckin();
-                else if (step === 1 && completedTasks.length > 0) setStep(2);
+                if (step === 4) saveCheckin();
+                else if (step === 2 && completedTasks.length > 0) setStep(3);
               }}
-              disabled={step === 1 && completedTasks.length === 0}
+              disabled={step === 2 && completedTasks.length === 0}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                step === 1 && completedTasks.length === 0
+                step === 2 && completedTasks.length === 0
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 3 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : step === 1 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : step === 2 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>

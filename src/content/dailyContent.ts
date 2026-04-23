@@ -12,6 +12,7 @@
 import { MATRIX_DAYS } from "./matrixDays";
 import type { DailyContent, DailyTask, DailyJournal } from "./matrixDayTypes";
 import { PLAYER_DAYS, mapPlayerDayToDailyContent } from "./playerDays";
+import { scienceBitesByDay } from "./scienceBites";
 
 // ─────────── Generic Placeholder Builder ───────────
 // Wird verwendet, solange finale Tagesinhalte nicht eingepflegt sind.
@@ -2449,6 +2450,12 @@ for (const playerDay of PLAYER_DAYS) {
     ...mapped,
     comprehensionPool: existingPool,
   };
+}
+
+// Override Science Bites with the finalized 1-56 bite set.
+for (const [dayStr, scienceBite] of Object.entries(scienceBitesByDay)) {
+  const n = Number(dayStr);
+  if (DAILY_CONTENT[n]) DAILY_CONTENT[n].scienceBite = { fact: scienceBite };
 }
 
 export const getDailyContent = (dayNumber: number): DailyContent | null =>
