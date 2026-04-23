@@ -4592,5 +4592,456 @@ export const PLAYER_DAYS: PlayerDay[] = [
       rest: "Sehr stark bei Arbeit, Gespräch, Handyimpuls, Planänderung, Ergebnisorientierung und kleinen Reizmomenten im Alltag.",
       match: "Kurzversion: Wohnort prüfen → in Prozess zurück → nächste Szene von dort leben."
     }
+  },
+  {
+    day_id: 51,
+    title: "Spannung ist nicht automatisch Bedrohung",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Fear vs Love / Gratitude vs Anxiety / Control vs Non-Control",
+    lens: "Spannung darf da sein, ohne dass mein ganzes System sofort enger, bedrohungsfixierter und schutzorientierter werden muss.",
+    primary_mechanism: "Threat Decoupling Under Tension",
+    today_trigger: "Sobald reale Spannung da ist — Warten, Relevanz, offener Ausgang, Verantwortung, Beobachtung, Unsicherheit oder eine körperlich spürbare innere Aufladung — ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Spannung = automatische Bedrohung zu Spannung = spürbar, aber nicht regierend.",
+    science_bite: "Spannung ist nicht das Problem. Das Problem beginnt dort, wo dein System Spannung fast automatisch als Gefahr liest. Dann wird Wahrnehmung enger, Schutz größer, Mangel sichtbarer und Handlung kleiner. Reife heißt heute nicht, spannungsfrei zu werden. Reife heißt, dass Spannung nicht mehr automatisch dein ganzes System in Bedrohungsmodus zieht.",
+    tasks: [
+      {
+        id: "d51-t1",
+        title: "Erkenne den Bedrohungszug",
+        trigger: "Wenn du merkst, dass Spannung in dir sofort Enge, Schutz oder Problemfokus auslöst",
+        when_to_use: "Vor einer wichtigen Szene, beim Warten, in unklarer Lage, bei Verantwortung, bei Beobachtung, in offener Situation oder wenn der Körper bereits Spannung trägt",
+        action: "Frag dich kurz: 'Ist hier gerade nur Spannung da — oder macht mein System schon Bedrohung daraus?'",
+        why: "Du musst zuerst unterscheiden, ob du gerade etwas spürst oder ob dein System daraus schon eine gefährliche Geschichte baut.",
+        explanation: "Viele Menschen merken nur die Spannung und halten sie direkt für das Problem. Heute geht es darum, eine Ebene tiefer zu sehen: Wann wird aus Spannung schon Bedrohungslese? Wann wird das System enger als nötig?",
+        self_talk: "Spannung oder schon Bedrohung?",
+        micro_reframe: "Spannung ist real. Bedrohungsenge ist schon die nächste Übersetzung.",
+        reframe_step: {
+          trigger: "Ich spüre Spannung im Körper oder im Kopf.",
+          reframe: "Bevor ich automatisch kleiner werde, prüfe ich, ob mein System schon auf Gefahr schaltet.",
+          anchor: "Spannung oder schon Bedrohung?"
+        },
+        system_function: "Threat Interpretation Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d51-t2",
+        title: "Halte Weite mit im System",
+        trigger: "Nachdem du gemerkt hast, dass Spannung gerade zu Bedrohungsenge werden will",
+        when_to_use: "Direkt in derselben Situation, bevor dein Wahrnehmungsfeld noch kleiner wird",
+        action: "Frag dich: 'Was ist trotz Spannung noch da?' und halte 2–3 reale stabile Dinge bewusst mit im Bild.",
+        why: "Der Tag wird nicht dadurch stark, dass du Spannung wegmachst, sondern dass du verhinderst, dass sie dein ganzes Wahrnehmungsfeld übernimmt.",
+        explanation: "Vielleicht ist dein Körper noch tragfähig. Vielleicht ist deine Aufgabe klar. Vielleicht ist deine Technik erreichbar. Vielleicht ist Unterstützung da. Vielleicht ist der Moment nicht gegen dich, sondern einfach offen. Du trainierst, dass Spannung nicht alleiniger Herrscher über deine Wahrnehmung wird.",
+        self_talk: "Weite bleibt mit drin.",
+        micro_reframe: "Spannung darf da sein, ohne mein ganzes Feld zu besetzen.",
+        reframe_step: {
+          trigger: "Ich habe den Bedrohungszug erkannt.",
+          reframe: "Jetzt gebe ich Spannung nicht das ganze Feld. Ich halte bewusst auch Stabilität und Möglichkeit mit im System.",
+          anchor: "Weite bleibt mit drin."
+        },
+        system_function: "Breadth Preservation",
+        icon: "Expand"
+      },
+      {
+        id: "d51-t3",
+        title: "Handle ohne Engzug",
+        trigger: "Wenn Spannung noch da ist, aber dein System nicht mehr komplett in Bedrohungsmodus steckt",
+        when_to_use: "In der direkt nächsten Handlung oder Szene",
+        action: "Setze die nächste Handlung nicht aus Enge und Schutz, sondern aus Prozess, Weite und Verfügbarkeit.",
+        why: "Tag 51 wird erst real, wenn Spannung nicht mehr automatisch eine kleine, hektische oder defensive Handlung erzeugt.",
+        explanation: "Du musst nicht ruhig sein. Du musst nicht locker sein. Du musst nur verhindern, dass Spannung dein Verhalten automatisch verengt. Die nächste Szene soll zeigen: Spannung ist da, aber sie regiert mich nicht komplett.",
+        self_talk: "Nicht aus Engzug.",
+        micro_reframe: "Reife heißt heute nicht spannungsfrei, sondern weniger bedrohungsgesteuert.",
+        reframe_step: {
+          trigger: "Spannung ist noch da, aber ich bin nicht mehr komplett in Engzug.",
+          reframe: "Jetzt handle ich nicht aus Schutzkleinheit, sondern aus mehr Prozess und Verfügbarkeit.",
+          anchor: "Nicht aus Engzug."
+        },
+        system_function: "Tension-Tolerant Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo wurde Spannung heute zu Bedrohung — und wo nicht mehr?",
+      questions: [
+        { id: "d51-j1", question: "In welcher Situation war heute echte Spannung da?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d51-j2", question: "Woran habe ich gemerkt, dass mein System daraus Bedrohungsenge gemacht hat?", placeholder: "Was wurde enger, kleiner oder schutzorientierter?" },
+        { id: "d51-j3", question: "Was konnte ich trotz Spannung bewusst mit im Bild halten?", placeholder: "Welche realen stabilen Dinge waren noch da?" },
+        { id: "d51-j4", question: "Wie hat sich meine nächste Handlung verändert, als Spannung nicht alles übernehmen durfte?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache aus einem Spannungsmoment, 1 Sache, die trotzdem stabil da war, und 1 Sache, die dir gezeigt hat, dass Spannung nicht automatisch Bedrohung sein muss.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie schnell mein System Spannung noch in Bedrohungsenge übersetzt?"
+    },
+    gratitude_prompt: "Welche Spannung heute hat mir gezeigt, dass Enge nicht automatisch folgen muss?",
+    self_talk_anchors: [
+      { text: "Spannung oder schon Bedrohung?", when: "Wenn Spannung anzieht" },
+      { text: "Weite bleibt mit drin.", when: "Wenn du Bedrohungsmonopol aufbrichst" },
+      { text: "Nicht aus Engzug.", when: "In der nächsten Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei relevanter Szene, offenem Ausgang, Warten, Verantwortung, Beobachtung und körperlich spürbarer Spannung.",
+      rest: "Sehr stark bei Gesprächen, Nachrichten, Entscheidungen, Warten, Unsicherheit und allem, was innerlich spürbar auflädt.",
+      match: "Maximal relevant: Spannung ist da, aber sie darf nicht automatisch Bedrohungsmodus und kleine Handlung erzeugen."
+    }
+  },
+  {
+    day_id: 52,
+    title: "Leistung aus Beitrag statt aus Schutz",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Fear vs Love / Purpose",
+    lens: "Mein Leistungsmotor muss nicht primär aus Schutz, Beweis oder Angst laufen.",
+    primary_mechanism: "Contribution-Oriented Performance State",
+    today_trigger: "Sobald du in eine relevante Handlung gehst und merkst, dass dein innerer Motor stärker aus Schutz als aus Beitrag organisiert ist, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Schutzmotor zu Beitragsmotor.",
+    science_bite: "Leistung sieht oft stark aus, ist innerlich aber trotzdem schutzorganisiert: nicht scheitern, nicht schlecht aussehen, nicht exponiert werden, nicht Kontrolle verlieren. Genau dann wird sie enger, härter, selbstbezogener und weniger frei. Tag 52 verändert deshalb nicht nur deine Handlung, sondern den Motor darunter. Die Frage ist heute nicht nur: Was tue ich? Sondern: Woraus tue ich es?",
+    tasks: [
+      {
+        id: "d52-t1",
+        title: "Erkenne den Schutzmotor",
+        trigger: "Wenn du in einer relevanten Handlung innerlich merkst, dass du eher Schaden vermeiden, dich absichern oder dich beweisen willst",
+        when_to_use: "Bei Verantwortungsszene, Führungsmoment, offener Aktion, Drucksituation, sichtbarer Aufgabe oder Szene mit Bedeutung für andere",
+        action: "Frag dich kurz: 'Treibt mich hier gerade Schutz — oder Beitrag?'",
+        why: "Bevor Leistung aus einer reiferen Quelle organisiert werden kann, musst du merken, wann dein Motor noch auf Selbstschutz läuft.",
+        explanation: "Schutzmotor ist oft nicht laut. Er zeigt sich in Härte, Absicherung, unnötiger Wichtigkeit, Beweisdrang, Defensivität oder künstlicher Kontrolle. Du machst heute sichtbar, was die Leistung innerlich antreibt.",
+        self_talk: "Schutz oder Beitrag?",
+        micro_reframe: "Nicht jede starke Aktivierung ist dienliche Leistung — oft ist sie noch Schutzmotor.",
+        reframe_step: {
+          trigger: "Eine relevante Handlung steht an und mein System spannt sich stark an.",
+          reframe: "Bevor ich einfach loslaufe, prüfe ich, woraus meine Leistung gerade organisiert wird.",
+          anchor: "Schutz oder Beitrag?"
+        },
+        system_function: "Performance Motor Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d52-t2",
+        title: "Hol den Beitragsmotor rein",
+        trigger: "Nachdem du den Schutzmotor erkannt hast",
+        when_to_use: "Direkt vor der nächsten relevanten Handlung",
+        action: "Frag dich: 'Was dient hier Aufgabe, Team oder größerer Ausrichtung wirklich?'",
+        why: "Die Umcodierung des Tages liegt nicht in weniger Energie, sondern in anderer Energie-Richtung.",
+        explanation: "Beitrag ist heute nicht weich. Er ist präzise. Er fragt nicht: Wie sichere ich mich? Sondern: Was hilft hier wirklich? Was trägt? Was ist die saubere verantwortliche Handlung? Genau dort wird Leistung freier.",
+        self_talk: "Was dient hier wirklich?",
+        micro_reframe: "Wenn Leistung aus Beitrag statt Schutz kommt, wird sie oft freier und sauberer.",
+        reframe_step: {
+          trigger: "Ich habe Schutzmotor erkannt.",
+          reframe: "Jetzt richte ich meine Leistung neu: weg von Selbstschutz, hin zu Aufgabe und Beitrag.",
+          anchor: "Was dient hier wirklich?"
+        },
+        system_function: "Contribution Activation",
+        icon: "Compass"
+      },
+      {
+        id: "d52-t3",
+        title: "Setze die dienliche Handlung",
+        trigger: "Wenn der Beitragsmotor klarer geworden ist",
+        when_to_use: "In der direkt nächsten relevanten Szene",
+        action: "Setze eine sichtbare Handlung, die mehr dient als schützt.",
+        why: "Tag 52 wirkt erst, wenn der neue Motor direkt in Verhalten sichtbar wird.",
+        explanation: "Das kann sein: klare Kommunikation, offenes Anbieten, Verantwortung übernehmen, stabilisierende Handlung, mutige aber dienliche Entscheidung. Nicht fürs Bild. Nicht zur Rettung. Für den Beitrag.",
+        self_talk: "Dienlich leisten.",
+        micro_reframe: "Meine Leistung wird reifer, wenn sie weniger Selbstschutz und mehr Beitrag trägt.",
+        reframe_step: {
+          trigger: "Der Beitragsmotor ist klarer.",
+          reframe: "Jetzt setze ich keine Schutzhandlung, sondern eine dienliche Leistungshandlung.",
+          anchor: "Dienlich leisten."
+        },
+        system_function: "Contribution-Based Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Woraus war meine Leistung heute organisiert?",
+      questions: [
+        { id: "d52-j1", question: "In welcher relevanten Situation war mein Schutzmotor heute am stärksten?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d52-j2", question: "Woran habe ich gemerkt, dass mein System eher aus Schutz als aus Beitrag geleistet hat?", placeholder: "Was war innerlich oder im Verhalten spürbar?" },
+        { id: "d52-j3", question: "Was war in dieser Situation die dienlichere, beitragsorientierte Handlung?", placeholder: "Formuliere sie klar." },
+        { id: "d52-j4", question: "Konnte ich sie heute sichtbar setzen?", placeholder: "Wie sah die Handlung konkret aus?" }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, in der Schutz stark war, 1 Sache, in der Beitrag sichtbar wurde, und 1 Sache, die dir gezeigt hat, dass Leistung nicht primär aus Angst organisiert werden muss.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, woraus mein Leistungsmotor unter Bedeutung noch zu oft gebaut ist?"
+    },
+    gratitude_prompt: "Welche Szene heute hat mir gezeigt, dass Leistung aus Beitrag freier sein kann als Leistung aus Schutz?",
+    self_talk_anchors: [
+      { text: "Schutz oder Beitrag?", when: "Wenn relevante Leistung ansteht" },
+      { text: "Was dient hier wirklich?", when: "Wenn du den Motor neu richtest" },
+      { text: "Dienlich leisten.", when: "In der sichtbaren Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei Verantwortungsszene, Führungsmoment, offener Aktion, Drucksituation oder sichtbarer Aufgabe.",
+      rest: "Sehr stark bei Gesprächen, Entscheidungen, Arbeit, Verantwortung übernehmen und jemandem Stabilität geben.",
+      match: "Maximal relevant: nicht aus Schutz performen, sondern aus Aufgabe, Beitrag und größerer Ausrichtung."
+    }
+  },
+  {
+    day_id: 53,
+    title: "Schwierigkeit wird Wachstumsraum",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Growth vs Winning",
+    lens: "Schwierigkeit muss nicht automatisch Problemrahmen bleiben.",
+    primary_mechanism: "Growth Appraisal Default",
+    today_trigger: "Sobald etwas nicht glatt läuft, unangenehm ist, länger dauert, fordert, Reibung hat oder Unsicherheit erzeugt, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Schwierigkeit = Problem zu Schwierigkeit = Entwicklungsraum.",
+    science_bite: "Viele Systeme lesen Reibung noch automatisch als Problem: etwas läuft nicht glatt, es zieht, es nervt, es bremst, es sollte nicht sein. Genau dort bleibt Wachstum oft zu künstlich und Problemfokus zu automatisch. Tag 53 macht Growth natürlicher: Nicht Schwierigkeit wegmachen. Nicht Problem romantisieren. Sondern Schwierigkeit real als Ort lesen, an dem Entwicklung stattfindet.",
+    tasks: [
+      {
+        id: "d53-t1",
+        title: "Erkenne den Problemzug",
+        trigger: "Wenn Schwierigkeit sofort als Problemrahmen gelesen wird",
+        when_to_use: "Bei Reibung, zähem Lernen, unangenehmer Aufgabe, technischer Schwierigkeit, Unsicherheit, längerer Entwicklung oder allem, was nicht glatt läuft",
+        action: "Markiere innerlich einmal klar: 'Problemzug.'",
+        why: "Bevor Wachstum Default werden kann, musst du merken, wann dein System Schwierigkeit noch automatisch als Problem liest.",
+        explanation: "Achte auf Genervtheit, enge Interpretation, sofortige Defizitlese, 'warum ist das so?', 'das bremst', 'das sollte nicht sein'. Genau das ist der Problemzug.",
+        self_talk: "Problemzug.",
+        micro_reframe: "Schwierigkeit ist da — aber Problemzentrierung ist schon die erste alte Lesart.",
+        reframe_step: {
+          trigger: "Etwas läuft nicht glatt oder fordert mich.",
+          reframe: "Bevor ich Schwierigkeit automatisch zum Problem mache, markiere ich den Problemzug.",
+          anchor: "Problemzug."
+        },
+        system_function: "Deficit Framing Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d53-t2",
+        title: "Hol die Entwicklungslese rein",
+        trigger: "Nachdem du den Problemzug erkannt hast",
+        when_to_use: "Direkt in derselben Schwierigkeit",
+        action: "Frag dich: 'Was trainiert diese Schwierigkeit gerade in mir?' oder 'Welcher Entwicklungsraum liegt genau hier?'",
+        why: "Hier liegt die Umcodierung des Tages.",
+        explanation: "Nicht romantisieren. Nicht alles gut finden. Nicht Schwierigkeit wegreden. Nur die Entwicklungsdimension real mit hineinholen. Genau dadurch wird die nächste Handlung weniger defensiv.",
+        self_talk: "Das trainiert etwas.",
+        micro_reframe: "Bedeutung verschiebt Verhalten — wenn Schwierigkeit Entwicklungsraum wird, wird Handlung offener.",
+        reframe_step: {
+          trigger: "Ich habe den Problemzug erkannt.",
+          reframe: "Jetzt lese ich Schwierigkeit nicht nur als Störung, sondern nehme ihre Entwicklungsdimension real mit hinein.",
+          anchor: "Das trainiert etwas."
+        },
+        system_function: "Growth Appraisal Activation",
+        icon: "Compass"
+      },
+      {
+        id: "d53-t3",
+        title: "Handle wie jemand, der daraus wächst",
+        trigger: "Wenn die Entwicklungslese wieder mit im System ist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Frag dich: 'Wie sieht meine nächste Handlung aus, wenn ich das hier als Wachstumsraum lese?' und setze genau diese.",
+        why: "Tag 53 wirkt nur, wenn die neue Lesart wieder in Verhalten geht.",
+        explanation: "Das heißt heute: offener, lernbereiter, weniger defensiv, weniger problemfixiert, weniger bildschützend. Nicht heroisch. Nicht künstlich mutig. Nur entwicklungsorientiert.",
+        self_talk: "Daran wachsen.",
+        micro_reframe: "Wenn Wachstum die Lesart wird, muss die nächste Handlung nicht mehr aus Problemdenken kommen.",
+        reframe_step: {
+          trigger: "Ich habe Entwicklungsraum wieder mit im Bild.",
+          reframe: "Jetzt handle ich nicht problemzentriert, sondern entwicklungsorientiert weiter.",
+          anchor: "Daran wachsen."
+        },
+        system_function: "Growth-Default Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo war Schwierigkeit heute noch Problem — und wo schon Wachstumsraum?",
+      questions: [
+        { id: "d53-j1", question: "In welcher Schwierigkeit war mein Problemzug heute am stärksten?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d53-j2", question: "Woran habe ich gemerkt, dass mein System sie zuerst als Problemrahmen gelesen hat?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d53-j3", question: "Welche Entwicklungsdimension konnte ich real mit hineinholen?", placeholder: "Was trainiert oder zeigt diese Schwierigkeit?" },
+        { id: "d53-j4", question: "Wie hat sich meine nächste Handlung verändert, als ich Schwierigkeit als Wachstumsraum gelesen habe?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, die heute unangenehm war, 1 Sache, die dadurch sichtbar oder trainiert wurde, und 1 Sache, die dir gezeigt hat, dass Schwierigkeit nicht automatisch Problem bleiben muss.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie natürlich Wachstum für mein System unter Schwierigkeit schon wird?"
+    },
+    gratitude_prompt: "Welche Schwierigkeit heute hat mir gezeigt, dass Entwicklung real mit im Bild sein kann?",
+    self_talk_anchors: [
+      { text: "Problemzug.", when: "Wenn Schwierigkeit automatisch zum Problem wird" },
+      { text: "Das trainiert etwas.", when: "Wenn du die Entwicklungslese reinholst" },
+      { text: "Daran wachsen.", when: "In der nächsten entwicklungsorientierten Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei Reibung, technischem Lernen, zähen Phasen, unangenehmer Schwierigkeit und längerer Entwicklung.",
+      rest: "Sehr stark bei Arbeit, Gespräch, unangenehmer Aufgabe, Alltag mit Reibung oder allem, was länger dauert als gewünscht.",
+      match: "Wenn Schwierigkeit kommt: nicht sofort als Problem lesen, sondern als realen Entwicklungsraum mitführen."
+    }
+  },
+  {
+    day_id: 54,
+    title: "Sicherheit ohne frischen Beweis",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Confidence vs Self-Doubt",
+    lens: "Sicherheit bleibt verfügbar, auch wenn gerade kein neues äußeres Signal sie bestätigt.",
+    primary_mechanism: "Confidence from Internalized Substance",
+    today_trigger: "Sobald dein System nach frischer Bestätigung, gutem Gefühl oder neuem Signal sucht, bevor es sauber weiterhandelt, ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von Beweisabhängigkeit zu verinnerlichter Substanz.",
+    science_bite: "Confidence wird unreif, wenn sie ständig neu gefüttert werden muss: durch eine gute Szene, ein gutes Gefühl, Rückmeldung, Erfolg, sichtbare Kontrolle oder frischen Beweis. Heute trainierst du die reifere Form: Sicherheit bleibt verfügbar, auch wenn gerade nichts Neues sie bestätigt. Nicht blind. Nicht überheblich. Sondern ruhig aus etwas, das schon in dir aufgebaut wurde.",
+    tasks: [
+      {
+        id: "d54-t1",
+        title: "Erkenne den Bestätigungszug",
+        trigger: "Wenn dein System Sicherheit aus einem neuen äußeren Signal ziehen will",
+        when_to_use: "In neutralen Phasen, bei fehlendem Feedback, nach keiner klaren Bestätigung, bei offener Szene oder wenn du innerlich auf 'ein gutes Zeichen' wartest",
+        action: "Frag dich kurz: 'Warte ich gerade auf frische Bestätigung?'",
+        why: "Bevor Confidence verinnerlichter werden kann, musst du die Abhängigkeit von neuem Signal sichtbar machen.",
+        explanation: "Der Bestätigungszug ist oft leise: noch kurz abwarten, noch ein gutes Gefühl brauchen, noch eine gelungene Szene, noch ein kleines äußeres Okay. Genau das markierst du heute.",
+        self_talk: "Bestätigungszug?",
+        micro_reframe: "Das Problem ist nicht fehlende Bestätigung — das Problem ist, wenn mein System sie ständig neu verlangt.",
+        reframe_step: {
+          trigger: "Ich merke, dass ich auf äußeres oder inneres Signal warte.",
+          reframe: "Bevor ich weiter in Signal-Suche bleibe, mache ich die Abhängigkeit sichtbar.",
+          anchor: "Bestätigungszug?"
+        },
+        system_function: "Proof Dependence Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d54-t2",
+        title: "Hol die innere Basis zurück",
+        trigger: "Nachdem du den Bestätigungszug erkannt hast",
+        when_to_use: "Direkt danach, bevor du weiter auf Signal wartest",
+        action: "Erinnere bewusst, was in dir schon gilt, auch ohne neues äußeres Zeichen.",
+        why: "Hier wird Confidence innerlicher statt signalabhängiger.",
+        explanation: "Es geht nicht um Mantra oder künstlichen Selbstglauben. Es geht darum, wieder auf das zurückzugehen, was schon da ist: Standard, Aufbau, Training, getragene Linien, verinnerlichte Substanz.",
+        self_talk: "Innere Basis.",
+        micro_reframe: "Sicherheit wird reifer, wenn sie nicht jedes Mal neu bewiesen werden muss.",
+        reframe_step: {
+          trigger: "Ich habe den Bestätigungszug erkannt.",
+          reframe: "Jetzt hole ich nicht neues Signal, sondern meine vorhandene Basis zurück.",
+          anchor: "Innere Basis."
+        },
+        system_function: "Internal Confidence Recall",
+        icon: "Compass"
+      },
+      {
+        id: "d54-t3",
+        title: "Handle aus Substanz",
+        trigger: "Wenn deine innere Basis wieder klarer ist",
+        when_to_use: "In der direkt nächsten Handlung",
+        action: "Frag dich: 'Wie sieht meine nächste Handlung aus, wenn ich keinen frischen Beweis brauche?' und setze genau diese.",
+        why: "Tag 54 wird erst real, wenn verinnerlichte Confidence verhaltenswirksam wird.",
+        explanation: "Nicht blind. Nicht überheblich. Nicht gelöst von Realität. Sondern ruhig, standardtreu und aus vorhandener Substanz.",
+        self_talk: "Aus Substanz.",
+        micro_reframe: "Ich brauche keinen frischen Beweis, um die nächste saubere Handlung zu setzen.",
+        reframe_step: {
+          trigger: "Meine innere Basis ist wieder vorne.",
+          reframe: "Jetzt handle ich nicht aus Signal-Suche, sondern aus vorhandener Substanz.",
+          anchor: "Aus Substanz."
+        },
+        system_function: "Internalized Confidence Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo wollte mein System heute frische Bestätigung — und wo brauchte ich sie nicht mehr?",
+      questions: [
+        { id: "d54-j1", question: "In welchem Moment war mein Bestätigungszug heute am stärksten?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d54-j2", question: "Woran habe ich gemerkt, dass mein System Sicherheit aus einem neuen äußeren Signal ziehen wollte?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d54-j3", question: "Welche innere Basis habe ich bewusst zurückgeholt?", placeholder: "Was galt in dir schon, auch ohne neues Signal?" },
+        { id: "d54-j4", question: "Wie hat sich meine nächste Handlung verändert, als ich keinen frischen Beweis mehr verlangt habe?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, bei der heute keine klare Bestätigung kam, 1 Sache, die in dir trotzdem schon gegolten hat, und 1 Sache, die dir gezeigt hat, dass Sicherheit ruhiger wird, wenn sie nicht dauernd neu bewiesen werden muss.",
+      free_reflection_prompt: "Was zeigt mir das darüber, wie sehr meine Confidence schon aus verinnerlichter Substanz statt aus frischer Rückversicherung lebt?"
+    },
+    gratitude_prompt: "Welche Szene heute hat mir gezeigt, dass Sicherheit auch ohne neues Signal verfügbar bleiben kann?",
+    self_talk_anchors: [
+      { text: "Bestätigungszug?", when: "Wenn du auf neues Signal wartest" },
+      { text: "Innere Basis.", when: "Wenn du Confidence zurück nach innen holst" },
+      { text: "Aus Substanz.", when: "In der nächsten sauberen Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei neutralen Phasen, fehlendem Feedback, keiner klaren Bestätigung oder offener Szene.",
+      rest: "Sehr stark bei Arbeit ohne Rückmeldung, Gespräch ohne Echo, Aufgabe ohne sofortiges Resultat und neutralem Tag ohne externe Bestätigung.",
+      match: "Maximal relevant: nicht nach der letzten Szene leben, nicht auf frischen Beweis warten, aus verinnerlichter Substanz weiterhandeln."
+    }
+  },
+  {
+    day_id: 55,
+    title: "Höchste Qualität ohne Selbstprojekt",
+    phase: "Phase IV — Verkörperung und Identität",
+    week: 8,
+    line: "Ego vs Inner Excellence",
+    lens: "Ich kann höchste Qualität anstreben, ohne dass Anspruch und Leistung wieder zu einem Projekt über mich werden.",
+    primary_mechanism: "Excellence Without Ego Add-On",
+    today_trigger: "Sobald reale Momente auftauchen, in denen Qualität zählt — wichtige Wiederholung, technische Ausführung, sichtbare Szene, Verantwortungsmoment, führende Rolle oder etwas, das du wirklich gut machen willst — ist der Tag aktiv.",
+    core_shift: "Heute verschiebst du dich von hoher Qualität mit Ego-Zusatz zu hoher Qualität als reine, dienliche Exzellenz.",
+    science_bite: "Das Problem ist nicht hoher Anspruch. Das Problem ist: Ego klebt sich an Qualität und macht sie wieder zu einem Selbstprojekt. Dann wird Leistung enger, selbstbezogener, härter, weniger frei, weniger dienlich und weniger wirklich exzellent. Tag 55 greift genau das an. Nicht weniger Qualität. Reinere Qualität.",
+    tasks: [
+      {
+        id: "d55-t1",
+        title: "Erkenne den Beweiszug in hoher Qualität",
+        trigger: "Wenn du etwas wirklich gut machen willst und merkst, dass Anspruch sich mit Selbstbeweis mischt",
+        when_to_use: "Bei wichtiger Wiederholung, technischer Ausführung, sichtbarer Szene, Verantwortung, Führung, relevanter Aufgabe oder anspruchsvoller Alltagsleistung",
+        action: "Frag dich kurz: 'Will ich hier gerade nur Qualität — oder auch ein Projekt über mich daraus machen?'",
+        why: "Bevor Exzellenz von Ego gereinigt werden kann, musst du merken, wann hoher Anspruch wieder auf Selbstbild kippt.",
+        explanation: "Nicht jeder hohe Anspruch ist rein. Manchmal hängt still mit drin: ich will zeigen, ich will beweisen, ich will mich darin sehen, ich will, dass das etwas über mich sagt. Genau diesen Zusatz machst du heute sichtbar.",
+        self_talk: "Qualität oder Selbstprojekt?",
+        micro_reframe: "Hoher Anspruch ist nicht das Problem — die Rückbiegung auf mein Selbst ist das Problem.",
+        reframe_step: {
+          trigger: "Ich will etwas wirklich gut machen.",
+          reframe: "Bevor ich mich darin verliere, prüfe ich, ob sich Qualität gerade mit Selbstprojekt vermischt.",
+          anchor: "Qualität oder Selbstprojekt?"
+        },
+        system_function: "Ego Add-On Awareness",
+        icon: "Eye"
+      },
+      {
+        id: "d55-t2",
+        title: "Reinige den Anspruch",
+        trigger: "Nachdem du den Ego-Zusatz erkannt hast",
+        when_to_use: "Direkt vor der relevanten Qualitäts-Handlung",
+        action: "Frag dich: 'Wie sieht höchste Qualität hier aus, wenn sie wirklich der Aufgabe dient?'",
+        why: "Tag 55 ist die reifste Form der Ego-Linie: nicht weniger Qualität, sondern gereinigte Qualität.",
+        explanation: "Du nimmst den Anspruch nicht raus. Du reinigst nur den Zusatz. Qualität bleibt hoch. Aber sie wird sauberer, freier, weniger selbstbesessen und mehr an Aufgabe, Präzision und Dienst gebunden.",
+        self_talk: "Reine Qualität.",
+        micro_reframe: "Die höchste Form des Systems ist nicht weniger Qualität, sondern reinere Qualität.",
+        reframe_step: {
+          trigger: "Ich habe gemerkt, dass hoher Anspruch wieder auf mich kippt.",
+          reframe: "Jetzt richte ich höchste Qualität zurück auf Aufgabe und saubere Exzellenz.",
+          anchor: "Reine Qualität."
+        },
+        system_function: "Excellence Purification",
+        icon: "Compass"
+      },
+      {
+        id: "d55-t3",
+        title: "Setze volle Qualität ohne Showzug",
+        trigger: "Wenn der gereinigte Anspruch wieder klarer ist",
+        when_to_use: "In der direkt nächsten relevanten Handlung",
+        action: "Setze höchste verfügbare Qualität — ohne Showzug, ohne Beweisdrang, ohne fürs Bild zu spielen.",
+        why: "Tag 55 wirkt erst dann vollständig, wenn Anspruch hoch bleibt und Ego-Zusatz im Verhalten kleiner wird.",
+        explanation: "Das ist die reifste Form dieser Linie: volle Qualität, volle Präzision, voller Ernst — aber nicht fürs Bild, nicht für Show, nicht für Selbstaufwertung. Exzellenz direkt an Aufgabe gebunden.",
+        self_talk: "Volle Qualität, kein Zusatz.",
+        micro_reframe: "Ich kann höchste Qualität setzen, ohne daraus ein Beweisprojekt über mich zu machen.",
+        reframe_step: {
+          trigger: "Meine Qualitäts-Handlung ist klar.",
+          reframe: "Jetzt setze ich sie voll — aber ohne Extra-Show, ohne Ego-Zusatz, ohne Selbstprojekt.",
+          anchor: "Volle Qualität, kein Zusatz."
+        },
+        system_function: "Pure Excellence Action",
+        icon: "ArrowRightCircle"
+      }
+    ],
+    journal: {
+      title: "Wo wollte Qualität heute wieder zum Selbstprojekt werden — und wo nicht?",
+      questions: [
+        { id: "d55-j1", question: "In welcher Qualitäts-Szene war mein Anspruch heute am höchsten?", placeholder: "Beschreibe die Situation konkret." },
+        { id: "d55-j2", question: "Woran habe ich gemerkt, dass sich Anspruch oder Leistung wieder an mein Selbstbild kleben wollten?", placeholder: "Was war innerlich spürbar?" },
+        { id: "d55-j3", question: "Wie habe ich hohe Qualität wieder auf Aufgabe statt auf Selbstprojekt ausgerichtet?", placeholder: "Was war dein innerer Shift?" },
+        { id: "d55-j4", question: "Wo ist es mir gelungen, volle Qualität ohne Showzug, Beweisdrang oder Bildspiel zu setzen?", placeholder: "Beschreibe die Handlung." }
+      ],
+      gratitude_instruction: "Schreibe 5 Dinge auf, für die du heute dankbar bist. Mindestens 1 Sache, in der heute Qualität wirklich gezählt hat, 1 Sache, in der der Beweiszug kleiner wurde, und 1 Sache, die dir gezeigt hat, dass Exzellenz reiner werden kann, ohne niedriger zu werden.",
+      free_reflection_prompt: "Was zeigt mir dieser Tag darüber, wie viel Ego-Zusatz noch an meiner Qualität klebt — und wie rein Exzellenz schon werden kann?"
+    },
+    gratitude_prompt: "Welche Qualitäts-Szene heute hat mir gezeigt, dass höchste Qualität nicht automatisch Selbstprojekt werden muss?",
+    self_talk_anchors: [
+      { text: "Qualität oder Selbstprojekt?", when: "Wenn hoher Anspruch auftaucht" },
+      { text: "Reine Qualität.", when: "Wenn du den Anspruch reinigst" },
+      { text: "Volle Qualität, kein Zusatz.", when: "In der sichtbaren Exzellenz-Handlung" }
+    ],
+    variants: {
+      training: "Ideal bei wichtiger Wiederholung, technischer Ausführung, sichtbarer Szene, Verantwortungsmoment oder führender Rolle.",
+      rest: "Sehr stark bei Arbeit mit Sorgfalt, präziser Entscheidung, Gespräch mit echter Präsenz oder etwas ordentlich und ernsthaft tun, ohne es fürs Bild zu tun.",
+      match: "Hier maximal relevant: Qualität hoch halten, kein Showzug, kein Beweisdrang, nicht fürs Bild spielen, Exzellenz direkt an Aufgabe binden."
+    }
   }
+
 ];
