@@ -155,7 +155,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       return;
     }
 
-    setStep(4);
+    setStep(5);
   };
 
   const handleComprehensionComplete = async (
@@ -172,7 +172,58 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         status: "completed",
       });
     }
-    setStep(3);
+    setStep(4);
+  };
+
+  const ScienceBiteIntro = () => {
+    const bite = resolved?.content.scienceBite.fact ?? "";
+    const [headline, ...body] = bite.split("\n\n").filter(Boolean);
+
+    return (
+      <motion.div
+        key="science-intro"
+        initial={{ opacity: 0, scale: 0.96, y: 24 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: -16 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="min-h-[calc(100vh-11rem)] flex flex-col justify-center"
+      >
+        {loadingTasks ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+        ) : (
+          <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
+            <div className="p-5 border-b border-border/50 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Science Bite</p>
+                <h2 className="font-heading text-2xl font-bold leading-tight">{headline}</h2>
+              </div>
+              <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                <Brain className="w-5 h-5 text-primary" />
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {body.map((paragraph, index) => (
+                <p key={index} className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+
+            <div className="p-5 pt-0">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setStep(1)}
+                className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
+              >
+                Verstanden <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    );
   };
 
   // ─── Knowledge Bite Card (Science Bite + Why per Task) ───
@@ -266,7 +317,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         <motion.button
           whileHover={allRead ? { scale: 1.02 } : {}}
           whileTap={allRead ? { scale: 0.98 } : {}}
-          onClick={() => allRead && setStep(1)}
+          onClick={() => allRead && setStep(2)}
           disabled={!allRead}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
             allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
