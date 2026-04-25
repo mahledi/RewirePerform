@@ -486,13 +486,22 @@ const Dashboard = () => {
     return () => window.removeEventListener("focus", handleFocus);
   }, [setupMode, loading, user?.id]);
 
-  const syncTasks = async () => {
+  // Speichert das Wettkampfziel. Früher wurde hier ein KI-Sync getriggert; seit der Matrix-Architektur
+  // sind die Tagesinhalte deterministisch — diese Funktion speichert ausschließlich den zeitlichen Anker.
+  const saveCompetitionGoal = async () => {
     if (!user?.id) {
       toast.error("Bitte melde dich an.");
       return;
     }
     setSyncing(true);
     try {
+      const normalizedCompetitionDate = normalizeDateString(competitionDate);
+      if (competitionDate && !normalizedCompetitionDate) {
+        toast.error("Wettkampfdatum hat ein ungültiges Format. Bitte korrigieren.");
+        setSyncing(false);
+        return;
+      }
+
       const { data: existing } = await supabase
         .from("program_settings")
         .select("id")
@@ -501,7 +510,7 @@ const Dashboard = () => {
 
       if (existing) {
         await supabase.from("program_settings").update({
-          competition_date: competitionDate || null,
+          competition_date: normalizedCompetitionDate,
           competition_name: competitionName || null,
           updated_at: new Date().toISOString(),
         }).eq("id", existing.id);
@@ -509,12 +518,12 @@ const Dashboard = () => {
         await supabase.from("program_settings").insert({
           session_id: user!.id,
           user_id: user!.id,
-          competition_date: competitionDate || null,
+          competition_date: normalizedCompetitionDate,
           competition_name: competitionName || null,
           program_start: format(new Date(), "yyyy-MM-dd"),
         });
       }
-      toast.success("Programm aktualisiert.");
+      toast.success("Wettkampfziel gespeichert.");
     } catch (err: any) {
       console.error("Update error:", err);
       toast.error(`Fehler: ${err?.message || "Unbekannter Fehler"}`);
