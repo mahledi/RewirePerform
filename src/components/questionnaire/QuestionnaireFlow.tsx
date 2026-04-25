@@ -38,6 +38,8 @@ const QuestionnaireFlow = ({
   });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const draftIdRef = useRef<string | null>(draftId);
+  const isSavingRef = useRef<boolean>(false);
+  const pendingSaveRef = useRef<{ answers: Record<string, string | string[] | number>; categoryIndex: number; silent: boolean } | null>(null);
 
   const orderedQuestions = useMemo(() => {
     return categories.flatMap((cat) => getQuestionsByCategory(cat.id));
