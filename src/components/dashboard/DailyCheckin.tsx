@@ -98,6 +98,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
   const saveCheckin = async () => {
     if (!user?.id) return;
+    if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
