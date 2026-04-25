@@ -10,6 +10,7 @@ import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
+import { normalizeDateString } from "@/lib/utils";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -113,9 +114,14 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       .eq("user_id", user!.id)
       .maybeSingle();
 
+    const normalizedCompetitionDate = normalizeDateString(competitionDate);
+    if (competitionDate && !normalizedCompetitionDate) {
+      toast.error("Wettkampfdatum hat ein ungültiges Format und wurde ignoriert.");
+    }
+
     if (existing) {
       await supabase.from("program_settings").update({
-        competition_date: competitionDate || null,
+        competition_date: normalizedCompetitionDate,
         competition_name: competitionName || null,
         program_start: format(today, "yyyy-MM-dd"),
         updated_at: new Date().toISOString(),
@@ -124,7 +130,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       await supabase.from("program_settings").insert({
         session_id: user!.id,
         user_id: user!.id,
-        competition_date: competitionDate || null,
+        competition_date: normalizedCompetitionDate,
         competition_name: competitionName || null,
         program_start: format(today, "yyyy-MM-dd"),
       });
@@ -480,13 +486,22 @@ const Dashboard = () => {
     return () => window.removeEventListener("focus", handleFocus);
   }, [setupMode, loading, user?.id]);
 
-  const syncTasks = async () => {
+  // Speichert das Wettkampfziel. Früher wurde hier ein KI-Sync getriggert; seit der Matrix-Architektur
+  // sind die Tagesinhalte deterministisch — diese Funktion speichert ausschließlich den zeitlichen Anker.
+  const saveCompetitionGoal = async () => {
     if (!user?.id) {
       toast.error("Bitte melde dich an.");
       return;
     }
     setSyncing(true);
     try {
+      const normalizedCompetitionDate = normalizeDateString(competitionDate);
+      if (competitionDate && !normalizedCompetitionDate) {
+        toast.error("Wettkampfdatum hat ein ungültiges Format. Bitte korrigieren.");
+        setSyncing(false);
+        return;
+      }
+
       const { data: existing } = await supabase
         .from("program_settings")
         .select("id")
@@ -495,7 +510,7 @@ const Dashboard = () => {
 
       if (existing) {
         await supabase.from("program_settings").update({
-          competition_date: competitionDate || null,
+          competition_date: normalizedCompetitionDate,
           competition_name: competitionName || null,
           updated_at: new Date().toISOString(),
         }).eq("id", existing.id);
@@ -503,12 +518,12 @@ const Dashboard = () => {
         await supabase.from("program_settings").insert({
           session_id: user!.id,
           user_id: user!.id,
-          competition_date: competitionDate || null,
+          competition_date: normalizedCompetitionDate,
           competition_name: competitionName || null,
           program_start: format(new Date(), "yyyy-MM-dd"),
         });
       }
-      toast.success("Programm aktualisiert.");
+      toast.success("Wettkampfziel gespeichert.");
     } catch (err: any) {
       console.error("Update error:", err);
       toast.error(`Fehler: ${err?.message || "Unbekannter Fehler"}`);
@@ -730,14 +745,14 @@ const Dashboard = () => {
                     className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mb-4">Änderungen werden beim nächsten KI-Sync wirksam.</p>
+                <p className="text-xs text-muted-foreground mb-4">Wettkampfziel wird gespeichert. Es dient als zeitlicher Anker im Programm.</p>
                 <button
-                  onClick={syncTasks}
+                  onClick={saveCompetitionGoal}
                   disabled={syncing}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all disabled:opacity-50"
                 >
-                  <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
-                  {syncing ? "KI passt an..." : "Programm anpassen"}
+                  {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {syncing ? "Speichert..." : "Speichern"}
                 </button>
               </div>
             </motion.div>
@@ -1068,7 +1083,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-3 text-center">
-                      Nach Änderungen → <button onClick={syncTasks} className="text-primary underline">KI-Sync</button> drücken
+                      Änderungen am Kalender werden automatisch übernommen.
                     </p>
                   </motion.div>
                 )}

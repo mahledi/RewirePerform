@@ -300,6 +300,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          position: string | null
           sport: string | null
           team: string | null
           updated_at: string
@@ -308,6 +309,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          position?: string | null
           sport?: string | null
           team?: string | null
           updated_at?: string
@@ -316,6 +318,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          position?: string | null
           sport?: string | null
           team?: string | null
           updated_at?: string

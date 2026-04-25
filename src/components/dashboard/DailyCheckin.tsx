@@ -70,7 +70,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("sport, team")
+      .select("sport, position, team")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -79,7 +79,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       date,
       contextType: eventType,
       sport: profile?.sport ?? null,
-      position: profile?.team ?? null,
+      // Bevorzuge das neue, semantisch korrekte Feld; Fallback auf Legacy-Feld für ältere Profile.
+      position: profile?.position ?? profile?.team ?? null,
     });
 
     if (result) {
@@ -97,6 +98,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
   const saveCheckin = async () => {
     if (!user?.id) return;
+    if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
@@ -515,20 +517,21 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               ))}
             </div>
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={!saving ? { scale: 1.02 } : undefined}
+              whileTap={!saving ? { scale: 0.98 } : undefined}
               onClick={() => {
+                if (saving) return;
                 if (step === 4) saveCheckin();
                 else if (step === 2 && completedTasks.length > 0) setStep(3);
               }}
-              disabled={step === 2 && completedTasks.length === 0}
+              disabled={saving || (step === 2 && completedTasks.length === 0)}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                step === 2 && completedTasks.length === 0
+                saving || (step === 2 && completedTasks.length === 0)
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 4 ? (<>{saving ? "Speichert..." : "Abschließen"}<Check className="w-4 h-4" /></>) : step === 2 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 4 ? (<>{saving ? <><Loader2 className="w-4 h-4 animate-spin" />Speichert...</> : <>Abschließen<Check className="w-4 h-4" /></>}</>) : step === 2 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>

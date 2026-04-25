@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -53,6 +54,48 @@ const Settings = () => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [sending, setSending] = useState(false);
 
+  // Profil: Sport + Position (Position ersetzt das alte Misuse von "team")
+  const [sport, setSport] = useState("");
+  const [position, setPosition] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("sport, position, team")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) {
+        setSport(data.sport ?? "");
+        // Fallback auf Legacy-"team"-Feld, falls position noch leer ist
+        setPosition(data.position ?? data.team ?? "");
+      }
+      setProfileLoading(false);
+    };
+    loadProfile();
+  }, [user]);
+
+  const saveProfile = async () => {
+    if (!user) return;
+    setSavingProfile(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        sport: sport.trim() || null,
+        position: position.trim() || null,
+      })
+      .eq("id", user.id);
+    setSavingProfile(false);
+    if (error) {
+      toast.error("Profil konnte nicht gespeichert werden.");
+    } else {
+      toast.success("Profil gespeichert.");
+    }
+  };
+
   const handleFeedback = async () => {
     if (!feedbackMessage.trim() || !user) return;
     if (feedbackMessage.trim().length < 5) {
@@ -93,6 +136,47 @@ const Settings = () => {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* Profil: Sport & Position */}
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-primary" />
+              <h2 className="font-heading font-semibold text-lg">Dein Profil</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Sport und Position helfen uns, dein Mentaltraining auf deine Rolle zuzuschneiden.
+            </p>
+            {profileLoading ? (
+              <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Sportart</label>
+                  <Input
+                    value={sport}
+                    onChange={(e) => setSport(e.target.value)}
+                    placeholder="z.B. Fußball, Basketball, Leichtathletik"
+                    className="bg-secondary/50 border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Position / Rolle</label>
+                  <Input
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
+                    placeholder="z.B. Stürmer, Point Guard, Sprinter"
+                    className="bg-secondary/50 border-border"
+                  />
+                </div>
+                <Button onClick={saveProfile} disabled={savingProfile} className="w-full">
+                  {savingProfile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Profil speichern
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.section>
+
         {/* Feedback */}
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
