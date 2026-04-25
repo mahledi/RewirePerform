@@ -54,6 +54,48 @@ const Settings = () => {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [sending, setSending] = useState(false);
 
+  // Profil: Sport + Position (Position ersetzt das alte Misuse von "team")
+  const [sport, setSport] = useState("");
+  const [position, setPosition] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("sport, position, team")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data) {
+        setSport(data.sport ?? "");
+        // Fallback auf Legacy-"team"-Feld, falls position noch leer ist
+        setPosition(data.position ?? data.team ?? "");
+      }
+      setProfileLoading(false);
+    };
+    loadProfile();
+  }, [user]);
+
+  const saveProfile = async () => {
+    if (!user) return;
+    setSavingProfile(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        sport: sport.trim() || null,
+        position: position.trim() || null,
+      })
+      .eq("id", user.id);
+    setSavingProfile(false);
+    if (error) {
+      toast.error("Profil konnte nicht gespeichert werden.");
+    } else {
+      toast.success("Profil gespeichert.");
+    }
+  };
+
   const handleFeedback = async () => {
     if (!feedbackMessage.trim() || !user) return;
     if (feedbackMessage.trim().length < 5) {
