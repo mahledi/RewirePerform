@@ -80,12 +80,34 @@ const QuestionnaireFlow = ({
       categoryIndex: number,
       opts: { silent?: boolean } = {}
     ) => {
+      // Mutex: wenn ein Save läuft, jüngsten Stand puffern und am Ende einmal nachreichen.
+      if (isSavingRef.current) {
+        pendingSaveRef.current = { answers: currentAnswers, categoryIndex, silent: !!opts.silent };
+        return;
+      }
+      isSavingRef.current = true;
       if (!opts.silent) setSaveState("saving");
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           setSaveState("error");
           return;
+        }
+
+        // Falls noch keine draftId bekannt: prüfen ob es schon einen offenen Draft gibt
+        // (z.B. parallele Sessions / weiterer Tab) und den verwenden statt neuen einzufügen.
+        if (!draftIdRef.current) {
+          const { data: existing } = await supabase
+            .from("questionnaire_responses")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("is_complete", false)
+            .order("progress_updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (existing?.id) {
+            draftIdRef.current = existing.id;
+          }
         }
 
         if (draftIdRef.current) {
@@ -110,8 +132,33 @@ const QuestionnaireFlow = ({
             })
             .select("id")
             .single();
-          if (error) throw error;
-          draftIdRef.current = data.id;
+          if (error) {
+            // Race-Fallback: wenn parallel ein Draft entstanden ist (Unique-Index hat zugeschlagen),
+            // jetzt nachladen und in den Update-Pfad wechseln.
+            const { data: rescued } = await supabase
+              .from("questionnaire_responses")
+              .select("id")
+              .eq("user_id", user.id)
+              .eq("is_complete", false)
+              .order("progress_updated_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (rescued?.id) {
+              draftIdRef.current = rescued.id;
+              await supabase
+                .from("questionnaire_responses")
+                .update({
+                  answers: currentAnswers as any,
+                  last_category_index: categoryIndex,
+                  progress_updated_at: new Date().toISOString(),
+                })
+                .eq("id", rescued.id);
+            } else {
+              throw error;
+            }
+          } else {
+            draftIdRef.current = data.id;
+          }
         }
         setSaveState("saved");
         if (!opts.silent) {
@@ -120,6 +167,15 @@ const QuestionnaireFlow = ({
       } catch (err) {
         console.error("Save draft error:", err);
         setSaveState("error");
+      } finally {
+        isSavingRef.current = false;
+        // Pending Save nachreichen, falls in der Zwischenzeit eine neuere Version aufgelaufen ist.
+        const pending = pendingSaveRef.current;
+        pendingSaveRef.current = null;
+        if (pending) {
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          saveDraft(pending.answers, pending.categoryIndex, { silent: pending.silent });
+        }
       }
     },
     []
