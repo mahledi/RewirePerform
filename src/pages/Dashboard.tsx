@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen } from "lucide-react";
+import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen, Hourglass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
 import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -315,6 +316,8 @@ const Dashboard = () => {
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const [baselineDone, setBaselineDone] = useState(false);
   const [retestDone, setRetestDone] = useState(false);
+  const [waitingForCoach, setWaitingForCoach] = useState(false);
+  const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
@@ -347,11 +350,26 @@ const Dashboard = () => {
     const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
     const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
 
-    const [{ data: eventData }, { data: settingsArr }] = await Promise.all([
+    const [{ data: eventData }, { data: settingsArr }, effective] = await Promise.all([
       eventsQuery,
       settingsQuery,
+      getEffectiveProgramStart(user!.id),
     ]);
     const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
+
+    // Athleten in einem Team warten auf Coach-Aktivierung
+    if (effective.hasTeam) {
+      setTeamProgramStart(effective.source === "team" ? effective.startDate : null);
+      const today = format(new Date(), "yyyy-MM-dd");
+      const notStartedYet =
+        !effective.startDate || effective.startDate > today;
+      if (notStartedYet) {
+        setWaitingForCoach(true);
+        setLoading(false);
+        return;
+      }
+      setWaitingForCoach(false);
+    }
 
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
@@ -361,7 +379,12 @@ const Dashboard = () => {
       }
       setSetupMode(false);
     } else {
-      setSetupMode(true);
+      // Team-Mitglieder bekommen keinen eigenen Setup-Flow — Coach steuert
+      if (effective.hasTeam) {
+        setSetupMode(false);
+      } else {
+        setSetupMode(true);
+      }
     }
     setLoading(false);
   };
@@ -545,6 +568,87 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (waitingForCoach) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              <span className="font-heading font-bold">MindGame</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Einstellungen">
+                <Settings className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={async () => { await signOut(); navigate("/"); }}
+                className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
+                title="Abmelden"
+              >
+                <LogOut className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-xl mx-auto px-6 py-16 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-6 flex items-center justify-center"
+          >
+            <Hourglass className="w-10 h-10 text-primary" />
+          </motion.div>
+          <h1 className="font-heading text-2xl md:text-3xl font-bold mb-3">
+            Dein Coach hat das Programm noch nicht gestartet.
+          </h1>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+            Sobald alle Spieler registriert sind, gibt dein Coach das Programm frei.
+          </p>
+
+          {teamProgramStart && (
+            <div className="mb-8 p-4 rounded-2xl bg-primary/10 border border-primary/30 inline-flex items-center gap-2 text-primary">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm font-semibold">
+                Start: {format(new Date(teamProgramStart), "d. MMMM yyyy", { locale: de })}
+              </span>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate("/questionnaire")}
+              className="w-full p-4 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-3">
+                <ClipboardCheck className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-heading font-semibold">Onboarding-Fragebogen</p>
+                  <p className="text-xs text-muted-foreground">Falls noch nicht ausgefüllt</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => navigate("/settings")}
+              className="w-full p-4 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm font-heading font-semibold">Einstellungen & FAQ</p>
+                  <p className="text-xs text-muted-foreground">App erkunden</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

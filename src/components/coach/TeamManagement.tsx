@@ -2,13 +2,28 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Copy, Loader2, Share2, MessageCircle } from "lucide-react";
+import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck } from "lucide-react";
+import { addDays, format, parseISO } from "date-fns";
+import { de } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Team {
   id: string;
   name: string;
   sport: string | null;
   access_code: string;
+  program_start_date?: string | null;
+  program_activated_at?: string | null;
 }
 
 interface TeamManagementProps {
@@ -84,6 +99,29 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     toast.success("Zugangscode kopiert!");
   };
 
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+
+  const activateProgram = async (team: Team) => {
+    if (!user) return;
+    setActivatingId(team.id);
+    const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+    const { error } = await supabase
+      .from("teams")
+      .update({
+        program_start_date: tomorrow,
+        program_activated_by: user.id,
+        program_activated_at: new Date().toISOString(),
+      })
+      .eq("id", team.id);
+    setActivatingId(null);
+    if (error) {
+      toast.error("Programm konnte nicht gestartet werden: " + error.message);
+    } else {
+      toast.success(`Programm startet am ${format(addDays(new Date(), 1), "d. MMMM yyyy", { locale: de })}`);
+      onTeamCreated();
+    }
+  };
+
   return (
     <div className="space-y-4">
       {teams.map((team) => (
@@ -129,6 +167,50 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
           <p className="text-[11px] text-muted-foreground mt-2 text-center">
             Teile diesen Code mit deinen Sportlern
           </p>
+
+          {/* Program Start Activation */}
+          <div className="mt-4 pt-4 border-t border-border/50">
+            {team.program_start_date ? (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 text-primary text-sm">
+                <CalendarCheck className="w-4 h-4 shrink-0" />
+                <span className="font-medium">
+                  Programm startet am {format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}
+                </span>
+              </div>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    disabled={activatingId === team.id}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:shadow-glow transition-all disabled:opacity-50"
+                  >
+                    {activatingId === team.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Rocket className="w-4 h-4" />
+                        Programm starten
+                      </>
+                    )}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Programm starten?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Das Programm startet morgen für alle registrierten Spieler. Bist du sicher?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => activateProgram(team)}>
+                      Ja, Programm starten
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </div>
       ))}
 
