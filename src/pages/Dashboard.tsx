@@ -350,11 +350,26 @@ const Dashboard = () => {
     const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
     const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
 
-    const [{ data: eventData }, { data: settingsArr }] = await Promise.all([
+    const [{ data: eventData }, { data: settingsArr }, effective] = await Promise.all([
       eventsQuery,
       settingsQuery,
+      getEffectiveProgramStart(user!.id),
     ]);
     const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
+
+    // Athleten in einem Team warten auf Coach-Aktivierung
+    if (effective.hasTeam) {
+      setTeamProgramStart(effective.source === "team" ? effective.startDate : null);
+      const today = format(new Date(), "yyyy-MM-dd");
+      const notStartedYet =
+        !effective.startDate || effective.startDate > today;
+      if (notStartedYet) {
+        setWaitingForCoach(true);
+        setLoading(false);
+        return;
+      }
+      setWaitingForCoach(false);
+    }
 
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
@@ -364,7 +379,12 @@ const Dashboard = () => {
       }
       setSetupMode(false);
     } else {
-      setSetupMode(true);
+      // Team-Mitglieder bekommen keinen eigenen Setup-Flow — Coach steuert
+      if (effective.hasTeam) {
+        setSetupMode(false);
+      } else {
+        setSetupMode(true);
+      }
     }
     setLoading(false);
   };
