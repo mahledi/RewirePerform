@@ -14,6 +14,8 @@ interface Team {
   name: string;
   sport: string | null;
   access_code: string;
+  program_start_date: string | null;
+  program_activated_at: string | null;
 }
 
 const Coach = () => {
@@ -28,7 +30,7 @@ const Coach = () => {
     if (!user) return;
     const { data } = await supabase
       .from("teams")
-      .select("id, name, sport, access_code")
+      .select("id, name, sport, access_code, program_start_date, program_activated_at")
       .eq("created_by", user.id);
     const teamList = (data ?? []) as Team[];
     setTeams(teamList);
