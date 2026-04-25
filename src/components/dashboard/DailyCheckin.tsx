@@ -70,7 +70,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("sport, team")
+      .select("sport, position, team")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -79,7 +79,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       date,
       contextType: eventType,
       sport: profile?.sport ?? null,
-      position: profile?.team ?? null,
+      // Bevorzuge das neue, semantisch korrekte Feld; Fallback auf Legacy-Feld für ältere Profile.
+      position: profile?.position ?? profile?.team ?? null,
     });
 
     if (result) {
