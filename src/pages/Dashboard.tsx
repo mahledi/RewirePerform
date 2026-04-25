@@ -316,6 +316,8 @@ const Dashboard = () => {
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const [baselineDone, setBaselineDone] = useState(false);
   const [retestDone, setRetestDone] = useState(false);
+  const [waitingForCoach, setWaitingForCoach] = useState(false);
+  const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
