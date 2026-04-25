@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck } from "lucide-react";
+import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import {
