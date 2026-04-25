@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
