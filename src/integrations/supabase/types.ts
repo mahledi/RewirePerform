@@ -364,6 +364,9 @@ export type Database = {
           answers: Json
           created_at: string
           id: string
+          is_complete: boolean
+          last_category_index: number
+          progress_updated_at: string
           session_id: string
           user_id: string | null
         }
@@ -372,6 +375,9 @@ export type Database = {
           answers?: Json
           created_at?: string
           id?: string
+          is_complete?: boolean
+          last_category_index?: number
+          progress_updated_at?: string
           session_id: string
           user_id?: string | null
         }
@@ -380,6 +386,9 @@ export type Database = {
           answers?: Json
           created_at?: string
           id?: string
+          is_complete?: boolean
+          last_category_index?: number
+          progress_updated_at?: string
           session_id?: string
           user_id?: string | null
         }
