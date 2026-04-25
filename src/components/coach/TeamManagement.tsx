@@ -100,9 +100,70 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   };
 
   const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<Record<string, { athleteCount: number; completedCount: number }>>({});
+  const [readinessLoading, setReadinessLoading] = useState(true);
+
+  const loadReadiness = async () => {
+    setReadinessLoading(true);
+    const result: Record<string, { athleteCount: number; completedCount: number }> = {};
+    for (const team of teams) {
+      // 1) Mitglieder des Teams
+      const { data: members } = await supabase
+        .from("team_members")
+        .select("user_id")
+        .eq("team_id", team.id);
+      const memberIds = (members ?? []).map((m) => m.user_id);
+
+      if (memberIds.length === 0) {
+        result[team.id] = { athleteCount: 0, completedCount: 0 };
+        continue;
+      }
+
+      // 2) Nur Athleten herausfiltern (Coach ist auch Mitglied)
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", memberIds);
+      const athleteIds = (roles ?? []).filter((r) => r.role === "athlete").map((r) => r.user_id);
+
+      if (athleteIds.length === 0) {
+        result[team.id] = { athleteCount: 0, completedCount: 0 };
+        continue;
+      }
+
+      // 3) Wer hat den Fragebogen abgeschlossen?
+      const { data: responses } = await supabase
+        .from("questionnaire_responses")
+        .select("user_id, is_complete")
+        .in("user_id", athleteIds)
+        .eq("is_complete", true);
+      const completedIds = new Set((responses ?? []).map((r) => r.user_id));
+
+      result[team.id] = {
+        athleteCount: athleteIds.length,
+        completedCount: athleteIds.filter((id) => completedIds.has(id)).length,
+      };
+    }
+    setReadiness(result);
+    setReadinessLoading(false);
+  };
+
+  useEffect(() => {
+    if (teams.length > 0) loadReadiness();
+    else setReadinessLoading(false);
+  }, [teams]);
 
   const activateProgram = async (team: Team) => {
     if (!user) return;
+    const r = readiness[team.id];
+    if (!r || r.athleteCount === 0) {
+      toast.error("Es sind noch keine Spieler im Team registriert.");
+      return;
+    }
+    if (r.completedCount < r.athleteCount) {
+      toast.error("Es haben noch nicht alle Spieler den Fragebogen abgeschlossen.");
+      return;
+    }
     setActivatingId(team.id);
     const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
     const { error } = await supabase
