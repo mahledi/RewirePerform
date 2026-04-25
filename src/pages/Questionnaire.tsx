@@ -27,14 +27,13 @@ const Questionnaire = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      // Alle offenen Drafts laden, nicht nur den jüngsten — verwaiste Duplikate aufräumen.
+      const { data: openDrafts, error } = await supabase
         .from("questionnaire_responses")
-        .select("id, answers, last_category_index, is_complete")
+        .select("id, answers, last_category_index, progress_updated_at")
         .eq("user_id", user.id)
         .eq("is_complete", false)
-        .order("progress_updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order("progress_updated_at", { ascending: false });
 
       if (error) {
         console.error("Error loading draft:", error);
@@ -42,11 +41,20 @@ const Questionnaire = () => {
         return;
       }
 
-      if (data && data.answers && Object.keys(data.answers as object).length > 0) {
+      const drafts = openDrafts ?? [];
+
+      // Falls aus älteren Race-Conditions Duplikate existieren: alle bis auf den jüngsten löschen.
+      if (drafts.length > 1) {
+        const stale = drafts.slice(1).map((d) => d.id);
+        await supabase.from("questionnaire_responses").delete().in("id", stale);
+      }
+
+      const latest = drafts[0];
+      if (latest && latest.answers && Object.keys(latest.answers as object).length > 0) {
         setDraft({
-          id: data.id,
-          answers: data.answers as Record<string, string | string[] | number>,
-          lastCategoryIndex: data.last_category_index ?? 0,
+          id: latest.id,
+          answers: latest.answers as Record<string, string | string[] | number>,
+          lastCategoryIndex: latest.last_category_index ?? 0,
         });
         setPhase("resume");
       } else {
