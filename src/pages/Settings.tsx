@@ -136,6 +136,47 @@ const Settings = () => {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* Profil: Sport & Position */}
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-primary" />
+              <h2 className="font-heading font-semibold text-lg">Dein Profil</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Sport und Position helfen uns, dein Mentaltraining auf deine Rolle zuzuschneiden.
+            </p>
+            {profileLoading ? (
+              <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Sportart</label>
+                  <Input
+                    value={sport}
+                    onChange={(e) => setSport(e.target.value)}
+                    placeholder="z.B. Fußball, Basketball, Leichtathletik"
+                    className="bg-secondary/50 border-border"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Position / Rolle</label>
+                  <Input
+                    value={position}
+                    onChange={(e) => setPosition(e.target.value)}
+                    placeholder="z.B. Stürmer, Point Guard, Sprinter"
+                    className="bg-secondary/50 border-border"
+                  />
+                </div>
+                <Button onClick={saveProfile} disabled={savingProfile} className="w-full">
+                  {savingProfile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Profil speichern
+                </Button>
+              </div>
+            )}
+          </div>
+        </motion.section>
+
         {/* Feedback */}
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
