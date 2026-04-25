@@ -11,7 +11,7 @@
  */
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
+import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { drawComprehensionQuestions } from "@/content/dailyContent";
 import type { CalendarEventType, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
@@ -42,14 +42,9 @@ export async function ensureAssignment(
 ): Promise<{ assignment: AssignmentRecord; resolved: ResolvedDay } | null> {
   const dateStr = format(input.date, "yyyy-MM-dd");
 
-  // 1) program day berechnen
-  const { data: settings } = await supabase
-    .from("program_settings")
-    .select("program_start")
-    .eq("user_id", input.userId)
-    .maybeSingle();
-
-  const info = getCurrentProgramDay(settings?.program_start ?? null, input.date);
+  // 1) program day berechnen — Team-Start hat Vorrang vor Solo-Start
+  const effective = await getEffectiveProgramStart(input.userId);
+  const info = getCurrentProgramDay(effective.startDate, input.date);
   if (!info) return null;
 
   const resolved = resolveDay(info.dayNumber, input.date, input.contextType, {
