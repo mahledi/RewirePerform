@@ -745,14 +745,14 @@ const Dashboard = () => {
                     className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mb-4">Änderungen werden beim nächsten KI-Sync wirksam.</p>
+                <p className="text-xs text-muted-foreground mb-4">Wettkampfziel wird gespeichert. Es dient als zeitlicher Anker im Programm.</p>
                 <button
-                  onClick={syncTasks}
+                  onClick={saveCompetitionGoal}
                   disabled={syncing}
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all disabled:opacity-50"
                 >
-                  <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
-                  {syncing ? "KI passt an..." : "Programm anpassen"}
+                  {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {syncing ? "Speichert..." : "Speichern"}
                 </button>
               </div>
             </motion.div>
