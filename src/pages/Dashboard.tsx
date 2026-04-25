@@ -1083,7 +1083,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-3 text-center">
-                      Nach Änderungen → <button onClick={syncTasks} className="text-primary underline">KI-Sync</button> drücken
+                      Änderungen am Kalender werden automatisch übernommen.
                     </p>
                   </motion.div>
                 )}
