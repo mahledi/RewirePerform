@@ -114,9 +114,14 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       .eq("user_id", user!.id)
       .maybeSingle();
 
+    const normalizedCompetitionDate = normalizeDateString(competitionDate);
+    if (competitionDate && !normalizedCompetitionDate) {
+      toast.error("Wettkampfdatum hat ein ungültiges Format und wurde ignoriert.");
+    }
+
     if (existing) {
       await supabase.from("program_settings").update({
-        competition_date: competitionDate || null,
+        competition_date: normalizedCompetitionDate,
         competition_name: competitionName || null,
         program_start: format(today, "yyyy-MM-dd"),
         updated_at: new Date().toISOString(),
@@ -125,7 +130,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
       await supabase.from("program_settings").insert({
         session_id: user!.id,
         user_id: user!.id,
-        competition_date: competitionDate || null,
+        competition_date: normalizedCompetitionDate,
         competition_name: competitionName || null,
         program_start: format(today, "yyyy-MM-dd"),
       });
