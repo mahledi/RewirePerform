@@ -230,7 +230,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
           </p>
 
           {/* Program Start Activation */}
-          <div className="mt-4 pt-4 border-t border-border/50">
+          <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             {team.program_start_date ? (
               <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 text-primary text-sm">
                 <CalendarCheck className="w-4 h-4 shrink-0" />
@@ -238,39 +238,85 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                   Programm startet am {format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}
                 </span>
               </div>
-            ) : (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button
-                    disabled={activatingId === team.id}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:shadow-glow transition-all disabled:opacity-50"
-                  >
-                    {activatingId === team.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Rocket className="w-4 h-4" />
-                        Programm starten
-                      </>
-                    )}
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Programm starten?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Das Programm startet morgen für alle registrierten Spieler. Bist du sicher?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => activateProgram(team)}>
-                      Ja, Programm starten
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            ) : (() => {
+              const r = readiness[team.id];
+              const ready = !!r && r.athleteCount > 0 && r.completedCount >= r.athleteCount;
+              const noAthletes = !!r && r.athleteCount === 0;
+              const pending = r ? r.athleteCount - r.completedCount : 0;
+
+              return (
+                <>
+                  {/* Status-Karte: Fragebogen-Fortschritt im Team */}
+                  <div className={`flex items-start gap-2 px-3 py-2.5 rounded-xl text-xs ${
+                    ready ? "bg-primary/10 text-primary" : "bg-secondary/50 text-muted-foreground"
+                  }`}>
+                    <ClipboardCheck className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      {readinessLoading || !r ? (
+                        <span>Lade Fragebogen-Status…</span>
+                      ) : noAthletes ? (
+                        <span>Noch keine Spieler im Team registriert.</span>
+                      ) : (
+                        <>
+                          <span className="font-medium">
+                            Fragebogen: {r.completedCount} / {r.athleteCount} Spieler abgeschlossen
+                          </span>
+                          {!ready && (
+                            <p className="mt-1 text-[11px] opacity-80">
+                              {pending} {pending === 1 ? "Spieler hat" : "Spieler haben"} den Fragebogen noch nicht ausgefüllt.
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {ready ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          disabled={activatingId === team.id}
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:shadow-glow transition-all disabled:opacity-50"
+                        >
+                          {activatingId === team.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Rocket className="w-4 h-4" />
+                              Programm starten
+                            </>
+                          )}
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Programm starten?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Alle {r.athleteCount} Spieler haben den Fragebogen abgeschlossen.
+                            Das Programm startet morgen für dein Team. Bist du sicher?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => activateProgram(team)}>
+                            Ja, Programm starten
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-muted text-muted-foreground font-semibold text-sm cursor-not-allowed"
+                      title="Erst freigeben, wenn alle Spieler den Fragebogen ausgefüllt haben."
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                      {noAthletes ? "Noch keine Spieler" : "Warte auf Fragebögen"}
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       ))}
