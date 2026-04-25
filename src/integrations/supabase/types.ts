@@ -421,6 +421,9 @@ export type Database = {
           created_by: string | null
           id: string
           name: string
+          program_activated_at: string | null
+          program_activated_by: string | null
+          program_start_date: string | null
           sport: string | null
         }
         Insert: {
@@ -429,6 +432,9 @@ export type Database = {
           created_by?: string | null
           id?: string
           name: string
+          program_activated_at?: string | null
+          program_activated_by?: string | null
+          program_start_date?: string | null
           sport?: string | null
         }
         Update: {
@@ -437,9 +443,20 @@ export type Database = {
           created_by?: string | null
           id?: string
           name?: string
+          program_activated_at?: string | null
+          program_activated_by?: string | null
+          program_start_date?: string | null
           sport?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teams_program_activated_by_fkey"
+            columns: ["program_activated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_day_assignments: {
         Row: {
