@@ -10,6 +10,7 @@ import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
+import { normalizeDateString } from "@/lib/utils";
 
 type EventType = "training" | "rest" | "competition";
 
