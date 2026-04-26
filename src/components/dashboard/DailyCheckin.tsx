@@ -57,6 +57,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [assignmentId, setAssignmentId] = useState<string | null>(null);
   const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
   const [comprehensionDone, setComprehensionDone] = useState(false);
+  const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
