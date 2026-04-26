@@ -1,116 +1,155 @@
-# Pre-Launch Bug-Sweep – Plan
+# Micro-Adjustment Layer für Daily Experience
 
-5 Launch-Blocker werden in einer logischen Reihenfolge behoben. Reihenfolge folgt dem Prinzip: **erst die Daten-Integrität sichern, dann UI bereinigen.**
+Ziel: Der Spieler bekommt das Gefühl „das Programm versteht meinen Sport, meine Position, meinen Zustand und meine Muster" — ohne dass die feste 56-Tage-Struktur, Tasks, Journalfragen, Science Bites oder Comprehension Checks verändert werden.
 
-**Geschätzter Gesamtaufwand:** ~4–6 Stunden Implementierung + Test.
+Die bestehende Stub-Funktion `applyMicroAdjustments()` in `src/lib/getDayContent.ts` wird durch einen sauberen, deterministischen Layer ersetzt, der nur **rahmt**, nie überschreibt.
 
----
+## Was gebaut wird
 
-## Reihenfolge & Übersicht
+### 1. Neue Datei `src/lib/microAdjustment.ts`
 
-| # | Bug | Bereich | Aufwand | Risiko bei Nicht-Fix |
-|---|---|---|---|---|
-| 1 | Bug 15 – Position über `profiles.team` | Datenmodell + Profile | ~1.5h | Falsche Personalisierung, Verwirrung mit Coach-Teams |
-| 2 | Bug 5 – Questionnaire Race Condition | Fragebogen-Save | ~1h | Datenverlust in Multi-Tab-Szenarien |
-| 3 | Bug 13 – Check-in doppelt triggerbar | Daily Check-in | ~30min | Doppelte Einträge, Statistik-Verfälschung |
-| 4 | Bug 20 – `competitionDate` Format | Dashboard-Settings | ~45min | DB-Fehler bei ungültiger Eingabe, UI-Crash |
-| 5 | Bug 21 – KI-Sync Button irrelevant | Dashboard-UI | ~30min | User-Verwirrung („KI passt an…" passiert nichts mehr) |
+Reine TypeScript-Library, keine API-Calls, keine DB-Calls, keine KI.
 
----
+**Types:**
+```text
+MicroAdjustmentInput {
+  day: { dayNumber, lens, primaryMechanism, recurrenceType, phase }
+  contextType: "training" | "rest" | "competition"
+  profile?: { sport?, position?, fullName? }
+  questionnaireSignals?: {
+    resultFocus?: number        // 0..1
+    selfCriticism?: number
+    judgementFear?: number
+    egoVisibility?: number
+    confidence?: number
+  }
+  checkin?: {
+    mood?: number               // 1..10
+    energy?: number
+    focus?: number
+    stress?: number
+  }
+  recentJournalSignals?: Array<
+    "self_doubt" | "pressure_after_mistake" | "fear_of_judgement"
+    | "low_energy" | "result_focus" | "comparison" | "avoidance"
+    | "frustration_uncontrollable"
+  >
+}
 
-## Bug 1 – Position eigene Spalte (war Bug 15)
+MicroAdjustmentOutput {
+  athleteAddressLine: string        // neutrale Anrede
+  sportExample: string              // 1 Satz Sportbezug, fallback generisch
+  positionExample: string | null    // nur wenn Position bekannt
+  stateEmphasis: string | null      // nur wenn Check-in vorhanden
+  profileEmphasis: string | null    // nur wenn Fragebogensignal stark genug
+  journalPatternEmphasis: string | null  // nur wenn Muster vorhanden
+  microCue: string                  // immer gesetzt, sehr kurz
+}
+```
 
-**Problem:** `DailyCheckin.tsx` Z. 82 nutzt `profile?.team` als Spielposition. Das Feld `profiles.team` ist ein historisches Free-Text-Feld und kollidiert semantisch mit dem neuen Coach-Team-System (`teams`-Tabelle).
+**Funktion:** `buildMicroAdjustmentContext(input): MicroAdjustmentOutput`
 
-**Lösung:**
-- DB-Migration: neue Spalte `profiles.position TEXT NULL`.
-- One-Time Backfill: `UPDATE profiles SET position = team WHERE position IS NULL AND team IS NOT NULL`.
-- Code-Umstellung:
-  - `src/components/dashboard/DailyCheckin.tsx` Z. 73 + 82: `select("sport, position")` und `position: profile?.position ?? null`.
-  - `src/pages/Settings.tsx` (oder wo immer Profil bearbeitet wird) – Eingabefeld „Position" hinzufügen, das auf `position` schreibt.
-- `profiles.team` bleibt vorerst als Legacy-Feld erhalten (kein Drop), nur nicht mehr verwendet.
+Pure, deterministisch, undefined-safe. Jeder fehlende Input → sauberer Fallback (Feld = null oder neutrale Variante). Keine Diagnose-Sprache, kein „du bist jemand, der…", keine Motivationsfloskeln.
 
-**Konkrete Code-Ziele:**
-- `supabase/migrations/<ts>_add_profiles_position.sql`
-- `src/components/dashboard/DailyCheckin.tsx` (Z. 71–83)
-- `src/pages/Settings.tsx` (neuer Profil-Block) – falls noch nicht vorhanden, kleines Profil-Edit-Formular ergänzen
-- `src/integrations/supabase/types.ts` (auto)
+**Rule-based Bausteine (intern, klein gehalten):**
+- `pickSportExample(sport, day.primaryMechanism)` — kleines Mapping für Fußball, Basketball, Tennis, Leichtathletik, sonst generisch.
+- `pickPositionExample(sport, position, day.primaryMechanism)` — Mapping für IV, Stürmer, Mittelfeld, Torwart (Fußball); Guard/Forward/Center (Basketball); sonst null.
+- `pickStateEmphasis(checkin)` — low energy / high stress / low focus / frustration → je 1 vorbereiteter Satz.
+- `pickProfileEmphasis(signals)` — nur das stärkste Signal über Schwellwert wird verwendet (max 1 Satz).
+- `pickJournalEmphasis(patterns)` — nimmt häufigstes Muster, formuliert als „In deinen letzten Reflexionen tauchte häufiger auf: …".
+- `pickMicroCue(day, state)` — kurzer Anker, max 4 Wörter, z. B. „Handlung vor Selbstbewertung", „Nur die nächste", „Direkt zurück".
 
----
+### 2. Neue Komponente `src/components/daily/TodayForYou.tsx`
 
-## Bug 2 – Questionnaire Race Condition (war Bug 5)
+Kleine, ruhige Karte. Zeigt 2–4 kurze Sätze:
 
-**Problem:** `QuestionnaireFlow.tsx` Z. 100–113: Beim ersten Auto-Save wird `INSERT` ohne Idempotenz gemacht. Wenn zwei Tabs/Devices parallel speichern, entstehen Duplikat-Drafts (Unique-Index `WHERE is_complete=false` würde greifen → Fehler im 2. Tab → Datenverlust). Außerdem: `Questionnaire.tsx` Z. 30–37 lädt nur den neuesten Draft, alte verwaiste Drafts bleiben liegen.
+```text
+┌─────────────────────────────────────┐
+│ HEUTE FÜR DICH                      │
+│                                     │
+│ {athleteAddressLine}                │
+│ {sportExample / positionExample}    │
+│ {stateEmphasis | profileEmphasis |  │
+│  journalPatternEmphasis}            │
+│                                     │
+│ Cue: {microCue}                     │
+└─────────────────────────────────────┘
+```
 
-**Lösung:**
-- **Echtes Upsert statt INSERT:** Ersetze den `insert(...).select("id").single()`-Pfad durch ein `upsert(..., { onConflict: "user_id", ignoreDuplicates: false })`-Muster. Dafür braucht es einen Partial-Unique-Index auf `(user_id) WHERE is_complete = false` (Migration 20260425024353 hat ihn bereits).
-- Alternative (sauberer): Vor dem ersten INSERT ein **Pre-Check + Lock** – `select id` mit `is_complete=false`, wenn vorhanden → `draftIdRef = existing.id` setzen und `update` machen.
-- **Mount-Time Cleanup:** In `Questionnaire.tsx` (loadDraft) → wenn mehrere unvollständige Drafts existieren, alle bis auf den jüngsten löschen.
-- **Save-Mutex:** `isSavingRef` einführen, damit parallele `saveDraft`-Aufrufe sequenziell laufen (verhindert Race innerhalb desselben Tabs).
+- Fehlende Felder werden ausgelassen, nicht mit Platzhaltern gefüllt.
+- Keine Icons-Overload, eine kleine `Sparkles`-Markierung reicht.
+- Style entsprechend bestehender `bg-gradient-card border-glow` Karten.
 
-**Konkrete Code-Ziele:**
-- `src/components/questionnaire/QuestionnaireFlow.tsx` (Z. 75–124, `saveDraft`)
-- `src/pages/Questionnaire.tsx` (Z. 22–57, `loadDraft`)
+### 3. Integration in `src/components/dashboard/DailyCheckin.tsx`
 
----
+- In `loadDay()` zusätzlich laden:
+  - aktuellster Eintrag aus `daily_checkins` für heute (mood/energy/focus, falls vorhanden) — graceful, falls keiner existiert.
+  - `questionnaire_responses.analysis` (bereits vorhanden im Dashboard-Flow, hier read-only).
+  - letzte 5 `daily_journals`-Einträge → simple Pattern-Extraktion über Keyword-Matching (Whitelist deutscher/englischer Trigger-Wörter, kein KI-Call). Liefert Liste der `recentJournalSignals`.
+- `buildMicroAdjustmentContext(...)` aufrufen, Ergebnis im State halten.
+- `<TodayForYou />` rendern **oberhalb** des `TaskDashboard` (Step 2 / Aufgaben-Schritt) und im `ScienceBiteIntro` als kleine Vorschau-Zeile (nur `athleteAddressLine`).
+- Kein Eingriff in `tasks`, `journal`, `comprehensionPool`, `scienceBite`.
 
-## Bug 3 – Check-in doppelt triggerbar (war Bug 13)
+### 4. Aufräumen `src/lib/getDayContent.ts`
 
-**Problem:** `DailyCheckin.tsx` Z. 517–532: Der „Abschließen"-Button triggert `saveCheckin()`. Zwischen Klick und `setSaving(true)` (Z. 100) gibt es ein Zeitfenster für Doppel-Klicks. Außerdem keine UI-Disable-Bindung an `saving` für den Button selbst.
+- Bestehende Stub-Funktion `applyMicroAdjustments` bleibt bestehen für Sport-Hints in Task-Detail (nicht entfernen, kein Breaking Change), wird aber **nicht erweitert**.
+- Neue Logik liegt komplett in `microAdjustment.ts` und wird vom Daily-Flow aufgerufen, nicht vom Resolver. So bleibt der Resolver pur.
 
-**Lösung:**
-- `disabled={saving || ...}` direkt am Button-Element ergänzen (Z. 524).
-- `saveCheckin()` mit Guard am Anfang: `if (saving) return;`.
-- Optional: `useRef<boolean>` als zusätzlicher synchroner Lock, da `setSaving` async ist.
+## Was NICHT angefasst wird
 
-**Konkrete Code-Ziele:**
-- `src/components/dashboard/DailyCheckin.tsx` Z. 98–100 (Guard) und Z. 517–532 (disabled-Logik)
+- `src/content/dailyContent.ts`, `src/content/matrixDays.ts`, `src/content/scienceBites.ts`
+- Tasks-Struktur, Journalfragen, Comprehension Pool
+- Day-Assignment-Logik (`dayAssignment.ts`, `getCurrentProgramDay.ts`)
+- Comprehension Check, Completion-Persistenz
+- Coach-Sicht / RLS / Datenbank-Schema (keine Migration)
+- Deep Profile, Settings, Auth, Dashboard-Hauptflow
 
----
+## Datenquellen (nur bestehende)
 
-## Bug 4 – `competitionDate` Format-Validierung (war Bug 20)
+| Quelle | Felder | Fallback |
+|---|---|---|
+| `profiles` | sport, position, full_name | neutrale Anrede |
+| `questionnaire_responses.analysis` | scores, dominant_category | kein Profil-Emphasis |
+| `daily_checkins` (heute) | mood/energy/focus_rating | kein State-Emphasis |
+| `daily_journals` (letzte 5) | reflection/answers Text | keine Journal-Emphasis |
 
-**Problem:** `Dashboard.tsx` schreibt den rohen String aus `<input type="date">` an mehreren Stellen (Z. 118, 127, 498, 506) ohne Validierung in die DB. `<input type="date">` liefert in den meisten Browsern `YYYY-MM-DD`, aber bei Safari iOS / leerer Eingabe / Locale-Edge-Cases gibt's Inkonsistenzen. Anzeige Z. 919 hat zwar `!isNaN()`, das schützt aber nicht den Schreibpfad.
+Pattern-Extraktion aus Journals: einfache Keyword-Whitelist (z. B. „Fehler", „Druck", „Vergleich", „müde", „Ergebnis"). **Kein** AI-Call, **keine** psychologische Interpretation, kein Speichern.
 
-**Lösung:**
-- Helper `normalizeDateString(value: string): string | null` zentral in `src/lib/utils.ts` – akzeptiert `YYYY-MM-DD`, gibt `null` bei ungültig zurück.
-- Alle vier Schreibstellen (`competition_date: competitionDate || null`) auf `normalizeDateString(competitionDate)` umstellen.
-- Zusätzlich: bei Save eine Toast-Warnung, wenn der User etwas eingegeben hat, aber das Format ungültig ist (Edge Case Safari).
+## Beispielausgaben (Tests im Kopf)
 
-**Konkrete Code-Ziele:**
-- `src/lib/utils.ts` (Helper hinzufügen)
-- `src/pages/Dashboard.tsx` Z. 117–131, Z. 489–510
+**Tag 20, Fußball, IV, hoher Stress, Journalmuster Selbstkritik:**
+> Heute geht es um den Moment direkt nach einer unsauberen Aktion. Als Innenverteidiger ist das besonders sichtbar und hat schnell Folgen. In deinen letzten Reflexionen tauchte häufiger Selbstkritik nach Fehlern auf — heute reicht eine saubere Rückkehrhandlung. Cue: Fehler, nicht Ich.
 
----
+**Tag 30, Stürmer, Match Day, Ergebnisdruck-Profil:**
+> Heute wird der Ausgang lauter sein als sonst. Als Stürmer ziehen Abschluss und verpasste Chancen schnell aus dem Prozess. Dein Profil zeigt starken Ergebnisbezug — heute ist der Anker die nächste Handlung. Cue: Nur die nächste.
 
-## Bug 5 – KI-Sync Button entfernen (war Bug 21)
+**Tag 43, kein Sport, niedrige Energie:**
+> Heute muss Präsenz nicht groß sein. Allgemeiner Trainingsbezug: kleinere, schnellere Rückkehr reicht. Bei niedriger Energie zählt weniger Reibung statt maximalem Fokus. Cue: Direkt zurück.
 
-**Problem:** `Dashboard.tsx` Z. 710–745 zeigt ein Settings-Panel mit „Programm anpassen / KI passt an…"-Button. Die App nutzt aber seit der Matrix-Umstellung deterministische Inhalte (siehe Kommentar in `Dashboard.tsx` Z. 133–134). Der Button schreibt nur noch `competition_date` in die DB – das Wording ist irreführend.
+**Tag 1, kein Profil, kein Check-in, kein Journal:**
+> Heute geht es um {lens}. Such dir einen Moment im Training oder Alltag, der dazu passt. Cue: {dayCue}.
 
-**Lösung:**
-- Button-Label umbenennen: „KI passt an…" → „Speichern".
-- Beschreibungstext Z. 733 ändern: „Änderungen werden beim nächsten KI-Sync wirksam." → „Wettkampfziel wird gespeichert. Es dient als zeitlicher Anker im Programm."
-- Icon `RefreshCw` durch `Save` (oder `Check`) ersetzen.
-- Funktion `syncTasks()` umbenennen in `saveCompetitionGoal()` (semantisch korrekt) – Logik bleibt.
+## Akzeptanzkriterien (Selbstcheck nach Implementierung)
 
-**Konkrete Code-Ziele:**
-- `src/pages/Dashboard.tsx` Z. 483–518 (Funktion) und Z. 710–745 (UI)
+- 56-Tage-Content unverändert (`dailyContent.ts`, `matrixDays.ts` unberührt).
+- Tasks/Journal/Comprehension/ScienceBite werden nicht überschrieben.
+- Neue Karte „Heute für dich" erscheint in DailyCheckin.
+- Alle Felder fallen sauber zurück, wenn Daten fehlen — keine `undefined`-Texte, keine leeren Sätze.
+- Keine neue Edge Function, keine DB-Migration, keine Breaking Changes.
+- Code type-safe, keine `any` in der neuen Logik.
 
----
+## Wie testen
 
-## Test-Plan nach Implementierung
+1. Neuer User ohne Profil → nur generische Anrede + Cue.
+2. Profil mit Sport=Fußball, Position=Stürmer → Sport- und Positionsbezug sichtbar.
+3. Daily Check-in mit niedriger Energie speichern, neu öffnen → State-Emphasis sichtbar.
+4. Mehrere Journal-Einträge mit „Fehler"/„Druck" anlegen → Journal-Emphasis sichtbar.
+5. Coach-Sicht prüfen: keine Änderung, keine neuen Felder sichtbar.
 
-1. **Bug 15:** Profil mit Position bearbeiten → DailyCheckin laden → in `user_day_assignments.adaptation_summary` muss korrekte Position stehen.
-2. **Bug 5:** Fragebogen in 2 Tabs öffnen, in beiden eine Antwort geben → kein Fehler, ein einziger Draft in DB.
-3. **Bug 13:** Im Reflexions-Step 5x schnell „Abschließen" klicken → genau 1 `daily_checkins`-Eintrag.
-4. **Bug 20:** Im Settings-Panel ein invalides Datum forcieren (Safari iOS oder DevTools-Override) → kein DB-Fehler, klare Toast-Meldung.
-5. **Bug 21:** Settings-Panel öffnen → kein „KI"-Wording mehr sichtbar.
+## Geänderte / neue Dateien
 
----
+- **neu** `src/lib/microAdjustment.ts`
+- **neu** `src/components/daily/TodayForYou.tsx`
+- **edit** `src/components/dashboard/DailyCheckin.tsx` (loadDay erweitern, Komponente einbinden)
 
-## Was bleibt für Post-Launch
-
-- Bug 10/11/14/30 (orange) → Sprint 1 nach Launch
-- Bug 24/26/29 (gelb) → Tech-Debt-Sprint
-
-Nach Approval starte ich mit **Bug 15** (DB-Migration zuerst, weil Foundation für sauberes Datenmodell), dann linear durch.
+Keine weiteren Files, keine Migrations, keine Edge Functions.

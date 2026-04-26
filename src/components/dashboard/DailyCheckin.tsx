@@ -13,9 +13,15 @@ import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
 import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
+import TodayForYou from "@/components/daily/TodayForYou";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
+import {
+  buildMicroAdjustmentContext,
+  extractJournalSignals,
+  type MicroAdjustmentOutput,
+} from "@/lib/microAdjustment";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
@@ -51,6 +57,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [assignmentId, setAssignmentId] = useState<string | null>(null);
   const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
   const [comprehensionDone, setComprehensionDone] = useState(false);
+  const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -87,6 +94,87 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       setResolved(result.resolved);
       setAssignmentId(result.assignment.id);
       setComprehensionQuestions(drawComprehensionQuestions(result.resolved.matrix.dayNumber, 3));
+
+      // ─── Micro-Adjustment Layer ─────────────────────────
+      // Lädt nur bestehende Daten, kein KI-Call, undefined-safe.
+      const dateStr = format(date, "yyyy-MM-dd");
+      const [{ data: todayCheckin }, { data: recentJournals }, { data: questionnaire }] = await Promise.all([
+        supabase
+          .from("daily_checkins")
+          .select("mood_before, energy_level, focus_rating")
+          .eq("user_id", user.id)
+          .eq("date", dateStr)
+          .maybeSingle(),
+        supabase
+          .from("daily_journals")
+          .select("free_reflection, gratitude, answers")
+          .eq("user_id", user.id)
+          .order("date", { ascending: false })
+          .limit(5),
+        supabase
+          .from("questionnaire_responses")
+          .select("analysis")
+          .eq("user_id", user.id)
+          .not("analysis", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      const journalTexts: string[] = [];
+      for (const j of recentJournals ?? []) {
+        if (j.free_reflection) journalTexts.push(j.free_reflection);
+        if (j.gratitude) journalTexts.push(j.gratitude);
+        if (j.answers && typeof j.answers === "object") {
+          for (const v of Object.values(j.answers as Record<string, unknown>)) {
+            if (typeof v === "string") journalTexts.push(v);
+          }
+        }
+      }
+
+      // Sehr leichte, optionale Signal-Extraktion aus der bestehenden Analyse.
+      // Erwartet KEINE bestimmte Schema-Form — alles optional.
+      const analysis = (questionnaire?.analysis ?? null) as Record<string, unknown> | null;
+      const num = (v: unknown): number | undefined => (typeof v === "number" ? v : undefined);
+      const score10 = (v: unknown): number | undefined => {
+        const n = num(v);
+        return typeof n === "number" ? Math.max(0, Math.min(1, n / 10)) : undefined;
+      };
+      const questionnaireSignals = analysis
+        ? {
+            resultFocus: score10((analysis as any).result_focus ?? (analysis as any).resultFocus),
+            selfCriticism: score10((analysis as any).self_criticism ?? (analysis as any).selfCriticism),
+            judgementFear: score10((analysis as any).judgement_fear ?? (analysis as any).judgementFear),
+            egoVisibility: score10((analysis as any).ego_visibility ?? (analysis as any).egoVisibility),
+            confidence: score10((analysis as any).confidence),
+          }
+        : undefined;
+
+      const micro = buildMicroAdjustmentContext({
+        day: {
+          dayNumber: result.resolved.matrix.dayNumber,
+          lens: result.resolved.matrix.lens,
+          primaryMechanism: result.resolved.matrix.primaryMechanism,
+          recurrenceType: result.resolved.matrix.recurrenceType,
+          phase: result.resolved.matrix.phase,
+        },
+        contextType: eventType,
+        profile: {
+          sport: profile?.sport ?? null,
+          position: profile?.position ?? profile?.team ?? null,
+        },
+        questionnaireSignals,
+        checkin: todayCheckin
+          ? {
+              mood: todayCheckin.mood_before ?? null,
+              energy: todayCheckin.energy_level ?? null,
+              focus: todayCheckin.focus_rating ?? null,
+              stress: null,
+            }
+          : undefined,
+        recentJournalSignals: extractJournalSignals(journalTexts),
+      });
+      setMicroAdjustment(micro);
     }
     setLoadingTasks(false);
   };
@@ -346,6 +434,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
             Tag {resolved.matrix.dayNumber} · {resolved.matrix.lens}
           </p>
         )}
+
+        {microAdjustment && <TodayForYou data={microAdjustment} />}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
           <span>{completedCount} / {totalCount} erledigt</span>
