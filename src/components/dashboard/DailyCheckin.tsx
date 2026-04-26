@@ -13,9 +13,15 @@ import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
 import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
+import TodayForYou from "@/components/daily/TodayForYou";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
+import {
+  buildMicroAdjustmentContext,
+  extractJournalSignals,
+  type MicroAdjustmentOutput,
+} from "@/lib/microAdjustment";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
