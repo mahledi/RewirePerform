@@ -435,6 +435,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
           </p>
         )}
 
+        {microAdjustment && <TodayForYou data={microAdjustment} />}
+
         <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
           <span>{completedCount} / {totalCount} erledigt</span>
         </div>
