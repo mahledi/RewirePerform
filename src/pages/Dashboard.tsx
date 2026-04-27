@@ -913,21 +913,6 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-        {analysis && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground font-heading mb-1">Mental Score</p>
-                <p className="text-3xl font-heading font-bold text-primary">{analysis.mental_score}<span className="text-base text-muted-foreground">/100</span></p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">{competitionName || "8-Wochen-Programm"}</p>
-                <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten</p>
-                {competitionDate && !isNaN(new Date(competitionDate).getTime()) && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Today's Check-in CTA */}
         {todayEventType && checkinStatusLoading ? (
