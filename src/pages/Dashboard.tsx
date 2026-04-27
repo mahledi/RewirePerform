@@ -947,6 +947,27 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {/* Tagesjournal — gleiche visuelle Bedeutung wie der Check-in */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <button
+            onClick={() => navigate("/journal")}
+            className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-heading font-semibold">Tagesjournal</p>
+                  <p className="text-sm text-muted-foreground">Heute Abend reflektieren →</p>
+                </div>
+              </div>
+              <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+            </div>
+          </button>
+        </motion.div>
+
         {/* Science Bite */}
         <ScienceBite />
 
