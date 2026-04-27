@@ -421,62 +421,45 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
   // ─── Task Dashboard (Step 3) ─────────────────────────────
   const TaskDashboard = () => {
-    const completedCount = completedTasks.length;
-    const totalCount = tasks.length;
-
     return (
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-heading text-2xl font-bold">Deine Aufgaben</h2>
+          <h2 className="font-heading text-2xl font-bold">Heute im Fokus</h2>
         </div>
         {resolved && (
-          <p className="text-muted-foreground mb-6 text-sm">
+          <p className="text-muted-foreground mb-4 text-sm">
             Tag {resolved.matrix.dayNumber} · {resolved.matrix.lens}
           </p>
         )}
 
         {microAdjustment && <TodayForYou data={microAdjustment} />}
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-          <span>{completedCount} / {totalCount} erledigt</span>
-        </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            initial={{ width: 0 }}
-            animate={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
-            transition={{ duration: 0.4 }}
-          />
-        </div>
+        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+          Das sind deine Aufgaben für heute — meistens im Training oder über den Tag verteilt.
+          Nichts musst du jetzt abhaken. Heute Abend reflektierst du sie im Journal.
+        </p>
 
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : (
           <div className="space-y-3">
             {tasks.map((task) => {
-              const isCompleted = completedTasks.includes(task.id);
               const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
               return (
                 <button
                   key={task.id}
-                  onClick={() => !isCompleted && setSelectedTask(task)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all ${
-                    isCompleted
-                      ? "bg-primary/10 ring-1 ring-primary/30 opacity-70"
-                      : "bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
-                  }`}
+                  onClick={() => setSelectedTask(task)}
+                  className="w-full text-left p-4 rounded-2xl transition-all bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      isCompleted ? "bg-primary" : "bg-secondary"
-                    }`}>
-                      {isCompleted ? <Check className="w-5 h-5 text-primary-foreground" /> : <IconComp className="w-5 h-5 text-muted-foreground" />}
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-secondary">
+                      <IconComp className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${isCompleted ? "text-primary line-through" : ""}`}>{task.title}</p>
+                      <p className="text-sm font-semibold">{task.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{task.whenToUse}</p>
                     </div>
-                    {!isCompleted && <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />}
+                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
                   </div>
                 </button>
               );
@@ -550,9 +533,16 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                 {step === 4 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
-                    <p className="text-muted-foreground mb-4 text-sm">
-                      Ein bis zwei Sätze. Das vertiefte Tagesjournal kommt danach im Journal-Bereich.
+                    <p className="text-muted-foreground mb-2 text-sm">
+                      Ein bis zwei Sätze – wie startest du heute mental in den Tag?
                     </p>
+                    <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
+                      <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        <span className="text-foreground font-medium">Heute Abend</span> findest du auf dem Dashboard dein Tagesjournal,
+                        um Training und Aufgaben in Ruhe zu reflektieren.
+                      </p>
+                    </div>
                     <VoiceInput
                       currentValue={reflection}
                       onTranscript={(val) => setReflection(val)}
@@ -572,17 +562,17 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                       <Check className="w-10 h-10 text-primary" />
                     </motion.div>
                     <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
-                    <p className="text-muted-foreground mb-2">{completedTasks.length} von {tasks.length} Aufgaben erledigt.</p>
-                    <p className="text-xs text-muted-foreground mb-8">Schließe den Tag jetzt im Journal.</p>
+                    <p className="text-muted-foreground mb-2 text-sm">
+                      Du hast deine Linse für heute gesetzt. Trag sie mit dir durch Training und Tag.
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-8 max-w-sm mx-auto">
+                      Heute Abend wartet das Tagesjournal auf deinem Dashboard – dort schließt du den Tag ab.
+                    </p>
                     <div className="flex flex-col gap-3 max-w-xs mx-auto">
                       <button
-                        onClick={() => { onClose(); navigate("/journal"); }}
-                        className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all flex items-center justify-center gap-2"
+                        onClick={onClose}
+                        className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
                       >
-                        <BookOpen className="w-4 h-4" />
-                        Tagesjournal öffnen
-                      </button>
-                      <button onClick={onClose} className="px-8 py-3 rounded-xl bg-secondary text-foreground font-heading font-medium hover:bg-secondary/80">
                         Zurück zum Dashboard
                       </button>
                     </div>
@@ -612,16 +602,16 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               onClick={() => {
                 if (saving) return;
                 if (step === 4) saveCheckin();
-                else if (step === 2 && completedTasks.length > 0) setStep(3);
+                else if (step === 2) setStep(3);
               }}
-              disabled={saving || (step === 2 && completedTasks.length === 0)}
+              disabled={saving}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                saving || (step === 2 && completedTasks.length === 0)
+                saving
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 4 ? (<>{saving ? <><Loader2 className="w-4 h-4 animate-spin" />Speichert...</> : <>Abschließen<Check className="w-4 h-4" /></>}</>) : step === 2 && completedTasks.length === 0 ? (<>Mind. 1 Aufgabe</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 4 ? (<>{saving ? <><Loader2 className="w-4 h-4 animate-spin" />Speichert...</> : <>Abschließen<Check className="w-4 h-4" /></>}</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>
