@@ -434,8 +434,6 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
           </p>
         )}
 
-        {microAdjustment && <TodayForYou data={microAdjustment} />}
-
         <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
           Das sind deine Aufgaben für heute — meistens im Training oder über den Tag verteilt.
           Nichts musst du jetzt abhaken. Heute Abend reflektierst du sie im Journal.
