@@ -427,56 +427,42 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     return (
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-heading text-2xl font-bold">Deine Aufgaben</h2>
+          <h2 className="font-heading text-2xl font-bold">Heute im Fokus</h2>
         </div>
         {resolved && (
-          <p className="text-muted-foreground mb-6 text-sm">
+          <p className="text-muted-foreground mb-4 text-sm">
             Tag {resolved.matrix.dayNumber} · {resolved.matrix.lens}
           </p>
         )}
 
         {microAdjustment && <TodayForYou data={microAdjustment} />}
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-          <span>{completedCount} / {totalCount} erledigt</span>
-        </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            initial={{ width: 0 }}
-            animate={{ width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%` }}
-            transition={{ duration: 0.4 }}
-          />
-        </div>
+        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+          Das sind deine Aufgaben für heute — meistens im Training oder über den Tag verteilt.
+          Nichts musst du jetzt abhaken. Heute Abend reflektierst du sie im Journal.
+        </p>
 
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : (
           <div className="space-y-3">
             {tasks.map((task) => {
-              const isCompleted = completedTasks.includes(task.id);
               const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
               return (
                 <button
                   key={task.id}
-                  onClick={() => !isCompleted && setSelectedTask(task)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all ${
-                    isCompleted
-                      ? "bg-primary/10 ring-1 ring-primary/30 opacity-70"
-                      : "bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
-                  }`}
+                  onClick={() => setSelectedTask(task)}
+                  className="w-full text-left p-4 rounded-2xl transition-all bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      isCompleted ? "bg-primary" : "bg-secondary"
-                    }`}>
-                      {isCompleted ? <Check className="w-5 h-5 text-primary-foreground" /> : <IconComp className="w-5 h-5 text-muted-foreground" />}
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-secondary">
+                      <IconComp className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${isCompleted ? "text-primary line-through" : ""}`}>{task.title}</p>
+                      <p className="text-sm font-semibold">{task.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{task.whenToUse}</p>
                     </div>
-                    {!isCompleted && <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />}
+                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
                   </div>
                 </button>
               );
