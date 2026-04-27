@@ -281,35 +281,37 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : (
-          <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
-            <div className="p-5 border-b border-border/50 flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Science Bite</p>
-                <h2 className="font-heading text-2xl font-bold leading-tight">{headline}</h2>
+          <div className="space-y-4">
+            <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
+              <div className="p-5 border-b border-border/50 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Science Bite</p>
+                  <h2 className="font-heading text-2xl font-bold leading-tight">{headline}</h2>
+                </div>
+                <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                  <Brain className="w-5 h-5 text-primary" />
+                </div>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                <Brain className="w-5 h-5 text-primary" />
+
+              <div className="p-5 space-y-4">
+                {body.map((paragraph, index) => (
+                  <p key={index} className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                    {paragraph}
+                  </p>
+                ))}
               </div>
             </div>
 
-            <div className="p-5 space-y-4">
-              {body.map((paragraph, index) => (
-                <p key={index} className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            {microAdjustment && <TodayForYou data={microAdjustment} />}
 
-            <div className="p-5 pt-0">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setStep(1)}
-                className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
-              >
-                Verstanden <ArrowRight className="w-5 h-5" />
-              </motion.button>
-            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setStep(1)}
+              className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
+            >
+              Verstanden <ArrowRight className="w-5 h-5" />
+            </motion.button>
           </div>
         )}
       </motion.div>
