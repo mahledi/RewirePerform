@@ -421,9 +421,6 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
 
   // ─── Task Dashboard (Step 3) ─────────────────────────────
   const TaskDashboard = () => {
-    const completedCount = completedTasks.length;
-    const totalCount = tasks.length;
-
     return (
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
         <div className="flex items-center justify-between mb-2">
