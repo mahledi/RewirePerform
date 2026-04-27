@@ -702,14 +702,6 @@ const Dashboard = () => {
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
-              onClick={() => navigate("/journal")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
-              title="Tagesjournal"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              Journal
-            </button>
-            <button
               onClick={async () => { await signOut(); navigate("/"); }}
               className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
               title="Abmelden"
@@ -921,21 +913,6 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-        {analysis && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground font-heading mb-1">Mental Score</p>
-                <p className="text-3xl font-heading font-bold text-primary">{analysis.mental_score}<span className="text-base text-muted-foreground">/100</span></p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">{competitionName || "8-Wochen-Programm"}</p>
-                <p className="text-sm font-heading font-medium text-foreground">{events.length} Einheiten</p>
-                {competitionDate && !isNaN(new Date(competitionDate).getTime()) && <p className="text-xs text-yellow-400 mt-1">Ziel: {format(new Date(competitionDate), "d. MMM yyyy", { locale: de })}</p>}
-              </div>
-            </div>
-          </motion.div>
-        )}
 
         {/* Today's Check-in CTA */}
         {todayEventType && checkinStatusLoading ? (
@@ -969,6 +946,27 @@ const Dashboard = () => {
             <p className="text-muted-foreground text-sm">Heute ist kein Eintrag geplant. Genieße deinen freien Tag.</p>
           </motion.div>
         )}
+
+        {/* Tagesjournal — gleiche visuelle Bedeutung wie der Check-in */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <button
+            onClick={() => navigate("/journal")}
+            className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-heading font-semibold">Tagesjournal</p>
+                  <p className="text-sm text-muted-foreground">Heute Abend reflektieren →</p>
+                </div>
+              </div>
+              <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+            </div>
+          </button>
+        </motion.div>
 
         {/* Science Bite */}
         <ScienceBite />
