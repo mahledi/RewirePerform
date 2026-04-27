@@ -702,14 +702,6 @@ const Dashboard = () => {
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
-              onClick={() => navigate("/journal")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
-              title="Tagesjournal"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              Journal
-            </button>
-            <button
               onClick={async () => { await signOut(); navigate("/"); }}
               className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
               title="Abmelden"
