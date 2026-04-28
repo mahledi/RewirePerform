@@ -5,6 +5,7 @@ import { Brain, ArrowRight, ArrowLeft, Check, ClipboardCheck, BarChart3, Loader2
 import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/validatedAssessments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { toast } from "sonner";
 
 type Phase = "select" | "instructions" | "items" | "results" | "sequence-done" | "comparison";
