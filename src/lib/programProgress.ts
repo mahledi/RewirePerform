@@ -13,10 +13,12 @@
 import { format, differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
 
 export interface ProgressSnapshot {
   user_id: string;
   team_id: string | null;
+  program_instance_id: string | null;
   date: string;
   program_day: number | null;
   days_available: number;
