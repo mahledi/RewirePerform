@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
+import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
@@ -37,13 +37,13 @@ const Journal = () => {
     const today = new Date();
     const dateStr = format(today, "yyyy-MM-dd");
 
-    const [{ data: settings }, { data: events }, { data: existing }] = await Promise.all([
-      supabase.from("program_settings").select("program_start").eq("user_id", user.id).maybeSingle(),
+    const [effective, { data: events }, { data: existing }] = await Promise.all([
+      getEffectiveProgramStart(user.id),
       supabase.from("calendar_events").select("date,event_type").eq("user_id", user.id).eq("date", dateStr).limit(1),
       supabase.from("daily_journals").select("*").eq("user_id", user.id).eq("date", dateStr).maybeSingle(),
     ]);
 
-    const info = getCurrentProgramDay(settings?.program_start ?? null, today);
+    const info = getCurrentProgramDay(effective.startDate, today);
     if (!info) {
       setLoading(false);
       return;
