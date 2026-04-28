@@ -120,16 +120,22 @@ const Assessment = () => {
         setPhase("results");
       } else {
         if (mode === "post") {
-          const { data: allPre } = await supabase
+          let preQ = supabase
             .from("assessments")
             .select("assessment_type, scores, total_score, timing")
             .eq("timing", "pre")
             .eq("user_id", user.id);
-          const { data: allPost } = await supabase
+          let postQ = supabase
             .from("assessments")
             .select("assessment_type, scores, total_score, timing")
             .eq("timing", "post")
             .eq("user_id", user.id);
+          if (instance?.id) {
+            preQ = preQ.eq("program_instance_id", instance.id);
+            postQ = postQ.eq("program_instance_id", instance.id);
+          }
+          const { data: allPre } = await preQ;
+          const { data: allPost } = await postQ;
           setPreResults((allPre || []) as SavedResult[]);
           setPostResults((allPost || []) as SavedResult[]);
           setPhase("comparison");
