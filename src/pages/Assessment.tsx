@@ -5,6 +5,7 @@ import { Brain, ArrowRight, ArrowLeft, Check, ClipboardCheck, BarChart3, Loader2
 import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/validatedAssessments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { toast } from "sonner";
 
 type Phase = "select" | "instructions" | "items" | "results" | "sequence-done" | "comparison";
@@ -46,11 +47,14 @@ const Assessment = () => {
 
   const loadPreResults = async () => {
     if (!user?.id) return;
-    const { data } = await supabase
+    const instance = await getOrCreateActiveInstance(user.id);
+    let q = supabase
       .from("assessments")
       .select("assessment_type, scores, total_score, timing")
       .eq("timing", "pre")
       .eq("user_id", user.id);
+    if (instance?.id) q = q.eq("program_instance_id", instance.id);
+    const { data } = await q;
     if (data) setPreResults(data as SavedResult[]);
   };
 
@@ -77,6 +81,8 @@ const Assessment = () => {
     const scores = calculateScores(selectedTest, answers);
     setSavedScores(scores);
 
+    const instance = await getOrCreateActiveInstance(user.id);
+
     const { error: insertError } = await supabase.from("assessments").insert({
       user_id: user.id,
       session_id: user.id,
@@ -85,12 +91,13 @@ const Assessment = () => {
       answers: answers as any,
       scores: scores.subscaleScores as any,
       total_score: scores.totalScore,
+      program_instance_id: instance?.id ?? null,
     });
 
     if (insertError) {
-      // Duplicate (unique index on user_id+assessment_type+timing) → bereits absolviert
+      // Duplicate (unique on user_id+instance+type+timing) → bereits absolviert in dieser Cohorte
       if ((insertError as any).code === "23505") {
-        toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits gespeichert.`);
+        toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits in diesem Programm-Zyklus gespeichert.`);
       } else {
         toast.error("Speichern fehlgeschlagen.");
         setSaving(false);
@@ -113,16 +120,22 @@ const Assessment = () => {
         setPhase("results");
       } else {
         if (mode === "post") {
-          const { data: allPre } = await supabase
+          let preQ = supabase
             .from("assessments")
             .select("assessment_type, scores, total_score, timing")
             .eq("timing", "pre")
             .eq("user_id", user.id);
-          const { data: allPost } = await supabase
+          let postQ = supabase
             .from("assessments")
             .select("assessment_type, scores, total_score, timing")
             .eq("timing", "post")
             .eq("user_id", user.id);
+          if (instance?.id) {
+            preQ = preQ.eq("program_instance_id", instance.id);
+            postQ = postQ.eq("program_instance_id", instance.id);
+          }
+          const { data: allPre } = await preQ;
+          const { data: allPost } = await postQ;
           setPreResults((allPre || []) as SavedResult[]);
           setPostResults((allPost || []) as SavedResult[]);
           setPhase("comparison");

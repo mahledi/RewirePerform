@@ -194,6 +194,9 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
     const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
+    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+    const instance = await getOrCreateActiveInstance(user.id);
+
     const payload: any = {
       session_id: user.id,
       user_id: user.id,
@@ -204,6 +207,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       focus_rating: focusRating,
       tasks_completed: completedTitles,
       reflection: reflection || null,
+      program_instance_id: instance?.id ?? null,
     };
 
     let error: any = null;
@@ -235,6 +239,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         completedTaskTitles: completedTitles,
         status: "completed",
         variantUsed: eventType,
+        programInstanceId: instance?.id ?? null,
       });
     }
 
@@ -255,6 +260,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   ) => {
     setComprehensionDone(true);
     if (assignmentId && resolved && user?.id) {
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
       await upsertComprehension({
         assignmentId,
         userId: user.id,
@@ -262,6 +269,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         questions: comprehensionQuestions,
         results,
         status: "completed",
+        programInstanceId: instance?.id ?? null,
       });
     }
     await saveCheckin();

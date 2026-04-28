@@ -63,6 +63,8 @@ const Journal = () => {
   const handleSave = async () => {
     if (!user?.id || !resolved) return;
     setSaving(true);
+    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+    const instance = await getOrCreateActiveInstance(user.id);
     const payload = {
       user_id: user.id,
       date: resolved.date,
@@ -71,6 +73,7 @@ const Journal = () => {
       answers,
       gratitude: gratitude || null,
       free_reflection: freeReflection || null,
+      program_instance_id: instance?.id ?? null,
     };
     const { error } = await supabase
       .from("daily_journals")
