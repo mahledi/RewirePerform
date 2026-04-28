@@ -140,6 +140,7 @@ export async function upsertComprehension(args: {
   questions: ComprehensionQuestion[];
   results: ComprehensionResult[];
   status: "pending" | "completed";
+  programInstanceId?: string | null;
 }) {
   const correctCount = args.results.filter((r) => r.isCorrect).length;
   const { data: existing } = await supabase
@@ -158,6 +159,7 @@ export async function upsertComprehension(args: {
     total_count: args.questions.length,
     status: args.status,
     completed_at: args.status === "completed" ? new Date().toISOString() : null,
+    program_instance_id: args.programInstanceId ?? null,
   };
 
   if (existing) {
