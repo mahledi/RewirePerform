@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, Square } from "lucide-react";
+import { Mic, Square } from "lucide-react";
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
@@ -23,38 +23,95 @@ const VoiceInput = ({
   onTranscript,
   currentValue = "",
   language = "de-DE",
-  placeholder = "Tippe oder sprich deine Antwort ein...",
 }: VoiceInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [pulseLevel, setPulseLevel] = useState(0);
+
   const recognitionRef = useRef<any>(null);
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentValueRef = useRef(currentValue);
+  const isListeningRef = useRef(false); // Ref-Spiegel für stabile Closures
+  const onTranscriptRef = useRef(onTranscript);
+  const startingRef = useRef(false); // Schutz gegen doppelten Start
 
-  // Keep ref in sync with prop
+  // Refs in sync halten
   useEffect(() => {
     currentValueRef.current = currentValue;
   }, [currentValue]);
+
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript;
+  }, [onTranscript]);
 
   useEffect(() => {
     const SpeechRecognition = getSpeechRecognition();
     setIsSupported(!!SpeechRecognition);
 
     return () => {
+      isListeningRef.current = false;
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try {
+          recognitionRef.current.onend = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.abort();
+        } catch {
+          // ignore
+        }
+        recognitionRef.current = null;
       }
       if (pulseIntervalRef.current) {
         clearInterval(pulseIntervalRef.current);
+        pulseIntervalRef.current = null;
       }
     };
   }, []);
 
+  const cleanupRecognition = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.abort();
+      } catch {
+        // ignore
+      }
+      recognitionRef.current = null;
+    }
+    if (pulseIntervalRef.current) {
+      clearInterval(pulseIntervalRef.current);
+      pulseIntervalRef.current = null;
+    }
+    setPulseLevel(0);
+    setInterimText("");
+  }, []);
+
   const startListening = useCallback(() => {
+    // WICHTIG: synchron im User-Gesture-Kontext bleiben.
+    if (startingRef.current) return;
+    startingRef.current = true;
+
     const SpeechRecognition = getSpeechRecognition();
-    if (!SpeechRecognition) return;
+    if (!SpeechRecognition) {
+      startingRef.current = false;
+      return;
+    }
+
+    // Falls eine alte Instanz noch existiert: sauber entfernen.
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.abort();
+      } catch {
+        // ignore
+      }
+      recognitionRef.current = null;
+    }
 
     const recognition = new SpeechRecognition();
     recognition.lang = language;
@@ -81,61 +138,72 @@ const VoiceInput = ({
         const cur = currentValueRef.current;
         const separator = cur && !cur.endsWith(" ") ? " " : "";
         const newValue = cur + separator + final;
-        onTranscript(newValue);
+        onTranscriptRef.current(newValue);
         setInterimText("");
       }
     };
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error:", event.error);
-      if (event.error !== "aborted") {
+      if (event.error !== "aborted" && event.error !== "no-speech") {
+        isListeningRef.current = false;
         setIsListening(false);
         setInterimText("");
       }
     };
 
     recognition.onend = () => {
-      // Restart if still supposed to be listening (continuous mode workaround)
-      if (isListening && recognitionRef.current === recognition) {
+      // Auto-Restart nur wenn weiterhin gewünscht und das die aktuelle Instanz ist
+      if (isListeningRef.current && recognitionRef.current === recognition) {
         try {
           recognition.start();
         } catch {
+          isListeningRef.current = false;
           setIsListening(false);
         }
       }
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+    isListeningRef.current = true;
     setIsListening(true);
 
     // Fake pulse animation
+    if (pulseIntervalRef.current) clearInterval(pulseIntervalRef.current);
     pulseIntervalRef.current = setInterval(() => {
       setPulseLevel(Math.random());
     }, 150);
-  }, [language, onTranscript, isListening]);
+
+    try {
+      recognition.start();
+    } catch (e) {
+      // InvalidStateError: alte Engine noch nicht freigegeben — kurz warten und retry
+      console.warn("Recognition.start() failed, retrying...", e);
+      setTimeout(() => {
+        if (recognitionRef.current === recognition && isListeningRef.current) {
+          try {
+            recognition.start();
+          } catch (err) {
+            console.error("Recognition retry failed:", err);
+            cleanupRecognition();
+            isListeningRef.current = false;
+            setIsListening(false);
+          }
+        }
+      }, 250);
+    } finally {
+      // Lock früh genug freigeben, damit der nächste echte User-Klick wieder geht
+      setTimeout(() => {
+        startingRef.current = false;
+      }, 50);
+    }
+  }, [language, cleanupRecognition]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.abort();
-      recognitionRef.current = null;
-    }
+    isListeningRef.current = false;
+    cleanupRecognition();
     setIsListening(false);
-    setInterimText("");
-    if (pulseIntervalRef.current) {
-      clearInterval(pulseIntervalRef.current);
-      pulseIntervalRef.current = null;
-    }
-    setPulseLevel(0);
-  }, []);
-
-  // Update the ref for onend handler
-  useEffect(() => {
-    if (!isListening && recognitionRef.current) {
-      recognitionRef.current.abort();
-      recognitionRef.current = null;
-    }
-  }, [isListening]);
+  }, [cleanupRecognition]);
 
   if (!isSupported) return null;
 
