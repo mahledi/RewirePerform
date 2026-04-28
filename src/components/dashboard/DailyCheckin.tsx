@@ -652,7 +652,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         </div>
       </div>
 
-      {(step === 0 || step === 1 || step === 4) && !selectedTask && (
+      {(step === 1 || step === 2 || step === 4) && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -669,14 +669,14 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               whileTap={!saving ? { scale: 0.98 } : undefined}
               onClick={() => {
                 if (saving) return;
-                if (step === 0) {
-                  if (moodBefore !== null && energyLevel !== null) setStep(1);
-                } else if (step === 1) setStep(2);
+                if (step === 1) {
+                  if (moodBefore !== null && energyLevel !== null) setStep(2);
+                } else if (step === 2) setStep(3);
                 else if (step === 4) setStep(5);
               }}
-              disabled={saving || (step === 0 && (moodBefore === null || energyLevel === null))}
+              disabled={saving || (step === 1 && (moodBefore === null || energyLevel === null))}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                saving || (step === 0 && (moodBefore === null || energyLevel === null))
+                saving || (step === 1 && (moodBefore === null || energyLevel === null))
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
