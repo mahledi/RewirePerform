@@ -191,15 +191,19 @@ export interface RetestStatus {
 const REQUIRED_TYPES = ["csai2r", "smtq", "flow_short"];
 
 export async function getRetestStatus(userId: string): Promise<RetestStatus> {
-  const effective = await getEffectiveProgramStart(userId);
-  const info = getCurrentProgramDay(effective.startDate, new Date());
+  const instance = await getOrCreateActiveInstance(userId);
+  const startDate = instance?.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
+  const info = getCurrentProgramDay(startDate, new Date());
   const programDay = info?.dayNumber ?? null;
 
-  const { data } = await supabase
+  // Cohort-scoped: only assessments from current instance count
+  let q = supabase
     .from("assessments")
-    .select("assessment_type, timing")
+    .select("assessment_type, timing, program_instance_id")
     .eq("user_id", userId)
     .in("timing", ["mid", "post"]);
+  if (instance?.id) q = q.eq("program_instance_id", instance.id);
+  const { data } = await q;
 
   const midTypes = new Set((data ?? []).filter((a) => a.timing === "mid").map((a) => a.assessment_type));
   const postTypes = new Set((data ?? []).filter((a) => a.timing === "post").map((a) => a.assessment_type));
@@ -207,8 +211,6 @@ export async function getRetestStatus(userId: string): Promise<RetestStatus> {
   const midDone = REQUIRED_TYPES.every((t) => midTypes.has(t));
   const postDone = REQUIRED_TYPES.every((t) => postTypes.has(t));
 
-  // Mid-Banner: Tag 28..55, noch nicht gemacht
-  // Post-Banner: Tag 56+, noch nicht gemacht
   const midDue = !!programDay && programDay >= 28 && programDay < 56 && !midDone;
   const postDue = !!programDay && programDay >= 56 && !postDone;
 
