@@ -506,10 +506,75 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               />
             ) : (
               <>
-                {step === 0 && <ScienceBiteIntro />}
-                {step === 1 && <KnowledgeStep />}
-                {step === 2 && <TaskDashboard />}
-                {step === 3 && (
+                {step === 0 && (
+                  <motion.div
+                    key="mood-energy"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                  >
+                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in starten</h2>
+                    <p className="text-muted-foreground mb-8 text-sm">
+                      Zwei kurze Fragen, bevor wir loslegen.
+                    </p>
+
+                    <div className="space-y-8">
+                      <div>
+                        <label className="text-sm font-semibold block mb-3">
+                          Wie ist deine Stimmung gerade?
+                        </label>
+                        <div className="grid grid-cols-10 gap-1.5">
+                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                            <button
+                              key={n}
+                              onClick={() => setMoodBefore(n)}
+                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                moodBefore === n
+                                  ? "bg-primary text-primary-foreground shadow-glow"
+                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                              }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                          <span>schlecht</span>
+                          <span>sehr gut</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold block mb-3">
+                          Wie ist dein Energielevel?
+                        </label>
+                        <div className="grid grid-cols-10 gap-1.5">
+                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                            <button
+                              key={n}
+                              onClick={() => setEnergyLevel(n)}
+                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                energyLevel === n
+                                  ? "bg-primary text-primary-foreground shadow-glow"
+                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                              }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                          <span>leer</span>
+                          <span>voll geladen</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+                {step === 1 && <ScienceBiteIntro />}
+                {step === 2 && <KnowledgeStep />}
+                {step === 3 && <TaskDashboard />}
+                {step === 4 && (
                   <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
                     <p className="text-muted-foreground mb-6 text-sm">
@@ -524,7 +589,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                       />
                     ) : (
                       <button
-                        onClick={() => setStep(4)}
+                        onClick={() => setStep(5)}
                         className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold"
                       >
                         Weiter zur Reflexion
@@ -532,7 +597,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     )}
                   </motion.div>
                 )}
-                {step === 4 && (
+                {step === 5 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-2 text-sm">
@@ -558,7 +623,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     />
                   </motion.div>
                 )}
-                {step === 5 && (
+                {step === 6 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
