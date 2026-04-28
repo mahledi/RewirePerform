@@ -260,6 +260,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   ) => {
     setComprehensionDone(true);
     if (assignmentId && resolved && user?.id) {
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
       await upsertComprehension({
         assignmentId,
         userId: user.id,
@@ -267,6 +269,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         questions: comprehensionQuestions,
         results,
         status: "completed",
+        programInstanceId: instance?.id ?? null,
       });
     }
     await saveCheckin();
