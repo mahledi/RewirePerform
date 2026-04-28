@@ -325,6 +325,63 @@ export type Database = {
         }
         Relationships: []
       }
+      program_progress_snapshots: {
+        Row: {
+          checkins_completed_count: number
+          completion_rate: number
+          comprehension_average: number | null
+          created_at: string
+          current_streak: number
+          date: string
+          days_available: number
+          days_completed: number
+          id: string
+          journals_completed_count: number
+          longest_streak: number
+          program_day: number | null
+          tasks_completed_count: number
+          team_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          checkins_completed_count?: number
+          completion_rate?: number
+          comprehension_average?: number | null
+          created_at?: string
+          current_streak?: number
+          date: string
+          days_available?: number
+          days_completed?: number
+          id?: string
+          journals_completed_count?: number
+          longest_streak?: number
+          program_day?: number | null
+          tasks_completed_count?: number
+          team_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          checkins_completed_count?: number
+          completion_rate?: number
+          comprehension_average?: number | null
+          created_at?: string
+          current_streak?: number
+          date?: string
+          days_available?: number
+          days_completed?: number
+          id?: string
+          journals_completed_count?: number
+          longest_streak?: number
+          program_day?: number | null
+          tasks_completed_count?: number
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       program_settings: {
         Row: {
           competition_date: string | null
@@ -585,9 +642,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      weekly_user_comprehension: {
+        Row: {
+          comprehension_average: number | null
+          comprehension_count: number | null
+          user_id: string | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
+      weekly_user_metrics: {
+        Row: {
+          avg_energy: number | null
+          avg_focus: number | null
+          avg_mood: number | null
+          checkins_completed_count: number | null
+          user_id: string | null
+          week_start: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      compute_team_outcomes: {
+        Args: { min_n?: number; team_id_param: string }
+        Returns: Json
+      }
       get_team_stats: { Args: { team_id_param: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
