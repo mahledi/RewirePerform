@@ -792,9 +792,9 @@ const Dashboard = () => {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-heading font-semibold text-sm mb-1">Post-Tests fällig!</h3>
+                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deinen Abschluss-Re-Test.</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 8-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Wiederhole jetzt die Tests, um die beobachtete Veränderung zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}

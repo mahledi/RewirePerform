@@ -20,11 +20,11 @@ const Assessment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const mode = searchParams.get("mode") as "pre" | "post" | null;
+  const mode = searchParams.get("mode") as "pre" | "mid" | "post" | null;
 
   const [phase, setPhase] = useState<Phase>(mode ? "instructions" : "select");
   const [selectedTest, setSelectedTest] = useState<AssessmentInstrument | null>(mode ? allAssessments[0] : null);
-  const [timing, setTiming] = useState<"pre" | "post">(mode || "pre");
+  const [timing, setTiming] = useState<"pre" | "mid" | "post">(mode || "pre");
   const [currentItem, setCurrentItem] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
@@ -54,7 +54,7 @@ const Assessment = () => {
     if (data) setPreResults(data as SavedResult[]);
   };
 
-  const startTest = (test: AssessmentInstrument, t: "pre" | "post") => {
+  const startTest = (test: AssessmentInstrument, t: "pre" | "mid" | "post") => {
     setSelectedTest(test);
     setTiming(t);
     setAnswers({});
