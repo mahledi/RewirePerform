@@ -77,7 +77,7 @@ const Assessment = () => {
     const scores = calculateScores(selectedTest, answers);
     setSavedScores(scores);
 
-    await supabase.from("assessments").insert({
+    const { error: insertError } = await supabase.from("assessments").insert({
       user_id: user.id,
       session_id: user.id,
       assessment_type: selectedTest.id,
@@ -86,6 +86,17 @@ const Assessment = () => {
       scores: scores.subscaleScores as any,
       total_score: scores.totalScore,
     });
+
+    if (insertError) {
+      // Duplicate (unique index on user_id+assessment_type+timing) → bereits absolviert
+      if ((insertError as any).code === "23505") {
+        toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits gespeichert.`);
+      } else {
+        toast.error("Speichern fehlgeschlagen.");
+        setSaving(false);
+        return;
+      }
+    }
 
     const result: SavedResult = {
       assessment_type: selectedTest.id,
