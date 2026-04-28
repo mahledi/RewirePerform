@@ -309,7 +309,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setStep(3)}
+              onClick={() => setStep(1)}
               className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
             >
               Verstanden <ArrowRight className="w-5 h-5" />
