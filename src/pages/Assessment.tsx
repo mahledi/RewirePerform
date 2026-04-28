@@ -20,11 +20,11 @@ const Assessment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const mode = searchParams.get("mode") as "pre" | "post" | null;
+  const mode = searchParams.get("mode") as "pre" | "mid" | "post" | null;
 
   const [phase, setPhase] = useState<Phase>(mode ? "instructions" : "select");
   const [selectedTest, setSelectedTest] = useState<AssessmentInstrument | null>(mode ? allAssessments[0] : null);
-  const [timing, setTiming] = useState<"pre" | "post">(mode || "pre");
+  const [timing, setTiming] = useState<"pre" | "mid" | "post">(mode || "pre");
   const [currentItem, setCurrentItem] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
@@ -54,7 +54,7 @@ const Assessment = () => {
     if (data) setPreResults(data as SavedResult[]);
   };
 
-  const startTest = (test: AssessmentInstrument, t: "pre" | "post") => {
+  const startTest = (test: AssessmentInstrument, t: "pre" | "mid" | "post") => {
     setSelectedTest(test);
     setTiming(t);
     setAnswers({});
@@ -77,7 +77,7 @@ const Assessment = () => {
     const scores = calculateScores(selectedTest, answers);
     setSavedScores(scores);
 
-    await supabase.from("assessments").insert({
+    const { error: insertError } = await supabase.from("assessments").insert({
       user_id: user.id,
       session_id: user.id,
       assessment_type: selectedTest.id,
@@ -86,6 +86,17 @@ const Assessment = () => {
       scores: scores.subscaleScores as any,
       total_score: scores.totalScore,
     });
+
+    if (insertError) {
+      // Duplicate (unique index on user_id+assessment_type+timing) → bereits absolviert
+      if ((insertError as any).code === "23505") {
+        toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits gespeichert.`);
+      } else {
+        toast.error("Speichern fehlgeschlagen.");
+        setSaving(false);
+        return;
+      }
+    }
 
     const result: SavedResult = {
       assessment_type: selectedTest.id,

@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { normalizeDateString } from "@/lib/utils";
+import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -317,6 +318,8 @@ const Dashboard = () => {
   const [preTestsDone, setPreTestsDone] = useState(false);
   const [postTestsDone, setPostTestsDone] = useState(false);
   const [postTestDue, setPostTestDue] = useState(false);
+  const [midTestDue, setMidTestDue] = useState(false);
+  const [midTestsDone, setMidTestsDone] = useState(false);
   const [todayCheckinDone, setTodayCheckinDone] = useState(false);
   const [checkinStatusLoading, setCheckinStatusLoading] = useState(true);
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
@@ -433,10 +436,18 @@ const Dashboard = () => {
       const postDone = hasCompletedAllAssessments(postTypes);
       setPostTestsDone(postDone);
 
-      setPostTestDue(daysSince >= 56 && !postDone);
+      // Mid/Post via centralized helper (uses effective program start incl. team)
+      const retest = await getRetestStatus(user!.id);
+      setMidTestDue(retest.midDue);
+      setMidTestsDone(retest.midDone);
+      setPostTestDue(retest.postDue || (daysSince >= 56 && !postDone));
+
+      // Idempotenter Adherence-Snapshot für heute
+      upsertTodaySnapshot(user!.id).catch((e) => console.error("snapshot error", e));
     } else {
       setProgramStartDate(null);
       setPostTestDue(false);
+      setMidTestDue(false);
     }
   };
 
@@ -751,15 +762,39 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
+        {/* Mid-Test Banner (Tag 28) */}
+        {midTestDue && !midTestsDone && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
+            <div className="flex items-start gap-3">
+              <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deinen Mid-Program Re-Test.</h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Du hast Halbzeit erreicht. Wiederhole die Tests, um beobachtete Veränderungen zu dokumentieren.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate("/assessment?mode=mid")}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  Mid-Tests starten
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Post-Test Banner */}
         {postTestDue && !postTestsDone && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-yellow-400/10 border border-yellow-400/30">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-heading font-semibold text-sm mb-1">Post-Tests fällig!</h3>
+                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deinen Abschluss-Re-Test.</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 8-Wochen-Programm ist abgeschlossen. Fülle jetzt die Post-Tests aus, um deine Entwicklung wissenschaftlich zu dokumentieren.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Wiederhole jetzt die Tests, um die beobachtete Veränderung zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
