@@ -264,7 +264,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         status: "completed",
       });
     }
-    setStep(5);
+    await saveCheckin();
   };
 
   const ScienceBiteIntro = () => {
@@ -309,7 +309,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setStep(2)}
+              onClick={() => setStep(3)}
               className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
             >
               Verstanden <ArrowRight className="w-5 h-5" />
@@ -411,7 +411,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         <motion.button
           whileHover={allRead ? { scale: 1.02 } : {}}
           whileTap={allRead ? { scale: 0.98 } : {}}
-          onClick={() => allRead && setStep(3)}
+          onClick={() => allRead && setStep(4)}
           disabled={!allRead}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
             allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
