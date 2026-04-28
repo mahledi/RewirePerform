@@ -182,43 +182,27 @@ serve(async (req) => {
     // Current week values
     const currentWeek = trendData[trendData.length - 1];
 
-    // Calculate aMCC resilience from tasks_completed (count flame tasks completed)
-    let totalFlameCompleted = 0;
-    let totalFlameTotal = 0;
-    for (const c of (recentCheckins ?? [])) {
-      if (c.tasks_completed && Array.isArray(c.tasks_completed)) {
-        for (const task of c.tasks_completed as any[]) {
-          if (task.icon === "flame") {
-            totalFlameTotal++;
-            if (task.completed) totalFlameCompleted++;
-          }
-        }
-      }
-    }
-    const resilienceScore = totalFlameTotal > 0
-      ? Math.round((totalFlameCompleted / totalFlameTotal) * 100)
+    // Resilience as completion rate of daily check-ins (tasks_completed has entries)
+    const totalCheckinCount = (recentCheckins ?? []).length;
+    const completedCheckinCount = (recentCheckins ?? []).filter(
+      (c) => Array.isArray(c.tasks_completed) && c.tasks_completed.length > 0
+    ).length;
+    const resilienceScore = totalCheckinCount > 0
+      ? Math.round((completedCheckinCount / totalCheckinCount) * 100)
       : 0;
 
-    // Resilience trend per week
+    // Resilience trend per week (completion rate per week)
     const resilienceTrend = weekBounds.map((wb) => {
       const weekCheckins = (recentCheckins ?? []).filter(
         (c) => c.date >= wb.start && c.date < wb.end
       );
-      let flameCompleted = 0;
-      let flameTotal = 0;
-      for (const c of weekCheckins) {
-        if (c.tasks_completed && Array.isArray(c.tasks_completed)) {
-          for (const task of c.tasks_completed as any[]) {
-            if (task.icon === "flame") {
-              flameTotal++;
-              if (task.completed) flameCompleted++;
-            }
-          }
-        }
-      }
+      const weekTotal = weekCheckins.length;
+      const weekCompleted = weekCheckins.filter(
+        (c) => Array.isArray(c.tasks_completed) && c.tasks_completed.length > 0
+      ).length;
       return {
         week: wb.label,
-        score: flameTotal > 0 ? Math.round((flameCompleted / flameTotal) * 100) : null,
+        score: weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : null,
       };
     });
 

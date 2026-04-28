@@ -58,6 +58,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
   const [comprehensionDone, setComprehensionDone] = useState(false);
   const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
+  const [moodBefore, setMoodBefore] = useState<number | null>(null);
+  const [energyLevel, setEnergyLevel] = useState<number | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -197,8 +199,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       user_id: user.id,
       date: dateStr,
       event_type: eventType,
-      mood_before: null,
-      energy_level: null,
+      mood_before: moodBefore,
+      energy_level: energyLevel,
       focus_rating: focusRating,
       tasks_completed: completedTitles,
       reflection: reflection || null,
@@ -245,7 +247,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       return;
     }
 
-    setStep(5);
+    setStep(6);
   };
 
   const handleComprehensionComplete = async (
@@ -262,7 +264,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         status: "completed",
       });
     }
-    setStep(4);
+    setStep(5);
   };
 
   const ScienceBiteIntro = () => {
@@ -307,7 +309,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setStep(1)}
+              onClick={() => setStep(2)}
               className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
             >
               Verstanden <ArrowRight className="w-5 h-5" />
@@ -409,7 +411,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         <motion.button
           whileHover={allRead ? { scale: 1.02 } : {}}
           whileTap={allRead ? { scale: 0.98 } : {}}
-          onClick={() => allRead && setStep(2)}
+          onClick={() => allRead && setStep(3)}
           disabled={!allRead}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
             allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
@@ -504,10 +506,75 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               />
             ) : (
               <>
-                {step === 0 && <ScienceBiteIntro />}
-                {step === 1 && <KnowledgeStep />}
-                {step === 2 && <TaskDashboard />}
-                {step === 3 && (
+                {step === 0 && (
+                  <motion.div
+                    key="mood-energy"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                  >
+                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in starten</h2>
+                    <p className="text-muted-foreground mb-8 text-sm">
+                      Zwei kurze Fragen, bevor wir loslegen.
+                    </p>
+
+                    <div className="space-y-8">
+                      <div>
+                        <label className="text-sm font-semibold block mb-3">
+                          Wie ist deine Stimmung gerade?
+                        </label>
+                        <div className="grid grid-cols-10 gap-1.5">
+                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                            <button
+                              key={n}
+                              onClick={() => setMoodBefore(n)}
+                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                moodBefore === n
+                                  ? "bg-primary text-primary-foreground shadow-glow"
+                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                              }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                          <span>schlecht</span>
+                          <span>sehr gut</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-semibold block mb-3">
+                          Wie ist dein Energielevel?
+                        </label>
+                        <div className="grid grid-cols-10 gap-1.5">
+                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                            <button
+                              key={n}
+                              onClick={() => setEnergyLevel(n)}
+                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                energyLevel === n
+                                  ? "bg-primary text-primary-foreground shadow-glow"
+                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                              }`}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                          <span>leer</span>
+                          <span>voll geladen</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+                {step === 1 && <ScienceBiteIntro />}
+                {step === 2 && <KnowledgeStep />}
+                {step === 3 && <TaskDashboard />}
+                {step === 4 && (
                   <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
                     <p className="text-muted-foreground mb-6 text-sm">
@@ -522,7 +589,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                       />
                     ) : (
                       <button
-                        onClick={() => setStep(4)}
+                        onClick={() => setStep(5)}
                         className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold"
                       >
                         Weiter zur Reflexion
@@ -530,7 +597,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     )}
                   </motion.div>
                 )}
-                {step === 4 && (
+                {step === 5 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-2 text-sm">
@@ -556,7 +623,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     />
                   </motion.div>
                 )}
-                {step === 5 && (
+                {step === 6 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
@@ -584,7 +651,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         </div>
       </div>
 
-      {step < 5 && step !== 0 && step !== 1 && step !== 3 && !selectedTask && (
+      {(step === 0 || step === 3 || step === 5) && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -592,7 +659,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               Zurück
             </button>
             <div className="flex gap-1.5">
-              {[0, 1, 2, 3, 4].map((s) => (
+              {[0, 1, 2, 3, 4, 5].map((s) => (
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
@@ -601,17 +668,20 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               whileTap={!saving ? { scale: 0.98 } : undefined}
               onClick={() => {
                 if (saving) return;
-                if (step === 4) saveCheckin();
-                else if (step === 2) setStep(3);
+                if (step === 5) saveCheckin();
+                else if (step === 0) {
+                  if (moodBefore !== null && energyLevel !== null) setStep(1);
+                }
+                else if (step === 3) setStep(4);
               }}
-              disabled={saving}
+              disabled={saving || (step === 0 && (moodBefore === null || energyLevel === null))}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                saving
+                saving || (step === 0 && (moodBefore === null || energyLevel === null))
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 4 ? (<>{saving ? <><Loader2 className="w-4 h-4 animate-spin" />Speichert...</> : <>Abschließen<Check className="w-4 h-4" /></>}</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              {step === 5 ? (<>{saving ? <><Loader2 className="w-4 h-4 animate-spin" />Speichert...</> : <>Abschließen<Check className="w-4 h-4" /></>}</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
             </motion.button>
           </div>
         </div>
