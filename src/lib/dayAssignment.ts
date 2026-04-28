@@ -101,6 +101,7 @@ export async function upsertCompletion(args: {
   completedTaskTitles: string[];
   status: "in_progress" | "completed";
   variantUsed?: string;
+  programInstanceId?: string | null;
 }) {
   const { data: existing } = await supabase
     .from("user_day_completion")
@@ -108,7 +109,7 @@ export async function upsertCompletion(args: {
     .eq("assignment_id", args.assignmentId)
     .maybeSingle();
 
-  const base = {
+  const base: any = {
     assignment_id: args.assignmentId,
     user_id: args.userId,
     day_number: args.dayNumber,
@@ -117,6 +118,7 @@ export async function upsertCompletion(args: {
     variant_used: args.variantUsed ?? null,
     opened_at: existing ? undefined : new Date().toISOString(),
     completed_at: args.status === "completed" ? new Date().toISOString() : null,
+    program_instance_id: args.programInstanceId ?? null,
   };
 
   if (existing) {
