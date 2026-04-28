@@ -47,11 +47,14 @@ const Assessment = () => {
 
   const loadPreResults = async () => {
     if (!user?.id) return;
-    const { data } = await supabase
+    const instance = await getOrCreateActiveInstance(user.id);
+    let q = supabase
       .from("assessments")
       .select("assessment_type, scores, total_score, timing")
       .eq("timing", "pre")
       .eq("user_id", user.id);
+    if (instance?.id) q = q.eq("program_instance_id", instance.id);
+    const { data } = await q;
     if (data) setPreResults(data as SavedResult[]);
   };
 
