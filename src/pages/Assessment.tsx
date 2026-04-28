@@ -81,6 +81,8 @@ const Assessment = () => {
     const scores = calculateScores(selectedTest, answers);
     setSavedScores(scores);
 
+    const instance = await getOrCreateActiveInstance(user.id);
+
     const { error: insertError } = await supabase.from("assessments").insert({
       user_id: user.id,
       session_id: user.id,
@@ -89,12 +91,13 @@ const Assessment = () => {
       answers: answers as any,
       scores: scores.subscaleScores as any,
       total_score: scores.totalScore,
+      program_instance_id: instance?.id ?? null,
     });
 
     if (insertError) {
-      // Duplicate (unique index on user_id+assessment_type+timing) → bereits absolviert
+      // Duplicate (unique on user_id+instance+type+timing) → bereits absolviert in dieser Cohorte
       if ((insertError as any).code === "23505") {
-        toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits gespeichert.`);
+        toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits in diesem Programm-Zyklus gespeichert.`);
       } else {
         toast.error("Speichern fehlgeschlagen.");
         setSaving(false);
