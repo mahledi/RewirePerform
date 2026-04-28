@@ -506,7 +506,8 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               />
             ) : (
               <>
-                {step === 0 && (
+                {step === 0 && <ScienceBiteIntro />}
+                {step === 1 && (
                   <motion.div
                     key="mood-energy"
                     initial={{ opacity: 0, x: 50 }}
@@ -571,7 +572,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     </div>
                   </motion.div>
                 )}
-                {step === 1 && (
+                {step === 2 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-2 text-sm">
@@ -597,7 +598,6 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     />
                   </motion.div>
                 )}
-                {step === 2 && <ScienceBiteIntro />}
                 {step === 3 && <KnowledgeStep />}
                 {step === 4 && <TaskDashboard />}
                 {step === 5 && (
