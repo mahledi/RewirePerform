@@ -264,7 +264,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         status: "completed",
       });
     }
-    setStep(5);
+    await saveCheckin();
   };
 
   const ScienceBiteIntro = () => {
@@ -309,7 +309,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => setStep(2)}
+              onClick={() => setStep(3)}
               className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
             >
               Verstanden <ArrowRight className="w-5 h-5" />
@@ -411,7 +411,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         <motion.button
           whileHover={allRead ? { scale: 1.02 } : {}}
           whileTap={allRead ? { scale: 0.98 } : {}}
-          onClick={() => allRead && setStep(3)}
+          onClick={() => allRead && setStep(4)}
           disabled={!allRead}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
             allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
@@ -571,33 +571,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     </div>
                   </motion.div>
                 )}
-                {step === 1 && <ScienceBiteIntro />}
-                {step === 2 && <KnowledgeStep />}
-                {step === 3 && <TaskDashboard />}
-                {step === 4 && (
-                  <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
-                    <p className="text-muted-foreground mb-6 text-sm">
-                      {comprehensionQuestions.length > 0
-                        ? "Drei Fragen zur heutigen Linse. Kein Test — nur Festigung."
-                        : "Heute kein Check verfügbar. Du kannst direkt weitergehen."}
-                    </p>
-                    {comprehensionQuestions.length > 0 ? (
-                      <ComprehensionCheck
-                        questions={comprehensionQuestions}
-                        onComplete={handleComprehensionComplete}
-                      />
-                    ) : (
-                      <button
-                        onClick={() => setStep(5)}
-                        className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold"
-                      >
-                        Weiter zur Reflexion
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-                {step === 5 && (
+                {step === 1 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
                     <p className="text-muted-foreground mb-2 text-sm">
@@ -621,6 +595,33 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                       placeholder="Kurze Beobachtung – ohne Bewertung."
                       className="w-full h-32 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
                     />
+                  </motion.div>
+                )}
+                {step === 2 && <ScienceBiteIntro />}
+                {step === 3 && <KnowledgeStep />}
+                {step === 4 && <TaskDashboard />}
+                {step === 5 && (
+                  <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
+                    <p className="text-muted-foreground mb-6 text-sm">
+                      {comprehensionQuestions.length > 0
+                        ? "Drei Fragen zur heutigen Linse. Kein Test — nur Festigung."
+                        : "Heute kein Check verfügbar. Du kannst direkt abschließen."}
+                    </p>
+                    {comprehensionQuestions.length > 0 ? (
+                      <ComprehensionCheck
+                        questions={comprehensionQuestions}
+                        onComplete={handleComprehensionComplete}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => saveCheckin()}
+                        disabled={saving}
+                        className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold disabled:opacity-60"
+                      >
+                        {saving ? "Speichert..." : "Check-in abschließen"}
+                      </button>
+                    )}
                   </motion.div>
                 )}
                 {step === 6 && (
@@ -651,7 +652,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
         </div>
       </div>
 
-      {(step === 0 || step === 3 || step === 5) && !selectedTask && (
+      {(step === 0 || step === 1 || step === 4) && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -668,11 +669,10 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
               whileTap={!saving ? { scale: 0.98 } : undefined}
               onClick={() => {
                 if (saving) return;
-                if (step === 5) saveCheckin();
-                else if (step === 0) {
+                if (step === 0) {
                   if (moodBefore !== null && energyLevel !== null) setStep(1);
-                }
-                else if (step === 3) setStep(4);
+                } else if (step === 1) setStep(2);
+                else if (step === 4) setStep(5);
               }}
               disabled={saving || (step === 0 && (moodBefore === null || energyLevel === null))}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
@@ -681,7 +681,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                   : "bg-primary text-primary-foreground hover:shadow-glow"
               }`}
             >
-              {step === 5 ? (<>{saving ? <><Loader2 className="w-4 h-4 animate-spin" />Speichert...</> : <>Abschließen<Check className="w-4 h-4" /></>}</>) : (<>Weiter<ArrowRight className="w-4 h-4" /></>)}
+              Weiter<ArrowRight className="w-4 h-4" />
             </motion.button>
           </div>
         </div>
