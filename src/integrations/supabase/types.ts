@@ -20,6 +20,7 @@ export type Database = {
           assessment_type: string
           created_at: string
           id: string
+          program_instance_id: string | null
           scores: Json | null
           session_id: string
           timing: string
@@ -31,6 +32,7 @@ export type Database = {
           assessment_type: string
           created_at?: string
           id?: string
+          program_instance_id?: string | null
           scores?: Json | null
           session_id: string
           timing: string
@@ -42,6 +44,7 @@ export type Database = {
           assessment_type?: string
           created_at?: string
           id?: string
+          program_instance_id?: string | null
           scores?: Json | null
           session_id?: string
           timing?: string
@@ -92,6 +95,7 @@ export type Database = {
           day_number: number
           generated_questions: Json
           id: string
+          program_instance_id: string | null
           results: Json
           status: string
           total_count: number | null
@@ -105,6 +109,7 @@ export type Database = {
           day_number: number
           generated_questions?: Json
           id?: string
+          program_instance_id?: string | null
           results?: Json
           status?: string
           total_count?: number | null
@@ -118,6 +123,7 @@ export type Database = {
           day_number?: number
           generated_questions?: Json
           id?: string
+          program_instance_id?: string | null
           results?: Json
           status?: string
           total_count?: number | null
@@ -142,6 +148,7 @@ export type Database = {
           focus_rating: number | null
           id: string
           mood_before: number | null
+          program_instance_id: string | null
           reflection: string | null
           session_id: string
           tasks_completed: Json | null
@@ -155,6 +162,7 @@ export type Database = {
           focus_rating?: number | null
           id?: string
           mood_before?: number | null
+          program_instance_id?: string | null
           reflection?: string | null
           session_id: string
           tasks_completed?: Json | null
@@ -168,6 +176,7 @@ export type Database = {
           focus_rating?: number | null
           id?: string
           mood_before?: number | null
+          program_instance_id?: string | null
           reflection?: string | null
           session_id?: string
           tasks_completed?: Json | null
@@ -185,6 +194,7 @@ export type Database = {
           gratitude: string | null
           id: string
           journal_title: string | null
+          program_instance_id: string | null
           updated_at: string
           user_id: string
         }
@@ -197,6 +207,7 @@ export type Database = {
           gratitude?: string | null
           id?: string
           journal_title?: string | null
+          program_instance_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -209,6 +220,7 @@ export type Database = {
           gratitude?: string | null
           id?: string
           journal_title?: string | null
+          program_instance_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -325,6 +337,42 @@ export type Database = {
         }
         Relationships: []
       }
+      program_instances: {
+        Row: {
+          created_at: string
+          cycle_number: number
+          ended_at: string | null
+          id: string
+          started_at: string
+          status: string
+          team_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_number?: number
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          team_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_number?: number
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       program_progress_snapshots: {
         Row: {
           checkins_completed_count: number
@@ -339,6 +387,7 @@ export type Database = {
           journals_completed_count: number
           longest_streak: number
           program_day: number | null
+          program_instance_id: string | null
           tasks_completed_count: number
           team_id: string | null
           updated_at: string
@@ -357,6 +406,7 @@ export type Database = {
           journals_completed_count?: number
           longest_streak?: number
           program_day?: number | null
+          program_instance_id?: string | null
           tasks_completed_count?: number
           team_id?: string | null
           updated_at?: string
@@ -375,6 +425,7 @@ export type Database = {
           journals_completed_count?: number
           longest_streak?: number
           program_day?: number | null
+          program_instance_id?: string | null
           tasks_completed_count?: number
           team_id?: string | null
           updated_at?: string
@@ -578,6 +629,7 @@ export type Database = {
           day_number: number
           id: string
           opened_at: string | null
+          program_instance_id: string | null
           task_completion: Json
           time_spent_seconds: number | null
           updated_at: string
@@ -592,6 +644,7 @@ export type Database = {
           day_number: number
           id?: string
           opened_at?: string | null
+          program_instance_id?: string | null
           task_completion?: Json
           time_spent_seconds?: number | null
           updated_at?: string
@@ -606,6 +659,7 @@ export type Database = {
           day_number?: number
           id?: string
           opened_at?: string | null
+          program_instance_id?: string | null
           task_completion?: Json
           time_spent_seconds?: number | null
           updated_at?: string
