@@ -143,14 +143,8 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
     );
   }
 
-  // Placeholder marker for following block
-  {/* keep */}
-  <div style={{ display: "none" }}>
-    <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="text-muted-foreground text-sm">Keine Athleten im Team.</p>
-      </div>
-    );
-  }
+
+
 
   const getTrendIcon = (trend: TrendPoint[]) => {
     const valid = trend.filter((t) => t.value !== null);
