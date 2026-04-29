@@ -116,6 +116,42 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
     );
   }
 
+  if (data.insufficient_data) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
+          <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Du siehst nur Aggregate (mind. {data.min_n ?? 5} Spieler). Keine Einzelwerte,
+              keine Reflexionen, keine Journale.
+            </p>
+          </div>
+        </div>
+        <div className="text-center py-12">
+          <AlertTriangle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-foreground text-sm font-medium mb-1">
+            Zu wenig Daten für anonymisierte Auswertung.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Aktuell {data.teamSize} Athlet{data.teamSize === 1 ? "" : "en"} im Team —
+            mindestens {data.min_n ?? 5} mit Daten erforderlich.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Placeholder marker for following block
+  {/* keep */}
+  <div style={{ display: "none" }}>
+    <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+        <p className="text-muted-foreground text-sm">Keine Athleten im Team.</p>
+      </div>
+    );
+  }
+
   const getTrendIcon = (trend: TrendPoint[]) => {
     const valid = trend.filter((t) => t.value !== null);
     if (valid.length < 2) return <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
