@@ -12,6 +12,7 @@ import {
   Minus,
   Users,
   Zap,
+  Lock,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -32,13 +33,18 @@ import {
 interface TrendPoint {
   week: string;
   value: number | null;
+  n_users?: number;
+  sufficient_data?: boolean;
 }
 
 interface TeamMentalData {
-  energy: { current: number; trend: TrendPoint[] };
-  mood: { current: number; trend: TrendPoint[] };
-  focus: { current: number; trend: TrendPoint[] };
-  resilience: { current: number; trend: { week: string; score: number | null }[] };
+  insufficient_data?: boolean;
+  insufficient_reason?: string;
+  min_n?: number;
+  energy: { current: number | null; trend: TrendPoint[] };
+  mood: { current: number | null; trend: TrendPoint[] };
+  focus: { current: number | null; trend: TrendPoint[] };
+  resilience: { current: number | null; trend: { week: string; score: number | null; n_users?: number; sufficient_data?: boolean }[] };
   participation: { rate: number; total: number };
   stressWarning: boolean;
   teamSize: number;
@@ -110,6 +116,36 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       </div>
     );
   }
+
+  if (data.insufficient_data) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
+          <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Du siehst nur Aggregate (mind. {data.min_n ?? 5} Spieler). Keine Einzelwerte,
+              keine Reflexionen, keine Journale.
+            </p>
+          </div>
+        </div>
+        <div className="text-center py-12">
+          <AlertTriangle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-foreground text-sm font-medium mb-1">
+            Zu wenig Daten für anonymisierte Auswertung.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Aktuell {data.teamSize} Athlet{data.teamSize === 1 ? "" : "en"} im Team —
+            mindestens {data.min_n ?? 5} mit Daten erforderlich.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+
+
 
   const getTrendIcon = (trend: TrendPoint[]) => {
     const valid = trend.filter((t) => t.value !== null);
@@ -391,13 +427,14 @@ const MetricCard = ({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value: number | null;
   max: number;
   trend: React.ReactNode;
   color: string;
   suffix?: string;
 }) => {
-  const percentage = max > 0 ? (value / max) * 100 : 0;
+  const hasValue = typeof value === "number";
+  const percentage = hasValue && max > 0 ? (value! / max) * 100 : 0;
   const barColor =
     percentage >= 70 ? "bg-primary" : percentage >= 40 ? "bg-yellow-500" : "bg-destructive";
 
@@ -408,8 +445,8 @@ const MetricCard = ({
         {trend}
       </div>
       <p className="text-xl font-bold text-foreground">
-        {value}
-        {suffix || <span className="text-xs text-muted-foreground font-normal">/{max}</span>}
+        {hasValue ? value : <span className="text-muted-foreground">—</span>}
+        {hasValue && (suffix || <span className="text-xs text-muted-foreground font-normal">/{max}</span>)}
       </p>
       <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
       <div className="w-full h-1 bg-secondary/50 rounded-full mt-2">
