@@ -281,6 +281,16 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                               {pending} {pending === 1 ? "Spieler hat" : "Spieler haben"} den Fragebogen noch nicht ausgefüllt.
                             </p>
                           )}
+                          {!ready && r.pendingNames.length > 0 && (
+                            <ul className="mt-2 space-y-1">
+                              {r.pendingNames.map((name) => (
+                                <li key={name} className="text-[11px] opacity-70 flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 shrink-0" />
+                                  {name}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </>
                       )}
                     </div>
