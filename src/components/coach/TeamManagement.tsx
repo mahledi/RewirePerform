@@ -100,12 +100,16 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   };
 
   const [activatingId, setActivatingId] = useState<string | null>(null);
-  const [readiness, setReadiness] = useState<Record<string, { athleteCount: number; completedCount: number }>>({});
+  const [readiness, setReadiness] = useState<Record<string, {
+    athleteCount: number;
+    completedCount: number;
+    pendingNames: string[];
+  }>>({});
   const [readinessLoading, setReadinessLoading] = useState(true);
 
   const loadReadiness = async () => {
     setReadinessLoading(true);
-    const result: Record<string, { athleteCount: number; completedCount: number }> = {};
+    const result: Record<string, { athleteCount: number; completedCount: number; pendingNames: string[] }> = {};
     for (const team of teams) {
       // 1) Mitglieder des Teams
       const { data: members } = await supabase
