@@ -32,13 +32,18 @@ import {
 interface TrendPoint {
   week: string;
   value: number | null;
+  n_users?: number;
+  sufficient_data?: boolean;
 }
 
 interface TeamMentalData {
-  energy: { current: number; trend: TrendPoint[] };
-  mood: { current: number; trend: TrendPoint[] };
-  focus: { current: number; trend: TrendPoint[] };
-  resilience: { current: number; trend: { week: string; score: number | null }[] };
+  insufficient_data?: boolean;
+  insufficient_reason?: string;
+  min_n?: number;
+  energy: { current: number | null; trend: TrendPoint[] };
+  mood: { current: number | null; trend: TrendPoint[] };
+  focus: { current: number | null; trend: TrendPoint[] };
+  resilience: { current: number | null; trend: { week: string; score: number | null; n_users?: number; sufficient_data?: boolean }[] };
   participation: { rate: number; total: number };
   stressWarning: boolean;
   teamSize: number;
