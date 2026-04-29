@@ -119,7 +119,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
       const memberIds = (members ?? []).map((m) => m.user_id);
 
       if (memberIds.length === 0) {
-        result[team.id] = { athleteCount: 0, completedCount: 0 };
+        result[team.id] = { athleteCount: 0, completedCount: 0, pendingNames: [] };
         continue;
       }
 
@@ -131,7 +131,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
       const athleteIds = (roles ?? []).filter((r) => r.role === "athlete").map((r) => r.user_id);
 
       if (athleteIds.length === 0) {
-        result[team.id] = { athleteCount: 0, completedCount: 0 };
+        result[team.id] = { athleteCount: 0, completedCount: 0, pendingNames: [] };
         continue;
       }
 
@@ -143,9 +143,20 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
         .eq("is_complete", true);
       const completedIds = new Set((responses ?? []).map((r) => r.user_id));
 
+      const pendingIds = athleteIds.filter((id) => !completedIds.has(id));
+
+      const { data: pendingProfiles } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", pendingIds);
+      const pendingNames = (pendingProfiles ?? []).map(
+        (p) => p.full_name || "Unbekannt"
+      );
+
       result[team.id] = {
         athleteCount: athleteIds.length,
         completedCount: athleteIds.filter((id) => completedIds.has(id)).length,
+        pendingNames,
       };
     }
     setReadiness(result);
