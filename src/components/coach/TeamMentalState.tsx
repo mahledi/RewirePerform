@@ -427,13 +427,14 @@ const MetricCard = ({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value: number | null;
   max: number;
   trend: React.ReactNode;
   color: string;
   suffix?: string;
 }) => {
-  const percentage = max > 0 ? (value / max) * 100 : 0;
+  const hasValue = typeof value === "number";
+  const percentage = hasValue && max > 0 ? (value! / max) * 100 : 0;
   const barColor =
     percentage >= 70 ? "bg-primary" : percentage >= 40 ? "bg-yellow-500" : "bg-destructive";
 
@@ -444,8 +445,8 @@ const MetricCard = ({
         {trend}
       </div>
       <p className="text-xl font-bold text-foreground">
-        {value}
-        {suffix || <span className="text-xs text-muted-foreground font-normal">/{max}</span>}
+        {hasValue ? value : <span className="text-muted-foreground">—</span>}
+        {hasValue && (suffix || <span className="text-xs text-muted-foreground font-normal">/{max}</span>)}
       </p>
       <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
       <div className="w-full h-1 bg-secondary/50 rounded-full mt-2">
