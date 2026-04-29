@@ -12,6 +12,7 @@ import {
   Minus,
   Users,
   Zap,
+  Lock,
 } from "lucide-react";
 import {
   ResponsiveContainer,
