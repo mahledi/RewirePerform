@@ -1,3 +1,16 @@
+/**
+ * team-mental-state — privacy-hardened V1
+ *
+ * Hard rules (do NOT relax):
+ *  - Strict n >= 5 anonymity threshold for any psychological signal
+ *    (mood/energy/focus/resilience/team chemistry/vibe).
+ *  - Raw reflection / journal / questionnaire free-text NEVER leaves the DB.
+ *  - The AI vibe summary, if generated, may only consume aggregated numeric
+ *    metrics (rounded means + counts). No per-player text is ever included
+ *    in the prompt.
+ *  - When n < 5, return empty psychological signals + insufficient_data flag.
+ *    The UI shows "Zu wenig Daten für anonymisierte Auswertung."
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
@@ -6,6 +19,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const MIN_N = 5;
+
+function emptyPayload(teamSize: number, reason: string) {
+  return {
+    insufficient_data: true,
+    insufficient_reason: reason,
+    min_n: MIN_N,
+    teamSize,
+    energy: { current: null, trend: [] },
+    mood: { current: null, trend: [] },
+    focus: { current: null, trend: [] },
+    resilience: { current: null, trend: [] },
+    participation: { rate: 0, total: 0 },
+    stressWarning: false,
+    teamChemistry: null,
+    vibe: null,
+  };
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -22,11 +54,12 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Verify the caller is a coach
-    const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
+    // Verify caller
+    const anonClient = createClient(supabaseUrl, anonKey);
     const { data: { user }, error: authError } = await anonClient.auth.getUser(
       authHeader.replace("Bearer ", "")
     );
@@ -42,7 +75,6 @@ serve(async (req) => {
       .select("role")
       .eq("user_id", user.id)
       .maybeSingle();
-
     if (roleData?.role !== "coach") {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
@@ -58,14 +90,13 @@ serve(async (req) => {
       });
     }
 
-    // Verify coach owns this team
+    // Verify ownership
     const { data: team } = await supabase
       .from("teams")
       .select("id")
       .eq("id", team_id)
       .eq("created_by", user.id)
       .maybeSingle();
-
     if (!team) {
       return new Response(JSON.stringify({ error: "Team not found" }), {
         status: 404,
@@ -73,140 +104,97 @@ serve(async (req) => {
       });
     }
 
-    // Get team members (athletes only)
+    // Athletes in this team
     const { data: members } = await supabase
       .from("team_members")
       .select("user_id")
       .eq("team_id", team_id);
-
     const memberIds = (members ?? []).map((m) => m.user_id);
 
     if (memberIds.length === 0) {
-      return new Response(JSON.stringify({
-        energy: { current: 0, trend: [] },
-        resilience: { current: 0, trend: [] },
-        mood: { current: 0, trend: [] },
-        focus: { current: 0, trend: [] },
-        participation: { rate: 0, total: 0 },
-        stressWarning: false,
-        teamSize: 0,
-        vibe: null,
-      }), {
+      return new Response(JSON.stringify(emptyPayload(0, "no_members")), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Filter to athletes
     const { data: roles } = await supabase
       .from("user_roles")
       .select("user_id, role")
       .in("user_id", memberIds);
-
     const athleteIds = (roles ?? [])
       .filter((r) => r.role === "athlete")
       .map((r) => r.user_id);
+    const teamSize = athleteIds.length;
 
-    if (athleteIds.length === 0) {
-      return new Response(JSON.stringify({
-        energy: { current: 0, trend: [] },
-        resilience: { current: 0, trend: [] },
-        mood: { current: 0, trend: [] },
-        focus: { current: 0, trend: [] },
-        participation: { rate: 0, total: 0 },
-        stressWarning: false,
-        teamSize: 0,
-        vibe: null,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (teamSize < MIN_N) {
+      return new Response(
+        JSON.stringify(emptyPayload(teamSize, "below_min_n")),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Get last 28 days of check-ins
+    // Last 28 days of check-ins — numeric fields ONLY. Raw `reflection` is
+    // intentionally NOT selected. It must never leave the DB via this function.
     const fourWeeksAgo = new Date();
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const cutoff = fourWeeksAgo.toISOString().split("T")[0];
 
     const { data: checkins } = await supabase
       .from("daily_checkins")
-      .select("user_id, date, energy_level, mood_before, focus_rating, reflection")
+      .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed")
       .in("user_id", athleteIds)
       .gte("date", cutoff)
       .order("date", { ascending: true });
 
     const allCheckins = checkins ?? [];
 
-    // Get assessments for resilience (aMCC scores from tasks_completed)
-    const { data: recentCheckins } = await supabase
-      .from("daily_checkins")
-      .select("user_id, date, tasks_completed")
-      .in("user_id", athleteIds)
-      .gte("date", cutoff);
-
-    // Calculate weekly aggregates (4 weeks)
-    const weeks: string[] = [];
+    // Build 4 weekly buckets
+    const weeks: { start: string; end: string; label: string }[] = [];
     for (let i = 3; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i * 7);
-      weeks.push(d.toISOString().split("T")[0]);
+      const start = d.toISOString().split("T")[0];
+      const end = new Date(d);
+      end.setDate(end.getDate() + 7);
+      const label =
+        i === 0 ? "Diese Woche" : i === 1 ? "Letzte Woche" : `Vor ${i} Wochen`;
+      weeks.push({ start, end: end.toISOString().split("T")[0], label });
     }
 
-    const getWeekLabel = (weekIndex: number) => {
-      if (weekIndex === 3) return "Diese Woche";
-      if (weekIndex === 2) return "Letzte Woche";
-      return `Vor ${3 - weekIndex} Wochen`;
-    };
-
-    const weekBounds = weeks.map((start, i) => {
-      const end = new Date(start);
-      end.setDate(end.getDate() + 7);
-      return { start, end: end.toISOString().split("T")[0], label: getWeekLabel(i) };
-    });
-
-    const trendData = weekBounds.map((wb) => {
-      const weekCheckins = allCheckins.filter(
-        (c) => c.date >= wb.start && c.date < wb.end
-      );
-      const energyVals = weekCheckins.filter((c) => c.energy_level != null).map((c) => c.energy_level!);
-      const moodVals = weekCheckins.filter((c) => c.mood_before != null).map((c) => c.mood_before!);
-      const focusVals = weekCheckins.filter((c) => c.focus_rating != null).map((c) => c.focus_rating!);
-
+    // Per-week aggregation. Anonymity threshold: hide values when distinct
+    // contributing athletes < MIN_N.
+    const trendData = weeks.map((wb) => {
+      const wc = allCheckins.filter((c) => c.date >= wb.start && c.date < wb.end);
+      const distinctUsers = new Set(wc.map((c) => c.user_id)).size;
+      const safe = distinctUsers >= MIN_N;
+      const avg = (vals: (number | null | undefined)[]) => {
+        const nums = vals.filter((v): v is number => typeof v === "number");
+        if (nums.length === 0) return null;
+        return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+      };
       return {
         week: wb.label,
-        energy: energyVals.length > 0 ? Math.round((energyVals.reduce((a, b) => a + b, 0) / energyVals.length) * 10) / 10 : null,
-        mood: moodVals.length > 0 ? Math.round((moodVals.reduce((a, b) => a + b, 0) / moodVals.length) * 10) / 10 : null,
-        focus: focusVals.length > 0 ? Math.round((focusVals.reduce((a, b) => a + b, 0) / focusVals.length) * 10) / 10 : null,
-        checkins: weekCheckins.length,
+        n_users: distinctUsers,
+        sufficient_data: safe,
+        energy: safe ? avg(wc.map((c) => c.energy_level)) : null,
+        mood: safe ? avg(wc.map((c) => c.mood_before)) : null,
+        focus: safe ? avg(wc.map((c) => c.focus_rating)) : null,
+        // Resilience proxy = % of check-ins with at least 1 task completed
+        resilience: safe
+          ? (() => {
+              if (wc.length === 0) return null;
+              const done = wc.filter(
+                (c) => Array.isArray(c.tasks_completed) && c.tasks_completed.length > 0
+              ).length;
+              return Math.round((done / wc.length) * 100);
+            })()
+          : null,
       };
     });
 
-    // Current week values
     const currentWeek = trendData[trendData.length - 1];
 
-    // Resilience as completion rate of daily check-ins (tasks_completed has entries)
-    const totalCheckinCount = (recentCheckins ?? []).length;
-    const completedCheckinCount = (recentCheckins ?? []).filter(
-      (c) => Array.isArray(c.tasks_completed) && c.tasks_completed.length > 0
-    ).length;
-    const resilienceScore = totalCheckinCount > 0
-      ? Math.round((completedCheckinCount / totalCheckinCount) * 100)
-      : 0;
-
-    // Resilience trend per week (completion rate per week)
-    const resilienceTrend = weekBounds.map((wb) => {
-      const weekCheckins = (recentCheckins ?? []).filter(
-        (c) => c.date >= wb.start && c.date < wb.end
-      );
-      const weekTotal = weekCheckins.length;
-      const weekCompleted = weekCheckins.filter(
-        (c) => Array.isArray(c.tasks_completed) && c.tasks_completed.length > 0
-      ).length;
-      return {
-        week: wb.label,
-        score: weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : null,
-      };
-    });
-
-    // Participation rate (last 7 days)
+    // Participation (last 7 days) — operational, not psychological. Safe.
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const weekCutoff = sevenDaysAgo.toISOString().split("T")[0];
@@ -214,117 +202,164 @@ serve(async (req) => {
       allCheckins.filter((c) => c.date >= weekCutoff).map((c) => c.user_id)
     ).size;
 
-    // Stress warning: if average mood < 4 or energy < 4 (on 0-10 scale)
+    // Stress warning — only if current week has sufficient data.
     const stressWarning =
-      (currentWeek.mood !== null && currentWeek.mood < 4) ||
-      (currentWeek.energy !== null && currentWeek.energy < 4);
+      currentWeek.sufficient_data &&
+      ((currentWeek.mood !== null && currentWeek.mood < 4) ||
+        (currentWeek.energy !== null && currentWeek.energy < 4));
 
-    // Collect anonymized reflections for AI vibe summary (last 7 days only)
-    const recentReflections = allCheckins
-      .filter((c) => c.date >= weekCutoff && c.reflection && c.reflection.trim().length > 5)
-      .map((c) => c.reflection!);
-
-    let vibe: string | null = null;
-
-    if (recentReflections.length >= 3) {
-      // Generate AI vibe summary
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      if (LOVABLE_API_KEY) {
-        try {
-          const vibePrompt = `Du analysierst anonymisierte Reflexionen eines Sportteams aus den letzten 7 Tagen.
-Gib eine kurze, faktenbasierte Zusammenfassung (3-5 Sätze) des dominanten Team-Gefühls.
-
-REGELN:
-- NUR Fakten, KEINE Handlungsempfehlungen
-- Beschreibe die Stimmung, nicht was der Trainer tun soll
-- Nenne dominante Themen (z.B. Angst vor Fehlern, Euphorie, Frust, Zusammenhalt, Müdigkeit)
-- Formuliere in der dritten Person ("Das Team...", "Die Mannschaft...")
-- Maximal 5 Sätze
-- Deutsch
-
-Hier sind ${recentReflections.length} anonymisierte Reflexionen:
-${recentReflections.map((r, i) => `${i + 1}. "${r}"`).join("\n")}`;
-
-          const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                { role: "system", content: "Du bist ein Sportpsychologie-Analyst. Gib nur Fakten, keine Ratschläge." },
-                { role: "user", content: vibePrompt },
-              ],
-            }),
-          });
-
-          if (aiResponse.ok) {
-            const aiData = await aiResponse.json();
-            vibe = aiData.choices?.[0]?.message?.content || null;
-          }
-        } catch (e) {
-          console.error("AI vibe generation failed:", e);
-        }
-      }
-    }
-
-    // Get questionnaire analysis data for team chemistry / deeper insights
+    // Team chemistry from questionnaire analyses — only safe if >= MIN_N
+    // distinct athletes have a non-null analysis.
     const { data: questionnaireData } = await supabase
       .from("questionnaire_responses")
-      .select("analysis, user_id")
+      .select("user_id, analysis")
       .in("user_id", athleteIds)
       .not("analysis", "is", null);
 
-    // Extract aggregated inner excellence scores
-    let ieScores = { growthMindset: 0, presence: 0, egoFreedom: 0, emotionalControl: 0, count: 0 };
-    for (const q of (questionnaireData ?? [])) {
-      const analysis = q.analysis as any;
-      if (analysis?.inner_excellence_profile) {
-        const ie = analysis.inner_excellence_profile;
-        if (ie.growth_mindset_score != null) {
-          ieScores.growthMindset += ie.growth_mindset_score;
-          ieScores.count++;
+    let teamChemistry: {
+      growthMindset: number;
+      presence: number;
+      egoFreedom: number;
+      emotionalControl: number;
+    } | null = null;
+
+    const distinctQUsers = new Set((questionnaireData ?? []).map((q) => q.user_id)).size;
+    if (distinctQUsers >= MIN_N) {
+      let gm = 0, pr = 0, ego = 0, ec = 0, c = 0;
+      const presenceMap: Record<string, number> = {
+        niedrig: 25, mittel: 50, hoch: 75, "sehr hoch": 100,
+      };
+      for (const q of questionnaireData ?? []) {
+        const ie = (q.analysis as any)?.inner_excellence_profile;
+        if (!ie) continue;
+        if (typeof ie.growth_mindset_score === "number") { gm += ie.growth_mindset_score; c++; }
+        if (typeof ie.ego_freedom_score === "number") ego += ie.ego_freedom_score;
+        if (typeof ie.emotional_control_score === "number") ec += ie.emotional_control_score;
+        if (typeof ie.presence_level === "string") {
+          pr += presenceMap[ie.presence_level.toLowerCase()] ?? 50;
         }
-        if (ie.ego_freedom_score != null) ieScores.egoFreedom += ie.ego_freedom_score;
-        if (ie.emotional_control_score != null) ieScores.emotionalControl += ie.emotional_control_score;
-        // presence_level is text, convert
-        const presenceMap: Record<string, number> = { "niedrig": 25, "mittel": 50, "hoch": 75, "sehr hoch": 100 };
-        if (ie.presence_level) ieScores.presence += (presenceMap[ie.presence_level.toLowerCase()] ?? 50);
+      }
+      if (c >= MIN_N) {
+        teamChemistry = {
+          growthMindset: Math.round(gm / c),
+          presence: Math.round(pr / c),
+          egoFreedom: Math.round(ego / c),
+          emotionalControl: Math.round(ec / c),
+        };
       }
     }
 
-    const teamChemistry = ieScores.count > 0 ? {
-      growthMindset: Math.round(ieScores.growthMindset / ieScores.count),
-      presence: Math.round(ieScores.presence / ieScores.count),
-      egoFreedom: Math.round(ieScores.egoFreedom / ieScores.count),
-      emotionalControl: Math.round(ieScores.emotionalControl / ieScores.count),
-    } : null;
+    // AI vibe — derived ONLY from aggregated numeric metrics. No raw text in.
+    let vibe: string | null = null;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (LOVABLE_API_KEY && currentWeek.sufficient_data) {
+      try {
+        const numericSummary = {
+          team_size: teamSize,
+          contributing_athletes_this_week: currentWeek.n_users,
+          this_week: {
+            mood: currentWeek.mood,
+            energy: currentWeek.energy,
+            focus: currentWeek.focus,
+            resilience_pct: currentWeek.resilience,
+          },
+          previous_weeks: trendData.slice(0, -1).map((w) => ({
+            label: w.week,
+            n_users: w.n_users,
+            mood: w.mood,
+            energy: w.energy,
+            focus: w.focus,
+          })),
+          stress_warning: stressWarning,
+        };
+
+        const vibePrompt = `Du fasst den aggregierten Team-Zustand kurz zusammen.
+NUR aggregierte numerische Metriken (Skala 0-10 für Stimmung/Energie/Fokus, 0-100% für Resilienz).
+Keine Reflexionen, keine Einzelaussagen, keine Tipps.
+
+REGELN:
+- 2-4 nüchterne Sätze
+- Beschreibe nur das aggregierte Bild ("Das Team ...", "Die Werte ...")
+- Erwähne Trend (steigend/fallend/stabil) wenn klar
+- Keine Handlungsempfehlung
+- Deutsch
+- Keine Kausalaussagen ("weil", "wegen")
+
+Aggregierte Daten:
+${JSON.stringify(numericSummary, null, 2)}`;
+
+        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "Du bist ein neutraler Statistik-Erzähler. Beschreibe nur aggregierte Zahlen. Keine Einzelaussagen, keine Empfehlungen, keine Kausalaussagen.",
+              },
+              { role: "user", content: vibePrompt },
+            ],
+          }),
+        });
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          vibe = aiData.choices?.[0]?.message?.content || null;
+        }
+      } catch (e) {
+        console.error("AI vibe (aggregate-only) failed:", e);
+      }
+    }
 
     const result = {
+      insufficient_data: false,
+      min_n: MIN_N,
+      teamSize,
       energy: {
-        current: currentWeek.energy ?? 0,
-        trend: trendData.map((t) => ({ week: t.week, value: t.energy })),
+        current: currentWeek.sufficient_data ? currentWeek.energy : null,
+        trend: trendData.map((t) => ({
+          week: t.week,
+          value: t.sufficient_data ? t.energy : null,
+          n_users: t.n_users,
+          sufficient_data: t.sufficient_data,
+        })),
       },
       mood: {
-        current: currentWeek.mood ?? 0,
-        trend: trendData.map((t) => ({ week: t.week, value: t.mood })),
+        current: currentWeek.sufficient_data ? currentWeek.mood : null,
+        trend: trendData.map((t) => ({
+          week: t.week,
+          value: t.sufficient_data ? t.mood : null,
+          n_users: t.n_users,
+          sufficient_data: t.sufficient_data,
+        })),
       },
       focus: {
-        current: currentWeek.focus ?? 0,
-        trend: trendData.map((t) => ({ week: t.week, value: t.focus })),
+        current: currentWeek.sufficient_data ? currentWeek.focus : null,
+        trend: trendData.map((t) => ({
+          week: t.week,
+          value: t.sufficient_data ? t.focus : null,
+          n_users: t.n_users,
+          sufficient_data: t.sufficient_data,
+        })),
       },
       resilience: {
-        current: resilienceScore,
-        trend: resilienceTrend,
+        current: currentWeek.sufficient_data ? currentWeek.resilience : null,
+        trend: trendData.map((t) => ({
+          week: t.week,
+          score: t.sufficient_data ? t.resilience : null,
+          n_users: t.n_users,
+          sufficient_data: t.sufficient_data,
+        })),
       },
       participation: {
-        rate: athleteIds.length > 0 ? Math.round((activeThisWeek / athleteIds.length) * 100) : 0,
+        rate: teamSize > 0 ? Math.round((activeThisWeek / teamSize) * 100) : 0,
         total: activeThisWeek,
       },
       stressWarning,
-      teamSize: athleteIds.length,
       teamChemistry,
       vibe,
     };
@@ -334,9 +369,9 @@ ${recentReflections.map((r, i) => `${i + 1}. "${r}"`).join("\n")}`;
     });
   } catch (e) {
     console.error("team-mental-state error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
