@@ -135,7 +135,7 @@ const Auth = () => {
         <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-2 mb-6 cursor-pointer" onClick={() => navigate("/")}>
             <Brain className="w-7 h-7 text-primary" />
-            <span className="font-heading text-xl font-bold">MindGame</span>
+            <span className="font-heading text-xl font-bold">RewirePerform</span>
           </div>
           <h1 className="font-heading text-3xl font-bold mb-2">
             {isLogin ? "Willkommen zurück." : "Deine Reise beginnt."}

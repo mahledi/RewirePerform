@@ -18,8 +18,8 @@ const feedbackTypes = [
 
 const faqItems = [
   {
-    q: "Was ist MindGame?",
-    a: "MindGame ist ein wissenschaftlich fundiertes Mentaltraining-Programm speziell für Sportler. Es analysiert dein mentales Profil und erstellt darauf basierend personalisierte tägliche Aufgaben, die dich mental stärker machen — auf und neben dem Platz.",
+    q: "Was ist RewirePerform?",
+    a: "RewirePerform ist ein wissenschaftlich fundiertes Mentaltraining-Programm speziell für Sportler. Es analysiert dein mentales Profil und erstellt darauf basierend personalisierte tägliche Aufgaben, die dich mental stärker machen — auf und neben dem Platz.",
   },
   {
     q: "Wie funktioniert das Programm?",
@@ -184,7 +184,7 @@ const Settings = () => {
               <MessageSquare className="w-5 h-5 text-primary" />
               <h2 className="font-heading font-semibold text-lg">Feedback</h2>
             </div>
-            <p className="text-sm text-muted-foreground">Hilf uns, MindGame besser zu machen. Melde Bugs, teile Vorschläge oder schreib uns einfach.</p>
+            <p className="text-sm text-muted-foreground">Hilf uns, RewirePerform besser zu machen. Melde Bugs, teile Vorschläge oder schreib uns einfach.</p>
 
             <div className="flex gap-2">
               {feedbackTypes.map((t) => {
@@ -271,7 +271,7 @@ const Settings = () => {
 
               <div>
                 <h3 className="font-medium text-foreground mb-1">DSGVO</h3>
-                <p>MindGame entspricht der Datenschutz-Grundverordnung (DSGVO). Deine Daten werden ausschließlich in der EU verarbeitet und nicht an Dritte weitergegeben.</p>
+                <p>RewirePerform entspricht der Datenschutz-Grundverordnung (DSGVO). Deine Daten werden ausschließlich in der EU verarbeitet und nicht an Dritte weitergegeben.</p>
               </div>
             </div>
           </div>
@@ -285,7 +285,7 @@ const Settings = () => {
               <h2 className="font-heading font-semibold text-lg">Als App installieren</h2>
             </div>
 
-            <p className="text-sm text-muted-foreground">Du kannst MindGame wie eine echte App auf deinem Handy nutzen — ohne App Store. So geht's:</p>
+            <p className="text-sm text-muted-foreground">Du kannst RewirePerform wie eine echte App auf deinem Handy nutzen — ohne App Store. So geht's:</p>
 
             <div className="space-y-4">
               <div className="rounded-lg bg-secondary/50 p-4 space-y-2">
@@ -294,7 +294,7 @@ const Settings = () => {
                   iPhone (Safari)
                 </h3>
                 <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Öffne MindGame in <strong className="text-foreground">Safari</strong></li>
+                  <li>Öffne RewirePerform in <strong className="text-foreground">Safari</strong></li>
                   <li>Tippe auf das <strong className="text-foreground">Teilen-Symbol</strong> (Quadrat mit Pfeil nach oben)</li>
                   <li>Scrolle runter und wähle <strong className="text-foreground">"Zum Home-Bildschirm"</strong></li>
                   <li>Tippe auf <strong className="text-foreground">"Hinzufügen"</strong></li>
@@ -307,14 +307,14 @@ const Settings = () => {
                   Android (Chrome)
                 </h3>
                 <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Öffne MindGame in <strong className="text-foreground">Chrome</strong></li>
+                  <li>Öffne RewirePerform in <strong className="text-foreground">Chrome</strong></li>
                   <li>Tippe auf die <strong className="text-foreground">drei Punkte</strong> oben rechts</li>
                   <li>Wähle <strong className="text-foreground">"Zum Startbildschirm hinzufügen"</strong></li>
                   <li>Bestätige mit <strong className="text-foreground">"Hinzufügen"</strong></li>
                 </ol>
               </div>
 
-              <p className="text-xs text-muted-foreground">Nach der Installation öffnet sich MindGame im Vollbildmodus — genau wie eine normale App. Du bleibst eingeloggt und bekommst direkten Zugriff.</p>
+              <p className="text-xs text-muted-foreground">Nach der Installation öffnet sich RewirePerform im Vollbildmodus — genau wie eine normale App. Du bleibst eingeloggt und bekommst direkten Zugriff.</p>
             </div>
           </div>
         </motion.section>
