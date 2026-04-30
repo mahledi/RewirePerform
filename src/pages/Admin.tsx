@@ -149,9 +149,10 @@ const Admin = () => {
 
   const updateFeedback = async (id: string, status: string) => {
     const note = noteDraft[id];
-    const { error } = await supabase.rpc("update_feedback_status" as never, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).rpc("update_feedback_status", {
       feedback_id: id, new_status: status, new_note: note ?? null,
-    } as never);
+    });
     if (error) {
       toast({ title: "Fehler", description: error.message, variant: "destructive" });
       return;
