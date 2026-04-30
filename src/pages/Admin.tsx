@@ -104,16 +104,18 @@ const Admin = () => {
 
   const loadAll = async () => {
     setLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sb = supabase as any;
     const [ov, ts, hl, fb] = await Promise.all([
-      supabase.rpc("get_admin_overview_stats" as never),
-      supabase.rpc("get_admin_teams_summary" as never),
-      supabase.rpc("get_admin_system_health" as never),
-      supabase.from("feedback" as never).select("*").order("created_at", { ascending: false }),
+      sb.rpc("get_admin_overview_stats"),
+      sb.rpc("get_admin_teams_summary"),
+      sb.rpc("get_admin_system_health"),
+      sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
     if (ov.data) setOverview(ov.data as Overview);
     if (ts.data) setTeams(ts.data as TeamRow[]);
     if (hl.data) setHealth(hl.data as Health);
-    if (!fb.error && fb.data) setFeedback(fb.data as unknown as FeedbackRow[]);
+    if (!fb.error && fb.data) setFeedback(fb.data as FeedbackRow[]);
     setLoading(false);
   };
 
