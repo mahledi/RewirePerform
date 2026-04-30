@@ -54,6 +54,9 @@ const App = () => (
             <Route path="/journal" element={
               <ProtectedRoute><Journal /></ProtectedRoute>
             } />
+            <Route path="/admin" element={
+              <ProtectedRoute><Admin /></ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
