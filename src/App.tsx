@@ -15,6 +15,7 @@ import DeepProfile from "./pages/DeepProfile.tsx";
 import Progress from "./pages/Progress.tsx";
 import Settings from "./pages/Settings.tsx";
 import Journal from "./pages/Journal.tsx";
+import Admin from "./pages/Admin.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,9 @@ const App = () => (
             } />
             <Route path="/journal" element={
               <ProtectedRoute><Journal /></ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute><Admin /></ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>

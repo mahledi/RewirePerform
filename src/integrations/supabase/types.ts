@@ -255,23 +255,32 @@ export type Database = {
       }
       feedback: {
         Row: {
+          admin_note: string | null
           created_at: string
           id: string
           message: string
+          reviewed_at: string | null
+          status: string
           type: string
           user_id: string
         }
         Insert: {
+          admin_note?: string | null
           created_at?: string
           id?: string
           message: string
+          reviewed_at?: string | null
+          status?: string
           type?: string
           user_id: string
         }
         Update: {
+          admin_note?: string | null
           created_at?: string
           id?: string
           message?: string
+          reviewed_at?: string | null
+          status?: string
           type?: string
           user_id?: string
         }
@@ -722,6 +731,9 @@ export type Database = {
         Args: { min_n?: number; team_id_param: string }
         Returns: Json
       }
+      get_admin_overview_stats: { Args: never; Returns: Json }
+      get_admin_system_health: { Args: never; Returns: Json }
+      get_admin_teams_summary: { Args: never; Returns: Json }
       get_team_stats: { Args: { team_id_param: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
@@ -734,9 +746,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_feedback_status: {
+        Args: { feedback_id: string; new_note?: string; new_status: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      app_role: "athlete" | "coach"
+      app_role: "athlete" | "coach" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -864,7 +880,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["athlete", "coach"],
+      app_role: ["athlete", "coach", "admin"],
     },
   },
 } as const
