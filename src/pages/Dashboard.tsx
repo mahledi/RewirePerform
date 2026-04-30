@@ -151,7 +151,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold">MindGame</span>
+            <span className="font-heading font-bold">RewirePerform</span>
           </div>
           <span className="text-xs text-muted-foreground font-heading">Kalender-Setup</span>
         </div>
@@ -605,7 +605,7 @@ const Dashboard = () => {
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              <span className="font-heading font-bold">MindGame</span>
+              <span className="font-heading font-bold">RewirePerform</span>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Einstellungen">
@@ -703,7 +703,7 @@ const Dashboard = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold">MindGame</span>
+            <span className="font-heading font-bold">RewirePerform</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Tests">

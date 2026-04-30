@@ -28,7 +28,7 @@ const Index = () => {
       <CTASection />
       <footer className="py-8 border-t border-border">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2026 MindGame. Alle Rechte vorbehalten.
+          © 2026 RewirePerform. Alle Rechte vorbehalten.
         </div>
       </footer>
     </div>
