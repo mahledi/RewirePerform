@@ -15,6 +15,7 @@ interface Team {
   name: string;
   sport: string | null;
   access_code: string;
+  coach_access_code: string;
   program_start_date: string | null;
   program_activated_at: string | null;
 }
