@@ -212,16 +212,23 @@ const Auth = () => {
               </div>
 
               {/* Team Code */}
-              <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Teamcode (optional)"
-                  value={teamCode}
-                  onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
-                  maxLength={6}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm uppercase tracking-widest"
-                />
+              <div>
+                <div className="relative">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Teamcode (optional)"
+                    value={teamCode}
+                    onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
+                    maxLength={6}
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm uppercase tracking-widest"
+                  />
+                </div>
+                {teamCode.trim() && (
+                  <p className="text-[11px] text-muted-foreground mt-2 px-1">
+                    Dein Code legt automatisch fest, ob du als Sportler oder Coach beitrittst.
+                  </p>
+                )}
               </div>
             </>
           )}
