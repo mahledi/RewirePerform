@@ -30,10 +30,24 @@ const Coach = () => {
 
   const fetchTeams = async () => {
     if (!user) return;
-    const { data } = await supabase
+    // Coaches see teams they CREATED + teams where they are a member (co-coach)
+    const { data: memberships } = await supabase
+      .from("team_members")
+      .select("team_id")
+      .eq("user_id", user.id);
+    const memberTeamIds = (memberships ?? []).map((m) => m.team_id);
+
+    let query = supabase
       .from("teams")
-      .select("id, name, sport, access_code, program_start_date, program_activated_at")
-      .eq("created_by", user.id);
+      .select("id, name, sport, access_code, coach_access_code, program_start_date, program_activated_at");
+
+    if (memberTeamIds.length > 0) {
+      query = query.or(`created_by.eq.${user.id},id.in.(${memberTeamIds.join(",")})`);
+    } else {
+      query = query.eq("created_by", user.id);
+    }
+
+    const { data } = await query;
     const teamList = (data ?? []) as Team[];
     setTeams(teamList);
     if (teamList.length > 0 && !selectedTeam) {
