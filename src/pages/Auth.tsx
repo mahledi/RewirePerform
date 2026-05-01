@@ -101,18 +101,23 @@ const Auth = () => {
           await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
         }
 
+        let effectiveRole: "athlete" | "coach" = selectedRole;
         if (teamCode.trim()) {
           const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
             _code: teamCode.trim(),
           });
-          if (joinError || !joinResult || (joinResult as { success?: boolean }).success !== true) {
+          const result = joinResult as { success?: boolean; role?: "athlete" | "coach" } | null;
+          if (joinError || !result || result.success !== true) {
             toast.error("Teamcode nicht gefunden. Du kannst ihn später eingeben.");
+          } else if (result.role) {
+            // Server enforces the role based on which code was used.
+            effectiveRole = result.role;
           }
         }
 
 
         toast.success("Konto erstellt! Willkommen.");
-        navigate(selectedRole === "coach" ? "/coach" : "/dashboard");
+        navigate(effectiveRole === "coach" ? "/coach" : "/dashboard");
       }
     }
     setLoading(false);
