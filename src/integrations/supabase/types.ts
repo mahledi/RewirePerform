@@ -734,6 +734,16 @@ export type Database = {
       get_admin_overview_stats: { Args: never; Returns: Json }
       get_admin_system_health: { Args: never; Returns: Json }
       get_admin_teams_summary: { Args: never; Returns: Json }
+      get_team_questionnaire_status: {
+        Args: { _team_id: string }
+        Returns: {
+          full_name: string
+          is_complete: boolean
+          last_category_index: number
+          progress_updated_at: string
+          user_id: string
+        }[]
+      }
       get_team_stats: { Args: { team_id_param: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
@@ -746,6 +756,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      join_team_by_code: { Args: { _code: string }; Returns: Json }
       update_feedback_status: {
         Args: { feedback_id: string; new_note?: string; new_status: string }
         Returns: undefined
