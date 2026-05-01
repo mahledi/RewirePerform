@@ -75,29 +75,32 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     setCreating(false);
   };
 
-  const getShareMessage = (team: Team) =>
-    `Hey! Ich lade dich ein, unserem Mentaltraining beizutreten 🧠💪\n\nTeam: ${team.name}\nDein Zugangscode: ${team.access_code}\n\nRegistriere dich in der App und gib diesen Code bei der Anmeldung ein, um dem Team beizutreten.`;
+  const getPlayerMessage = (team: Team) =>
+    `Hey! Ich lade dich als Sportler in unser Mentaltraining ein 🧠💪\n\nTeam: ${team.name}\nDein Spieler-Code: ${team.access_code}\n\nRegistriere dich auf RewirePerform und gib diesen Code bei der Anmeldung ein.`;
 
-  const shareWhatsApp = (team: Team) => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(getShareMessage(team))}`, "_blank");
+  const getCoachMessage = (team: Team) =>
+    `Hi! Ich lade dich als Co-Coach zu unserem Team ein 🎯\n\nTeam: ${team.name}\nDein Coach-Code: ${team.coach_access_code}\n\nRegistriere dich auf RewirePerform und gib diesen Code bei der Anmeldung ein – du bekommst direkt Coach-Zugang.`;
+
+  const shareWhatsApp = (message: string) => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
 
-  const shareNative = async (team: Team) => {
+  const shareNative = async (title: string, message: string) => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Team ${team.name} beitreten`, text: getShareMessage(team) });
+        await navigator.share({ title, text: message });
       } catch {
         // user cancelled
       }
     } else {
-      navigator.clipboard.writeText(getShareMessage(team));
+      navigator.clipboard.writeText(message);
       toast.success("Einladungstext kopiert!");
     }
   };
 
-  const copyCode = (code: string) => {
+  const copyCode = (code: string, label: string) => {
     navigator.clipboard.writeText(code);
-    toast.success("Zugangscode kopiert!");
+    toast.success(`${label} kopiert!`);
   };
 
   const [activatingId, setActivatingId] = useState<string | null>(null);
