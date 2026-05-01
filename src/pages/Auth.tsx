@@ -146,34 +146,35 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <>
-              {/* Role Selection */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole("athlete")}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
-                    selectedRole === "athlete"
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  Sportler
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole("coach")}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
-                    selectedRole === "coach"
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
-                  }`}
-                >
-                  <Shield className="w-4 h-4" />
-                  Trainer
-                </button>
-              </div>
-
+              {/* Role Selection — only when no team code (code determines role server-side) */}
+              {!teamCode.trim() && (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole("athlete")}
+                    className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                      selectedRole === "athlete"
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                    }`}
+                  >
+                    <User className="w-4 h-4" />
+                    Sportler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole("coach")}
+                    className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                      selectedRole === "coach"
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4" />
+                    Trainer
+                  </button>
+                </div>
+              )}
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
