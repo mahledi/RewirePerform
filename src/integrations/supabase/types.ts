@@ -546,6 +546,7 @@ export type Database = {
       teams: {
         Row: {
           access_code: string
+          coach_access_code: string
           created_at: string | null
           created_by: string | null
           id: string
@@ -557,6 +558,7 @@ export type Database = {
         }
         Insert: {
           access_code?: string
+          coach_access_code?: string
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -568,6 +570,7 @@ export type Database = {
         }
         Update: {
           access_code?: string
+          coach_access_code?: string
           created_at?: string | null
           created_by?: string | null
           id?: string
