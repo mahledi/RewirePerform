@@ -197,40 +197,80 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
             </div>
           </div>
 
-          {/* Access Code */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 bg-secondary/50 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-primary font-bold">
-              {team.access_code}
+          {/* Player Invitation */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spieler einladen</span>
+              <span className="text-[10px] text-muted-foreground">Sportler-Zugang</span>
             </div>
-            <button
-              onClick={() => copyCode(team.access_code)}
-              className="p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-            >
-              <Copy className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 bg-secondary/50 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-primary font-bold">
+                {team.access_code}
+              </div>
+              <button
+                onClick={() => copyCode(team.access_code, "Spieler-Code")}
+                className="p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                aria-label="Spieler-Code kopieren"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => shareWhatsApp(getPlayerMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-medium"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp
+              </button>
+              <button
+                onClick={() => shareNative(`Team ${team.name} – Spieler einladen`, getPlayerMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Teilen
+              </button>
+            </div>
           </div>
 
-          {/* Share Buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => shareWhatsApp(team)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-sm font-medium"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </button>
-            <button
-              onClick={() => shareNative(team)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-            >
-              <Share2 className="w-4 h-4" />
-              Teilen
-            </button>
+          {/* Coach Invitation */}
+          <div className="mb-2 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Co-Coach einladen</span>
+              <span className="text-[10px] text-amber-500/80">Coach-Zugang</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-amber-500 font-bold">
+                {team.coach_access_code}
+              </div>
+              <button
+                onClick={() => copyCode(team.coach_access_code, "Coach-Code")}
+                className="p-3 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors"
+                aria-label="Coach-Code kopieren"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => shareWhatsApp(getCoachMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-medium"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp
+              </button>
+              <button
+                onClick={() => shareNative(`Team ${team.name} – Co-Coach einladen`, getCoachMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors text-xs font-medium"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Teilen
+              </button>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 text-center">
+              Co-Coaches haben vollen Coach-Zugriff. Teile diesen Code nur mit Personen, denen du vertraust.
+            </p>
           </div>
-
-          <p className="text-[11px] text-muted-foreground mt-2 text-center">
-            Teile diesen Code mit deinen Sportlern
-          </p>
 
           {/* Program Start Activation */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
