@@ -22,6 +22,7 @@ interface Team {
   name: string;
   sport: string | null;
   access_code: string;
+  coach_access_code: string;
   program_start_date?: string | null;
   program_activated_at?: string | null;
 }
@@ -74,29 +75,32 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     setCreating(false);
   };
 
-  const getShareMessage = (team: Team) =>
-    `Hey! Ich lade dich ein, unserem Mentaltraining beizutreten 🧠💪\n\nTeam: ${team.name}\nDein Zugangscode: ${team.access_code}\n\nRegistriere dich in der App und gib diesen Code bei der Anmeldung ein, um dem Team beizutreten.`;
+  const getPlayerMessage = (team: Team) =>
+    `Hey! Ich lade dich als Sportler in unser Mentaltraining ein 🧠💪\n\nTeam: ${team.name}\nDein Spieler-Code: ${team.access_code}\n\nRegistriere dich auf RewirePerform und gib diesen Code bei der Anmeldung ein.`;
 
-  const shareWhatsApp = (team: Team) => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(getShareMessage(team))}`, "_blank");
+  const getCoachMessage = (team: Team) =>
+    `Hi! Ich lade dich als Co-Coach zu unserem Team ein 🎯\n\nTeam: ${team.name}\nDein Coach-Code: ${team.coach_access_code}\n\nRegistriere dich auf RewirePerform und gib diesen Code bei der Anmeldung ein – du bekommst direkt Coach-Zugang.`;
+
+  const shareWhatsApp = (message: string) => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
 
-  const shareNative = async (team: Team) => {
+  const shareNative = async (title: string, message: string) => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: `Team ${team.name} beitreten`, text: getShareMessage(team) });
+        await navigator.share({ title, text: message });
       } catch {
         // user cancelled
       }
     } else {
-      navigator.clipboard.writeText(getShareMessage(team));
+      navigator.clipboard.writeText(message);
       toast.success("Einladungstext kopiert!");
     }
   };
 
-  const copyCode = (code: string) => {
+  const copyCode = (code: string, label: string) => {
     navigator.clipboard.writeText(code);
-    toast.success("Zugangscode kopiert!");
+    toast.success(`${label} kopiert!`);
   };
 
   const [activatingId, setActivatingId] = useState<string | null>(null);
@@ -193,40 +197,80 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
             </div>
           </div>
 
-          {/* Access Code */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 bg-secondary/50 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-primary font-bold">
-              {team.access_code}
+          {/* Player Invitation */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spieler einladen</span>
+              <span className="text-[10px] text-muted-foreground">Sportler-Zugang</span>
             </div>
-            <button
-              onClick={() => copyCode(team.access_code)}
-              className="p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-            >
-              <Copy className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 bg-secondary/50 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-primary font-bold">
+                {team.access_code}
+              </div>
+              <button
+                onClick={() => copyCode(team.access_code, "Spieler-Code")}
+                className="p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                aria-label="Spieler-Code kopieren"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => shareWhatsApp(getPlayerMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-medium"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp
+              </button>
+              <button
+                onClick={() => shareNative(`Team ${team.name} – Spieler einladen`, getPlayerMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Teilen
+              </button>
+            </div>
           </div>
 
-          {/* Share Buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => shareWhatsApp(team)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-sm font-medium"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </button>
-            <button
-              onClick={() => shareNative(team)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-            >
-              <Share2 className="w-4 h-4" />
-              Teilen
-            </button>
+          {/* Coach Invitation */}
+          <div className="mb-2 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Co-Coach einladen</span>
+              <span className="text-[10px] text-amber-500/80">Coach-Zugang</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-amber-500 font-bold">
+                {team.coach_access_code}
+              </div>
+              <button
+                onClick={() => copyCode(team.coach_access_code, "Coach-Code")}
+                className="p-3 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors"
+                aria-label="Coach-Code kopieren"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => shareWhatsApp(getCoachMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-medium"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                WhatsApp
+              </button>
+              <button
+                onClick={() => shareNative(`Team ${team.name} – Co-Coach einladen`, getCoachMessage(team))}
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors text-xs font-medium"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Teilen
+              </button>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2 text-center">
+              Co-Coaches haben vollen Coach-Zugriff. Teile diesen Code nur mit Personen, denen du vertraust.
+            </p>
           </div>
-
-          <p className="text-[11px] text-muted-foreground mt-2 text-center">
-            Teile diesen Code mit deinen Sportlern
-          </p>
 
           {/* Program Start Activation */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">

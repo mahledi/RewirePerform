@@ -101,18 +101,23 @@ const Auth = () => {
           await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
         }
 
+        let effectiveRole: "athlete" | "coach" = selectedRole;
         if (teamCode.trim()) {
           const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
             _code: teamCode.trim(),
           });
-          if (joinError || !joinResult || (joinResult as { success?: boolean }).success !== true) {
+          const result = joinResult as { success?: boolean; role?: "athlete" | "coach" } | null;
+          if (joinError || !result || result.success !== true) {
             toast.error("Teamcode nicht gefunden. Du kannst ihn später eingeben.");
+          } else if (result.role) {
+            // Server enforces the role based on which code was used.
+            effectiveRole = result.role;
           }
         }
 
 
         toast.success("Konto erstellt! Willkommen.");
-        navigate(selectedRole === "coach" ? "/coach" : "/dashboard");
+        navigate(effectiveRole === "coach" ? "/coach" : "/dashboard");
       }
     }
     setLoading(false);
@@ -141,34 +146,35 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <>
-              {/* Role Selection */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole("athlete")}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
-                    selectedRole === "athlete"
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  Sportler
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRole("coach")}
-                  className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
-                    selectedRole === "coach"
-                      ? "bg-primary/10 border-primary text-primary"
-                      : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
-                  }`}
-                >
-                  <Shield className="w-4 h-4" />
-                  Trainer
-                </button>
-              </div>
-
+              {/* Role Selection — only when no team code (code determines role server-side) */}
+              {!teamCode.trim() && (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole("athlete")}
+                    className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                      selectedRole === "athlete"
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                    }`}
+                  >
+                    <User className="w-4 h-4" />
+                    Sportler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole("coach")}
+                    className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+                      selectedRole === "coach"
+                        ? "bg-primary/10 border-primary text-primary"
+                        : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4" />
+                    Trainer
+                  </button>
+                </div>
+              )}
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -206,16 +212,23 @@ const Auth = () => {
               </div>
 
               {/* Team Code */}
-              <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Teamcode (optional)"
-                  value={teamCode}
-                  onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
-                  maxLength={6}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm uppercase tracking-widest"
-                />
+              <div>
+                <div className="relative">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Teamcode (optional)"
+                    value={teamCode}
+                    onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
+                    maxLength={6}
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm uppercase tracking-widest"
+                  />
+                </div>
+                {teamCode.trim() && (
+                  <p className="text-[11px] text-muted-foreground mt-2 px-1">
+                    Dein Code legt automatisch fest, ob du als Sportler oder Coach beitrittst.
+                  </p>
+                )}
               </div>
             </>
           )}
