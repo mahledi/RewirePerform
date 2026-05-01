@@ -111,57 +111,41 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     setReadinessLoading(true);
     const result: Record<string, { athleteCount: number; completedCount: number; pendingNames: string[] }> = {};
     for (const team of teams) {
-      // 1) Mitglieder des Teams
-      const { data: members } = await supabase
-        .from("team_members")
-        .select("user_id")
-        .eq("team_id", team.id);
-      const memberIds = (members ?? []).map((m) => m.user_id);
-
-      if (memberIds.length === 0) {
+      const { data, error } = await supabase.rpc("get_team_questionnaire_status", {
+        _team_id: team.id,
+      });
+      if (error || !data) {
         result[team.id] = { athleteCount: 0, completedCount: 0, pendingNames: [] };
         continue;
       }
-
-      // 2) Nur Athleten herausfiltern (Coach ist auch Mitglied)
+      // RPC returns rows for ALL team_members; coach himself is also a member -> filter via existing roles fetch
+      const rows = data as Array<{
+        user_id: string;
+        full_name: string | null;
+        is_complete: boolean;
+      }>;
+      const memberIds = rows.map((r) => r.user_id);
       const { data: roles } = await supabase
         .from("user_roles")
         .select("user_id, role")
         .in("user_id", memberIds);
-      const athleteIds = (roles ?? []).filter((r) => r.role === "athlete").map((r) => r.user_id);
-
-      if (athleteIds.length === 0) {
-        result[team.id] = { athleteCount: 0, completedCount: 0, pendingNames: [] };
-        continue;
-      }
-
-      // 3) Wer hat den Fragebogen abgeschlossen?
-      const { data: responses } = await supabase
-        .from("questionnaire_responses")
-        .select("user_id, is_complete")
-        .in("user_id", athleteIds)
-        .eq("is_complete", true);
-      const completedIds = new Set((responses ?? []).map((r) => r.user_id));
-
-      const pendingIds = athleteIds.filter((id) => !completedIds.has(id));
-
-      const { data: pendingProfiles } = await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", pendingIds);
-      const pendingNames = (pendingProfiles ?? []).map(
-        (p) => p.full_name || "Unbekannt"
+      const athleteIdSet = new Set(
+        (roles ?? []).filter((r) => r.role === "athlete").map((r) => r.user_id)
       );
+      const athleteRows = rows.filter((r) => athleteIdSet.has(r.user_id));
+      const completed = athleteRows.filter((r) => r.is_complete);
+      const pending = athleteRows.filter((r) => !r.is_complete);
 
       result[team.id] = {
-        athleteCount: athleteIds.length,
-        completedCount: athleteIds.filter((id) => completedIds.has(id)).length,
-        pendingNames,
+        athleteCount: athleteRows.length,
+        completedCount: completed.length,
+        pendingNames: pending.map((r) => r.full_name || "Unbekannt"),
       };
     }
     setReadiness(result);
     setReadinessLoading(false);
   };
+
 
   useEffect(() => {
     if (teams.length > 0) loadReadiness();

@@ -93,30 +93,23 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else if (data.user) {
-        await supabase.from("user_roles").insert({
-          user_id: data.user.id,
-          role: selectedRole,
-        }).then(() => {});
+        // Role is set automatically by the handle_new_user_role trigger using
+        // raw_user_meta_data.role passed in signUp options. No client-side
+        // user_roles insert (blocked by admin-only RLS).
 
         if (sport && data.user) {
           await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
         }
 
         if (teamCode.trim()) {
-          const { data: team } = await supabase
-            .from("teams")
-            .select("id")
-            .eq("access_code", teamCode.trim().toUpperCase())
-            .maybeSingle();
-          if (team) {
-            await supabase.from("team_members").insert({
-              team_id: team.id,
-              user_id: data.user.id,
-            });
-          } else {
+          const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
+            _code: teamCode.trim(),
+          });
+          if (joinError || !joinResult || (joinResult as { success?: boolean }).success !== true) {
             toast.error("Teamcode nicht gefunden. Du kannst ihn später eingeben.");
           }
         }
+
 
         toast.success("Konto erstellt! Willkommen.");
         navigate(selectedRole === "coach" ? "/coach" : "/dashboard");
