@@ -137,7 +137,7 @@ const Coach = () => {
       </div>
 
       {/* Team selector if multiple teams */}
-      {teams.length > 1 && (tab === "overview" || tab === "mental" || tab === "evidence") && (
+      {teams.length > 1 && (tab === "overview" || tab === "mental" || tab === "evidence" || tab === "toolkit") && (
         <div className="px-6 mb-4">
           <select
             value={selectedTeam ?? ""}
@@ -181,6 +181,15 @@ const Coach = () => {
           ) : (
             <div className="text-center py-12">
               <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Erstelle zuerst ein Team unter "Teams".</p>
+            </div>
+          )
+        ) : tab === "toolkit" ? (
+          selectedTeam ? (
+            <CoachToolkit teamId={selectedTeam} />
+          ) : (
+            <div className="text-center py-12">
+              <Sparkles className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">Erstelle zuerst ein Team unter "Teams".</p>
             </div>
           )
