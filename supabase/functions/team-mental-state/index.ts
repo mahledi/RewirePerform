@@ -403,7 +403,7 @@ ${JSON.stringify(numericSummary, null, 2)}`;
     });
 
 
-      insufficient_data: false,
+      const result = {
       min_n: MIN_N,
       teamSize,
       energy: {
