@@ -685,25 +685,30 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
-            <motion.button
-              whileHover={!saving ? { scale: 1.02 } : undefined}
-              whileTap={!saving ? { scale: 0.98 } : undefined}
-              onClick={() => {
-                if (saving) return;
-                if (step === 1) {
-                  if (moodBefore !== null && energyLevel !== null) setStep(2);
-                } else if (step === 2) setStep(3);
-                else if (step === 4) setStep(5);
-              }}
-              disabled={saving || (step === 1 && (moodBefore === null || energyLevel === null))}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                saving || (step === 1 && (moodBefore === null || energyLevel === null))
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary text-primary-foreground hover:shadow-glow"
-              }`}
-            >
-              Weiter<ArrowRight className="w-4 h-4" />
-            </motion.button>
+            {(() => {
+              const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
+              const blocked = saving || (step === 1 && !pulseComplete);
+              return (
+                <motion.button
+                  whileHover={!blocked ? { scale: 1.02 } : undefined}
+                  whileTap={!blocked ? { scale: 0.98 } : undefined}
+                  onClick={() => {
+                    if (blocked) return;
+                    if (step === 1) setStep(2);
+                    else if (step === 2) setStep(3);
+                    else if (step === 4) setStep(5);
+                  }}
+                  disabled={blocked}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
+                    blocked
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "bg-primary text-primary-foreground hover:shadow-glow"
+                  }`}
+                >
+                  Weiter<ArrowRight className="w-4 h-4" />
+                </motion.button>
+              );
+            })()}
           </div>
         </div>
       )}
