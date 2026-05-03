@@ -37,6 +37,23 @@ interface TrendPoint {
   sufficient_data?: boolean;
 }
 
+interface WellbeingDay {
+  date?: string;
+  n_users: number;
+  sufficient_data: boolean;
+  mood: number | null;
+  energy: number | null;
+  focus: number | null;
+  stress: number | null;
+  recovery: number | null;
+  sleep_quality: number | null;
+  physical_readiness: number | null;
+  motivation: number | null;
+  pressure: number | null;
+  team_connection: number | null;
+  readiness_index: number | null;
+}
+
 interface TeamMentalData {
   insufficient_data?: boolean;
   insufficient_reason?: string;
@@ -55,6 +72,13 @@ interface TeamMentalData {
     emotionalControl: number;
   } | null;
   vibe: string | null;
+  wellbeing?: {
+    today: WellbeingDay;
+    daily_trends: WellbeingDay[];
+    weekly_trends: (WellbeingDay & { week: string })[];
+  };
+  readiness_index?: number | null;
+  coach_hints?: string[];
 }
 
 const TeamMentalState = ({ teamId }: { teamId: string }) => {
