@@ -86,6 +86,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_journals: {
+        Row: {
+          action_commitment: string | null
+          coach_id: string
+          created_at: string
+          gratitude: string | null
+          id: string
+          reflection_1: string | null
+          reflection_2: string | null
+          reflection_3: string | null
+          team_id: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          action_commitment?: string | null
+          coach_id: string
+          created_at?: string
+          gratitude?: string | null
+          id?: string
+          reflection_1?: string | null
+          reflection_2?: string | null
+          reflection_3?: string | null
+          team_id: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          action_commitment?: string | null
+          coach_id?: string
+          created_at?: string
+          gratitude?: string | null
+          id?: string
+          reflection_1?: string | null
+          reflection_2?: string | null
+          reflection_3?: string | null
+          team_id?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: []
+      }
       comprehension_check_instances: {
         Row: {
           assignment_id: string
