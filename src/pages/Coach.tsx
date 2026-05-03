@@ -116,6 +116,15 @@ const Coach = () => {
             Wirksamkeit
           </button>
           <button
+            onClick={() => setTab("toolkit")}
+            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
+              tab === "toolkit" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Toolkit
+          </button>
+          <button
             onClick={() => setTab("manage")}
             className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
               tab === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
