@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, LogOut, Users, Settings, Activity, BarChart3 } from "lucide-react";
+import { Brain, LogOut, Users, Settings, Activity, BarChart3, Sparkles } from "lucide-react";
 import TeamOverview from "@/components/coach/TeamOverview";
 import TeamManagement from "@/components/coach/TeamManagement";
 import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
+import CoachToolkit from "@/components/coach/CoachToolkit";
 
-type Tab = "overview" | "mental" | "evidence" | "manage";
+type Tab = "overview" | "mental" | "evidence" | "toolkit" | "manage";
 
 interface Team {
   id: string;
