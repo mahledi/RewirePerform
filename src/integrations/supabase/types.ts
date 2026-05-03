@@ -195,6 +195,7 @@ export type Database = {
           session_id: string
           tasks_completed: Json | null
           user_id: string | null
+          wellbeing_metrics: Json
         }
         Insert: {
           created_at?: string
@@ -209,6 +210,7 @@ export type Database = {
           session_id: string
           tasks_completed?: Json | null
           user_id?: string | null
+          wellbeing_metrics?: Json
         }
         Update: {
           created_at?: string
@@ -223,6 +225,7 @@ export type Database = {
           session_id?: string
           tasks_completed?: Json | null
           user_id?: string | null
+          wellbeing_metrics?: Json
         }
         Relationships: []
       }

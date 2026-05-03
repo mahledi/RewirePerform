@@ -141,7 +141,7 @@ serve(async (req) => {
 
     const { data: checkins } = await supabase
       .from("daily_checkins")
-      .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed")
+      .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed, wellbeing_metrics")
       .in("user_id", athleteIds)
       .gte("date", cutoff)
       .order("date", { ascending: true });
@@ -315,6 +315,93 @@ ${JSON.stringify(numericSummary, null, 2)}`;
       }
     }
 
+    // ─── Wellbeing / Team Pulse aggregates ───────────────────
+    // Pull the wellbeing_metrics jsonb (numeric only). Never fetch reflection.
+    type WBKey = "mood" | "energy" | "focus" | "stress" | "recovery" | "sleep_quality" | "physical_readiness" | "motivation" | "pressure" | "team_connection";
+    const WB_KEYS: WBKey[] = ["mood", "energy", "focus", "stress", "recovery", "sleep_quality", "physical_readiness", "motivation", "pressure", "team_connection"];
+
+    const aggregateWB = (rows: typeof allCheckins) => {
+      const distinctUsers = new Set(rows.map((r) => r.user_id)).size;
+      const sufficient = distinctUsers >= MIN_N;
+      const out: Record<string, number | null> = {};
+      for (const k of WB_KEYS) {
+        if (!sufficient) { out[k] = null; continue; }
+        const vals: number[] = [];
+        for (const r of rows) {
+          const wm = (r as any).wellbeing_metrics as Record<string, unknown> | null;
+          const v = wm && typeof wm[k] === "number" ? (wm[k] as number) : null;
+          // Fallbacks for backward compatibility
+          const fallback =
+            v === null && k === "mood" ? r.mood_before :
+            v === null && k === "energy" ? r.energy_level :
+            v === null && k === "focus" ? r.focus_rating :
+            null;
+          const final = v !== null ? v : (typeof fallback === "number" ? fallback : null);
+          if (typeof final === "number") vals.push(final);
+        }
+        out[k] = vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : null;
+      }
+      return { n_users: distinctUsers, sufficient_data: sufficient, ...out };
+    };
+
+    const computeReadiness = (agg: Record<string, number | null>): number | null => {
+      const positives: number[] = [];
+      for (const k of ["energy", "focus", "recovery", "sleep_quality", "physical_readiness", "motivation", "team_connection"]) {
+        const v = agg[k]; if (typeof v === "number") positives.push(v);
+      }
+      if (positives.length < 3) return null;
+      const posAvg = positives.reduce((a, b) => a + b, 0) / positives.length; // 1..10
+      const stress = typeof agg.stress === "number" ? agg.stress : 5;
+      const pressure = typeof agg.pressure === "number" ? agg.pressure : 5;
+      const penalty = ((stress + pressure) / 2 - 5) * 0.5; // 0..2.5
+      const raw = posAvg - penalty; // ~1..10
+      return Math.max(0, Math.min(100, Math.round(((raw - 1) / 9) * 100)));
+    };
+
+    const buildHints = (agg: any): string[] => {
+      if (!agg.sufficient_data) return ["Noch nicht genug anonymisierte Daten für Team-Tendenzen."];
+      const hints: string[] = [];
+      if (typeof agg.stress === "number" && typeof agg.recovery === "number" && agg.stress >= 7 && agg.recovery <= 4) {
+        hints.push("Hohe Spannung bei niedriger Erholung. Heute könnten klare Struktur, kürzere Erklärungen und weniger Zusatzdruck hilfreich sein.");
+      }
+      if (typeof agg.energy === "number" && agg.energy <= 4) {
+        hints.push("Team-Energie wirkt niedrig. Fokus: klare Trainingsstruktur, kurze Anweisungen und saubere Belastungssteuerung.");
+      }
+      if (typeof agg.focus === "number" && agg.focus <= 4) {
+        hints.push("Fokus wirkt niedrig. Hilfreich: ein klarer Tages-Cue, weniger parallele Informationen, mehr Wiederholung.");
+      }
+      if (typeof agg.pressure === "number" && agg.pressure >= 7) {
+        hints.push("Bewertungsdruck wirkt hoch. Hilfreich: Prozesssprache statt Ergebnisdruck.");
+      }
+      if (typeof agg.team_connection === "number" && agg.team_connection <= 4) {
+        hints.push("Teamverbundenheit wirkt niedrig. Hilfreich: kurze gemeinsame Standards, Paar-/Gruppenaufgaben oder positive Teamrückmeldung.");
+      }
+      if (hints.length === 0) hints.push("Aggregierte Werte wirken stabil. Weiter wie geplant.");
+      return hints;
+    };
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const todayRows = allCheckins.filter((c) => c.date === todayStr);
+    const todayAgg = aggregateWB(todayRows);
+    const todayReadiness = computeReadiness(todayAgg as any);
+    const coachHints = buildHints(todayAgg);
+
+    // Daily trend (last 14 days)
+    const dailyTrend: any[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split("T")[0];
+      const rows = allCheckins.filter((c) => c.date === ds);
+      const agg = aggregateWB(rows);
+      dailyTrend.push({ date: ds, ...agg, readiness_index: computeReadiness(agg as any) });
+    }
+    // Weekly trend (4 weeks)
+    const weeklyWB = weeks.map((wb) => {
+      const rows = allCheckins.filter((c) => c.date >= wb.start && c.date < wb.end);
+      const agg = aggregateWB(rows);
+      return { week: wb.label, start: wb.start, ...agg, readiness_index: computeReadiness(agg as any) };
+    });
+
     const result = {
       insufficient_data: false,
       min_n: MIN_N,
@@ -362,6 +449,14 @@ ${JSON.stringify(numericSummary, null, 2)}`;
       stressWarning,
       teamChemistry,
       vibe,
+      // ─── Team Pulse / Wellbeing ───────────────────────────
+      wellbeing: {
+        today: { date: todayStr, ...todayAgg, readiness_index: todayReadiness },
+        daily_trends: dailyTrend,
+        weekly_trends: weeklyWB,
+      },
+      readiness_index: todayReadiness,
+      coach_hints: coachHints,
     };
 
     return new Response(JSON.stringify(result), {

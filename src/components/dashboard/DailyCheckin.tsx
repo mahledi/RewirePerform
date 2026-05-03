@@ -60,6 +60,15 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
+  // Team Pulse — erweiterte Wohlbefindens-Metriken (1-10)
+  const [focusClarity, setFocusClarity] = useState<number | null>(null);
+  const [stress, setStress] = useState<number | null>(null);
+  const [recovery, setRecovery] = useState<number | null>(null);
+  const [sleepQuality, setSleepQuality] = useState<number | null>(null);
+  const [physicalReadiness, setPhysicalReadiness] = useState<number | null>(null);
+  const [motivation, setMotivation] = useState<number | null>(null);
+  const [pressure, setPressure] = useState<number | null>(null);
+  const [teamConnection, setTeamConnection] = useState<number | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -191,11 +200,24 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
-    const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
+    const focusRating = focusClarity ?? (tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0);
     const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
     const instance = await getOrCreateActiveInstance(user.id);
+
+    const wellbeing_metrics = {
+      mood: moodBefore,
+      energy: energyLevel,
+      focus: focusClarity,
+      stress,
+      recovery,
+      sleep_quality: sleepQuality,
+      physical_readiness: physicalReadiness,
+      motivation,
+      pressure,
+      team_connection: teamConnection,
+    };
 
     const payload: any = {
       session_id: user.id,
@@ -207,6 +229,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       focus_rating: focusRating,
       tasks_completed: completedTitles,
       reflection: reflection || null,
+      wellbeing_metrics,
       program_instance_id: instance?.id ?? null,
     };
 
@@ -522,69 +545,59 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -50 }}
                   >
-                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in starten</h2>
-                    <p className="text-muted-foreground mb-8 text-sm">
-                      Zwei kurze Fragen, bevor wir loslegen.
+                    <h2 className="font-heading text-2xl font-bold mb-1">Wohlbefinden & Bereitschaft</h2>
+                    <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Team Pulse</p>
+                    <p className="text-muted-foreground mb-6 text-sm">
+                      Wie fühlst du dich heute? Kurze Skala von 1 bis 10. Deine Antworten bleiben privat —
+                      Coaches sehen nur anonymisierte Team-Tendenzen (mind. 5 Spieler).
                     </p>
 
-                    <div className="space-y-8">
-                      <div>
-                        <label className="text-sm font-semibold block mb-3">
-                          Wie ist deine Stimmung gerade?
-                        </label>
-                        <div className="grid grid-cols-10 gap-1.5">
-                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                            <button
-                              key={n}
-                              onClick={() => setMoodBefore(n)}
-                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
-                                moodBefore === n
-                                  ? "bg-primary text-primary-foreground shadow-glow"
-                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
+                    <div className="space-y-7">
+                      {[
+                        { label: "Stimmung", question: "Wie ist deine allgemeine Stimmung gerade?", value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
+                        { label: "Energie", question: "Wie viel Energie hast du gerade?", value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
+                        { label: "Mentale Klarheit / Fokus", question: "Wie klar und fokussiert fühlst du dich gerade?", value: focusClarity, set: setFocusClarity, low: "sehr zerstreut", high: "sehr klar" },
+                        { label: "Stress / innere Spannung", question: "Wie viel innere Spannung oder Stress spürst du gerade?", value: stress, set: setStress, low: "sehr niedrig", high: "sehr hoch" },
+                        { label: "Erholung", question: "Wie erholt fühlst du dich heute?", value: recovery, set: setRecovery, low: "gar nicht erholt", high: "sehr erholt" },
+                        { label: "Schlafqualität", question: "Wie war deine Schlafqualität?", value: sleepQuality, set: setSleepQuality, low: "sehr schlecht", high: "sehr gut" },
+                        { label: "Körperliche Bereitschaft", question: "Wie bereit fühlt sich dein Körper für Belastung an?", value: physicalReadiness, set: setPhysicalReadiness, low: "gar nicht bereit", high: "sehr bereit" },
+                        { label: "Motivation / Einsatzbereitschaft", question: "Wie bereit bist du, heute wirklich in die Arbeit zu gehen?", value: motivation, set: setMotivation, low: "kaum bereit", high: "sehr bereit" },
+                        { label: "Druck / Bewertungsgefühl", question: "Wie stark fühlt sich heute Druck oder Bewertungsgefühl an?", value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
+                        { label: "Teamverbundenheit", question: "Wie verbunden fühlst du dich gerade mit dem Team?", value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
+                      ].map((q) => (
+                        <div key={q.label}>
+                          <label className="text-sm font-semibold block mb-1">{q.label}</label>
+                          <p className="text-xs text-muted-foreground mb-2">{q.question}</p>
+                          <div className="grid grid-cols-10 gap-1.5">
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                              <button
+                                key={n}
+                                onClick={() => q.set(n)}
+                                className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                  q.value === n
+                                    ? "bg-primary text-primary-foreground shadow-glow"
+                                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                            <span>{q.low}</span>
+                            <span>{q.high}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
-                          <span>schlecht</span>
-                          <span>sehr gut</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-semibold block mb-3">
-                          Wie ist dein Energielevel?
-                        </label>
-                        <div className="grid grid-cols-10 gap-1.5">
-                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                            <button
-                              key={n}
-                              onClick={() => setEnergyLevel(n)}
-                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
-                                energyLevel === n
-                                  ? "bg-primary text-primary-foreground shadow-glow"
-                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
-                          <span>leer</span>
-                          <span>voll geladen</span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
                 {step === 2 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Optional: Was beeinflusst deinen Zustand heute?</h2>
                     <p className="text-muted-foreground mb-2 text-sm">
-                      Ein bis zwei Sätze – wie startest du heute mental in den Tag?
+                      Gibt es etwas, das deinen heutigen Zustand stark beeinflusst? Diese Antwort bleibt vollständig privat —
+                      sie verlässt nie deinen Account und wird Coaches niemals gezeigt.
                     </p>
                     <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
                       <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
@@ -601,7 +614,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     <textarea
                       value={reflection}
                       onChange={(e) => setReflection(e.target.value)}
-                      placeholder="Kurze Beobachtung – ohne Bewertung."
+                      placeholder="Optional. Nur für dich sichtbar."
                       className="w-full h-32 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </motion.div>
@@ -672,25 +685,30 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
-            <motion.button
-              whileHover={!saving ? { scale: 1.02 } : undefined}
-              whileTap={!saving ? { scale: 0.98 } : undefined}
-              onClick={() => {
-                if (saving) return;
-                if (step === 1) {
-                  if (moodBefore !== null && energyLevel !== null) setStep(2);
-                } else if (step === 2) setStep(3);
-                else if (step === 4) setStep(5);
-              }}
-              disabled={saving || (step === 1 && (moodBefore === null || energyLevel === null))}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                saving || (step === 1 && (moodBefore === null || energyLevel === null))
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary text-primary-foreground hover:shadow-glow"
-              }`}
-            >
-              Weiter<ArrowRight className="w-4 h-4" />
-            </motion.button>
+            {(() => {
+              const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
+              const blocked = saving || (step === 1 && !pulseComplete);
+              return (
+                <motion.button
+                  whileHover={!blocked ? { scale: 1.02 } : undefined}
+                  whileTap={!blocked ? { scale: 0.98 } : undefined}
+                  onClick={() => {
+                    if (blocked) return;
+                    if (step === 1) setStep(2);
+                    else if (step === 2) setStep(3);
+                    else if (step === 4) setStep(5);
+                  }}
+                  disabled={blocked}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
+                    blocked
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : "bg-primary text-primary-foreground hover:shadow-glow"
+                  }`}
+                >
+                  Weiter<ArrowRight className="w-4 h-4" />
+                </motion.button>
+              );
+            })()}
           </div>
         </div>
       )}
