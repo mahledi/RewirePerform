@@ -213,7 +213,119 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         </div>
       )}
 
-      {/* Key Metrics Grid */}
+      {/* ─── Team Pulse — Heutige aggregierte Werte ─── */}
+      {data.wellbeing && (
+        <div className="bg-card border border-primary/20 rounded-2xl p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
+                Team Pulse — heute
+              </h3>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Aggregierte Teamdaten · keine Einzelwerte
+              </p>
+            </div>
+            {typeof data.readiness_index === "number" && (
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Team-Bereitschaft</p>
+                <p className="text-2xl font-bold text-primary">{data.readiness_index}<span className="text-xs text-muted-foreground">/100</span></p>
+              </div>
+            )}
+          </div>
+
+          {!data.wellbeing.today.sufficient_data ? (
+            <p className="text-xs text-muted-foreground py-4 text-center">
+              Zu wenig Daten für anonymisierte Auswertung. ({data.wellbeing.today.n_users}/{data.min_n ?? 5})
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[
+                { k: "mood", label: "Stimmung" },
+                { k: "energy", label: "Energie" },
+                { k: "focus", label: "Fokus" },
+                { k: "stress", label: "Stress" },
+                { k: "recovery", label: "Erholung" },
+                { k: "sleep_quality", label: "Schlaf" },
+                { k: "physical_readiness", label: "Körperl. Bereit." },
+                { k: "motivation", label: "Motivation" },
+                { k: "pressure", label: "Druck" },
+                { k: "team_connection", label: "Teamverb." },
+              ].map(({ k, label }) => {
+                const v = (data.wellbeing!.today as any)[k] as number | null;
+                return (
+                  <div key={k} className="bg-secondary/30 rounded-xl px-3 py-2">
+                    <p className="text-[10px] text-muted-foreground">{label}</p>
+                    <p className="text-base font-semibold text-foreground">
+                      {typeof v === "number" ? v.toFixed(1) : "—"}
+                      {typeof v === "number" && <span className="text-[10px] text-muted-foreground font-normal">/10</span>}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <p className="text-[10px] text-muted-foreground italic">
+            Interner Team-Pulse-Wert aus aggregierten Check-in-Daten. Keine Diagnose. Keine Kausalaussage.
+          </p>
+        </div>
+      )}
+
+      {/* ─── Coach-Hinweise (deterministisch, aggregiert) ─── */}
+      {data.coach_hints && data.coach_hints.length > 0 && (
+        <div className="bg-card border border-border/50 rounded-2xl p-4 space-y-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            Heutige Hinweise (aggregiert)
+          </h3>
+          <ul className="space-y-2">
+            {data.coach_hints.map((h, i) => (
+              <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
+                <span className="text-primary mt-0.5">•</span>
+                <span>{h}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ─── 14-Tage Wellbeing Trend ─── */}
+      {data.wellbeing && data.wellbeing.daily_trends.some((d) => d.sufficient_data) && (
+        <div className="bg-card border border-border/50 rounded-2xl p-4">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-primary" />
+            14-Tage Trend (Stimmung · Energie · Stress · Erholung)
+          </h3>
+          <div className="h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.wellbeing.daily_trends.map((d) => ({
+                date: d.date?.slice(5) ?? "",
+                mood: d.sufficient_data ? d.mood : null,
+                energy: d.sufficient_data ? d.energy : null,
+                stress: d.sufficient_data ? d.stress : null,
+                recovery: d.sufficient_data ? d.recovery : null,
+              }))}>
+                <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 10]} tick={{ fontSize: 9, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} width={22} />
+                <Tooltip contentStyle={{ background: "hsl(220 18% 10%)", border: "1px solid hsl(220 14% 18%)", borderRadius: "12px", fontSize: "12px", color: "hsl(0 0% 95%)" }} />
+                <Line type="monotone" dataKey="mood" stroke="hsl(217, 91%, 60%)" strokeWidth={2} dot={false} name="Stimmung" connectNulls />
+                <Line type="monotone" dataKey="energy" stroke="hsl(48, 96%, 53%)" strokeWidth={2} dot={false} name="Energie" connectNulls />
+                <Line type="monotone" dataKey="stress" stroke="hsl(0, 84%, 60%)" strokeWidth={2} dot={false} name="Stress" connectNulls />
+                <Line type="monotone" dataKey="recovery" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} name="Erholung" connectNulls />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-blue-400" /> Stimmung</span>
+            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Energie</span>
+            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-red-500" /> Stress</span>
+            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-primary" /> Erholung</span>
+          </div>
+        </div>
+      )}
+
+
       <div className="grid grid-cols-2 gap-3">
         <MetricCard
           icon={<Zap className="w-4 h-4" />}
