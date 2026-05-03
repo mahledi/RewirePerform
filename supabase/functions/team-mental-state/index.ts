@@ -141,7 +141,7 @@ serve(async (req) => {
 
     const { data: checkins } = await supabase
       .from("daily_checkins")
-      .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed")
+      .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed, wellbeing_metrics")
       .in("user_id", athleteIds)
       .gte("date", cutoff)
       .order("date", { ascending: true });
