@@ -1,78 +1,48 @@
-## IT-Audit Ergebnis
+# Intent-Auswahl vor Auth
 
-Rebranding "MindGame → RewirePerform" ist **vollständig** (keine Treffer mehr im Code). Aus IT-Sicht **noch nicht launch-ready**: Der Security-Scan zeigt **3 kritische/erhöhte Befunde**, die vor Go-Live behoben werden müssen. Build/TS/Routing sind sauber.
+Aktuell gibt es eine flache Auth-Seite mit Rollen-Toggle (Sportler/Trainer) + optionalem Teamcode. Das ist verwirrend. Wir führen eine vorgelagerte Auswahl ein, die den Auth-Flow klar steuert.
 
----
+## UX-Flow
 
-## Kritische Security-Findings (MÜSSEN vor Launch gefixt werden)
-
-### 1. Privilege Escalation auf `user_roles` (ERROR – kritisch)
-Die Policy **„Users can insert own role"** erlaubt jedem eingeloggten User, sich selbst die Rolle `admin` oder `coach` zuzuweisen. Da `has_role()` direkt aus dieser Tabelle liest, hebelt das **das gesamte Rechtesystem aus** (inkl. neuer Admin Control Center).
-
-**Fix:** Self-Service-INSERT-Policy droppen. Rollenvergabe darf nur durch:
-- den DB-Trigger bei Signup (läuft als `SECURITY DEFINER`, ignoriert RLS) und
-- eine neue Admin-only-Policy (`has_role(auth.uid(),'admin')`)
-erfolgen.
-
-### 2. Team-Access-Codes für alle sichtbar (ERROR – kritisch)
-Policy **„Anyone authenticated can view teams"** mit `USING (true)` exponiert die `access_code`-Spalte aller Teams an jeden eingeloggten Athleten. Jeder kann Codes auslesen und beliebigen Teams beitreten.
-
-**Fix:** SELECT-Policy ersetzen, sodass ein User nur Teams sieht, in denen er Mitglied ist oder die er selbst erstellt hat:
-```sql
-USING (
-  created_by = auth.uid()
-  OR id IN (SELECT team_id FROM team_members WHERE user_id = auth.uid())
-)
 ```
-Beitritt per Code läuft weiterhin über die bestehende RPC (SECURITY DEFINER), die den Code prüft – kein UX-Bruch.
+/auth (Schritt 1: Intent)
+  ├─ "Allein starten"        → Schritt 2: Signup (Sportler, kein Code)        → /questionnaire
+  ├─ "Team beitreten"        → Schritt 2: Signup mit Pflicht-Teamcode-Eingabe → Rolle ergibt sich aus Code (Player/Coach)
+  │                                                                              → /questionnaire (athlete) oder /coach (coach)
+  └─ "Team erstellen"        → Schritt 2: Signup als Coach (kein Code)        → /coach (dort Team anlegen)
 
-### 3. RLS-Policies adressieren `public` statt `authenticated` (WARN)
-Auf `assessments`, `deep_profile_assessments`, `feedback`, `personalized_tasks (DELETE)` greifen Policies für die `public`-Rolle. Bei `auth.uid() IS NULL` (anonym) könnten Zeilen mit `user_id IS NULL` durchrutschen. `user_id` ist auf 3 von 4 Tabellen nullable.
+Login bleibt separat, eine flache Form (E-Mail/Passwort) — Routing nach gespeicherter Rolle.
+```
 
-**Fix:** Policies droppen und mit `TO authenticated` neu anlegen, gleiche Bedingung. Kein Funktionsverlust.
+Eine "Zurück"-Option führt vom Signup-Schritt zurück zur Intent-Auswahl. Toggle "Bereits registriert? Anmelden" bleibt erhalten und springt direkt in den Login (überspringt Intent-Schritt).
 
----
+## Änderungen
 
-## Mittlere Findings (vor Launch ratsam, kein Blocker)
+### `src/pages/Auth.tsx`
+- Neuen lokalen State `mode`: `"intent" | "signup" | "login"`. Default `"intent"`.
+- Neuen State `intent`: `"solo" | "join" | "create"` — wird in Schritt 1 gesetzt.
+- Schritt-1-View: drei große Karten (Icons: `User` solo, `Users` join, `Shield` create) mit kurzer Beschreibung. Darunter Link "Bereits registriert? Anmelden" → setzt `mode = "login"`.
+- Schritt-2-Signup-View (nur wenn `mode === "signup"`):
+  - Header-Subtitle passt sich an Intent an ("Du startest allein", "Du trittst einem Team bei", "Du erstellst dein Team").
+  - **Solo**: keine Teamcode-Eingabe, `selectedRole = "athlete"` fix, kein Rollen-Toggle.
+  - **Join**: Teamcode-Pflichtfeld (Validierung: 6 Zeichen, sonst Fehler). Kein Rollen-Toggle (Code bestimmt Rolle).
+  - **Create**: kein Teamcode-Feld, `selectedRole = "coach"` fix, kein Rollen-Toggle. Hinweistext: "Du legst dein Team nach der Anmeldung im Coach-Bereich an."
+  - Felder Name + Sport bleiben für alle Varianten (Sport bei Coach optional → Validierung anpassen: Sport nur Pflicht wenn `intent !== "create"`).
+  - "Zurück"-Button oben links → `mode = "intent"`.
+- Login-View (`mode === "login"`): nur E-Mail + Passwort + Submit. Link "Noch kein Konto?" → `mode = "intent"`.
+- `handleSubmit` Anpassungen:
+  - Bei Signup `effectiveRole` = abhängig vom Intent setzen (`solo`/`join`→athlete-Default, `create`→coach).
+  - Bei `intent === "join"`: Teamcode Pflicht; bei Fehlschlag (RPC) NICHT weiternavigieren, sondern Fehler zeigen und User im Signup belassen (heute nur Toast + trotzdem weiter).
+  - Navigation: `solo` → `/questionnaire`; `join` → server-Rolle (`/questionnaire` oder `/coach`); `create` → `/coach`.
 
-### 4. Leaked Password Protection deaktiviert (WARN)
-HaveIBeenPwned-Check ist aus. Empfehlung: in den Auth-Settings via `cloud--configure_auth` aktivieren (Schutz vor bekannt geleakten Passwörtern bei Signup/Reset). **Aktion:** Ein-Klick-Konfiguration, kein Code.
+### Keine Backend-Änderungen
+RPC `join_team_by_code` und Rollen-Trigger bleiben unverändert. Server entscheidet weiterhin verbindlich über die Rolle bei Code-Beitritt.
 
-### 5. 16× „SECURITY DEFINER function executable" (WARN)
-Betrifft Helper-Funktionen wie `has_role`, Signup-Trigger, Team-Join-RPC. Diese **müssen** SECURITY DEFINER bleiben (sonst funktioniert RLS-Vermeidung im Trigger nicht). Lovable/Supabase-Standard – wird als bewusste Architekturentscheidung **als „ignored" markiert** mit Begründung in der Security-Memory. Kein echter Bug.
+## Edge Cases
+- User wechselt in Schritt 2 den Intent zurück → Felder bleiben erhalten (kein Reset).
+- Solo-User, der später Team beitreten will: weiterhin über Settings/Teamcode-Flow möglich (nicht Teil dieser Änderung).
+- Coach-Erstellung ohne Team: `/coach` zeigt bereits leeren Zustand mit "Erstelle zuerst ein Team unter Teams" — passt.
 
----
-
-## Branding-Polish (klein, nice-to-have)
-
-`index.html` enthält noch Lovable-Default-Einträge:
-- `og:image` und `twitter:image` → `https://lovable.dev/opengraph-image-p98pqg.png`
-- `twitter:site` → `@Lovable`
-
-**Fix:** Auf Platzhalter mit `/app-icon.png` (lokal) und `@RewirePerform`-Handle (oder entfernen) umstellen. Wichtig für sauberes Link-Sharing (WhatsApp/Discord-Previews) bei Go-Live.
-
----
-
-## Was NICHT gemacht wird
-
-- Keine Änderung an Programm-Inhalten, Tasks, Daily-Flow, Coach-Logik.
-- Keine neuen Tabellen, keine Datenmigration.
-- Keine UX-Änderung für Athleten/Coaches – Team-Beitritt per Code funktioniert weiter über RPC.
-- Bestehende Admin-Funktionalität bleibt erhalten (Admin-Rolle wird weiterhin via `is_admin`-Funktion / Trigger gesetzt).
-
----
-
-## Umsetzungsschritte (in Default-Mode)
-
-1. **Migration** `harden_rls_pre_launch.sql`:
-   - DROP Policy `"Users can insert own role"` auf `user_roles`
-   - CREATE Policy `"Admins can manage user_roles"` (INSERT/UPDATE/DELETE für `has_role(auth.uid(),'admin')`)
-   - DROP + RECREATE Policy `"Anyone authenticated can view teams"` → mitgliedsbasiert
-   - DROP + RECREATE die 7 `public`-Policies auf `assessments`, `deep_profile_assessments`, `feedback`, `personalized_tasks` mit `TO authenticated`
-2. **Auth-Setting**: Leaked Password Protection aktivieren.
-3. **index.html**: OG/Twitter-Tags auf RewirePerform-Werte setzen.
-4. **Security-Memory** updaten: SECURITY-DEFINER-Funde als bewusst ignorieren begründen.
-5. **Re-Scan**: `security--run_security_scan` + `supabase--linter` zur Verifikation.
-6. **Smoke-Test (manuell, durch dich)** mit Test-Account: Athlet-Login → Daily-Flow, Team beitreten per Code, Coach-Login → Team-Übersicht, Admin-Login → /admin.
-
-Nach diesen Schritten: **launch-ready aus IT-Sicht.**
+## Out of Scope
+- Keine Änderungen an `/coach`, Dashboard, Questionnaire-Routing.
+- Kein Email-Verify-Flow-Umbau.
