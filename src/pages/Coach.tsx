@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, LogOut, Users, Settings, Activity, BarChart3 } from "lucide-react";
+import { Brain, LogOut, Users, Settings, Activity, BarChart3, Sparkles } from "lucide-react";
 import TeamOverview from "@/components/coach/TeamOverview";
 import TeamManagement from "@/components/coach/TeamManagement";
 import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
+import CoachToolkit from "@/components/coach/CoachToolkit";
 
-type Tab = "overview" | "mental" | "evidence" | "manage";
+type Tab = "overview" | "mental" | "evidence" | "toolkit" | "manage";
 
 interface Team {
   id: string;
@@ -115,6 +116,15 @@ const Coach = () => {
             Wirksamkeit
           </button>
           <button
+            onClick={() => setTab("toolkit")}
+            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
+              tab === "toolkit" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Toolkit
+          </button>
+          <button
             onClick={() => setTab("manage")}
             className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
               tab === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
@@ -127,7 +137,7 @@ const Coach = () => {
       </div>
 
       {/* Team selector if multiple teams */}
-      {teams.length > 1 && (tab === "overview" || tab === "mental" || tab === "evidence") && (
+      {teams.length > 1 && (tab === "overview" || tab === "mental" || tab === "evidence" || tab === "toolkit") && (
         <div className="px-6 mb-4">
           <select
             value={selectedTeam ?? ""}
@@ -171,6 +181,15 @@ const Coach = () => {
           ) : (
             <div className="text-center py-12">
               <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Erstelle zuerst ein Team unter "Teams".</p>
+            </div>
+          )
+        ) : tab === "toolkit" ? (
+          selectedTeam ? (
+            <CoachToolkit teamId={selectedTeam} />
+          ) : (
+            <div className="text-center py-12">
+              <Sparkles className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">Erstelle zuerst ein Team unter "Teams".</p>
             </div>
           )
