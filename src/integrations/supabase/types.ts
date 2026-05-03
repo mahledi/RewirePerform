@@ -328,6 +328,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          created_at: string
+          id: string
+          notification_type: string
+          sent_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_type: string
+          sent_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_type?: string
+          sent_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       personalized_tasks: {
         Row: {
           date: string
@@ -520,6 +544,51 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          evening_hour: number
+          evening_minute: number
+          id: string
+          morning_hour: number
+          morning_minute: number
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          evening_hour?: number
+          evening_minute?: number
+          id?: string
+          morning_hour?: number
+          morning_minute?: number
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          evening_hour?: number
+          evening_minute?: number
+          id?: string
+          morning_hour?: number
+          morning_minute?: number
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       questionnaire_responses: {
         Row: {
           analysis: Json | null
@@ -631,6 +700,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      training_schedule: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          id: string
+          training_hour: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          id?: string
+          training_hour: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          training_hour?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_day_assignments: {
         Row: {

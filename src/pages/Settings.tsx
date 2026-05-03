@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { TrainingAndNotifications } from "@/components/settings/TrainingAndNotifications";
 import { toast } from "sonner";
 
 const feedbackTypes = [
@@ -175,6 +176,10 @@ const Settings = () => {
               </div>
             )}
           </div>
+        </motion.section>
+
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <TrainingAndNotifications />
         </motion.section>
 
         {/* Feedback */}
