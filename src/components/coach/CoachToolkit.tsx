@@ -153,11 +153,11 @@ const CoachToolkit = ({ teamId }: Props) => {
       >
         {!team?.program_start_date ? (
           <p className="text-sm text-muted-foreground">
-            Noch kein Programmstart f\u00fcr dieses Team festgelegt.
+            Noch kein Programmstart für dieses Team festgelegt.
           </p>
         ) : !dayInfo || !resolved ? (
           <p className="text-sm text-muted-foreground">
-            Au\u00dferhalb des 56-Tage-Fensters.
+            Außerhalb des 56-Tage-Fensters.
           </p>
         ) : (
           (() => {
@@ -175,7 +175,7 @@ const CoachToolkit = ({ teamId }: Props) => {
                     {resolved.content.coreShift || resolved.matrix.lens}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Linie: {resolved.matrix.lens} \u00b7 Phase {resolved.matrix.phase} \u00b7 Woche {resolved.matrix.week}
+                    Linie: {resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
                   </div>
                 </div>
 
@@ -190,7 +190,7 @@ const CoachToolkit = ({ teamId }: Props) => {
 
                 <div>
                   <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute \u00fcben die Spieler
+                    Heute üben die Spieler
                   </div>
                   <ol className="list-decimal list-inside space-y-1 text-foreground/90">
                     {resolved.content.tasks.map((t) => (
@@ -201,7 +201,7 @@ const CoachToolkit = ({ teamId }: Props) => {
 
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
                   <div className="text-xs font-medium text-primary mb-1">
-                    Als Coach unterst\u00fctzen
+                    Als Coach unterstützen
                   </div>
                   <p className="text-foreground/90">{guidance.support}</p>
                 </div>
@@ -228,14 +228,14 @@ const CoachToolkit = ({ teamId }: Props) => {
       {/* SECTION 2 — SCIENCE BITE */}
       <Section
         icon={<Sparkles className="w-5 h-5 text-primary" />}
-        title="Science Bite f\u00fcr Coaches"
+        title="Science Bite für Coaches"
       >
         <div className="space-y-3 text-sm">
           <div className="font-heading text-base font-semibold">{scienceBite.title}</div>
           <p className="text-foreground/90">{scienceBite.explanation}</p>
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
             <div className="text-xs font-medium text-primary mb-1">
-              Was bedeutet das f\u00fcr dich als Coach?
+              Was bedeutet das für dich als Coach?
             </div>
             <p className="text-foreground/90">{scienceBite.coachAngle}</p>
           </div>
@@ -303,7 +303,7 @@ const CoachToolkit = ({ teamId }: Props) => {
                 }
                 rows={2}
                 className="w-full bg-background/40 border border-border/50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Privat \u2014 nur f\u00fcr dich sichtbar"
+                placeholder="Privat — nur für dich sichtbar"
               />
             </div>
           ))}
@@ -321,7 +321,7 @@ const CoachToolkit = ({ teamId }: Props) => {
             Speichern
           </button>
           <p className="text-[11px] text-muted-foreground text-center">
-            Privat. Nur du siehst deine Eintr\u00e4ge.
+            Privat. Nur du siehst deine Einträge.
           </p>
         </div>
       </Section>
