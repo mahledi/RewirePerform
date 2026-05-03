@@ -1,8 +1,11 @@
 // Hourly cron-driven Web Push sender.
 // Sends three notification types: morning, pre_training, evening.
 // Idempotent via notification_log unique (user_id, notification_type, sent_date).
-import { corsHeaders } from "@supabase/supabase-js/cors";
-import { createClient } from "@supabase/supabase-js";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
