@@ -402,8 +402,8 @@ ${JSON.stringify(numericSummary, null, 2)}`;
       return { week: wb.label, start: wb.start, ...agg, readiness_index: computeReadiness(agg as any) };
     });
 
-
-      const result = {
+    const result = {
+      insufficient_data: false,
       min_n: MIN_N,
       teamSize,
       energy: {
