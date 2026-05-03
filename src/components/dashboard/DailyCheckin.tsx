@@ -200,11 +200,24 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
-    const focusRating = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0;
+    const focusRating = focusClarity ?? (tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0);
     const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
     const instance = await getOrCreateActiveInstance(user.id);
+
+    const wellbeing_metrics = {
+      mood: moodBefore,
+      energy: energyLevel,
+      focus: focusClarity,
+      stress,
+      recovery,
+      sleep_quality: sleepQuality,
+      physical_readiness: physicalReadiness,
+      motivation,
+      pressure,
+      team_connection: teamConnection,
+    };
 
     const payload: any = {
       session_id: user.id,
@@ -216,6 +229,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
       focus_rating: focusRating,
       tasks_completed: completedTitles,
       reflection: reflection || null,
+      wellbeing_metrics,
       program_instance_id: instance?.id ?? null,
     };
 
