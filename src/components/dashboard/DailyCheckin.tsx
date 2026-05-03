@@ -60,6 +60,15 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
+  // Team Pulse — erweiterte Wohlbefindens-Metriken (1-10)
+  const [focusClarity, setFocusClarity] = useState<number | null>(null);
+  const [stress, setStress] = useState<number | null>(null);
+  const [recovery, setRecovery] = useState<number | null>(null);
+  const [sleepQuality, setSleepQuality] = useState<number | null>(null);
+  const [physicalReadiness, setPhysicalReadiness] = useState<number | null>(null);
+  const [motivation, setMotivation] = useState<number | null>(null);
+  const [pressure, setPressure] = useState<number | null>(null);
+  const [teamConnection, setTeamConnection] = useState<number | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
