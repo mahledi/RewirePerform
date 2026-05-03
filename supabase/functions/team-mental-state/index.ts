@@ -449,6 +449,14 @@ ${JSON.stringify(numericSummary, null, 2)}`;
       stressWarning,
       teamChemistry,
       vibe,
+      // ─── Team Pulse / Wellbeing ───────────────────────────
+      wellbeing: {
+        today: { date: todayStr, ...todayAgg, readiness_index: todayReadiness },
+        daily_trends: dailyTrend,
+        weekly_trends: weeklyWB,
+      },
+      readiness_index: todayReadiness,
+      coach_hints: coachHints,
     };
 
     return new Response(JSON.stringify(result), {
