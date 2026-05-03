@@ -1,0 +1,107 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowLeft, Loader2, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
+import { resolveDay } from "@/lib/getDayContent";
+import type { ResolvedDay } from "@/content/matrixDayTypes";
+
+const PreTraining = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [resolved, setResolved] = useState<ResolvedDay | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      const eff = await getEffectiveProgramStart(user.id);
+      const info = getCurrentProgramDay(eff.startDate);
+      if (!info) {
+        setLoading(false);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("sport,position")
+        .eq("id", user.id)
+        .maybeSingle();
+      const day = resolveDay(info.dayNumber, new Date(), "training", {
+        sport: profile?.sport,
+        position: profile?.position,
+      });
+      setResolved(day);
+      setLoading(false);
+    };
+    load();
+  }, [user]);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <button
+            onClick={() => navigate("/")}
+            className="p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <span className="font-heading font-bold text-lg">Pre-Training</span>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : !resolved ? (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground">Programm noch nicht gestartet</p>
+            <Button onClick={() => navigate("/")} className="mt-6">Zurück</Button>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div>
+              <h1 className="font-heading font-bold text-3xl mb-2">Gleich geht's los 💪</h1>
+              <p className="text-muted-foreground">Das nimmst du heute aufs Feld:</p>
+            </div>
+
+            <div className="space-y-3">
+              {resolved.content.tasks.map((task, i) => (
+                <div
+                  key={task.id}
+                  className="rounded-xl border border-border bg-card p-4 flex gap-3"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 font-semibold">
+                    {i + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="font-heading font-semibold leading-tight">{task.title}</h2>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {task.concreteAction || task.why}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Button onClick={() => navigate("/")} size="lg" className="w-full">
+              <Target className="w-4 h-4 mr-2" />
+              Bereit
+            </Button>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PreTraining;
