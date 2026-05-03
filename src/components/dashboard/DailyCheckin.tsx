@@ -594,9 +594,10 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                 )}
                 {step === 2 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzes Stimmungs-Echo</h2>
+                    <h2 className="font-heading text-2xl font-bold mb-2">Optional: Was beeinflusst deinen Zustand heute?</h2>
                     <p className="text-muted-foreground mb-2 text-sm">
-                      Ein bis zwei Sätze – wie startest du heute mental in den Tag?
+                      Gibt es etwas, das deinen heutigen Zustand stark beeinflusst? Diese Antwort bleibt vollständig privat —
+                      sie verlässt nie deinen Account und wird Coaches niemals gezeigt.
                     </p>
                     <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
                       <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
@@ -613,7 +614,7 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     <textarea
                       value={reflection}
                       onChange={(e) => setReflection(e.target.value)}
-                      placeholder="Kurze Beobachtung – ohne Bewertung."
+                      placeholder="Optional. Nur für dich sichtbar."
                       className="w-full h-32 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </motion.div>
