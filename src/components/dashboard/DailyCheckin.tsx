@@ -545,61 +545,50 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -50 }}
                   >
-                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in starten</h2>
-                    <p className="text-muted-foreground mb-8 text-sm">
-                      Zwei kurze Fragen, bevor wir loslegen.
+                    <h2 className="font-heading text-2xl font-bold mb-1">Wohlbefinden & Bereitschaft</h2>
+                    <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Team Pulse</p>
+                    <p className="text-muted-foreground mb-6 text-sm">
+                      Wie fühlst du dich heute? Kurze Skala von 1 bis 10. Deine Antworten bleiben privat —
+                      Coaches sehen nur anonymisierte Team-Tendenzen (mind. 5 Spieler).
                     </p>
 
-                    <div className="space-y-8">
-                      <div>
-                        <label className="text-sm font-semibold block mb-3">
-                          Wie ist deine Stimmung gerade?
-                        </label>
-                        <div className="grid grid-cols-10 gap-1.5">
-                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                            <button
-                              key={n}
-                              onClick={() => setMoodBefore(n)}
-                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
-                                moodBefore === n
-                                  ? "bg-primary text-primary-foreground shadow-glow"
-                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
+                    <div className="space-y-7">
+                      {[
+                        { label: "Stimmung", question: "Wie ist deine allgemeine Stimmung gerade?", value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
+                        { label: "Energie", question: "Wie viel Energie hast du gerade?", value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
+                        { label: "Mentale Klarheit / Fokus", question: "Wie klar und fokussiert fühlst du dich gerade?", value: focusClarity, set: setFocusClarity, low: "sehr zerstreut", high: "sehr klar" },
+                        { label: "Stress / innere Spannung", question: "Wie viel innere Spannung oder Stress spürst du gerade?", value: stress, set: setStress, low: "sehr niedrig", high: "sehr hoch" },
+                        { label: "Erholung", question: "Wie erholt fühlst du dich heute?", value: recovery, set: setRecovery, low: "gar nicht erholt", high: "sehr erholt" },
+                        { label: "Schlafqualität", question: "Wie war deine Schlafqualität?", value: sleepQuality, set: setSleepQuality, low: "sehr schlecht", high: "sehr gut" },
+                        { label: "Körperliche Bereitschaft", question: "Wie bereit fühlt sich dein Körper für Belastung an?", value: physicalReadiness, set: setPhysicalReadiness, low: "gar nicht bereit", high: "sehr bereit" },
+                        { label: "Motivation / Einsatzbereitschaft", question: "Wie bereit bist du, heute wirklich in die Arbeit zu gehen?", value: motivation, set: setMotivation, low: "kaum bereit", high: "sehr bereit" },
+                        { label: "Druck / Bewertungsgefühl", question: "Wie stark fühlt sich heute Druck oder Bewertungsgefühl an?", value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
+                        { label: "Teamverbundenheit", question: "Wie verbunden fühlst du dich gerade mit dem Team?", value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
+                      ].map((q) => (
+                        <div key={q.label}>
+                          <label className="text-sm font-semibold block mb-1">{q.label}</label>
+                          <p className="text-xs text-muted-foreground mb-2">{q.question}</p>
+                          <div className="grid grid-cols-10 gap-1.5">
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                              <button
+                                key={n}
+                                onClick={() => q.set(n)}
+                                className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                  q.value === n
+                                    ? "bg-primary text-primary-foreground shadow-glow"
+                                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
+                            <span>{q.low}</span>
+                            <span>{q.high}</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
-                          <span>schlecht</span>
-                          <span>sehr gut</span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-semibold block mb-3">
-                          Wie ist dein Energielevel?
-                        </label>
-                        <div className="grid grid-cols-10 gap-1.5">
-                          {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                            <button
-                              key={n}
-                              onClick={() => setEnergyLevel(n)}
-                              className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
-                                energyLevel === n
-                                  ? "bg-primary text-primary-foreground shadow-glow"
-                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
-                          <span>leer</span>
-                          <span>voll geladen</span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </motion.div>
                 )}
