@@ -900,6 +900,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_coach_of_user: { Args: { _user_id: string }; Returns: boolean }
+      is_creator_of_team: { Args: { _team_id: string }; Returns: boolean }
+      is_member_of_team: { Args: { _team_id: string }; Returns: boolean }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
       update_feedback_status: {
         Args: { feedback_id: string; new_note?: string; new_status: string }
