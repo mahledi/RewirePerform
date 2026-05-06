@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogContent,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, ChevronRight, AlertCircle } from "lucide-react";
-import AdminDayPreview from "./AdminDayPreview";
+import { Search, ChevronRight, AlertCircle, ChevronLeft, Dumbbell, Moon, Trophy, X, Eye } from "lucide-react";
+import DailyCheckin from "@/components/dashboard/DailyCheckin";
+import type { CalendarEventType } from "@/content/matrixDayTypes";
 
 const phaseColor: Record<number, string> = {
   1: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -19,15 +19,30 @@ const phaseColor: Record<number, string> = {
   4: "bg-primary/15 text-primary border-primary/30",
 };
 
+const phaseStarts: { phase: number; day: number; label: string }[] = [
+  { phase: 1, day: 1, label: "Phase 1 · Tag 1" },
+  { phase: 2, day: 15, label: "Phase 2 · Tag 15" },
+  { phase: 3, day: 29, label: "Phase 3 · Tag 29" },
+  { phase: 4, day: 43, label: "Phase 4 · Tag 43" },
+];
+
+const eventTypes: { id: CalendarEventType; label: string; icon: typeof Dumbbell }[] = [
+  { id: "training", label: "Training", icon: Dumbbell },
+  { id: "rest", label: "Ruhetag", icon: Moon },
+  { id: "competition", label: "Wettkampf", icon: Trophy },
+];
+
 const AdminDayBrowser = () => {
   const [search, setSearch] = useState("");
   const [phaseFilter, setPhaseFilter] = useState<number | null>(null);
   const [openDay, setOpenDay] = useState<number | null>(null);
+  const [eventType, setEventType] = useState<CalendarEventType>("training");
+  const [jumpInput, setJumpInput] = useState("");
 
   const days = useMemo(() => {
     return MATRIX_DAYS.map((m) => {
       const content = getDailyContent(m.dayNumber);
-      return { matrix: m, hasContent: !!content, content };
+      return { matrix: m, hasContent: !!content };
     });
   }, []);
 
@@ -54,16 +69,66 @@ const AdminDayBrowser = () => {
     return Array.from(byWeek.entries()).sort((a, b) => a[0] - b[0]);
   }, [filtered]);
 
+  const currentMatrix = openDay ? MATRIX_DAYS.find((m) => m.dayNumber === openDay) : null;
+
+  const handleJump = () => {
+    const n = parseInt(jumpInput, 10);
+    if (!isNaN(n) && n >= 1 && n <= MATRIX_DAYS.length) {
+      setOpenDay(n);
+      setJumpInput("");
+    }
+  };
+
+  const goPrev = () => {
+    if (openDay && openDay > 1) setOpenDay(openDay - 1);
+  };
+  const goNext = () => {
+    if (openDay && openDay < MATRIX_DAYS.length) setOpenDay(openDay + 1);
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Programmtage 1–{MATRIX_DAYS.length}</CardTitle>
+        <CardTitle>Programmtage 1–{MATRIX_DAYS.length} · Spieler-Simulator</CardTitle>
         <CardDescription>
-          Klicke einen Tag an, um ihn exakt so zu sehen wie ein Spieler — inkl. Tasks, Journal-Fragen und Comprehension-Pool.
-          Read-only, keine Spielerdaten.
+          Klicke einen Tag an, um den vollständigen Spieler-Check-in 1:1 durchzugehen — gleiche Komponente, Schritt für Schritt,
+          inklusive Slider, Tasks, Journal-Fragen und Comprehension Check. <strong>Read-only — nichts wird gespeichert.</strong>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Sprung-Leiste */}
+        <div className="flex gap-2 flex-wrap items-center p-3 rounded-lg bg-muted/30 border border-border/40">
+          <span className="text-xs uppercase tracking-widest text-muted-foreground">Springe zu</span>
+          <div className="flex items-center gap-1.5">
+            <Input
+              type="number"
+              min={1}
+              max={MATRIX_DAYS.length}
+              placeholder="Tag…"
+              value={jumpInput}
+              onChange={(e) => setJumpInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleJump()}
+              className="w-24 h-8 text-sm"
+            />
+            <Button size="sm" variant="outline" onClick={handleJump} className="h-8">
+              <Eye className="w-3.5 h-3.5 mr-1" />
+              Öffnen
+            </Button>
+          </div>
+          <div className="h-5 w-px bg-border mx-1" />
+          {phaseStarts.map((p) => (
+            <Button
+              key={p.phase}
+              size="sm"
+              variant="outline"
+              className="h-8"
+              onClick={() => setOpenDay(p.day)}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+
         {/* Filters */}
         <div className="flex gap-2 flex-wrap items-center">
           <div className="relative flex-1 min-w-[200px]">
@@ -146,18 +211,66 @@ const AdminDayBrowser = () => {
         </div>
       </CardContent>
 
-      {/* Day Detail Dialog */}
+      {/* Vollbild-Spieler-Simulator */}
       <Dialog open={openDay !== null} onOpenChange={(o) => !o && setOpenDay(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] p-0 flex flex-col">
-          <DialogHeader className="p-6 pb-3 border-b shrink-0">
-            <DialogTitle>Spieler-Vorschau · Tag {openDay}</DialogTitle>
-            <DialogDescription>
-              Identische Darstellung wie im Spieler-Check-in. Read-only.
-            </DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="flex-1 p-6">
-            {openDay !== null && <AdminDayPreview dayNumber={openDay} />}
-          </ScrollArea>
+        <DialogContent className="max-w-none w-screen h-screen sm:rounded-none p-0 gap-0 flex flex-col [&>button]:hidden">
+          {/* Admin-Toolbar oberhalb der Spieler-UI */}
+          <div className="shrink-0 border-b border-border bg-muted/40 px-4 py-2 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="default" className="text-[10px] uppercase tracking-widest">Preview</Badge>
+              <span className="text-xs text-muted-foreground">Nichts wird gespeichert</span>
+              {currentMatrix && (
+                <>
+                  <span className="text-xs">·</span>
+                  <span className="text-xs font-semibold">
+                    Tag {currentMatrix.dayNumber} · Phase {currentMatrix.phase} · Woche {currentMatrix.week}
+                  </span>
+                  <span className="text-xs text-muted-foreground hidden md:inline">— {currentMatrix.lens}</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Kontext-Toggle */}
+              <div className="flex gap-1">
+                {eventTypes.map(({ id, label, icon: Icon }) => (
+                  <Button
+                    key={id}
+                    size="sm"
+                    variant={eventType === id ? "default" : "outline"}
+                    onClick={() => setEventType(id)}
+                    className="h-7 text-xs"
+                  >
+                    <Icon className="w-3 h-3 mr-1" />
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <div className="h-5 w-px bg-border" />
+              <Button size="sm" variant="outline" onClick={goPrev} disabled={!openDay || openDay <= 1} className="h-7">
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={goNext} disabled={!openDay || openDay >= MATRIX_DAYS.length} className="h-7">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setOpenDay(null)} className="h-7">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Echte Spieler-Komponente, im Preview-Mode */}
+          <div className="flex-1 overflow-y-auto">
+            {openDay !== null && (
+              <DailyCheckin
+                key={`${openDay}-${eventType}`}
+                eventType={eventType}
+                date={new Date()}
+                onClose={() => setOpenDay(null)}
+                previewMode
+                previewDayNumber={openDay}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </Card>

@@ -30,6 +30,10 @@ interface DailyCheckinProps {
   eventType: EventType;
   date: Date;
   onClose: () => void;
+  /** Preview/Admin mode: no DB writes, force a specific day, no navigation on completion. */
+  previewMode?: boolean;
+  /** Force a specific day number instead of computing from program start (preview only). */
+  previewDayNumber?: number;
 }
 
 const iconMap: Record<string, typeof Brain> = {
@@ -43,7 +47,7 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
   competition: { label: "Wettkampftag", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
-const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
+const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -74,13 +78,30 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
 
   useEffect(() => {
+    if (previewMode) {
+      loadPreviewDay();
+      return;
+    }
     if (!user?.id) {
       navigate("/auth");
       return;
     }
     loadDay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, previewMode, previewDayNumber, eventType]);
+
+  const loadPreviewDay = () => {
+    if (typeof previewDayNumber !== "number") return;
+    setLoadingTasks(true);
+    const r = resolveDay(previewDayNumber, date, eventType);
+    if (r) {
+      setResolved(r);
+      setAssignmentId(null);
+      setComprehensionQuestions(drawComprehensionQuestions(r.matrix.dayNumber, 3));
+      setMicroAdjustment(null);
+    }
+    setLoadingTasks(false);
+  };
 
   const loadDay = async () => {
     if (!user?.id) return;
@@ -196,6 +217,10 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
   };
 
   const saveCheckin = async () => {
+    if (previewMode) {
+      setStep(6);
+      return;
+    }
     if (!user?.id) return;
     if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaving(true);
@@ -282,6 +307,10 @@ const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
     results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
   ) => {
     setComprehensionDone(true);
+    if (previewMode) {
+      await saveCheckin();
+      return;
+    }
     if (assignmentId && resolved && user?.id) {
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
