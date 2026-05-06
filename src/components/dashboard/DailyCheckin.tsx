@@ -30,6 +30,10 @@ interface DailyCheckinProps {
   eventType: EventType;
   date: Date;
   onClose: () => void;
+  /** Preview/Admin mode: no DB writes, force a specific day, no navigation on completion. */
+  previewMode?: boolean;
+  /** Force a specific day number instead of computing from program start (preview only). */
+  previewDayNumber?: number;
 }
 
 const iconMap: Record<string, typeof Brain> = {
