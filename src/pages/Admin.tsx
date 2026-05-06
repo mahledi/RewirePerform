@@ -216,6 +216,11 @@ const Admin = () => {
             )}
           </TabsContent>
 
+          {/* DAYS — Spieler-Vorschau jedes Programmtags */}
+          <TabsContent value="days" className="mt-4">
+            <AdminDayBrowser />
+          </TabsContent>
+
           {/* TEAMS */}
           <TabsContent value="teams" className="mt-4">
             <Card>
