@@ -7,7 +7,6 @@ const HeroSection = () => {
   const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background Image */}
       <div className="absolute inset-0">
         <img
           src={heroImage}
@@ -18,7 +17,6 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
       </div>
 
-      {/* Content */}
       <div className="relative z-10 container mx-auto px-6 py-32">
         <div className="max-w-3xl">
           <motion.div
@@ -29,7 +27,7 @@ const HeroSection = () => {
           >
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border-glow">
               <Brain className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Wissenschaftlich fundiert</span>
+              <span className="text-sm font-medium text-primary">Neurokognitives Performance-System</span>
             </div>
           </motion.div>
 
@@ -39,20 +37,31 @@ const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="font-heading text-5xl md:text-7xl font-bold leading-[1.05] mb-6"
           >
-            Dein Kopf entscheidet
+            Trainiere das System
             <br />
-            <span className="text-gradient">das Spiel.</span>
+            <span className="text-gradient">hinter deiner Performance.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-6 leading-relaxed"
           >
-            KI-gestützte neurokognitive Performance-Begleitung. 
-            Wir rewiren die Gehirnregionen, die unter Druck versagen – 
-            wissenschaftlich belegt, sportartspezifisch, täglich.
+            RewirePerform ist ein 56-Tage-System für Athleten und Teams, das tägliche
+            mentale Praxis, neurokognitive Prinzipien, Team Pulse, Coach Dashboard
+            und messbare Entwicklung verbindet.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+            className="text-base text-muted-foreground/80 max-w-2xl mb-10 leading-relaxed"
+          >
+            Kein Motivationstalk. Kein loses Mindset-Coaching. Ein strukturiertes
+            System, das Verhalten, Aufmerksamkeit, Druckregulation und
+            Selbstführung täglich trainiert.
           </motion.p>
 
           <motion.div
@@ -66,13 +75,12 @@ const HeroSection = () => {
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
             <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-border font-heading font-medium text-foreground transition-all hover:bg-secondary">
-              Mehr erfahren
+              Demo anfragen
             </button>
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );

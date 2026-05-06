@@ -1,51 +1,56 @@
 import { motion } from "framer-motion";
-import { ClipboardCheck, Cpu, CalendarDays, Target } from "lucide-react";
+import { ClipboardCheck, Repeat, Users, LineChart } from "lucide-react";
 
 const steps = [
   {
     icon: ClipboardCheck,
-    title: "Tiefgehende Analyse",
+    title: "Analyse",
     description:
-      "Deine Antworten auf sorgfältig entwickelte Fragen offenbaren mentale Muster, Stärken und Lücken – auch solche, die dir selbst nicht bewusst sind.",
+      "Fragen erfassen Sport, Position, Selbstführung, Druckmuster, Motivation und mentale Ausgangslage.",
   },
   {
-    icon: Cpu,
-    title: "KI-Auswertung",
+    icon: Repeat,
+    title: "Tägliche Praxis",
     description:
-      "Unser Algorithmus wertet deine Antworten aus und erstellt ein individuelles Profil. Kein Sportler bekommt das gleiche Programm.",
+      "Jeden Tag trainieren Spieler konkrete Skills: Fokus, Prozessdenken, Fehlerreaktion, Selbstgespräch, Druckinterpretation, Discomfort und Reflexion.",
   },
   {
-    icon: CalendarDays,
-    title: "Tägliche Begleitung",
+    icon: Users,
+    title: "Team Pulse",
     description:
-      "An Trainingstagen mentale Übungen für den Wettkampf. An Ruhetagen Visualisierung, Mindset-Arbeit und Vorbereitung. Jeden Tag ein Check-in.",
+      "10 kurze Check-in-Fragen machen Zustand, Bereitschaft und Teamtendenzen sichtbar — anonymisiert und aggregiert.",
   },
   {
-    icon: Target,
-    title: "Adaptive Anpassung",
+    icon: LineChart,
+    title: "Evidence Layer",
     description:
-      "Die KI verschiebt und passt dein Programm fortlaufend an – basierend auf deinen täglichen Eingaben und deinem Fortschritt.",
+      "Pre/Mid/Post-Assessments, Adherence, Comprehension und Teamdaten zeigen beobachtete Entwicklung über 56 Tage.",
   },
 ];
 
 const ProcessSection = () => {
   return (
-    <section className="py-32 relative">
+    <section className="py-32 relative bg-secondary/30">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="text-center mb-20 max-w-3xl mx-auto"
         >
           <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
             So funktioniert es
           </span>
-          <h2 className="font-heading text-4xl md:text-5xl font-bold">
-            Von der Analyse zur
+          <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
+            56 Tage. Eine klare Progression.
             <br />
-            <span className="text-gradient">täglichen Praxis</span>
+            <span className="text-gradient">Tägliche Reps.</span>
           </h2>
+          <p className="text-muted-foreground text-lg leading-relaxed">
+            Jeder Tag verbindet Science Bite, mentale Aufgabe, Verständnischeck
+            und Reflexion. Die Struktur bleibt stabil — die Anwendung wird über
+            Sport, Position, Zustand und Fortschritt persönlich eingeordnet.
+          </p>
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
