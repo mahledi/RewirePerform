@@ -1,10 +1,13 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import WhySection from "@/components/WhySection";
 import ProcessSection from "@/components/ProcessSection";
-import ScienceSection from "@/components/ScienceSection";
 import BrainSection from "@/components/BrainSection";
-import DailySection from "@/components/DailySection";
+import MechanismSection from "@/components/MechanismSection";
+import PlayersSection from "@/components/PlayersSection";
 import CoachSection from "@/components/CoachSection";
+import EvidenceSection from "@/components/EvidenceSection";
+import PrivacySection from "@/components/PrivacySection";
 import CTASection from "@/components/CTASection";
 
 const Index = () => {
@@ -12,18 +15,29 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
+      <div id="why">
+        <WhySection />
+      </div>
       <div id="process">
         <ProcessSection />
       </div>
       <div id="science">
-        <ScienceSection />
-      </div>
-      <div id="brain">
         <BrainSection />
       </div>
-      <DailySection />
+      <div id="mechanisms">
+        <MechanismSection />
+      </div>
+      <div id="players">
+        <PlayersSection />
+      </div>
       <div id="coaches">
         <CoachSection />
+      </div>
+      <div id="evidence">
+        <EvidenceSection />
+      </div>
+      <div id="privacy">
+        <PrivacySection />
       </div>
       <CTASection />
       <footer className="py-8 border-t border-border">

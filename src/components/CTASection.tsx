@@ -14,23 +14,28 @@ const CTASection = () => {
           className="text-center max-w-2xl mx-auto"
         >
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
-            Bereit, den
+            Bereit, mentale Performance
             <br />
-            <span className="text-gradient">Unterschied zu machen?</span>
+            <span className="text-gradient">systematisch zu trainieren?</span>
           </h2>
           <p className="text-muted-foreground text-lg mb-10 leading-relaxed">
-            Starte jetzt mit deinem individuellen Mental-Performance-Programm. 
-            Wissenschaftlich fundiert. KI-personalisiert. Täglich begleitet.
+            Für Teams, Coaches und Athleten, die mentale Entwicklung nicht länger
+            dem Zufall überlassen wollen.
           </p>
-          <button
-            onClick={() => navigate("/auth")}
-            className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]"
-          >
-            Jetzt Zugang sichern
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </button>
-          <p className="text-xs text-muted-foreground mt-6">
-            Individueller Zugang · Sofort starten · Jederzeit kündbar
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate("/auth")}
+              className="group inline-flex items-center justify-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]"
+            >
+              Zugang sichern
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </button>
+            <button className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-xl border border-border font-heading font-semibold text-lg text-foreground transition-all hover:bg-secondary">
+              Demo anfragen
+            </button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-8 font-heading">
+            Keine Motivations-Floskeln. Ein System.
           </p>
         </motion.div>
       </div>

@@ -1,48 +1,26 @@
 import { motion } from "framer-motion";
-import { Brain, Zap, Target, Wind, Eye, Flame, Shield } from "lucide-react";
+import { Shield, Brain, Flame, Repeat } from "lucide-react";
 
-const regions = [
+const cards = [
   {
-    icon: Zap,
-    region: "Amygdala",
-    role: "Dein Alarmsystem",
-    description: "Reagiert in 12ms – schneller als dein Bewusstsein. Wir lehren sie, Druck als Chance zu lesen statt als Gefahr.",
-    color: "text-red-400",
+    icon: Shield,
+    title: "Amygdala & Bedrohung",
+    text: "Unter Druck reagieren Bedrohungssysteme schneller. Das Ziel ist nicht, Angst auszuschalten, sondern Verhalten trotz innerer Aktivierung steuerbar zu machen.",
   },
   {
     icon: Brain,
-    region: "Präfrontaler Kortex",
-    role: "Dein Entscheidungszentrum",
-    description: "Unter Stress fährt er herunter – genau wenn du ihn am meisten brauchst. Wir halten ihn aktiv.",
-    color: "text-blue-400",
+    title: "Präfrontaler Kortex & Kontrolle",
+    text: "Fokus, Bewertung und Handlungskontrolle stehen in Verbindung mit präfrontalen Prozessen. Das System trainiert die Rückkehr zur bewussten nächsten Handlung.",
   },
   {
     icon: Flame,
-    region: "Anterior Midcingulate Cortex",
-    role: "Dein Willpower-Muskel",
-    description: "Er wächst PHYSISCH wenn du freiwillig unangenehme Dinge tust. Messbar im MRT. Disziplin ist trainierbar – buchstäblich.",
-    color: "text-orange-400",
+    title: "aMCC & Anstrengung",
+    text: "Der anterior midcingulate cortex wird mit Anstrengung, Widerstand und freiwilligem Handeln trotz Unkomfort in Verbindung gebracht. Deshalb enthält das Programm kleine, machbare Challenges.",
   },
   {
-    icon: Target,
-    region: "Basalganglien",
-    role: "Dein Autopilot",
-    description: "Mentale Skills werden hierhin verlagert, damit sie automatisch laufen – wie Dribbeln oder Atmen.",
-    color: "text-green-400",
-  },
-  {
-    icon: Wind,
-    region: "Default Mode Network",
-    role: "Dein Grübel-Netzwerk",
-    description: "Nach Fehlern läuft es heiß. Keine Charakterschwäche – ein Netzwerk, das man gezielt unterbrechen kann.",
-    color: "text-purple-400",
-  },
-  {
-    icon: Eye,
-    region: "Prämotorischer Kortex",
-    role: "Dein Simulations-Center",
-    description: "Visualisierung aktiviert dieselben Neuronen wie echte Bewegung. Mentale Reps = echte Reps.",
-    color: "text-cyan-400",
+    icon: Repeat,
+    title: "Basalganglien & Automatisierung",
+    text: "Was wiederholt wird, kann leichter verfügbar werden. Das System bringt mentale Skills aus der Theorie in wiederholte Alltagspraxis.",
   },
 ];
 
@@ -59,43 +37,44 @@ const BrainSection = () => {
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="px-4 py-2 rounded-full bg-primary/10 border-glow">
               <span className="text-sm font-medium text-primary tracking-widest uppercase">
-                Neurokognitives Training
+                Neurowissenschaft
               </span>
             </div>
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
-            Wir trainieren dein Gehirn.
+            Das Gehirn ist die Grundlage.
             <br />
-            <span className="text-gradient">Nicht dein Ego.</span>
+            <span className="text-gradient">Nicht die Metapher.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Jede Aufgabe in deinem 56-Tage-Programm zielt auf eine spezifische 
-            Gehirnregion. Das ist kein Motivations-Talk – das ist Neurowissenschaft. 
-            Dein Gehirn verändert sich physisch. Messbar.
+            RewirePerform arbeitet mit Prinzipien der Neuroplastizität:
+            Wiederholung, Aufmerksamkeit, emotionaler Kontext, Selbstregulation
+            und Verhalten unter Druck. Die täglichen Aufgaben sind mentale Reps —
+            nicht als Motivation, sondern als Training für Muster, die im
+            Wettkampf entscheiden.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {regions.map((r, i) => (
+        <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+          {cards.map((c, i) => (
             <motion.div
-              key={r.region}
+              key={c.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="p-6 rounded-2xl bg-gradient-card border-glow shadow-card group hover:scale-[1.02] transition-transform"
+              className="p-6 rounded-2xl bg-gradient-card border-glow shadow-card"
             >
               <div className="flex items-start gap-4">
-                <div className={`p-2.5 rounded-xl bg-secondary/50 ${r.color}`}>
-                  <r.icon className="w-5 h-5" />
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                  <c.icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-heading font-semibold text-foreground mb-0.5">
-                    {r.region}
+                  <h3 className="font-heading font-semibold text-foreground mb-2">
+                    {c.title}
                   </h3>
-                  <span className="text-xs font-medium text-primary">{r.role}</span>
-                  <p className="text-muted-foreground text-sm leading-relaxed mt-2">
-                    {r.description}
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {c.text}
                   </p>
                 </div>
               </div>
@@ -103,25 +82,17 @@ const BrainSection = () => {
           ))}
         </div>
 
-        {/* aMCC Highlight */}
-        <motion.div
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-12 p-8 rounded-2xl bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-glow text-center max-w-2xl mx-auto"
+          className="mt-10 text-center text-xs text-muted-foreground/70 max-w-2xl mx-auto"
         >
-          <Flame className="w-8 h-8 text-primary mx-auto mb-4" />
-          <h3 className="font-heading text-xl font-bold mb-3 text-foreground">
-            Der aMCC – Dein Willpower-Muskel
-          </h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Studien zeigen: Der Anterior Midcingulate Cortex wächst physisch, wenn du 
-            freiwillig unangenehme Dinge tust. Bei Extremsportlern und "Super-Agern" 
-            ist er signifikant größer. Deshalb enthält jeder Tag in deinem Programm 
-            eine aMCC-Challenge – eine kleine Überwindung, die deinen Willpower-Muskel 
-            wachsen lässt. Buchstäblich.
-          </p>
-        </motion.div>
+          RewirePerform misst keine Gehirnaktivität und behauptet keine
+          garantierte physische Veränderung. Das System ist darauf ausgelegt,
+          Bedingungen zu schaffen, die neuroplastische Anpassung unterstützen
+          können.
+        </motion.p>
       </div>
     </section>
   );

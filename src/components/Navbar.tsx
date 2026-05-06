@@ -11,9 +11,11 @@ const Navbar = () => {
           <span className="font-heading font-bold text-lg">RewirePerform</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#process" className="hover:text-foreground transition-colors">Prozess</a>
+          <a href="#process" className="hover:text-foreground transition-colors">System</a>
           <a href="#science" className="hover:text-foreground transition-colors">Wissenschaft</a>
-          <a href="#coaches" className="hover:text-foreground transition-colors">Für Coaches</a>
+          <a href="#mechanisms" className="hover:text-foreground transition-colors">Mechanismen</a>
+          <a href="#coaches" className="hover:text-foreground transition-colors">Coaches</a>
+          <a href="#evidence" className="hover:text-foreground transition-colors">Evidenz</a>
         </div>
         <button onClick={() => navigate("/auth")} className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
           Zugang
