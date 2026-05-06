@@ -307,6 +307,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
   ) => {
     setComprehensionDone(true);
+    if (previewMode) {
+      await saveCheckin();
+      return;
+    }
     if (assignmentId && resolved && user?.id) {
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
