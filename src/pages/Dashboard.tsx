@@ -300,7 +300,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut, user, role } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -331,6 +331,17 @@ const Dashboard = () => {
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
     REQUIRED_ASSESSMENTS.every((id) => types.has(id));
+
+  useEffect(() => {
+    if (role === "admin") {
+      navigate("/admin");
+      return;
+    }
+
+    if (role === "coach") {
+      navigate("/coach");
+    }
+  }, [role, navigate]);
 
   useEffect(() => {
     const loadAnalysis = async () => {
