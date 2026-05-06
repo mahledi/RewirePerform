@@ -178,8 +178,9 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
+          <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
+            <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="evidence">Wirksamkeit</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
