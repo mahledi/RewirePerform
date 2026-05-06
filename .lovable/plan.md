@@ -1,61 +1,81 @@
-## What's actually broken
+## Problem
 
-Your admin account is **already correct in the database**:
+Die Landing Page hat 10 Vollbild-Sektionen (`py-32` = jeweils ~500px). Mehrere Inhalte wiederholen sich:
 
+- **Team Pulse** wird in Hero, Process (Step 3), Mechanism Stack, Coach Section (zweimal: Feature + "Live Team Intelligence"-Block), und Evidence Stats erwähnt → **5 mal**.
+- **Privacy / "Coach sieht nur Aggregate / n≥5"** kommt in Mechanism, Coach Section, Coach "Live Team Intelligence", Evidence Stats und der ganzen PrivacySection vor → **5 mal**.
+- **Comprehension Check** taucht in Process, Mechanism, Players und Evidence auf → **4 mal**.
+- **"Kein Motivationstalk / nicht dem Zufall überlassen"** in Hero, Why und CTA.
+- **Hero** hat zwei volle Beschreibungs-Absätze, der zweite wiederholt den ersten.
+- **WhySection** und **PlayersSection** sind beide "3 Karten + Intro" zum gleichen Thema (Druck/Fehler/Fokus).
+- **CoachSection** hat ein 3-Karten-Grid UND einen großen "Live Team Intelligence"-Block direkt darunter, die exakt dasselbe sagen.
+
+## Ziel
+
+Von **10 Sektionen auf 7** reduzieren, Premium-Ton beibehalten, Wissenschaft & Disclaimer behalten, jedes Konzept nur **einmal** als Owner-Section haben.
+
+## Neue Struktur
+
+```text
+1. Hero          — Positioning (gekürzt: 1 Absatz statt 2)
+2. Why           — Das Problem + die 3 Skills (Druck/Emotion/Fokus)  ← merged WhySection
+3. Process       — 56 Tage / 4 Schritte (Owner: Team Pulse)
+4. Brain         — 4 Hirn-Mechanismen (Owner: Neurowissenschaft + Disclaimer)
+5. Mechanism     — Mechanism Stack auf 4 Karten gekürzt (kein Team Pulse, kein Coach Loop)
+6. Coach         — EINE konsolidierte Coach-Section (Owner: Coach-Sicht + Privacy)
+7. Evidence      — Outcome-Layer + Science Guardrail (Owner: Messung)
+8. CTA           — Final
 ```
-user_id: 870240aa-6742-4374-84a2-fbc108559a71  →  role: admin   (only row)
-```
 
-But every request to `GET /user_roles?user_id=eq.870240aa...` returns:
+**Entfernt:** `PlayersSection` (geht in Why auf), `PrivacySection` (Inhalt zieht in Coach-Section als Privacy-Liste rechts), separater "Live Team Intelligence"-Block (in Coach-Header integriert).
 
-```
-500  "infinite recursion detected in policy for relation \"teams\""
-```
+→ 10 Sektionen → 7 + Hero + CTA = **9 Bildschirme weniger Scrollen, ~30% kürzer.**
 
-So `AuthContext.fetchRole()` fails silently, `role` stays `null`, and the UI behaves as if you have no admin access. This affects **all logged-in users**, not just you — coaches and athletes can't load their role either right now.
+## Konkrete Änderungen pro Datei
 
-### Why it recurses
+**`src/pages/Index.tsx`**
+- Imports/Renderings von `WhySection` (behalten, neu), `PlayersSection` (entfernen) und `PrivacySection` (entfernen) entsprechend anpassen.
+- Reihenfolge: Hero → Why → Process → Brain → Mechanism → Coach → Evidence → CTA.
 
-Current policies on `user_roles`:
-- `Coaches can read team member roles` → subquery on `team_members` → which has policy `Coach can view own team members` → subquery on `teams` → which has policy `Members and creator can view teams` → subquery on `team_members` again. Postgres aborts the chain.
+**`src/components/HeroSection.tsx`**
+- Zweiten Absatz ("Kein Motivationstalk…") streichen.
+- Im ersten Absatz "Team Pulse, Coach Dashboard" entfernen → bleibt: "…tägliche mentale Praxis, neurokognitive Prinzipien und messbare Entwicklung verbindet."
 
-The `has_role()` SECURITY DEFINER function exists specifically to break this kind of cycle, but the coach-facing `user_roles` policy bypasses it with an inline `EXISTS` subquery.
+**`src/components/WhySection.tsx`**
+- Bleibt strukturell (Intro + 3 Karten Druck/Emotion/Fokus). Übernimmt zusätzlich den Players-Spirit ("Spieler üben täglich, anders zu reagieren") als zweiten Satz im Intro. So entfällt PlayersSection komplett.
 
-## Fix (single migration, no code changes)
+**`src/components/PlayersSection.tsx`**
+- Datei bleibt liegen, wird aber nicht mehr importiert (kann später gelöscht werden).
 
-1. **Replace the recursive `user_roles` SELECT policies** with non-recursive ones that use the existing SECURITY DEFINER `has_role()` helper, plus a simple "own row" rule:
-   - `Users read own role` → `user_id = auth.uid()`
-   - `Admins read all roles` → `has_role(auth.uid(), 'admin')`
-   - Coach access to athlete roles is moved into a SECURITY DEFINER helper (`is_coach_of(_user_id)`) so the policy doesn't traverse `team_members` → `teams` inline.
+**`src/components/ProcessSection.tsx`**
+- Bleibt der **einzige** Owner von "Team Pulse" als Programmschritt. Kleinere Copy-Glättung (Step 3 bleibt explizit Team Pulse).
 
-2. **Simplify the `teams` SELECT policy** to also avoid the `team_members` → `teams` cycle by introducing a SECURITY DEFINER `is_member_of_team(_team_id)` helper.
+**`src/components/MechanismSection.tsx`**
+- Von 6 auf 4 Karten kürzen: **entfernen**: "Check-ins" (= Team Pulse, gehört zu Process) und "Coach Feedback Loop" (gehört zu Coach-Section).
+- Behalten: Journaling, Dankbarkeit, Comprehension, Discomfort & aMCC.
+- Intro-Absatz auf 2 Sätze straffen, italic Footer behalten.
 
-3. **Simplify `team_members` SELECT** the same way (use a SECURITY DEFINER `is_creator_of_team(_team_id)` helper instead of an inline subquery on `teams`).
+**`src/components/CoachSection.tsx`** (umgebaut)
+- Drei-Karten-Grid bleibt (Team Pulse, Heute im Programm, Coach Toolkit) — hier ist Team Pulse erlaubt, weil Coach-Sicht.
+- Großer "Live Team Intelligence"-Block **entfernt** (Inhalt überschneidet sich vollständig mit den 3 Karten).
+- Stattdessen darunter ein zweispaltiges Privacy-Panel (linkes Statement + rechte Liste der 5 Privacy-Punkte aus PrivacySection). Damit wird PrivacySection obsolet.
 
-All three helpers will be `STABLE SECURITY DEFINER SET search_path = public`, matching the existing `has_role` pattern, so they don't trigger RLS recursion.
+**`src/components/PrivacySection.tsx`**
+- Datei bleibt liegen, nicht mehr importiert.
 
-4. **No data change needed** — your `admin` row is already there. After the migration, the next `GET /user_roles` will succeed and `AuthContext` will set `role = 'admin'`, which makes `/admin` load and the rest of the app treat you as admin.
+**`src/components/EvidenceSection.tsx`**
+- Stat-Pill **"Team Pulse — Daily" entfernen** (doppelt zu Process + Coach). 6 Stats → 5 Stats, Grid auf `lg:grid-cols-5` setzen.
+- Intro-Absatz um einen Satz kürzen.
+- Science Guardrail bleibt unverändert (das ist wichtiger Eigner-Text).
 
-## Verification after migration
+**`src/components/CTASection.tsx`**
+- Subline "Für Teams, Coaches und Athleten…" auf einen Satz kürzen, damit nicht erneut die Why-Sektion paraphrasiert wird.
 
-- `SELECT role FROM user_roles WHERE user_id = '870240aa-...'` → `admin` (already true).
-- Open the app, hard-refresh, sign in. Network tab: `GET /user_roles?...` → `200`, body `[{"role":"admin"}]`.
-- Navigate to `/admin` — Admin Control Center loads.
-- Coaches and athletes can still load their own role and team data (verified by the new helper functions returning the same answers the old subqueries did).
+**`src/components/Navbar.tsx`**
+- Anker bleiben gleich (`#why` neu hinzufügen, `#players`/`#privacy` entfallen). Sichtbare Links: System · Wissenschaft · Mechanismen · Coaches · Evidenz (5 Links, unverändert).
 
-## Risk
+## Effekt
 
-Low. The new policies preserve the same access semantics:
-- Users still see only their own role.
-- Coaches still see roles of their team members.
-- Admins still see everything.
-- Teams/team_members visibility for coaches and members is unchanged.
-
-The only behavioral change is that the SELECT no longer crashes.
-
-## Out of scope
-
-- No frontend changes.
-- No new tables or columns.
-- No change to `has_role`, the admin RPCs, or the existing admin UI.
-- Not re-promoting the account — it is already admin.
+- Jedes Kernkonzept hat **genau einen** Eigentümer-Block.
+- Vertikale Höhe der Page ca. **−30%**.
+- Premium/Science-Ton, Disclaimer und Privacy-Substanz bleiben vollständig erhalten.

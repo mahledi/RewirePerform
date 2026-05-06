@@ -4,10 +4,8 @@ import WhySection from "@/components/WhySection";
 import ProcessSection from "@/components/ProcessSection";
 import BrainSection from "@/components/BrainSection";
 import MechanismSection from "@/components/MechanismSection";
-import PlayersSection from "@/components/PlayersSection";
 import CoachSection from "@/components/CoachSection";
 import EvidenceSection from "@/components/EvidenceSection";
-import PrivacySection from "@/components/PrivacySection";
 import CTASection from "@/components/CTASection";
 
 const Index = () => {
@@ -27,17 +25,11 @@ const Index = () => {
       <div id="mechanisms">
         <MechanismSection />
       </div>
-      <div id="players">
-        <PlayersSection />
-      </div>
       <div id="coaches">
         <CoachSection />
       </div>
       <div id="evidence">
         <EvidenceSection />
-      </div>
-      <div id="privacy">
-        <PrivacySection />
       </div>
       <CTASection />
       <footer className="py-8 border-t border-border">

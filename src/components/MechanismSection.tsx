@@ -1,12 +1,8 @@
 import { motion } from "framer-motion";
-import { Activity, BookOpen, Heart, CheckCircle2, Flame, Users } from "lucide-react";
+
+import { BookOpen, Heart, CheckCircle2, Flame } from "lucide-react";
 
 const cards = [
-  {
-    icon: Activity,
-    title: "Check-ins",
-    text: "Der tägliche Team Pulse macht Zustand, Belastung und Bereitschaft sichtbar — für den Spieler persönlich und für den Coach nur aggregiert.",
-  },
   {
     icon: BookOpen,
     title: "Journaling & Reflexion",
@@ -26,11 +22,6 @@ const cards = [
     icon: Flame,
     title: "Discomfort & aMCC",
     text: "Kleine freiwillige Herausforderungen trainieren Handeln trotz Widerstand — ein Prozess, der mit Anstrengung und dem anterior midcingulate cortex in Verbindung gebracht wird.",
-  },
-  {
-    icon: Users,
-    title: "Coach Feedback Loop",
-    text: "Coaches sehen Live-Tendenzen des Teams: Teilnahme, Team Pulse, Adherence und Entwicklung — nicht die private Innenwelt einzelner Spieler.",
   },
 ];
 
@@ -53,12 +44,10 @@ const MechanismSection = () => {
             <span className="text-gradient">Mechanismen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-            Jeder Teil von RewirePerform hat eine Funktion. Check-ins machen
-            Zustand sichtbar. Journaling stärkt Selbstwahrnehmung. Dankbarkeit
-            verändert Aufmerksamkeit. Comprehension Checks verwandeln Wissen in
-            Anwendung. Kleine Challenges trainieren Handeln trotz Widerstand.
-            Coach-Daten schaffen ein Umfeld, das Entwicklung unterstützt — ohne
-            private Reflexionen offenzulegen.
+            Jeder Teil von RewirePerform hat eine Funktion: Reflexion stärkt
+            Selbstwahrnehmung, Dankbarkeit verändert Aufmerksamkeit,
+            Comprehension verwandelt Wissen in Anwendung, kleine Challenges
+            trainieren Handeln trotz Widerstand.
           </p>
           <p className="text-sm text-muted-foreground/80 italic">
             Das Tool ist neu. Die Mechanismen dahinter sind nicht zufällig: Sie
