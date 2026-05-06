@@ -29,11 +29,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<AppRole>(null);
 
   const fetchRole = async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
       .maybeSingle();
+    if (error) {
+      console.error("Failed to fetch user role", error);
+    }
     setRole((data?.role as AppRole) ?? null);
   };
 
