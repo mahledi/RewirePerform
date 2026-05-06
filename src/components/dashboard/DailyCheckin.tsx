@@ -217,6 +217,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   };
 
   const saveCheckin = async () => {
+    if (previewMode) {
+      setStep(6);
+      return;
+    }
     if (!user?.id) return;
     if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaving(true);
