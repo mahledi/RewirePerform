@@ -1,37 +1,14 @@
-// Push notification service worker.
-// Intentionally NOT a caching service worker — only handles push + notificationclick.
-self.addEventListener("install", (e) => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
-
-self.addEventListener("push", (event) => {
-  let data = { title: "MindGame", body: "", url: "/" };
-  try {
-    if (event.data) data = { ...data, ...event.data.json() };
-  } catch (e) {
-    if (event.data) data.body = event.data.text();
-  }
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: "/app-icon.png",
-      badge: "/app-icon.png",
-      data: { url: data.url || "/" },
-    })
-  );
-});
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  const url = event.notification.data?.url || "/";
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if ("focus" in client) {
-          client.navigate(url);
-          return client.focus();
-        }
-      }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
-    })
-  );
-});
+// Legacy SW path – superseded by Workbox SW at /sw.js (built by vite-plugin-pwa).
+// This stub exists only to clean up old registrations on devices that fetched
+// the previous public/sw.js before the PWA migration.
+self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
+self.addEventListener("activate", (e) =>
+  e.waitUntil(
+    (async () => {
+      await self.clients.claim();
+      // Note: do NOT delete caches here — the new Workbox SW (also at /sw.js)
+      // will take over after the next deploy. This file is kept only as a
+      // safety net during the rollover.
+    })()
+  )
+);
