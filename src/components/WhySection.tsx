@@ -39,10 +39,11 @@ const WhySection = () => {
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
             Spieler trainieren Technik, Taktik, Athletik und Ernährung. Aber der
-            Umgang mit Druck, Fehlern, Selbstzweifel, Fokusverlust und negativen
-            Emotionen wird oft erst dann thematisiert, wenn es zu spät ist.
-            RewirePerform bringt diese Arbeit in den Alltag — strukturiert,
-            wiederholbar und messbar.
+            Umgang mit Druck, Fehlern, Selbstzweifel und Fokusverlust wird oft
+            erst dann thematisiert, wenn es zu spät ist. RewirePerform bringt
+            diese Arbeit in den Alltag — und Spieler üben täglich, anders zu
+            reagieren: nach Fehlern, unter Druck, bei Müdigkeit und in Momenten,
+            in denen das Ego die Kontrolle übernehmen will.
           </p>
         </motion.div>
 

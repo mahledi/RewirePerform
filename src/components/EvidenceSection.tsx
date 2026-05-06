@@ -7,7 +7,6 @@ const stats = [
   { label: "Anonymisiert", value: "n≥5" },
   { label: "Adherence", value: "Tracked" },
   { label: "Comprehension", value: "Tracked" },
-  { label: "Team Pulse", value: "Daily" },
 ];
 
 const cards = [
@@ -47,14 +46,12 @@ const EvidenceSection = () => {
             <span className="text-gradient">sichtbar machen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            RewirePerform behauptet nicht blind. Es misst Nutzung, Verständnis,
-            Adherence und beobachtete Veränderungen über 56 Tage. Nicht als
-            Kausalbeweis ohne Kontrollgruppe — sondern als ehrlicher
-            Outcome-Layer für Teams.
+            RewirePerform misst Nutzung, Verständnis, Adherence und beobachtete
+            Veränderungen über 56 Tage — als ehrlicher Outcome-Layer für Teams.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-16 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-16 max-w-5xl mx-auto">
           {stats.map((s) => (
             <div
               key={s.label}

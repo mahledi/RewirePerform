@@ -46,22 +46,10 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-6 leading-relaxed"
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed"
           >
-            RewirePerform ist ein 56-Tage-System für Athleten und Teams, das tägliche
-            mentale Praxis, neurokognitive Prinzipien, Team Pulse, Coach Dashboard
-            und messbare Entwicklung verbindet.
-          </motion.p>
-
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25 }}
-            className="text-base text-muted-foreground/80 max-w-2xl mb-10 leading-relaxed"
-          >
-            Kein Motivationstalk. Kein loses Mindset-Coaching. Ein strukturiertes
-            System, das Verhalten, Aufmerksamkeit, Druckregulation und
-            Selbstführung täglich trainiert.
+            Ein 56-Tage-System für Athleten und Teams, das tägliche mentale
+            Praxis, neurokognitive Prinzipien und messbare Entwicklung verbindet.
           </motion.p>
 
           <motion.div

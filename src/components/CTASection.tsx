@@ -19,8 +19,7 @@ const CTASection = () => {
             <span className="text-gradient">systematisch zu trainieren?</span>
           </h2>
           <p className="text-muted-foreground text-lg mb-10 leading-relaxed">
-            Für Teams, Coaches und Athleten, die mentale Entwicklung nicht länger
-            dem Zufall überlassen wollen.
+            Für Teams, die nichts mehr dem Zufall überlassen wollen.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button

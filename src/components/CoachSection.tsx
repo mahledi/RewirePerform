@@ -19,6 +19,14 @@ const features = [
   },
 ];
 
+const privacyItems = [
+  "Journale bleiben privat",
+  "Freitexte bleiben privat",
+  "Coach sieht nur Aggregate",
+  "Teamdaten ab n≥5",
+  "Keine psychologischen Labels einzelner Spieler",
+];
+
 const CoachSection = () => {
   return (
     <section className="py-32 relative bg-secondary/30">
@@ -63,38 +71,47 @@ const CoachSection = () => {
           ))}
         </div>
 
-        {/* Live Team Intelligence */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="p-10 rounded-3xl bg-gradient-card border-glow shadow-card max-w-5xl mx-auto"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-primary tracking-widest uppercase">
-              Live Team Intelligence
+        {/* Privacy Panel */}
+        <div className="grid lg:grid-cols-2 gap-10 items-center max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
+              Privacy
             </span>
-          </div>
-          <h3 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-            Live-Daten für{" "}
-            <span className="text-gradient">bessere Teamführung.</span>
-          </h3>
-          <p className="text-muted-foreground leading-relaxed mb-3">
-            Zum ersten Mal wird mentale Performance im Team nicht nur gefühlt,
-            sondern sichtbar gemacht: tägliche Check-ins, Team Pulse, Adherence,
-            Verständnis und Pre/Mid/Post-Assessments zeigen, wie das Team
-            wirklich durch das Programm geht. Coaches erhalten Orientierung für
-            Training, Belastung und Kommunikation — ohne private Journale oder
-            Einzelantworten zu sehen.
-          </p>
-          <p className="text-sm text-muted-foreground/80 italic">
-            Live bedeutet nicht Überwachung. Live bedeutet: Der Coach sieht
-            rechtzeitig, ob das Team müde, überlastet, fokussiert, verbunden
-            oder bereit wirkt — aggregiert, anonymisiert und erst ab
-            ausreichender Gruppengröße.
-          </p>
-        </motion.div>
+            <h3 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+              Ehrliche Reflexion
+              <br />
+              <span className="text-gradient">braucht Schutz.</span>
+            </h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Spieler sollen sich selbst verstehen lernen, ohne Angst zu haben,
+              dass private Gedanken gegen sie verwendet werden. Deshalb trennt
+              RewirePerform klar zwischen Spieler-Privatsphäre und
+              Coach-Überblick.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="p-8 rounded-2xl bg-gradient-card border-glow shadow-card"
+          >
+            <ul className="space-y-4">
+              {privacyItems.map((item) => (
+                <li key={item} className="flex items-start gap-3">
+                  <div className="p-1.5 rounded-lg bg-primary/10 mt-0.5">
+                    <Lock className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-foreground font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
