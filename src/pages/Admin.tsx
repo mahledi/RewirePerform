@@ -14,6 +14,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import { Textarea } from "@/components/ui/textarea";
+import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
 
 type Overview = {
   total_users: number; total_athletes: number; total_coaches: number; total_admins: number;
