@@ -63,9 +63,9 @@ const Coach = () => {
 
   useEffect(() => {
     if (!loading && role && role !== "coach") {
-      navigate("/dashboard");
+      navigate(role === "admin" ? "/admin" : "/dashboard");
     }
-  }, [role, loading]);
+  }, [role, loading, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
