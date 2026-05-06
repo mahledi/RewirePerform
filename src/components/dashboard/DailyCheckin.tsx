@@ -78,13 +78,30 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
 
   useEffect(() => {
+    if (previewMode) {
+      loadPreviewDay();
+      return;
+    }
     if (!user?.id) {
       navigate("/auth");
       return;
     }
     loadDay();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, previewMode, previewDayNumber, eventType]);
+
+  const loadPreviewDay = () => {
+    if (typeof previewDayNumber !== "number") return;
+    setLoadingTasks(true);
+    const r = resolveDay(previewDayNumber, date, eventType);
+    if (r) {
+      setResolved(r);
+      setAssignmentId(null);
+      setComprehensionQuestions(drawComprehensionQuestions(r.matrix.dayNumber, 3));
+      setMicroAdjustment(null);
+    }
+    setLoadingTasks(false);
+  };
 
   const loadDay = async () => {
     if (!user?.id) return;
