@@ -47,7 +47,7 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
   competition: { label: "Wettkampftag", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
-const DailyCheckin = ({ eventType, date, onClose }: DailyCheckinProps) => {
+const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
