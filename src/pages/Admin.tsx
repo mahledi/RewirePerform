@@ -14,6 +14,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import { Textarea } from "@/components/ui/textarea";
+import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
 
 type Overview = {
   total_users: number; total_athletes: number; total_coaches: number; total_admins: number;
@@ -177,8 +178,9 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
+          <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
+            <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="evidence">Wirksamkeit</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
@@ -212,6 +214,11 @@ const Admin = () => {
                 <StatCard label="Admins" value={overview.total_admins} />
               </div>
             )}
+          </TabsContent>
+
+          {/* DAYS — Spieler-Vorschau jedes Programmtags */}
+          <TabsContent value="days" className="mt-4">
+            <AdminDayBrowser />
           </TabsContent>
 
           {/* TEAMS */}
