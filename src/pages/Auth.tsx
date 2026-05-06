@@ -67,7 +67,12 @@ const Auth = () => {
         .select("role")
         .eq("user_id", data.user.id)
         .maybeSingle();
-      navigate(roleData?.role === "coach" ? "/coach" : "/dashboard");
+      const nextRoute = roleData?.role === "admin"
+        ? "/admin"
+        : roleData?.role === "coach"
+          ? "/coach"
+          : "/dashboard";
+      navigate(nextRoute);
     }
     setLoading(false);
   };
