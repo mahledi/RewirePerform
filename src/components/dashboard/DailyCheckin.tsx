@@ -385,11 +385,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     const [expanded, setExpanded] = useState(false);
     const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
 
-    const handleToggle = () => {
-      if (!expanded) onRead();
-      setExpanded(!expanded);
-    };
-
     return (
       <motion.div
         layout
@@ -397,7 +392,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           expanded ? "bg-accent/10 border border-accent/20" : "bg-gradient-card border-glow"
         }`}
       >
-        <button onClick={handleToggle} className="w-full text-left p-4 flex items-center gap-3">
+        <button onClick={() => setExpanded(!expanded)} className="w-full text-left p-4 flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
             isRead ? "bg-primary" : "bg-secondary"
           }`}>
@@ -418,11 +413,22 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-4 pt-0">
+              <div className="px-4 pb-4 pt-0 space-y-3">
                 <div className="flex items-start gap-2 p-4 rounded-xl bg-primary/5 border border-primary/10">
                   <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground leading-relaxed">{task.detailedExplanation}</p>
                 </div>
+                <button
+                  onClick={onRead}
+                  disabled={isRead}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-heading font-semibold text-sm transition-all ${
+                    isRead
+                      ? "bg-primary/15 text-primary cursor-default"
+                      : "bg-primary text-primary-foreground hover:shadow-glow active:scale-[0.98]"
+                  }`}
+                >
+                  {isRead ? (<><CheckCircle2 className="w-4 h-4" /> Verstanden</>) : (<>Verstanden</>)}
+                </button>
               </div>
             </motion.div>
           )}
