@@ -1324,5 +1324,1083 @@
       "correctOptionId": "a",
       "explanation": "Die richtige Antwort ist 'a', denn die inhaltliche Debatte mit einem Gedanken (Fusion) ist das Gegenteil vom Beobachten; der Versuch, ihn durch positive Sätze zu ersetzen (c), ist eine ebenso häufige Falle, weil es den Gedanken bekämpft, statt ihn zu entkoppeln."
     }
+  ],
+  "14": [
+    {
+      "id": "d14-q1",
+      "target": "lens",
+      "stem": "Warum raubt Ergebnisdenken die Gegenwart?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Weil dein Fokus auf das zukünftige Resultat gerichtet ist, statt auf die jetzige Aufgabe."
+        },
+        {
+          "id": "b",
+          "text": "Weil das Denken an Ergebnisse dich ablenkt und du dich dadurch härter pushen musst."
+        },
+        {
+          "id": "c",
+          "text": "Weil du die Konsequenzen analysierst, anstatt einfach auf deine Fähigkeiten zu vertrauen."
+        },
+        {
+          "id": "d",
+          "text": "Weil du dich mental auf das Scheitern vorbereitest, was deine Leistung direkt schwächt."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) erfasst, dass Aufmerksamkeit eine begrenzte Ressource ist, die nicht gleichzeitig in der Zukunft (Ergebnis) und Gegenwart (Aktion) sein kann. Option (c) ist ein häufiges Missverständnis, da Analyse oft als nützliche Vorbereitung getarnt ist, aber den Fokus von der Handlung abzieht."
+    },
+    {
+      "id": "d14-q2",
+      "target": "action",
+      "stem": "Was machst du heute vor und nach jeder Aktion?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du richtest deine Aufmerksamkeit kurz bewusst auf deinen nächsten konkreten Handlungsschritt."
+        },
+        {
+          "id": "b",
+          "text": "Du stärkst dein Selbstvertrauen, indem du dir das positive Endergebnis wiederholt vorstellst."
+        },
+        {
+          "id": "c",
+          "text": "Du analysierst sofort nach der Aktion, was gut lief und was beim nächsten Mal besser muss."
+        },
+        {
+          "id": "d",
+          "text": "Du versuchst, den Kopf komplett freizubekommen, um mit maximaler Lockerheit zu agieren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt den 'Core Shift' des Tages, den Fokus aktiv auf den Prozesspunkt zu legen. Option (c) beschreibt das Gegenteil, nämlich das sofortige Bewerten, was den Fokus wieder auf das Ergebnis lenkt und die Gegenwart raubt."
+    },
+    {
+      "id": "d14-q3",
+      "target": "mistake",
+      "stem": "Wann verlässt du heute typischerweise den Prozess-Modus?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn der Druck steigt und dein Kopf zu den möglichen Konsequenzen des Spielstands springt."
+        },
+        {
+          "id": "b",
+          "text": "Sobald du körperliche Ermüdung spürst und anfängst, an deiner Ausdauer zu zweifeln."
+        },
+        {
+          "id": "c",
+          "text": "Sobald eine laute Anweisung vom Trainer kommt, die deine ganze Konzentration erfordert."
+        },
+        {
+          "id": "d",
+          "text": "Wenn dir ein technischer Fehler unterläuft und du sofort versuchst, diesen zu analysieren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) benennt den Kernmechanismus, bei dem der Fokus von der Aktion auf das zukünftige Ergebnis und dessen Konsequenzen springt. Option (d) beschreibt einen verwandten Fehler, die Analyse-Schleife, die aber eine Reaktion auf die Vergangenheit ist und nicht zwingend auf den zukünftigen Ausgang."
+    }
+  ],
+  "15": [
+    {
+      "id": "d15-q1",
+      "target": "lens",
+      "stem": "Was bedeutet 'Präsenz aktiv zurückholen'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Es bedeutet, das Abschweifen zu bemerken und die Aufmerksamkeit aktiv zur Aufgabe zurückzulenken."
+        },
+        {
+          "id": "b",
+          "text": "Es bedeutet, sich dafür zu bestrafen, dass man die Konzentration überhaupt erst verloren hat."
+        },
+        {
+          "id": "c",
+          "text": "Es bedeutet, sich selbst anzutreiben, noch stärker auf die gegenwärtige Aufgabe zu fokussieren."
+        },
+        {
+          "id": "d",
+          "text": "Es bedeutet, genau zu analysieren, warum man abgelenkt war, um es zukünftig zu vermeiden."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Antwort (a) beschreibt den Mechanismus 'Bemerken und Zurückkehren', während die Analyse des Fehlers (d) oder das stärkere Pushen (c) oft zu mehr Anspannung führen."
+    },
+    {
+      "id": "d15-q2",
+      "target": "action",
+      "stem": "Was ist heute dein Reset-Trigger im Training?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ein kurzes, bewusstes Signal, um den Fokus sofort wieder auf einen festen Ankerpunkt zu lenken."
+        },
+        {
+          "id": "b",
+          "text": "Eine kurze Pause, um den Kopf komplett freizubekommen und über nichts Spezielles nachzudenken."
+        },
+        {
+          "id": "c",
+          "text": "Eine aufmunternde Selbstansprache, um das Selbstvertrauen für die nächste Aktion zu stärken."
+        },
+        {
+          "id": "d",
+          "text": "Eine mentale Wiederholung des letzten Fehlers, um ihn beim nächsten Mal direkt zu korrigieren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) betont das Umlenken der Aufmerksamkeit auf einen Anker, anstatt den Fehler zu analysieren (d) oder das Selbstvertrauen allgemein zu stärken (c)."
+    },
+    {
+      "id": "d15-q3",
+      "target": "mistake",
+      "stem": "Wann scheitert ein Reset-Trigger typischerweise?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn der Trigger nicht direkt an eine konkrete Handlung oder einen Aufmerksamkeitsanker gekoppelt ist."
+        },
+        {
+          "id": "b",
+          "text": "Wenn man ihn nicht jedes Mal absolut perfekt ausführt und sich danach unmittelbar besser fühlen muss."
+        },
+        {
+          "id": "c",
+          "text": "Wenn Teamkollegen oder der Trainer nicht bemerken, dass man gerade mental an etwas arbeitet."
+        },
+        {
+          "id": "d",
+          "text": "Wenn man nicht genug Willenskraft aufwendet, um alle ablenkenden Gedanken damit zu unterdrücken."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) zeigt, dass der Trigger eine klare Zielhandlung braucht, während der Versuch, Gedanken zu unterdrücken (d) oder ihn perfekt auszuführen (b), häufige Fehlerquellen sind."
+    }
+  ],
+  "16": [
+    {
+      "id": "d16-q1",
+      "target": "lens",
+      "stem": "Warum motiviert ein größerer Grund nachhaltiger?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ein Grund, der über dich hinausgeht, ist weniger von deiner Tagesform und deinen Gefühlen abhängig."
+        },
+        {
+          "id": "b",
+          "text": "Ein größerer Grund motiviert dich, deine persönlichen Leistungsgrenzen konstanter zu verschieben."
+        },
+        {
+          "id": "c",
+          "text": "Ein größerer Grund wird vom Coach und vom Team positiver wahrgenommen und deshalb stärker bestärkt."
+        },
+        {
+          "id": "d",
+          "text": "Ein größerer Grund hilft dir, dich nach Fehlern nicht ablenken zu lassen und dranzubleiben."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort erklärt, dass die Motivation stabiler ist, weil sie nicht an dein Ego gekoppelt ist, während das Missverständnis ist, dass es nur darum geht, sich härter zu pushen."
+    },
+    {
+      "id": "d16-q2",
+      "target": "action",
+      "stem": "Was setzt du heute konkret vor dem Training?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Einen konkreten Grund für dein Team, der dein Handeln im Training leiten soll."
+        },
+        {
+          "id": "b",
+          "text": "Ein messbares Leistungsziel, das dich motiviert, dein volles Potenzial abzurufen."
+        },
+        {
+          "id": "c",
+          "text": "Einen klaren mentalen Vorsatz, im Training unter Druck emotional stabil zu bleiben."
+        },
+        {
+          "id": "d",
+          "text": "Einen wichtigen technischen Fokuspunkt, den du bei jeder Aktion bewusst umsetzen willst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort fokussiert auf den team-dienlichen Grund, während die falschen Optionen plausible, aber auf dich selbst zentrierte Techniken beschreiben."
+    },
+    {
+      "id": "d16-q3",
+      "target": "mistake",
+      "stem": "Was ist ein Schein-'größerer Grund', der trotzdem Ego ist?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ich will die Führung übernehmen, damit das Team erkennt, dass ich unverzichtbar bin."
+        },
+        {
+          "id": "b",
+          "text": "Ich stelle mich heute in den Dienst des Teams und erfülle meine Rolle für die anderen."
+        },
+        {
+          "id": "c",
+          "text": "Ich will, dass wir heute als eine geschlossene Einheit auftreten und uns gegenseitig helfen."
+        },
+        {
+          "id": "d",
+          "text": "Ich fokussiere mich darauf, die Taktik des Trainers für den gemeinsamen Erfolg umzusetzen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort entlarvt den Ego-Fokus (Anerkennung bekommen), während die häufigste falsche Antwort ein echtes, auf das Team ausgerichtetes Ziel beschreibt."
+    }
+  ],
+  "17": [
+    {
+      "id": "d17-q1",
+      "target": "lens",
+      "stem": "Wie entsteht laut heutigem Tag ein neues Selbstbild?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ein neues Selbstbild entsteht durch kleine, bewusste Handlungen, die du als Beweis für deine neue Identität zählst."
+        },
+        {
+          "id": "b",
+          "text": "Ein neues Selbstbild entsteht, indem du dir positive Eigenschaften immer wieder vorsagst, bis du sie verinnerlichst."
+        },
+        {
+          "id": "c",
+          "text": "Ein neues Selbstbild entsteht, indem du deine alten Schwächen genau analysierst, um sie gezielt zu bekämpfen."
+        },
+        {
+          "id": "d",
+          "text": "Ein neues Selbstbild entsteht, indem du Andere durch herausragende Leistungen von deinen neuen Fähigkeiten überzeugst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ein neues Selbstbild entsteht durch das bewusste Sammeln von Handlungs-Beweisen, nicht durch reines Nachdenken über dich oder das Erbringen von Leistung für Andere."
+    },
+    {
+      "id": "d17-q2",
+      "target": "action",
+      "stem": "Was sammelst du heute aktiv?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du sammelst heute winzige Aktionen, die deinem alten Selbstbild aktiv widersprechen und als Beweis dienen."
+        },
+        {
+          "id": "b",
+          "text": "Du sammelst heute positives Feedback vom Coach, um dein Selbstvertrauen für den Wettkampf gezielt zu stärken."
+        },
+        {
+          "id": "c",
+          "text": "Du sammelst heute alle Momente, in denen das alte Selbstbild auftaucht, um die Auslöser genau zu verstehen."
+        },
+        {
+          "id": "d",
+          "text": "Du sammelst heute Argumente, um anderen zu beweisen, dass du dich im Vergleich zu früher deutlich verbessert hast."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Der Fokus liegt auf dem aktiven Setzen und Speichern von Handlungs-Beweisen, nicht auf der reinen Analyse der Vergangenheit oder dem Sammeln von Meinungen."
+    },
+    {
+      "id": "d17-q3",
+      "target": "mistake",
+      "stem": "Was zerstört diesen Identitätsaufbau?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du lässt einen Rückfall ins alte Muster sofort als Beweis gelten, dass sich sowieso nichts ändert."
+        },
+        {
+          "id": "b",
+          "text": "Du wartest auf eine grosse, perfekte Aktion, anstatt viele kleine unperfekte Beweise zu sammeln."
+        },
+        {
+          "id": "c",
+          "text": "Du bestrafst dich für jeden kleinen Fehler, um dich zu motivieren, es beim nächsten Mal besser zu machen."
+        },
+        {
+          "id": "d",
+          "text": "Du machst deine neuen Handlungen nur dann, wenn niemand zusieht, damit niemand sie bewerten kann."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ein einzelner Datenpunkt ist kein Beweis für deine Identität; die Identität formt sich durch die Wiederholung vieler kleiner Handlungen über Zeit."
+    }
+  ],
+  "18": [
+    {
+      "id": "d18-q1",
+      "target": "lens",
+      "stem": "Was bedeutet 'Wachstum beginnt dort, wo du unsicher wirst'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Das Gefühl von Unsicherheit ist das klare Zeichen, dass du gerade deine Fähigkeiten erweiterst."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du dich unsicher fühlst, solltest du eine Pause machen und die Situation genau analysieren."
+        },
+        {
+          "id": "c",
+          "text": "Momente der Unsicherheit musst du schnell überwinden, um deine Topleistung abrufen zu können."
+        },
+        {
+          "id": "d",
+          "text": "Echte Stärke bedeutet, seine aufkommende Unsicherheit vor den Mitspielern zu verbergen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Unsicherheit ist das direkte Signal für eine Wachstumschance, während die häufigste falsche Wahl sie als Leistungsproblem sieht, das man sofort abstellen muss."
+    },
+    {
+      "id": "d18-q2",
+      "target": "behavior",
+      "stem": "Wie sieht 'sichtbare Unsicherheit bewusst wählen' im Training aus?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du probierst eine neue Technik im Team-Drill, obwohl sie noch nicht perfekt sitzt und du scheitern könntest."
+        },
+        {
+          "id": "b",
+          "text": "Du trainierst eine schwierige Technik lange allein, bis du sie ohne Fehler beherrschst und sie zeigen kannst."
+        },
+        {
+          "id": "c",
+          "text": "Du wiederholst vor allem die Übungen, die du schon gut kannst, um dein Selbstvertrauen für den Wettkampf zu stärken."
+        },
+        {
+          "id": "d",
+          "text": "Du lässt dir von einem Coach genau jeden Schritt vorgeben, um bei neuen Übungen keine Fehler zu machen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Es geht darum, die unsichere Aktion bewusst vor anderen zu wagen, statt Unsicherheit zu vermeiden, bis alles perfekt ist."
+    },
+    {
+      "id": "d18-q3",
+      "target": "mistake",
+      "stem": "Wo kippt das in Selbstüberforderung?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn der gewählte Reiz so weit von deinem Können entfernt ist, dass dein System nicht andocken kann."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du eine Aufgabe wählst, die nur knapp außerhalb deiner aktuellen Komfortzone liegt und dich fordert."
+        },
+        {
+          "id": "c",
+          "text": "Wenn die gewählte Aktion ein starkes Gefühl der Konzentration und einen höheren Puls bei dir auslöst."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du für das Meistern einer neuen Aufgabe mehrere Wiederholungen und einige Anläufe benötigst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Überforderung entsteht, wenn der Reiz komplett außer Reichweite ist; die anderen Optionen beschreiben den idealen Lernzustand."
+    }
+  ],
+  "19": [
+    {
+      "id": "d19-q1",
+      "target": "lens",
+      "stem": "Warum ist 'nicht kontrollierbar' nicht gleich 'bedrohlich'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Weil erst deine persönliche Bewertung eine neutrale Sache bedrohlich macht."
+        },
+        {
+          "id": "b",
+          "text": "Weil du dich mental darauf vorbereiten kannst, alles kontrollieren zu wollen."
+        },
+        {
+          "id": "c",
+          "text": "Weil du durch hartes Training lernst, solche Ereignisse einfach auszuhalten."
+        },
+        {
+          "id": "d",
+          "text": "Weil du die Situation genau analysieren musst, um sie besser zu verstehen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Bedrohung entsteht erst durch deine Bewertung, nicht durch die Sache selbst; ein häufiger Fehler ist die Analyse, anstatt die Situation nur neutral zu benennen."
+    },
+    {
+      "id": "d19-q2",
+      "target": "action",
+      "stem": "Was tust du heute, wenn etwas außerhalb deiner Kontrolle passiert (Wetter, Schiri, Gegner)?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du benennst die Fakten nüchtern und richtest deinen Fokus auf die nächste Aktion."
+        },
+        {
+          "id": "b",
+          "text": "Du kanalisierst deinen Ärger, um dich für die nächste Aufgabe härter zu pushen."
+        },
+        {
+          "id": "c",
+          "text": "Du analysierst die Situation, um zu verstehen, warum sie unfair für dich war."
+        },
+        {
+          "id": "d",
+          "text": "Du zeigst dir und anderen, dass dich eine solche Kleinigkeit gar nicht berührt."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Kern-Aktion ist das neutrale Benennen der Fakten und das Weitergehen, während das Nutzen von Ärger die emotionale Aufladung nur verstärkt."
+    },
+    {
+      "id": "d19-q3",
+      "target": "mistake",
+      "stem": "Woran erkennst du, dass du es doch wieder emotional auflädst?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Die Situation beschäftigt dich gedanklich weiter, obwohl sie schon längst vorbei ist."
+        },
+        {
+          "id": "b",
+          "text": "Du bist enttäuscht von dir, dass du dich kurz hast aus dem Konzept bringen lassen."
+        },
+        {
+          "id": "c",
+          "text": "Du versuchst die Situation sofort zu vergessen und blendest die Erinnerung daran aus."
+        },
+        {
+          "id": "d",
+          "text": "Du zwingst dich, äußerlich ruhig zu bleiben, obwohl es innerlich in dir kocht."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Das mentale 'Mittragen' der Situation ist das Kernzeichen der Aufladung, während Selbstkritik eine zusätzliche, unnötige Belastung darstellt."
+    }
+  ],
+  "20": [
+    {
+      "id": "d20-q1",
+      "target": "lens",
+      "stem": "Was bedeutet 'Fehler ohne Selbstangriff'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Einen Fehler als reine Information für dein nächstes Handeln zu nutzen."
+        },
+        {
+          "id": "b",
+          "text": "Nach einem Fehler härter zu trainieren, um ihn sofort auszugleichen."
+        },
+        {
+          "id": "c",
+          "text": "Den Fehler genau zu analysieren, damit er sicher nie wieder vorkommt."
+        },
+        {
+          "id": "d",
+          "text": "Fehler zu akzeptieren, aber nach aussen hin keine Schwäche zu zeigen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort fokussiert darauf, den Fehler als neutrale Information zu sehen, während die Analyse-Option eine typische Falle ist, bei der man mental beim Fehler hängen bleibt."
+    },
+    {
+      "id": "d20-q2",
+      "target": "action",
+      "stem": "Was machst du heute konkret nach einem Fehler?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du trennst die reine Information vom inneren Urteil und gehst weiter."
+        },
+        {
+          "id": "b",
+          "text": "Du machst eine Straf-Wiederholung, um den Fehler mental loszuwerden."
+        },
+        {
+          "id": "c",
+          "text": "Du versuchst bei der nächsten Aktion alles überkorrekt richtig zu machen."
+        },
+        {
+          "id": "d",
+          "text": "Du gehst kurz aus der Situation, um den Fehler mental zu korrigieren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort beschreibt den Kernprozess des Tages – Trennung von Info und Urteil – während der Versuch, alles perfekt zu machen, eine Form von Selbstangriff durch erhöhten Druck ist."
+    },
+    {
+      "id": "d20-q3",
+      "target": "mistake",
+      "stem": "Was ist hier die typische Selbstangriff-Form?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Einen einzelnen Fehler zu einer allgemeinen Aussage über dich selbst zu machen."
+        },
+        {
+          "id": "b",
+          "text": "Sich über den Spielfehler zu ärgern und kurz innerlich darauf zu fluchen."
+        },
+        {
+          "id": "c",
+          "text": "Enttäuscht zu sein, weil das Ergebnis der Übung jetzt schlechter aussieht."
+        },
+        {
+          "id": "d",
+          "text": "Zu befürchten, dass dir dieser Fehler in einem Wettkampf auch passiert."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort beschreibt den Kern des Selbstangriffs – die Verallgemeinerung zur Identität – während sich nur zu ärgern eine normale Emotion ist, die nicht zwangsläufig die eigene Person in Frage stellt."
+    }
+  ],
+  "21": [
+    {
+      "id": "d21-q1",
+      "target": "lens",
+      "stem": "Was bedeutet 'Team vor Selbstbild'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du richtest deine Handlungen danach aus, was die Situation für den Teamerfolg erfordert."
+        },
+        {
+          "id": "b",
+          "text": "Du befolgst immer genau die Anweisungen des Trainers, ohne diese zu hinterfragen."
+        },
+        {
+          "id": "c",
+          "text": "Du stellst sicher, dass deine eigenen Erfolge vom restlichen Team anerkannt werden."
+        },
+        {
+          "id": "d",
+          "text": "Du unterdrückst deine Impulse und überlässt die Initiative komplett deinen Mitspielern."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort fokussiert auf den teambezogenen Nutzen einer Handlung, während die falsche Wahl des passiven Abwartens eine häufige Fehlinterpretation von 'Ego zurücknehmen' darstellt."
+    },
+    {
+      "id": "d21-q2",
+      "target": "behavior",
+      "stem": "Wie sieht eine teamdienliche Aktion heute konkret aus?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du spielst den einfachen Pass zum freien Mitspieler, statt selbst den Abschluss zu suchen."
+        },
+        {
+          "id": "b",
+          "text": "Du erklärst einem Mitspieler sofort lautstark, welchen Fehler er gerade gemacht hat."
+        },
+        {
+          "id": "c",
+          "text": "Du versuchst, durch besonders riskante Alleingänge ein Zeichen für das Team zu setzen."
+        },
+        {
+          "id": "d",
+          "text": "Du vermeidest es, den entscheidenden Wurf zu nehmen, um keinen Fehler zu riskieren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort beschreibt eine Handlung, bei der der Teamnutzen über die persönliche Geltung gestellt wird, während das laute Korrigieren von Mitspielern oft mehr dem eigenen Image als dem Team dient."
+    },
+    {
+      "id": "d21-q3",
+      "target": "mistake",
+      "stem": "Wann kippt 'teamdienlich' wieder ins Ego?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sobald du insgeheim hoffst, dass dein 'teamdienliches' Verhalten bemerkt wird."
+        },
+        {
+          "id": "b",
+          "text": "Wenn deine Aktion vom Coach oder dem Team nicht direkt gelobt oder anerkannt wird."
+        },
+        {
+          "id": "c",
+          "text": "Sobald dir bei einer Aktion, die dem Team helfen sollte, ein technischer Fehler passiert."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du nach einer Aktion darüber nachdenkst, ob sie die richtige Entscheidung war."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort entlarvt die Absicht hinter der Handlung als entscheidenden Punkt, während die Erwartung von Lob ein häufiges Missverständnis ist, bei dem das Ego Bestätigung von aussen sucht."
+    }
+  ],
+  "22": [
+    {
+      "id": "d22-q1",
+      "target": "lens",
+      "stem": "Was heißt 'Prozess als Heimat'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ein klarer Prozess dient dir als verlässlicher Ankerpunkt, wenn Druck aufkommt."
+        },
+        {
+          "id": "b",
+          "text": "Du musst dich voll auf den Prozess konzentrieren, um deine Leistung zu steigern."
+        },
+        {
+          "id": "c",
+          "text": "Du solltest deinen Prozessablauf so optimieren, dass keine Fehler mehr passieren."
+        },
+        {
+          "id": "d",
+          "text": "Du suchst dir nur Prozesse aus, die sich für dich immer sicher und gut anfühlen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) betont den Prozess als stabilen Anker in Drucksituationen, während die falsche Wahl (b) den Prozess fälschlicherweise als reines Mittel zur Leistungssteigerung darstellt."
+    },
+    {
+      "id": "d22-q2",
+      "target": "action",
+      "stem": "Was definierst du heute pro Trainingseinheit?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Einen einzigen, beobachtbaren Prozess-Schritt, der dir heute als Anker dient."
+        },
+        {
+          "id": "b",
+          "text": "Ein messbares Ergebnisziel, das du am Ende der Einheit erreichen möchtest."
+        },
+        {
+          "id": "c",
+          "text": "Ein technisches Detail, das du ab sofort in jeder Aktion fehlerfrei umsetzen musst."
+        },
+        {
+          "id": "d",
+          "text": "Ein positives Gefühl, das du während der gesamten Trainingseinheit halten willst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt einen konkreten, steuerbaren Prozessanker, während die falsche Wahl (c) den Fokus auf ein fehlerfreies Ergebnis legt und damit den Prozess untergräbt."
+    },
+    {
+      "id": "d22-q3",
+      "target": "mistake",
+      "stem": "Was untergräbt einen Prozessanker?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Anker sofort zu wechseln, wenn das Ergebnis einer Aktion nicht deinen Wünschen entspricht."
+        },
+        {
+          "id": "b",
+          "text": "Verbissen darüber nachzudenken, ob der gewählte Anker wirklich der Beste für dich ist."
+        },
+        {
+          "id": "c",
+          "text": "Ausschließlich Anker zu wählen, bei denen du dir von Anfang an absolut sicher bist."
+        },
+        {
+          "id": "d",
+          "text": "Den Anker zu nutzen, um dich nach einem Fehler sofort wieder auf die Aufgabe zu besinnen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt, wie Ergebnis-Abhängigkeit den Anker entwertet, während die falsche Wahl (b) das Missverständnis zeigt, dass ständige Analyse wichtiger als die Rückkehr zum Prozess sei."
+    }
+  ],
+  "23": [
+    {
+      "id": "d23-q1",
+      "target": "lens",
+      "stem": "Warum ist Dankbarkeit ein Leistungszustand?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sie erweitert den mentalen Fokus und macht handlungsfähiger, wenn man unter Druck steht."
+        },
+        {
+          "id": "b",
+          "text": "Sie hilft dabei, Fehler gezielt auszublenden, um positiver in eine Aufgabe zu gehen."
+        },
+        {
+          "id": "c",
+          "text": "Sie erzeugt ein gutes Gefühl, das dich motiviert, noch härter an dir selbst zu arbeiten."
+        },
+        {
+          "id": "d",
+          "text": "Sie dient als mentale Belohnung, um sich nach einer harten Trainingseinheit besser zu fühlen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Weitung der Aufmerksamkeit (Option a) ist der Kernmechanismus, der mehr Handlungsmöglichkeiten schafft; es geht nicht darum, sich einfach nur besser zu fühlen oder Fehler auszublenden (häufigste Fehlannahme)."
+    },
+    {
+      "id": "d23-q2",
+      "target": "action",
+      "stem": "Was tust du heute vor dem Training konkret?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du benennst 2–3 vorhandene Ressourcen oder Gelegenheiten, die dir jetzt zur Verfügung stehen."
+        },
+        {
+          "id": "b",
+          "text": "Du zwingst dich, an etwas Positives zu denken, um deine negativen Gefühle zu verdrängen."
+        },
+        {
+          "id": "c",
+          "text": "Du erstellst eine Liste von Dingen, für die du im Allgemeinen dankbar sein müsstest."
+        },
+        {
+          "id": "d",
+          "text": "Du fokussierst dich auf einen vergangenen Erfolg, um dein Selbstvertrauen für heute zu stärken."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Es geht darum, den Blick auf präsente, nutzbare Möglichkeiten zu lenken (Option a), nicht darum, sich zu positiven Gedanken zu zwingen oder Dankbarkeit als moralische Pflicht zu sehen (häufigste Fehlannahme)."
+    },
+    {
+      "id": "d23-q3",
+      "target": "mistake",
+      "stem": "Was ist Schein-Dankbarkeit?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Man redet sich Dankbarkeit ein, der Aufmerksamkeitsfokus bleibt aber trotzdem im Defizit-Modus."
+        },
+        {
+          "id": "b",
+          "text": "Man bedankt sich bei anderen, obwohl man ihre Hilfe eigentlich gar nicht gebraucht hätte."
+        },
+        {
+          "id": "c",
+          "text": "Man ist nur für die ganz grossen Erfolge im Leben dankbar, aber nicht für die kleinen Dinge."
+        },
+        {
+          "id": "d",
+          "text": "Man nutzt Dankbarkeit als reine Technik, um ein bestimmtes Leistungsziel zu erreichen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Schein-Dankbarkeit ändert den inneren Zustand nicht (Option a), weil der Fokus im Defizitmodus bleibt; es geht nicht darum, Dankbarkeit als reine Technik zu missbrauchen (häufigste Fehlannahme)."
+    }
+  ],
+  "24": [
+    {
+      "id": "d24-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Fokus auf die nächste kleine Aufgabe zu richten, auch wenn die innere Motivation gerade fehlt."
+        },
+        {
+          "id": "b",
+          "text": "Die eigene Willenskraft zu nutzen, um die fehlende Motivation durch mehr Anstrengung auszugleichen."
+        },
+        {
+          "id": "c",
+          "text": "Innere Widerstände zu analysieren, um so herauszufinden, warum die Energie an diesem Tag so niedrig ist."
+        },
+        {
+          "id": "d",
+          "text": "Sich mit dem Gefühl abzufinden und die Erwartungen für den Rest der Einheit bewusst herunterzuschrauben."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die heutige Fähigkeit ist, die Aufmerksamkeit bewusst auf die nächste Aktion zu lenken, anstatt sie vom Gefühl der Unlust kapern zu lassen."
+    },
+    {
+      "id": "d24-q2",
+      "target": "action",
+      "stem": "Was machst du, wenn du heute spürst: 'keine Lust'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Zustand kurz anerkennen und den Fokus dann sofort auf die nächste saubere Ausführung richten."
+        },
+        {
+          "id": "b",
+          "text": "Dich mental dafür bestrafen, dass du nicht voll da bist und versuchen, dich härter anzutreiben."
+        },
+        {
+          "id": "c",
+          "text": "In die Diskussion mit dir selbst gehen, woran es liegen könnte und was du als nächstes brauchst."
+        },
+        {
+          "id": "d",
+          "text": "Das Gefühl zum Anlass nehmen, die Intensität deines Trainings für den Rest der Einheit zu senken."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Aktion ist, Unlust zu bemerken, aber nicht zu bewerten, und stattdessen die Aufmerksamkeit auf die nächste kleine Aufgabe zu lenken."
+    },
+    {
+      "id": "d24-q3",
+      "target": "mistake",
+      "stem": "Was ist die typische Falle bei niedriger Energie?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Unlust als Ausrede zu benutzen, um bei der Ausführungsqualität deiner Aufgaben Abstriche zu machen."
+        },
+        {
+          "id": "b",
+          "text": "So zu tun, als wäre keine Müdigkeit da, und zu versuchen, den Zustand mit reiner Willenskraft zu besiegen."
+        },
+        {
+          "id": "c",
+          "text": "Den Zustand als grosses Problem anzusehen, das man sofort mental analysieren und auch direkt lösen muss."
+        },
+        {
+          "id": "d",
+          "text": "Sich vorzunehmen, es nächstes Mal durch mehr Schlaf oder bessere Ernährung unbedingt zu vermeiden."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Falle ist, das Gefühl als Entschuldigung für unsaubere Arbeit zu nehmen, anstatt Präzision von der aktuellen Stimmung zu entkoppeln."
+    }
+  ],
+  "25": [
+    {
+      "id": "d25-q1",
+      "target": "lens",
+      "stem": "Was bedeutet 'Handeln trotz Zweifel'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Eine Handlung zu starten, auch wenn das Zutrauen dafür noch nicht ganz da ist."
+        },
+        {
+          "id": "b",
+          "text": "Die Zweifel erst vollständig zu verstehen, um dann sicher handeln zu können."
+        },
+        {
+          "id": "c",
+          "text": "Sich mental so stark zu machen, dass man gar keine Zweifel mehr spüren kann."
+        },
+        {
+          "id": "d",
+          "text": "Sich die Erlaubnis vom Coach zu holen, um die Unsicherheit zu überwinden."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort beschreibt, dass Handeln der Auslöser für Zutrauen ist, während die Analyse von Zweifeln (eine häufige Fehlannahme) das Warten nur verlängert."
+    },
+    {
+      "id": "d25-q2",
+      "target": "behavior",
+      "stem": "Wie zeigt sich das heute im Training?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du startest einen Versuch, obwohl ein Teil von dir noch zögert oder unsicher ist."
+        },
+        {
+          "id": "b",
+          "text": "Du nimmst dir einen Moment Zeit, bis das richtige Gefühl für die Aktion wieder da ist."
+        },
+        {
+          "id": "c",
+          "text": "Du versuchst, die Unsicherheit wegzudrücken, um entschlossener wirken zu können."
+        },
+        {
+          "id": "d",
+          "text": "Du analysierst genau, woher der Zweifel kommt, bevor du die Aktion überhaupt beginnst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die korrekte Antwort fokussiert auf die Handlung trotz des Zögerns, während das Warten auf das 'richtige Gefühl' die Kernfalle darstellt, die es zu überwinden gilt."
+    },
+    {
+      "id": "d25-q3",
+      "target": "mistake",
+      "stem": "Was wäre die typische Confidence-Falle?",
+      "options": [
+        {
+          "id": "a",
+          "text": "In eine Warteschleife zu geraten, bis du dich wieder absolut sicher fühlst."
+        },
+        {
+          "id": "b",
+          "text": "Dir selbst einzureden, dass du härter sein musst und keine Zweifel spüren darfst."
+        },
+        {
+          "id": "c",
+          "text": "Eine leichtere Aufgabe zu wählen, um das Gefühl der Unsicherheit zu umgehen."
+        },
+        {
+          "id": "d",
+          "text": "Noch eine schnelle Zusatz-Analyse zu machen, um einen perfekten Plan zu haben."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Kernfalle ist das Warten auf Sicherheit anstatt zu handeln; sich für Zweifel zu bestrafen oder 'härter' sein zu wollen, ist ein häufiges Missverständnis des Ziels."
+    }
+  ],
+  "26": [
+    {
+      "id": "d26-q1",
+      "target": "lens",
+      "stem": "Wie liest du heute einen starken Gegner?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Als ehrliche Prüfung, die deine aktuelle Qualität sichtbar macht."
+        },
+        {
+          "id": "b",
+          "text": "Als gefährliche Bedrohung, die du unbedingt ausschalten musst."
+        },
+        {
+          "id": "c",
+          "text": "Als Anlass, dich noch härter zu pushen und mehr zu kämpfen."
+        },
+        {
+          "id": "d",
+          "text": "Als jemanden, dessen Schwächen du analysieren und ausnutzen musst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort fokussiert auf den Gegner als Test der eigenen Qualität, während die Fehlannahme ist, dass man auf starke Gegner mit mehr Kampf oder Aggressivität reagieren muss."
+    },
+    {
+      "id": "d26-q2",
+      "target": "action",
+      "stem": "Was tust du konkret vor dem Spiel/Training gegen Stärkere?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du fragst dich, was deine eine saubere Kontakt-Handlung ist."
+        },
+        {
+          "id": "b",
+          "text": "Du gehst deine Checkliste durch, um mental nichts zu vergessen."
+        },
+        {
+          "id": "c",
+          "text": "Du motivierst dich, indem du an deine bisherigen Erfolge denkst."
+        },
+        {
+          "id": "d",
+          "text": "Du nimmst dir vor, dem Gegner heute keine einzige Chance zu geben."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die korrekte Handlung ist der Fokus auf den sauberen Kontakt, da dies den Prozess steuert, während das Festhalten an alten Erfolgen die aktuelle Prüfung vermeidet."
+    },
+    {
+      "id": "d26-q3",
+      "target": "mistake",
+      "stem": "Was ist der typische Fear-Modus gegen starke Gegner?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Das System macht den Gegner größer und sich selbst instinktiv kleiner."
+        },
+        {
+          "id": "b",
+          "text": "Man versucht, durch übertriebene Härte fehlenden Respekt zu erzwingen."
+        },
+        {
+          "id": "c",
+          "text": "Man will es besonders gut machen und fängt an, zu viel nachzudenken."
+        },
+        {
+          "id": "d",
+          "text": "Man konzentriert sich verbissen darauf, dem Gegner keine Blöße zu zeigen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die korrekte Antwort beschreibt den Kern des Triggers – das instinktive Kleinmachen – während zu viel Nachdenken oder Verkrampfung oft erst die Folge davon sind."
+    }
+  ],
+  "27": [
+    {
+      "id": "d27-q1",
+      "target": "lens",
+      "stem": "Was heißt 'Scheitern bewusst riskieren'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wählst eine für deine Entwicklung dienliche Handlung, obwohl diese auch scheitern kann."
+        },
+        {
+          "id": "b",
+          "text": "Du gehst an die Leistungsgrenze, um dich unbedingt gegen die anderen durchzusetzen."
+        },
+        {
+          "id": "c",
+          "text": "Du nimmst dir gezielt vor, eine bestimmte Aktion absichtlich fehlerhaft auszuführen."
+        },
+        {
+          "id": "d",
+          "text": "Du analysierst ganz genau, bei welchen Handlungen ein hohes Scheiter-Risiko besteht."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) betont die dienliche Handlung trotz Risiko, während die falsche Wahl (c) das Ziel verfehlt, indem sie absichtliches Scheitern statt echtes Riskieren ins Zentrum stellt."
+    },
+    {
+      "id": "d27-q2",
+      "target": "action",
+      "stem": "Wie setzt du das heute kalkuliert um?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du erkennst die bildschützende Wahl und entscheidest dich bewusst für die entwicklungsrelevante Aktion."
+        },
+        {
+          "id": "b",
+          "text": "Du versuchst heute, in jeder Situation einfach die riskanteste verfügbare Option blind zu wählen."
+        },
+        {
+          "id": "c",
+          "text": "Du ignorierst die Möglichkeit des Scheiterns komplett und zwingst dich, noch härter zu pushen."
+        },
+        {
+          "id": "d",
+          "text": "Du wartest auf den perfekten Moment, in dem eine riskante Aktion garantiert sicher gelingen wird."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt den Kernprozess des Tags, während die falsche Wahl (b) den wichtigen Punkt 'kalkuliert' ignoriert und zu blindem Aktionismus führt."
+    },
+    {
+      "id": "d27-q3",
+      "target": "mistake",
+      "stem": "Wo verfehlst du das Prinzip?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn du die Aktion nur fürs Image machst und dich bei Misslingen sofort innerlich abwertest."
+        },
+        {
+          "id": "b",
+          "text": "Wenn die riskante Handlung scheitert und du die Ursache dafür als Erstes bei anderen suchst."
+        },
+        {
+          "id": "c",
+          "text": "Wenn du das mögliche Scheitern so lange analysierst, bis du am Ende gar nicht mehr handelst."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du eine schwierige Aktion wählst und dann krampfhaft versuchst, den Erfolg zu erzwingen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) trifft den Kern, weil du das Misslingen zu einem Urteil über dich machst, während die falsche Wahl (d) den Fehler im Leistungs-Framing sucht, also das Scheitern gar nicht erst akzeptiert."
+    }
   ]
 }
