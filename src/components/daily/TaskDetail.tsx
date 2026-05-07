@@ -194,9 +194,9 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
         }`}
       >
         {isCompleted ? (
-          <><Check className="w-5 h-5" /> Erledigt</>
+          <><Check className="w-5 h-5" /> Verstanden</>
         ) : (
-          <><Check className="w-5 h-5" /> Als erledigt markieren</>
+          <><Check className="w-5 h-5" /> Verstanden</>
         )}
       </motion.button>
     </motion.div>
