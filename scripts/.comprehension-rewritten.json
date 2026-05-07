@@ -1,0 +1,1328 @@
+{
+  "1": [
+    {
+      "id": "d1-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Meine Gedanken so zu steuern, dass ich bei der Sache bleibe."
+        },
+        {
+          "id": "b",
+          "text": "Den Moment zu erkennen, in dem mein Fokus von der Aufgabe abschweift."
+        },
+        {
+          "id": "c",
+          "text": "Mich selbst anzutreiben, um meine Konzentration zu verlängern."
+        },
+        {
+          "id": "d",
+          "text": "Die Gründe für meine Unkonzentriertheit schnell zu verstehen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Das Ziel ist das reine Bemerken des Abschweifens, nicht die sofortige Analyse oder das Erzwingen von pausenloser Konzentration."
+    },
+    {
+      "id": "d1-q2",
+      "target": "action",
+      "stem": "Was ist die zentrale Praxis heute?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Das Abdriften der Gedanken mit einem neutralen Wort innerlich zu markieren."
+        },
+        {
+          "id": "b",
+          "text": "Mich nach einem Fehler zu bestrafen, um ihn nicht mehr zu wiederholen."
+        },
+        {
+          "id": "c",
+          "text": "Meine Leistung gedanklich mit der meiner Mitspieler zu vergleichen."
+        },
+        {
+          "id": "d",
+          "text": "Den Grund für einen Fehler zu analysieren, um ihn besser zu verstehen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die heutige Übung ist, das Abschweifen kurz und neutral zu 'markieren', anstatt in eine Analyse oder Selbstbestrafung zu verfallen."
+    },
+    {
+      "id": "d1-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis der Aufgabe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sich zu ärgern, weil der Fokus nicht die ganze Zeit stabil geblieben ist."
+        },
+        {
+          "id": "b",
+          "text": "Das Wegdriften als Signal zu nutzen, um den Fokus aktiv neu auszurichten."
+        },
+        {
+          "id": "c",
+          "text": "Momente des Abschweifens als Teil des normalen Prozesses zu akzeptieren."
+        },
+        {
+          "id": "d",
+          "text": "Nach dem Bemerken des Abschweifens zur nächsten Aktion zurückzukehren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ein Missverständnis ist, sich über das natürliche Abschweifen zu ärgern, anstatt es als neutrales Signal für die Rückkehr zur Aufgabe zu nutzen."
+    },
+    {
+      "id": "d1-q4",
+      "target": "behavior",
+      "stem": "Was machst du, wenn du im Training merkst, dass du abgedriftet bist?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ich zwinge mich, meine Gedanken aggressiv auf das Spiel zu richten."
+        },
+        {
+          "id": "b",
+          "text": "Ich markiere es innerlich mit 'Weg' und richte den Fokus auf den Ball."
+        },
+        {
+          "id": "c",
+          "text": "Ich gehe die letzten Aktionen im Kopf durch, um meinen Fehler zu finden."
+        },
+        {
+          "id": "d",
+          "text": "Ich versuche zu verhindern, dass solche Gedanken wieder auftauchen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die Aufgabe ist, das Abschweifen kurz zu benennen und den Fokus direkt zurückzuholen, anstatt in Analysen oder Grübelschleifen zu verfallen."
+    },
+    {
+      "id": "d1-q5",
+      "target": "lens",
+      "stem": "Warum ist Bemerken ein eigenständiges Training?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Weil es meine Fähigkeit trainiert, ablenkende Gedanken auszublenden."
+        },
+        {
+          "id": "b",
+          "text": "Weil es mir die Wahl gibt, wie ich auf meine Gedanken bewusst reagiere."
+        },
+        {
+          "id": "c",
+          "text": "Weil es meine Konzentration automatisch und mühelos verbessern wird."
+        },
+        {
+          "id": "d",
+          "text": "Weil es sicherstellt, dass ich mich danach noch härter konzentrieren muss."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Das Bemerken ist der erste Schritt, der eine bewusste Entscheidung ermöglicht, anstatt das Ziel zu haben, Gedanken einfach nur zu unterdrücken."
+    },
+    {
+      "id": "d1-q6",
+      "target": "behavior",
+      "stem": "Wie sieht heute ein erfolgreicher Tag aus?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du konntest das gedankliche Abschweifen heute komplett verhindern."
+        },
+        {
+          "id": "b",
+          "text": "Du hast heute mehrmals bemerkt, dass deine Gedanken gewandert sind."
+        },
+        {
+          "id": "c",
+          "text": "Du hast dich heute nach jedem Fehler härter angetrieben als sonst."
+        },
+        {
+          "id": "d",
+          "text": "Du hast deine Fehler heute sofort analysiert und theoretisch korrigiert."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Erfolg misst sich heute daran, wie oft du das Abschweifen bemerkt hast, nicht daran, ob du es verhindern oder dich härter antreiben konntest."
+    }
+  ],
+  "2": [
+    {
+      "id": "d2-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Darum, die Ursache für einen Fehler sofort gründlich zu analysieren."
+        },
+        {
+          "id": "b",
+          "text": "Darum, den ersten Gedanken nach einem Fehler bewusst wahrzunehmen."
+        },
+        {
+          "id": "c",
+          "text": "Darum, sich nach einem Fehler sofort wieder extra anzustrengen."
+        },
+        {
+          "id": "d",
+          "text": "Darum, einen gemachten Fehler möglichst schnell wieder zu vergessen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die Kernübung heute ist das neutrale Wahrnehmen des Gedankens (Defusion), während die Analyse des Fehlers oder das direkte Vergessen wollen bereits Reaktionen darauf sind."
+    },
+    {
+      "id": "d2-q2",
+      "target": "action",
+      "stem": "Was ist die zentrale Praxis heute?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den ersten Gedanken nach einem Fehler zu bemerken und zu benennen."
+        },
+        {
+          "id": "b",
+          "text": "Den negativen Gedanken sofort durch einen positiven zu ersetzen."
+        },
+        {
+          "id": "c",
+          "text": "Einige tiefe Atemzüge zu nehmen, um sich direkt zu beruhigen."
+        },
+        {
+          "id": "d",
+          "text": "Die fehlerhafte Aktion sofort und fehlerfrei zu wiederholen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Heute geht es um das reine Bemerken des Gedankens, nicht darum, ihn sofort zu ändern oder auf den Fehler mit einer spezifischen Korrektur zu reagieren."
+    },
+    {
+      "id": "d2-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis der Aufgabe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den inneren Satz nach dem Fehler als mentalen Vorgang zu sehen."
+        },
+        {
+          "id": "b",
+          "text": "Sich für den aufgetauchten Gedanken direkt selbst zu kritisieren."
+        },
+        {
+          "id": "c",
+          "text": "Sich nach dem Bemerken des Satzes bewusst wieder aufzurichten."
+        },
+        {
+          "id": "d",
+          "text": "Kurz innezuhalten, um den ersten inneren Impuls zu registrieren."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Ein Missverständnis wäre, sich für den Gedanken zu kritisieren, da dies die Verstrickung verstärkt, anstatt sie durch neutrales Beobachten zu lösen."
+    },
+    {
+      "id": "d2-q4",
+      "target": "behavior",
+      "stem": "Du machst im Training einen klaren Fehler. Was ist heute die richtige Reaktion?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den technischen Grund für den Fehler sofort finden und korrigieren wollen."
+        },
+        {
+          "id": "b",
+          "text": "Den auftauchenden Gedanken kurz bemerken und dann wieder ins Handeln kommen."
+        },
+        {
+          "id": "c",
+          "text": "Den Fehler ignorieren und so tun, als wäre absolut nichts passiert."
+        },
+        {
+          "id": "d",
+          "text": "Sich innerlich zu bestrafen, um beim nächsten Mal konzentrierter zu sein."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die richtige Reaktion ist das Bemerken des Gedankens mit direkter Rückkehr zur Handlung, anstatt in die Fehleranalyse oder Selbstbestrafung zu verfallen."
+    },
+    {
+      "id": "d2-q5",
+      "target": "lens",
+      "stem": "Warum ist der innere Satz nach dem Fehler wichtiger als der Fehler selbst?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Weil dieser Satz bestimmt, wie du in die nächste Aktion gehst und lernst."
+        },
+        {
+          "id": "b",
+          "text": "Weil Selbstkritik dafür sorgt, dass du den gleichen Fehler nicht wiederholst."
+        },
+        {
+          "id": "c",
+          "text": "Weil eine positive Deutung den gerade gemachten Fehler direkt ausgleichen kann."
+        },
+        {
+          "id": "d",
+          "text": "Weil der Satz dir hilft, die genaue Ursache des Fehlers schneller zu finden."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Der innere Satz ist entscheidend, da er deine emotionale und kognitive Verfassung für den nächsten Moment prägt, während Selbstkritik oft das Gegenteil bewirkt."
+    }
+  ],
+  "3": [
+    {
+      "id": "d3-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Situationen objektiv beschreiben"
+        },
+        {
+          "id": "b",
+          "text": "Erkennen, wie die Bewertung einer Situation deinen Zustand steuert"
+        },
+        {
+          "id": "c",
+          "text": "Belastende Situationen vermeiden"
+        },
+        {
+          "id": "d",
+          "text": "Anderen die Lage erklären können"
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Linse: Nicht die Situation selbst macht den Zustand — sondern deine Bewertung davon."
+    },
+    {
+      "id": "d3-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bedeutung erkennen, die du einer belastenden Situation gibst"
+        },
+        {
+          "id": "b",
+          "text": "Belastende Situationen meiden"
+        },
+        {
+          "id": "c",
+          "text": "Belastung sofort herunteratmen"
+        },
+        {
+          "id": "d",
+          "text": "Bewertung an andere abgeben"
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Erkennen, welche Bedeutung du der Situation gibst — das ist heute der Hebel."
+    },
+    {
+      "id": "d3-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis der Aufgabe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Die eigene Bewertung neutral benennen"
+        },
+        {
+          "id": "b",
+          "text": "Sich einreden, dass alles harmlos ist"
+        },
+        {
+          "id": "c",
+          "text": "Bemerken, wie Bewertung Anspannung erzeugt"
+        },
+        {
+          "id": "d",
+          "text": "Eine zweite mögliche Lesart prüfen"
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Es geht nicht um positives Umlügen. Es geht um echtes Erkennen der inneren Lesart."
+    },
+    {
+      "id": "d3-q4",
+      "target": "behavior",
+      "stem": "Eine wichtige Übung steht an und du fühlst Druck. Was tust du heute zuerst?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Druck wegdrücken"
+        },
+        {
+          "id": "b",
+          "text": "Bemerken, was du dir über die Situation sagst"
+        },
+        {
+          "id": "c",
+          "text": "Mehr Anstrengung aufbringen"
+        },
+        {
+          "id": "d",
+          "text": "Dich ablenken, bis es losgeht"
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Erst die Bewertung sehen, dann handeln. Druck ist oft Folge der Lesart."
+    }
+  ],
+  "4": [
+    {
+      "id": "d4-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Deine gesamte Energie darauf zu verwenden, das Spiel zu kontrollieren."
+        },
+        {
+          "id": "b",
+          "text": "Wahrzunehmen, welche äusseren Umstände dir unnötig Energie rauben."
+        },
+        {
+          "id": "c",
+          "text": "Unerwünschte Gedanken und Gefühle so schnell wie möglich zu stoppen."
+        },
+        {
+          "id": "d",
+          "text": "Fehler und Probleme zu analysieren, um sie sofort zu korrigieren."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die heutige Übung schärft die Wahrnehmung für Energieverluste (b), anstatt krampfhaft zu versuchen, alles kontrollieren zu wollen (a)."
+    },
+    {
+      "id": "d4-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Fokus bewusst von Unsteuerbarem weg auf deine nächste Aktion zu lenken."
+        },
+        {
+          "id": "b",
+          "text": "Dich zu zwingen, Frustration über unfaire Ereignisse einfach wegzudrücken."
+        },
+        {
+          "id": "c",
+          "text": "Genau zu verstehen, warum bestimmte Dinge ausserhalb deiner Kontrolle liegen."
+        },
+        {
+          "id": "d",
+          "text": "Unkontrollierbare Situationen zu ignorieren und innerlich abzuschalten."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Praxis ist eine aktive Fokuslenkung auf das Steuerbare (a), nicht ein passives Unterdrücken oder Analysieren von Gedanken (b, c)."
+    },
+    {
+      "id": "d4-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis der Aufgabe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sich bei Rückschlägen komplett rauszunehmen und innerlich abzuschalten."
+        },
+        {
+          "id": "b",
+          "text": "Die Aufmerksamkeit bewusst auf die Atmung zu lenken, wenn Ärger hochkommt."
+        },
+        {
+          "id": "c",
+          "text": "Anerkennen, dass die Taktik des Gegners nicht in deiner Hand liegt."
+        },
+        {
+          "id": "d",
+          "text": "Den Fokus nach einem Fehler schnell wieder auf die nächste Aktion zu richten."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Loslassen ist eine aktive Neuausrichtung des Fokus (b, c, d), kein passives Aufgeben oder innerliches Abschalten (a)."
+    },
+    {
+      "id": "d4-q4",
+      "target": "behavior",
+      "stem": "Der Schiri trifft eine schlechte Entscheidung gegen dich. Was ist heute die saubere Reaktion?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dir vornehmen, es dem Schiri durch eine besonders harte Aktion zu zeigen."
+        },
+        {
+          "id": "b",
+          "text": "Die Entscheidung innerlich abhaken und den Fokus zur eigenen Aufgabe lenken."
+        },
+        {
+          "id": "c",
+          "text": "Die Szene im Kopf wiederholen, um zu verstehen, was falsch gelaufen ist."
+        },
+        {
+          "id": "d",
+          "text": "Deinem Captain signalisieren, dass er die Entscheidung jetzt klären muss."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die saubere Reaktion ist das Zurückholen der Energie zum Steuerbaren (b), anstatt sie in Analyse (c) oder Gegenreaktionen (a) zu verlieren."
+    }
+  ],
+  "5": [
+    {
+      "id": "d5-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Gezielt an den eigenen vermeintlichen mentalen Schwächen arbeiten."
+        },
+        {
+          "id": "b",
+          "text": "Bemerken, wenn die Gedanken vor allem um das eigene Bild kreisen."
+        },
+        {
+          "id": "c",
+          "text": "Alle selbstbezogenen oder egoistischen Gedanken sofort unterdrücken."
+        },
+        {
+          "id": "d",
+          "text": "Sich darauf konzentrieren, im Training besonders stark aufzutreten."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die Kernaufgabe ist, Momente des Selbstbezugs neutral zu bemerken (b), nicht, sie zu bekämpfen oder zu unterdrücken (c), was sie nur stärker macht."
+    },
+    {
+      "id": "d5-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Fokus-Shift von der Aufgabe zum eigenen Ansehen registrieren."
+        },
+        {
+          "id": "b",
+          "text": "Situationen aus dem Weg gehen, in denen man bewertet werden könnte."
+        },
+        {
+          "id": "c",
+          "text": "Genau analysieren, warum das eigene Ego in bestimmten Momenten aktiv ist."
+        },
+        {
+          "id": "d",
+          "text": "Sich zwingen, in jeder Situation besonders mannschaftsdienlich zu agieren."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Der Kern ist das reine Bemerken des Moments (a), während eine genaue Analyse (c) dich nur tiefer in die Selbstbezogenheit hineinzieht."
+    },
+    {
+      "id": "d5-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis der Aufgabe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sich dafür zu bestrafen, wenn der Fokus wiederholt aufs Ego kippt."
+        },
+        {
+          "id": "b",
+          "text": "Den Moment des Selbstbezugs als einen normalen mentalen Vorgang ansehen."
+        },
+        {
+          "id": "c",
+          "text": "Registrieren, wenn eine Handlung primär dem eigenen Ansehen dient."
+        },
+        {
+          "id": "d",
+          "text": "Die Aufmerksamkeit bewusst von der Aussenwirkung auf die Aufgabe lenken."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ziel ist das Erkennen von Ego-Momenten ohne Urteil (c); Selbstbestrafung (a) ist eine häufige Falle, die das Ego sogar noch verstärkt."
+    },
+    {
+      "id": "d5-q4",
+      "target": "behavior",
+      "stem": "Du spürst, dass du eine Aktion gewählt hast, um gut auszusehen, statt der Aufgabe zu dienen. Was tust du?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Die Situation analysieren, um den Fehler künftig sicher zu vermeiden."
+        },
+        {
+          "id": "b",
+          "text": "Es innerlich kurz bemerken und den Fokus wieder auf die Aufgabe lenken."
+        },
+        {
+          "id": "c",
+          "text": "Sich innerlich kritisieren, nicht uneigennützig genug gehandelt zu haben."
+        },
+        {
+          "id": "d",
+          "text": "Versuchen, den Fehler durch eine besonders gute Aktion auszugleichen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Der Schlüssel ist das Bemerken und Neuausrichten (b); eine Analyse (a) oder der Versuch, es 'wieder gut zu machen' (d), halten den Fokus nur beim Thema 'Ich'."
+    }
+  ],
+  "6": [
+    {
+      "id": "d6-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Negative Gefühle nach dem Sport durch positive Gedanken zu ersetzen."
+        },
+        {
+          "id": "b",
+          "text": "Den Fokus bewusst von dem, was fehlt, auf das zu lenken, was bereits da ist."
+        },
+        {
+          "id": "c",
+          "text": "Sich anzugewöhnen, in jeder Situation nur noch das Gute sehen zu wollen."
+        },
+        {
+          "id": "d",
+          "text": "Die eigenen Fehler zu ignorieren, um mental stärker nach aussen zu wirken."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Es geht darum, die Wahrnehmung bewusst zu erweitern, anstatt negative Gefühle durch positives Denken einfach nur ersetzen zu wollen."
+    },
+    {
+      "id": "d6-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Im Moment des Mangelblicks 2-3 konkrete, vorhandene Dinge zu benennen."
+        },
+        {
+          "id": "b",
+          "text": "Sich eine generell dankbare und positive Grundhaltung vorzunehmen."
+        },
+        {
+          "id": "c",
+          "text": "Aufkommende Gefühle von Frust oder Druck sofort aktiv zu unterdrücken."
+        },
+        {
+          "id": "d",
+          "text": "Täglich eine Liste zu erstellen mit allem, was an dem Tag gut gelaufen ist."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Kern-Aktion ist das konkrete Benennen im Moment des Mangelblicks, nicht eine allgemeine Haltung oder eine Liste am Tagesende."
+    },
+    {
+      "id": "d6-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis der Aufgabe?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dankbarkeit mechanisch wie eine Checkliste abzuhaken, um die Aufgabe zu erledigen."
+        },
+        {
+          "id": "b",
+          "text": "Sich vorzunehmen, den ganzen Tag nur auf das Positive zu achten."
+        },
+        {
+          "id": "c",
+          "text": "Die Übung als schnelle Technik einzusetzen, um negative Gefühle loszuwerden."
+        },
+        {
+          "id": "d",
+          "text": "Seinen Frust über Fehler zu nutzen, um beim nächsten Training härter zu pushen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ein mechanisches Abarbeiten ohne echtes Wahrnehmen verfehlt das Ziel, während das Wegdrücken von Gefühlen ebenfalls ein Kern-Missverständnis ist."
+    },
+    {
+      "id": "d6-q4",
+      "target": "behavior",
+      "stem": "Das Training war hart und frustrierend. Wie wendest du heute die Linse an?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nutzt den Frust, um dich für das nächste Training noch härter anzutreiben."
+        },
+        {
+          "id": "b",
+          "text": "Du lässt den Frust zu und benennst 1-2 Dinge, die trotzdem unterstützend waren."
+        },
+        {
+          "id": "c",
+          "text": "Du versuchst dich rasch abzulenken, um die frustrierenden Gefühle zu verdrängen."
+        },
+        {
+          "id": "d",
+          "text": "Du analysierst die Ursachen, um logisch zu verstehen, warum du Frust spürst."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die Übung erweitert den Blick, ohne den Frust zu verdrängen, statt ihn als reinen Antrieb für mehr Leistung zu missbrauchen."
+    }
+  ],
+  "7": [
+    {
+      "id": "d7-q1",
+      "target": "lens",
+      "stem": "Worum geht es am Wocheninte­grationstag?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Es geht darum, die erbrachten Leistungen der letzten Woche zu analysieren."
+        },
+        {
+          "id": "b",
+          "text": "Es geht darum, wiederkehrende Muster deiner inneren Reaktionen zu erkennen."
+        },
+        {
+          "id": "c",
+          "text": "Es geht darum, Versäumnisse der Woche zu identifizieren und zu korrigieren."
+        },
+        {
+          "id": "d",
+          "text": "Es geht darum, einen detaillierten Plan für die kommende Woche aufzustellen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Der Fokus liegt auf dem Erkennen von Mustern ohne Urteil, anstatt die Woche leistungsorientiert zu bewerten oder sich zu kritisieren."
+    },
+    {
+      "id": "d7-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du richtest den Blick gezielt auf wiederkehrende Reaktionsmuster in dir."
+        },
+        {
+          "id": "b",
+          "text": "Du analysierst deine Fehler, um sie in der nächsten Woche direkt zu beheben."
+        },
+        {
+          "id": "c",
+          "text": "Du bewertest deine Wochenleistung, um deinen Trainingsplan anzupassen."
+        },
+        {
+          "id": "d",
+          "text": "Du zwingst dich dazu, härter zu arbeiten, wo du diese Woche schwach warst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Praxis ist das reine Beobachten innerer Muster, nicht die sofortige Analyse von Fehlern oder das Bewerten der eigenen Leistung."
+    },
+    {
+      "id": "d7-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sich dafür zu kritisieren, dass bestimmte Muster immer wieder auftauchen."
+        },
+        {
+          "id": "b",
+          "text": "Ein wiederkehrendes Gefühl oder eine Reaktion der Woche genau zu benennen."
+        },
+        {
+          "id": "c",
+          "text": "Zu beobachten, in welchen Situationen ein Muster besonders oft getriggert wird."
+        },
+        {
+          "id": "d",
+          "text": "Einen konkreten Aspekt auszuwählen, auf den man nächste Woche achten will."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ein Missverständnis ist es, die erkannten Muster zur Selbstkritik zu nutzen, anstatt sie als neutrale Information für die nächste Woche zu sehen."
+    },
+    {
+      "id": "d7-q4",
+      "target": "behavior",
+      "stem": "Wie sieht ein erfolgreicher Tag 7 aus?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du hast eine Liste mit allen Fehlern der Woche erstellt, um sie zu beheben."
+        },
+        {
+          "id": "b",
+          "text": "Du hast ein wiederkehrendes Muster benannt und einen Hebel für die Zukunft gewählt."
+        },
+        {
+          "id": "c",
+          "text": "Du hast einen Plan für die Leistungssteigerung in der nächsten Woche gemacht."
+        },
+        {
+          "id": "d",
+          "text": "Du hast dir vorgenommen, nächste Woche in allen Bereichen härter zu arbeiten."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Erfolg bedeutet hier, Klarheit über ein Muster zu gewinnen und einen Fokuspunkt zu setzen, nicht sich mit einer Fehlerliste oder neuen Leistungszielen zu überfordern."
+    }
+  ],
+  "8": [
+    {
+      "id": "d8-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Den Coach davon überzeugen, dass du der engagierteste Spieler im Team bist."
+        },
+        {
+          "id": "b",
+          "text": "Vor dem Training eine konkrete Verhaltensweise für die Einheit festlegen."
+        },
+        {
+          "id": "c",
+          "text": "Deine bisherigen Fehler analysieren, um sie heute nicht wiederholen zu müssen."
+        },
+        {
+          "id": "d",
+          "text": "Ein klares Leistungsziel setzen, um dich härter als sonst zu pushen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Es geht darum, bewusst ein Verhalten für den Tag zu wählen, nicht darum, ein Leistungsziel zu jagen oder vergangene Fehler zu analysieren."
+    },
+    {
+      "id": "d8-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "In einem Satz festlegen, welche Version von dir heute trainieren wird."
+        },
+        {
+          "id": "b",
+          "text": "Eine Liste mit Dingen erstellen, die du heute nicht falsch machen darfst."
+        },
+        {
+          "id": "c",
+          "text": "Den Trainer fragen, was er heute ganz konkret von dir erwartet."
+        },
+        {
+          "id": "d",
+          "text": "Dir vornehmen, dich heute im Training einfach maximal anzustrengen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die zentrale Praxis ist, deine Identität für den Tag aktiv in einem Satz zu benennen, anstatt dich auf Fehlervermeidung oder externe Erwartungen zu fokussieren."
+    },
+    {
+      "id": "d8-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Die gewählte Version als ein Leistungsziel zu verstehen, z.B. '3 Tore schiessen'."
+        },
+        {
+          "id": "b",
+          "text": "Die gewählte Version als eine konkrete Verhaltensweise zu betrachten."
+        },
+        {
+          "id": "c",
+          "text": "Die Version als eine klare Absicht für dein heutiges Handeln zu nutzen."
+        },
+        {
+          "id": "d",
+          "text": "Die Version als eine Richtung zu sehen, falls du mal den Faden verlierst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Ein Missverständnis ist, die Tages-Version als Leistungsziel zu formulieren, anstatt sie als Beschreibung für dein Verhalten und Handeln zu nutzen."
+    },
+    {
+      "id": "d8-q4",
+      "target": "behavior",
+      "stem": "Du gehst ins Training. Wie wendest du heute die Linse an?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du legst für dich eine präsente Haltung fest und beginnst die erste Übung damit."
+        },
+        {
+          "id": "b",
+          "text": "Du wartest erstmal ab, wie du dich fühlst und passt dein Verhalten dann an."
+        },
+        {
+          "id": "c",
+          "text": "Du nimmst dir vor, deine Leistung vom letzten Training heute zu übertreffen."
+        },
+        {
+          "id": "d",
+          "text": "Du versuchst zu erfüllen, was der Trainer von dir erwartet und schaut."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die Anwendung ist, dein Verhalten proaktiv festzulegen, anstatt es von deiner Stimmung, dem Ergebnis oder den Erwartungen anderer abhängig zu machen."
+    }
+  ],
+  "9": [
+    {
+      "id": "d9-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Methoden zu lernen, um jegliche Form von Anspannung im Wettkampf auszuschalten."
+        },
+        {
+          "id": "b",
+          "text": "Zu erkennen, dass Druckgefühle auch durch die eigene Bewertung der Lage entstehen."
+        },
+        {
+          "id": "c",
+          "text": "Sich mental so abzuhärten, dass äußerer Druck einfach nicht mehr spürbar ist."
+        },
+        {
+          "id": "d",
+          "text": "Die Ursachen von Nervosität genau zu analysieren, um sie rational aufzulösen."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die richtige Antwort ist, dass Druck eine Interpretation ist; ein häufiges Missverständnis ist der Versuch, sich gegen Druck abzuhärten, anstatt seine Entstehung zu verstehen."
+    },
+    {
+      "id": "d9-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Kurz innezuhalten, um die eigene, automatische Interpretation der Situation zu finden."
+        },
+        {
+          "id": "b",
+          "text": "Sich von Situationen fernzuhalten, die bekanntermaßen unnötigen Druck auslösen."
+        },
+        {
+          "id": "c",
+          "text": "Sich zu sagen, dass man dem Druck standhalten und einfach härter weitermachen muss."
+        },
+        {
+          "id": "d",
+          "text": "Eine spezielle Atemtechnik anzuwenden, um das Nervensystem sofort zu beruhigen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die zentrale Praxis ist das Bewusstmachen der eigenen Bewertung (Lesart); ein häufiges Missverständnis ist, die Symptome (z.B. mit Atmung) zu managen, ohne die Deutung dahinter zu erkennen."
+    },
+    {
+      "id": "d9-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Zu glauben, das Ziel sei, durch mentale Stärke gar keine Anspannung mehr zu fühlen."
+        },
+        {
+          "id": "b",
+          "text": "Anzuerkennen, dass das Gefühl der Anspannung eine wertvolle Information enthält."
+        },
+        {
+          "id": "c",
+          "text": "Zu bemerken, dass die gleiche Wettkampf-Situation verschieden gelesen werden kann."
+        },
+        {
+          "id": "d",
+          "text": "Neugierig zu prüfen, welches angestrebte Ergebnis dein System gerade schützen will."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort beschreibt die falsche Annahme, Angst und Anspannung einfach ausblenden zu müssen; die anderen Optionen sind korrekte Anwendungen des heutigen Prinzips."
+    },
+    {
+      "id": "d9-q4",
+      "target": "behavior",
+      "stem": "Vor einem entscheidenden Moment wird dir eng. Was tust du heute zuerst?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du versuchst, das enge Gefühl zu ignorieren und dich nur auf das Ziel zu fokussieren."
+        },
+        {
+          "id": "b",
+          "text": "Du hältst kurz inne und fragst dich, als was dein System die Situation gerade bewertet."
+        },
+        {
+          "id": "c",
+          "text": "Du zwingst dich, an deine Stärken zu denken und alle aufkommenden Zweifel zu verwerfen."
+        },
+        {
+          "id": "d",
+          "text": "Du konzentrierst dich auf eine tiefe Atmung, um das Gefühl der Enge loszuwerden."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die erste Handlung ist die Bewusstwerdung der eigenen Lesart; ein typischer Fehler ist, das Gefühl direkt bekämpfen oder ignorieren zu wollen, anstatt seine Ursache zu verstehen."
+    }
+  ],
+  "10": [
+    {
+      "id": "d10-q1",
+      "target": "lens",
+      "stem": "Worum geht es heute im Kern?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Eine positive Einstellung zu finden, bevor du eine Herausforderung annimmst."
+        },
+        {
+          "id": "b",
+          "text": "Zu erkennen, dass dein bewusstes Handeln dein Selbstvertrauen direkt formt."
+        },
+        {
+          "id": "c",
+          "text": "Dich darauf zu konzentrieren, am Ende mehr positive Ergebnisse zu erzielen."
+        },
+        {
+          "id": "d",
+          "text": "Dir selbst gut zuzureden, um deine inneren Zweifel mental zu überwinden."
+        }
+      ],
+      "correctOptionId": "b",
+      "explanation": "Die richtige Antwort (b) betont, dass Handeln die Ursache von Confidence ist, während die häufigste falsche Wahl (a) fälschlicherweise annimmt, dass ein bestimmtes Gefühl die Voraussetzung für das Handeln ist."
+    },
+    {
+      "id": "d10-q2",
+      "target": "action",
+      "stem": "Was ist heute die zentrale Praxis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Trotz Unsicherheit eine saubere Aktion im Training oder Spiel bewusst umzusetzen."
+        },
+        {
+          "id": "b",
+          "text": "Abzuwarten, bis du dich mental bereit und sicher für die nächste Aktion fühlst."
+        },
+        {
+          "id": "c",
+          "text": "Nach einer Aktion genau zu analysieren, was gut und was schlecht gelaufen ist."
+        },
+        {
+          "id": "d",
+          "text": "Dich durch positive Gedanken dazu zu pushen, dich selbstsicherer zu fühlen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt das Prinzip 'Handeln vor Gefühl', während die häufigste falsche Wahl (d) den Fehler macht, ein Gefühl erzwingen zu wollen, anstatt einfach zu handeln."
+    },
+    {
+      "id": "d10-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute ein Missverständnis?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Zu warten, bis ein gutes Gefühl da ist, bevor du dich im Training etwas traust."
+        },
+        {
+          "id": "b",
+          "text": "So zu tun, als wärst du selbstsicher, auch wenn du es innerlich gar nicht bist."
+        },
+        {
+          "id": "c",
+          "text": "Jede einzelne Aktion zu bewerten, um daraus Selbstvertrauen für die Zukunft abzuleiten."
+        },
+        {
+          "id": "d",
+          "text": "Dich selbst härter anzugehen, wenn du merkst, dass deine Confidence niedrig ist."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt das Kern-Missverständnis, dass ein Gefühl eine Voraussetzung für eine Handlung ist, während die häufigste falsche Wahl (b) den Fokus fälschlicherweise auf eine äußere Fassade statt auf die eigentliche Handlung legt."
+    },
+    {
+      "id": "d10-q4",
+      "target": "behavior",
+      "stem": "Du fühlst dich vor dem Training unsicher. Was ist heute die richtige Reaktion?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du fokussierst dich darauf, die erste Übung sauber zu starten, anstatt auf dein Gefühl zu achten."
+        },
+        {
+          "id": "b",
+          "text": "Du nimmst dir Zeit, um dich durch positive Selbstgespräche mental sicherer zu machen."
+        },
+        {
+          "id": "c",
+          "text": "Du entscheidest dich, das Training etwas lockerer anzugehen, um mögliche Fehler zu vermeiden."
+        },
+        {
+          "id": "d",
+          "text": "Du versuchst, die Unsicherheit zu ignorieren und dich einfach extra hart zu pushen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) wendet den Grundsatz 'Handeln vor Gefühl' direkt an, während die häufigste falsche Wahl (d) das unsichere Gefühl durch 'härter pushen' bekämpfen will, anstatt die Handlung vom Gefühl zu entkoppeln."
+    }
+  ],
+  "11": [
+    {
+      "id": "d11-q1",
+      "target": "lens",
+      "stem": "Warum ist Unsicherheit heute notwendig, nicht hinderlich?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Weil dein Gehirn nur dann etwas wirklich Neues lernt, wenn eine klare Erwartung nicht eintrifft."
+        },
+        {
+          "id": "b",
+          "text": "Weil du dich durch das bewusste Aushalten von Unsicherheit mental zusätzlich abhärten kannst."
+        },
+        {
+          "id": "c",
+          "text": "Weil du unter leichtem Druck besser funktionierst und die Unsicherheit dich härter pusht."
+        },
+        {
+          "id": "d",
+          "text": "Weil du durch dein unsicheres Agieren für deine Gegner unberechenbarer werden kannst."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) benennt den Kernmechanismus des 'Prediction Error'; eine häufige Fehlannahme ist, dass es beim Aushalten von Unsicherheit nur um mentale Härte geht (b)."
+    },
+    {
+      "id": "d11-q2",
+      "target": "action",
+      "stem": "Was tust du heute konkret im Training?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du probierst bewusst eine Variante, bei der das Ergebnis für dich unsicher ist und Neues entstehen kann."
+        },
+        {
+          "id": "b",
+          "text": "Du fokussierst dich auf deine Stärken, um dein Gefühl von Sicherheit und Kompetenz weiter zu festigen."
+        },
+        {
+          "id": "c",
+          "text": "Du analysierst ganz genau, warum deine Technik bei einer bereits sicheren Übung noch fehlerhaft ist."
+        },
+        {
+          "id": "d",
+          "text": "Du versuchst, deine persönliche Bestleistung mit mehr Willenskraft als sonst zu übertreffen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt das aktive Aufsuchen einer Lernzone, während das Wiederholen von Bekanntem (b) die 'Sicherheitsschleife' darstellt, die es zu durchbrechen gilt."
+    },
+    {
+      "id": "d11-q3",
+      "target": "mistake",
+      "stem": "Was wäre heute der typische Fehler?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bei aufkommender Unsicherheit sofort wieder zur altbekannten und sicheren Übung zurückzukehren."
+        },
+        {
+          "id": "b",
+          "text": "Eine neue Übung erzwingen zu wollen, obwohl du dich dabei bereits überfordert fühlst."
+        },
+        {
+          "id": "c",
+          "text": "Dich selbst dafür zu kritisieren, dass du bei der herausfordernden, neuen Variante Fehler machst."
+        },
+        {
+          "id": "d",
+          "text": "Lange nachzudenken, welche unsichere Option die absolut beste für deinen Lernfortschritt wäre."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort (a) beschreibt den Kernfehler – die Flucht aus der Lernsituation zurück ins Sichere – während Selbstkritik (c) ein häufiges, aber sekundäres Problem ist."
+    }
+  ],
+  "12": [
+    {
+      "id": "d12-q1",
+      "target": "lens",
+      "stem": "Was unterscheidet Exzellenz von Selbstdarstellung?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Der Fokus liegt auf der Qualität der Aktion, unabhängig vom Ergebnis oder wer zusieht."
+        },
+        {
+          "id": "b",
+          "text": "Der Fokus liegt darauf, durch besondere Leistungen den eigenen Wert für das Team zu beweisen."
+        },
+        {
+          "id": "c",
+          "text": "Der Fokus liegt darauf, die eigenen Fehler schonungslos zu analysieren und zu beheben."
+        },
+        {
+          "id": "d",
+          "text": "Der Fokus liegt darauf, härter als alle anderen zu arbeiten, um sich ständig zu verbessern."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Exzellenz findet im Stillen statt und konzentriert sich auf die saubere Handlung, während Selbstdarstellung auf die Aussenwirkung und das Beeindrucken anderer abzielt."
+    },
+    {
+      "id": "d12-q2",
+      "target": "behavior",
+      "stem": "Wie zeigt sich Qualität-vor-Wirkung in deinem Verhalten heute?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wählst die taktisch klügste Aktion, auch wenn sie vielleicht weniger auffällig ist."
+        },
+        {
+          "id": "b",
+          "text": "Du versuchst eine besonders riskante Aktion, um das Spiel entscheidend zu prägen."
+        },
+        {
+          "id": "c",
+          "text": "Du übernimmst die Führung und versuchst, das Team mit einer lauten Ansage zu pushen."
+        },
+        {
+          "id": "d",
+          "text": "Du konzentrierst dich darauf, deine Kernaufgaben ohne Fehler zu erledigen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Qualität bedeutet, das Richtige zu tun, nicht das Auffälligste; eine riskante Aktion zu versuchen, um zu beeindrucken, ist das Gegenteil (Wirkungs-Fokus)."
+    },
+    {
+      "id": "d12-q3",
+      "target": "mistake",
+      "stem": "Woran erkennst du, dass du wieder im Ego-Modus bist?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Deine Gedanken kreisen darum, wie deine Aktion bei anderen ankommt oder bewertet wird."
+        },
+        {
+          "id": "b",
+          "text": "Du spürst einen enormen Druck, weil du in dieser Situation unbedingt abliefern musst."
+        },
+        {
+          "id": "c",
+          "text": "Du analysierst einen Fehler und bist wütend auf dich, weil dir das nicht passieren darf."
+        },
+        {
+          "id": "d",
+          "text": "Du merkst, dass du dich noch mehr anstrengen musst, um dein volles Potenzial zu zeigen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Der Ego-Modus zeigt sich daran, dass der Fokus von der Aufgabe zur Aussenwirkung wechselt; Wut über Fehler ist oft eine Folge davon, aber der Kern ist die Sorge um das eigene Bild."
+    }
+  ],
+  "13": [
+    {
+      "id": "d13-q1",
+      "target": "lens",
+      "stem": "Was bedeutet 'Gedanken sind Ereignisse, keine Befehle'?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Gedanken sind mentale Vorgänge, die dein Handeln nicht direkt bestimmen müssen."
+        },
+        {
+          "id": "b",
+          "text": "Gedanken sind Signale, die du erst analysieren musst, bevor du weiter handelst."
+        },
+        {
+          "id": "c",
+          "text": "Gedanken sind innere Gegner, die du durch mentale Härte zum Schweigen bringen musst."
+        },
+        {
+          "id": "d",
+          "text": "Gedanken sind dein Instinkt, der im Wettkampf immer die richtige Richtung vorgibt."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort ist 'a', weil Gedanken mentale Ereignisse sind, die du beobachten kannst, ohne darauf reagieren zu müssen; ein häufiger Fehler ist es, sie als wichtige Signale zu sehen, die man sofort analysieren muss (b), was dich in deinem Kopf gefangen hält."
+    },
+    {
+      "id": "d13-q2",
+      "target": "action",
+      "stem": "Was machst du konkret, wenn ein störender Gedanke auftaucht?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du benennst den Gedanken innerlich und richtest den Fokus zurück auf deine Aufgabe."
+        },
+        {
+          "id": "b",
+          "text": "Du stoppst deine aktuelle Handlung, um den Gedanken erst vollständig zu analysieren."
+        },
+        {
+          "id": "c",
+          "text": "Du argumentierst im Kopf gegen den Gedanken, um seine ungute Wirkung zu entkräften."
+        },
+        {
+          "id": "d",
+          "text": "Du interpretierst den Gedanken als Zeichen, dich willentlich noch stärker anzustrengen."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort ist 'a', da das Benennen Distanz schafft, ohne die Handlung zu unterbrechen; ein typischer Fehler ist es, in eine Analyse-Schleife zu geraten (b), statt den Fokus auf die eigentliche Aufgabe zu legen."
+    },
+    {
+      "id": "d13-q3",
+      "target": "mistake",
+      "stem": "Was wäre die typische Defusion-Falle?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sich auf eine innere Debatte einzulassen, ob der Gedanke wahr oder falsch ist."
+        },
+        {
+          "id": "b",
+          "text": "Den Gedanken zu nutzen, um sich zu noch mehr Einsatz und Härte anzutreiben."
+        },
+        {
+          "id": "c",
+          "text": "Den Gedanken schnell mit einem positiven und motivierenden Leitsatz zu ersetzen."
+        },
+        {
+          "id": "d",
+          "text": "Eine spezielle Atemtechnik zu nutzen, damit der Gedanke möglichst schnell weggeht."
+        }
+      ],
+      "correctOptionId": "a",
+      "explanation": "Die richtige Antwort ist 'a', denn die inhaltliche Debatte mit einem Gedanken (Fusion) ist das Gegenteil vom Beobachten; der Versuch, ihn durch positive Sätze zu ersetzen (c), ist eine ebenso häufige Falle, weil es den Gedanken bekämpft, statt ihn zu entkoppeln."
+    }
+  ]
+}
