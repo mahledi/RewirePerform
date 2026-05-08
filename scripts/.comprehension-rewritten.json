@@ -2402,5 +2402,2064 @@
       "correctOptionId": "a",
       "explanation": "Die richtige Antwort (a) trifft den Kern, weil du das Misslingen zu einem Urteil über dich machst, während die falsche Wahl (d) den Fehler im Leistungs-Framing sucht, also das Scheitern gar nicht erst akzeptiert."
     }
+  ],
+  "28": [
+    {
+      "id": "d28-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du versuchst, die Umstände innerlich kleinzumachen, damit sie dich weniger stören."
+        },
+        {
+          "id": "b",
+          "text": "Du nutzt die Umstände als Signal, jetzt härter gegen alles anzukämpfen."
+        },
+        {
+          "id": "c",
+          "text": "Du erkennst die Umstände an und hältst trotzdem deine nächste Funktion vorne."
+        },
+        {
+          "id": "d",
+          "text": "Du bewertest die Umstände kurz und entscheidest dann, ob Protest sinnvoll ist."
+        }
+      ],
+      "explanation": "Richtig ist, Unfairness nicht zu leugnen, aber Funktion größer zu halten als Protest. Die anderen Antworten bleiben im Wegdrücken, Aufladen oder Bewerten hängen."
+    },
+    {
+      "id": "d28-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du zeigst kurz, dass es unfair war, damit dein Team die Situation ernst nimmt."
+        },
+        {
+          "id": "b",
+          "text": "Du registrierst die Szene und führst dich direkt zur nächsten beeinflussbaren Aktion zurück."
+        },
+        {
+          "id": "c",
+          "text": "Du nutzt den Ärger als Energie, damit du danach noch entschlossener spielst."
+        },
+        {
+          "id": "d",
+          "text": "Du merkst dir die Entscheidung, um sie später sachlich einordnen zu können."
+        }
+      ],
+      "explanation": "Richtig ist die Rückkehr zur beeinflussbaren Handlung. Ärger, Protest oder inneres Sammeln wirken plausibel, halten dich aber länger an der Fehlentscheidung fest."
+    },
+    {
+      "id": "d28-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn du kurz merkst, dass etwas unfair war, und danach wieder spielbereit wirst."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du eine Entscheidung innerlich einordnest, ohne deine nächste Aktion zu verlieren."
+        },
+        {
+          "id": "c",
+          "text": "Wenn du nach der Szene einmal atmest und dich neu an der Aufgabe ausrichtest."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du die Szene emotional weiterträgst und sie deine nächsten Aktionen mitsteuert."
+        }
+      ],
+      "explanation": "Kontrolltransfer scheitert, wenn ein altes Ereignis die nächsten Aktionen kontrolliert. Wahrnehmen, Atmen oder Sortieren sind okay, solange du danach funktional zurückkommst."
+    }
+  ],
+  "29": [
+    {
+      "id": "d29-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wirst in wichtigen Momenten besonders vorsichtig, damit dein Verhalten nicht kippt."
+        },
+        {
+          "id": "b",
+          "text": "Du lebst deine gewählte Version gerade dann, wenn die Situation Bedeutung bekommt."
+        },
+        {
+          "id": "c",
+          "text": "Du erhöhst dein Risiko, damit man sieht, dass du wichtige Momente annimmst."
+        },
+        {
+          "id": "d",
+          "text": "Du richtest dich stärker am Ergebnis aus, weil es in diesem Moment mehr zählt."
+        }
+      ],
+      "explanation": "Richtig ist, die eigene Richtung unter Bedeutung stabil zu halten. Vorsicht, Risiko und Ergebnisfokus können Druckreaktionen sein, auch wenn sie sich logisch anfühlen."
+    },
+    {
+      "id": "d29-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wirst lauter und präsenter, damit dein Umfeld deine Entschlossenheit erkennt."
+        },
+        {
+          "id": "b",
+          "text": "Du veränderst deine Routine, weil besondere Situationen besondere Vorbereitung brauchen."
+        },
+        {
+          "id": "c",
+          "text": "Du spielst etwas sicherer, damit deine Rolle in der Situation nicht gefährdet wird."
+        },
+        {
+          "id": "d",
+          "text": "Du handelst unter Druck nah an dem Verhalten, das du vorher bewusst aufgebaut hast."
+        }
+      ],
+      "explanation": "Identität unter Druck zeigt sich durch Verhaltenskonsistenz. Lauter werden, absichern oder Routinen ändern kann stark wirken, ist aber oft schon Anpassung an Druck."
+    },
+    {
+      "id": "d29-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du schaltest heimlich auf Sicherheit und machst nicht mehr deine echte Aktion."
+        },
+        {
+          "id": "b",
+          "text": "Du spürst Druck im Körper und bleibst trotzdem bei deiner nächsten Aufgabe."
+        },
+        {
+          "id": "c",
+          "text": "Du kommunizierst weiter klar, obwohl der Moment mehr Bedeutung bekommt."
+        },
+        {
+          "id": "d",
+          "text": "Du nutzt deinen Fokuspunkt, damit die Situation nicht größer als die Handlung wird."
+        }
+      ],
+      "explanation": "Die Falle ist nicht, Druck zu spüren, sondern kleiner zu handeln, um dich zu schützen. Die anderen Antworten halten dich trotz Druck in Funktion."
+    }
+  ],
+  "30": [
+    {
+      "id": "d30-q1",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du blendest das Ergebnis innerlich aus, damit es weniger Einfluss auf dich nimmt."
+        },
+        {
+          "id": "b",
+          "text": "Du spielst sicherer, weil in wichtigen Momenten weniger Fehler erlaubt sind."
+        },
+        {
+          "id": "c",
+          "text": "Du passt deine Strategie sofort an, sobald das Ergebnis psychologisch Druck macht."
+        },
+        {
+          "id": "d",
+          "text": "Du bleibst trotz Ergebniszug bei der konkreten Aufgabe der nächsten Aktion."
+        }
+      ],
+      "explanation": "Prozess halten heißt, trotz Ergebnisdruck zur beeinflussbaren Handlung zurückzukehren. Ausblenden, Absichern oder ständiges Anpassen wirkt sinnvoll, folgt aber oft schon dem Druck."
+    },
+    {
+      "id": "d30-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ein kurzer Prozess-Trigger, der dich direkt zurück zur nächsten Aktion bringt."
+        },
+        {
+          "id": "b",
+          "text": "Ein Blick auf das Ergebnis, damit du dein Risiko passend anpassen kannst."
+        },
+        {
+          "id": "c",
+          "text": "Ein Vergleich mit dem Gegner, damit du die Intensität richtig einschätzt."
+        },
+        {
+          "id": "d",
+          "text": "Eine kurze Diskussion im Team, damit ihr unter Druck alles neu sortiert."
+        }
+      ],
+      "explanation": "Unter Ergebnisdruck muss der Anker kurz, einfach und handlungsnah sein. Ergebnis, Vergleich oder Diskussion ziehen dich schnell wieder aus der nächsten Aktion."
+    },
+    {
+      "id": "d30-q3",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn du deinen Prozessanker nutzt, obwohl der äußere Druck spürbar steigt."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du kurz atmest und deine Aufmerksamkeit zurück zur Aktion bringst."
+        },
+        {
+          "id": "c",
+          "text": "Wenn du Aktionen vor allem danach wählst, ob sie das Ergebnis retten."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du dich neu positionierst, um wieder besser spielbar zu sein."
+        }
+      ],
+      "explanation": "Der Prozess kippt, wenn Ergebnislogik deine Handlungsauswahl übernimmt. Atmen, Anker und Positionierung sind nur dann problematisch, wenn sie Ergebnisangst dienen."
+    }
+  ],
+  "31": [
+    {
+      "id": "d31-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du versuchst, den Fehler möglichst schnell zu vergessen, damit er dich nicht schwächt."
+        },
+        {
+          "id": "b",
+          "text": "Du lässt den Fehler bei der Handlung und machst daraus kein Urteil über dich."
+        },
+        {
+          "id": "c",
+          "text": "Du erklärst sofort, warum der Fehler passiert ist, damit dein Bild geschützt bleibt."
+        },
+        {
+          "id": "d",
+          "text": "Du nimmst den Fehler besonders ernst, damit du ihn sicher nicht wiederholst."
+        }
+      ],
+      "explanation": "Richtig ist, den Fehler sachlich auf Handlungsebene zu halten. Vergessen, erklären oder überladen schützt oft nur das Bild, statt wirklich zurück in Funktion zu bringen."
+    },
+    {
+      "id": "d31-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du korrigierst kurz deine Position und richtest dich wieder an der nächsten Szene aus."
+        },
+        {
+          "id": "b",
+          "text": "Du sagst knapp deinen Fehler an und spielst danach ohne große Erklärung weiter."
+        },
+        {
+          "id": "c",
+          "text": "Du erkennst sachlich, was technisch oder taktisch gerade unsauber war."
+        },
+        {
+          "id": "d",
+          "text": "Du erklärst lautstark, suchst Schuldige oder ziehst dich sichtbar aus der Szene zurück."
+        }
+      ],
+      "explanation": "Ins Ich kippen zeigt sich durch Bildverteidigung, Schuldsuche oder Rückzug. Sachliche Korrektur und Rückkehr halten den Fehler bei der Handlung."
+    },
+    {
+      "id": "d31-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du erkennst ihn sachlich an, setzt einen Reset und gehst in die nächste Aktion."
+        },
+        {
+          "id": "b",
+          "text": "Du erklärst kurz, warum die Situation nicht nur durch dich entstanden ist."
+        },
+        {
+          "id": "c",
+          "text": "Du nimmst dir einige Aktionen Zeit, um innerlich wieder sicher zu werden."
+        },
+        {
+          "id": "d",
+          "text": "Du wirst demonstrativ aktiver, damit niemand deine Unsicherheit bemerkt."
+        }
+      ],
+      "explanation": "Die richtige Kette ist Anerkennen, Reset, nächste Aktion. Erklären, verschwinden oder überkompensieren macht den Fehler wieder zur Bühne fürs Ich."
+    }
+  ],
+  "32": [
+    {
+      "id": "d32-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du blendest Bewertung möglichst aus, damit dein Verhalten nicht künstlich wird."
+        },
+        {
+          "id": "b",
+          "text": "Du nutzt Beobachtung als Anreiz, um heute besonders stark zu wirken."
+        },
+        {
+          "id": "c",
+          "text": "Du bleibst lernfähig, obwohl Beobachtung und Bewertung spürbar im Raum sind."
+        },
+        {
+          "id": "d",
+          "text": "Du schützt dich durch sichere Aktionen, damit sichtbare Fehler weniger wahrscheinlich werden."
+        }
+      ],
+      "explanation": "Heute geht es darum, unter Bewertung offen und lernfähig zu bleiben. Ausblenden, beeindrucken oder absichern sind typische Schutzstrategien."
+    },
+    {
+      "id": "d32-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wählst Aktionen etwas sicherer, damit deine Qualität unter Beobachtung stabil bleibt."
+        },
+        {
+          "id": "b",
+          "text": "Du machst dieselben sinnvollen Aktionen wie ohne Beobachtung und bleibst bei der Lernaufgabe."
+        },
+        {
+          "id": "c",
+          "text": "Du suchst stärker sichtbare Aktionen, damit deine Entwicklung auch erkennbar wird."
+        },
+        {
+          "id": "d",
+          "text": "Du beobachtest genau, wie Coach oder Mitspieler auf deine Aktionen reagieren."
+        }
+      ],
+      "explanation": "Soziale Defusion zeigt sich, wenn Beobachtung dein Verhalten nicht übernimmt. Sicherer, sichtbarer oder beobachterorientierter zu handeln bedeutet, dass Außenwirkung steuert."
+    },
+    {
+      "id": "d32-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du bleibst bei deiner Aufgabe, auch wenn du merkst, dass andere dich sehen."
+        },
+        {
+          "id": "b",
+          "text": "Du nimmst den Beobachter wahr, ohne daraus deine Handlungsauswahl zu machen."
+        },
+        {
+          "id": "c",
+          "text": "Du sprichst vor der Einheit kurz mit dem Beobachter und bleibst dann bei dir."
+        },
+        {
+          "id": "d",
+          "text": "Du wählst Aktionen danach, ob sie für den Beobachter möglichst gut aussehen."
+        }
+      ],
+      "explanation": "Der Bewertungsreflex ist, Verhalten für Außenwirkung zu optimieren. Wahrnehmen oder bei der Aufgabe bleiben ist nicht das Problem, solange es dich nicht steuert."
+    }
+  ],
+  "33": [
+    {
+      "id": "d33-q1",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du stoppst einen alten Reflex früh und setzt bewusst eine vorbereitete neue Reaktion."
+        },
+        {
+          "id": "b",
+          "text": "Du verdrängst das alte Muster, damit es während der Einheit weniger Raum bekommt."
+        },
+        {
+          "id": "c",
+          "text": "Du analysierst das alte Muster lange, bis du seine Ursache besser verstehst."
+        },
+        {
+          "id": "d",
+          "text": "Du schämst dich für den Reflex, damit dein System ihn stärker vermeiden will."
+        }
+      ],
+      "explanation": "Umcodierung braucht Stoppen und Ersetzen. Verdrängen, Analysieren oder Scham wirken intensiv, liefern aber keine neue Verhaltensspur."
+    },
+    {
+      "id": "d33-q2",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nimmst dir allgemein vor, heute mental stabiler und bewusster zu handeln."
+        },
+        {
+          "id": "b",
+          "text": "Du sammelst mehrere Schwächen, damit du möglichst viel gleichzeitig verbessern kannst."
+        },
+        {
+          "id": "c",
+          "text": "Du legst einen konkreten Trigger, die alte Reaktion und die neue Ersatzhandlung fest."
+        },
+        {
+          "id": "d",
+          "text": "Du bestimmst eine Konsequenz, falls du wieder in das alte Muster zurückfällst."
+        }
+      ],
+      "explanation": "Der Tag braucht ein klares Trigger-Reaktion-Ersatz-Paar. Allgemeine Ziele, Schwächenlisten oder Strafen bleiben zu unscharf oder erzeugen nur Druck."
+    },
+    {
+      "id": "d33-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Weil der Trigger zu klar benannt wird und dadurch zu viel Aufmerksamkeit bekommt."
+        },
+        {
+          "id": "b",
+          "text": "Weil die alte Reaktion bewusst wahrgenommen wird, statt sie direkt zu vermeiden."
+        },
+        {
+          "id": "c",
+          "text": "Weil man die neue Reaktion zu oft übt und dadurch unnatürlich wird."
+        },
+        {
+          "id": "d",
+          "text": "Weil nur Nicht-mehr-machen geplant wird, aber keine neue Reaktion bereitsteht."
+        }
+      ],
+      "explanation": "Nur Vermeidung lässt ein Loch, in das das alte Muster zurückfällt. Eine neue konkrete Reaktion gibt dem System eine echte Alternative."
+    }
+  ],
+  "34": [
+    {
+      "id": "d34-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du redest dir die Belastung gut, damit sie im Moment weniger schwer wirkt."
+        },
+        {
+          "id": "b",
+          "text": "Du öffnest mitten im Schweren wieder Wahrnehmung für Tragfähigkeit und Möglichkeit."
+        },
+        {
+          "id": "c",
+          "text": "Du bist dankbar für die Belastung, weil sie dich automatisch stärker macht."
+        },
+        {
+          "id": "d",
+          "text": "Du suchst mehr Belastung, damit du Dankbarkeit unter Druck beweisen kannst."
+        }
+      ],
+      "explanation": "Dankbarkeit im Belastungsmodus heißt Weite zurückholen, nicht Schmerz schönreden. Die anderen Antworten machen Dankbarkeit zu Zwang, Beweis oder Verdrängung."
+    },
+    {
+      "id": "d34-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du sagst dir, dass du es bald geschafft hast, damit die Belastung kleiner wirkt."
+        },
+        {
+          "id": "b",
+          "text": "Du hältst kurz durch und wartest, bis der schwere Moment von selbst vorbeigeht."
+        },
+        {
+          "id": "c",
+          "text": "Du beschwerst dich kurz innerlich, damit der Druck einmal raus kann."
+        },
+        {
+          "id": "d",
+          "text": "Du benennst konkrete Dinge, die trotz Belastung noch tragen und verfügbar sind."
+        }
+      ],
+      "explanation": "Konkrete Tragfähigkeit öffnet dein Wahrnehmungsfeld im Schweren. Durchhalten, Wegwarten oder Beschweren kann menschlich sein, verändert aber den Zustand nicht sauber."
+    },
+    {
+      "id": "d34-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du zwingst dir Dankbarkeit auf, obwohl du innerlich nur weiter durchhalten willst."
+        },
+        {
+          "id": "b",
+          "text": "Du erkennst eine konkrete Möglichkeit, ohne den schweren Moment wegzuleugnen."
+        },
+        {
+          "id": "c",
+          "text": "Du nimmst deinen Atem wahr und holst dadurch wieder etwas Weite zurück."
+        },
+        {
+          "id": "d",
+          "text": "Du sprichst kurz mit einem Mitspieler und kommst dadurch wieder in Verbindung."
+        }
+      ],
+      "explanation": "Pseudo-Dankbarkeit ist aufgesetzt und verändert die Aufmerksamkeit nicht wirklich. Konkretes Wahrnehmen, Atmen oder Verbindung kann echte Weite zurückgeben."
+    }
+  ],
+  "35": [
+    {
+      "id": "d35-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du bleibst im Hintergrund stabil, damit du keine unnötige Bewertung auslöst."
+        },
+        {
+          "id": "b",
+          "text": "Du sorgst dafür, dass andere ihre Verantwortung im Team klarer übernehmen."
+        },
+        {
+          "id": "c",
+          "text": "Du übernimmst sichtbar Initiative, wenn die Situation eine klare Handlung von dir braucht."
+        },
+        {
+          "id": "d",
+          "text": "Du vermeidest Bewertung, indem du nur dann handelst, wenn es sicher richtig ist."
+        }
+      ],
+      "explanation": "Verantwortung wird heute sichtbar und verhaltensnah. Im Hintergrund bleiben, andere steuern oder Bewertung vermeiden kann sich vernünftig tarnen, bleibt aber oft Rückzug."
+    },
+    {
+      "id": "d35-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du erklärst klar, was andere besser machen sollten, wenn die Situation Führung braucht."
+        },
+        {
+          "id": "b",
+          "text": "Du setzt eine Aktion, Ansage oder Rolle, die du sonst eher abgegeben hättest."
+        },
+        {
+          "id": "c",
+          "text": "Du machst das, was von außen am stärksten nach Verantwortung aussieht."
+        },
+        {
+          "id": "d",
+          "text": "Du sprichst öffentlich an, was gerade im Team nicht gut genug läuft."
+        }
+      ],
+      "explanation": "Sichtbare Verantwortung heißt, selbst eine sinnvolle Handlung zu übernehmen. Kommentieren, wirken wollen oder öffentlich kritisieren ersetzt keine eigene Verantwortung."
+    },
+    {
+      "id": "d35-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn deine Handlung misslingt, obwohl du wirklich einen Beitrag leisten wolltest."
+        },
+        {
+          "id": "b",
+          "text": "Wenn andere deine Verantwortung sehen und dadurch mehr Vertrauen in dich bekommen."
+        },
+        {
+          "id": "c",
+          "text": "Wenn der Coach deine Aktion bemerkt, obwohl du sie für die Situation gesetzt hast."
+        },
+        {
+          "id": "d",
+          "text": "Wenn Sichtbarkeit wichtiger wird als der Beitrag, den deine Handlung leisten soll."
+        }
+      ],
+      "explanation": "Ego beginnt, wenn Sichtbarkeit zum Ziel wird. Scheitern, gesehen werden oder vom Coach bemerkt werden ist nicht automatisch Ego."
+    }
+  ],
+  "36": [
+    {
+      "id": "d36-q1",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du bleibst in Hektik und Reizdichte für die nächste funktionale Handlung verfügbar."
+        },
+        {
+          "id": "b",
+          "text": "Du vermeidest Chaos möglichst früh, damit dein Fokus gar nicht erst gestört wird."
+        },
+        {
+          "id": "c",
+          "text": "Du wirkst nach außen ruhig, auch wenn innerlich mehrere Dinge gleichzeitig ziehen."
+        },
+        {
+          "id": "d",
+          "text": "Du wirst schneller als das Chaos, damit du weniger Zeit für Ablenkung hast."
+        }
+      ],
+      "explanation": "Präsenz im Chaos bedeutet Verfügbarkeit, nicht perfekte Ruhe oder Vermeidung. Schnell wirken oder ruhig aussehen kann die innere Streuung sogar verdecken."
+    },
+    {
+      "id": "d36-q2",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nutzt eine längere Atemroutine, damit dein System einmal komplett runterfährt."
+        },
+        {
+          "id": "b",
+          "text": "Du suchst kurz den Blick zum Coach, damit du wieder Orientierung bekommst."
+        },
+        {
+          "id": "c",
+          "text": "Du nutzt einen sehr kurzen Trigger und gehst direkt in die einfachste nächste Aktion."
+        },
+        {
+          "id": "d",
+          "text": "Du motivierst dich laut, damit dein Energielevel gegen die Hektik ankommt."
+        }
+      ],
+      "explanation": "Im Chaos greift nur Minimalismus: kurzer Trigger, einfache Handlung. Längere Routinen, Außenorientierung oder laute Motivation sind oft zu langsam oder zu abhängig."
+    },
+    {
+      "id": "d36-q3",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn du dich auf eine konkrete nächste Aktion begrenzt und sie sauber ausführst."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du gleichzeitig mehrere Probleme mental lösen willst und dadurch streust."
+        },
+        {
+          "id": "c",
+          "text": "Wenn du deinen Trigger nutzt, obwohl um dich herum weiter Hektik bleibt."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du einem Mitspieler kurz hilfst, ohne deine eigene Aufgabe zu verlieren."
+        }
+      ],
+      "explanation": "Multitasking unter Druck zerstört Präsenz. Begrenzen, triggern oder kurz helfen kann funktional sein, wenn die eigene nächste Aufgabe klar bleibt."
+    }
+  ],
+  "37": [
+    {
+      "id": "d37-q1",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du ignorierst die Unfairness, damit sie nicht unnötig groß in deinem Kopf wird."
+        },
+        {
+          "id": "b",
+          "text": "Du gewöhnst dich an Unfairness, weil sie im Sport sowieso immer vorkommt."
+        },
+        {
+          "id": "c",
+          "text": "Du bekämpfst die Unfairness sachlich, damit sie beim nächsten Mal weniger Macht hat."
+        },
+        {
+          "id": "d",
+          "text": "Du hörst auf, die Unfairness innerlich weiter aufzuladen und durchzukauen."
+        }
+      ],
+      "explanation": "Gelassenheit heißt nicht ignorieren oder dulden, sondern nicht weiterfüttern. Bekämpfen oder Gewöhnen kann plausibel klingen, hält die Energie aber oft am Ereignis."
+    },
+    {
+      "id": "d37-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du reagierst kurz und wechselst dann zurück in die Aufgabe, ohne wiederzukehren."
+        },
+        {
+          "id": "b",
+          "text": "Du sprichst es öffentlich an, damit dein Team die Situation richtig einordnet."
+        },
+        {
+          "id": "c",
+          "text": "Du erinnerst Mitspieler daran, damit ihr nicht so tut, als wäre es egal."
+        },
+        {
+          "id": "d",
+          "text": "Du machst einen sarkastischen Kommentar, um den Frust kurz rauszulassen."
+        }
+      ],
+      "explanation": "Eine kurze Reaktion ist menschlich, aber Nicht-Wiederkehren ist die Übung. Öffentlich machen, erinnern oder kommentieren füttert die Szene weiter."
+    },
+    {
+      "id": "d37-q3",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du spielst die nächste Aktion sauber, obwohl die vorherige Szene unfair war."
+        },
+        {
+          "id": "b",
+          "text": "Du beruhigst einen Mitspieler, ohne die alte Szene wieder groß zu machen."
+        },
+        {
+          "id": "c",
+          "text": "Du führst innerlich Bilanz, wie viele unfaire Momente sich schon gesammelt haben."
+        },
+        {
+          "id": "d",
+          "text": "Du atmest einmal und bringst deine Aufmerksamkeit zurück ins Spiel."
+        }
+      ],
+      "explanation": "Bilanzführen hält Aufmerksamkeit dauerhaft im Außen und lädt Frust auf. Die anderen Antworten führen zurück in Funktion oder helfen, ohne die Szene weiter zu vergrößern."
+    }
+  ],
+  "38": [
+    {
+      "id": "d38-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wirst emotional aggressiver, damit dein Körper die Spannung nicht als Rückzug liest."
+        },
+        {
+          "id": "b",
+          "text": "Du bleibst in Spannung vorwärts orientiert, statt in Schutz und Vermeidung zu gehen."
+        },
+        {
+          "id": "c",
+          "text": "Du gehst mehr Risiko ein, damit dein System merkt, dass du keine Angst hast."
+        },
+        {
+          "id": "d",
+          "text": "Du suchst bewusst Kontakt und Reibung, damit du dich an Druck gewöhnst."
+        }
+      ],
+      "explanation": "Angriff meint Challenge-Richtung, nicht Aggression oder blindes Risiko. Die Distraktoren verwechseln Vorwärtsorientierung mit Härte, Beweis oder Konflikt."
+    },
+    {
+      "id": "d38-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du übernimmst Verantwortung, obwohl die Situation sichtbar und unangenehm ist."
+        },
+        {
+          "id": "b",
+          "text": "Du wagst eine schwere Aktion, wenn sie zur Aufgabe und Situation passt."
+        },
+        {
+          "id": "c",
+          "text": "Du sprichst kurz mit dem Coach, wenn du wirklich Orientierung brauchst."
+        },
+        {
+          "id": "d",
+          "text": "Du wählst vor allem sichere, unauffällige Aktionen, um keinen Fehler zu machen."
+        }
+      ],
+      "explanation": "Schutzmodus zeigt sich oft als unauffällige Sicherheit. Verantwortung, passende schwere Aktionen oder echte Orientierungssuche können dagegen funktional sein."
+    },
+    {
+      "id": "d38-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nutzt den Vermeidungsimpuls als Signal für eine klare, dienliche Vorwärtshandlung."
+        },
+        {
+          "id": "b",
+          "text": "Du wartest die Spannung ab, damit du später ruhiger entscheiden kannst."
+        },
+        {
+          "id": "c",
+          "text": "Du suchst erst Rücksprache, bevor du in einer Drucksituation aktiv wirst."
+        },
+        {
+          "id": "d",
+          "text": "Du wechselst die Position, wenn die Situation sich zu sichtbar anfühlt."
+        }
+      ],
+      "explanation": "Der Vermeidungsimpuls ist heute der Umschaltpunkt zur Challenge-Antwort. Warten, Rücksprache oder Positionswechsel kann auch Schutz bleiben, wenn es nur Sichtbarkeit reduziert."
+    }
+  ],
+  "39": [
+    {
+      "id": "d39-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wirst bei Führung lockerer und bei Rückstand härter, weil der Verlauf es verlangt."
+        },
+        {
+          "id": "b",
+          "text": "Du passt deinen Zustand an den Spielstand an, damit du die Situation ernst nimmst."
+        },
+        {
+          "id": "c",
+          "text": "Du bleibst funktional im Standard, egal ob der Verlauf gerade hoch oder tief ist."
+        },
+        {
+          "id": "d",
+          "text": "Du verwaltest gute Phasen und kämpfst schlechte Phasen mit mehr Willen weg."
+        }
+      ],
+      "explanation": "Stabilität heißt, der Standard bleibt stärker als der Verlauf. Lockerlassen, Härterwerden oder Verwalten sind typische Momentum-Reaktionen."
+    },
+    {
+      "id": "d39-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bei Führung verlierst du Schärfe, bei Rückstand wirst du hektisch oder resignierst."
+        },
+        {
+          "id": "b",
+          "text": "Du hältst deinen Anker, obwohl das Spiel gerade klar in eine Richtung kippt."
+        },
+        {
+          "id": "c",
+          "text": "Du sprichst in Führung und Rückstand ähnlich klar mit deinen Mitspielern."
+        },
+        {
+          "id": "d",
+          "text": "Du atmest in beiden Phasen gleich und gehst zurück zur nächsten Szene."
+        }
+      ],
+      "explanation": "Instabilität zeigt sich als Asymmetrie zwischen Führung und Rückstand. Anker, Kommunikation und Rückkehr zeigen, dass dein Standard noch trägt."
+    },
+    {
+      "id": "d39-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du spielst konzentriert weiter, obwohl das Ergebnis gerade für dich spricht."
+        },
+        {
+          "id": "b",
+          "text": "Du beruhigst Mitspieler, ohne selbst aus deinem Standard zu fallen."
+        },
+        {
+          "id": "c",
+          "text": "Du hältst deinen Anker und behandelst die nächste Szene normal."
+        },
+        {
+          "id": "d",
+          "text": "Du beginnst, das Ergebnis zu verwalten, statt weiter Aktionen sauber zu wählen."
+        }
+      ],
+      "explanation": "Bei Führung ist Verwalten der klassische Prozessbruch. Weiterspielen, beruhigen und Anker halten schützen den Standard trotz positivem Verlauf."
+    }
+  ],
+  "40": [
+    {
+      "id": "d40-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du spielst im Wettkampf nur Bewährtes, damit das Ergebnis nicht unnötig leidet."
+        },
+        {
+          "id": "b",
+          "text": "Du bleibst unter Bewertung lernoffen, statt nur Schaden und Fehler zu vermeiden."
+        },
+        {
+          "id": "c",
+          "text": "Du probierst im Wettkampf möglichst viel aus, weil Wachstum wichtiger als Ergebnis ist."
+        },
+        {
+          "id": "d",
+          "text": "Du ignorierst Bewertung, damit du dich freier und mutiger entwickeln kannst."
+        }
+      ],
+      "explanation": "Wachstum trotz Ergebnisdruck heißt offene, gezielte Entwicklung bei Relevanz. Nur absichern, alles ausprobieren oder Bewertung ignorieren verfehlt die Balance."
+    },
+    {
+      "id": "d40-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du machst nur, was sicher funktioniert, damit die Drucksituation stabil bleibt."
+        },
+        {
+          "id": "b",
+          "text": "Du redest mit dem Coach über Ideen, die du irgendwann umsetzen willst."
+        },
+        {
+          "id": "c",
+          "text": "Du schreibst dir nach der Einheit auf, was du später verbessern könntest."
+        },
+        {
+          "id": "d",
+          "text": "Du setzt eine bewusste, gezielte Variante in einer echten Drucksituation um."
+        }
+      ],
+      "explanation": "Lernoffenheit unter Druck zeigt sich in gezielter Anwendung, nicht nur in Reden oder Notizen. Reine Sicherheit schützt kurzfristig, lässt aber kein Wachstum zu."
+    },
+    {
+      "id": "d40-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wählst in jeder Drucksituation automatisch die kleinste und sicherste Aktion."
+        },
+        {
+          "id": "b",
+          "text": "Du baust eine kleine Variante ein, die zur Situation und Aufgabe passt."
+        },
+        {
+          "id": "c",
+          "text": "Du reflektierst nach dem Spiel, was unter Druck wirklich möglich war."
+        },
+        {
+          "id": "d",
+          "text": "Du sprichst mit dem Coach, um eine gezielte nächste Lernkante zu finden."
+        }
+      ],
+      "explanation": "Die typische Verengung ist automatische Schadensvermeidung. Kleine passende Varianten, Reflexion oder Coach-Austausch können Wachstum unter Bewertung unterstützen."
+    }
+  ],
+  "41": [
+    {
+      "id": "d41-q1",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du versuchst, Fehler schnell aus deinem Kopf zu löschen, damit dein Selbstbild frei bleibt."
+        },
+        {
+          "id": "b",
+          "text": "Du behandelst Fehler als unwichtig, weil sie langfristig sowieso nicht entscheiden."
+        },
+        {
+          "id": "c",
+          "text": "Du gibst Fehler direkt zu, damit niemand denkt, du würdest sie verstecken."
+        },
+        {
+          "id": "d",
+          "text": "Du hältst deinen Selbstkern stabil, auch wenn eine Ausführung gerade unperfekt war."
+        }
+      ],
+      "explanation": "Identitätsstabilität heißt, Fehler als Momentinformation zu sehen, nicht als Aussage über dich. Löschen, Kleinreden oder demonstratives Zugeben kann weiterhin am Bild hängen."
+    },
+    {
+      "id": "d41-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du verdrängst den Fehler schnell, damit du emotional nicht zu tief hineingezogen wirst."
+        },
+        {
+          "id": "b",
+          "text": "Du korrigierst Verhalten sachlich, ohne daraus einen Angriff auf dich zu machen."
+        },
+        {
+          "id": "c",
+          "text": "Du verteilst die Schuld fair, damit die Situation nicht allein an dir hängenbleibt."
+        },
+        {
+          "id": "d",
+          "text": "Du sagst dir deutlich, dass dieser Fehler zeigt, woran du noch nicht gut bist."
+        }
+      ],
+      "explanation": "Richtig ist: Korrektur ja, Selbstangriff nein. Verdrängen, Schuld verteilen oder harte Selbstetiketten halten den Fehler weiter im Identitätsraum."
+    },
+    {
+      "id": "d41-q3",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du benennst den Fehler sachlich und leitest daraus eine konkrete Korrektur ab."
+        },
+        {
+          "id": "b",
+          "text": "Du spielst weiter, obwohl du merkst, dass die Szene nicht sauber war."
+        },
+        {
+          "id": "c",
+          "text": "Du machst aus einem Fehler eine Aussage über deinen Wert als Spieler oder Mensch."
+        },
+        {
+          "id": "d",
+          "text": "Du lernst aus der Situation, ohne dich innerlich komplett darüber zu definieren."
+        }
+      ],
+      "explanation": "Identitätsstabilität bricht, wenn Verhalten zu Wert wird. Sachlich benennen, weiterspielen und lernen sind funktional, wenn dein Kern stabil bleibt."
+    }
+  ],
+  "42": [
+    {
+      "id": "d42-q1",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Er zeigt, welche Muster unter echter Last stabil bleiben und welche zuerst kippen."
+        },
+        {
+          "id": "b",
+          "text": "Er gibt dir Raum, die letzten Wochen eher locker ausklingen zu lassen."
+        },
+        {
+          "id": "c",
+          "text": "Er fügt neue Übungen hinzu, damit du vor Woche acht mehr Werkzeuge hast."
+        },
+        {
+          "id": "d",
+          "text": "Er bewertet deine Leistung, damit du weißt, wie gut du bisher warst."
+        }
+      ],
+      "explanation": "Konsolidierung heißt Muster unter Last ehrlich lesen. Frei haben, neue Tools sammeln oder Leistung bewerten verfehlt den Sinn dieses Tages."
+    },
+    {
+      "id": "d42-q2",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du listest alle Schwächen auf, damit du möglichst vollständig erkennst, was fehlt."
+        },
+        {
+          "id": "b",
+          "text": "Du gehst jeden Tag einzeln durch, um deine Entwicklung genau zu bewerten."
+        },
+        {
+          "id": "c",
+          "text": "Du benennst ein stabiles und ein instabiles Muster konkret aus den letzten Wochen."
+        },
+        {
+          "id": "d",
+          "text": "Du verschiebst die Reflexion, bis du mehr Abstand zum Programmverlauf hast."
+        }
+      ],
+      "explanation": "Die richtige Reflexion ist konkret und eingegrenzt: ein stabiles, ein instabiles Muster. Zu viel sammeln oder bewerten macht es diffus und schwer umsetzbar."
+    },
+    {
+      "id": "d42-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nennst konkrete Beispiele, an denen deine Muster wirklich sichtbar wurden."
+        },
+        {
+          "id": "b",
+          "text": "Du machst Notizen, damit aus dem Druckblock eine klare Lernkante entsteht."
+        },
+        {
+          "id": "c",
+          "text": "Du sprichst mit jemandem darüber, wenn es dir beim Sortieren hilft."
+        },
+        {
+          "id": "d",
+          "text": "Du machst aus Reflexion eine Bewertung darüber, wie gut oder schlecht du bist."
+        }
+      ],
+      "explanation": "Die Falle ist Selbstbewertung statt Mustererkennung. Beispiele, Notizen oder Gespräche können helfen, wenn sie bei stabil/instabil bleiben."
+    }
+  ],
+  "43": [
+    {
+      "id": "d43-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du verlierst den Fokus gar nicht mehr, weil Präsenz jetzt automatisch verfügbar ist."
+        },
+        {
+          "id": "b",
+          "text": "Du findest nach kurzen Drifts schnell zurück, ohne daraus ein großes Ereignis zu machen."
+        },
+        {
+          "id": "c",
+          "text": "Du nutzt Fokus als bewusste Methode, sobald du merkst, dass Druck entsteht."
+        },
+        {
+          "id": "d",
+          "text": "Du wartest auf das richtige Gefühl, damit Präsenz wieder natürlich auftauchen kann."
+        }
+      ],
+      "explanation": "Präsenz als Standard heißt schnelle normale Rückkehr, nicht perfekte Dauerpräsenz. Die anderen Antworten verwechseln Standard mit Fehlerfreiheit, Methode oder Stimmung."
+    },
+    {
+      "id": "d43-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wirst nicht mehr abgelenkt, weil dein System die Aufgabe automatisch vorne hält."
+        },
+        {
+          "id": "b",
+          "text": "Du brauchst eine längere Routine, aber kommst danach sehr sauber zurück."
+        },
+        {
+          "id": "c",
+          "text": "Du erklärst dir kurz, warum du abgelenkt warst, und lernst daraus."
+        },
+        {
+          "id": "d",
+          "text": "Du bist nach Ablenkung in Sekunden wieder bei der Aufgabe statt erst nach Minuten."
+        }
+      ],
+      "explanation": "Der Indikator ist die Geschwindigkeit der Rückkehr. Keine Ablenkung, lange Routinen oder Erklärungen machen Präsenz wieder zu etwas Besonderem."
+    },
+    {
+      "id": "d43-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du brauchst nach jeder Ablenkung noch mehrere bewusste Schritte, um zurückzukommen."
+        },
+        {
+          "id": "b",
+          "text": "Du nutzt einen kurzen Trigger und bist direkt wieder in der nächsten Handlung."
+        },
+        {
+          "id": "c",
+          "text": "Du bist konzentriert, ohne die Konzentration ständig kontrollieren zu müssen."
+        },
+        {
+          "id": "d",
+          "text": "Du atmest beiläufig und richtest dich automatisch wieder an der Aufgabe aus."
+        }
+      ],
+      "explanation": "Wenn Rückkehr noch viel Aufwand braucht, ist Präsenz noch Werkzeug statt Standard. Kurze Rückkehr und beiläufige Aufgabebindung zeigen mehr Integration."
+    }
+  ],
+  "44": [
+    {
+      "id": "d44-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du redest dich kleiner, damit deine Stärke nicht zu viel Aufmerksamkeit bekommt."
+        },
+        {
+          "id": "b",
+          "text": "Du versteckst deine Stärke, weil Demut bedeutet, nicht zu sehr aufzufallen."
+        },
+        {
+          "id": "c",
+          "text": "Du lieferst hohe Qualität, ohne daraus einen Beweis über dich machen zu müssen."
+        },
+        {
+          "id": "d",
+          "text": "Du hältst dich zurück, damit Mitspieler neben dir nicht schlechter wirken."
+        }
+      ],
+      "explanation": "Demut in Stärke heißt nicht klein werden, sondern Stärke ohne Beweisdrang tragen. Kleinreden, Verstecken oder Zurückhalten verwechselt Demut mit Selbstbegrenzung."
+    },
+    {
+      "id": "d44-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du machst die starke Aktion und kehrst danach direkt in die Aufgabe zurück."
+        },
+        {
+          "id": "b",
+          "text": "Du genießt die starke Aktion bewusst, damit sie dein Selbstvertrauen verstärkt."
+        },
+        {
+          "id": "c",
+          "text": "Du erklärst kurz, warum die Aktion so gut war, damit andere lernen können."
+        },
+        {
+          "id": "d",
+          "text": "Du suchst Anerkennung, weil gute Leistung auch gesehen und bestätigt werden darf."
+        }
+      ],
+      "explanation": "Aktion plus Rückkehr zeigt Stärke ohne Ego-Zusatz. Genießen, erklären oder Anerkennung suchen kann verständlich sein, biegt Stärke aber wieder auf das Ich."
+    },
+    {
+      "id": "d44-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du machst eine starke Aktion, weil sie in der Situation wirklich gebraucht wird."
+        },
+        {
+          "id": "b",
+          "text": "Du bindest einen Mitspieler ein, obwohl du selbst gerade sehr stark bist."
+        },
+        {
+          "id": "c",
+          "text": "Du bleibst konzentriert und wählst die nächste passende Aktion."
+        },
+        {
+          "id": "d",
+          "text": "Du wiederholst die starke Aktion, weil sie geklappt hat und dein Bild stärkt."
+        }
+      ],
+      "explanation": "Ego zeigt sich, wenn du aus Beweisdrang wiederholst statt situativ zu wählen. Starke Aktionen, Einbindung und Fokus können dem Spiel dienen."
+    }
+  ],
+  "45": [
+    {
+      "id": "d45-q1",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du bedankst dich ständig, damit dein System positiver und offener bleibt."
+        },
+        {
+          "id": "b",
+          "text": "Du freust dich bewusst über alles, damit schlechte Momente weniger Gewicht bekommen."
+        },
+        {
+          "id": "c",
+          "text": "Du verdrängst schwere Momente, indem du deinen Blick sofort auf Gutes lenkst."
+        },
+        {
+          "id": "d",
+          "text": "Du übst Dankbarkeit als Grundverfügbarkeit, nicht nur als Reaktion auf gute Momente."
+        }
+      ],
+      "explanation": "Dankbarkeit ohne Anlass heißt Weite üben, bevor das Außen sie liefert. Ständiges Bedanken, Schönfärben oder Verdrängen macht sie wieder abhängig oder künstlich."
+    },
+    {
+      "id": "d45-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wartest auf einen guten Moment, damit deine Dankbarkeit nicht aufgesetzt wirkt."
+        },
+        {
+          "id": "b",
+          "text": "Du benennst eine reale Möglichkeit, die genau jetzt da ist, ohne besonderen Anlass."
+        },
+        {
+          "id": "c",
+          "text": "Du sammelst am Abend mehrere Dinge, damit die Übung vollständiger wird."
+        },
+        {
+          "id": "d",
+          "text": "Du sagst einem Mitspieler etwas Positives, damit Verbindung im Team entsteht."
+        }
+      ],
+      "explanation": "Default-Dankbarkeit wird in neutralen Momenten trainiert. Warten, nur abends sammeln oder nach außen geben kann gut sein, ersetzt aber nicht den inneren Grundzustand."
+    },
+    {
+      "id": "d45-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du übst Dankbarkeit nur dann, wenn es gerade gut läuft oder leicht fällt."
+        },
+        {
+          "id": "b",
+          "text": "Du hältst kurz inne, obwohl äußerlich nichts Besonderes passiert ist."
+        },
+        {
+          "id": "c",
+          "text": "Du benennst konkret, was schon da ist und gerade wirklich trägt."
+        },
+        {
+          "id": "d",
+          "text": "Du wiederholst die Übung mehrmals kurz, ohne daraus eine Show zu machen."
+        }
+      ],
+      "explanation": "Die Falle ist reaktive Dankbarkeit, die vom Außen abhängig bleibt. Neutralität, Konkretheit und kurze Wiederholung machen sie eher zu einer Basis."
+    }
+  ],
+  "46": [
+    {
+      "id": "d46-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du hörst kein Feedback mehr an, weil Bewertungen dich sonst wieder steuern könnten."
+        },
+        {
+          "id": "b",
+          "text": "Du wirst gleichgültiger, damit innere und äußere Urteile weniger Gewicht bekommen."
+        },
+        {
+          "id": "c",
+          "text": "Du nimmst Urteile wahr, ohne sie tief in Verhalten und Selbstbild eindringen zu lassen."
+        },
+        {
+          "id": "d",
+          "text": "Du wehrst Bewertungen sofort ab, damit du deine innere Stabilität schützt."
+        }
+      ],
+      "explanation": "Deep Defusion heißt wahrnehmen ohne Übernehmen. Abblocken, Gleichgültigkeit oder Abwehr sind nur andere Arten, dem Urteil zu viel Bedeutung zu geben."
+    },
+    {
+      "id": "d46-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Eine kritische Bemerkung führt nicht automatisch zu Vermeidung, Trotz oder Rückzug."
+        },
+        {
+          "id": "b",
+          "text": "Du diskutierst lange dagegen, damit die Bewertung nicht falsch stehenbleibt."
+        },
+        {
+          "id": "c",
+          "text": "Du beweist es allen, damit das Urteil seine Wirkung verliert."
+        },
+        {
+          "id": "d",
+          "text": "Du ziehst dich kurz zurück, damit du innerlich wieder Kontrolle bekommst."
+        }
+      ],
+      "explanation": "Urteil verliert Macht, wenn dein nächstes Verhalten nicht davon gesteuert wird. Diskussion, Beweis oder Rückzug zeigen, dass das Urteil noch tief wirkt."
+    },
+    {
+      "id": "d46-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nimmst Bewertung kurz wahr und richtest dich danach wieder an der Aufgabe aus."
+        },
+        {
+          "id": "b",
+          "text": "Du spielst weiter, ohne innerlich in Verteidigung oder Grübeln zu gehen."
+        },
+        {
+          "id": "c",
+          "text": "Du atmest und merkst, dass ein Urteil gerade nur ein innerer Kommentar ist."
+        },
+        {
+          "id": "d",
+          "text": "Du sagst nach außen, es sei dir egal, während du innerlich weiter grübelst."
+        }
+      ],
+      "explanation": "Schein-Defusion ist äußere Coolness bei innerer Bindung. Wahrnehmen, Atmen und Weiterspielen zeigen echte Distanz, wenn das Urteil nicht weiterregiert."
+    }
+  ],
+  "47": [
+    {
+      "id": "d47-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du zeigst Sicherheit sichtbar, damit dein Umfeld merkt, dass du stabil bist."
+        },
+        {
+          "id": "b",
+          "text": "Du bleibst sicher über klare Funktion, nicht über Stimmung oder lautes Auftreten."
+        },
+        {
+          "id": "c",
+          "text": "Du nutzt gute Momente, um dein Gefühl von Sicherheit bewusst zu verstärken."
+        },
+        {
+          "id": "d",
+          "text": "Du bestätigst dich innerlich öfter, damit deine Sicherheit nicht wegkippt."
+        }
+      ],
+      "explanation": "Ruhige Sicherheit ist funktionsbezogen und braucht wenig Zusatz. Zeigen, gute Stimmung oder ständige Selbstbestätigung machen Confidence wieder abhängig."
+    },
+    {
+      "id": "d47-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du trittst auffällig laut auf, damit deine Sicherheit auch nach außen klar wird."
+        },
+        {
+          "id": "b",
+          "text": "Du suchst nach Aktionen kurz Bestätigung, um dein Gefühl zu stabilisieren."
+        },
+        {
+          "id": "c",
+          "text": "Du wählst nur sichere Aktionen, damit dein Selbstvertrauen nicht unnötig leidet."
+        },
+        {
+          "id": "d",
+          "text": "Du machst klare Aktionen ohne Lautstärke, Show oder ständige Rückversicherung."
+        }
+      ],
+      "explanation": "Ruhige Sicherheit zeigt sich in klarer Aktion ohne Beweisbedarf. Lautstärke, Rückversicherung oder reine Sicherheit sind häufige Ersatzformen."
+    },
+    {
+      "id": "d47-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du stellst Sicherheit performativ dar, damit andere sie sehen und bestätigen können."
+        },
+        {
+          "id": "b",
+          "text": "Du lässt Sicherheit aus einer klaren, sauberen Aktion entstehen."
+        },
+        {
+          "id": "c",
+          "text": "Du führst eine schwere Aktion ruhig aus, wenn sie zur Situation passt."
+        },
+        {
+          "id": "d",
+          "text": "Du kommunizierst ruhig und bleibst danach weiter bei deiner Aufgabe."
+        }
+      ],
+      "explanation": "Die Falle ist Sicherheit als Darstellung. Echte Stabilität zeigt sich in Funktion, passender Aktion und ruhiger Weiterarbeit."
+    }
+  ],
+  "48": [
+    {
+      "id": "d48-q1",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du lässt alles passieren, ohne innerlich noch gegen die Situation zu arbeiten."
+        },
+        {
+          "id": "b",
+          "text": "Du gibst Widerstand auf, damit du dich nicht weiter unnötig verbrauchst."
+        },
+        {
+          "id": "c",
+          "text": "Du resignierst schneller, wenn etwas nicht kontrollierbar bleibt."
+        },
+        {
+          "id": "d",
+          "text": "Du lässt Nicht-Kontrollierbares los und bleibst im Kontrollierbaren klar handlungsfähig."
+        }
+      ],
+      "explanation": "Akzeptanz als Stärke spart Gegenkraft und führt in Handlung. Passivität, Aufgeben oder Resignation verlieren die aktive Klarheit."
+    },
+    {
+      "id": "d48-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du protestierst kurz weiter, damit du die Situation nicht einfach schluckst."
+        },
+        {
+          "id": "b",
+          "text": "Du bist nach einer unkontrollierbaren Szene sofort wieder im Beeinflussbaren verfügbar."
+        },
+        {
+          "id": "c",
+          "text": "Du wirst kurz still, weil du Energie sparen und später wieder handeln willst."
+        },
+        {
+          "id": "d",
+          "text": "Du wechselst die Strategie, damit du wieder mehr Kontrolle über das Außen bekommst."
+        }
+      ],
+      "explanation": "Starke Akzeptanz zeigt sich in schneller Rückkehr zum Beeinflussbaren. Protest, Stillwerden oder Außenkontrolle halten oft noch Gegenspannung."
+    },
+    {
+      "id": "d48-q3",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn du das Unkontrollierbare benennst und danach eine klare Handlung wählst."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du atmest und dadurch weniger Zusatzspannung in die Szene bringst."
+        },
+        {
+          "id": "c",
+          "text": "Wenn Akzeptanz in Passivität kippt und du aus der Handlung verschwindest."
+        },
+        {
+          "id": "d",
+          "text": "Wenn du trotz offener Situation ruhig im nächsten steuerbaren Schritt bleibst."
+        }
+      ],
+      "explanation": "Akzeptanz verliert Stärke, wenn sie handlungslos macht. Benennen, Atmen und steuerbar weiterhandeln halten sie funktional."
+    }
+  ],
+  "49": [
+    {
+      "id": "d49-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du bist jetzt dauerhaft fokussiert und musst Präsenz nicht mehr bewusst üben."
+        },
+        {
+          "id": "b",
+          "text": "Präsenz fühlt sich immer mehr wie deine normale Art zu handeln an."
+        },
+        {
+          "id": "c",
+          "text": "Andere erkennen deine Präsenz und bestätigen dir, dass du stabiler geworden bist."
+        },
+        {
+          "id": "d",
+          "text": "Du nutzt Präsenz weiter als Werkzeug, wenn du merkst, dass Druck entsteht."
+        }
+      ],
+      "explanation": "Präsenz wird identitätsnäher, wenn sie sich normal und vertraut anfühlt. Dauerfokus, Bestätigung oder reines Werkzeugdenken trifft den Kern nicht."
+    },
+    {
+      "id": "d49-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du brauchst längere Routinen, damit dein Fokus wirklich bewusst hergestellt wird."
+        },
+        {
+          "id": "b",
+          "text": "Andere müssen dich seltener erinnern, weil du dich nicht falsch zeigen willst."
+        },
+        {
+          "id": "c",
+          "text": "Du belohnst dich nach präsenten Momenten, damit sie sich stärker verankern."
+        },
+        {
+          "id": "d",
+          "text": "Fokus fühlt sich vertraut an, und fehlende Präsenz wirkt eher ungewohnt."
+        }
+      ],
+      "explanation": "Wenn Präsenz Teil der Identität wird, fühlt sie sich wie Heimat an. Lange Routinen, Außenhilfe oder Belohnung zeigen eher, dass sie noch abhängig ist."
+    },
+    {
+      "id": "d49-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du bewertest dich ständig, ob du heute präsent genug gewesen bist."
+        },
+        {
+          "id": "b",
+          "text": "Du nimmst deine Aufgabe wahr und kehrst ohne großes Drama zurück."
+        },
+        {
+          "id": "c",
+          "text": "Du hältst deinen Anker beiläufig, ohne daraus eine große Übung zu machen."
+        },
+        {
+          "id": "d",
+          "text": "Du atmest kurz und bist wieder bei der Szene, ohne dich zu analysieren."
+        }
+      ],
+      "explanation": "Permanente Selbstbewertung zeigt, dass Präsenz noch Performance ist. Beiläufige Rückkehr und Aufgabenbindung zeigen mehr Identitätsnähe."
+    }
+  ],
+  "50": [
+    {
+      "id": "d50-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du nutzt Prozess vor allem dann, wenn Druck oder Chaos dich herausziehen."
+        },
+        {
+          "id": "b",
+          "text": "Du bleibst im Prozess, solange Stimmung und äußere Bedingungen halbwegs stabil sind."
+        },
+        {
+          "id": "c",
+          "text": "Du kehrst unabhängig vom Außen immer wieder in Aufgabe, Standard und Anker zurück."
+        },
+        {
+          "id": "d",
+          "text": "Du gehst in den Prozess, wenn Ergebnisdenken keine Lösung mehr bietet."
+        }
+      ],
+      "explanation": "Prozess als Heimat heißt, er ist Grundort in allen Zuständen. Nur bei Druck, guter Stimmung oder als Notlösung bleibt Prozess noch Werkzeug."
+    },
+    {
+      "id": "d50-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bei Sieg, Frust, Lob und Fehlern greifst du auf denselben Prozessanker zurück."
+        },
+        {
+          "id": "b",
+          "text": "Du wechselst deinen Anker je nach Stimmung, damit er sich passend anfühlt."
+        },
+        {
+          "id": "c",
+          "text": "Du nutzt deinen Anker nur unter Druck, weil du ihn dann wirklich brauchst."
+        },
+        {
+          "id": "d",
+          "text": "Du nutzt Prozess vor allem im Training, weil Wettkampf mehr Ergebnislogik verlangt."
+        }
+      ],
+      "explanation": "Konsistenz über Zustände zeigt Prozess-Heimat. Wechsel, Notfallnutzung oder Trainingsbegrenzung machen den Prozess wieder abhängig vom Außen."
+    },
+    {
+      "id": "d50-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Wenn du den Anker bewusst nutzt, obwohl ein Hoch oder Tief gerade stark zieht."
+        },
+        {
+          "id": "b",
+          "text": "Wenn du atmest und dadurch den nächsten Prozessschritt wieder klarer siehst."
+        },
+        {
+          "id": "c",
+          "text": "Wenn du dich neu sortierst und danach wieder aus deinem Standard handelst."
+        },
+        {
+          "id": "d",
+          "text": "Wenn ein extremes Hoch oder Tief dich aus dem Anker zieht und du nicht zurückkehrst."
+        }
+      ],
+      "explanation": "Der Prozess geht verloren, wenn Hochs oder Tiefs deinen Wohnort verschieben und keine Rückkehr folgt. Anker, Atmen und Sortieren sind Rückwege."
+    }
+  ],
+  "51": [
+    {
+      "id": "d51-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du ignorierst Spannung, damit sie im Kopf nicht größer und bedrohlicher wird."
+        },
+        {
+          "id": "b",
+          "text": "Du hältst Sinn, Dankbarkeit und Möglichkeit mit im Bild, obwohl Spannung da ist."
+        },
+        {
+          "id": "c",
+          "text": "Du suchst Spannung bewusst, weil du nur unter Druck echte Weite trainieren kannst."
+        },
+        {
+          "id": "d",
+          "text": "Du bekämpfst Spannung aktiv, damit dein System schneller wieder ruhig wird."
+        }
+      ],
+      "explanation": "Weite entsteht, wenn Spannung nicht das ganze Wahrnehmungsfeld übernimmt. Ignorieren, Suchen oder Bekämpfen macht Spannung wieder zum Hauptthema."
+    },
+    {
+      "id": "d51-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du sagst dir, dass die Situation nicht so wichtig ist, damit der Druck kleiner wird."
+        },
+        {
+          "id": "b",
+          "text": "Du redest dir Mut zu, damit die Spannung nicht zu sehr dein Verhalten bestimmt."
+        },
+        {
+          "id": "c",
+          "text": "Du verdrängst die Spannung kurz, um die nächste Aktion sauberer zu spielen."
+        },
+        {
+          "id": "d",
+          "text": "Du benennst Sinn und eine konkrete Möglichkeit, die trotz Spannung gerade da sind."
+        }
+      ],
+      "explanation": "Sinn und Möglichkeit öffnen den Tunnel, ohne Spannung zu leugnen. Kleinreden, Mutreden oder Verdrängen beruhigt vielleicht kurz, schafft aber weniger echte Weite."
+    },
+    {
+      "id": "d51-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du fixierst dich auf das Bedrohliche und blendest alles Tragfähige im Moment aus."
+        },
+        {
+          "id": "b",
+          "text": "Du benennst den Sinn der Situation und findest dadurch etwas mehr inneren Raum."
+        },
+        {
+          "id": "c",
+          "text": "Du siehst eine konkrete Möglichkeit, obwohl der Ausgang weiterhin offen bleibt."
+        },
+        {
+          "id": "d",
+          "text": "Du atmest kurz und lässt die Spannung da sein, ohne ihr komplett zu folgen."
+        }
+      ],
+      "explanation": "Die Falle ist Tunnelblick auf Bedrohung. Sinn, Möglichkeit und Atmen helfen, Spannung spürbar zu halten, ohne sie regieren zu lassen."
+    }
+  ],
+  "52": [
+    {
+      "id": "d52-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du versuchst, alle im Team emotional positiv zu sehen und weniger hart zu bewerten."
+        },
+        {
+          "id": "b",
+          "text": "Du brauchst keine Strategie mehr, weil Sinn automatisch bessere Aktionen erzeugt."
+        },
+        {
+          "id": "c",
+          "text": "Du handelst aus Beitrag, Aufgabe und Team statt aus Angst, Schutz oder Ego."
+        },
+        {
+          "id": "d",
+          "text": "Du willst gefallen, weil soziale Verbindung deine Leistung stabiler machen kann."
+        }
+      ],
+      "explanation": "Purpose meint eine andere Energie-Richtung: Beitrag statt Schutz. Nett sein, Strategie ersetzen oder gefallen wollen verwechselt Sinn mit Harmonie."
+    },
+    {
+      "id": "d52-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Deine Aktionen orientieren sich an Beitrag und Aufgabe, nicht an Wirkung oder Schutz."
+        },
+        {
+          "id": "b",
+          "text": "Du machst spektakulärere Aktionen, weil du dich stärker mit dem Spiel verbunden fühlst."
+        },
+        {
+          "id": "c",
+          "text": "Du wählst sicherere Aktionen, damit du dem Team auf keinen Fall schadest."
+        },
+        {
+          "id": "d",
+          "text": "Du redest mehr, weil Purpose vor allem über klare Kommunikation sichtbar wird."
+        }
+      ],
+      "explanation": "Purpose zeigt sich daran, wonach du auswählst: Beitrag und Aufgabe. Spektakel, Sicherheit oder mehr Reden können auch Ego oder Angst dienen."
+    },
+    {
+      "id": "d52-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du wählst eine Aktion, weil sie der Aufgabe in diesem Moment wirklich dient."
+        },
+        {
+          "id": "b",
+          "text": "Du wählst eine Aktion, weil sie deinem Team jetzt konkret weiterhilft."
+        },
+        {
+          "id": "c",
+          "text": "Du wählst eine Aktion, weil sie einen ehrlichen Beitrag zur Situation leistet."
+        },
+        {
+          "id": "d",
+          "text": "Du wählst eine Aktion, weil ein Fehler dabei für dein Bild am wenigsten wehtut."
+        }
+      ],
+      "explanation": "Fear tarnt sich oft als kluge Schadensminimierung. Aufgabe, Team und Beitrag sind Purpose-Kriterien; Bildschutz ist ein anderer Motor."
+    }
+  ],
+  "53": [
+    {
+      "id": "d53-q1",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du suchst Reibung aktiv, weil Wachstum ohne Widerstand kaum möglich ist."
+        },
+        {
+          "id": "b",
+          "text": "Du vermeidest unnötige Reibung, damit dein System mehr Energie für Lernen behält."
+        },
+        {
+          "id": "c",
+          "text": "Du gewinnst innere Diskussionen, weil du Schwierigkeiten besser einordnen kannst."
+        },
+        {
+          "id": "d",
+          "text": "Du liest Reibung immer öfter zuerst als Entwicklungsraum statt als Bedrohung."
+        }
+      ],
+      "explanation": "Growth-Default heißt, Schwierigkeit automatisch als Lernraum lesen zu können. Reibung suchen, vermeiden oder gewinnen macht daraus wieder Kampf oder Kontrolle."
+    },
+    {
+      "id": "d53-q2",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du fragst zuerst, wer oder was die Schwierigkeit ausgelöst hat."
+        },
+        {
+          "id": "b",
+          "text": "Du fragst zuerst, was du daraus lernen und wie du jetzt wachsen kannst."
+        },
+        {
+          "id": "c",
+          "text": "Du wirst kurz still, damit du die Situation innerlich besser verarbeiten kannst."
+        },
+        {
+          "id": "d",
+          "text": "Du brauchst länger, um dich zu sortieren, weil du die Reibung ernst nimmst."
+        }
+      ],
+      "explanation": "Die erste Frage zeigt den Modus: Lernen oder Schuld/Problem. Stillwerden oder Sortieren kann helfen, aber nicht wenn es nur in Problemzug hängenbleibt."
+    },
+    {
+      "id": "d53-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du zeigst Lernhaltung nach außen, hoffst innerlich aber nur auf leichtere Tage."
+        },
+        {
+          "id": "b",
+          "text": "Du formulierst konkret, welche Lernaussage die Reibung gerade sichtbar macht."
+        },
+        {
+          "id": "c",
+          "text": "Du leitest eine kleine Anpassung ab, die dein Verhalten wirklich verändert."
+        },
+        {
+          "id": "d",
+          "text": "Du reflektierst mit dem Coach, ohne die Schwierigkeit als Selbsturteil zu lesen."
+        }
+      ],
+      "explanation": "Schein-Wachstum klingt nach Lernen, bleibt innerlich aber Durchhalten. Echte Growth-Orientierung enthält Bewertung plus konkrete Verhaltensableitung."
+    }
+  ],
+  "54": [
+    {
+      "id": "d54-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du brauchst weniger Training, weil dein Selbstbild unabhängig von Leistung bleibt."
+        },
+        {
+          "id": "b",
+          "text": "Du ignorierst Feedback, damit äußere Signale dein Vertrauen nicht beschädigen."
+        },
+        {
+          "id": "c",
+          "text": "Dein Selbstbild bleibt stabil, auch wenn Tagesform oder Feedback gerade schwanken."
+        },
+        {
+          "id": "d",
+          "text": "Du bist dauerhaft zufrieden, weil Confidence nicht mehr von Momenten abhängt."
+        }
+      ],
+      "explanation": "Confidence ohne Beweis heißt innere Stabilität trotz äußerer Schwankung. Training ersetzen, Feedback ignorieren oder Dauerzufriedenheit sind falsche Vereinfachungen."
+    },
+    {
+      "id": "d54-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nach einem schlechten Tag handelst du am nächsten Tag ohne Rückzug oder Überkompensation."
+        },
+        {
+          "id": "b",
+          "text": "Nach einem schlechten Tag trainierst du doppelt so hart, um das Gefühl zu korrigieren."
+        },
+        {
+          "id": "c",
+          "text": "Nach einem schlechten Tag trittst du lauter auf, damit Unsicherheit nicht sichtbar wird."
+        },
+        {
+          "id": "d",
+          "text": "Nach einem schlechten Tag ziehst du dich kurz zurück, bis dein Vertrauen wiederkommt."
+        }
+      ],
+      "explanation": "Verkörperte Confidence zeigt sich durch Konsistenz nach schlechten Tagen. Härter pushen, lauter werden oder Rückzug sind oft beweiseabhängige Reaktionen."
+    },
+    {
+      "id": "d54-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du hörst Feedback an und prüfst sachlich, ob darin eine nützliche Information steckt."
+        },
+        {
+          "id": "b",
+          "text": "Du arbeitest weiter, obwohl der letzte Tag nicht dein bestes Leistungsbild gezeigt hat."
+        },
+        {
+          "id": "c",
+          "text": "Dein Verhalten bleibt ähnlich, auch wenn Tagesform und äußere Rückmeldung wechseln."
+        },
+        {
+          "id": "d",
+          "text": "Dein Wertgefühl schwankt deutlich mit Tagesform, Lob, Kritik oder sichtbarem Erfolg."
+        }
+      ],
+      "explanation": "Nicht-internalisierte Confidence hängt am Außen. Feedback nutzen, weiterarbeiten und Verhalten stabil halten zeigen, dass dein Kern nicht ständig neue Beweise braucht."
+    }
+  ],
+  "55": [
+    {
+      "id": "d55-q1",
+      "correctOptionId": "b",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du machst dich mittelmäßiger, damit deine Qualität nicht zu sehr um dein Bild kreist."
+        },
+        {
+          "id": "b",
+          "text": "Du lieferst höchste verfügbare Qualität, ohne dich dabei ständig um dich selbst zu drehen."
+        },
+        {
+          "id": "c",
+          "text": "Du versteckst Stärken weniger, weil Exzellenz nur sichtbar wirklich Wirkung hat."
+        },
+        {
+          "id": "d",
+          "text": "Du willst dich nicht verbessern, wenn Verbesserung nur wieder Beweisdrang verstärkt."
+        }
+      ],
+      "explanation": "Exzellenz ohne Ego heißt hohe Qualität mit wenig Selbstbesessenheit. Mittelmaß, Verstecken oder Verbesserungsverzicht verwechseln Ego-Freiheit mit weniger Anspruch."
+    },
+    {
+      "id": "d55-q2",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du genießt eine starke Aktion ausführlich, damit sie dein Selbstvertrauen vertieft."
+        },
+        {
+          "id": "b",
+          "text": "Du erinnerst andere an die Aktion, wenn sie für das Team wichtig war."
+        },
+        {
+          "id": "c",
+          "text": "Du analysierst dich selbst direkt, damit du die Qualität später wiederholen kannst."
+        },
+        {
+          "id": "d",
+          "text": "Du bist während der starken Aktion so bei der Aufgabe, dass das Ich kaum Thema ist."
+        }
+      ],
+      "explanation": "Bei echter Mastery steht die Aufgabe im Mittelpunkt, nicht das Ich. Genießen, erinnern oder sofortige Selbstanalyse kann die Aktion wieder auf Selbstbild ziehen."
+    },
+    {
+      "id": "d55-q3",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du kippst nach einer starken Aktion kurz in Selbstinszenierung statt im Prozess zu bleiben."
+        },
+        {
+          "id": "b",
+          "text": "Du spielst konzentriert weiter, obwohl die starke Aktion sichtbar war."
+        },
+        {
+          "id": "c",
+          "text": "Du hilfst danach einem Mitspieler, weil die nächste Situation das gerade braucht."
+        },
+        {
+          "id": "d",
+          "text": "Du führst eine schwere Aktion sauber aus, ohne daraus eine Geschichte über dich zu machen."
+        }
+      ],
+      "explanation": "Der Rückfall ist Selbstinszenierung nach Qualität. Weiterspielen, helfen und schwere Aktionen sauber ausführen können Exzellenz ohne Ego zeigen."
+    }
+  ],
+  "56": [
+    {
+      "id": "d56-q1",
+      "correctOptionId": "c",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du lässt Beweise unwichtig werden, weil Entwicklung wichtiger als Wettkampfleistung ist."
+        },
+        {
+          "id": "b",
+          "text": "Du musst dich nicht mehr anstrengen, weil dein Wert nicht vom Ergebnis abhängt."
+        },
+        {
+          "id": "c",
+          "text": "Du nutzt Performance als Entwicklungsfeld, nicht als ständigen Beweis deines Werts."
+        },
+        {
+          "id": "d",
+          "text": "Du behandelst Wettkampf lockerer, weil er nicht mehr über deine Identität entscheidet."
+        }
+      ],
+      "explanation": "Der Satz trennt Entwicklung von Beweisdruck, ohne Leistung abzuwerten. Die anderen Antworten machen daraus Gleichgültigkeit, weniger Anstrengung oder zu viel Lockerheit."
+    },
+    {
+      "id": "d56-q2",
+      "correctOptionId": "a",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du beschreibst konkret, wer du im Sport geworden bist, nicht nur was du erreicht hast."
+        },
+        {
+          "id": "b",
+          "text": "Du listest deine Erfolge auf, damit du die letzten Wochen greifbarer einordnen kannst."
+        },
+        {
+          "id": "c",
+          "text": "Du bewertest alle Tage, damit du erkennst, welche Phase am meisten gebracht hat."
+        },
+        {
+          "id": "d",
+          "text": "Du planst die nächste Saison, damit die Entwicklung direkt weitergeführt wird."
+        }
+      ],
+      "explanation": "Integration zeigt sich als Identitätsaussage über Verhalten und Haltung. Erfolgslisten, Tagesbewertungen und Planung können sinnvoll sein, sind aber nicht der Kern."
+    },
+    {
+      "id": "d56-q3",
+      "correctOptionId": "d",
+      "options": [
+        {
+          "id": "a",
+          "text": "Du beschreibst dich über Verhalten und Haltung, die du weiter verkörpern willst."
+        },
+        {
+          "id": "b",
+          "text": "Du formulierst einen Zukunftsanker, der deine Entwicklung konkret weiterträgt."
+        },
+        {
+          "id": "c",
+          "text": "Du blickst ruhig zurück und erkennst Muster, die sich über die Reise verändert haben."
+        },
+        {
+          "id": "d",
+          "text": "Dein Selbstbild hängt am Ende stark an Zahl, Ergebnis, Lob oder sichtbarer Bestätigung."
+        }
+      ],
+      "explanation": "Wenn das Selbstbild am Ende an Beweisen hängt, bleibt der Beweismodus aktiv. Haltung, Zukunftsanker und ruhiger Rückblick zeigen eher Integration."
+    }
   ]
 }
