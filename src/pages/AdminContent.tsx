@@ -53,17 +53,6 @@ const AdminContent = () => {
   const cachedRole = typeof window !== "undefined" ? window.localStorage.getItem(CACHED_ROLE_KEY) : null;
   const effectiveRole = role ?? cachedRole;
 
-  if (loading && !cachedRole) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) return <Navigate to="/auth" replace />;
-  if (effectiveRole !== "admin") return <Navigate to="/" replace />;
-
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
     const filtered = MATRIX_DAYS.filter((m) => {
