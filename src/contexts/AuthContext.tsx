@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
+    try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
   };
 
   return (
