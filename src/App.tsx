@@ -62,6 +62,9 @@ const App = () => (
             <Route path="/admin" element={
               <ProtectedRoute><Admin /></ProtectedRoute>
             } />
+            <Route path="/admin/content" element={
+              <ProtectedRoute><AdminContent /></ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
