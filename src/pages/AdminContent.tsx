@@ -78,7 +78,18 @@ const AdminContent = () => {
     downloadFile(`admin-notes-${new Date().toISOString().slice(0, 10)}.md`, exportAsMarkdown(), "text/markdown");
   };
 
+  if (loading && !cachedRole) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/auth" replace />;
+  if (effectiveRole !== "admin") return <Navigate to="/" replace />;
+
   // Detail-Ansicht
+
   if (openDay !== null) {
     return (
       <div className="min-h-screen bg-background">
