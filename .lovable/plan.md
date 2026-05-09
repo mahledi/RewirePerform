@@ -1,54 +1,58 @@
-# Verständnis-Checks anspruchsvoller gestalten
+## Was du willst
 
-## Problem
+Eine **simple, offline-fähige Admin-Ansicht** zum Durchblättern aller 56 Programmtage — damit du auch ohne Netz (Zug, unterwegs, Mac mit WLAN aus) am Programm-Content arbeiten / ihn reviewen kannst. Kein Athleten-Flow, keine Supabase-Daten, keine AI.
 
-Die 181 Fragen in `src/content/dailyContent.ts` haben ein erkennbares Muster:
-- **Richtige Antwort** = oft die längste Option mit nuancierter Formulierung
-- **Distraktoren** = kurz, plakativ, offensichtlich falsch („Ich pushe mich härter", „Maximale Leistung erbracht")
+## Warum es jetzt nicht geht
 
-→ Spieler können raten ohne zu lesen. Kein echtes Verstehen nötig.
+Der existierende Admin (`/admin`) ruft beim Mount Supabase-Funktionen auf (`get_admin_overview_stats`, `get_admin_teams_summary` etc.). Schlägt einer fehl → React-State bleibt im Loading/Error → wirkt für dich wie „Offline". Außerdem lädt `/admin` viel JS (Recharts, Tabellen), was beim ersten Offline-Besuch evtl. nicht im Cache lag.
 
-## Ziel
+## Lösung: Eigenständige Offline-Route `/admin/content`
 
-Jede Frage soll:
-1. **Optionen gleichlang** (±15 % Zeichen, alle 1 Satz)
-2. **Alle 4 plausibel** für jemanden, der den Tag nur halb gelesen hat
-3. **Eine eindeutig richtig**, aber Unterscheidung erfordert Nachdenken über die *Kernaussage* des Tages (nicht über Wortlänge)
-4. **Distraktoren = häufige Missverständnisse** (z. B. Leistungs-Framing, Selbstoptimierung, Härte) — nicht offensichtlicher Unsinn
-5. **Erklärung** schärft warum-richtig *und* warum-falsch (1 Satz)
+Eine neue Seite, **die nichts von Supabase will**. Komplett aus dem Bundle (alle 56 Tage stecken bereits in `dailyContent.ts`, `matrixDays.ts`, `scienceBites.ts` — zusammen ~220 KB).
 
-## Vorgehen
+### Was die Seite zeigt
 
-**Automatisiert per Lovable AI Gateway** (gemini-2.5-pro, einmaliges Build-Skript, kein Runtime-Call):
+- Liste aller 56 Tage (gruppiert nach Phase / Woche), klickbar
+- Pro Tag in einer Detail-Ansicht:
+  - Matrix-Day Header (Phase, lens, primaryMechanism)
+  - Tasks (title, action, why)
+  - Science Bite
+  - Comprehension Pool (alle Fragen + richtige Antwort markiert + Erklärung)
+- **Edit-Notizen-Feld** pro Tag (lokal in `localStorage` gespeichert) — damit du beim Reviewen Verbesserungsideen festhalten kannst, die du später in den Code übernimmst
+- **Export-Button:** Alle Notizen als JSON / Markdown runterladen → einfach in den nächsten Lovable-Prompt kopieren
 
-1. Skript `scripts/rewrite-comprehension.ts` schreiben:
-   - Liest aktuelle Pools aus `dailyContent.ts`
-   - Schickt pro Tag den **Tagesinhalt** (Matrix + DailyContent) + **alte Fragen** an Gemini
-   - Prompt mit Regeln (1–5) + Few-Shot-Beispiel guter/schlechter Fragen
-   - Bekommt JSON zurück mit überarbeiteten Optionen + Erklärungen
-   - **Erhält** `id`, `target`, `stem`, `correctOptionId` (nur Texte ändern)
-   - Validiert: Längen-Toleranz, alle 4 Optionen vorhanden, korrekteOption-ID existiert
-2. Tag-für-Tag in einer neuen Datei `dailyContent.generated.ts` rausschreiben → manuell diffen → bei OK in `dailyContent.ts` mergen
-3. Build + Smoke-Test im Admin-Spieler-Simulator (Tage 1, 14, 28, 42, 56)
+### Offline-Garantien
 
-## Sicherheits-Netz
+1. **Route-Guard:** Prüft `user` aus AuthContext (Session liegt offline im localStorage von supabase-js → klappt). Kein DB-Roundtrip.
+2. **Bundle-Splitting deaktivieren** für diese Route → alles in einen Chunk, der mit der App-Shell vorgeladen wird.
+3. **Service Worker:** Ist bereits korrekt konfiguriert (`precacheAndRoute` + NetworkFirst-Fallback auf `index.html`). Sobald du die Route einmal online aufrufst, ist sie offline da.
+4. **Online/Offline-Indikator** oben rechts (kleiner grauer Dot + „Offline") via `navigator.onLine` — nur informativ, blockiert nichts.
 
-- **Kein Live-AI im User-Flow** — alles offline-vorgeneriert, statisch im File
-- **Backup** der alten Pools als `dailyContent.backup.ts` bevor überschrieben wird
-- Bei jedem Tag: Wenn AI-Output Validierung nicht besteht → alten Pool behalten, Tag in Log markieren
-- Du reviewst stichprobenartig 5–10 Tage bevor merge
+### Was sich NICHT ändert
+
+- Bestehender `/admin` bleibt 1:1 (Stats, Teams, Feedback, etc. — online-only, wie bisher).
+- Athleten-Flow, Coach-Flow, Onboarding: unangetastet.
+- Keine DB-Migration, keine neuen Tabellen, keine RLS-Änderung.
+- Keine AI-Calls.
 
 ## Technische Details
 
-- Datei: `src/content/dailyContent.ts` (Zeilen ~87–~2400, `COMPREHENSION_POOLS`)
-- Modell: `google/gemini-2.5-pro` über Lovable AI Gateway (`LOVABLE_API_KEY`)
-- Regex-Fallback fürs JSON-Parsing (Memory-Regel)
-- Skript-Run: `bun run scripts/rewrite-comprehension.ts`
-- Keine DB-Änderungen, keine UI-Änderungen, kein Edge-Function-Deploy
+**Neue Dateien:**
+- `src/pages/AdminContent.tsx` — die Offline-Content-Browser-Seite
+- `src/components/admin/DayContentDetail.tsx` — Detail-Render für einen Tag
+- `src/lib/adminNotes.ts` — kleines `localStorage`-Wrapper (`getNote(day)`, `setNote(day, text)`, `exportAll()`)
 
-## Was sich NICHT ändert
+**Anpassungen:**
+- `src/App.tsx` — neue Route `/admin/content` hinter `<ProtectedRoute>` + Admin-Rolle-Check (Rolle wird nach Login einmalig in `localStorage` gecached, damit es offline klappt)
+- `src/contexts/AuthContext.tsx` (winzig) — Rolle nach erstem Login persistieren
+- `src/pages/Admin.tsx` — kleiner Link/Button „📚 Content offline durchblättern" oben, der zu `/admin/content` führt
 
-- `ComprehensionCheck.tsx` UI bleibt 1:1
-- Anzahl Fragen pro Tag bleibt
-- `id`, `target`, `stem`, `correctOptionId` bleiben — nur Optionstexte + Erklärungen werden geschärft
-- Matrix-Tage, Tasks, Science Bites unberührt
+**Roll-out:**
+1. Bauen & publishen.
+2. Du öffnest **einmal online** `/admin/content` auf deinem Mac in Chrome → Service Worker cached alles.
+3. Ab dann: WLAN aus → Route funktioniert vollständig.
+
+## Test
+
+- Online: Route lädt, alle 56 Tage durchklickbar, Notizen speichern + Export-Download funktioniert.
+- Chrome DevTools → Application → Service Workers → „Offline" → Reload → Route lädt weiter, Notizen bleiben, Export funktioniert.
