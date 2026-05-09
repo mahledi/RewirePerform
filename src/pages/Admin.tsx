@@ -172,9 +172,16 @@ const Admin = () => {
               Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
-            <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
-          </Button>
+          <div className="flex items-center gap-2">
+            <a href="/admin/content">
+              <Button variant="outline" size="sm">
+                📚 Content offline
+              </Button>
+            </a>
+            <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
+              <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview">

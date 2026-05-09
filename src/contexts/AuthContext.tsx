@@ -29,15 +29,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<AppRole>(null);
 
   const fetchRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (error) {
-      console.error("Failed to fetch user role", error);
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (error) throw error;
+      const r = (data?.role as AppRole) ?? null;
+      setRole(r);
+      if (r) window.localStorage.setItem("cached_user_role", r);
+    } catch (err) {
+      console.error("Failed to fetch user role", err);
+      // Offline-Fallback: gecachte Rolle aus localStorage verwenden
+      const cached = window.localStorage.getItem("cached_user_role") as AppRole;
+      if (cached) setRole(cached);
     }
-    setRole((data?.role as AppRole) ?? null);
   };
 
   useEffect(() => {
@@ -69,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
+    try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
   };
 
   return (

@@ -17,6 +17,7 @@ import Settings from "./pages/Settings.tsx";
 import Journal from "./pages/Journal.tsx";
 import PreTraining from "./pages/PreTraining.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminContent from "./pages/AdminContent.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,9 @@ const App = () => (
             } />
             <Route path="/admin" element={
               <ProtectedRoute><Admin /></ProtectedRoute>
+            } />
+            <Route path="/admin/content" element={
+              <ProtectedRoute><AdminContent /></ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
