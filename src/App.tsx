@@ -17,6 +17,7 @@ import Settings from "./pages/Settings.tsx";
 import Journal from "./pages/Journal.tsx";
 import PreTraining from "./pages/PreTraining.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminContent from "./pages/AdminContent.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
