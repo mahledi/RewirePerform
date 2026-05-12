@@ -458,7 +458,9 @@ const Dashboard = () => {
       setPostTestDue(retest.postDue || (daysSince >= 56 && !postDone));
 
       // Idempotenter Adherence-Snapshot für heute
-      upsertTodaySnapshot(user!.id).catch((e) => console.error("snapshot error", e));
+      upsertTodaySnapshot(user!.id)
+        .then(() => loadFlameStats())
+        .catch((e) => console.error("snapshot error", e));
     } else {
       setProgramStartDate(null);
       setPostTestDue(false);
