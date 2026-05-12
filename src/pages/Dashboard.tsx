@@ -420,6 +420,51 @@ const Dashboard = () => {
   };
 
 
+  const loadFlameStats = async () => {
+    if (!user?.id) return;
+    try {
+      const instance = await getOrCreateActiveInstance(user.id);
+      const instanceId = instance?.id ?? null;
+
+      let completionsQ = supabase
+        .from("user_day_completion")
+        .select("day_number, completed_at, completion_status, program_instance_id")
+        .eq("user_id", user.id);
+      if (instanceId) completionsQ = completionsQ.eq("program_instance_id", instanceId);
+
+      let snapshotQ = supabase
+        .from("program_progress_snapshots")
+        .select("current_streak, longest_streak, days_available, days_completed, program_day, program_instance_id, date")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+        .limit(1);
+      if (instanceId) snapshotQ = snapshotQ.eq("program_instance_id", instanceId);
+
+      const [{ data: completions }, { data: snapshots }] = await Promise.all([
+        completionsQ,
+        snapshotQ,
+      ]);
+
+      const snapshot = snapshots && snapshots.length > 0 ? snapshots[0] : null;
+      const stats = buildFlameStats({
+        completions: (completions ?? []) as any,
+        snapshot: snapshot
+          ? {
+              current_streak: snapshot.current_streak,
+              longest_streak: snapshot.longest_streak,
+              days_available: snapshot.days_available,
+              days_completed: snapshot.days_completed,
+              program_day: snapshot.program_day,
+            }
+          : null,
+        today: new Date(),
+      });
+      setFlameStats(stats);
+    } catch (e) {
+      console.error("loadFlameStats error", e);
+    }
+  };
+
   const checkAssessments = async () => {
     const { data: settingsArr } = await supabase
       .from("program_settings")
