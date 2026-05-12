@@ -753,6 +753,8 @@ const Dashboard = () => {
         onClose={async () => {
           setShowCheckin(false);
           await checkTodayCheckin();
+          await upsertTodaySnapshot(user!.id).catch(() => {});
+          await loadFlameStats();
         }}
       />
     );
