@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import { buildFlameStats, type FlameStats } from "@/lib/flameStats";
+import FlameCard from "@/components/dashboard/FlameCard";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -327,6 +330,7 @@ const Dashboard = () => {
   const [retestDone, setRetestDone] = useState(false);
   const [waitingForCoach, setWaitingForCoach] = useState(false);
   const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
+  const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
@@ -416,6 +420,51 @@ const Dashboard = () => {
   };
 
 
+  const loadFlameStats = async () => {
+    if (!user?.id) return;
+    try {
+      const instance = await getOrCreateActiveInstance(user.id);
+      const instanceId = instance?.id ?? null;
+
+      let completionsQ = supabase
+        .from("user_day_completion")
+        .select("day_number, completed_at, completion_status, program_instance_id")
+        .eq("user_id", user.id);
+      if (instanceId) completionsQ = completionsQ.eq("program_instance_id", instanceId);
+
+      let snapshotQ = supabase
+        .from("program_progress_snapshots")
+        .select("current_streak, longest_streak, days_available, days_completed, program_day, program_instance_id, date")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+        .limit(1);
+      if (instanceId) snapshotQ = snapshotQ.eq("program_instance_id", instanceId);
+
+      const [{ data: completions }, { data: snapshots }] = await Promise.all([
+        completionsQ,
+        snapshotQ,
+      ]);
+
+      const snapshot = snapshots && snapshots.length > 0 ? snapshots[0] : null;
+      const stats = buildFlameStats({
+        completions: (completions ?? []) as any,
+        snapshot: snapshot
+          ? {
+              current_streak: snapshot.current_streak,
+              longest_streak: snapshot.longest_streak,
+              days_available: snapshot.days_available,
+              days_completed: snapshot.days_completed,
+              program_day: snapshot.program_day,
+            }
+          : null,
+        today: new Date(),
+      });
+      setFlameStats(stats);
+    } catch (e) {
+      console.error("loadFlameStats error", e);
+    }
+  };
+
   const checkAssessments = async () => {
     const { data: settingsArr } = await supabase
       .from("program_settings")
@@ -454,7 +503,9 @@ const Dashboard = () => {
       setPostTestDue(retest.postDue || (daysSince >= 56 && !postDone));
 
       // Idempotenter Adherence-Snapshot für heute
-      upsertTodaySnapshot(user!.id).catch((e) => console.error("snapshot error", e));
+      upsertTodaySnapshot(user!.id)
+        .then(() => loadFlameStats())
+        .catch((e) => console.error("snapshot error", e));
     } else {
       setProgramStartDate(null);
       setPostTestDue(false);
@@ -702,6 +753,8 @@ const Dashboard = () => {
         onClose={async () => {
           setShowCheckin(false);
           await checkTodayCheckin();
+          await upsertTodaySnapshot(user!.id).catch(() => {});
+          await loadFlameStats();
         }}
       />
     );
@@ -959,6 +1012,8 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {/* Flame / Consistency Card */}
+        {flameStats && <FlameCard stats={flameStats} />}
 
         {/* Today's Check-in CTA */}
         {todayEventType && checkinStatusLoading ? (
