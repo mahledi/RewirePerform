@@ -1010,6 +1010,8 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {/* Flame / Consistency Card */}
+        {flameStats && <FlameCard stats={flameStats} />}
 
         {/* Today's Check-in CTA */}
         {todayEventType && checkinStatusLoading ? (
