@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import { buildFlameStats, type FlameStats } from "@/lib/flameStats";
+import FlameCard from "@/components/dashboard/FlameCard";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -327,6 +330,7 @@ const Dashboard = () => {
   const [retestDone, setRetestDone] = useState(false);
   const [waitingForCoach, setWaitingForCoach] = useState(false);
   const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
+  const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
