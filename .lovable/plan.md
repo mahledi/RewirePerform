@@ -1,117 +1,61 @@
-## Flame / Consistency System — Plan
+# P0 Stabilization — Remove AI/Credit Dependencies
 
-A premium, non-manipulative consistency card on the individual player dashboard. Pure frontend, reuses the data that `upsertTodaySnapshot` already writes to `program_progress_snapshots` and `user_day_completion`. No DB changes, no AI, no coach/admin exposure.
+Goal: App runs fully without `LOVABLE_API_KEY`. No active code path calls Lovable AI Gateway. Existing UX preserved with deterministic replacements.
 
-### Files
+## Scope of confirmed AI touchpoints
 
-**New**
-- `src/lib/flameStats.ts` — pure helper. Builds `FlameStats` from completion rows + program meta.
-- `src/components/dashboard/FlameCard.tsx` — premium dark glass card with animated flame, level, streaks, today-state line.
-- `src/components/dashboard/FlameProgressGrid.tsx` — optional 56-cell consistency grid (rendered inside FlameCard, collapsible).
+Active calls found:
+- `src/components/questionnaire/QuestionnaireResults.tsx:114` → `invoke("analyze-questionnaire")`
+- `src/pages/Progress.tsx:54` → `invoke("generate-transformation-summary")`
+- `src/components/coach/TeamMentalState.tsx:97` → `invoke("team-mental-state")`
+- `supabase/functions/team-mental-state/index.ts:254-294` → optional Lovable AI call to generate `vibe`
+- `supabase/functions/analyze-questionnaire/index.ts` → AI gateway
+- `supabase/functions/generate-transformation-summary/index.ts` → AI gateway
 
-**Edited**
-- `src/pages/Dashboard.tsx` — mount `<FlameCard />` near the top of the player dashboard (below the "today / current program day" block, above tasks). Trigger a subtle pulse + toast when today transitions to completed.
+`src/lib/microAdjustment.ts` is already deterministic (only string/profile logic). Daily tasks are sourced from `src/content/dailyContent.ts` / `matrixDays.ts` — no active AI generation.
 
-No changes to: Coach page, Admin page, DailyCheckin logic, ScienceBite, Comprehension, Assessments, Evidence Engine, Team Pulse, edge functions, or `dailyContent`.
+## Changes
 
-### Data — no backend changes
+### 1. Deterministic questionnaire analysis
+- Add `src/lib/deterministicQuestionnaireAnalysis.ts` exporting `buildDeterministicQuestionnaireAnalysis(answers, profile?)`. Returns same shape consumed by `QuestionnaireResults`: `summary`, `strengths[]`, `development_areas[]`, `patterns[]`, `recommendations[]`, `mental_score` (0–100), `dominant_category`, `inner_excellence_profile { growth_mindset_score, presence_level, ego_freedom_score, emotional_control_score, purpose_orientation_score, pressure_regulation_score }`. Optional `training_day_tasks` / `rest_day_tasks` only if UI still reads them — framed as general recommendations.
+- Scoring: average Likert-style numeric answers per category (identity, resilience, focus, emotions, motivation, competition, recovery, environment, philosophy, neurocognition, inner_excellence, deep_profile). Map text/multi-choice to neutral defaults. Robust against missing answers.
+- Pattern rules: pressure↑+recovery↓, motivation↑+focus↓, self-criticism↑+identity↓, recovery↓.
+- Copy uses "deutet darauf hin / Orientierung / kein Diagnosewert".
+- Edit `src/components/questionnaire/QuestionnaireResults.tsx`: remove the `invoke("analyze-questionnaire")` block; build analysis locally, persist to `questionnaire_responses.analysis` via existing supabase update; update headings to "Dein Startprofil" / "Deterministische Auswertung".
 
-Reuse what's already loaded for the dashboard:
-- `program_progress_snapshots` (today's row written by `upsertTodaySnapshot`) → `current_streak`, `longest_streak`, `days_completed`, `days_available`, `completion_rate`, `program_day`.
-- `user_day_completion` rows for the active `program_instance_id` → `completed_at` per day to derive `lastCompletedDate`, `completedToday`, and the 56-day grid.
-- `getOrCreateActiveInstance` → `program_instance_id` scoping (already used elsewhere).
+### 2. Deterministic progress summary
+- Add `src/lib/deterministicProgressSummary.ts` exporting `buildProgressSummary(baseline, retest, questions)`. Counts improved/unchanged categories, names strongest delta and most-open area. Returns `{ summary: string, hasEnoughData: boolean }`.
+- Edit `src/pages/Progress.tsx`: replace `invoke("generate-transformation-summary")` with local call. If insufficient data: "Noch nicht genug Daten für eine Verlaufszusammenfassung."
 
-No new tables, no RPC, no migrations, no writes.
+### 3. Deterministic team mental state
+- Edit `supabase/functions/team-mental-state/index.ts`: delete the AI block (lines ~254–320). Replace with deterministic `vibe` from existing aggregates:
+  - `readiness_index >= 75` → "Team-Bereitschaft wirkt hoch."
+  - 55–74 → "stabil"; <55 → "reduziert"
+  - Append clauses for stress≥7+recovery≤4, pressure≥7, team_connection≤4
+  - `n < 5` → null + "Zu wenig Daten…"
+- No `LOVABLE_API_KEY`, no `ai.gateway` reference remains in this function.
+- Edit `src/components/coach/TeamMentalState.tsx` copy: "Team-Zusammenfassung / Deterministische Auswertung / Basierend auf aggregierten Team-Pulse-Werten" instead of "KI-Vibe".
 
-### `flameStats.ts` API
+### 4. Deprecate AI-only edge functions
+- `supabase/functions/analyze-questionnaire/index.ts` and `supabase/functions/generate-transformation-summary/index.ts`: replace bodies with a 410 Gone JSON stub (`{ error: "deprecated, replaced by deterministic client logic" }`) and a header comment marking them deprecated. Keeps deployments stable; no AI gateway calls. (Avoid full deletion to keep migrations/risk low.)
 
-```ts
-export type FlameLevel = "ember" | "spark" | "flame" | "momentum" | "commitment" | "identity";
-export type FlameState =
-  | "new_start"      // 0 days completed
-  | "active"         // streak running, today not yet completed
-  | "saved_today"    // completed today
-  | "at_risk"        // missed yesterday, streak still > 0 (graceful copy)
-  | "recovered"      // returning today after a gap
-  | "broken";        // gap > 1 day, streak reset
+### 5. Copy sweep
+- Search and replace user-facing strings: "KI erstellt", "KI generiert", "KI passt … an", "adaptive KI", "vollständig adaptiv", "KI-Analyse", "KI-Vibe", "AI coach" → "56-Tage-System", "feste Progression", "persönliche Einordnung", "Micro-Adjustment", "deterministische Auswertung", "Team-Zusammenfassung". Only edit files that currently contain those phrases (none found in landing components from initial scan; will re-grep across `src/` before editing).
 
-export interface FlameStats {
-  currentStreak: number;
-  longestStreak: number;
-  totalCompletedDays: number;
-  daysAvailable: number;       // capped at 56
-  completionRate: number;      // 0..1
-  programDay: number | null;
-  completedToday: boolean;
-  lastCompletedDate: string | null;
-  missedDaysCount: number;     // daysAvailable - totalCompletedDays
-  flameLevel: FlameLevel;
-  levelLabel: string;          // "Funke" | "Flamme" | "Momentum" | "Commitment" | "Identität"
-  flameState: FlameState;
-  message: string;             // short German line, see Copy
-  completedDayNumbers: number[]; // for the 56-grid
-}
+### 6. Validation
+- Final ripgrep for `LOVABLE_API_KEY` and `ai.gateway.lovable.dev` across `src/` and `supabase/functions/` — must return zero hits in active call sites (only deprecated stubs / comments).
+- TypeScript + build run by harness.
 
-export function buildFlameStats(input: {
-  completions: { day_number: number; completed_at: string | null; completion_status: string }[];
-  snapshot?: { current_streak: number; longest_streak: number; days_available: number; days_completed: number; program_day: number | null } | null;
-  today: Date;
-}): FlameStats;
-```
+## Out of scope (explicitly untouched)
+56-day content, daily tasks, science bites, comprehension, journals, Flame system, Evidence Engine, Admin Dashboard, Coach Dashboard structure, calendar ownership, FKS direction, comprehension `correctOptionId`, completion logic, co-coach permissions, micro-adjustment behavior (only comment cleanup if needed), DB schema, `personalized_tasks` table.
 
-Determinism:
-- Level thresholds: 0 → ember, 1–2 → spark/Funke, 3–6 → flame/Flamme, 7–13 → momentum/Momentum, 14–27 → commitment/Commitment, 28+ → identity/Identität.
-- Streaks: prefer values from `snapshot` (already correct, cohort-scoped). When snapshot missing, recompute from `completed_at` dates using same algorithm as `programProgress.ts`.
-- `flameState` derived from (completedToday, daysSinceLastCompleted, currentStreak, totalCompletedDays).
-
-### `FlameCard.tsx` UI
-
-- Dark glass card matching `bg-gradient-card border-glow` already used on the dashboard.
-- Header row: animated Lucide `Flame` icon with subtle CSS glow (green primary at low levels, warm amber tint from level Momentum upward — purely Tailwind/HSL tokens, no new colors). Right side: level badge ("Momentum", "Identität").
-- Big number: current streak ("7 Tage in Folge").
-- Sub-stats row: longest streak · completed days · completion %.
-- One-line state message (see Copy).
-- "56-Tage Konsistenz" toggle reveals `FlameProgressGrid` (7×8 dots: completed = filled primary, today = ring, missed-available = muted, future = very dim). No red anywhere.
-- Mobile-first; no childish elements; no confetti.
-- Subtle `framer-motion` pulse (already in deps) on the flame icon when `completedToday` flips true within the session, plus a `sonner` toast: "Flamme gesichert. Eine weitere Wiederholung im System." Milestone toasts at streak === 3, 7, 14, 28.
-
-### Copy (German, non-shaming)
-
-| State | Message |
-|---|---|
-| new_start | "Startbereit. Eine saubere Wiederholung beginnt das System." |
-| active | "Du hältst deine Wiederholung am Leben." |
-| saved_today | "Flamme gesichert. Heute zählt." |
-| at_risk | "Heute ist noch offen. Eine saubere Wiederholung reicht." |
-| recovered | "Stark: Rückkehr ist Teil des Systems." |
-| broken | "Streaks sind Signale, keine Urteile. Starte die nächste Serie." |
-
-Long-streak override (≥28): "Du beweist nichts. Du wirst jemand, der wiederkommt."
-
-### Dashboard integration
-
-In `Dashboard.tsx` (player view only — admins/coaches already redirect away in the existing `useEffect`):
-- Load completions for the active instance once (a single `supabase.from("user_day_completion").select(...)` already happens elsewhere; reuse it or add one scoped query alongside `upsertTodaySnapshot`).
-- Pass into `<FlameCard stats={...} />`, mounted near the top of the player section.
-- Detect `completedToday` flip inside `FlameCard` via a ref to fire the celebration once per session.
-
-### Privacy
-
-- Component renders only on the player dashboard page; nothing is added to Coach or Admin pages.
-- No new DB writes, so no new rows that could leak. Coach RLS unchanged.
-- No journals/reflections referenced.
-
-### Acceptance / how to test
-
-1. Open player dashboard with no completions → "Startbereit", level ember, streak 0, grid all dim.
-2. Complete today's flow → toast fires once, flame pulses, state becomes "saved_today", streak +1.
-3. Complete days 1–7 in a row (or seed) → level transitions through Funke → Flamme → Momentum, milestone toasts at 3 and 7.
-4. Skip a day, return next day → message becomes "Stark: Rückkehr…", streak honestly resets, longest streak preserved.
-5. Coach login → no flame visible anywhere. Admin login → no flame visible.
-6. Build + typecheck pass; no new migrations.
-
-### Out of scope (explicitly)
-
-- No streak-freeze / grace mechanic.
-- No changes to what counts as a completed day (uses existing `user_day_completion.completion_status === "completed"`).
-- No coach aggregate flame view (can be added later under existing aggregate-only privacy rules).
+## Files to change
+- new `src/lib/deterministicQuestionnaireAnalysis.ts`
+- new `src/lib/deterministicProgressSummary.ts`
+- edit `src/components/questionnaire/QuestionnaireResults.tsx`
+- edit `src/pages/Progress.tsx`
+- edit `src/components/coach/TeamMentalState.tsx` (copy only)
+- edit `supabase/functions/team-mental-state/index.ts` (remove AI block, deterministic vibe)
+- edit (stub) `supabase/functions/analyze-questionnaire/index.ts`
+- edit (stub) `supabase/functions/generate-transformation-summary/index.ts`
+- copy edits in any landing/marketing file that contains AI claims (re-scanned at edit time)
