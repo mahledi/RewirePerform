@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { categories, questions } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
+import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
@@ -57,13 +58,13 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
     "Muster werden erkannt...",
     "Stärken werden identifiziert...",
     "Entwicklungsfelder werden analysiert...",
-    "Dein Profil wird erstellt...",
+    "Dein Startprofil wird erstellt...",
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setLoadingStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
-    }, 3000);
+    }, 800);
 
     const analyze = async () => {
       try {
@@ -76,23 +77,10 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           return;
         }
 
-        const { data: insertedRow, error: insertError } = await supabase
-          .from("questionnaire_responses")
-          .insert({
-            session_id: user!.id,
-            user_id: user!.id,
-            answers: answers as any,
-          })
-          .select("id")
-          .single();
-
-        if (insertError) {
-          console.error("Error saving answers:", insertError);
-        }
-
         // Sync sport/position to profiles table
         const sportAnswer = answers["sport-01"] as string || null;
         const positionAnswer = answers["sport-02"] as string || null;
+        const levelAnswer = answers["sport-03"] as string || null;
         if (sportAnswer) {
           await supabase
             .from("profiles")
@@ -100,40 +88,31 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             .eq("id", userId);
         }
 
-        const questionsMeta = questions.map((q) => ({
-          id: q.id,
-          category: q.category,
-          question: q.question,
-          type: q.type,
-        }));
+        // Deterministic analysis — no AI, no edge function, no credits.
+        const analysisResult = buildDeterministicQuestionnaireAnalysis(answers, {
+          sport: sportAnswer,
+          position: positionAnswer,
+          level: levelAnswer,
+        }) as unknown as Analysis;
 
-        const sport = answers["sport-01"] as string || null;
-        const position = answers["sport-02"] as string || null;
-        const level = answers["sport-03"] as string || null;
+        const { data: insertedRow, error: insertError } = await supabase
+          .from("questionnaire_responses")
+          .insert({
+            session_id: user!.id,
+            user_id: user!.id,
+            answers: answers as any,
+            analysis: analysisResult as any,
+          })
+          .select("id")
+          .single();
 
-        const { data, error: fnError } = await supabase.functions.invoke(
-          "analyze-questionnaire",
-          {
-            body: { answers, questions: questionsMeta, sport, position, level },
-          }
-        );
-
-        if (fnError) throw fnError;
-
-        if (data?.error) {
-          throw new Error(data.error);
+        if (insertError) {
+          console.error("Error saving questionnaire response:", insertError);
         }
 
-        const analysisResult = data.analysis as Analysis;
+        // Small artificial delay so the user can read the loader once.
+        await new Promise((r) => setTimeout(r, 600));
         setAnalysis(analysisResult);
-
-        // Save analysis back to database using the inserted row ID
-        if (insertedRow?.id) {
-          await supabase
-            .from("questionnaire_responses")
-            .update({ analysis: analysisResult as any })
-            .eq("id", insertedRow.id);
-        }
       } catch (err) {
         console.error("Analysis error:", err);
         setError(
@@ -168,7 +147,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             <Loader2 className="w-12 h-12 text-primary" />
           </motion.div>
           <h2 className="font-heading text-2xl font-bold mb-3">
-            KI-Analyse läuft...
+            Auswertung läuft...
           </h2>
           <motion.p
             key={loadingStep}
@@ -234,17 +213,20 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               <div className="px-4 py-2 rounded-full bg-primary/10 border-glow flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-primary">
-                  KI-Analyse abgeschlossen
+                  Auswertung abgeschlossen
                 </span>
               </div>
             </div>
             <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-              Dein mentales
+              Dein
               <br />
-              <span className="text-gradient">Profil.</span>
+              <span className="text-gradient">Startprofil.</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               {analysis.summary}
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-3 max-w-md mx-auto">
+              Deterministische Auswertung aus deinen Antworten. Kein Diagnosewert, sondern Orientierung für dein 56-Tage-System.
             </p>
           </div>
 
