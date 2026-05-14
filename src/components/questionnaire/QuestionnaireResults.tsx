@@ -426,7 +426,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </motion.button>
             <p className="text-xs text-muted-foreground mt-4">
-              Dein personalisiertes Programm beginnt sofort.
+              Dein 56-Tage-System startet sofort.
             </p>
           </div>
         </motion.div>
