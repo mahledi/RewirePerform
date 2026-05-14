@@ -79,8 +79,8 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
               <div>
                 <h3 className="font-heading font-semibold mb-1">Einmalig & entscheidend</h3>
                 <p className="text-sm text-muted-foreground">
-                  Du machst das genau einmal. Danach übernimmt die KI und personalisiert 
-                  dein Programm auf Basis deiner Antworten – fortlaufend.
+                  Du machst das genau einmal. Danach läuft dein 56-Tage-System
+                  mit persönlicher Einordnung aus deinen Antworten.
                 </p>
               </div>
             </div>
