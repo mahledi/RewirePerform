@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, TrendingUp, Sparkles, BarChart3, FileText } from "l
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { questions, deepProfileQuestionIds } from "@/data/questionnaireData";
+import { buildDeterministicProgressSummary } from "@/lib/deterministicProgressSummary";
 
 interface ProfileData {
   timing: string;
@@ -18,8 +19,8 @@ const Progress = () => {
   const [baseline, setBaseline] = useState<ProfileData | null>(null);
   const [retest, setRetest] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [hasSummary, setHasSummary] = useState(false);
 
   const deepQuestions = useMemo(
     () => questions.filter((q) => deepProfileQuestionIds.includes(q.id)),
@@ -47,25 +48,17 @@ const Progress = () => {
     setLoading(false);
   };
 
-  const generateSummary = async () => {
-    if (!baseline || !retest) return;
-    setAiLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-transformation-summary", {
-        body: { baseline: baseline.answers, retest: retest.answers, questions: deepQuestions.map((q) => ({ id: q.id, question: q.question, type: q.type })) },
-      });
-      if (error) throw error;
-      setAiSummary(data?.summary || "Zusammenfassung konnte nicht erstellt werden.");
-    } catch (err) {
-      console.error("AI summary error:", err);
-      setAiSummary("Fehler bei der Erstellung der Zusammenfassung.");
-    }
-    setAiLoading(false);
-  };
-
   useEffect(() => {
-    if (baseline && retest && !aiSummary) generateSummary();
-  }, [baseline, retest]);
+    if (baseline && retest) {
+      const result = buildDeterministicProgressSummary(
+        baseline.answers,
+        retest.answers,
+        deepQuestions.map((q) => ({ id: q.id, question: q.question, type: q.type }))
+      );
+      setSummary(result.summary);
+      setHasSummary(result.hasEnoughData);
+    }
+  }, [baseline, retest, deepQuestions]);
 
   const formatAnswer = (answer: string | string[] | number | undefined) => {
     if (answer === undefined) return "—";
@@ -135,16 +128,14 @@ const Progress = () => {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-card border-glow mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
-              <h3 className="font-heading font-semibold">Transformations-Zusammenfassung</h3>
+              <h3 className="font-heading font-semibold">Verlaufszusammenfassung</h3>
             </div>
-            {aiLoading ? (
-              <div className="flex items-center gap-3 py-4">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                <span className="text-sm text-muted-foreground">KI analysiert deine Veränderung...</span>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{aiSummary}</p>
-            )}
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+              {summary ?? "Noch nicht genug Daten für eine Verlaufszusammenfassung."}
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 mt-3">
+              Deterministische Auswertung aus deinen Antworten. Keine Diagnose.
+            </p>
           </motion.div>
         )}
 

@@ -249,70 +249,36 @@ serve(async (req) => {
       }
     }
 
-    // AI vibe — derived ONLY from aggregated numeric metrics. No raw text in.
+    // Deterministic team summary — no AI, no Lovable AI Gateway, no LOVABLE_API_KEY.
+    // Built only from aggregated numeric metrics. Privacy-safe (n >= MIN_N enforced upstream).
     let vibe: string | null = null;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (LOVABLE_API_KEY && currentWeek.sufficient_data) {
-      try {
-        const numericSummary = {
-          team_size: teamSize,
-          contributing_athletes_this_week: currentWeek.n_users,
-          this_week: {
-            mood: currentWeek.mood,
-            energy: currentWeek.energy,
-            focus: currentWeek.focus,
-            resilience_pct: currentWeek.resilience,
-          },
-          previous_weeks: trendData.slice(0, -1).map((w) => ({
-            label: w.week,
-            n_users: w.n_users,
-            mood: w.mood,
-            energy: w.energy,
-            focus: w.focus,
-          })),
-          stress_warning: stressWarning,
-        };
+    if (currentWeek.sufficient_data) {
+      const parts: string[] = [];
+      const energy = currentWeek.energy;
+      const mood = currentWeek.mood;
+      const focus = currentWeek.focus;
 
-        const vibePrompt = `Du fasst den aggregierten Team-Zustand kurz zusammen.
-NUR aggregierte numerische Metriken (Skala 0-10 für Stimmung/Energie/Fokus, 0-100% für Resilienz).
-Keine Reflexionen, keine Einzelaussagen, keine Tipps.
-
-REGELN:
-- 2-4 nüchterne Sätze
-- Beschreibe nur das aggregierte Bild ("Das Team ...", "Die Werte ...")
-- Erwähne Trend (steigend/fallend/stabil) wenn klar
-- Keine Handlungsempfehlung
-- Deutsch
-- Keine Kausalaussagen ("weil", "wegen")
-
-Aggregierte Daten:
-${JSON.stringify(numericSummary, null, 2)}`;
-
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "system",
-                content:
-                  "Du bist ein neutraler Statistik-Erzähler. Beschreibe nur aggregierte Zahlen. Keine Einzelaussagen, keine Empfehlungen, keine Kausalaussagen.",
-              },
-              { role: "user", content: vibePrompt },
-            ],
-          }),
-        });
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          vibe = aiData.choices?.[0]?.message?.content || null;
-        }
-      } catch (e) {
-        console.error("AI vibe (aggregate-only) failed:", e);
+      // Overall energy/mood/focus picture
+      if (typeof energy === "number" && typeof mood === "number") {
+        const avg = (energy + mood) / 2;
+        if (avg >= 7) parts.push("Die Teamdaten zeigen aktuell stabile Energie und gute Stimmung.");
+        else if (avg >= 5) parts.push("Die Teamdaten zeigen aktuell mittlere Energie und durchschnittliche Stimmung.");
+        else parts.push("Die Teamdaten zeigen aktuell niedrigere Energie und gedrücktere Stimmung.");
       }
+      if (typeof focus === "number") {
+        if (focus >= 7) parts.push("Fokus wirkt hoch.");
+        else if (focus <= 4) parts.push("Fokus wirkt aktuell niedrig.");
+        else parts.push("Fokus wirkt mittel.");
+      }
+      if (stressWarning) {
+        parts.push("Stresslevel wirkt erhöht im Vergleich zu Energie/Stimmung.");
+      }
+      if (typeof currentWeek.resilience === "number") {
+        if (currentWeek.resilience >= 70) parts.push("Resilienz-Marker (aMCC) wirkt stabil.");
+        else if (currentWeek.resilience <= 40) parts.push("Resilienz-Marker (aMCC) wirkt reduziert.");
+      }
+      parts.push("Hinweis: aggregierte Teamdaten, keine Einzelbewertung.");
+      vibe = parts.join(" ");
     }
 
     // ─── Wellbeing / Team Pulse aggregates ───────────────────

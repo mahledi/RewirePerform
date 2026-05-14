@@ -24,7 +24,7 @@ const faqItems = [
   },
   {
     q: "Wie funktioniert das Programm?",
-    a: "Nach der Registrierung füllst du einen Fragebogen aus, der dein mentales Profil erfasst. Eine KI analysiert deine Antworten und erstellt einen individuellen Trainingsplan. Jeden Tag bekommst du angepasste Aufgaben — abgestimmt auf deinen Sport, deine Position und ob du trainierst oder einen Ruhetag hast.",
+    a: "Nach der Registrierung füllst du einen Fragebogen aus, der dein Startprofil erfasst. Daraus entsteht eine deterministische Einordnung. Danach läuft das feste 56-Tage-System mit täglichen Aufgaben, die durch Sport, Position und Tagestyp gerahmt werden (Micro-Adjustment).",
   },
   {
     q: "Was sind die täglichen Aufgaben?",
@@ -256,7 +256,7 @@ const Settings = () => {
             <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
               <div>
                 <h3 className="font-medium text-foreground mb-1">Was wird gespeichert?</h3>
-                <p>Deine Fragebogen-Antworten, täglichen Check-ins, Kalender-Einträge und die daraus generierte KI-Analyse. Alles wird verschlüsselt in einer sicheren Datenbank gespeichert.</p>
+                <p>Deine Fragebogen-Antworten, täglichen Check-ins, Kalender-Einträge und die daraus deterministisch berechnete Auswertung. Alles wird verschlüsselt in einer sicheren Datenbank gespeichert.</p>
               </div>
 
               <div>

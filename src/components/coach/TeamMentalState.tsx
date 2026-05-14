@@ -483,18 +483,18 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         </div>
       )}
 
-      {/* AI Vibe Summary */}
+      {/* Deterministic Team Summary */}
       {data.vibe && (
         <div className="bg-card border border-primary/20 rounded-2xl p-4">
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            Team-Vibe (KI-Analyse)
+            Team-Zusammenfassung
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
             {data.vibe}
           </p>
           <p className="text-xs text-muted-foreground/50 mt-3">
-            Basierend auf {data.teamSize} anonymisierten Reflexionen der letzten 7 Tage.
+            Deterministische Auswertung. Basierend auf aggregierten Team-Pulse-Werten der letzten 7 Tage.
           </p>
         </div>
       )}
