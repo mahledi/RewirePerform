@@ -302,11 +302,45 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
           {/* Program Start Activation */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             {team.program_start_date ? (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 text-primary text-sm">
-                <CalendarCheck className="w-4 h-4 shrink-0" />
-                <span className="font-medium">
-                  Programm startet am {format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}
-                </span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 text-primary text-sm">
+                  <CalendarCheck className="w-4 h-4 shrink-0" />
+                  <span className="font-medium flex-1">
+                    Programm startet am {format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setEditingStartId(team.id);
+                      setStartDateDraft(team.program_start_date!);
+                    }}
+                    className="text-xs underline opacity-80 hover:opacity-100"
+                  >
+                    Ändern
+                  </button>
+                </div>
+                {editingStartId === team.id && (
+                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/40">
+                    <input
+                      type="date"
+                      value={startDateDraft}
+                      onChange={(e) => setStartDateDraft(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-lg bg-background border border-border/50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <button
+                      onClick={() => updateTeamStartDate(team.id, startDateDraft)}
+                      disabled={savingStart}
+                      className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:shadow-glow disabled:opacity-50"
+                    >
+                      {savingStart ? <Loader2 className="w-3 h-3 animate-spin" /> : "Speichern"}
+                    </button>
+                    <button
+                      onClick={() => setEditingStartId(null)}
+                      className="px-3 py-2 rounded-lg bg-secondary text-muted-foreground text-xs"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (() => {
               const r = readiness[team.id];
