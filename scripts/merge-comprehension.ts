@@ -11,27 +11,28 @@ const data: Record<string, Array<{
   id: string;
   options: { id: string; text: string }[];
   explanation: string;
+  correctOptionId?: string;
 }>> = JSON.parse(readFileSync(REWRITTEN, "utf-8"));
 
 let src = readFileSync(SRC, "utf-8");
 
-// Build map: questionId -> {options:{a:text...}, explanation}
-const byQ = new Map<string, { options: Record<string, string>; explanation: string }>();
+// Build map: questionId -> {options, explanation, correctOptionId}
+const byQ = new Map<string, { options: Record<string, string>; explanation: string; correctOptionId?: string }>();
 for (const day of Object.values(data)) {
   for (const q of day) {
     const opts: Record<string, string> = {};
     for (const o of q.options) opts[o.id] = o.text;
-    byQ.set(q.id, { options: opts, explanation: q.explanation });
+    byQ.set(q.id, { options: opts, explanation: q.explanation, correctOptionId: q.correctOptionId });
   }
 }
 
 const escape = (s: string) => s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
-// For each question block, find by `id: "xyz"` and rewrite its options[] + explanation.
+// For each question block, find by `id: "xyz"` and rewrite its options[], correctOptionId, and explanation.
 let count = 0;
-const blockRe = /\{\s*id:\s*"([^"]+)",\s*target:\s*"[^"]+",\s*stem:\s*"[^"]*",\s*options:\s*\[([\s\S]*?)\],\s*correctOptionId:\s*"[^"]+",\s*explanation:\s*"([^"]*)",?\s*\}/g;
+const blockRe = /\{\s*id:\s*"([^"]+)",\s*target:\s*"[^"]+",\s*stem:\s*"[^"]*",\s*options:\s*\[([\s\S]*?)\],\s*correctOptionId:\s*"([^"]+)",\s*explanation:\s*"([^"]*)",?\s*\}/g;
 
-src = src.replace(blockRe, (full, id, optsBlock, _expl) => {
+src = src.replace(blockRe, (full, id, optsBlock, _correct, _expl) => {
   const rew = byQ.get(id);
   if (!rew) return full;
   const newOpts = optsBlock.replace(/\{\s*id:\s*"([abcd])",\s*text:\s*"([^"]*)"\s*\},?/g, (m: string, oid: string) => {
@@ -40,9 +41,11 @@ src = src.replace(blockRe, (full, id, optsBlock, _expl) => {
     return `{ id: "${oid}", text: "${escape(t)}" },`;
   });
   count++;
-  return full
-    .replace(optsBlock, newOpts)
-    .replace(/explanation:\s*"[^"]*"/, `explanation: "${escape(rew.explanation)}"`);
+  let updated = full.replace(optsBlock, newOpts).replace(/explanation:\s*"[^"]*"/, `explanation: "${escape(rew.explanation)}"`);
+  if (rew.correctOptionId) {
+    updated = updated.replace(/correctOptionId:\s*"[^"]+"/, `correctOptionId: "${rew.correctOptionId}"`);
+  }
+  return updated;
 });
 
 writeFileSync(SRC, src);

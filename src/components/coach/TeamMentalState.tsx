@@ -353,7 +353,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         />
         <MetricCard
           icon={<Flame className="w-4 h-4" />}
-          label="Resilienz (aMCC)"
+          label="Umsetzungsrate"
           value={data.resilience.current}
           max={100}
           suffix="%"
@@ -503,7 +503,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       <div className="bg-card border border-border/50 rounded-2xl p-4">
         <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <Flame className="w-4 h-4 text-orange-400" />
-          aMCC-Resilienz Trend
+          Umsetzungsrate Trend
         </h3>
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">

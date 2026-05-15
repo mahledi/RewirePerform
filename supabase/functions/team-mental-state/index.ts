@@ -274,8 +274,8 @@ serve(async (req) => {
         parts.push("Stresslevel wirkt erhöht im Vergleich zu Energie/Stimmung.");
       }
       if (typeof currentWeek.resilience === "number") {
-        if (currentWeek.resilience >= 70) parts.push("Resilienz-Marker (aMCC) wirkt stabil.");
-        else if (currentWeek.resilience <= 40) parts.push("Resilienz-Marker (aMCC) wirkt reduziert.");
+        if (currentWeek.resilience >= 70) parts.push("Umsetzungsrate wirkt stabil.");
+        else if (currentWeek.resilience <= 40) parts.push("Umsetzungsrate wirkt reduziert.");
       }
       parts.push("Hinweis: aggregierte Teamdaten, keine Einzelbewertung.");
       vibe = parts.join(" ");

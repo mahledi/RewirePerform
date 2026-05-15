@@ -16,7 +16,10 @@ const SUBSCALE_DIRECTION: Record<string, Dir> = {
   // Flow
   absorption: "higher_is_better",
   fluency: "higher_is_better",
-  anxiety: "lower_is_better", // FKS Besorgnis
+  // FKS-Besorgnis-Items sind item-level reverse-scored (siehe data/validatedAssessments.ts).
+  // Der gespeicherte Subscale-Score ist dadurch so kodiert, dass HÖHER = bessere
+  // Regulation unter Besorgnis bedeutet. Direction muss daher higher_is_better sein.
+  anxiety: "higher_is_better",
 };
 
 const SUBSCALE_LABEL: Record<string, string> = {
@@ -28,7 +31,7 @@ const SUBSCALE_LABEL: Record<string, string> = {
   control: "Kontrolle",
   absorption: "Absorption",
   fluency: "Flüssiges Erleben",
-  anxiety: "Besorgnis",
+  anxiety: "Besorgnis-Regulation",
 };
 
 const ASSESSMENT_LABELS: Record<string, string> = {
