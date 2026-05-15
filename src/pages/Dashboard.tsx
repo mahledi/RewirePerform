@@ -652,7 +652,19 @@ const Dashboard = () => {
   const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
   const todayEvents = getEventsForDate(new Date());
-  const todayEventType = todayEvents.length > 0 ? todayEvents[0].event_type : null;
+  // Team-Athleten ohne eigenes Kalender-Event laufen im Standard-Trainingstag.
+  // Es werden keine Fake-calendar_events in die DB geschrieben.
+  const isTeamActive =
+    programMode === "team" &&
+    !!teamProgramStart &&
+    teamProgramStart <= format(new Date(), "yyyy-MM-dd");
+  const todayEventType: EventType | null =
+    todayEvents.length > 0
+      ? (todayEvents[0].event_type as EventType)
+      : isTeamActive
+        ? "training"
+        : null;
+  const isTeamDefaultDay = isTeamActive && todayEvents.length === 0;
   const showPreTestReminder =
     !preTestsDone &&
     !setupMode &&
