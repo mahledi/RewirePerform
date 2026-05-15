@@ -1053,7 +1053,9 @@ const Dashboard = () => {
                   </div>
                   <div className="text-left">
                     <p className="font-heading font-semibold">Heute: {eventConfig[todayEventType as EventType].label}</p>
-                    <p className="text-sm text-muted-foreground">Tägliches Check-in starten →</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isTeamDefaultDay ? "Teammodus · Standardtag · " : ""}Tägliches Check-in starten →
+                    </p>
                   </div>
                 </div>
                 <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
