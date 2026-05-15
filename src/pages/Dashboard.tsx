@@ -10,6 +10,7 @@ import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
+import { getProgramModeInfo, type ProgramMode } from "@/lib/programMode";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
@@ -330,6 +331,7 @@ const Dashboard = () => {
   const [retestDone, setRetestDone] = useState(false);
   const [waitingForCoach, setWaitingForCoach] = useState(false);
   const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
+  const [programMode, setProgramMode] = useState<ProgramMode>("solo");
   const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
   
 
@@ -374,27 +376,41 @@ const Dashboard = () => {
     const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
     const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
 
-    const [{ data: eventData }, { data: settingsArr }, effective] = await Promise.all([
+    const [{ data: eventData }, { data: settingsArr }, modeInfo] = await Promise.all([
       eventsQuery,
       settingsQuery,
-      getEffectiveProgramStart(user!.id),
+      getProgramModeInfo(user!.id),
     ]);
     const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
-    // Athleten in einem Team warten auf Coach-Aktivierung
-    if (effective.hasTeam) {
-      setTeamProgramStart(effective.source === "team" ? effective.startDate : null);
+    setProgramMode(modeInfo.mode);
+
+    // Team-Athleten: Coach besitzt den Kalender. Kein Solo-Setup, keine eigenen Events nötig.
+    if (modeInfo.mode === "team") {
+      setTeamProgramStart(modeInfo.teamStartDate ?? null);
+      setSetupMode(false);
+
+      if (!modeInfo.teamStartDate) {
+        // Coach hat Programm noch nicht gestartet
+        setWaitingForCoach(true);
+        setLoading(false);
+        return;
+      }
+
       const today = format(new Date(), "yyyy-MM-dd");
-      const notStartedYet =
-        !effective.startDate || effective.startDate > today;
-      if (notStartedYet) {
+      if (modeInfo.teamStartDate > today) {
         setWaitingForCoach(true);
         setLoading(false);
         return;
       }
       setWaitingForCoach(false);
+      // Echte Team-Calendar-Events optional übernehmen, aber NICHT erzwingen
+      setEvents((eventData ?? []) as CalendarEvent[]);
+      setLoading(false);
+      return;
     }
 
+    // Solo-Mode
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
       if (settingsData) {
@@ -403,12 +419,7 @@ const Dashboard = () => {
       }
       setSetupMode(false);
     } else {
-      // Team-Mitglieder bekommen keinen eigenen Setup-Flow — Coach steuert
-      if (effective.hasTeam) {
-        setSetupMode(false);
-      } else {
-        setSetupMode(true);
-      }
+      setSetupMode(true);
     }
     setLoading(false);
   };
@@ -641,7 +652,19 @@ const Dashboard = () => {
   const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
   const todayEvents = getEventsForDate(new Date());
-  const todayEventType = todayEvents.length > 0 ? todayEvents[0].event_type : null;
+  // Team-Athleten ohne eigenes Kalender-Event laufen im Standard-Trainingstag.
+  // Es werden keine Fake-calendar_events in die DB geschrieben.
+  const isTeamActive =
+    programMode === "team" &&
+    !!teamProgramStart &&
+    teamProgramStart <= format(new Date(), "yyyy-MM-dd");
+  const todayEventType: EventType | null =
+    todayEvents.length > 0
+      ? (todayEvents[0].event_type as EventType)
+      : isTeamActive
+        ? "training"
+        : null;
+  const isTeamDefaultDay = isTeamActive && todayEvents.length === 0;
   const showPreTestReminder =
     !preTestsDone &&
     !setupMode &&
@@ -1030,7 +1053,9 @@ const Dashboard = () => {
                   </div>
                   <div className="text-left">
                     <p className="font-heading font-semibold">Heute: {eventConfig[todayEventType as EventType].label}</p>
-                    <p className="text-sm text-muted-foreground">Tägliches Check-in starten →</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isTeamDefaultDay ? "Teammodus · Standardtag · " : ""}Tägliches Check-in starten →
+                    </p>
                   </div>
                 </div>
                 <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
@@ -1072,132 +1097,152 @@ const Dashboard = () => {
         {/* Science Bite */}
         <ScienceBite />
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[
-            { label: "Training", count: trainingCount, icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
-            { label: "Ruhetage", count: restCount, icon: Moon, color: "text-blue-400", bg: "bg-blue-400/10" },
-            { label: "Wettkämpfe", count: competitionCount, icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-          ].map((stat) => (
-            <div key={stat.label} className="p-4 rounded-2xl bg-gradient-card border-glow text-center">
-              <stat.icon className={`w-5 h-5 ${stat.color} mx-auto mb-2`} />
-              <p className="text-2xl font-heading font-bold">{stat.count}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+        {/* Stats — nur Solo-Modus (Team-Athleten besitzen keinen eigenen Kalender) */}
+        {programMode === "solo" && (
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            {[
+              { label: "Training", count: trainingCount, icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
+              { label: "Ruhetage", count: restCount, icon: Moon, color: "text-blue-400", bg: "bg-blue-400/10" },
+              { label: "Wettkämpfe", count: competitionCount, icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10" },
+            ].map((stat) => (
+              <div key={stat.label} className="p-4 rounded-2xl bg-gradient-card border-glow text-center">
+                <stat.icon className={`w-5 h-5 ${stat.color} mx-auto mb-2`} />
+                <p className="text-2xl font-heading font-bold">{stat.count}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Calendar */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
-              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <h2 className="font-heading font-semibold text-lg">{format(currentMonth, "MMMM yyyy", { locale: de })}</h2>
-            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map((d) => (<div key={d} className="text-center text-xs text-muted-foreground font-medium py-2">{d}</div>))}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((day) => {
-              const dayEvents = getEventsForDate(day);
-              const isSelected = selectedDate && isSameDay(day, selectedDate);
-              const inMonth = isSameMonth(day, currentMonth);
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => { setSelectedDate(day); setShowAddEvent(false); }}
-                  className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all ${!inMonth ? "opacity-30" : ""} ${isToday(day) ? "ring-1 ring-primary" : ""} ${isSelected ? "bg-primary/20 ring-1 ring-primary" : "hover:bg-secondary"}`}
-                >
-                  <span className={`font-medium ${isToday(day) ? "text-primary" : ""}`}>{format(day, "d")}</span>
-                  {dayEvents.length > 0 && (
-                    <div className="flex gap-0.5 mt-0.5">
-                      {dayEvents.map((e) => (<div key={e.id} className={`w-1.5 h-1.5 rounded-full ${e.event_type === "training" ? "bg-primary" : e.event_type === "rest" ? "bg-blue-400" : "bg-yellow-400"}`} />))}
-                    </div>
-                  )}
+        {/* Calendar + Selected-Date Panel + Legend — nur Solo-Modus */}
+        {programMode === "solo" && (
+          <>
+            {/* Calendar */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                  <ChevronLeft className="w-5 h-5 text-muted-foreground" />
                 </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Selected Date Panel */}
-        <AnimatePresence>
-          {selectedDate && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-heading font-semibold">{format(selectedDate, "EEEE, d. MMMM", { locale: de })}</h3>
-                <button onClick={() => { setShowAddEvent(true); setNewEventType("training"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
-                  <Plus className="w-4 h-4" />Hinzufügen
+                <h2 className="font-heading font-semibold text-lg">{format(currentMonth, "MMMM yyyy", { locale: de })}</h2>
+                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {weekDays.map((d) => (<div key={d} className="text-center text-xs text-muted-foreground font-medium py-2">{d}</div>))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map((day) => {
+                  const dayEvents = getEventsForDate(day);
+                  const isSelected = selectedDate && isSameDay(day, selectedDate);
+                  const inMonth = isSameMonth(day, currentMonth);
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      onClick={() => { setSelectedDate(day); setShowAddEvent(false); }}
+                      className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-sm transition-all ${!inMonth ? "opacity-30" : ""} ${isToday(day) ? "ring-1 ring-primary" : ""} ${isSelected ? "bg-primary/20 ring-1 ring-primary" : "hover:bg-secondary"}`}
+                    >
+                      <span className={`font-medium ${isToday(day) ? "text-primary" : ""}`}>{format(day, "d")}</span>
+                      {dayEvents.length > 0 && (
+                        <div className="flex gap-0.5 mt-0.5">
+                          {dayEvents.map((e) => (<div key={e.id} className={`w-1.5 h-1.5 rounded-full ${e.event_type === "training" ? "bg-primary" : e.event_type === "rest" ? "bg-blue-400" : "bg-yellow-400"}`} />))}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
 
-              {getEventsForDate(selectedDate).length > 0 ? (
-                <div className="space-y-2 mb-4">
-                  {getEventsForDate(selectedDate).map((event) => {
-                    const config = eventConfig[event.event_type as EventType];
-                    return (
-                      <div key={event.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center`}>
-                            <config.icon className={`w-4 h-4 ${config.color}`} />
+            {/* Selected Date Panel */}
+            <AnimatePresence>
+              {selectedDate && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-heading font-semibold">{format(selectedDate, "EEEE, d. MMMM", { locale: de })}</h3>
+                    <button onClick={() => { setShowAddEvent(true); setNewEventType("training"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
+                      <Plus className="w-4 h-4" />Hinzufügen
+                    </button>
+                  </div>
+
+                  {getEventsForDate(selectedDate).length > 0 ? (
+                    <div className="space-y-2 mb-4">
+                      {getEventsForDate(selectedDate).map((event) => {
+                        const config = eventConfig[event.event_type as EventType];
+                        return (
+                          <div key={event.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center`}>
+                                <config.icon className={`w-4 h-4 ${config.color}`} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">{event.title || config.label}</p>
+                                <p className="text-xs text-muted-foreground">{config.label}</p>
+                              </div>
+                            </div>
+                            <button onClick={() => removeEvent(event.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors">
+                              <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                            </button>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium">{event.title || config.label}</p>
-                            <p className="text-xs text-muted-foreground">{config.label}</p>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mb-4">Kein Eintrag für diesen Tag.</p>
+                  )}
+
+                  <AnimatePresence>
+                    {showAddEvent && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className="p-4 rounded-xl bg-secondary/30 space-y-4">
+                          <div className="grid grid-cols-3 gap-2">
+                            {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => (
+                              <button key={type} onClick={() => setNewEventType(type)} className={`p-3 rounded-xl text-center transition-all ${newEventType === type ? `${config.bg} ring-1 ring-current ${config.color}` : "bg-secondary/50 hover:bg-secondary"}`}>
+                                <config.icon className={`w-5 h-5 mx-auto mb-1 ${newEventType === type ? config.color : "text-muted-foreground"}`} />
+                                <span className="text-xs font-medium">{config.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <input type="text" placeholder="Titel (optional)" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
+                          <div className="flex gap-2">
+                            <button onClick={addEvent} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all">
+                              <Check className="w-4 h-4" />Speichern
+                            </button>
+                            <button onClick={() => setShowAddEvent(false)} className="px-4 py-2.5 rounded-xl bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors">Abbrechen</button>
                           </div>
                         </div>
-                        <button onClick={() => removeEvent(event.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors">
-                          <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground mb-4">Kein Eintrag für diesen Tag.</p>
+                        <p className="text-xs text-muted-foreground mt-3 text-center">
+                          Änderungen am Kalender werden automatisch übernommen.
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               )}
+            </AnimatePresence>
 
-              <AnimatePresence>
-                {showAddEvent && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                    <div className="p-4 rounded-xl bg-secondary/30 space-y-4">
-                      <div className="grid grid-cols-3 gap-2">
-                        {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => (
-                          <button key={type} onClick={() => setNewEventType(type)} className={`p-3 rounded-xl text-center transition-all ${newEventType === type ? `${config.bg} ring-1 ring-current ${config.color}` : "bg-secondary/50 hover:bg-secondary"}`}>
-                            <config.icon className={`w-5 h-5 mx-auto mb-1 ${newEventType === type ? config.color : "text-muted-foreground"}`} />
-                            <span className="text-xs font-medium">{config.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                      <input type="text" placeholder="Titel (optional)" value={newEventTitle} onChange={(e) => setNewEventTitle(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary" />
-                      <div className="flex gap-2">
-                        <button onClick={addEvent} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all">
-                          <Check className="w-4 h-4" />Speichern
-                        </button>
-                        <button onClick={() => setShowAddEvent(false)} className="px-4 py-2.5 rounded-xl bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors">Abbrechen</button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-3 text-center">
-                      Änderungen am Kalender werden automatisch übernommen.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-primary" />Training</div>
+              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-400" />Ruhetag</div>
+              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />Wettkampf</div>
+            </div>
+          </>
+        )}
 
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-primary" />Training</div>
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-400" />Ruhetag</div>
-          <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />Wettkampf</div>
-        </div>
-
+        {/* Team-Modus Hinweis statt Solo-Kalender */}
+        {programMode === "team" && teamProgramStart && (
+          <div className="rounded-2xl bg-gradient-card border-glow p-5 mb-6 flex items-start gap-3">
+            <Calendar className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-heading font-semibold mb-1">Teammodus aktiv</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Dein Programmkalender wird vom Coach gesteuert. Tage ohne speziellen Eintrag laufen als Standard-Trainingstag.
+                Programmstart: {format(new Date(teamProgramStart), "d. MMMM yyyy", { locale: de })}.
+              </p>
+            </div>
+          </div>
+        )}
         {/* Privacy notice for athletes in teams */}
         <div className="mt-6 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
           <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
