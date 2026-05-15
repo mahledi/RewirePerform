@@ -10,6 +10,7 @@ import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
+import { getProgramModeInfo, type ProgramMode } from "@/lib/programMode";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
