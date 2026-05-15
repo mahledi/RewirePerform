@@ -376,27 +376,41 @@ const Dashboard = () => {
     const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
     const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
 
-    const [{ data: eventData }, { data: settingsArr }, effective] = await Promise.all([
+    const [{ data: eventData }, { data: settingsArr }, modeInfo] = await Promise.all([
       eventsQuery,
       settingsQuery,
-      getEffectiveProgramStart(user!.id),
+      getProgramModeInfo(user!.id),
     ]);
     const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
 
-    // Athleten in einem Team warten auf Coach-Aktivierung
-    if (effective.hasTeam) {
-      setTeamProgramStart(effective.source === "team" ? effective.startDate : null);
+    setProgramMode(modeInfo.mode);
+
+    // Team-Athleten: Coach besitzt den Kalender. Kein Solo-Setup, keine eigenen Events nötig.
+    if (modeInfo.mode === "team") {
+      setTeamProgramStart(modeInfo.teamStartDate ?? null);
+      setSetupMode(false);
+
+      if (!modeInfo.teamStartDate) {
+        // Coach hat Programm noch nicht gestartet
+        setWaitingForCoach(true);
+        setLoading(false);
+        return;
+      }
+
       const today = format(new Date(), "yyyy-MM-dd");
-      const notStartedYet =
-        !effective.startDate || effective.startDate > today;
-      if (notStartedYet) {
+      if (modeInfo.teamStartDate > today) {
         setWaitingForCoach(true);
         setLoading(false);
         return;
       }
       setWaitingForCoach(false);
+      // Echte Team-Calendar-Events optional übernehmen, aber NICHT erzwingen
+      setEvents((eventData ?? []) as CalendarEvent[]);
+      setLoading(false);
+      return;
     }
 
+    // Solo-Mode
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
       if (settingsData) {
@@ -405,12 +419,7 @@ const Dashboard = () => {
       }
       setSetupMode(false);
     } else {
-      // Team-Mitglieder bekommen keinen eigenen Setup-Flow — Coach steuert
-      if (effective.hasTeam) {
-        setSetupMode(false);
-      } else {
-        setSetupMode(true);
-      }
+      setSetupMode(true);
     }
     setLoading(false);
   };
