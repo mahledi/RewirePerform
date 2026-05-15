@@ -1097,20 +1097,22 @@ const Dashboard = () => {
         {/* Science Bite */}
         <ScienceBite />
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[
-            { label: "Training", count: trainingCount, icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
-            { label: "Ruhetage", count: restCount, icon: Moon, color: "text-blue-400", bg: "bg-blue-400/10" },
-            { label: "Wettkämpfe", count: competitionCount, icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-          ].map((stat) => (
-            <div key={stat.label} className="p-4 rounded-2xl bg-gradient-card border-glow text-center">
-              <stat.icon className={`w-5 h-5 ${stat.color} mx-auto mb-2`} />
-              <p className="text-2xl font-heading font-bold">{stat.count}</p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+        {/* Stats — nur Solo-Modus (Team-Athleten besitzen keinen eigenen Kalender) */}
+        {programMode === "solo" && (
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            {[
+              { label: "Training", count: trainingCount, icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
+              { label: "Ruhetage", count: restCount, icon: Moon, color: "text-blue-400", bg: "bg-blue-400/10" },
+              { label: "Wettkämpfe", count: competitionCount, icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10" },
+            ].map((stat) => (
+              <div key={stat.label} className="p-4 rounded-2xl bg-gradient-card border-glow text-center">
+                <stat.icon className={`w-5 h-5 ${stat.color} mx-auto mb-2`} />
+                <p className="text-2xl font-heading font-bold">{stat.count}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Calendar */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
