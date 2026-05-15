@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Users, Shield, UserPlus, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 type Mode = "intent" | "signup" | "login";
@@ -10,6 +11,16 @@ type Intent = "solo" | "join" | "create";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { user, role, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    if (role === "admin") navigate("/admin", { replace: true });
+    else if (role === "coach") navigate("/coach", { replace: true });
+    else if (role === "athlete") navigate("/dashboard", { replace: true });
+    // if role still null but user exists, wait for role to load
+  }, [user, role, authLoading, navigate]);
+
   const [mode, setMode] = useState<Mode>("intent");
   const [intent, setIntent] = useState<Intent>("solo");
   const [loading, setLoading] = useState(false);
