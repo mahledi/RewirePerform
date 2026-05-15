@@ -353,7 +353,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         />
         <MetricCard
           icon={<Flame className="w-4 h-4" />}
-          label="Resilienz (aMCC)"
+          label="Umsetzungsrate"
           value={data.resilience.current}
           max={100}
           suffix="%"
