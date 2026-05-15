@@ -104,12 +104,39 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   };
 
   const [activatingId, setActivatingId] = useState<string | null>(null);
+  const [editingStartId, setEditingStartId] = useState<string | null>(null);
+  const [startDateDraft, setStartDateDraft] = useState<string>("");
+  const [savingStart, setSavingStart] = useState(false);
   const [readiness, setReadiness] = useState<Record<string, {
     athleteCount: number;
     completedCount: number;
     pendingNames: string[];
   }>>({});
   const [readinessLoading, setReadinessLoading] = useState(true);
+
+  const updateTeamStartDate = async (teamId: string, date: string) => {
+    if (!date) {
+      toast.error("Bitte ein Datum auswählen.");
+      return;
+    }
+    setSavingStart(true);
+    const { error } = await supabase
+      .from("teams")
+      .update({
+        program_start_date: date,
+        program_activated_by: user!.id,
+        program_activated_at: new Date().toISOString(),
+      })
+      .eq("id", teamId);
+    setSavingStart(false);
+    if (error) {
+      toast.error("Konnte Programmstart nicht speichern: " + error.message);
+      return;
+    }
+    toast.success(`Programmstart auf ${format(parseISO(date), "d. MMMM yyyy", { locale: de })} gesetzt.`);
+    setEditingStartId(null);
+    onTeamCreated();
+  };
 
   const loadReadiness = async () => {
     setReadinessLoading(true);
