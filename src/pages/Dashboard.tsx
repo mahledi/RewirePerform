@@ -331,6 +331,7 @@ const Dashboard = () => {
   const [retestDone, setRetestDone] = useState(false);
   const [waitingForCoach, setWaitingForCoach] = useState(false);
   const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
+  const [programMode, setProgramMode] = useState<ProgramMode>("solo");
   const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
   
 
