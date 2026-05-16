@@ -66,6 +66,9 @@ const App = () => (
             <Route path="/admin/content" element={
               <ProtectedRoute><AdminContent /></ProtectedRoute>
             } />
+            <Route path="/admin/qa" element={
+              <ProtectedRoute><AdminQA /></ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
