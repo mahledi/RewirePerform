@@ -178,6 +178,11 @@ const Admin = () => {
                 📚 Content offline
               </Button>
             </a>
+            <a href="/admin/qa">
+              <Button variant="outline" size="sm">
+                🧪 QA Test Lab
+              </Button>
+            </a>
             <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
               <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
             </Button>

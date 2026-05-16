@@ -18,7 +18,9 @@ import Journal from "./pages/Journal.tsx";
 import PreTraining from "./pages/PreTraining.tsx";
 import Admin from "./pages/Admin.tsx";
 import AdminContent from "./pages/AdminContent.tsx";
+import AdminQA from "./pages/AdminQA.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import QATestBanner from "./components/qa/QATestBanner";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <QATestBanner />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -64,6 +67,9 @@ const App = () => (
             } />
             <Route path="/admin/content" element={
               <ProtectedRoute><AdminContent /></ProtectedRoute>
+            } />
+            <Route path="/admin/qa" element={
+              <ProtectedRoute><AdminQA /></ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>

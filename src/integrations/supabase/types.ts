@@ -390,6 +390,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_test_user: boolean
           position: string | null
           sport: string | null
           team: string | null
@@ -399,6 +400,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          is_test_user?: boolean
           position?: string | null
           sport?: string | null
           team?: string | null
@@ -408,6 +410,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_test_user?: boolean
           position?: string | null
           sport?: string | null
           team?: string | null
@@ -421,6 +424,7 @@ export type Database = {
           cycle_number: number
           ended_at: string | null
           id: string
+          is_test_instance: boolean
           started_at: string
           status: string
           team_id: string | null
@@ -432,6 +436,7 @@ export type Database = {
           cycle_number?: number
           ended_at?: string | null
           id?: string
+          is_test_instance?: boolean
           started_at?: string
           status?: string
           team_id?: string | null
@@ -443,6 +448,7 @@ export type Database = {
           cycle_number?: number
           ended_at?: string | null
           id?: string
+          is_test_instance?: boolean
           started_at?: string
           status?: string
           team_id?: string | null
@@ -592,6 +598,42 @@ export type Database = {
         }
         Relationships: []
       }
+      qa_time_overrides: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          scope: string
+          simulated_date: string
+          simulated_day_number: number | null
+          team_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          scope: string
+          simulated_date: string
+          simulated_day_number?: number | null
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          scope?: string
+          simulated_date?: string
+          simulated_day_number?: number | null
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       questionnaire_responses: {
         Row: {
           analysis: Json | null
@@ -664,6 +706,8 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: string
+          is_archived: boolean
+          is_test_team: boolean
           name: string
           program_activated_at: string | null
           program_activated_by: string | null
@@ -676,6 +720,8 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
+          is_archived?: boolean
+          is_test_team?: boolean
           name: string
           program_activated_at?: string | null
           program_activated_by?: string | null
@@ -688,6 +734,8 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
+          is_archived?: boolean
+          is_test_team?: boolean
           name?: string
           program_activated_at?: string | null
           program_activated_by?: string | null
@@ -871,13 +919,19 @@ export type Database = {
       }
     }
     Functions: {
+      archive_qa_cohort: { Args: { _team_id: string }; Returns: Json }
       compute_team_outcomes: {
         Args: { min_n?: number; team_id_param: string }
         Returns: Json
       }
-      get_admin_overview_stats: { Args: never; Returns: Json }
+      get_admin_overview_stats:
+        | { Args: never; Returns: Json }
+        | { Args: { include_test?: boolean }; Returns: Json }
       get_admin_system_health: { Args: never; Returns: Json }
-      get_admin_teams_summary: { Args: never; Returns: Json }
+      get_admin_teams_summary:
+        | { Args: never; Returns: Json }
+        | { Args: { include_test?: boolean }; Returns: Json }
+      get_effective_today: { Args: { _user_id: string }; Returns: string }
       get_team_questionnaire_status: {
         Args: { _team_id: string }
         Returns: {

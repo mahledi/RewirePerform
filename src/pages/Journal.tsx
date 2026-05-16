@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
+import { getEffectiveTodayDate } from "@/lib/qaTime";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
 const Journal = () => {
@@ -34,7 +35,7 @@ const Journal = () => {
 
   const loadDay = async () => {
     if (!user?.id) return;
-    const today = new Date();
+    const today = await getEffectiveTodayDate(user.id);
     const dateStr = format(today, "yyyy-MM-dd");
 
     const [effective, { data: events }, { data: existing }] = await Promise.all([
