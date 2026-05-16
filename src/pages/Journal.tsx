@@ -35,7 +35,7 @@ const Journal = () => {
 
   const loadDay = async () => {
     if (!user?.id) return;
-    const today = new Date();
+    const today = await getEffectiveTodayDate(user.id);
     const dateStr = format(today, "yyyy-MM-dd");
 
     const [effective, { data: events }, { data: existing }] = await Promise.all([
