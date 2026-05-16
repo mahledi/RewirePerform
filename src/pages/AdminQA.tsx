@@ -32,12 +32,18 @@ const AdminQA = () => {
 
   useEffect(() => {
     if (authLoading) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    // Wait until the role has been resolved before deciding.
+    if (role === null) return;
     if (role !== "admin") {
       navigate("/");
       return;
     }
     loadTeams();
-  }, [authLoading, role]);
+  }, [authLoading, role, user]);
 
   const loadTeams = async () => {
     setLoading(true);
