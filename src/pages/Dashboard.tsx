@@ -16,6 +16,7 @@ import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { buildFlameStats, type FlameStats } from "@/lib/flameStats";
 import FlameCard from "@/components/dashboard/FlameCard";
+import { getEffectiveTodayDate } from "@/lib/qaTime";
 
 type EventType = "training" | "rest" | "competition";
 
