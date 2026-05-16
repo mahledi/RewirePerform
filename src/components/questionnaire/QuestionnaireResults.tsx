@@ -95,20 +95,50 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           level: levelAnswer,
         }) as unknown as Analysis;
 
-        const { data: insertedRow, error: insertError } = await supabase
+        // Prefer updating the existing completed draft (avoids creating a
+        // new is_complete=false row that the resume-flow would treat as a reset).
+        const { data: existingComplete } = await supabase
           .from("questionnaire_responses")
-          .insert({
-            session_id: user!.id,
-            user_id: user!.id,
-            answers: answers as any,
-            analysis: analysisResult as any,
-          })
           .select("id")
-          .single();
+          .eq("user_id", user!.id)
+          .eq("is_complete", true)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-        if (insertError) {
-          console.error("Error saving questionnaire response:", insertError);
+        if (existingComplete?.id) {
+          const { error: updErr } = await supabase
+            .from("questionnaire_responses")
+            .update({
+              answers: answers as any,
+              analysis: analysisResult as any,
+              is_complete: true,
+            })
+            .eq("id", existingComplete.id);
+          if (updErr) console.error("Error updating questionnaire response:", updErr);
+        } else {
+          const { error: insertError } = await supabase
+            .from("questionnaire_responses")
+            .insert({
+              session_id: user!.id,
+              user_id: user!.id,
+              answers: answers as any,
+              analysis: analysisResult as any,
+              is_complete: true,
+              last_category_index: 9999,
+            })
+            .select("id")
+            .single();
+          if (insertError) console.error("Error saving questionnaire response:", insertError);
         }
+
+        // Clean up any leftover incomplete drafts so the resume screen
+        // does not re-appear and look like a reset.
+        await supabase
+          .from("questionnaire_responses")
+          .delete()
+          .eq("user_id", user!.id)
+          .eq("is_complete", false);
 
         // Small artificial delay so the user can read the loader once.
         await new Promise((r) => setTimeout(r, 600));
