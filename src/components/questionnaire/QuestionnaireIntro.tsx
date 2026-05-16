@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { buildQASyntheticAnswers } from "@/lib/qaSyntheticAnswers";
+import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
+import { toast } from "sonner";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -8,6 +13,66 @@ interface QuestionnaireIntroProps {
 
 const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
   const navigate = useNavigate();
+  const [isTestUser, setIsTestUser] = useState(false);
+  const [skipping, setSkipping] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("is_test_user")
+        .eq("id", user.id)
+        .maybeSingle();
+      setIsTestUser(!!data?.is_test_user);
+    })();
+  }, []);
+
+  const handleQASkip = async () => {
+    setSkipping(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const answers = buildQASyntheticAnswers();
+      const analysis = buildDeterministicQuestionnaireAnalysis(answers, {
+        sport: answers["sport-01"] as string,
+        position: answers["sport-02"] as string,
+        level: answers["sport-03"] as string,
+      });
+
+      await supabase
+        .from("profiles")
+        .update({ sport: answers["sport-01"] as string, team: answers["sport-02"] as string })
+        .eq("id", user.id);
+
+      await supabase
+        .from("questionnaire_responses")
+        .delete()
+        .eq("user_id", user.id);
+
+      const { error: insErr } = await supabase
+        .from("questionnaire_responses")
+        .insert({
+          user_id: user.id,
+          session_id: user.id,
+          answers: answers as any,
+          analysis: analysis as any,
+          is_complete: true,
+          last_category_index: 9999,
+        });
+      if (insErr) throw insErr;
+
+      toast.success("QA: Fragebogen übersprungen.");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("QA skip error:", err);
+      toast.error("Skip fehlgeschlagen. Siehe Konsole.");
+      setSkipping(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Back button */}
@@ -129,6 +194,22 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           <p className="text-center text-xs text-muted-foreground mt-4">
             Deine Antworten sind vertraulich und werden ausschließlich für dein Programm verwendet.
           </p>
+
+          {isTestUser && (
+            <div className="mt-8 p-4 rounded-xl border border-dashed border-primary/40 bg-primary/5">
+              <p className="text-xs text-muted-foreground mb-3 text-center">
+                QA-Modus erkannt. Du kannst den Fragebogen mit neutralen Default-Antworten überspringen.
+              </p>
+              <button
+                onClick={handleQASkip}
+                disabled={skipping}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-all disabled:opacity-50"
+              >
+                {skipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <FastForward className="w-4 h-4" />}
+                {skipping ? "Wird vorbereitet..." : "Fragebogen überspringen (QA)"}
+              </button>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>
