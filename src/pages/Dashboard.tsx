@@ -334,6 +334,7 @@ const Dashboard = () => {
   const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
   const [programMode, setProgramMode] = useState<ProgramMode>("solo");
   const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
+  const [effectiveToday, setEffectiveToday] = useState<Date>(new Date());
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
