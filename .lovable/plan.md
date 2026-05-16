@@ -1,61 +1,107 @@
-# P0 Stabilization — Remove AI/Credit Dependencies
+# P0 QA Test Lab — Admin-Only End-to-End Program Testing
 
-Goal: App runs fully without `LOVABLE_API_KEY`. No active code path calls Lovable AI Gateway. Existing UX preserved with deterministic replacements.
+Build an admin-gated QA Test Lab at `/admin/qa` that creates a fake coach + 5 athletes + 1 team, and lets you fast-forward the 56-day program by overriding "today" for that test cohort only. Real users and real data stay untouched.
 
-## Scope of confirmed AI touchpoints
+## What you'll be able to do
 
-Active calls found:
-- `src/components/questionnaire/QuestionnaireResults.tsx:114` → `invoke("analyze-questionnaire")`
-- `src/pages/Progress.tsx:54` → `invoke("generate-transformation-summary")`
-- `src/components/coach/TeamMentalState.tsx:97` → `invoke("team-mental-state")`
-- `supabase/functions/team-mental-state/index.ts:254-294` → optional Lovable AI call to generate `vibe`
-- `supabase/functions/analyze-questionnaire/index.ts` → AI gateway
-- `supabase/functions/generate-transformation-summary/index.ts` → AI gateway
+1. Open `/admin/qa` (admin only).
+2. Click **Create QA Cohort** → get 1 coach, 5 athletes, 1 team, credentials displayed once.
+3. Log in as any of them via `/auth` with the shown password.
+4. From `/admin/qa`, jump the test team to Day 1 / 7 / 28 / 56, or +1 day, or pick a custom day.
+5. The QA athletes' app behaves as if today is the simulated date — check-ins, journals, comprehension, completions, snapshots all write under the simulated date.
+6. Real coach/admin metrics exclude QA data by default; QA coach dashboard still shows the QA team normally.
+7. **Reset QA Cohort Data** wipes only QA-flagged rows. Auth users are archived, not deleted (safer).
 
-`src/lib/microAdjustment.ts` is already deterministic (only string/profile logic). Daily tasks are sourced from `src/content/dailyContent.ts` / `matrixDays.ts` — no active AI generation.
+## Scope guardrails
 
-## Changes
+- No changes to 56-day content, comprehension, scoring, AI/deterministic analysis, landing page, real product UX.
+- No new AI calls. No RLS weakening.
+- QA tooling is gated by `admin` role server-side (edge function checks `has_role`) AND client-side route guard.
 
-### 1. Deterministic questionnaire analysis
-- Add `src/lib/deterministicQuestionnaireAnalysis.ts` exporting `buildDeterministicQuestionnaireAnalysis(answers, profile?)`. Returns same shape consumed by `QuestionnaireResults`: `summary`, `strengths[]`, `development_areas[]`, `patterns[]`, `recommendations[]`, `mental_score` (0–100), `dominant_category`, `inner_excellence_profile { growth_mindset_score, presence_level, ego_freedom_score, emotional_control_score, purpose_orientation_score, pressure_regulation_score }`. Optional `training_day_tasks` / `rest_day_tasks` only if UI still reads them — framed as general recommendations.
-- Scoring: average Likert-style numeric answers per category (identity, resilience, focus, emotions, motivation, competition, recovery, environment, philosophy, neurocognition, inner_excellence, deep_profile). Map text/multi-choice to neutral defaults. Robust against missing answers.
-- Pattern rules: pressure↑+recovery↓, motivation↑+focus↓, self-criticism↑+identity↓, recovery↓.
-- Copy uses "deutet darauf hin / Orientierung / kein Diagnosewert".
-- Edit `src/components/questionnaire/QuestionnaireResults.tsx`: remove the `invoke("analyze-questionnaire")` block; build analysis locally, persist to `questionnaire_responses.analysis` via existing supabase update; update headings to "Dein Startprofil" / "Deterministische Auswertung".
+## Database changes (one migration)
 
-### 2. Deterministic progress summary
-- Add `src/lib/deterministicProgressSummary.ts` exporting `buildProgressSummary(baseline, retest, questions)`. Counts improved/unchanged categories, names strongest delta and most-open area. Returns `{ summary: string, hasEnoughData: boolean }`.
-- Edit `src/pages/Progress.tsx`: replace `invoke("generate-transformation-summary")` with local call. If insufficient data: "Noch nicht genug Daten für eine Verlaufszusammenfassung."
+Add columns:
+- `profiles.is_test_user boolean default false`
+- `teams.is_test_team boolean default false`
+- `program_instances.is_test_instance boolean default false`
 
-### 3. Deterministic team mental state
-- Edit `supabase/functions/team-mental-state/index.ts`: delete the AI block (lines ~254–320). Replace with deterministic `vibe` from existing aggregates:
-  - `readiness_index >= 75` → "Team-Bereitschaft wirkt hoch."
-  - 55–74 → "stabil"; <55 → "reduziert"
-  - Append clauses for stress≥7+recovery≤4, pressure≥7, team_connection≤4
-  - `n < 5` → null + "Zu wenig Daten…"
-- No `LOVABLE_API_KEY`, no `ai.gateway` reference remains in this function.
-- Edit `src/components/coach/TeamMentalState.tsx` copy: "Team-Zusammenfassung / Deterministische Auswertung / Basierend auf aggregierten Team-Pulse-Werten" instead of "KI-Vibe".
+New table `qa_time_overrides`:
+- `id, scope ('team'|'user'), team_id, user_id, simulated_date date, simulated_day_number int, created_by, created_at, updated_at`
+- RLS: only `admin` can select/insert/update/delete. No coach/athlete access (resolution happens server-side via edge function + client lib reads under admin... see note below).
 
-### 4. Deprecate AI-only edge functions
-- `supabase/functions/analyze-questionnaire/index.ts` and `supabase/functions/generate-transformation-summary/index.ts`: replace bodies with a 410 Gone JSON stub (`{ error: "deprecated, replaced by deterministic client logic" }`) and a header comment marking them deprecated. Keeps deployments stable; no AI gateway calls. (Avoid full deletion to keep migrations/risk low.)
+Note on RLS for `qa_time_overrides`: test athletes need to **read** their team's override at runtime. Two safe options:
+- (A) Add a SELECT policy: athletes can read overrides where they are member of the referenced team AND their profile `is_test_user = true`. Real users never match.
+- (B) Resolve via a `SECURITY DEFINER` function `get_effective_today(_user_id)` that admins/test users can call.
 
-### 5. Copy sweep
-- Search and replace user-facing strings: "KI erstellt", "KI generiert", "KI passt … an", "adaptive KI", "vollständig adaptiv", "KI-Analyse", "KI-Vibe", "AI coach" → "56-Tage-System", "feste Progression", "persönliche Einordnung", "Micro-Adjustment", "deterministische Auswertung", "Team-Zusammenfassung". Only edit files that currently contain those phrases (none found in landing components from initial scan; will re-grep across `src/` before editing).
+Plan uses **(B)** — cleaner, no extra RLS surface. RLS on `qa_time_overrides` stays admin-only.
 
-### 6. Validation
-- Final ripgrep for `LOVABLE_API_KEY` and `ai.gateway.lovable.dev` across `src/` and `supabase/functions/` — must return zero hits in active call sites (only deprecated stubs / comments).
-- TypeScript + build run by harness.
+New helpers (SECURITY DEFINER, search_path public):
+- `get_effective_today(_user_id uuid) returns date` — returns simulated date if user is test user with active override, else `CURRENT_DATE`.
+- `archive_qa_cohort(_team_id uuid)` — admin-only; deletes QA-flagged daily/journal/checkin/comprehension/snapshot/assessment/questionnaire/program_instance/team_member rows for that test team; marks team archived (rename + flag).
 
-## Out of scope (explicitly untouched)
-56-day content, daily tasks, science bites, comprehension, journals, Flame system, Evidence Engine, Admin Dashboard, Coach Dashboard structure, calendar ownership, FKS direction, comprehension `correctOptionId`, completion logic, co-coach permissions, micro-adjustment behavior (only comment cleanup if needed), DB schema, `personalized_tasks` table.
+Update `get_admin_overview_stats` and `get_admin_teams_summary` to **exclude** rows linked to `is_test_user`/`is_test_team` by default. Add a second function variant or boolean param `include_test boolean default false`.
 
-## Files to change
-- new `src/lib/deterministicQuestionnaireAnalysis.ts`
-- new `src/lib/deterministicProgressSummary.ts`
-- edit `src/components/questionnaire/QuestionnaireResults.tsx`
-- edit `src/pages/Progress.tsx`
-- edit `src/components/coach/TeamMentalState.tsx` (copy only)
-- edit `supabase/functions/team-mental-state/index.ts` (remove AI block, deterministic vibe)
-- edit (stub) `supabase/functions/analyze-questionnaire/index.ts`
-- edit (stub) `supabase/functions/generate-transformation-summary/index.ts`
-- copy edits in any landing/marketing file that contains AI claims (re-scanned at edit time)
+## Edge functions
+
+`supabase/functions/qa-create-cohort/index.ts`
+- Validates JWT, checks caller is admin via service-role client.
+- Uses Admin API (`auth.admin.createUser`) with `email_confirm: true` for 6 accounts.
+- Inserts profiles (`is_test_user=true`), user_roles, team (`is_test_team=true`, `program_start_date=today`), team_members, program_instances (`is_test_instance=true`).
+- Returns credentials JSON (shown once to admin).
+
+`supabase/functions/qa-set-time/index.ts`
+- Admin-only. Upserts `qa_time_overrides` for `{team_id, simulated_date, simulated_day_number}`.
+
+`supabase/functions/qa-archive-cohort/index.ts`
+- Admin-only. Calls `archive_qa_cohort` RPC.
+
+All three: CORS, `getClaims` JWT check, `has_role(..., 'admin')` enforcement.
+
+## Frontend changes
+
+New files:
+- `src/pages/AdminQA.tsx` — cohort list, Create/Reset buttons, credentials table with copy buttons, day-jump controls, simple checklist (computed from DB queries).
+- `src/lib/qaTime.ts` — `getEffectiveToday(userId)` calling RPC; `getEffectiveProgramDay(userId)` wrapping existing program-day calc with override.
+- `src/components/qa/QATestBanner.tsx` — small badge shown in dashboards when current user is test user or current team is test team.
+
+Route: add `<Route path="/admin/qa" element={<ProtectedRoute><AdminQA/></ProtectedRoute>}>` in `App.tsx`. Inside the page, guard with `role === 'admin'` (else redirect to `/`).
+
+Wire simulated date into daily write paths (only the date stamping, no logic changes):
+- `src/pages/Dashboard.tsx` (today resolution)
+- `src/components/dashboard/DailyCheckin.tsx` (date stamp)
+- `src/pages/Journal.tsx` (date stamp)
+- `src/components/daily/ComprehensionCheck.tsx` (date/day if applicable)
+- `src/lib/programProgress.ts` / snapshot writers
+- `src/lib/getCurrentProgramDay.ts` → accept an override date
+
+Pattern: each call site loads `effectiveToday` once via `qaTime.ts`. For real users this returns real `today` (no behavior change).
+
+Exclude test data from real metrics:
+- Update RPCs above; ensure `Admin.tsx` consumes the test-excluding versions by default with a toggle "Include test data" on `/admin/qa` only.
+
+## Security summary
+
+- `/admin/qa` route + page guarded by admin role.
+- Edge functions verify admin via JWT claims + `has_role`.
+- Service role used only inside edge functions.
+- `qa_time_overrides` RLS = admin-only; runtime resolution via SECURITY DEFINER RPC.
+- No impersonation. Admin logs in as QA user with displayed credentials.
+- Real-user dashboards unaffected; QA banner only renders when `is_test_user`/`is_test_team`.
+
+## Files to add / change (preview)
+
+Add: `src/pages/AdminQA.tsx`, `src/lib/qaTime.ts`, `src/components/qa/QATestBanner.tsx`, `supabase/functions/qa-create-cohort/index.ts`, `supabase/functions/qa-set-time/index.ts`, `supabase/functions/qa-archive-cohort/index.ts`.
+
+Edit: `src/App.tsx`, `src/pages/Dashboard.tsx`, `src/pages/Journal.tsx`, `src/components/dashboard/DailyCheckin.tsx`, `src/components/daily/ComprehensionCheck.tsx`, `src/lib/getCurrentProgramDay.ts`, `src/lib/programProgress.ts`, `src/pages/Admin.tsx` (link to `/admin/qa` + use test-excluded stats).
+
+Migration: one SQL file with column adds, `qa_time_overrides` table + RLS, `get_effective_today`, `archive_qa_cohort`, updated admin stat RPCs.
+
+## Acceptance criteria mapping
+
+All 15 acceptance criteria covered. Test-data exclusion is the default for `get_admin_overview_stats` / `get_admin_teams_summary`; QA page can opt-in.
+
+## Open questions before I build
+
+1. **Fixed dev password** (e.g. `RewireQA!2026`) shown in UI, or **random per cohort**? Random is safer; fixed is faster for repeat tests.
+2. **Reset behavior**: hard-delete QA auth users too, or only archive (keep auth users, wipe their data + rename team)? Archive is safer.
+3. **Env gate** `VITE_ENABLE_QA_TOOLS`: add it, or rely solely on admin-role gating? Admin-role gating is sufficient; env adds friction.
