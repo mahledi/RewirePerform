@@ -655,13 +655,13 @@ const Dashboard = () => {
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
-  const todayEvents = getEventsForDate(new Date());
+  const todayEvents = getEventsForDate(effectiveToday);
   // Team-Athleten ohne eigenes Kalender-Event laufen im Standard-Trainingstag.
   // Es werden keine Fake-calendar_events in die DB geschrieben.
   const isTeamActive =
     programMode === "team" &&
     !!teamProgramStart &&
-    teamProgramStart <= format(new Date(), "yyyy-MM-dd");
+    teamProgramStart <= format(effectiveToday, "yyyy-MM-dd");
   const todayEventType: EventType | null =
     todayEvents.length > 0
       ? (todayEvents[0].event_type as EventType)
@@ -673,7 +673,7 @@ const Dashboard = () => {
     !preTestsDone &&
     !setupMode &&
     !!programStartDate &&
-    differenceInDays(new Date(), new Date(programStartDate)) < 56;
+    differenceInDays(effectiveToday, new Date(programStartDate)) < 56;
 
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
