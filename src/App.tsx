@@ -20,6 +20,7 @@ import Admin from "./pages/Admin.tsx";
 import AdminContent from "./pages/AdminContent.tsx";
 import AdminQA from "./pages/AdminQA.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import QATestBanner from "./components/qa/QATestBanner";
 
 const queryClient = new QueryClient();
 
