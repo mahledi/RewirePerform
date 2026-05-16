@@ -23,7 +23,7 @@ const CTASection = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/auth?switch=1")}
               className="group inline-flex items-center justify-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow hover:scale-[1.02]"
             >
               Zugang sichern
