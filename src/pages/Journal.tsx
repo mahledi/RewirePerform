@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
+import { getEffectiveTodayDate } from "@/lib/qaTime";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
 const Journal = () => {
