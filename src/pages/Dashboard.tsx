@@ -530,7 +530,7 @@ const Dashboard = () => {
 
   const checkTodayCheckin = async () => {
     setCheckinStatusLoading(true);
-    const today = format(new Date(), "yyyy-MM-dd");
+    const today = format(effectiveToday, "yyyy-MM-dd");
 
     const checkinQuery = supabase
       .from("daily_checkins")
