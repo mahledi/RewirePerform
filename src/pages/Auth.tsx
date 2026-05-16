@@ -176,7 +176,7 @@ const Auth = () => {
   };
 
   // Don't flash login UI while restoring session or while a logged-in user is being redirected
-  if (authLoading || user) {
+  if (authLoading || switching || (user && !forceSwitch)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
