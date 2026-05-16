@@ -401,7 +401,7 @@ const Dashboard = () => {
         return;
       }
 
-      const today = format(new Date(), "yyyy-MM-dd");
+      const today = format(effectiveToday, "yyyy-MM-dd");
       if (modeInfo.teamStartDate > today) {
         setWaitingForCoach(true);
         setLoading(false);
