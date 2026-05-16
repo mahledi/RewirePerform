@@ -194,6 +194,22 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           <p className="text-center text-xs text-muted-foreground mt-4">
             Deine Antworten sind vertraulich und werden ausschließlich für dein Programm verwendet.
           </p>
+
+          {isTestUser && (
+            <div className="mt-8 p-4 rounded-xl border border-dashed border-primary/40 bg-primary/5">
+              <p className="text-xs text-muted-foreground mb-3 text-center">
+                QA-Modus erkannt. Du kannst den Fragebogen mit neutralen Default-Antworten überspringen.
+              </p>
+              <button
+                onClick={handleQASkip}
+                disabled={skipping}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-all disabled:opacity-50"
+              >
+                {skipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <FastForward className="w-4 h-4" />}
+                {skipping ? "Wird vorbereitet..." : "Fragebogen überspringen (QA)"}
+              </button>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>
