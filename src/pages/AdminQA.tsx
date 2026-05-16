@@ -128,7 +128,7 @@ const AdminQA = () => {
     toast.success("Copied");
   };
 
-  if (authLoading || loading) {
+  if (authLoading || role === null || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
