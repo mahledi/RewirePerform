@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Users, Shield, UserPlus, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,15 +11,27 @@ type Intent = "solo" | "join" | "create";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const forceSwitch = searchParams.get("switch") === "1";
   const { user, role, loading: authLoading } = useAuth();
+  const [switching, setSwitching] = useState(forceSwitch);
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (!forceSwitch) return;
+    // Sign out any existing session so the login form is shown
+    supabase.auth.signOut().finally(() => {
+      try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
+      setSwitching(false);
+    });
+  }, [forceSwitch]);
+
+  useEffect(() => {
+    if (authLoading || switching || !user) return;
     if (role === "admin") navigate("/admin", { replace: true });
     else if (role === "coach") navigate("/coach", { replace: true });
     else if (role === "athlete") navigate("/dashboard", { replace: true });
     // if role still null but user exists, wait for role to load
-  }, [user, role, authLoading, navigate]);
+  }, [user, role, authLoading, switching, navigate]);
 
   const [mode, setMode] = useState<Mode>("intent");
   const [intent, setIntent] = useState<Intent>("solo");
@@ -164,7 +176,7 @@ const Auth = () => {
   };
 
   // Don't flash login UI while restoring session or while a logged-in user is being redirected
-  if (authLoading || user) {
+  if (authLoading || switching || (user && !forceSwitch)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
