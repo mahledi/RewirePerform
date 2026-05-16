@@ -371,6 +371,8 @@ const Dashboard = () => {
     };
 
     loadAnalysis();
+    // Resolve QA-simulated date once for this session (returns real today for real users)
+    getEffectiveTodayDate(user!.id).then(setEffectiveToday).catch(() => {});
     checkSetup();
   }, []);
 
