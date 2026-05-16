@@ -18,6 +18,7 @@ import Journal from "./pages/Journal.tsx";
 import PreTraining from "./pages/PreTraining.tsx";
 import Admin from "./pages/Admin.tsx";
 import AdminContent from "./pages/AdminContent.tsx";
+import AdminQA from "./pages/AdminQA.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
