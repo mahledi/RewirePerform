@@ -776,7 +776,7 @@ const Dashboard = () => {
     return (
       <DailyCheckin
         eventType={todayEventType as EventType}
-        date={new Date()}
+        date={effectiveToday}
         onClose={async () => {
           setShowCheckin(false);
           await checkTodayCheckin();
