@@ -17,7 +17,7 @@ const Navbar = () => {
           <a href="#coaches" className="hover:text-foreground transition-colors">Coaches</a>
           <a href="#evidence" className="hover:text-foreground transition-colors">Evidenz</a>
         </div>
-        <button onClick={() => navigate("/auth")} className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
+        <button onClick={() => navigate("/auth?switch=1")} className="px-5 py-2 rounded-lg bg-primary font-heading font-medium text-sm text-primary-foreground hover:shadow-glow transition-all">
           Zugang
         </button>
       </div>
