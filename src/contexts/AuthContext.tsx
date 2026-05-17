@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Failed to fetch user role", err);
       // Offline-Fallback: gecachte Rolle aus localStorage verwenden
       const cached = window.localStorage.getItem("cached_user_role") as AppRole;
-      if (cached) setRole(cached);
+      if (cached === "athlete" || cached === "coach") setRole(cached);
     }
   };
 

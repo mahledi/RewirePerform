@@ -259,28 +259,37 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     };
 
     let error: any = null;
-    const { data: existingRows } = await supabase
+    const { data: existingRows, error: lookupError } = await supabase
       .from("daily_checkins")
       .select("id")
       .eq("user_id", user.id)
       .eq("date", dateStr)
       .limit(1);
+    if (lookupError) error = lookupError;
 
     const existing = existingRows?.[0];
-    if (existing) {
+    if (!error && existing) {
       const { error: updateError } = await supabase
         .from("daily_checkins")
         .update(payload)
         .eq("id", existing.id);
       error = updateError;
-    } else {
+    } else if (!error) {
       const { error: insertError } = await supabase.from("daily_checkins").insert(payload);
       error = insertError;
     }
 
+    if (error) {
+      setSaving(false);
+      console.error("Checkin save error:", error);
+      const { toast } = await import("sonner");
+      toast.error("Check-in konnte nicht gespeichert werden.");
+      return;
+    }
+
     // Persist day completion (orchestration layer)
     if (assignmentId && resolved) {
-      await upsertCompletion({
+      const { error: completionError } = await upsertCompletion({
         assignmentId,
         userId: user.id,
         dayNumber: resolved.matrix.dayNumber,
@@ -289,16 +298,16 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         variantUsed: eventType,
         programInstanceId: instance?.id ?? null,
       });
+      if (completionError) {
+        setSaving(false);
+        console.error("Completion save error:", completionError);
+        const { toast } = await import("sonner");
+        toast.error("Fortschritt konnte nicht gespeichert werden.");
+        return;
+      }
     }
 
     setSaving(false);
-
-    if (error) {
-      console.error("Checkin save error:", error);
-      const { toast } = await import("sonner");
-      toast.error("Check-in konnte nicht gespeichert werden.");
-      return;
-    }
 
     setStep(6);
   };
