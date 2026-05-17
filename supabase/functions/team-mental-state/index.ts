@@ -90,18 +90,34 @@ serve(async (req) => {
       });
     }
 
-    // Verify ownership
+    // Verify team access. Primary coaches own the team; co-coaches are members
+    // with a coach role and should see the same aggregated, privacy-safe view.
     const { data: team } = await supabase
       .from("teams")
-      .select("id")
+      .select("id, created_by")
       .eq("id", team_id)
-      .eq("created_by", user.id)
       .maybeSingle();
     if (!team) {
       return new Response(JSON.stringify({ error: "Team not found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (team.created_by !== user.id) {
+      const { data: membership } = await supabase
+        .from("team_members")
+        .select("team_id")
+        .eq("team_id", team_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!membership) {
+        return new Response(JSON.stringify({ error: "Team not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Athletes in this team

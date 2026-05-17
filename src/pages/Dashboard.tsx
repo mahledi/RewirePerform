@@ -90,7 +90,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
   const { user } = useAuth();
 
   const handleSave = async () => {
-    if (filledDays < 7) return;
+    if (filledDays < 56) return;
     setSaving(true);
 
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
@@ -201,7 +201,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Wähle unten ein Tool und tippe auf die Tage. Du kannst den Kalender später jederzeit anpassen.
+            Wähle unten ein Tool und tippe auf alle 56 Programmtage. Du kannst den Kalender später jederzeit anpassen.
           </p>
         </motion.div>
 
@@ -286,15 +286,15 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSave}
-          disabled={filledDays < 7 || saving}
+          disabled={filledDays < 56 || saving}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
-            filledDays >= 7 ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
+            filledDays >= 56 ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
           }`}
         >
           {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />Programm wird angelegt...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
         </motion.button>
-        {filledDays < 7 && (
-          <p className="text-xs text-muted-foreground text-center mt-3">Mindestens 7 Tage eintragen.</p>
+        {filledDays < 56 && (
+          <p className="text-xs text-muted-foreground text-center mt-3">Alle 56 Tage eintragen, damit dein Programm täglich trägt.</p>
         )}
       </div>
     </div>
@@ -352,6 +352,8 @@ const Dashboard = () => {
   }, [role, navigate]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const loadAnalysis = async () => {
       const { data } = await supabase
         .from("questionnaire_responses")
@@ -370,13 +372,17 @@ const Dashboard = () => {
       }
     };
 
-    loadAnalysis();
-    // Resolve QA-simulated date once for this session (returns real today for real users)
-    getEffectiveTodayDate(user!.id).then(setEffectiveToday).catch(() => {});
-    checkSetup();
-  }, []);
+    const initializeDashboard = async () => {
+      await loadAnalysis();
+      const resolvedToday = await getEffectiveTodayDate(user.id).catch(() => new Date());
+      setEffectiveToday(resolvedToday);
+      await checkSetup(resolvedToday);
+    };
 
-  const checkSetup = async () => {
+    initializeDashboard();
+  }, [user?.id]);
+
+  const checkSetup = async (referenceDate = effectiveToday) => {
     const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
     const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
 
@@ -401,7 +407,7 @@ const Dashboard = () => {
         return;
       }
 
-      const today = format(effectiveToday, "yyyy-MM-dd");
+      const today = format(referenceDate, "yyyy-MM-dd");
       if (modeInfo.teamStartDate > today) {
         setWaitingForCoach(true);
         setLoading(false);
@@ -489,7 +495,7 @@ const Dashboard = () => {
 
     if (settings?.program_start) {
       setProgramStartDate(settings.program_start);
-      const daysSince = differenceInDays(new Date(), new Date(settings.program_start));
+      const daysSince = differenceInDays(effectiveToday, new Date(settings.program_start));
 
       const { data: preTests } = await supabase
         .from("assessments")
@@ -563,7 +569,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!setupMode && !loading) refreshDashboardStatus();
-  }, [setupMode, loading, user?.id]);
+  }, [setupMode, loading, user?.id, effectiveToday]);
 
   // Re-check assessments when navigating back to dashboard
   useEffect(() => {
@@ -572,7 +578,7 @@ const Dashboard = () => {
     };
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
-  }, [setupMode, loading, user?.id]);
+  }, [setupMode, loading, user?.id, effectiveToday]);
 
   // Speichert das Wettkampfziel. Früher wurde hier ein KI-Sync getriggert; seit der Matrix-Architektur
   // sind die Tagesinhalte deterministisch — diese Funktion speichert ausschließlich den zeitlichen Anker.
@@ -608,7 +614,7 @@ const Dashboard = () => {
           user_id: user!.id,
           competition_date: normalizedCompetitionDate,
           competition_name: competitionName || null,
-          program_start: format(new Date(), "yyyy-MM-dd"),
+          program_start: format(effectiveToday, "yyyy-MM-dd"),
         });
       }
       toast.success("Wettkampfziel gespeichert.");

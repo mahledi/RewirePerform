@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Download, FileJson, FileText, Wifi, WifiOff, Loader2 } from "lucide-react";
+import { ArrowLeft, FileJson, FileText, Wifi, WifiOff, Loader2 } from "lucide-react";
 import DayContentDetail from "@/components/admin/DayContentDetail";
 import {
   downloadFile,
@@ -22,8 +22,6 @@ const phaseColor: Record<number, string> = {
   3: "bg-amber-500/15 text-amber-400 border-amber-500/30",
   4: "bg-primary/15 text-primary border-primary/30",
 };
-
-const CACHED_ROLE_KEY = "cached_user_role";
 
 const AdminContent = () => {
   const { user, role, loading } = useAuth();
@@ -48,10 +46,6 @@ const AdminContent = () => {
   useEffect(() => {
     setNoteCount(Object.keys(getAllNotes()).length);
   }, [openDay]);
-
-  // Offline-fähiger Rollen-Check: nutzt gecachte Rolle wenn DB nicht erreichbar
-  const cachedRole = typeof window !== "undefined" ? window.localStorage.getItem(CACHED_ROLE_KEY) : null;
-  const effectiveRole = role ?? cachedRole;
 
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -78,7 +72,7 @@ const AdminContent = () => {
     downloadFile(`admin-notes-${new Date().toISOString().slice(0, 10)}.md`, exportAsMarkdown(), "text/markdown");
   };
 
-  if (loading && !cachedRole) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -86,7 +80,7 @@ const AdminContent = () => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  if (effectiveRole !== "admin") return <Navigate to="/" replace />;
+  if (role !== "admin") return <Navigate to="/" replace />;
 
   // Detail-Ansicht
 
