@@ -13,6 +13,8 @@ import {
   Users,
   Zap,
   Lock,
+  Compass,
+  Target,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -29,6 +31,9 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
+import { resolveDay } from "@/lib/getDayContent";
+import type { ResolvedDay } from "@/content/matrixDayTypes";
 
 interface TrendPoint {
   week: string;
@@ -81,9 +86,120 @@ interface TeamMentalData {
   coach_hints?: string[];
 }
 
+interface TeamRow {
+  id: string;
+  name: string;
+  program_start_date: string | null;
+}
+
+type Tone = "stabil" | "aktiviert" | "belastet" | "fragil" | "unklar";
+
+const valueLabel = (value: number | null | undefined, high = "hoch", mid = "mittel", low = "niedrig") => {
+  if (typeof value !== "number") return "nicht ausreichend sichtbar";
+  if (value >= 7) return high;
+  if (value >= 5) return mid;
+  return low;
+};
+
+const buildTeamMirror = (today?: WellbeingDay): { tone: Tone; headline: string; body: string; load: string; resources: string } => {
+  if (!today?.sufficient_data) {
+    return {
+      tone: "unklar",
+      headline: "Noch kein belastbares Tagesbild",
+      body: "Für ein anonymisiertes Lagebild braucht es ausreichend Check-ins. Einzelwerte bleiben verborgen.",
+      load: "nicht ausreichend sichtbar",
+      resources: "nicht ausreichend sichtbar",
+    };
+  }
+
+  const readiness = today.readiness_index;
+  const stress = today.stress;
+  const pressure = today.pressure;
+  const recovery = today.recovery;
+  const focus = today.focus;
+  const energy = today.energy;
+  const connection = today.team_connection;
+  const loadAvg = [stress, pressure].filter((v): v is number => typeof v === "number").reduce((a, b) => a + b, 0) / Math.max(1, [stress, pressure].filter((v) => typeof v === "number").length);
+  const resourceAvg = [energy, focus, recovery, connection].filter((v): v is number => typeof v === "number").reduce((a, b) => a + b, 0) / Math.max(1, [energy, focus, recovery, connection].filter((v) => typeof v === "number").length);
+
+  let tone: Tone = "stabil";
+  if (typeof readiness === "number" && readiness < 45) tone = "fragil";
+  else if (loadAvg >= 7 && resourceAvg < 5.5) tone = "belastet";
+  else if (resourceAvg >= 7 && loadAvg <= 5.5) tone = "aktiviert";
+
+  const headlineByTone: Record<Tone, string> = {
+    stabil: "Stabiles Arbeitsfenster",
+    aktiviert: "Gute Aktivierung im Team",
+    belastet: "Erhöhte Last bei begrenzten Ressourcen",
+    fragil: "Sensibles Tagesfenster",
+    unklar: "Noch kein belastbares Tagesbild",
+  };
+
+  const body = [
+    `Bereitschaft: ${typeof readiness === "number" ? `${readiness}/100` : "nicht ausreichend sichtbar"}.`,
+    `Fokus wirkt ${valueLabel(focus)}; Energie wirkt ${valueLabel(energy)}.`,
+    `Druck/Spannung wirkt ${valueLabel(loadAvg, "hoch", "mittel", "niedrig")}; Erholung wirkt ${valueLabel(recovery)}.`,
+    `Teamverbundenheit wirkt ${valueLabel(connection)}.`,
+  ].join(" ");
+
+  return {
+    tone,
+    headline: headlineByTone[tone],
+    body,
+    load: valueLabel(loadAvg, "hoch", "mittel", "niedrig"),
+    resources: valueLabel(resourceAvg, "hoch", "mittel", "niedrig"),
+  };
+};
+
+const buildLensMatchpoints = (today: WellbeingDay | undefined, resolved: ResolvedDay | null): string[] => {
+  if (!today?.sufficient_data) return ["Noch keine belastbare Team-Tendenz für einen Abgleich mit der heutigen Linse."];
+  if (!resolved) return ["Die heutige Programmlinie ist noch nicht verfügbar. Das Team-Bild bleibt trotzdem anonymisiert interpretierbar."];
+
+  const items: string[] = [];
+  const lens = resolved.matrix.lens;
+  const lowFocus = typeof today.focus === "number" && today.focus <= 5;
+  const highPressure = typeof today.pressure === "number" && today.pressure >= 7;
+  const highStress = typeof today.stress === "number" && today.stress >= 7;
+  const lowRecovery = typeof today.recovery === "number" && today.recovery <= 5;
+  const lowConnection = typeof today.team_connection === "number" && today.team_connection <= 5;
+  const goodReadiness = typeof today.readiness_index === "number" && today.readiness_index >= 65;
+
+  items.push(`Heutige Linse: ${lens}. Der sinnvollste Match ist, Training und Ansprache auf diese Wahrnehmungsqualität auszurichten, ohne daraus eine Pflichtübung zu machen.`);
+
+  if (highPressure || highStress) {
+    items.push("Wenn Druck oder innere Spannung heute sichtbar sind, könnte eine ruhige Prozesssprache besonders gut zur Linse passen: weniger Bewertung, mehr klare Ausführungskriterien.");
+  }
+  if (lowFocus) {
+    items.push("Wenn Fokus heute schwächer wirkt, könnte ein einzelner gemeinsamer Cue reichen. Mehrere parallele Botschaften würden wahrscheinlich eher zerstreuen.");
+  }
+  if (lowRecovery) {
+    items.push("Bei niedriger Erholung könnte es passen, mentale Qualität über Präzision und Rhythmus zu steuern, nicht über zusätzliche Intensität.");
+  }
+  if (lowConnection) {
+    items.push("Wenn Teamverbundenheit niedrig wirkt, könnte ein kurzer gemeinsamer Standard vor der Einheit helfen, ohne daraus ein großes Teamgespräch zu machen.");
+  }
+  if (goodReadiness && !highPressure && !highStress) {
+    items.push("Das Team wirkt heute aufnahmefähig. Falls es in die Einheit passt, kann die Linse etwas expliziter in Coaching-Sprache und Feedback auftauchen.");
+  }
+  if (items.length === 1) {
+    items.push("Die aggregierten Werte wirken heute unauffällig. Die Linse kann leise mitlaufen: kurz benennen, im Training beobachten, nicht übererklären.");
+  }
+  return items;
+};
+
+const softenCoachObservation = (text: string) =>
+  text
+    .replace(/^Team-Energie wirkt niedrig\. Fokus:\s*/i, "Team-Energie wirkt niedrig. Möglich anschlussfähig wäre: ")
+    .replace(/^Fokus wirkt niedrig\. Hilfreich:\s*/i, "Fokus wirkt niedrig. Möglich anschlussfähig wäre: ")
+    .replace(/^Bewertungsdruck wirkt hoch\. Hilfreich:\s*/i, "Bewertungsdruck wirkt hoch. Möglich anschlussfähig wäre: ")
+    .replace(/^Teamverbundenheit wirkt niedrig\. Hilfreich:\s*/i, "Teamverbundenheit wirkt niedrig. Möglich anschlussfähig wäre: ")
+    .replace(/^Hohe Spannung bei niedriger Erholung\.\s*/i, "Hohe Spannung bei niedriger Erholung ist sichtbar. ")
+    .replace(/^Aggregierte Werte wirken stabil\. Weiter wie geplant\./i, "Aggregierte Werte wirken stabil. Die heutige Linse kann ruhig mitlaufen, ohne besondere Anpassung zu verlangen.");
+
 const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const { session } = useAuth();
   const [data, setData] = useState<TeamMentalData | null>(null);
+  const [team, setTeam] = useState<TeamRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,15 +210,19 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       setError(null);
 
       try {
-        const resp = await supabase.functions.invoke("team-mental-state", {
-          body: { team_id: teamId },
-        });
+        const [resp, teamResp] = await Promise.all([
+          supabase.functions.invoke("team-mental-state", {
+            body: { team_id: teamId },
+          }),
+          supabase.from("teams").select("id, name, program_start_date").eq("id", teamId).maybeSingle(),
+        ]);
 
         if (resp.error) {
           setError("Daten konnten nicht geladen werden.");
           console.error(resp.error);
         } else {
           setData(resp.data);
+          setTeam((teamResp.data as TeamRow | null) ?? null);
         }
       } catch (e) {
         setError("Verbindungsfehler.");
@@ -197,6 +317,10 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
     mood: data.mood.trend[i]?.value ?? 0,
     focus: data.focus.trend[i]?.value ?? 0,
   }));
+  const dayInfo = team?.program_start_date ? getCurrentProgramDay(team.program_start_date) : null;
+  const resolvedToday = dayInfo ? resolveDay(dayInfo.dayNumber, new Date(), "training") : null;
+  const teamMirror = buildTeamMirror(data.wellbeing?.today);
+  const lensMatchpoints = buildLensMatchpoints(data.wellbeing?.today, resolvedToday);
 
   return (
     <div className="space-y-4">
@@ -272,18 +396,71 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         </div>
       )}
 
+      {/* ─── Team State x Today's Lens ─── */}
+      {data.wellbeing && (
+        <div className="bg-card border border-primary/20 rounded-2xl p-4 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Compass className="w-4 h-4 text-primary" />
+                Teamzustand × heutige Linse
+              </h3>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Neutraler Spiegel · mögliche Matchpoints · keine Handlungsanweisung
+              </p>
+            </div>
+            {resolvedToday && (
+              <div className="text-right shrink-0">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tag</p>
+                <p className="text-lg font-bold text-primary">{resolvedToday.matrix.dayNumber}/56</p>
+              </div>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-[1fr_1.2fr] gap-3">
+            <div className="bg-secondary/30 border border-border/40 rounded-xl p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Aktuelles Team-Bild</p>
+              <p className="text-sm font-semibold text-foreground mb-2">{teamMirror.headline}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{teamMirror.body}</p>
+            </div>
+            <div className="bg-primary/5 border border-primary/15 rounded-xl p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Linse im Spielerprogramm</p>
+              <p className="text-sm font-semibold text-foreground mb-2">
+                {resolvedToday?.matrix.lens ?? "Noch keine heutige Linse verfügbar"}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {resolvedToday?.matrix.practiceFocus ?? "Sobald das Teamprogramm läuft, wird die Tageslinie hier mit dem Teamzustand abgeglichen."}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Mögliche Matchpoints</p>
+            {lensMatchpoints.map((item, i) => (
+              <div key={i} className="flex gap-2 text-xs text-muted-foreground leading-relaxed">
+                <Target className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                <p>{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ─── Coach-Hinweise (deterministisch, aggregiert) ─── */}
       {data.coach_hints && data.coach_hints.length > 0 && (
         <div className="bg-card border border-border/50 rounded-2xl p-4 space-y-2">
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            Heutige Hinweise (aggregiert)
+            Weitere Beobachtungen
           </h3>
+          <p className="text-[10px] text-muted-foreground">
+            Deterministisch aus aggregierten Tageswerten. Als Gesprächs- und Trainingskontext gedacht, nicht als Vorgabe.
+          </p>
           <ul className="space-y-2">
             {data.coach_hints.map((h, i) => (
               <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
                 <span className="text-primary mt-0.5">•</span>
-                <span>{h}</span>
+                <span>{softenCoachObservation(h)}</span>
               </li>
             ))}
           </ul>

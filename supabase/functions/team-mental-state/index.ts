@@ -349,21 +349,21 @@ serve(async (req) => {
       if (!agg.sufficient_data) return ["Noch nicht genug anonymisierte Daten für Team-Tendenzen."];
       const hints: string[] = [];
       if (typeof agg.stress === "number" && typeof agg.recovery === "number" && agg.stress >= 7 && agg.recovery <= 4) {
-        hints.push("Hohe Spannung bei niedriger Erholung. Heute könnten klare Struktur, kürzere Erklärungen und weniger Zusatzdruck hilfreich sein.");
+        hints.push("Hohe Spannung bei niedriger Erholung ist sichtbar. Falls es zum Trainingsplan passt, könnte eine klarere Struktur mit weniger Zusatzdruck gut anschließen.");
       }
       if (typeof agg.energy === "number" && agg.energy <= 4) {
-        hints.push("Team-Energie wirkt niedrig. Fokus: klare Trainingsstruktur, kurze Anweisungen und saubere Belastungssteuerung.");
+        hints.push("Team-Energie wirkt niedrig. Eine reduzierte, präzise Ansprache und saubere Belastungssteuerung könnten heute besser passen als zusätzliche Komplexität.");
       }
       if (typeof agg.focus === "number" && agg.focus <= 4) {
-        hints.push("Fokus wirkt niedrig. Hilfreich: ein klarer Tages-Cue, weniger parallele Informationen, mehr Wiederholung.");
+        hints.push("Fokus wirkt niedrig. Ein einzelner Tages-Cue und weniger parallele Informationen könnten die heutige Linse leichter greifbar machen.");
       }
       if (typeof agg.pressure === "number" && agg.pressure >= 7) {
-        hints.push("Bewertungsdruck wirkt hoch. Hilfreich: Prozesssprache statt Ergebnisdruck.");
+        hints.push("Bewertungsdruck wirkt hoch. Prozesssprache statt Ergebnisdruck könnte heute mehr Anschlussfähigkeit erzeugen.");
       }
       if (typeof agg.team_connection === "number" && agg.team_connection <= 4) {
-        hints.push("Teamverbundenheit wirkt niedrig. Hilfreich: kurze gemeinsame Standards, Paar-/Gruppenaufgaben oder positive Teamrückmeldung.");
+        hints.push("Teamverbundenheit wirkt niedrig. Ein kurzer gemeinsamer Standard oder eine kleine Paar-/Gruppenform könnte passen, ohne daraus ein großes Thema zu machen.");
       }
-      if (hints.length === 0) hints.push("Aggregierte Werte wirken stabil. Weiter wie geplant.");
+      if (hints.length === 0) hints.push("Aggregierte Werte wirken stabil. Die heutige Linse kann ruhig mitlaufen, ohne besondere Anpassung zu verlangen.");
       return hints;
     };
 
