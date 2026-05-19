@@ -7,8 +7,8 @@
  *   - comprehension_average
  *   - tasks/checkins/journals counts
  *
- * Wird beim Dashboard-Load aufgerufen. Pro (user, date) existiert nur ein
- * Eintrag dank UNIQUE-Constraint — wir nutzen upsert.
+ * Wird beim Dashboard-Load aufgerufen. Pro (user, date) bzw. pro
+ * (user, program_instance_id, date) soll nur ein Eintrag existieren.
  */
 import { format, differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,12 +161,31 @@ export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnaps
     journals_completed_count: journalsCount,
   };
 
-  // Cohort-scoped upsert. If there is no instance yet, fall back to legacy unique.
-  const { error } = await supabase
+  let existingQuery = supabase
     .from("program_progress_snapshots")
-    .upsert(snapshot, {
-      onConflict: instanceId ? "user_id,program_instance_id,date" : "user_id,date",
-    });
+    .select("id")
+    .eq("user_id", userId)
+    .eq("date", todayStr);
+
+  existingQuery = instanceId
+    ? existingQuery.eq("program_instance_id", instanceId)
+    : existingQuery.is("program_instance_id", null);
+
+  const { data: existing, error: lookupError } = await existingQuery.maybeSingle();
+
+  if (lookupError) {
+    console.error("upsertTodaySnapshot lookup error:", lookupError);
+    return null;
+  }
+
+  const { error } = existing?.id
+    ? await supabase
+        .from("program_progress_snapshots")
+        .update(snapshot)
+        .eq("id", existing.id)
+    : await supabase
+        .from("program_progress_snapshots")
+        .insert(snapshot);
 
   if (error) {
     console.error("upsertTodaySnapshot error:", error);

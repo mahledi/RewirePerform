@@ -57,6 +57,7 @@ const Journal = () => {
       setAnswers((existing.answers as Record<string, string>) ?? {});
       setGratitude(existing.gratitude ?? "");
       setFreeReflection(existing.free_reflection ?? "");
+      setDone(true);
     }
     setLoading(false);
   };
