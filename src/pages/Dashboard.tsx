@@ -573,8 +573,8 @@ const Dashboard = () => {
     const q = supabase.from("deep_profile_assessments").select("timing").eq("user_id", user!.id);
     const { data } = await q;
     const timings = new Set((data || []).map((d: any) => d.timing));
-    setBaselineDone(timings.has("baseline"));
-    setRetestDone(timings.has("retest"));
+    setBaselineDone(timings.has("pre") || timings.has("baseline"));
+    setRetestDone(timings.has("post") || timings.has("retest"));
   };
 
   const refreshDashboardStatus = async () => {

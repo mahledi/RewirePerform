@@ -4,6 +4,7 @@ import QuestionnaireIntro from "@/components/questionnaire/QuestionnaireIntro";
 import QuestionnaireFlow from "@/components/questionnaire/QuestionnaireFlow";
 import QuestionnaireResults from "@/components/questionnaire/QuestionnaireResults";
 import { supabase } from "@/integrations/supabase/client";
+import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
 
 type Phase = "loading" | "intro" | "resume" | "flow" | "results";
 
@@ -33,6 +34,7 @@ const Questionnaire = () => {
         .select("id, answers, last_category_index, progress_updated_at")
         .eq("user_id", user.id)
         .eq("is_complete", false)
+        .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
         .order("progress_updated_at", { ascending: false });
 
       if (error) {

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Users, Shield, UserPlus, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptionText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -69,7 +70,7 @@ const Auth = () => {
         const s = answers["sport-01"] || null;
         const position = answers["sport-02"] || null;
         if (s) {
-          await supabase.from("profiles").update({ sport: s, team: position }).eq("id", userId);
+          await supabase.from("profiles").update({ sport: getOptionText("sport-01", s), team: position }).eq("id", userId);
         }
       }
     }

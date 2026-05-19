@@ -101,15 +101,15 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
           <div className="mt-6 space-y-3">
             {question.options?.map((opt) => (
               <button
-                key={opt}
-                onClick={() => onAnswer(opt)}
+                key={opt.id}
+                onClick={() => onAnswer(opt.id)}
                 className={`w-full text-left p-4 rounded-xl border transition-all ${
-                  answer === opt
+                  answer === opt.id
                     ? "border-primary bg-primary/10 text-foreground"
                     : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
                 }`}
               >
-                <span className="text-sm">{opt}</span>
+                <span className="text-sm">{opt.text}</span>
               </button>
             ))}
           </div>
@@ -119,15 +119,15 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
         {question.type === "multi" && (
           <div className="mt-6 space-y-3">
             {question.options?.map((opt) => {
-              const selected = Array.isArray(answer) && answer.includes(opt);
+              const selected = Array.isArray(answer) && answer.includes(opt.id);
               return (
                 <button
-                  key={opt}
+                  key={opt.id}
                   onClick={() => {
                     const current = Array.isArray(answer) ? answer : [];
                     const updated = selected
-                      ? current.filter((a) => a !== opt)
-                      : [...current, opt];
+                      ? current.filter((a) => a !== opt.id)
+                      : [...current, opt.id];
                     onAnswer(updated);
                   }}
                   className={`w-full text-left p-4 rounded-xl border transition-all ${
@@ -148,7 +148,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                         </svg>
                       )}
                     </div>
-                    <span className="text-sm">{opt}</span>
+                    <span className="text-sm">{opt.text}</span>
                   </div>
                 </button>
               );

@@ -8,6 +8,10 @@ import { toast } from "@/hooks/use-toast";
 import QuestionnaireProgress from "./QuestionnaireProgress";
 import QuestionCard from "./QuestionCard";
 import CategoryIntro from "./CategoryIntro";
+import {
+  ONBOARDING_V2_INSTRUMENT_ID,
+  ONBOARDING_V2_VERSION,
+} from "@/content/questionnaireV2";
 
 interface QuestionnaireFlowProps {
   onComplete: (answers: Record<string, string | string[] | number>) => void;
@@ -117,6 +121,9 @@ const QuestionnaireFlow = ({
               answers: currentAnswers as any,
               last_category_index: categoryIndex,
               progress_updated_at: new Date().toISOString(),
+              instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+              questionnaire_version: ONBOARDING_V2_VERSION,
+              timing: "pre",
             })
             .eq("id", draftIdRef.current);
           if (error) throw error;
@@ -129,6 +136,10 @@ const QuestionnaireFlow = ({
               answers: currentAnswers as any,
               last_category_index: categoryIndex,
               is_complete: false,
+              instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+              questionnaire_version: ONBOARDING_V2_VERSION,
+              timing: "pre",
+              scores: {},
             })
             .select("id")
             .single();
@@ -151,6 +162,9 @@ const QuestionnaireFlow = ({
                   answers: currentAnswers as any,
                   last_category_index: categoryIndex,
                   progress_updated_at: new Date().toISOString(),
+                  instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+                  questionnaire_version: ONBOARDING_V2_VERSION,
+                  timing: "pre",
                 })
                 .eq("id", rescued.id);
             } else {
@@ -207,6 +221,9 @@ const QuestionnaireFlow = ({
             answers: answers as any,
             is_complete: true,
             last_category_index: categories.length,
+            instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+            questionnaire_version: ONBOARDING_V2_VERSION,
+            timing: "pre",
           })
           .eq("id", draftIdRef.current);
       }
