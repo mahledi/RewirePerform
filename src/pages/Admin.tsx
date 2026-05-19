@@ -92,6 +92,11 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+const formatPercent = (value: number | null) => {
+  if (value == null || !Number.isFinite(value)) return "–";
+  return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+};
+
 const Admin = () => {
   const { role, loading: authLoading, user } = useAuth();
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -108,8 +113,8 @@ const Admin = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = supabase as any;
     const [ov, ts, hl, fb] = await Promise.all([
-      sb.rpc("get_admin_overview_stats"),
-      sb.rpc("get_admin_teams_summary"),
+      sb.rpc("get_admin_overview_stats", { include_test: false }),
+      sb.rpc("get_admin_teams_summary", { include_test: false }),
       sb.rpc("get_admin_system_health"),
       sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
@@ -217,11 +222,11 @@ const Admin = () => {
                 <StatCard label="Comprehension Checks" value={overview.total_comprehension} />
                 <StatCard
                   label="Ø Adherence"
-                  value={overview.avg_adherence != null ? `${Math.round(overview.avg_adherence * 100)}%` : "–"}
+                  value={formatPercent(overview.avg_adherence)}
                 />
                 <StatCard
                   label="Ø Comprehension"
-                  value={overview.avg_comprehension_score != null ? `${Math.round(overview.avg_comprehension_score * 100)}%` : "–"}
+                  value={formatPercent(overview.avg_comprehension_score)}
                 />
                 <StatCard label="Admins" value={overview.total_admins} />
               </div>
