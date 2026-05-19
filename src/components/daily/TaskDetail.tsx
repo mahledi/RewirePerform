@@ -183,6 +183,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
 
       {/* Complete */}
       <motion.button
+        data-testid={`task-complete-${task.id}`}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onComplete}

@@ -376,6 +376,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
             {microAdjustment && <TodayForYou data={microAdjustment} />}
 
             <motion.button
+              data-testid="daily-science-ack"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setStep(1)}
@@ -401,7 +402,11 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           expanded ? "bg-accent/10 border border-accent/20" : "bg-gradient-card border-glow"
         }`}
       >
-        <button onClick={() => setExpanded(!expanded)} className="w-full text-left p-4 flex items-center gap-3">
+        <button
+          data-testid={`knowledge-card-${task.id}`}
+          onClick={() => setExpanded(!expanded)}
+          className="w-full text-left p-4 flex items-center gap-3"
+        >
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
             isRead ? "bg-primary" : "bg-secondary"
           }`}>
@@ -428,6 +433,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                   <p className="text-xs text-muted-foreground leading-relaxed">{task.detailedExplanation}</p>
                 </div>
                 <button
+                  data-testid={`knowledge-read-${task.id}`}
                   onClick={onRead}
                   disabled={isRead}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-heading font-semibold text-sm transition-all ${
@@ -484,6 +490,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         </div>
 
         <motion.button
+          data-testid="knowledge-unlock"
           whileHover={allRead ? { scale: 1.02 } : {}}
           whileTap={allRead ? { scale: 0.98 } : {}}
           onClick={() => allRead && setStep(4)}
@@ -525,6 +532,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               return (
                 <button
                   key={task.id}
+                  data-testid={`task-card-${task.id}`}
                   onClick={() => setSelectedTask(task)}
                   className="w-full text-left p-4 rounded-2xl transition-all bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
                 >
@@ -598,16 +606,16 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
                     <div className="space-y-7">
                       {[
-                        { label: "Stimmung", question: "Wie ist deine allgemeine Stimmung gerade?", value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
-                        { label: "Energie", question: "Wie viel Energie hast du gerade?", value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
-                        { label: "Mentale Klarheit / Fokus", question: "Wie klar und fokussiert fühlst du dich gerade?", value: focusClarity, set: setFocusClarity, low: "sehr zerstreut", high: "sehr klar" },
-                        { label: "Stress / innere Spannung", question: "Wie viel innere Spannung oder Stress spürst du gerade?", value: stress, set: setStress, low: "sehr niedrig", high: "sehr hoch" },
-                        { label: "Erholung", question: "Wie erholt fühlst du dich heute?", value: recovery, set: setRecovery, low: "gar nicht erholt", high: "sehr erholt" },
-                        { label: "Schlafqualität", question: "Wie war deine Schlafqualität?", value: sleepQuality, set: setSleepQuality, low: "sehr schlecht", high: "sehr gut" },
-                        { label: "Körperliche Bereitschaft", question: "Wie bereit fühlt sich dein Körper für Belastung an?", value: physicalReadiness, set: setPhysicalReadiness, low: "gar nicht bereit", high: "sehr bereit" },
-                        { label: "Motivation / Einsatzbereitschaft", question: "Wie bereit bist du, heute wirklich in die Arbeit zu gehen?", value: motivation, set: setMotivation, low: "kaum bereit", high: "sehr bereit" },
-                        { label: "Druck / Bewertungsgefühl", question: "Wie stark fühlt sich heute Druck oder Bewertungsgefühl an?", value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
-                        { label: "Teamverbundenheit", question: "Wie verbunden fühlst du dich gerade mit dem Team?", value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
+                        { id: "mood", label: "Stimmung", question: "Wie ist deine allgemeine Stimmung gerade?", value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
+                        { id: "energy", label: "Energie", question: "Wie viel Energie hast du gerade?", value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
+                        { id: "focus", label: "Mentale Klarheit / Fokus", question: "Wie klar und fokussiert fühlst du dich gerade?", value: focusClarity, set: setFocusClarity, low: "sehr zerstreut", high: "sehr klar" },
+                        { id: "stress", label: "Stress / innere Spannung", question: "Wie viel innere Spannung oder Stress spürst du gerade?", value: stress, set: setStress, low: "sehr niedrig", high: "sehr hoch" },
+                        { id: "recovery", label: "Erholung", question: "Wie erholt fühlst du dich heute?", value: recovery, set: setRecovery, low: "gar nicht erholt", high: "sehr erholt" },
+                        { id: "sleep", label: "Schlafqualität", question: "Wie war deine Schlafqualität?", value: sleepQuality, set: setSleepQuality, low: "sehr schlecht", high: "sehr gut" },
+                        { id: "physical", label: "Körperliche Bereitschaft", question: "Wie bereit fühlt sich dein Körper für Belastung an?", value: physicalReadiness, set: setPhysicalReadiness, low: "gar nicht bereit", high: "sehr bereit" },
+                        { id: "motivation", label: "Motivation / Einsatzbereitschaft", question: "Wie bereit bist du, heute wirklich in die Arbeit zu gehen?", value: motivation, set: setMotivation, low: "kaum bereit", high: "sehr bereit" },
+                        { id: "pressure", label: "Druck / Bewertungsgefühl", question: "Wie stark fühlt sich heute Druck oder Bewertungsgefühl an?", value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
+                        { id: "team", label: "Teamverbundenheit", question: "Wie verbunden fühlst du dich gerade mit dem Team?", value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
                       ].map((q) => (
                         <div key={q.label}>
                           <label className="text-sm font-semibold block mb-1">{q.label}</label>
@@ -616,6 +624,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                               <button
                                 key={n}
+                                data-testid={`pulse-${q.id}-${n}`}
                                 onClick={() => q.set(n)}
                                 className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
                                   q.value === n
@@ -656,6 +665,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                       placeholder="Schreibe frei oder sprich ein..."
                     />
                     <textarea
+                      data-testid="daily-state-reflection"
                       value={reflection}
                       onChange={(e) => setReflection(e.target.value)}
                       placeholder="Optional. Nur für dich sichtbar."
@@ -680,6 +690,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                       />
                     ) : (
                       <button
+                        data-testid="comprehension-empty-finish"
                         onClick={() => saveCheckin()}
                         disabled={saving}
                         className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold disabled:opacity-60"
@@ -734,6 +745,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               const blocked = saving || (step === 1 && !pulseComplete);
               return (
                 <motion.button
+                  data-testid={`daily-next-step-${step}`}
                   whileHover={!blocked ? { scale: 1.02 } : undefined}
                   whileTap={!blocked ? { scale: 0.98 } : undefined}
                   onClick={() => {

@@ -81,6 +81,7 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
               return (
                 <button
                   key={opt.id}
+                  data-testid={`comprehension-option-${opt.id}`}
                   onClick={() => handleSelect(opt.id)}
                   disabled={showFeedback}
                   className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3 ${
@@ -114,6 +115,7 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
           </AnimatePresence>
 
           <button
+            data-testid={isLast ? "comprehension-finish" : "comprehension-next"}
             onClick={handleNext}
             disabled={!showFeedback}
             className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold transition-all ${
