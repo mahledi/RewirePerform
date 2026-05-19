@@ -207,7 +207,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
             <p className="text-xl font-bold text-foreground">{cb.only_pre}</p>
           </div>
           <div className="bg-card border border-border/50 rounded-2xl p-3">
-            <p className="text-xs text-muted-foreground">Nicht gestartet</p>
+            <p className="text-xs text-muted-foreground">Pre-Test offen</p>
             <p className="text-xl font-bold text-foreground">{cb.never_started}</p>
           </div>
         </div>
@@ -338,7 +338,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
           <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
           <div className="text-xs text-muted-foreground leading-relaxed">
             <p className="text-foreground font-medium mb-1">Fehlende Daten</p>
-            {cb.never_started > 0 && <p>{cb.never_started} Spieler nicht gestartet.</p>}
+            {cb.never_started > 0 && <p>{cb.never_started} Spieler ohne Pre-Test.</p>}
             {cb.only_pre > 0 && <p>{cb.only_pre} Spieler nur mit Pre-Test.</p>}
             {cb.pre_and_mid_no_post > 0 && <p>{cb.pre_and_mid_no_post} Spieler ohne Post-Test.</p>}
           </div>
