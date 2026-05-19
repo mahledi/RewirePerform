@@ -57,6 +57,10 @@ const FlameCard = ({ stats }: FlameCardProps) => {
   }, [stats.completedToday, stats.currentStreak]);
 
   const completionPct = Math.round(stats.completionRate * 100);
+  const completedWithinAvailable =
+    stats.daysAvailable > 0
+      ? Math.min(stats.totalCompletedDays, stats.daysAvailable)
+      : stats.totalCompletedDays;
 
   return (
     <motion.div
@@ -124,7 +128,7 @@ const FlameCard = ({ stats }: FlameCardProps) => {
           <Stat label="Längste" value={`${stats.longestStreak}`} />
           <Stat
             label="Erledigt"
-            value={`${stats.totalCompletedDays}${
+            value={`${completedWithinAvailable}${
               stats.daysAvailable > 0 ? `/${stats.daysAvailable}` : ""
             }`}
           />
