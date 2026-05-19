@@ -9,7 +9,7 @@ import DailyCheckin from "@/components/dashboard/DailyCheckin";
 import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
+import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { getProgramModeInfo, type ProgramMode } from "@/lib/programMode";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
@@ -17,6 +17,7 @@ import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { buildFlameStats, type FlameStats } from "@/lib/flameStats";
 import FlameCard from "@/components/dashboard/FlameCard";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
+import { resolveDay } from "@/lib/getDayContent";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -467,6 +468,9 @@ const Dashboard = () => {
       ]);
 
       const snapshot = snapshots && snapshots.length > 0 ? snapshots[0] : null;
+      const effectiveStart = await getEffectiveProgramStart(user.id);
+      const dayInfo = getCurrentProgramDay(effectiveStart.startDate, effectiveToday);
+      const daysAvailable = dayInfo?.dayNumber ?? snapshot?.days_available ?? 0;
       const stats = buildFlameStats({
         completions: (completions ?? []) as any,
         snapshot: snapshot
@@ -478,24 +482,34 @@ const Dashboard = () => {
               program_day: snapshot.program_day,
             }
           : null,
-        today: new Date(),
+        today: effectiveToday,
       });
-      setFlameStats(stats);
+      setFlameStats({
+        ...stats,
+        daysAvailable,
+        programDay: dayInfo?.dayNumber ?? stats.programDay,
+        completionRate: daysAvailable > 0 ? Math.min(1, stats.totalCompletedDays / daysAvailable) : stats.completionRate,
+        missedDaysCount: Math.max(0, daysAvailable - stats.totalCompletedDays),
+      });
     } catch (e) {
       console.error("loadFlameStats error", e);
     }
   };
 
   const checkAssessments = async () => {
-    const { data: settingsArr } = await supabase
-      .from("program_settings")
-      .select("program_start")
-      .eq("user_id", user!.id);
+    const [{ data: settingsArr }, effectiveStart] = await Promise.all([
+      supabase
+        .from("program_settings")
+        .select("program_start")
+        .eq("user_id", user!.id),
+      getEffectiveProgramStart(user!.id),
+    ]);
     const settings = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
+    const startDate = effectiveStart.startDate ?? settings?.program_start ?? null;
 
-    if (settings?.program_start) {
-      setProgramStartDate(settings.program_start);
-      const daysSince = differenceInDays(effectiveToday, new Date(settings.program_start));
+    if (startDate) {
+      setProgramStartDate(startDate);
+      const daysSince = differenceInDays(effectiveToday, new Date(startDate));
 
       const { data: preTests } = await supabase
         .from("assessments")
@@ -680,6 +694,24 @@ const Dashboard = () => {
     !setupMode &&
     !!programStartDate &&
     differenceInDays(effectiveToday, new Date(programStartDate)) < 56;
+  const effectiveProgramStartDate = teamProgramStart ?? programStartDate;
+  const programDayInfo = getCurrentProgramDay(effectiveProgramStartDate, effectiveToday);
+  const currentProgramDay = programDayInfo?.dayNumber ?? null;
+  const todayResolved =
+    currentProgramDay && todayEventType
+      ? resolveDay(currentProgramDay, effectiveToday, todayEventType)
+      : null;
+  const currentPhase = currentProgramDay
+    ? currentProgramDay <= 14
+      ? 1
+      : currentProgramDay <= 28
+        ? 2
+        : currentProgramDay <= 42
+          ? 3
+          : 4
+    : null;
+  const phaseNames = ["", "Fundament & Selbstanalyse", "Skill-Erwerb", "Transfer", "Meisterschaft"] as const;
+  const programProgress = currentProgramDay ? (currentProgramDay / 56) * 100 : 0;
 
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
@@ -931,6 +963,54 @@ const Dashboard = () => {
           </motion.div>
         )}
 
+        {/* Daily Focus & Program Progress */}
+        {currentProgramDay && currentPhase && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">Heute im Programm</p>
+                <h2 className="font-heading text-xl font-bold leading-tight">
+                  Tag {currentProgramDay}/56
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Phase {currentPhase}: {phaseNames[currentPhase]}
+                </p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-xs text-muted-foreground">Woche {Math.ceil(currentProgramDay / 7)}/8</p>
+                {todayEventType && (
+                  <p className="text-xs text-primary mt-1">{eventConfig[todayEventType].label}</p>
+                )}
+              </div>
+            </div>
+
+            {todayResolved && (
+              <div className="mb-4 p-4 rounded-xl bg-secondary/35 border border-border/40">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Heutige Linse</p>
+                <p className="text-sm font-heading font-semibold leading-snug">{todayResolved.matrix.lens}</p>
+              </div>
+            )}
+
+            <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
+              <motion.div
+                className="h-full bg-primary rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${programProgress}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-muted-foreground">
+              <span className={currentPhase === 1 ? "text-primary font-semibold" : ""}>Fundament</span>
+              <span className={currentPhase === 2 ? "text-primary font-semibold" : ""}>Skills</span>
+              <span className={currentPhase === 3 ? "text-primary font-semibold" : ""}>Transfer</span>
+              <span className={currentPhase === 4 ? "text-primary font-semibold" : ""}>Meisterschaft</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Flame / Consistency Card */}
+        {flameStats && <FlameCard stats={flameStats} />}
+
         {/* Deep Profile Baseline Banner */}
         {!baselineDone && !setupMode && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
@@ -999,54 +1079,6 @@ const Dashboard = () => {
             </button>
           </motion.div>
         )}
-
-        {/* Phase & Progress Indicator */}
-        {programStartDate && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
-            {(() => {
-              const daysSince = differenceInDays(new Date(), new Date(programStartDate)) + 1;
-              const clampedDay = Math.min(Math.max(daysSince, 1), 56);
-              const phase = clampedDay <= 14 ? 1 : clampedDay <= 28 ? 2 : clampedDay <= 42 ? 3 : 4;
-              const phaseNames = ["", "Fundament & Selbstanalyse", "Skill-Erwerb", "Intensivierung & Transfer", "Meisterschaft & Re-Test"];
-              const phaseIcons = ["", "🧠", "🎯", "⚡", "🏆"];
-              const progress = (clampedDay / 56) * 100;
-              return (
-                <>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{phaseIcons[phase]}</span>
-                      <div>
-                        <p className="text-xs text-muted-foreground font-heading">Phase {phase} von 4</p>
-                        <p className="text-sm font-heading font-semibold">{phaseNames[phase]}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">Tag {clampedDay} / 56</p>
-                      <p className="text-xs text-muted-foreground">Woche {Math.ceil(clampedDay / 7)} / 8</p>
-                    </div>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
-                    <motion.div
-                      className="h-full bg-primary rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span className={phase === 1 ? "text-primary font-semibold" : ""}>Fundament</span>
-                    <span className={phase === 2 ? "text-primary font-semibold" : ""}>Skills</span>
-                    <span className={phase === 3 ? "text-primary font-semibold" : ""}>Transfer</span>
-                    <span className={phase === 4 ? "text-primary font-semibold" : ""}>Meisterschaft</span>
-                  </div>
-                </>
-              );
-            })()}
-          </motion.div>
-        )}
-
-        {/* Flame / Consistency Card */}
-        {flameStats && <FlameCard stats={flameStats} />}
 
         {/* Today's Check-in CTA */}
         {todayEventType && checkinStatusLoading ? (
