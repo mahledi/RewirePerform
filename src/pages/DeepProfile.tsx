@@ -1,22 +1,53 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Microscope, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, TrendingUp } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { questions, deepProfileQuestionIds } from "@/data/questionnaireData";
 import QuestionCard from "@/components/questionnaire/QuestionCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import {
+  DEVELOPMENT_INDEX_INSTRUMENT_ID,
+  DEVELOPMENT_INDEX_VERSION,
+  REWIRE_DEVELOPMENT_INDEX,
+} from "@/content/questionnaireV2";
+import type { Question } from "@/data/questionnaireData";
+import { scoreDevelopmentIndex } from "@/lib/developmentIndexScoring";
+
+type Timing = "pre" | "mid" | "post";
+
+function resolveTiming(raw: string | null): Timing {
+  if (raw === "mid") return "mid";
+  if (raw === "post" || raw === "retest") return "post";
+  return "pre";
+}
+
+function toQuestion(item: (typeof REWIRE_DEVELOPMENT_INDEX.items)[number]): Question {
+  return {
+    ...item,
+    question: item.text,
+    subtext: undefined,
+    scaleLabels:
+      item.lowLabel || item.highLabel
+        ? [item.lowLabel ?? "niedrig", item.highLabel ?? "hoch"]
+        : undefined,
+    depth: item.includeInScore ? "core" : "deep",
+    categoryIcon: "",
+  };
+}
 
 const DeepProfile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const timing = searchParams.get("timing") === "retest" ? "retest" : "baseline";
+  const timing = resolveTiming(searchParams.get("timing"));
   const { user } = useAuth();
 
   const deepQuestions = useMemo(
-    () => questions.filter((q) => deepProfileQuestionIds.includes(q.id)),
-    []
+    () =>
+      REWIRE_DEVELOPMENT_INDEX.items
+        .filter((item) => !item.timing || item.timing.includes(timing as "mid" | "post"))
+        .map(toQuestion),
+    [timing]
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,8 +59,7 @@ const DeepProfile = () => {
   const answer = currentQuestion ? answers[currentQuestion.id] : undefined;
 
   const canProceed = () => {
-    if (!answer) return false;
-    if (answer === "") return false;
+    if (answer === undefined || answer === "") return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
     return true;
   };
@@ -37,11 +67,16 @@ const DeepProfile = () => {
   const handleSave = async () => {
     if (!user?.id) return;
     setSaving(true);
+
+    const scores = scoreDevelopmentIndex(answers, timing);
     const { error } = await supabase.from("deep_profile_assessments").insert({
       user_id: user.id,
       session_id: user.id,
       timing,
       answers: answers as any,
+      scores: scores as any,
+      instrument_id: DEVELOPMENT_INDEX_INSTRUMENT_ID,
+      questionnaire_version: DEVELOPMENT_INDEX_VERSION,
     });
 
     if (error) {
@@ -51,7 +86,7 @@ const DeepProfile = () => {
       return;
     }
 
-    toast.success(timing === "baseline" ? "Baseline-Profil gespeichert!" : "Re-Test abgeschlossen!");
+    toast.success(timing === "pre" ? "Startwert gespeichert." : "Entwicklungsindex gespeichert.");
     setSaving(false);
     setDone(true);
   };
@@ -80,18 +115,16 @@ const DeepProfile = () => {
             <Check className="w-10 h-10 text-primary" />
           </motion.div>
           <h2 className="font-heading text-2xl font-bold mb-2">
-            {timing === "baseline" ? "Baseline gespeichert" : "Re-Test abgeschlossen!"}
+            {timing === "pre" ? "Startwert gespeichert" : "Entwicklung gespeichert"}
           </h2>
           <p className="text-muted-foreground mb-8">
-            {timing === "baseline"
-              ? "Dein Deep-Dive-Profil wurde erfasst. Es dient als Ausgangspunkt für deine Transformation."
-              : "Deine Antworten wurden gespeichert. Schau dir jetzt deinen Fortschritt an!"}
+            Deine Antworten wurden gespeichert. Freitext bleibt privat; Coaches sehen nur geschützte Team-Aggregate ab ausreichender Gruppengröße.
           </p>
           <button
-            onClick={() => navigate(timing === "retest" ? "/progress" : "/dashboard")}
+            onClick={() => navigate(timing === "post" ? "/progress" : "/dashboard")}
             className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
           >
-            {timing === "retest" ? "Fortschritt ansehen" : "Zum Dashboard"}
+            {timing === "post" ? "Fortschritt ansehen" : "Zum Dashboard"}
           </button>
         </motion.div>
       </div>
@@ -103,12 +136,12 @@ const DeepProfile = () => {
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Microscope className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold text-sm">Deep Profiling</span>
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <span className="font-heading font-bold text-sm">RewirePerform Development Index</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-secondary">
-              {timing === "baseline" ? "Baseline" : "Re-Test"}
+              {timing === "pre" ? "Pre" : timing === "mid" ? "Mid" : "Post"}
             </span>
             <span className="text-xs text-muted-foreground">
               {currentIndex + 1} / {deepQuestions.length}
@@ -138,6 +171,9 @@ const DeepProfile = () => {
               />
             )}
           </AnimatePresence>
+          <p className="text-[11px] text-muted-foreground mt-8">
+            {REWIRE_DEVELOPMENT_INDEX.disclaimer}
+          </p>
         </div>
       </div>
 

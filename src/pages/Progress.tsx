@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, TrendingUp, Sparkles, BarChart3, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { questions, deepProfileQuestionIds } from "@/data/questionnaireData";
+import { REWIRE_DEVELOPMENT_INDEX } from "@/content/questionnaireV2";
 import { buildDeterministicProgressSummary } from "@/lib/deterministicProgressSummary";
 
 interface ProfileData {
@@ -23,7 +23,10 @@ const Progress = () => {
   const [hasSummary, setHasSummary] = useState(false);
 
   const deepQuestions = useMemo(
-    () => questions.filter((q) => deepProfileQuestionIds.includes(q.id)),
+    () =>
+      REWIRE_DEVELOPMENT_INDEX.items
+        .filter((item) => item.includeInScore)
+        .map((item) => ({ id: item.id, question: item.text, type: item.type })),
     []
   );
 
@@ -40,8 +43,8 @@ const Progress = () => {
       .order("created_at", { ascending: true });
 
     if (data) {
-      const b = data.find((d) => d.timing === "baseline");
-      const r = data.find((d) => d.timing === "retest");
+      const b = data.find((d) => d.timing === "pre" || d.timing === "baseline");
+      const r = data.find((d) => d.timing === "post" || d.timing === "retest");
       if (b) setBaseline({ ...b, answers: b.answers as any });
       if (r) setRetest({ ...r, answers: r.answers as any });
     }
@@ -53,7 +56,7 @@ const Progress = () => {
       const result = buildDeterministicProgressSummary(
         baseline.answers,
         retest.answers,
-        deepQuestions.map((q) => ({ id: q.id, question: q.question, type: q.type }))
+        deepQuestions
       );
       setSummary(result.summary);
       setHasSummary(result.hasEnoughData);

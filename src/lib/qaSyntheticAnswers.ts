@@ -1,4 +1,4 @@
-// QA helper: generate a neutral, fully-populated answer set for the 78-question
+// QA helper: generate a neutral, fully-populated answer set for the onboarding
 // onboarding questionnaire so QA test users can skip it and jump straight into
 // the daily flow. Never used by real users.
 
@@ -17,7 +17,7 @@ export function buildQASyntheticAnswers(): Record<string, string | string[] | nu
         // Pick a sensible middle option if available, else first
         if (q.options && q.options.length > 0) {
           const idx = Math.min(Math.floor(q.options.length / 2), q.options.length - 1);
-          answers[q.id] = q.options[idx];
+          answers[q.id] = q.options[idx].id;
         } else {
           answers[q.id] = "";
         }
@@ -25,7 +25,7 @@ export function buildQASyntheticAnswers(): Record<string, string | string[] | nu
       case "multi":
         // Pick first 1-2 options as a neutral selection
         if (q.options && q.options.length > 0) {
-          answers[q.id] = q.options.slice(0, Math.min(2, q.options.length));
+          answers[q.id] = q.options.slice(0, Math.min(2, q.options.length)).map((option) => option.id);
         } else {
           answers[q.id] = [];
         }
@@ -38,9 +38,9 @@ export function buildQASyntheticAnswers(): Record<string, string | string[] | nu
   }
 
   // Sport defaults so downstream personalization has signal
-  answers["sport-01"] = "Fußball";
+  answers["sport-01"] = "football";
   answers["sport-02"] = "Mittelfeldspieler";
-  answers["sport-03"] = "Jugend / Nachwuchs";
+  answers["sport-03"] = "youth";
 
   return answers;
 }

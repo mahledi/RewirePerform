@@ -6,6 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildQASyntheticAnswers } from "@/lib/qaSyntheticAnswers";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 import { toast } from "sonner";
+import { getOptionText } from "@/data/questionnaireData";
+import {
+  ONBOARDING_V2_CATEGORIES,
+  ONBOARDING_V2_INSTRUMENT_ID,
+  ONBOARDING_V2_QUESTIONS,
+  ONBOARDING_V2_VERSION,
+} from "@/content/questionnaireV2";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -44,14 +51,11 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
 
       await supabase
         .from("profiles")
-        .update({ sport: answers["sport-01"] as string, team: answers["sport-02"] as string })
+        .update({
+          sport: getOptionText("sport-01", answers["sport-01"] as string),
+          team: answers["sport-02"] as string,
+        })
         .eq("id", user.id);
-
-      const { error: deleteErr } = await supabase
-        .from("questionnaire_responses")
-        .delete()
-        .eq("user_id", user.id);
-      if (deleteErr) throw deleteErr;
 
       const { error: insErr } = await supabase
         .from("questionnaire_responses")
@@ -60,6 +64,10 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           session_id: user.id,
           answers: answers as any,
           analysis: analysis as any,
+          scores: analysis.scores as any,
+          instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+          questionnaire_version: ONBOARDING_V2_VERSION,
+          timing: "pre",
           is_complete: true,
           last_category_index: 9999,
         });
@@ -100,21 +108,19 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           <div className="flex items-center gap-2 mb-8">
             <div className="px-4 py-2 rounded-full bg-primary/10 border-glow flex items-center gap-2">
               <Brain className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Deep Analysis</span>
+              <span className="text-sm font-medium text-primary">Startprofil</span>
             </div>
           </div>
 
           <h1 className="font-heading text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            Bevor wir beginnen,
+            Dein Startprofil.
             <br />
-            <span className="text-gradient">ein paar Worte.</span>
+            <span className="text-gradient">Klar, ehrlich, nützlich.</span>
           </h1>
 
           <p className="text-lg text-muted-foreground leading-relaxed mb-10">
-            Was jetzt kommt, ist kein gewöhnlicher Fragebogen. Es sind Fragen, die dir 
-            vermutlich noch niemand gestellt hat. Sie gehen tief – absichtlich. Denn nur 
-            wenn wir verstehen, wie du wirklich denkst, fühlst und handelst, können wir 
-            ein Programm entwickeln, das wirklich zu dir passt.
+            Wir erfassen, wie du aktuell mit Druck, Fehlern, Fokus, Motivation und Erholung arbeitest.
+            Das ist kein Test und keine Diagnose, sondern dein Ausgangspunkt für das 56-Tage-System.
           </p>
 
           {/* Preparation cards */}
@@ -122,9 +128,9 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
               <Clock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <h3 className="font-heading font-semibold mb-1">Nimm dir 30-45 Minuten Zeit</h3>
+                <h3 className="font-heading font-semibold mb-1">Nimm dir 20-30 Minuten Zeit</h3>
                 <p className="text-sm text-muted-foreground">
-                  Kein Multitasking. Kein Zeitdruck. Diese Antworten formen dein gesamtes Programm.
+                  Kein Multitasking. Kein Druck. Gute Antworten sind ehrlich, nicht perfekt.
                 </p>
               </div>
             </div>
@@ -134,8 +140,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
               <div>
                 <h3 className="font-heading font-semibold mb-1">Absolute Ehrlichkeit</h3>
                 <p className="text-sm text-muted-foreground">
-                  Es gibt keine richtigen Antworten. Nur ehrliche. Je tiefer du gehst, 
-                  desto besser wird dein Programm.
+                  Es gibt keine richtigen Antworten. Private Texte bleiben privat und werden Coaches nicht angezeigt.
                 </p>
               </div>
             </div>
@@ -143,10 +148,9 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
               <Sparkles className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <h3 className="font-heading font-semibold mb-1">Einmalig & entscheidend</h3>
+                <h3 className="font-heading font-semibold mb-1">Messbarer Startpunkt</h3>
                 <p className="text-sm text-muted-foreground">
-                  Du machst das genau einmal. Danach läuft dein 56-Tage-System
-                  mit persönlicher Einordnung aus deinen Antworten.
+                  Später vergleichen wir Entwicklung über sichere, aggregierbare Werte und separate Retests.
                 </p>
               </div>
             </div>
@@ -155,28 +159,15 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           {/* Category preview */}
           <div className="mb-12">
             <h3 className="font-heading font-semibold text-sm text-muted-foreground uppercase tracking-widest mb-4">
-              12 Bereiche · 78 Fragen
+              {ONBOARDING_V2_CATEGORIES.length} Bereiche · {ONBOARDING_V2_QUESTIONS.length} Fragen
             </h3>
             <div className="flex flex-wrap gap-2">
-              {[
-                "🪞 Identität",
-                "🔥 Resilienz",
-                "🎯 Fokus",
-                "🌊 Emotionen",
-                "⚡ Antrieb",
-                "🏆 Wettkampf",
-                "🌙 Erholung",
-                "🤝 Umfeld",
-                "🧭 Philosophie",
-                "🧠 Neurokognition",
-                "✨ Inner Excellence",
-                "🔬 Deep Profile",
-              ].map((cat) => (
+              {ONBOARDING_V2_CATEGORIES.map((cat) => (
                 <span
-                  key={cat}
+                  key={cat.id}
                   className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-sm"
                 >
-                  {cat}
+                  {cat.icon} {cat.title}
                 </span>
               ))}
             </div>

@@ -16,9 +16,13 @@ import {
   Zap,
   Moon,
 } from "lucide-react";
-import { categories, questions } from "@/data/questionnaireData";
+import { getOptionText } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
+import {
+  ONBOARDING_V2_INSTRUMENT_ID,
+  ONBOARDING_V2_VERSION,
+} from "@/content/questionnaireV2";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
@@ -44,6 +48,7 @@ interface Analysis {
   rest_day_tasks: string[];
   mental_score: number;
   dominant_category: string;
+  scores?: Record<string, unknown>;
 }
 
 const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
@@ -84,7 +89,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         if (sportAnswer) {
           await supabase
             .from("profiles")
-            .update({ sport: sportAnswer, team: positionAnswer })
+            .update({ sport: getOptionText("sport-01", sportAnswer), team: positionAnswer })
             .eq("id", userId);
         }
 
@@ -102,11 +107,10 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           .select("id")
           .eq("user_id", user!.id)
           .eq("is_complete", true)
+          .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-
-        let savedResponseId: string | null = existingComplete?.id ?? null;
 
         if (existingComplete?.id) {
           const { error: updErr } = await supabase
@@ -114,53 +118,34 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             .update({
               answers: answers as any,
               analysis: analysisResult as any,
+              scores: (analysisResult as any).scores ?? {},
+              instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+              questionnaire_version: ONBOARDING_V2_VERSION,
+              timing: "pre",
               is_complete: true,
             })
             .eq("id", existingComplete.id);
           if (updErr) throw updErr;
         } else {
-          const { data: insertedResponse, error: insertError } = await supabase
+          const { error: insertError } = await supabase
             .from("questionnaire_responses")
             .insert({
               session_id: user!.id,
               user_id: user!.id,
               answers: answers as any,
               analysis: analysisResult as any,
+              scores: (analysisResult as any).scores ?? {},
+              instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+              questionnaire_version: ONBOARDING_V2_VERSION,
+              timing: "pre",
               is_complete: true,
               last_category_index: 9999,
-            })
-            .select("id")
-            .single();
+            });
           if (insertError) throw insertError;
-          savedResponseId = insertedResponse?.id ?? null;
         }
 
-        // Keep exactly one completed questionnaire and no leftover drafts per
-        // user. Older duplicate completes can confuse coach status aggregates.
-        const { data: userResponses } = await supabase
-          .from("questionnaire_responses")
-          .select("id, is_complete, created_at")
-          .eq("user_id", user!.id)
-          .order("created_at", { ascending: false });
-
-        const staleResponseIds = (userResponses ?? [])
-          .filter((response) => response.id !== savedResponseId)
-          .map((response) => response.id);
-
-        if (staleResponseIds.length > 0) {
-          await supabase
-            .from("questionnaire_responses")
-            .delete()
-            .in("id", staleResponseIds);
-        }
-
-        // Clean up any leftover incomplete drafts so the resume screen does
-        // not re-appear and look like a reset if cleanup permissions change.
-        await supabase
-          .from("questionnaire_responses")
-          .delete()
-          .eq("user_id", user!.id)
-          .eq("is_complete", false);
+        // Preserve old questionnaire rows. Draft cleanup is intentionally not
+        // destructive here; resume code only looks at V2 incomplete drafts.
 
         // Small artificial delay so the user can read the loader once.
         await new Promise((r) => setTimeout(r, 600));
