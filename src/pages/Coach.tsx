@@ -75,23 +75,34 @@ const Coach = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Brain className="w-6 h-6 text-primary" />
-          <span className="font-heading text-lg font-bold">Coach</span>
+      <div className="sticky top-0 z-40 border-b border-border/60 bg-background/86 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 md:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card premium-hairline">
+              <Brain className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <span className="font-heading text-base font-semibold leading-none">Coach</span>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Team Performance Console</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+            title="Abmelden"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
-        <button onClick={handleSignOut} className="text-muted-foreground hover:text-foreground transition-colors">
-          <LogOut className="w-5 h-5" />
-        </button>
       </div>
 
       {/* Tabs */}
-      <div className="px-6 mb-6">
-        <div className="flex gap-1 bg-secondary/50 rounded-xl p-1 overflow-x-auto">
+      <div className="mx-auto max-w-5xl px-5 pt-5 md:px-6">
+        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border/70 bg-muted/50 p-1 shadow-card">
           <button
             onClick={() => setTab("overview")}
-            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              tab === "overview" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+              tab === "overview" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -99,8 +110,8 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("mental")}
-            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              tab === "mental" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+              tab === "mental" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
             <Activity className="w-3.5 h-3.5" />
@@ -108,8 +119,8 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("evidence")}
-            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              tab === "evidence" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+              tab === "evidence" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" />
@@ -117,8 +128,8 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("toolkit")}
-            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              tab === "toolkit" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+              tab === "toolkit" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -126,8 +137,8 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("manage")}
-            className={`flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-all ${
-              tab === "manage" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+              tab === "manage" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
@@ -138,11 +149,11 @@ const Coach = () => {
 
       {/* Team selector if multiple teams */}
       {teams.length > 1 && (tab === "overview" || tab === "mental" || tab === "evidence" || tab === "toolkit") && (
-        <div className="px-6 mb-4">
+        <div className="mx-auto max-w-5xl px-5 pt-4 md:px-6">
           <select
             value={selectedTeam ?? ""}
             onChange={(e) => setSelectedTeam(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full px-4 py-3 rounded-xl bg-card border border-border/70 text-foreground text-sm shadow-card focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {teams.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
@@ -152,7 +163,7 @@ const Coach = () => {
       )}
 
       {/* Content */}
-      <div className="px-6 pb-12">
+      <div className="mx-auto max-w-5xl px-5 py-6 md:px-6 md:pb-12">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
