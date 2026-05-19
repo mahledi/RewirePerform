@@ -1,31 +1,53 @@
-# QA: Fragebogen-Skip für Test-Spieler
+# Fix: Black-Screen auf der veröffentlichten App
 
-## Ziel
-Für QA-Test-Accounts (Profile mit `is_test_user = true`) den 78-Fragen-Fragebogen mit einem Klick überspringen, damit du direkt den täglichen Flow testen kannst.
+## Was kaputt ist
 
-Echte Spieler sind davon **nicht** betroffen — sie sehen den Skip-Button nicht und durchlaufen den Fragebogen ganz normal.
+Die veröffentlichte Version (`science-fueled-athlete.lovable.app`) zeigt einen schwarzen Bildschirm. Die Sandbox-Preview funktioniert. Ursache ist eindeutig nachgewiesen:
 
-## So funktioniert es
+- Das ausgelieferte JS-Bundle (`/assets/index-bRAPu7bO.js`, ~2 MB) enthält **kein einziges Vorkommen** unserer Supabase-Projekt-URL (`twceqincrbrenyuqukpj`) und keinen Anon-Key.
+- D.h. beim Build der Publish-Pipeline waren `VITE_SUPABASE_URL` und `VITE_SUPABASE_PUBLISHABLE_KEY` leer.
+- `createClient(undefined, undefined)` wirft sofort → React-Root crasht → leerer `<div id="root"></div>`.
 
-Auf der Fragebogen-Intro-Seite erscheint **nur für QA-Test-User** ein zusätzlicher Button „Fragebogen überspringen (QA)".
+Das ist **keine Folge** der Edge-Function-Aufräumarbeiten ("ohne Supabase"). Es ist eine Folge davon, dass `src/integrations/supabase/client.ts` im Rahmen der Portability-Initiative auf reine Env-Variablen umgestellt wurde — die Lovable-Publish-Pipeline injiziert diese Variablen aber nicht in den Build, und es gibt keinen Fallback.
 
-Beim Klick:
-1. Es wird ein synthetischer „neutraler" Antwort-Satz für alle 78 Fragen erzeugt (mittlere Werte / sinnvolle Defaults pro Fragetyp).
-2. Die bestehende deterministische Analyse läuft darüber → erzeugt eine vollwertige `analysis` (Mental Score, Stärken, Entwicklungsfelder, Tasks etc.).
-3. Eine vollständige `questionnaire_responses`-Zeile wird gespeichert (`is_complete = true`, mit Analyse), Sport/Position werden auf sinnvolle QA-Defaults gesetzt.
-4. Weiterleitung direkt zu `/dashboard` — täglicher Flow ist sofort testbar.
+## Was zu tun ist
 
-## Sicherheit / Begrenzung
-- Button rendert clientseitig nur, wenn `profiles.is_test_user = true` für den eingeloggten User.
-- Echte User sehen nichts und werden vom Skip nicht beeinflusst.
-- Es werden **keine** Tabellen, RLS-Policies oder echten Daten verändert.
-- Keine neuen Edge Functions, keine AI-Aufrufe.
+### 1. Robusten Fallback im Supabase-Client
+
+`src/integrations/supabase/client.ts` so anpassen, dass es
+
+- weiterhin bevorzugt `import.meta.env.VITE_SUPABASE_*` benutzt (Portability bleibt),
+- aber bei fehlenden Werten auf die fest hinterlegten Projekt-URL und Publishable-Key zurückfällt (Lovable-Publish funktioniert wieder).
+
+Der Publishable-Key ist ein öffentlicher Anon-Key (RLS schützt die Daten) und darf laut Lovable-Vorgaben im Code stehen.
+
+### 2. Verifikation
+
+- Republish auslösen.
+- `curl https://science-fueled-athlete.lovable.app/` und das verlinkte `/assets/index-*.js` herunterladen.
+- Prüfen, dass die Projekt-Ref im Bundle vorkommt.
+- Seite im Browser laden, Konsole muss frei von Supabase-Init-Fehlern sein, Landing-Page rendert.
+
+### 3. Kein Rückbau der Portability
+
+- `.env.example`, `scripts/validate-env.mjs`, GitHub-Workflow und `docs/PORTABILITY.md` bleiben unverändert.
+- Auf fremden Hosts (Vercel etc.) wirken weiterhin die echten Env-Vars; der Fallback greift dort nicht, weil die Vars gesetzt sind.
 
 ## Technische Details
-- Neue Datei `src/lib/qaSyntheticAnswers.ts`: erzeugt einen Default-Antwort-Satz aus `questionnaireData.ts` (für jede Frage je nach Typ: mittlere Skala, erste Single-Choice-Option, leere/neutrale Multi-Choice, Standard-Text).
-- `src/components/questionnaire/QuestionnaireIntro.tsx`: lädt `is_test_user` aus dem eigenen Profil; rendert den QA-Skip-Button konditional.
-- Klick-Handler: ruft `buildDeterministicQuestionnaireAnalysis` mit den synthetischen Antworten + QA-Sport-Defaults, schreibt eine komplette `questionnaire_responses`-Zeile (analog zur Logik in `QuestionnaireResults.tsx`), räumt offene Drafts ab, navigiert zu `/dashboard`.
-- Keine Änderungen am normalen Fragebogen-Flow.
 
-## Antwort auf deine Frage
-Nein, der Fragebogen ist für den Flow nicht zwingend nötig — solange am Ende eine `questionnaire_responses`-Zeile mit `analysis` in der DB liegt, funktioniert das Dashboard und der gesamte tägliche Flow. Der Skip erfüllt genau das.
+```text
+client.ts (neu, vereinfacht):
+
+  const url = import.meta.env.VITE_SUPABASE_URL
+    || "https://twceqincrbrenyuqukpj.supabase.co";
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    || "<aktueller anon key>";
+  export const supabase = createClient<Database>(url, key, { auth: { ... } });
+```
+
+Hinweis: `src/integrations/supabase/client.ts` ist normalerweise als "auto-generated, do not edit" markiert. Hier ist die manuelle Bearbeitung trotzdem korrekt, weil genau diese Datei im Portability-Schritt schon manuell auf Env-Vars umgebaut wurde und die Lovable-Generierung sie aktuell nicht überschreibt.
+
+## Nicht Teil dieses Plans
+
+- Keine Änderungen am Questionnaire, an `qaSyntheticAnswers.ts`, am Test-/Fragenkatalog oder an Edge Functions.
+- Kein Wechsel zurück auf alte AI-Edge-Function-Calls.
