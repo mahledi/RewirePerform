@@ -276,9 +276,6 @@ export type Database = {
           answers: Json
           created_at: string
           id: string
-          instrument_id: string | null
-          questionnaire_version: string | null
-          scores: Json
           session_id: string
           timing: string
           user_id: string | null
@@ -287,9 +284,6 @@ export type Database = {
           answers?: Json
           created_at?: string
           id?: string
-          instrument_id?: string | null
-          questionnaire_version?: string | null
-          scores?: Json
           session_id: string
           timing: string
           user_id?: string | null
@@ -298,9 +292,6 @@ export type Database = {
           answers?: Json
           created_at?: string
           id?: string
-          instrument_id?: string | null
-          questionnaire_version?: string | null
-          scores?: Json
           session_id?: string
           timing?: string
           user_id?: string | null
@@ -649,14 +640,10 @@ export type Database = {
           answers: Json
           created_at: string
           id: string
-          instrument_id: string | null
           is_complete: boolean
           last_category_index: number
           progress_updated_at: string
-          questionnaire_version: string | null
-          scores: Json
           session_id: string
-          timing: string
           user_id: string | null
         }
         Insert: {
@@ -664,14 +651,10 @@ export type Database = {
           answers?: Json
           created_at?: string
           id?: string
-          instrument_id?: string | null
           is_complete?: boolean
           last_category_index?: number
           progress_updated_at?: string
-          questionnaire_version?: string | null
-          scores?: Json
           session_id: string
-          timing?: string
           user_id?: string | null
         }
         Update: {
@@ -679,14 +662,10 @@ export type Database = {
           answers?: Json
           created_at?: string
           id?: string
-          instrument_id?: string | null
           is_complete?: boolean
           last_category_index?: number
           progress_updated_at?: string
-          questionnaire_version?: string | null
-          scores?: Json
           session_id?: string
-          timing?: string
           user_id?: string | null
         }
         Relationships: []
