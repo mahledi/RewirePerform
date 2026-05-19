@@ -120,9 +120,12 @@ const Journal = () => {
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-6">
           <Check className="w-8 h-8 text-primary" />
         </motion.div>
-        <h2 className="font-heading text-2xl font-bold mb-2">Tag abgeschlossen.</h2>
+        <h2 className="font-heading text-2xl font-bold mb-2">Tagesbogen geschlossen.</h2>
+        <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
+          Tag {resolved.matrix.dayNumber}/56 gespeichert
+        </p>
         <p className="text-sm text-muted-foreground mb-8 max-w-sm">
-          Was du heute aufgeschrieben hast, bleibt in dir – auch wenn du es morgen nicht mehr ansiehst.
+          Deine Reflexion bleibt privat. Morgen wartet die nächste Linse auf dem Dashboard.
         </p>
         <button
           onClick={() => navigate("/dashboard")}

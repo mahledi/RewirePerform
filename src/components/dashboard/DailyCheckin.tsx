@@ -706,12 +706,22 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                       <Check className="w-10 h-10 text-primary" />
                     </motion.div>
                     <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
-                    <p className="text-muted-foreground mb-2 text-sm">
-                      Du hast deine Linse für heute gesetzt. Trag sie mit dir durch Training und Tag.
+                    {resolved && (
+                      <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
+                        Tag {resolved.matrix.dayNumber}/56 · {resolved.matrix.lens}
+                      </p>
+                    )}
+                    <p className="text-muted-foreground mb-3 text-sm">
+                      Deine heutige Wiederholung ist im System.
                     </p>
-                    <p className="text-xs text-muted-foreground mb-8 max-w-sm mx-auto">
-                      Heute Abend wartet das Tagesjournal auf deinem Dashboard – dort schließt du den Tag ab.
-                    </p>
+                    <div className="mb-8 max-w-sm mx-auto rounded-2xl bg-primary/5 border border-primary/15 p-4 text-left">
+                      <div className="flex items-start gap-3">
+                        <Flame className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Die Flamme lebt von Rückkehr. Heute Abend schließt du den Tag mit dem Journal sauber ab.
+                        </p>
+                      </div>
+                    </div>
                     <div className="flex flex-col gap-3 max-w-xs mx-auto">
                       <button
                         onClick={onClose}
