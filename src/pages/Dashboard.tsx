@@ -1055,7 +1055,11 @@ const Dashboard = () => {
           </motion.div>
         ) : todayEventType && !todayCheckinDone ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <button onClick={() => setShowCheckin(true)} className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group">
+            <button
+              data-testid="daily-checkin-start"
+              onClick={() => setShowCheckin(true)}
+              className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl ${eventConfig[todayEventType as EventType].bg} flex items-center justify-center`}>

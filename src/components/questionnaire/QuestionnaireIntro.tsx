@@ -47,10 +47,11 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
         .update({ sport: answers["sport-01"] as string, team: answers["sport-02"] as string })
         .eq("id", user.id);
 
-      await supabase
+      const { error: deleteErr } = await supabase
         .from("questionnaire_responses")
         .delete()
         .eq("user_id", user.id);
+      if (deleteErr) throw deleteErr;
 
       const { error: insErr } = await supabase
         .from("questionnaire_responses")

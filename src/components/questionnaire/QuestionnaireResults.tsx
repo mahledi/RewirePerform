@@ -106,6 +106,8 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           .limit(1)
           .maybeSingle();
 
+        let savedResponseId: string | null = existingComplete?.id ?? null;
+
         if (existingComplete?.id) {
           const { error: updErr } = await supabase
             .from("questionnaire_responses")
@@ -115,9 +117,9 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               is_complete: true,
             })
             .eq("id", existingComplete.id);
-          if (updErr) console.error("Error updating questionnaire response:", updErr);
+          if (updErr) throw updErr;
         } else {
-          const { error: insertError } = await supabase
+          const { data: insertedResponse, error: insertError } = await supabase
             .from("questionnaire_responses")
             .insert({
               session_id: user!.id,
@@ -129,11 +131,31 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             })
             .select("id")
             .single();
-          if (insertError) console.error("Error saving questionnaire response:", insertError);
+          if (insertError) throw insertError;
+          savedResponseId = insertedResponse?.id ?? null;
         }
 
-        // Clean up any leftover incomplete drafts so the resume screen
-        // does not re-appear and look like a reset.
+        // Keep exactly one completed questionnaire and no leftover drafts per
+        // user. Older duplicate completes can confuse coach status aggregates.
+        const { data: userResponses } = await supabase
+          .from("questionnaire_responses")
+          .select("id, is_complete, created_at")
+          .eq("user_id", user!.id)
+          .order("created_at", { ascending: false });
+
+        const staleResponseIds = (userResponses ?? [])
+          .filter((response) => response.id !== savedResponseId)
+          .map((response) => response.id);
+
+        if (staleResponseIds.length > 0) {
+          await supabase
+            .from("questionnaire_responses")
+            .delete()
+            .in("id", staleResponseIds);
+        }
+
+        // Clean up any leftover incomplete drafts so the resume screen does
+        // not re-appear and look like a reset if cleanup permissions change.
         await supabase
           .from("questionnaire_responses")
           .delete()

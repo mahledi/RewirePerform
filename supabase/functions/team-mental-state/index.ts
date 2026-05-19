@@ -155,14 +155,19 @@ serve(async (req) => {
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const cutoff = fourWeeksAgo.toISOString().split("T")[0];
 
-    const { data: checkins } = await supabase
+    const { data: checkins, error: checkinsError } = await supabase
       .from("daily_checkins")
       .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed, wellbeing_metrics")
       .in("user_id", athleteIds)
-      .gte("date", cutoff)
-      .order("date", { ascending: true });
+      .order("date", { ascending: true })
+      .limit(5000);
 
-    const allCheckins = checkins ?? [];
+    if (checkinsError) throw checkinsError;
+
+    const allCheckins = (checkins ?? []).filter((c) => {
+      if (!c.date) return false;
+      return String(c.date) >= cutoff;
+    });
 
     // Build 4 weekly buckets
     const weeks: { start: string; end: string; label: string }[] = [];
