@@ -153,6 +153,8 @@ Coach-facing rule remains stricter than admin research export:
 
 ## Launch Recommendation
 
+For launch, keep the system as an internal evaluation layer, not a full research
+claim. Use the existing exports for club presentations and product review.
 
 After first real pilot usage, build Phase 2 as a dedicated branch:
 
