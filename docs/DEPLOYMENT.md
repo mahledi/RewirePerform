@@ -39,6 +39,21 @@ After the first deploy, add the hosted URL in Supabase:
 - Site URL
 - Any OAuth provider callback URLs, if providers are added later
 
+For the RewirePerform launch domain, prefer:
+
+```text
+Production URL: https://rewireperform.com
+Support URL: https://rewireperform.com/support
+Privacy URL: https://rewireperform.com/privacy
+```
+
+The iOS premium WebView shell is built from the same `dist` output via Capacitor:
+
+```bash
+npm run app:build
+npm run app:open:ios
+```
+
 ## Supabase Deploy
 
 Install and log in to the Supabase CLI, then link the project:
@@ -109,3 +124,9 @@ Before merging a deploy PR:
 - Auth, questionnaire, dashboard check-in, coach team view, settings, and admin QA still load.
 - Any new Supabase table has RLS enabled and policies reviewed.
 - Any new secret is documented here and in `.env.example`.
+
+Before TestFlight/App Store submission:
+
+- Follow `docs/APP_STORE.md`.
+- Confirm `rewireperform.com` works as the production domain.
+- Confirm App Store privacy labels match actual collected data.

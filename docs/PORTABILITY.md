@@ -8,6 +8,7 @@ This app should remain usable with Lovable while being able to run without Lovab
 - Backend: Supabase Auth, Postgres, RLS policies, RPC functions, Edge Functions.
 - App state: Supabase user/session plus some local browser state for UX.
 - PWA: `vite-plugin-pwa` with manual service-worker registration guards.
+- iOS shell: Capacitor premium WebView using the same `dist` build.
 - Lovable usage: development/preview tooling only. Product-critical analysis is deterministic in app code.
 
 ## Independence Rules
@@ -88,3 +89,4 @@ npm run validate:env
 - Supabase Edge Functions deploy from the repo.
 - Secrets are configured in Supabase and hosting provider dashboards.
 - Lovable preview can be disabled without breaking login, check-in, questionnaire, coach, admin, or PWA flows.
+- Capacitor iOS can be rebuilt from GitHub with `npm run app:build`.
