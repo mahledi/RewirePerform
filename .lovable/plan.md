@@ -1,81 +1,59 @@
-# Stabilisierung & Unabhängigkeit: "Production-Grade" Plan
+# Weg zur vollen Unabhängigkeit
 
-Ziel: Das System so absichern, dass es **ohne Lovable** läuft, **ohne Regressionen** bleibt und **professionell deploybar** ist. Keine neuen Features — nur Härtung, Tests, Observability, Dokumentation.
+Ziel: RewirePerform läuft komplett ohne Lovable — eigenes Hosting (Web + iOS App Store), eigene Backend-Kontrolle, eigene CI/CD. Lovable bleibt optional als Dev-Tool.
 
-## Was bleibt unverändert
-- Produktlogik (56-Tage-Programm, Coach, aMCC, Tasks, Check-in)
-- UI/UX
-- Supabase-Schema
+## Aktueller Stand (gut!)
 
-## Arbeitspakete
+- Code auf GitHub synchronisiert (Single Source of Truth)
+- Vite-Build → standard `dist/` Output → läuft überall
+- Supabase ist Standard-Postgres + Auth, kein Lovable-Lock-in
+- Capacitor iOS-Shell bereits eingerichtet (`ios/`)
+- `docs/PORTABILITY.md` + `docs/DEPLOYMENT.md` existieren bereits
+- Env-Validierung (`npm run validate:env`) vorhanden
 
-### 1. Lint-Schulden tilgen (Blocker für CI-Gate)
-- `any` raus, Hook-Deps korrekt, ungenutzte Imports löschen
-- `npm run lint` in CI-Pipeline als **Pflicht-Gate** aufnehmen
-- ESLint-Regeln nicht aufweichen — Code anpassen
+**Du bist schon zu ~80% unabhängig.** Es fehlt nur die Aktivierung.
 
-### 2. Test-Layer ausbauen
-Aktuell nur 1 Beispiel-Test. Ziel: **Smoke + kritische Pfade**.
-- Unit-Tests für `lib/`: `deterministicQuestionnaireAnalysis`, `deterministicProgressSummary`, `dayAssignment`, `getCurrentProgramDay`, `flameStats`, `programProgress`, `questionScoring`
-- Component-Tests (Vitest + Testing Library) für: `DailyCheckin`, `QuestionnaireFlow`, `ProtectedRoute`
-- Playwright E2E für 3 Flows: Auth → Onboarding → Tag 1 Check-in / Coach-Team-View / Admin-QA
-- Coverage-Schwelle: mind. 60% auf `src/lib/`
+## Die 4 Schritte zur Unabhängigkeit
 
-### 3. CI/CD verschärfen
-- Lint + Typecheck + Test + Build = **alle 4 Pflicht** für Merge
-- Branch-Protection auf `main` (vom Nutzer in GitHub zu aktivieren — wird dokumentiert)
-- Preview-Deploys via Vercel/Netlify (Wahl: Vercel empfohlen)
+### Schritt 1: Eigenes Web-Hosting (1–2 Stunden)
+- Vercel/Netlify/Cloudflare Pages mit GitHub-Repo verbinden
+- Build-Settings: `npm ci` / `npm run build` / Output `dist`
+- Env-Variablen setzen: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
+- Custom Domain `rewireperform.com` verbinden
+- Supabase Auth → Redirect-URLs um neue Domain ergänzen
 
-### 4. Lovable-Entkopplung final
-- `lovable-tagger` nur dev — verifizieren
-- `scripts/rewrite-comprehension.ts` als optional markieren, aus Default-Pfad raus
-- Deprecated Edge Functions (`analyze-questionnaire`, `generate-transformation-summary`) komplett löschen statt 410-Stubs
-- README: "Run without Lovable" Section
+### Schritt 2: Supabase aus Lovable Cloud "befreien" (kritisch)
+Aktuell läuft die DB als **Lovable Cloud Managed Supabase** (`twceqincrbrenyuqukpj`). Optionen:
 
-### 5. Observability
-- Frontend: Sentry oder simpler ErrorBoundary + Supabase-Logging-Tabelle
-- Edge Functions: strukturiertes Logging (level, request_id, user_id)
-- Health-Endpoint: `/api/health` (Edge Fn) für Uptime-Checks
+- **Option A (empfohlen, einfach):** DB **behalten wie sie ist**. Lovable Cloud bleibt der Hoster, du nutzt sie direkt über Supabase API. Funktioniert auch ohne Lovable Editor. Risiko: Lovable könnte irgendwann den Zugriff ändern.
+- **Option B (volle Souveränität):** Migration zu eigenem Supabase-Account. Schema via `supabase db dump` exportieren, neues Projekt anlegen, Daten + Users migrieren, Edge Functions deployen, Frontend-Env umstellen. Aufwand: 1 Tag, einmal sauber dokumentiert.
 
-### 6. Sicherheits-Audit
-- `supabase--linter` laufen lassen, alle Findings fixen
-- Manuelles RLS-Review der wichtigsten Tabellen: `daily_checkins`, `assessments`, `program_instances`, `team_members`, `user_roles`
-- Security-Memory-Dokument aktualisieren
+### Schritt 3: iOS App Store (Capacitor, schon vorbereitet)
+- Apple Developer Account ($99/Jahr)
+- `npm run app:build` → `npx cap sync ios` → Xcode öffnen
+- App Icons + Splash bereits in `ios/App/App/Assets.xcassets/`
+- App Store Connect: Eintrag erstellen → TestFlight → Review → Live
+- Anleitung steht teilweise in `docs/APP_STORE.md`
 
-### 7. Backup & Rollback
-- Dokumentierte Supabase-Backup-Strategie (täglicher PITR-Snapshot)
-- Migration-Rollback-Playbook in `docs/DEPLOYMENT.md` ergänzen
-- DB-Export-Skript: `scripts/export-snapshot.ts`
+### Schritt 4: CI/CD ohne Lovable
+- GitHub Actions (`.github/workflows/ci.yml` existiert bereits)
+- Erweitern um: Auto-Deploy zu Vercel + Supabase Edge Functions bei Push auf `main`
+- Damit ist Lovable nur noch ein optionaler Editor
 
-### 8. Dokumentation finalisieren
-- `README.md`: Quickstart, Architektur-Diagramm, Tech-Stack
-- `CONTRIBUTING.md`: Branch-Strategie, PR-Template, Commit-Konvention
-- `docs/ARCHITECTURE.md`: Daten-Flow, Komponenten-Map
-- `docs/RUNBOOK.md`: Was tun bei Outage X/Y/Z
+## Was diese Plan-Iteration jetzt liefert
 
-## Reihenfolge (PR-Branches)
+Ich schlage vor, **jetzt nur Schritt 1 + 4 vorzubereiten** (Web-Deploy + CI), weil das dich sofort unabhängig macht ohne DB-Migrations-Risiko. Schritt 2 (DB-Souveränität) und Schritt 3 (App Store) machen wir separat, wenn du bereit bist.
 
-1. `hardening/lint-zero` — Lint-Schulden weg, CI-Gate hart
-2. `hardening/test-coverage` — Unit + Component + E2E
-3. `hardening/observability` — ErrorBoundary, Logging, Health
-4. `hardening/security-audit` — Linter-Findings + RLS-Review
-5. `hardening/lovable-decouple-final` — Stubs weg, README-Sektion
-6. `hardening/docs-runbook` — README, ARCHITECTURE, RUNBOOK
-7. `hardening/backup-rollback` — Snapshot-Skript, Playbook
+Konkret in diesem Loop:
+1. `docs/INDEPENDENCE.md` schreiben — eine klare Schritt-für-Schritt-Anleitung (Web-Deploy, DB-Migration, App Store, CI/CD), die du auch in einem Jahr noch verstehst, ohne mich zu fragen.
+2. `.github/workflows/deploy.yml` ergänzen — Auto-Deploy-Skeleton für Vercel + Supabase Functions (auskommentiert, du aktivierst es wenn du den Hoster gewählt hast).
+3. `scripts/export-supabase-schema.sh` — One-Click-Skript für DB-Dump (für spätere Migration).
 
-Jeder Branch klein, einzeln mergebar, einzeln revertierbar.
+Kein Refactoring, keine Code-Änderungen am App-Verhalten. Nur Doku + Tooling für Unabhängigkeit.
 
-## Erfolgskriterien
+## Technische Details
 
-- `npm run ci` (lint + typecheck + test + build) grün ohne Ausnahmen
-- App startet auf Vercel **ohne Lovable-Verbindung**
-- E2E-Suite läuft in CI
-- 0 offene Supabase-Linter-Findings
-- Onboarding eines neuen Devs in <30 Min via README
-
-## Technische Details (für später)
-
-- Vitest + @testing-library/react für Components
-- Playwright bereits installiert — Config existiert
-- Sentry: `@sentry/react` + DSN als Build-Secret
-- Branch-Protection: GitHub-Settings, nicht im Code
+- Keine neuen Runtime-Dependencies
+- Keine DB-Migrationen
+- Keine Änderungen an `src/`, Supabase-Schema oder Edge Functions
+- Lovable-spezifisches (`lovable-tagger`, `.lovable/`) bleibt — stört Standalone-Betrieb nicht
