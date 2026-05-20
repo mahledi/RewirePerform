@@ -1,53 +1,81 @@
-# Fix: Black-Screen auf der veröffentlichten App
+# Stabilisierung & Unabhängigkeit: "Production-Grade" Plan
 
-## Was kaputt ist
+Ziel: Das System so absichern, dass es **ohne Lovable** läuft, **ohne Regressionen** bleibt und **professionell deploybar** ist. Keine neuen Features — nur Härtung, Tests, Observability, Dokumentation.
 
-Die veröffentlichte Version (`science-fueled-athlete.lovable.app`) zeigt einen schwarzen Bildschirm. Die Sandbox-Preview funktioniert. Ursache ist eindeutig nachgewiesen:
+## Was bleibt unverändert
+- Produktlogik (56-Tage-Programm, Coach, aMCC, Tasks, Check-in)
+- UI/UX
+- Supabase-Schema
 
-- Das ausgelieferte JS-Bundle (`/assets/index-bRAPu7bO.js`, ~2 MB) enthält **kein einziges Vorkommen** unserer Supabase-Projekt-URL (`twceqincrbrenyuqukpj`) und keinen Anon-Key.
-- D.h. beim Build der Publish-Pipeline waren `VITE_SUPABASE_URL` und `VITE_SUPABASE_PUBLISHABLE_KEY` leer.
-- `createClient(undefined, undefined)` wirft sofort → React-Root crasht → leerer `<div id="root"></div>`.
+## Arbeitspakete
 
-Das ist **keine Folge** der Edge-Function-Aufräumarbeiten ("ohne Supabase"). Es ist eine Folge davon, dass `src/integrations/supabase/client.ts` im Rahmen der Portability-Initiative auf reine Env-Variablen umgestellt wurde — die Lovable-Publish-Pipeline injiziert diese Variablen aber nicht in den Build, und es gibt keinen Fallback.
+### 1. Lint-Schulden tilgen (Blocker für CI-Gate)
+- `any` raus, Hook-Deps korrekt, ungenutzte Imports löschen
+- `npm run lint` in CI-Pipeline als **Pflicht-Gate** aufnehmen
+- ESLint-Regeln nicht aufweichen — Code anpassen
 
-## Was zu tun ist
+### 2. Test-Layer ausbauen
+Aktuell nur 1 Beispiel-Test. Ziel: **Smoke + kritische Pfade**.
+- Unit-Tests für `lib/`: `deterministicQuestionnaireAnalysis`, `deterministicProgressSummary`, `dayAssignment`, `getCurrentProgramDay`, `flameStats`, `programProgress`, `questionScoring`
+- Component-Tests (Vitest + Testing Library) für: `DailyCheckin`, `QuestionnaireFlow`, `ProtectedRoute`
+- Playwright E2E für 3 Flows: Auth → Onboarding → Tag 1 Check-in / Coach-Team-View / Admin-QA
+- Coverage-Schwelle: mind. 60% auf `src/lib/`
 
-### 1. Robusten Fallback im Supabase-Client
+### 3. CI/CD verschärfen
+- Lint + Typecheck + Test + Build = **alle 4 Pflicht** für Merge
+- Branch-Protection auf `main` (vom Nutzer in GitHub zu aktivieren — wird dokumentiert)
+- Preview-Deploys via Vercel/Netlify (Wahl: Vercel empfohlen)
 
-`src/integrations/supabase/client.ts` so anpassen, dass es
+### 4. Lovable-Entkopplung final
+- `lovable-tagger` nur dev — verifizieren
+- `scripts/rewrite-comprehension.ts` als optional markieren, aus Default-Pfad raus
+- Deprecated Edge Functions (`analyze-questionnaire`, `generate-transformation-summary`) komplett löschen statt 410-Stubs
+- README: "Run without Lovable" Section
 
-- weiterhin bevorzugt `import.meta.env.VITE_SUPABASE_*` benutzt (Portability bleibt),
-- aber bei fehlenden Werten auf die fest hinterlegten Projekt-URL und Publishable-Key zurückfällt (Lovable-Publish funktioniert wieder).
+### 5. Observability
+- Frontend: Sentry oder simpler ErrorBoundary + Supabase-Logging-Tabelle
+- Edge Functions: strukturiertes Logging (level, request_id, user_id)
+- Health-Endpoint: `/api/health` (Edge Fn) für Uptime-Checks
 
-Der Publishable-Key ist ein öffentlicher Anon-Key (RLS schützt die Daten) und darf laut Lovable-Vorgaben im Code stehen.
+### 6. Sicherheits-Audit
+- `supabase--linter` laufen lassen, alle Findings fixen
+- Manuelles RLS-Review der wichtigsten Tabellen: `daily_checkins`, `assessments`, `program_instances`, `team_members`, `user_roles`
+- Security-Memory-Dokument aktualisieren
 
-### 2. Verifikation
+### 7. Backup & Rollback
+- Dokumentierte Supabase-Backup-Strategie (täglicher PITR-Snapshot)
+- Migration-Rollback-Playbook in `docs/DEPLOYMENT.md` ergänzen
+- DB-Export-Skript: `scripts/export-snapshot.ts`
 
-- Republish auslösen.
-- `curl https://science-fueled-athlete.lovable.app/` und das verlinkte `/assets/index-*.js` herunterladen.
-- Prüfen, dass die Projekt-Ref im Bundle vorkommt.
-- Seite im Browser laden, Konsole muss frei von Supabase-Init-Fehlern sein, Landing-Page rendert.
+### 8. Dokumentation finalisieren
+- `README.md`: Quickstart, Architektur-Diagramm, Tech-Stack
+- `CONTRIBUTING.md`: Branch-Strategie, PR-Template, Commit-Konvention
+- `docs/ARCHITECTURE.md`: Daten-Flow, Komponenten-Map
+- `docs/RUNBOOK.md`: Was tun bei Outage X/Y/Z
 
-### 3. Kein Rückbau der Portability
+## Reihenfolge (PR-Branches)
 
-- `.env.example`, `scripts/validate-env.mjs`, GitHub-Workflow und `docs/PORTABILITY.md` bleiben unverändert.
-- Auf fremden Hosts (Vercel etc.) wirken weiterhin die echten Env-Vars; der Fallback greift dort nicht, weil die Vars gesetzt sind.
+1. `hardening/lint-zero` — Lint-Schulden weg, CI-Gate hart
+2. `hardening/test-coverage` — Unit + Component + E2E
+3. `hardening/observability` — ErrorBoundary, Logging, Health
+4. `hardening/security-audit` — Linter-Findings + RLS-Review
+5. `hardening/lovable-decouple-final` — Stubs weg, README-Sektion
+6. `hardening/docs-runbook` — README, ARCHITECTURE, RUNBOOK
+7. `hardening/backup-rollback` — Snapshot-Skript, Playbook
 
-## Technische Details
+Jeder Branch klein, einzeln mergebar, einzeln revertierbar.
 
-```text
-client.ts (neu, vereinfacht):
+## Erfolgskriterien
 
-  const url = import.meta.env.VITE_SUPABASE_URL
-    || "https://twceqincrbrenyuqukpj.supabase.co";
-  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-    || "<aktueller anon key>";
-  export const supabase = createClient<Database>(url, key, { auth: { ... } });
-```
+- `npm run ci` (lint + typecheck + test + build) grün ohne Ausnahmen
+- App startet auf Vercel **ohne Lovable-Verbindung**
+- E2E-Suite läuft in CI
+- 0 offene Supabase-Linter-Findings
+- Onboarding eines neuen Devs in <30 Min via README
 
-Hinweis: `src/integrations/supabase/client.ts` ist normalerweise als "auto-generated, do not edit" markiert. Hier ist die manuelle Bearbeitung trotzdem korrekt, weil genau diese Datei im Portability-Schritt schon manuell auf Env-Vars umgebaut wurde und die Lovable-Generierung sie aktuell nicht überschreibt.
+## Technische Details (für später)
 
-## Nicht Teil dieses Plans
-
-- Keine Änderungen am Questionnaire, an `qaSyntheticAnswers.ts`, am Test-/Fragenkatalog oder an Edge Functions.
-- Kein Wechsel zurück auf alte AI-Edge-Function-Calls.
+- Vitest + @testing-library/react für Components
+- Playwright bereits installiert — Config existiert
+- Sentry: `@sentry/react` + DSN als Build-Secret
+- Branch-Protection: GitHub-Settings, nicht im Code
