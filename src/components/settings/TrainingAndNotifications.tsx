@@ -35,6 +35,9 @@ const localToUtc = (h: number, m: number) => {
 const formatHM = (h: number, m: number) =>
   `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 
+const errorMessage = (err: unknown, fallback = "Fehler") =>
+  err instanceof Error ? err.message : fallback;
+
 const morningOptions = (() => {
   const out: { h: number; m: number }[] = [];
   for (let h = 6; h <= 10; h++) for (const m of [0, 30]) out.push({ h, m });
@@ -59,6 +62,7 @@ export const TrainingAndNotifications = () => {
   // Notification time UI state (local for display)
   const [morningLocal, setMorningLocal] = useState({ h: 7, m: 30 });
   const [eveningLocal, setEveningLocal] = useState({ h: 21, m: 0 });
+  const [preTrainingMinutes, setPreTrainingMinutes] = useState(60);
   const [savingTimes, setSavingTimes] = useState(false);
 
   useEffect(() => {
@@ -66,11 +70,15 @@ export const TrainingAndNotifications = () => {
       if (!user) return;
       const { data } = await supabase
         .from("training_schedule")
-        .select("day_of_week,training_hour")
+        .select("day_of_week,training_hour,training_local_hour")
         .eq("user_id", user.id);
       const map: Record<number, number | null> = {};
       DAYS.forEach((d) => (map[d.idx] = null));
-      (data ?? []).forEach((r) => (map[r.day_of_week] = r.training_hour));
+      (data ?? []).forEach((r) => {
+        const localHour = r.training_local_hour ?? utcToLocal(r.training_hour, 0).h;
+        const { h: utcHour } = localToUtc(localHour, 0);
+        map[r.day_of_week] = utcHour;
+      });
       setSchedule(map);
       setScheduleLoading(false);
     };
@@ -83,8 +91,9 @@ export const TrainingAndNotifications = () => {
       const e = utcToLocal(push.eveningHour, push.eveningMinute);
       setMorningLocal(m);
       setEveningLocal(e);
+      setPreTrainingMinutes(push.preTrainingMinutes);
     }
-  }, [push.loading, push.enabled, push.morningHour, push.morningMinute, push.eveningHour, push.eveningMinute]);
+  }, [push.loading, push.enabled, push.morningHour, push.morningMinute, push.eveningHour, push.eveningMinute, push.preTrainingMinutes]);
 
   const setDayHourLocal = (dayIdx: number, localHour: number | null) => {
     const next = { ...schedule };
@@ -115,18 +124,24 @@ export const TrainingAndNotifications = () => {
       if (delErr) throw delErr;
       const rows = Object.entries(schedule)
         .filter(([, h]) => h !== null)
-        .map(([day, h]) => ({
-          user_id: user.id,
-          day_of_week: Number(day),
-          training_hour: h as number,
-        }));
+        .map(([day, h]) => {
+          const localHour = displayHour(h as number);
+          return {
+            user_id: user.id,
+            day_of_week: Number(day),
+            training_hour: h as number,
+            training_local_hour: localHour,
+            training_local_minute: 0,
+            training_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+          };
+        });
       if (rows.length) {
         const { error: insErr } = await supabase.from("training_schedule").insert(rows);
         if (insErr) throw insErr;
       }
       toast.success("Trainingszeiten gespeichert.");
-    } catch (e: any) {
-      toast.error("Speichern fehlgeschlagen: " + (e?.message ?? "Fehler"));
+    } catch (e: unknown) {
+      toast.error("Speichern fehlgeschlagen: " + errorMessage(e));
     } finally {
       setSavingSchedule(false);
     }
@@ -136,8 +151,8 @@ export const TrainingAndNotifications = () => {
     try {
       await push.subscribe();
       toast.success("Benachrichtigungen aktiviert.");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Fehler beim Aktivieren");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Fehler beim Aktivieren"));
     }
   };
   const handleDisablePush = async () => {
@@ -150,10 +165,10 @@ export const TrainingAndNotifications = () => {
     try {
       const m = localToUtc(morningLocal.h, morningLocal.m);
       const e = localToUtc(eveningLocal.h, eveningLocal.m);
-      await push.saveTimes(m.h, m.m, e.h, e.m);
+      await push.saveTimes(m.h, m.m, e.h, e.m, preTrainingMinutes);
       toast.success("Zeiten gespeichert.");
-    } catch (err: any) {
-      toast.error(err?.message ?? "Fehler");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err));
     } finally {
       setSavingTimes(false);
     }
@@ -230,9 +245,15 @@ export const TrainingAndNotifications = () => {
           </p>
 
           {!push.supported ? (
-            <p className="text-sm text-muted-foreground">
-              Dein Browser unterstützt keine Push-Benachrichtigungen. Installiere die App auf deinem Homescreen.
-            </p>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm text-muted-foreground">
+              {push.supportReason === "native_shell"
+                ? "Push für die iOS-App wird für die native App-Store-Version vorbereitet. Web-Push läuft unabhängig davon in der Web-App/PWA."
+                : push.supportReason === "preview_host"
+                  ? "Push ist in Lovable-Preview-Umgebungen deaktiviert. Teste Benachrichtigungen später auf rewireperform.com oder lokal."
+                  : push.supportReason === "insecure"
+                    ? "Push benötigt eine sichere HTTPS-Verbindung."
+                    : "Dieser Browser unterstützt keine Push-Benachrichtigungen. Auf iPhone/iPad funktioniert Web-Push als installierte Home-Screen-App."}
+            </div>
           ) : push.loading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -286,6 +307,21 @@ export const TrainingAndNotifications = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Pre-Training-Reminder</label>
+                <Select
+                  value={String(preTrainingMinutes)}
+                  onValueChange={(v) => setPreTrainingMinutes(Number(v))}
+                >
+                  <SelectTrigger className="bg-secondary/50">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="60">60 Minuten vor Training</SelectItem>
+                    <SelectItem value="30">30 Minuten vor Training</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button onClick={saveTimes} disabled={savingTimes} className="w-full">
                 {savingTimes && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 Zeiten speichern
@@ -295,7 +331,7 @@ export const TrainingAndNotifications = () => {
                 Push deaktivieren
               </Button>
               <p className="text-xs text-muted-foreground">
-                Reminder werden zur vollen oder halben Stunde gesendet. Pre-Training-Reminder kommen ~1 Stunde vor deiner eingetragenen Trainingszeit.
+                Reminder werden zur vollen oder halben Stunde gesendet. Pre-Training öffnet direkt deine kurze Vorbereitung.
               </p>
             </div>
           )}

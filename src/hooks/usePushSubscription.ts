@@ -19,11 +19,42 @@ const arrayBufferToBase64Url = (buf: ArrayBuffer | null) => {
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };
 
+const getBrowserTimeZone = () =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+type CapacitorWindow = Window & {
+  Capacitor?: {
+    isNativePlatform?: () => boolean;
+  };
+};
+
 export const isPushSupported = () =>
-  typeof window !== "undefined" &&
-  "serviceWorker" in navigator &&
-  "PushManager" in window &&
-  "Notification" in window;
+  getPushSupport().supported;
+
+export const getPushSupport = ():
+  | { supported: true; reason: null }
+  | { supported: false; reason: "native_shell" | "preview_host" | "insecure" | "browser" } => {
+  if (typeof window === "undefined") return { supported: false, reason: "browser" };
+
+  const isNativeShell = !!(window as CapacitorWindow).Capacitor?.isNativePlatform?.();
+  if (isNativeShell) return { supported: false, reason: "native_shell" };
+
+  const host = window.location.hostname;
+  const isPreviewHost =
+    host.includes("id-preview--") ||
+    host.includes("lovableproject.com") ||
+    host.includes("lovable.app");
+  if (isPreviewHost) return { supported: false, reason: "preview_host" };
+
+  const isLocal = host === "localhost" || host === "127.0.0.1";
+  if (!window.isSecureContext && !isLocal) return { supported: false, reason: "insecure" };
+
+  const supported =
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window;
+  return supported ? { supported: true, reason: null } : { supported: false, reason: "browser" };
+};
 
 export const usePushSubscription = () => {
   const { user } = useAuth();
@@ -33,9 +64,11 @@ export const usePushSubscription = () => {
   const [morningMinute, setMorningMinute] = useState(30);
   const [eveningHour, setEveningHour] = useState(21);
   const [eveningMinute, setEveningMinute] = useState(0);
+  const [preTrainingMinutes, setPreTrainingMinutes] = useState(60);
+  const support = getPushSupport();
 
   const refresh = useCallback(async () => {
-    if (!user || !isPushSupported()) {
+    if (!user || !support.supported) {
       setLoading(false);
       return;
     }
@@ -45,7 +78,7 @@ export const usePushSubscription = () => {
       if (sub) {
         const { data } = await supabase
           .from("push_subscriptions")
-          .select("morning_hour,morning_minute,evening_hour,evening_minute")
+          .select("morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes")
           .eq("endpoint", sub.endpoint)
           .maybeSingle();
         setEnabled(!!data);
@@ -54,6 +87,7 @@ export const usePushSubscription = () => {
           setMorningMinute(data.morning_minute);
           setEveningHour(data.evening_hour);
           setEveningMinute(data.evening_minute);
+          setPreTrainingMinutes(data.pre_training_minutes ?? 60);
         }
       } else {
         setEnabled(false);
@@ -61,14 +95,14 @@ export const usePushSubscription = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, support.supported]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
   const subscribe = useCallback(async () => {
-    if (!user || !isPushSupported()) throw new Error("Push nicht unterstützt");
+    if (!user || !support.supported) throw new Error("Push nicht unterstützt");
 
     const perm = await Notification.requestPermission();
     if (perm !== "granted") throw new Error("Berechtigung abgelehnt");
@@ -105,15 +139,17 @@ export const usePushSubscription = () => {
         morning_minute: morningMinute,
         evening_hour: eveningHour,
         evening_minute: eveningMinute,
+        pre_training_minutes: preTrainingMinutes,
+        timezone: getBrowserTimeZone(),
       },
       { onConflict: "endpoint" },
     );
     if (error) throw error;
     setEnabled(true);
-  }, [user, morningHour, morningMinute, eveningHour, eveningMinute]);
+  }, [user, support.supported, morningHour, morningMinute, eveningHour, eveningMinute, preTrainingMinutes]);
 
   const unsubscribe = useCallback(async () => {
-    if (!isPushSupported()) return;
+    if (!support.supported) return;
     const reg = await navigator.serviceWorker.getRegistration("/sw.js");
     const sub = await reg?.pushManager.getSubscription();
     if (sub) {
@@ -121,15 +157,16 @@ export const usePushSubscription = () => {
       await sub.unsubscribe();
     }
     setEnabled(false);
-  }, []);
+  }, [support.supported]);
 
   const saveTimes = useCallback(
-    async (mh: number, mm: number, eh: number, em: number) => {
+    async (mh: number, mm: number, eh: number, em: number, preMinutes: number) => {
       if (!user) return;
       setMorningHour(mh);
       setMorningMinute(mm);
       setEveningHour(eh);
       setEveningMinute(em);
+      setPreTrainingMinutes(preMinutes);
       await supabase
         .from("push_subscriptions")
         .update({
@@ -137,6 +174,8 @@ export const usePushSubscription = () => {
           morning_minute: mm,
           evening_hour: eh,
           evening_minute: em,
+          pre_training_minutes: preMinutes,
+          timezone: getBrowserTimeZone(),
         })
         .eq("user_id", user.id);
     },
@@ -146,13 +185,15 @@ export const usePushSubscription = () => {
   return {
     enabled,
     loading,
-    supported: isPushSupported(),
+    supported: support.supported,
     morningHour,
     morningMinute,
     eveningHour,
     eveningMinute,
+    preTrainingMinutes,
     subscribe,
     unsubscribe,
     saveTimes,
+    supportReason: support.reason,
   };
 };

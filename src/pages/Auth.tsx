@@ -14,6 +14,8 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const forceSwitch = searchParams.get("switch") === "1";
+  const redirectTo = searchParams.get("redirect");
+  const safeRedirect = redirectTo && /^\/(?!\/)/.test(redirectTo) ? redirectTo : null;
   const { user, role, loading: authLoading } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
 
@@ -28,11 +30,12 @@ const Auth = () => {
 
   useEffect(() => {
     if (authLoading || switching || !user) return;
-    if (role === "admin") navigate("/admin", { replace: true });
+    if (safeRedirect) navigate(safeRedirect, { replace: true });
+    else if (role === "admin") navigate("/admin", { replace: true });
     else if (role === "coach") navigate("/coach", { replace: true });
     else if (role === "athlete") navigate("/dashboard", { replace: true });
     // if role still null but user exists, wait for role to load
-  }, [user, role, authLoading, switching, navigate]);
+  }, [user, role, authLoading, switching, navigate, safeRedirect]);
 
   const [mode, setMode] = useState<Mode>("intent");
   const [intent, setIntent] = useState<Intent>("solo");
@@ -96,7 +99,7 @@ const Auth = () => {
         : roleData?.role === "coach"
           ? "/coach"
           : "/dashboard";
-      navigate(nextRoute);
+      navigate(safeRedirect ?? nextRoute);
     }
     setLoading(false);
   };

@@ -23,6 +23,7 @@ import Privacy from "./pages/Privacy.tsx";
 import Support from "./pages/Support.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import QATestBanner from "./components/qa/QATestBanner";
+import { NotificationOpenTracker } from "./components/notifications/NotificationOpenTracker";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <QATestBanner />
+          <NotificationOpenTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/privacy" element={<Privacy />} />

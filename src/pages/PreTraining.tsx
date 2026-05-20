@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Target } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,8 +70,28 @@ const PreTraining = () => {
             className="space-y-6"
           >
             <div>
-              <h1 className="font-heading font-bold text-3xl mb-2">Gleich geht's los 💪</h1>
-              <p className="text-muted-foreground">Das nimmst du heute aufs Feld:</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-3">
+                Pre-Training
+              </p>
+              <h1 className="font-heading font-bold text-3xl mb-2">Bereit für die nächste Einheit</h1>
+              <p className="text-muted-foreground">
+                Kurz sortieren, klare Linse setzen, dann raus in die Arbeit.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                    Heutige Linse
+                  </p>
+                  <h2 className="font-heading font-semibold mt-1">{resolved.matrix.lens}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {resolved.matrix.practiceFocus}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -95,7 +115,7 @@ const PreTraining = () => {
 
             <Button onClick={() => navigate("/")} size="lg" className="w-full">
               <Target className="w-4 h-4 mr-2" />
-              Bereit
+              Bereit fürs Training
             </Button>
           </motion.div>
         )}
