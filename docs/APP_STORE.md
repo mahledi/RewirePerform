@@ -82,17 +82,27 @@ Web push already exists:
 - Supabase tables: `push_subscriptions`, `notification_log`
 - Edge Functions: `get-vapid-public-key`, `send-daily-reminder`
 
-For App Store V1, push is optional and should not block launch. Native iOS WebView push support is not equivalent to browser Web Push. If web push is not reliable inside the native shell, keep notification settings visible only where supported and schedule native push as a follow-up.
+For App Store V1, push is optional and should not block launch. Native iOS WebView push support is not equivalent to browser Web Push: the native shell must not show a broken web-push activation path. Web/PWA push remains supported on production HTTPS hosts, while native APNs/Capacitor push is a follow-up track.
+
+Reminder behavior:
+
+- Morning and evening reminders honor saved hour and minute.
+- Pre-training reminders honor the selected lead time, currently 30 or 60 minutes before the saved training time.
+- Training weekdays are interpreted in the user's local timezone so a local Monday training remains Monday even when UTC crosses midnight.
+- The Supabase schedule should invoke `send-daily-reminder` every 30 minutes for the half-hour slots to be reliable.
+- Notification logs store send/open/failure status only; no journal text, private reflections, or psychological raw values are included.
 
 Push QA:
 
 1. Confirm VAPID secrets in Supabase.
 2. Open `https://rewireperform.com/settings` in a supported browser.
 3. Enable push and verify a `push_subscriptions` row.
-4. Save reminder times and verify UTC conversion.
-5. Invoke `send-daily-reminder` in a safe test window.
-6. Verify one `notification_log` row per user/type/date.
-7. Confirm expired subscriptions are removed after send failures.
+4. Save full-hour and half-hour reminder times and verify UTC conversion.
+5. Save 30-minute and 60-minute pre-training lead times.
+6. Invoke `send-daily-reminder` in a safe test window.
+7. Verify one `notification_log` row per user/type/date with `status`, `target_url`, and `scheduled_for`.
+8. Click the notification and confirm the target route marks the log as `opened`.
+9. Confirm expired subscriptions are removed and logged as `expired_subscription` after send failures.
 
 ## App Privacy Labels Draft
 

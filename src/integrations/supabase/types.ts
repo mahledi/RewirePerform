@@ -343,23 +343,47 @@ export type Database = {
       notification_log: {
         Row: {
           created_at: string
+          error_code: number | null
+          failed_at: string | null
           id: string
+          metadata: Json
           notification_type: string
+          opened_at: string | null
+          scheduled_for: string | null
+          sent_at: string | null
           sent_date: string
+          status: string
+          target_url: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          error_code?: number | null
+          failed_at?: string | null
           id?: string
+          metadata?: Json
           notification_type: string
+          opened_at?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
           sent_date: string
+          status?: string
+          target_url?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          error_code?: number | null
+          failed_at?: string | null
           id?: string
+          metadata?: Json
           notification_type?: string
+          opened_at?: string | null
+          scheduled_for?: string | null
+          sent_at?: string | null
           sent_date?: string
+          status?: string
+          target_url?: string | null
           user_id?: string
         }
         Relationships: []
@@ -573,6 +597,8 @@ export type Database = {
           morning_hour: number
           morning_minute: number
           p256dh: string
+          pre_training_minutes: number
+          timezone: string
           updated_at: string
           user_agent: string | null
           user_id: string
@@ -587,6 +613,8 @@ export type Database = {
           morning_hour?: number
           morning_minute?: number
           p256dh: string
+          pre_training_minutes?: number
+          timezone?: string
           updated_at?: string
           user_agent?: string | null
           user_id: string
@@ -601,6 +629,8 @@ export type Database = {
           morning_hour?: number
           morning_minute?: number
           p256dh?: string
+          pre_training_minutes?: number
+          timezone?: string
           updated_at?: string
           user_agent?: string | null
           user_id?: string
@@ -779,6 +809,9 @@ export type Database = {
           day_of_week: number
           id: string
           training_hour: number
+          training_local_hour: number | null
+          training_local_minute: number
+          training_timezone: string
           updated_at: string
           user_id: string
         }
@@ -787,6 +820,9 @@ export type Database = {
           day_of_week: number
           id?: string
           training_hour: number
+          training_local_hour?: number | null
+          training_local_minute?: number
+          training_timezone?: string
           updated_at?: string
           user_id: string
         }
@@ -795,6 +831,9 @@ export type Database = {
           day_of_week?: number
           id?: string
           training_hour?: number
+          training_local_hour?: number | null
+          training_local_minute?: number
+          training_timezone?: string
           updated_at?: string
           user_id?: string
         }

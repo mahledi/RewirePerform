@@ -79,6 +79,8 @@ supabase functions deploy send-daily-reminder
 supabase functions deploy get-vapid-public-key
 ```
 
+`send-daily-reminder` should be invoked every 30 minutes in production so full-hour and half-hour reminder slots are both covered.
+
 Deprecated stubs may also be deployed for compatibility:
 
 ```bash
