@@ -927,10 +927,6 @@ export type Database = {
       get_admin_overview_stats:
         | { Args: never; Returns: Json }
         | { Args: { include_test?: boolean }; Returns: Json }
-      get_admin_presentation_metrics: {
-        Args: { include_test?: boolean }
-        Returns: Json
-      }
       get_admin_system_health: { Args: never; Returns: Json }
       get_admin_teams_summary:
         | { Args: never; Returns: Json }
