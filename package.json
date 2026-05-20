@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "app:build": "npm run build && npx cap sync ios",
+    "app:open:ios": "npx cap open ios",
+    "app:sync:ios": "npx cap sync ios",
     "typecheck": "tsc --noEmit",
     "validate:env": "node scripts/validate-env.mjs",
     "ci": "npm run validate:env -- --example-only && npm run typecheck && npm run build && npm test",
@@ -16,6 +19,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

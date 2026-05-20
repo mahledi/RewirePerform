@@ -19,6 +19,8 @@ import PreTraining from "./pages/PreTraining.tsx";
 import Admin from "./pages/Admin.tsx";
 import AdminContent from "./pages/AdminContent.tsx";
 import AdminQA from "./pages/AdminQA.tsx";
+import Privacy from "./pages/Privacy.tsx";
+import Support from "./pages/Support.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import QATestBanner from "./components/qa/QATestBanner";
 
@@ -34,6 +36,8 @@ const App = () => (
           <QATestBanner />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/questionnaire" element={
               <ProtectedRoute><Questionnaire /></ProtectedRoute>
