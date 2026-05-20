@@ -75,6 +75,7 @@ For the team, confirm:
 - Coach cannot access journal text or raw private answers
 - Admin overview excludes QA data when `include_test = false`
 - Admin QA/test data remains visible only in QA tooling or explicit include-test calls
+- Presentation activity metrics count athlete activity only; admin/coach test clicks must not inflate adherence or program usage.
 
 ## Presentation Exports
 
@@ -104,4 +105,3 @@ Mark the layer as launch-ready only if:
 - admin exports contain no private text or individual psychological values
 - QA data does not pollute production metrics
 - `npm run typecheck`, `npm test`, and `npm run build` pass
-
