@@ -952,6 +952,10 @@ export type Database = {
         Args: { include_test?: boolean }
         Returns: Json
       }
+      get_admin_study_overview: {
+        Args: { include_test?: boolean }
+        Returns: Json
+      }
       get_admin_system_health: { Args: never; Returns: Json }
       get_admin_teams_summary:
         | { Args: never; Returns: Json }
@@ -983,6 +987,10 @@ export type Database = {
       is_creator_of_team: { Args: { _team_id: string }; Returns: boolean }
       is_member_of_team: { Args: { _team_id: string }; Returns: boolean }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
+      create_study_aggregate_snapshot: {
+        Args: { _cohort_id?: string | null; include_test?: boolean }
+        Returns: Json
+      }
       update_feedback_status: {
         Args: { feedback_id: string; new_note?: string; new_status: string }
         Returns: undefined

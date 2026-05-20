@@ -1,5 +1,10 @@
 # RewirePerform Study Layer Phase 2
 
+Launch-Study V1 is now defined in `docs/LAUNCH_STUDY_V1.md` and backed by
+dedicated cohort, participant, measurement-window, snapshot, and export-manifest
+database objects. This file remains the roadmap for the later research-grade
+layer after real pilot data exists.
+
 RewirePerform already captures enough operational data for internal program
 evaluation: adherence, completed days, check-ins, comprehension, journals as
 counts, program progress snapshots, validated assessment timing, and team-level

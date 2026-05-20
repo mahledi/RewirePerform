@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, RefreshCcw, AlertTriangle } from "lucide-react";
+import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -49,6 +49,23 @@ type PresentationMetrics = {
   evidence_readiness: Record<string, number | null>;
   presentation_kpis: Array<{ label: string; value: number | null; type: "count" | "rate" }>;
   team_summaries: Array<Record<string, unknown>>;
+  export_catalog: string[];
+  privacy_exclusions: string[];
+};
+
+type StudyOverview = {
+  generated_at: string;
+  include_test: boolean;
+  privacy_level: string;
+  claim_boundary: string;
+  summary: Record<string, number | boolean | null>;
+  activation: Record<string, number | null>;
+  activity: Record<string, number | null>;
+  measurement_readiness: Record<string, number | boolean | null>;
+  data_quality: Record<string, number | boolean | null>;
+  cohort_summaries: Array<Record<string, unknown>>;
+  team_summaries: Array<Record<string, unknown>>;
+  measurement_windows: Array<Record<string, unknown>>;
   export_catalog: string[];
   privacy_exclusions: string[];
 };
@@ -136,8 +153,10 @@ const Admin = () => {
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [presentation, setPresentation] = useState<PresentationMetrics | null>(null);
+  const [study, setStudy] = useState<StudyOverview | null>(null);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
 
   const isAdmin = role === "admin";
@@ -146,17 +165,19 @@ const Admin = () => {
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = supabase as any;
-    const [ov, ts, hl, pm, fb] = await Promise.all([
+    const [ov, ts, hl, pm, st, fb] = await Promise.all([
       sb.rpc("get_admin_overview_stats", { include_test: false }),
       sb.rpc("get_admin_teams_summary", { include_test: false }),
       sb.rpc("get_admin_system_health"),
       sb.rpc("get_admin_presentation_metrics", { include_test: false }),
+      sb.rpc("get_admin_study_overview", { include_test: false }),
       sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
     if (ov.data) setOverview(ov.data as Overview);
     if (ts.data) setTeams(ts.data as TeamRow[]);
     if (hl.data) setHealth(hl.data as Health);
     if (pm.data) setPresentation(pm.data as PresentationMetrics);
+    if (st.data) setStudy(st.data as StudyOverview);
     if (!fb.error && fb.data) setFeedback(fb.data as FeedbackRow[]);
     setLoading(false);
   };
@@ -203,6 +224,32 @@ const Admin = () => {
     loadAll();
   };
 
+  const createStudySnapshot = async () => {
+    setSnapshotLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).rpc("create_study_aggregate_snapshot", {
+      _cohort_id: null,
+      include_test: false,
+    });
+    setSnapshotLoading(false);
+    if (error) {
+      toast({ title: "Snapshot konnte nicht erstellt werden", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Study-Snapshot erstellt", description: "Manifest und aggregierter Snapshot wurden gespeichert." });
+    loadAll();
+  };
+
+  const studyExportManifest = study ? {
+    generated_at: new Date().toISOString(),
+    source_generated_at: study.generated_at,
+    export_type: "launch_study_v1",
+    privacy_level: study.privacy_level,
+    claim_boundary: study.claim_boundary,
+    included_exports: study.export_catalog,
+    privacy_exclusions: study.privacy_exclusions,
+  } : null;
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -231,12 +278,13 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-3 md:grid-cols-8 w-full">
+          <TabsList className="grid grid-cols-3 md:grid-cols-9 w-full">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="evidence">Wirksamkeit</TabsTrigger>
             <TabsTrigger value="presentation">Präsentation</TabsTrigger>
+            <TabsTrigger value="study">Study</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="exports">Exporte</TabsTrigger>
             <TabsTrigger value="health">Systemstatus</TabsTrigger>
@@ -468,6 +516,145 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          {/* STUDY / EVIDENCE */}
+          <TabsContent value="study" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <CardTitle>Study / Evidence</CardTitle>
+                    <CardDescription>
+                      Interne Programmevaluation mit Kohorten-, Nutzungs- und Entwicklungsaggregaten. Keine Diagnose, keine Kausalaussage ohne Kontrollgruppe.
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" onClick={createStudySnapshot} disabled={snapshotLoading || loading || !study}>
+                    {snapshotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                    Snapshot speichern
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {loading || !study ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+                      <StatCard label="Athleten" value={study.summary.athletes_total as number ?? 0} />
+                      <StatCard label="Aktivierung" value={formatPercent(study.activation.activation_rate)} />
+                      <StatCard label="Day 1" value={formatPercent(study.activation.day_1_rate)} />
+                      <StatCard label="7d aktiv" value={formatPercent(study.activation.active_7d_rate)} />
+                      <StatCard label="28d aktiv" value={formatPercent(study.activation.active_28d_rate)} />
+                      <StatCard label="56 Tage" value={formatPercent(study.activation.day_56_completion_rate)} />
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Programmaktivität</h3>
+                        <div className="space-y-2 text-sm">
+                          <Row label="Abgeschlossene Tage" value={study.activity.completed_days_total} />
+                          <Row label="Check-ins" value={study.activity.checkins_total} />
+                          <Row label="Verständnis-Checks" value={study.activity.comprehension_checks_total} />
+                          <Row label="Journals (nur Anzahl)" value={study.activity.journal_entries_count_only} />
+                          <Row label="Ø Completion" value={formatPercent(study.activity.avg_completion_rate)} />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Messfenster-Readiness</h3>
+                        <div className="space-y-2 text-sm">
+                          <Row label="Validated Pre n" value={study.measurement_readiness.validated_assessments_pre_n as number} />
+                          <Row label="Validated Mid n" value={study.measurement_readiness.validated_assessments_mid_n as number} />
+                          <Row label="Validated Post n" value={study.measurement_readiness.validated_assessments_post_n as number} />
+                          <Row label="Development Index Pre n" value={study.measurement_readiness.development_index_pre_n as number} />
+                          <Row label="Development Index Post n" value={study.measurement_readiness.development_index_post_n as number} />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Datenqualität & Privacy</h3>
+                        <div className="space-y-2 text-sm">
+                          <Row label="Ohne Programmlauf" value={study.data_quality.athletes_without_program_instance as number} />
+                          <Row label="Ohne Day 1" value={study.data_quality.athletes_without_day_1 as number} />
+                          <Row label="Ohne Pre" value={study.data_quality.athletes_without_pre_assessment as number} />
+                          <Row label="Low confidence" value={study.data_quality.low_confidence ? "ja" : "nein"} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-border/60 p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                          <h3 className="text-sm font-medium">Kohorten</h3>
+                          <p className="text-xs text-muted-foreground">QA, Demo, Pilot und Production bleiben getrennt. Sensible Aggregate erst ab n ≥ 5.</p>
+                        </div>
+                        <Badge variant="outline">{study.privacy_level}</Badge>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Kohorte</TableHead>
+                              <TableHead>Typ</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead className="text-right">n</TableHead>
+                              <TableHead>Aggregate</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {study.cohort_summaries.map((cohort, index) => (
+                              <TableRow key={String(cohort.id ?? index)}>
+                                <TableCell className="font-medium">{String(cohort.name ?? "–")}</TableCell>
+                                <TableCell>{String(cohort.cohort_type ?? "–")}</TableCell>
+                                <TableCell>{String(cohort.status ?? "–")}</TableCell>
+                                <TableCell className="text-right">{String(cohort.participant_count ?? 0)}</TableCell>
+                                <TableCell>
+                                  <Badge variant={cohort.aggregate_visible ? "default" : "outline"}>
+                                    {cohort.aggregate_visible ? "sichtbar" : "n < 5"}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {!study.cohort_summaries.length && (
+                              <TableRow>
+                                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                                  Noch keine expliziten Study-Kohorten angelegt. Die Live-Produktionsmetriken oben bleiben trotzdem auswertbar.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" onClick={() => downloadJson("study_summary.json", study)}>
+                        <Download className="w-4 h-4 mr-2" />study_summary.json
+                      </Button>
+                      <Button variant="outline" onClick={() => downloadCsv("cohort_metrics.csv", study.team_summaries)}>
+                        <Download className="w-4 h-4 mr-2" />cohort_metrics.csv
+                      </Button>
+                      <Button variant="outline" onClick={() => downloadCsv("measurement_windows.csv", study.measurement_windows)}>
+                        <Download className="w-4 h-4 mr-2" />measurement_windows.csv
+                      </Button>
+                      <Button variant="outline" onClick={() => downloadCsv("data_quality.csv", [study.data_quality])}>
+                        <Download className="w-4 h-4 mr-2" />data_quality.csv
+                      </Button>
+                      <Button variant="outline" disabled={!studyExportManifest} onClick={() => studyExportManifest && downloadJson("export_manifest.json", studyExportManifest)}>
+                        <Download className="w-4 h-4 mr-2" />export_manifest.json
+                      </Button>
+                    </div>
+
+                    <div className="rounded-lg border border-border/60 p-4">
+                      <h3 className="text-sm font-medium mb-2">Claim Boundary</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{study.claim_boundary}</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Ausgeschlossen: {study.privacy_exclusions.join(", ")}.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* FEEDBACK */}
           <TabsContent value="feedback" className="mt-4">
             <Card>
@@ -603,6 +790,15 @@ const Admin = () => {
                   </Button>
                   <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadJson("presentation_metrics.json", presentation)}>
                     <Download className="w-4 h-4 mr-2" />Presentation JSON
+                  </Button>
+                  <Button variant="outline" disabled={!study} onClick={() => study && downloadJson("study_summary.json", study)}>
+                    <Download className="w-4 h-4 mr-2" />Study Summary
+                  </Button>
+                  <Button variant="outline" disabled={!study} onClick={() => study && downloadCsv("cohort_metrics.csv", study.team_summaries)}>
+                    <Download className="w-4 h-4 mr-2" />Study Cohort Metrics
+                  </Button>
+                  <Button variant="outline" disabled={!study} onClick={() => study && downloadCsv("data_quality.csv", [study.data_quality])}>
+                    <Download className="w-4 h-4 mr-2" />Study Data Quality
                   </Button>
                   <Button variant="outline" onClick={() => downloadCsv("feedback.csv",
                     feedback.map(f => ({
