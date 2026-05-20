@@ -12,6 +12,7 @@ Launch-Study V1 turns the existing RewirePerform tracking layer into a privacy-s
 - Comprehension check count
 - Journal count only
 - Pre/Mid/Post readiness
+- Development Index readiness
 - Team/cohort aggregate quality
 - Missingness and dropout risk indicators
 
