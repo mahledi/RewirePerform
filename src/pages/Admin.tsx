@@ -39,6 +39,20 @@ type Health = {
   checkins_missing_instance: number; teams_without_evidence: number;
 };
 
+type PresentationMetrics = {
+  generated_at: string;
+  include_test: boolean;
+  privacy_level: string;
+  claim_boundary: string;
+  summary: Record<string, number | null>;
+  activity: Record<string, number | null>;
+  evidence_readiness: Record<string, number | null>;
+  presentation_kpis: Array<{ label: string; value: number | null; type: "count" | "rate" }>;
+  team_summaries: Array<Record<string, unknown>>;
+  export_catalog: string[];
+  privacy_exclusions: string[];
+};
+
 type FeedbackRow = {
   id: string; created_at: string; type: string; message: string;
   user_id: string; status: string; admin_note: string | null; reviewed_at: string | null;
@@ -81,6 +95,16 @@ function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
   URL.revokeObjectURL(url);
 }
 
+function downloadJson(filename: string, payload: unknown) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <Card>
@@ -89,6 +113,15 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
         <div className="text-2xl font-semibold mt-1">{value}</div>
       </CardContent>
     </Card>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string | number | null }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium text-right">{value ?? "–"}</span>
+    </div>
   );
 }
 
@@ -102,6 +135,7 @@ const Admin = () => {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
+  const [presentation, setPresentation] = useState<PresentationMetrics | null>(null);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
@@ -112,15 +146,17 @@ const Admin = () => {
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = supabase as any;
-    const [ov, ts, hl, fb] = await Promise.all([
+    const [ov, ts, hl, pm, fb] = await Promise.all([
       sb.rpc("get_admin_overview_stats", { include_test: false }),
       sb.rpc("get_admin_teams_summary", { include_test: false }),
       sb.rpc("get_admin_system_health"),
+      sb.rpc("get_admin_presentation_metrics", { include_test: false }),
       sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
     if (ov.data) setOverview(ov.data as Overview);
     if (ts.data) setTeams(ts.data as TeamRow[]);
     if (hl.data) setHealth(hl.data as Health);
+    if (pm.data) setPresentation(pm.data as PresentationMetrics);
     if (!fb.error && fb.data) setFeedback(fb.data as FeedbackRow[]);
     setLoading(false);
   };
@@ -195,11 +231,12 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full">
+          <TabsList className="grid grid-cols-3 md:grid-cols-8 w-full">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="evidence">Wirksamkeit</TabsTrigger>
+            <TabsTrigger value="presentation">Präsentation</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="exports">Exporte</TabsTrigger>
             <TabsTrigger value="health">Systemstatus</TabsTrigger>
@@ -347,6 +384,90 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          {/* PRESENTATION DATA */}
+          <TabsContent value="presentation" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Präsentationsdaten</CardTitle>
+                <CardDescription>
+                  Aggregierte Nutzungs- und Fortschrittsdaten für interne Evaluation, Vereinspräsentationen und Launch-Review.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {loading || !presentation ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+                      {presentation.presentation_kpis.map((kpi) => (
+                        <StatCard
+                          key={kpi.label}
+                          label={kpi.label}
+                          value={kpi.type === "rate" && typeof kpi.value === "number" ? formatPercent(kpi.value) : kpi.value ?? "–"}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Activity</h3>
+                        <div className="space-y-2 text-sm">
+                          <Row label="Aktive Nutzer 7 Tage" value={presentation.activity.active_users_7d} />
+                          <Row label="Journals (nur Anzahl)" value={presentation.activity.journal_entries_total} />
+                          <Row label="Ø Streak" value={presentation.activity.avg_current_streak} />
+                          <Row label="Ø Verständnis" value={formatPercent(presentation.activity.avg_comprehension)} />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Evidence Readiness</h3>
+                        <div className="space-y-2 text-sm">
+                          <Row label="Teams n ≥ 5" value={presentation.evidence_readiness.teams_with_min_5_athletes} />
+                          <Row label="Pre n ≥ 5" value={presentation.evidence_readiness.teams_with_pre_n_5} />
+                          <Row label="Mid n ≥ 5" value={presentation.evidence_readiness.teams_with_mid_n_5} />
+                          <Row label="Pre/Post n ≥ 5" value={presentation.evidence_readiness.teams_with_pre_post_n_5} />
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Privacy Boundary</h3>
+                        <div className="space-y-2">
+                          <Badge variant="outline">{presentation.privacy_level}</Badge>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {presentation.claim_boundary}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => downloadJson("presentation_metrics.json", presentation)}
+                      >
+                        <Download className="w-4 h-4 mr-2" />Präsentationspaket JSON
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => downloadCsv("presentation_team_summaries.csv", presentation.team_summaries)}
+                      >
+                        <Download className="w-4 h-4 mr-2" />Team Summaries CSV
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => downloadCsv("presentation_kpis.csv", presentation.presentation_kpis.map((kpi) => ({ ...kpi })))}
+                      >
+                        <Download className="w-4 h-4 mr-2" />KPI CSV
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                      Ausgeschlossen: {presentation.privacy_exclusions.join(", ")}.
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* FEEDBACK */}
           <TabsContent value="feedback" className="mt-4">
             <Card>
@@ -442,6 +563,46 @@ const Admin = () => {
                     }))
                   )}>
                     <Download className="w-4 h-4 mr-2" />Assessments aggregiert
+                  </Button>
+                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("program_progress.csv",
+                    presentation.team_summaries.map(t => ({
+                      team: t.team,
+                      sport: t.sport,
+                      athlete_count: t.athlete_count,
+                      avg_completion_rate: t.avg_completion_rate,
+                      avg_days_completed: t.avg_days_completed,
+                      avg_days_available: t.avg_days_available,
+                      avg_current_streak: t.avg_current_streak,
+                    }))
+                  )}>
+                    <Download className="w-4 h-4 mr-2" />Program Progress
+                  </Button>
+                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("checkin_activity.csv",
+                    presentation.team_summaries.map(t => ({
+                      team: t.team,
+                      athlete_count: t.athlete_count,
+                      checkins: t.checkins,
+                      completed_days: t.completed_days,
+                      journal_entries_count_only: t.journal_entries_count_only,
+                    }))
+                  )}>
+                    <Download className="w-4 h-4 mr-2" />Check-in Aktivität
+                  </Button>
+                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("comprehension_summary.csv",
+                    presentation.team_summaries.map(t => ({
+                      team: t.team,
+                      athlete_count: t.athlete_count,
+                      comprehension_checks: t.comprehension_checks,
+                      avg_comprehension: t.avg_comprehension,
+                    }))
+                  )}>
+                    <Download className="w-4 h-4 mr-2" />Verständnis
+                  </Button>
+                  <Button variant="outline" disabled={!health} onClick={() => health && downloadCsv("system_health.csv", [health as unknown as Record<string, unknown>])}>
+                    <Download className="w-4 h-4 mr-2" />System Health
+                  </Button>
+                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadJson("presentation_metrics.json", presentation)}>
+                    <Download className="w-4 h-4 mr-2" />Presentation JSON
                   </Button>
                   <Button variant="outline" onClick={() => downloadCsv("feedback.csv",
                     feedback.map(f => ({
