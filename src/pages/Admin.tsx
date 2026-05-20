@@ -157,6 +157,7 @@ const Admin = () => {
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
+  const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
 
   const isAdmin = role === "admin";
@@ -170,7 +171,7 @@ const Admin = () => {
       sb.rpc("get_admin_teams_summary", { include_test: false }),
       sb.rpc("get_admin_system_health"),
       sb.rpc("get_admin_presentation_metrics", { include_test: false }),
-      sb.rpc("get_admin_study_overview", { include_test: false }),
+      sb.rpc("get_admin_study_overview", { include_test: studyIncludeTest }),
       sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
     if (ov.data) setOverview(ov.data as Overview);
@@ -185,7 +186,7 @@ const Admin = () => {
   useEffect(() => {
     if (!authLoading && isAdmin) loadAll();
     else if (!authLoading) setLoading(false);
-  }, [authLoading, isAdmin]);
+  }, [authLoading, isAdmin, studyIncludeTest]);
 
   if (authLoading) {
     return (
@@ -229,7 +230,7 @@ const Admin = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).rpc("create_study_aggregate_snapshot", {
       _cohort_id: null,
-      include_test: false,
+      include_test: studyIncludeTest,
     });
     setSnapshotLoading(false);
     if (error) {
@@ -244,6 +245,7 @@ const Admin = () => {
     generated_at: new Date().toISOString(),
     source_generated_at: study.generated_at,
     export_type: "launch_study_v1",
+    include_test: study.include_test,
     privacy_level: study.privacy_level,
     claim_boundary: study.claim_boundary,
     included_exports: study.export_catalog,
@@ -527,10 +529,32 @@ const Admin = () => {
                       Interne Programmevaluation mit Kohorten-, Nutzungs- und Entwicklungsaggregaten. Keine Diagnose, keine Kausalaussage ohne Kontrollgruppe.
                     </CardDescription>
                   </div>
-                  <Button variant="outline" onClick={createStudySnapshot} disabled={snapshotLoading || loading || !study}>
-                    {snapshotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
-                    Snapshot speichern
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <div className="inline-flex rounded-lg border border-border/70 bg-muted/50 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setStudyIncludeTest(false)}
+                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                          !studyIncludeTest ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Production
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStudyIncludeTest(true)}
+                        className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                          studyIncludeTest ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        QA anzeigen
+                      </button>
+                    </div>
+                    <Button variant="outline" onClick={createStudySnapshot} disabled={snapshotLoading || loading || !study}>
+                      {snapshotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                      Snapshot speichern
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-5">
@@ -538,6 +562,12 @@ const Admin = () => {
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
                 ) : (
                   <>
+                    {study.include_test && (
+                      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                        QA-Ansicht aktiv: Testdaten werden nur hier eingeblendet. Production-Metriken und Präsentationsexporte bleiben standardmäßig ohne QA-Daten.
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
                       <StatCard label="Athleten" value={study.summary.athletes_total as number ?? 0} />
                       <StatCard label="Aktivierung" value={formatPercent(study.activation.activation_rate)} />
