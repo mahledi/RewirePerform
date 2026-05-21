@@ -67,16 +67,15 @@ self.addEventListener("push", (event: PushEvent) => {
 
 self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
-  const url = (event.notification.data as any)?.url || "/";
+  const targetUrl = new URL((event.notification.data as any)?.url || "/", self.location.origin).href;
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if ("focus" in client) {
-          (client as WindowClient).navigate(url);
-          return (client as WindowClient).focus();
-        }
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clients) => {
+      const appClient = clients.find((client) => "focus" in client) as WindowClient | undefined;
+      if (appClient) {
+        const navigatedClient = await appClient.navigate(targetUrl).catch(() => null);
+        return (navigatedClient || appClient).focus();
       }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
     })
   );
 });
