@@ -14,6 +14,16 @@ import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
 import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
 import TodayForYou from "@/components/daily/TodayForYou";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
@@ -73,9 +83,22 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [motivation, setMotivation] = useState<number | null>(null);
   const [pressure, setPressure] = useState<number | null>(null);
   const [teamConnection, setTeamConnection] = useState<number | null>(null);
+  const [showExitDialog, setShowExitDialog] = useState(false);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
+
+  const handleBack = () => {
+    if (selectedTask) {
+      setSelectedTask(null);
+      return;
+    }
+    if (step > 0) {
+      setStep(step - 1);
+      return;
+    }
+    setShowExitDialog(true);
+  };
 
   useEffect(() => {
     if (previewMode) {
@@ -560,11 +583,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => {
-              if (selectedTask) { setSelectedTask(null); return; }
-              if (step > 0) { setStep(step - 1); return; }
-              onClose();
-            }}
+            onClick={handleBack}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -741,7 +760,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       {(step === 1 || step === 2 || step === 4) && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
-            <button onClick={() => (step > 0 ? setStep(step - 1) : onClose())} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={handleBack} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Zurück
             </button>
@@ -778,6 +797,21 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           </div>
         </div>
       )}
+
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent className="mx-4 rounded-2xl border-border/60">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Check-in verlassen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Du bist gerade am Anfang des Check-ins. Wenn du ihn verlässt, wird noch nichts gespeichert.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Weiter im Check-in</AlertDialogCancel>
+            <AlertDialogAction onClick={onClose}>Verlassen</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
