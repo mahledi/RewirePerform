@@ -101,7 +101,13 @@ export const usePushSubscription = () => {
     refresh();
   }, [refresh]);
 
-  const subscribe = useCallback(async () => {
+  const subscribe = useCallback(async (times?: {
+    morningHour: number;
+    morningMinute: number;
+    eveningHour: number;
+    eveningMinute: number;
+    preTrainingMinutes: number;
+  }) => {
     if (!user || !support.supported) throw new Error("Push nicht unterstützt");
 
     const perm = await Notification.requestPermission();
@@ -128,6 +134,12 @@ export const usePushSubscription = () => {
     const p256dh = arrayBufferToBase64Url(sub.getKey("p256dh"));
     const auth = arrayBufferToBase64Url(sub.getKey("auth"));
 
+    const nextMorningHour = times?.morningHour ?? morningHour;
+    const nextMorningMinute = times?.morningMinute ?? morningMinute;
+    const nextEveningHour = times?.eveningHour ?? eveningHour;
+    const nextEveningMinute = times?.eveningMinute ?? eveningMinute;
+    const nextPreTrainingMinutes = times?.preTrainingMinutes ?? preTrainingMinutes;
+
     const { error } = await supabase.from("push_subscriptions").upsert(
       {
         user_id: user.id,
@@ -135,16 +147,21 @@ export const usePushSubscription = () => {
         p256dh,
         auth,
         user_agent: navigator.userAgent,
-        morning_hour: morningHour,
-        morning_minute: morningMinute,
-        evening_hour: eveningHour,
-        evening_minute: eveningMinute,
-        pre_training_minutes: preTrainingMinutes,
+        morning_hour: nextMorningHour,
+        morning_minute: nextMorningMinute,
+        evening_hour: nextEveningHour,
+        evening_minute: nextEveningMinute,
+        pre_training_minutes: nextPreTrainingMinutes,
         timezone: getBrowserTimeZone(),
       },
       { onConflict: "endpoint" },
     );
     if (error) throw error;
+    setMorningHour(nextMorningHour);
+    setMorningMinute(nextMorningMinute);
+    setEveningHour(nextEveningHour);
+    setEveningMinute(nextEveningMinute);
+    setPreTrainingMinutes(nextPreTrainingMinutes);
     setEnabled(true);
   }, [user, support.supported, morningHour, morningMinute, eveningHour, eveningMinute, preTrainingMinutes]);
 
