@@ -31,7 +31,15 @@ Environment variables:
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_SUPABASE_PROJECT_ID
+VITE_SENTRY_DSN optional, enables frontend error monitoring
+VITE_APP_ENV production | staging | development
+VITE_RELEASE_SHA optional, current Git commit SHA
 ```
+
+If `VITE_SENTRY_DSN` is empty, monitoring is disabled and the app still starts normally.
+When Sentry is enabled, only technical context is sent. Do not add e-mail,
+journal text, free answers, private reflections, or individual psychological
+scores to Sentry tags, contexts, breadcrumbs, or extras.
 
 After the first deploy, add the hosted URL in Supabase:
 
@@ -104,6 +112,28 @@ supabase secrets set VAPID_PRIVATE_KEY=...
 supabase secrets set VAPID_SUBJECT=mailto:hello@rewireperform.com
 ```
 
+## Launch Operations
+
+Apply the Launch-Ops migration before the first real pilot:
+
+```bash
+supabase db push
+```
+
+It creates `app_event_log` plus `get_admin_ops_status()`. This is a
+privacy-safe operational layer for login, teamcode, check-in, journal,
+assessment, push and pre-training flow events.
+
+Operational checks after deploy:
+
+1. Log in as an athlete.
+2. Complete a check-in and journal.
+3. Open `/pre-training`.
+4. Log in as admin and open Systemstatus.
+5. Confirm Launch-Ops shows technical events and no private content.
+
+Incident and pilot rules live in `docs/LAUNCH_OPERATIONS.md`.
+
 ## Rollback
 
 Frontend rollback:
@@ -126,6 +156,7 @@ Before merging a deploy PR:
 - Auth, questionnaire, dashboard check-in, coach team view, settings, and admin QA still load.
 - Any new Supabase table has RLS enabled and policies reviewed.
 - Any new secret is documented here and in `.env.example`.
+- Admin Systemstatus / Launch-Ops loads without exposing private content.
 
 Before TestFlight/App Store submission:
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, Loader2, Target } from "lucide-react";
@@ -8,12 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import type { ResolvedDay } from "@/content/matrixDayTypes";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 const PreTraining = () => {
-  const { user } = useAuth();
+  const { user, role, isTestUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
+  const trackedRef = useRef(false);
 
   useEffect(() => {
     const load = async () => {
@@ -21,6 +23,17 @@ const PreTraining = () => {
       const eff = await getEffectiveProgramStart(user.id);
       const info = getCurrentProgramDay(eff.startDate);
       if (!info) {
+        if (!trackedRef.current) {
+          trackedRef.current = true;
+          void trackAppEvent({
+            eventName: "pre_training_opened",
+            status: "skipped",
+            role,
+            route: "/pre-training",
+            isTest: isTestUser,
+            metadata: { reason: "program_not_started" },
+          });
+        }
         setLoading(false);
         return;
       }
@@ -34,10 +47,36 @@ const PreTraining = () => {
         position: profile?.position,
       });
       setResolved(day);
+      if (!trackedRef.current) {
+        trackedRef.current = true;
+        void trackAppEvent({
+          eventName: "pre_training_opened",
+          status: "success",
+          role,
+          route: "/pre-training",
+          isTest: isTestUser,
+          metadata: {
+            day_number: info.dayNumber,
+            has_profile_context: Boolean(profile?.sport || profile?.position),
+          },
+        });
+      }
       setLoading(false);
     };
-    load();
-  }, [user]);
+    load().catch((error) => {
+      setLoading(false);
+      if (!trackedRef.current) {
+        trackedRef.current = true;
+        void captureAppError({
+          eventName: "pre_training_opened",
+          error,
+          role,
+          route: "/pre-training",
+          isTest: isTestUser,
+        });
+      }
+    });
+  }, [user, role, isTestUser]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

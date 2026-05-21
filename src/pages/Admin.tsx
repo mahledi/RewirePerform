@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
+import { trackAppEvent } from "@/lib/monitoring";
 
 type Overview = {
   total_users: number; total_athletes: number; total_coaches: number; total_admins: number;
@@ -38,6 +39,34 @@ type Health = {
   athletes_without_program_instance: number; teams_below_min_n: number;
   assessments_missing_instance: number; completions_missing_instance: number;
   checkins_missing_instance: number; teams_without_evidence: number;
+};
+
+type OpsStatus = {
+  generated_at: string;
+  include_test: boolean;
+  events_last_24h: number;
+  failed_events_24h: number;
+  critical_failed_events_24h: number;
+  flow_failures_24h: Record<string, number>;
+  recent_failed_events: Array<{
+    created_at: string;
+    event_name: string;
+    status: string;
+    role: string | null;
+    route: string | null;
+    error_code: string | null;
+    is_test: boolean;
+  }>;
+  push: {
+    sent_7d: number;
+    opened_7d: number;
+    failed_7d: number;
+    expired_subscriptions_7d: number;
+  };
+  qa_vs_production: Record<string, number>;
+  teams_below_min_n: number;
+  privacy_level: string;
+  privacy_exclusions: string[];
 };
 
 type PresentationMetrics = {
@@ -111,6 +140,13 @@ function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  void trackAppEvent({
+    eventName: "admin_export_downloaded",
+    status: "success",
+    role: "admin",
+    route: "/admin",
+    metadata: { filename, format: "csv", row_count: rows.length },
+  });
 }
 
 function downloadJson(filename: string, payload: unknown) {
@@ -121,6 +157,13 @@ function downloadJson(filename: string, payload: unknown) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+  void trackAppEvent({
+    eventName: "admin_export_downloaded",
+    status: "success",
+    role: "admin",
+    route: "/admin",
+    metadata: { filename, format: "json" },
+  });
 }
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -154,6 +197,7 @@ const Admin = () => {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
+  const [ops, setOps] = useState<OpsStatus | null>(null);
   const [presentation, setPresentation] = useState<PresentationMetrics | null>(null);
   const [study, setStudy] = useState<StudyOverview | null>(null);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
@@ -168,12 +212,13 @@ const Admin = () => {
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = supabase as any;
-    const [ov, ts, hl, pm, st, fb] = await Promise.all([
+    const [ov, ts, hl, pm, st, op, fb] = await Promise.all([
       sb.rpc("get_admin_overview_stats", { include_test: false }),
       sb.rpc("get_admin_teams_summary", { include_test: false }),
       sb.rpc("get_admin_system_health"),
       sb.rpc("get_admin_presentation_metrics", { include_test: false }),
       sb.rpc("get_admin_study_overview", { include_test: studyIncludeTest }),
+      sb.rpc("get_admin_ops_status", { include_test: studyIncludeTest }),
       sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
     if (ov.data) setOverview(ov.data as Overview);
@@ -181,6 +226,7 @@ const Admin = () => {
     if (hl.data) setHealth(hl.data as Health);
     if (pm.data) setPresentation(pm.data as PresentationMetrics);
     if (st.data) setStudy(st.data as StudyOverview);
+    if (op.data) setOps(op.data as OpsStatus);
     if (!fb.error && fb.data) setFeedback(fb.data as FeedbackRow[]);
     setLoading(false);
   };
@@ -859,7 +905,7 @@ const Admin = () => {
           </TabsContent>
 
           {/* HEALTH */}
-          <TabsContent value="health" className="mt-4">
+          <TabsContent value="health" className="space-y-4 mt-4">
             <Card>
               <CardHeader>
                 <CardTitle>Systemstatus</CardTitle>
@@ -882,6 +928,95 @@ const Admin = () => {
                   <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
                   <span>Werte &gt; 0 deuten auf Inkonsistenzen hin, die vor einer Vereinspräsentation behoben werden sollten.</span>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Launch-Ops</CardTitle>
+                <CardDescription>
+                  Technische Flow-Events, Save-Fehler und Push-Status. Keine privaten Antworten, keine Journale, keine E-Mails.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loading || !ops ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <StatCard label="Events 24h" value={ops.events_last_24h} />
+                      <StatCard label="Fehler 24h" value={ops.failed_events_24h} />
+                      <StatCard label="Kritische Fehler 24h" value={ops.critical_failed_events_24h} />
+                      <StatCard label="Teams < 5" value={ops.teams_below_min_n} />
+                      <StatCard label="Push sent 7d" value={ops.push.sent_7d} />
+                      <StatCard label="Push opened 7d" value={ops.push.opened_7d} />
+                      <StatCard label="Push failed 7d" value={ops.push.failed_7d} />
+                      <StatCard label="Abgelaufene Push Subs" value={ops.push.expired_subscriptions_7d} />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">Fehler nach Flow (24h)</h3>
+                        <div className="space-y-2 text-sm">
+                          {Object.entries(ops.flow_failures_24h).length ? (
+                            Object.entries(ops.flow_failures_24h).map(([flow, count]) => (
+                              <Row key={flow} label={flow} value={count} />
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Keine fehlgeschlagenen Flow-Events in den letzten 24 Stunden.</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-border/60 p-4">
+                        <h3 className="text-sm font-medium mb-3">QA vs Production</h3>
+                        <div className="space-y-2 text-sm">
+                          {Object.entries(ops.qa_vs_production).map(([label, value]) => (
+                            <Row key={label} label={label} value={value} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-border/60 p-4">
+                      <h3 className="text-sm font-medium mb-3">Letzte fehlgeschlagene Events</h3>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Zeit</TableHead>
+                              <TableHead>Flow</TableHead>
+                              <TableHead>Rolle</TableHead>
+                              <TableHead>Route</TableHead>
+                              <TableHead>Error</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {ops.recent_failed_events.map((event, index) => (
+                              <TableRow key={`${event.created_at}-${event.event_name}-${index}`}>
+                                <TableCell className="whitespace-nowrap text-xs">
+                                  {new Date(event.created_at).toLocaleString("de-DE")}
+                                </TableCell>
+                                <TableCell>{event.event_name}</TableCell>
+                                <TableCell>{event.role ?? "–"}</TableCell>
+                                <TableCell>{event.route ?? "–"}</TableCell>
+                                <TableCell>{event.error_code ?? "–"}</TableCell>
+                              </TableRow>
+                            ))}
+                            {!ops.recent_failed_events.length && (
+                              <TableRow>
+                                <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                                  Keine fehlgeschlagenen Events gespeichert.
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                      Privacy Boundary: {ops.privacy_level}. Ausgeschlossen: {ops.privacy_exclusions.join(", ")}.
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

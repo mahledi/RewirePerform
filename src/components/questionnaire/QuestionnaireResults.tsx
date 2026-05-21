@@ -23,6 +23,7 @@ import {
   ONBOARDING_V2_INSTRUMENT_ID,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
@@ -149,9 +150,31 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
         // Small artificial delay so the user can read the loader once.
         await new Promise((r) => setTimeout(r, 600));
+        void trackAppEvent({
+          eventName: "onboarding_completed",
+          status: "success",
+          role: "athlete",
+          route: "/questionnaire",
+          metadata: {
+            instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+            questionnaire_version: ONBOARDING_V2_VERSION,
+            answer_count: Object.keys(answers).length,
+          },
+        });
         setAnalysis(analysisResult);
       } catch (err) {
         console.error("Analysis error:", err);
+        void captureAppError({
+          eventName: "onboarding_completed",
+          error: err,
+          role: "athlete",
+          route: "/questionnaire",
+          metadata: {
+            instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+            questionnaire_version: ONBOARDING_V2_VERSION,
+            answer_count: Object.keys(answers).length,
+          },
+        });
         setError(
           err instanceof Error
             ? err.message

@@ -13,6 +13,7 @@ import {
 } from "@/content/questionnaireV2";
 import type { Question } from "@/data/questionnaireData";
 import { scoreDevelopmentIndex } from "@/lib/developmentIndexScoring";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 type Timing = "pre" | "mid" | "post";
 
@@ -40,7 +41,7 @@ const DeepProfile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const timing = resolveTiming(searchParams.get("timing"));
-  const { user } = useAuth();
+  const { user, role, isTestUser } = useAuth();
 
   const deepQuestions = useMemo(
     () =>
@@ -81,11 +82,33 @@ const DeepProfile = () => {
 
     if (error) {
       console.error("Save error:", error);
+      void captureAppError({
+        eventName: "deep_profile_saved",
+        error,
+        role,
+        route: "/deep-profile",
+        isTest: isTestUser,
+        metadata: {
+          timing,
+          item_count: Object.keys(answers).length,
+        },
+      });
       toast.error("Speichern fehlgeschlagen. Bitte versuche es erneut.");
       setSaving(false);
       return;
     }
 
+    void trackAppEvent({
+      eventName: "deep_profile_saved",
+      status: "success",
+      role,
+      route: "/deep-profile",
+      isTest: isTestUser,
+      metadata: {
+        timing,
+        item_count: Object.keys(answers).length,
+      },
+    });
     toast.success(timing === "pre" ? "Startwert gespeichert." : "Entwicklungsindex gespeichert.");
     setSaving(false);
     setDone(true);

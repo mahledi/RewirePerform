@@ -28,6 +28,12 @@ const optionalEdge = [
   "VAPID_SUBJECT",
 ];
 
+const optionalClient = [
+  "VITE_SENTRY_DSN",
+  "VITE_APP_ENV",
+  "VITE_RELEASE_SHA",
+];
+
 function parseEnvFile(path) {
   if (!existsSync(path)) return {};
   const parsed = {};
@@ -95,6 +101,10 @@ if (strictEdge) {
 
 const documented = new Set(Object.keys(example));
 for (const key of [...requiredEdge, ...optionalEdge]) {
+  if (!documented.has(key)) fail(`.env.example should document ${key}`);
+}
+
+for (const key of optionalClient) {
   if (!documented.has(key)) fail(`.env.example should document ${key}`);
 }
 
