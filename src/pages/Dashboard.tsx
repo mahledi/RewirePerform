@@ -42,6 +42,7 @@ interface Analysis {
 
 
 const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
+const DEEP_PROFILE_BASELINE_AVAILABLE_FROM_DAY = 7;
 
 const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { label: "Training", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
@@ -712,6 +713,11 @@ const Dashboard = () => {
     : null;
   const phaseNames = ["", "Fundament & Selbstanalyse", "Skill-Erwerb", "Transfer", "Meisterschaft"] as const;
   const programProgress = currentProgramDay ? (currentProgramDay / 56) * 100 : 0;
+  const showDeepProfileBaselineBanner =
+    !baselineDone &&
+    !setupMode &&
+    currentProgramDay !== null &&
+    currentProgramDay >= DEEP_PROFILE_BASELINE_AVAILABLE_FROM_DAY;
 
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
@@ -1012,7 +1018,7 @@ const Dashboard = () => {
         {flameStats && <FlameCard stats={flameStats} />}
 
         {/* Deep Profile Baseline Banner */}
-        {!baselineDone && !setupMode && (
+        {showDeepProfileBaselineBanner && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
             <div className="flex items-start gap-3">
               <Microscope className="w-5 h-5 text-primary shrink-0 mt-0.5" />
