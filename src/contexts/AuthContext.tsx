@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole>(null);
 
-  const fetchRole = async (userId: string) => {
+  const fetchRole = async (userId: string): Promise<AppRole> => {
     try {
       const { data, error } = await supabase
         .from("user_roles")
@@ -39,11 +39,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const r = (data?.role as AppRole) ?? null;
       setRole(r);
       if (r) window.localStorage.setItem("cached_user_role", r);
+      return r;
     } catch (err) {
       console.error("Failed to fetch user role", err);
       // Offline-Fallback: gecachte Rolle aus localStorage verwenden
       const cached = window.localStorage.getItem("cached_user_role") as AppRole;
-      if (cached === "athlete" || cached === "coach") setRole(cached);
+      if (cached === "athlete" || cached === "coach" || cached === "admin") {
+        setRole(cached);
+        return cached;
+      }
+      return null;
     }
   };
 
@@ -53,19 +58,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchRole(session.user.id), 0);
+          setLoading(true);
+          setTimeout(async () => {
+            await fetchRole(session.user.id);
+            setLoading(false);
+          }, 0);
         } else {
           setRole(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRole(session.user.id);
+        await fetchRole(session.user.id);
       }
       setLoading(false);
     });

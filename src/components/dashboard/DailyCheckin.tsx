@@ -542,7 +542,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold">{task.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{task.whenToUse}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.whenToUse}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
                   </div>
