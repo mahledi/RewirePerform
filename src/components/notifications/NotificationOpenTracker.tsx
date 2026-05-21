@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { captureAppError, trackAppEvent } from "@/lib/monitoring";
+import { captureAppError } from "@/lib/monitoring";
 
 export const NotificationOpenTracker = () => {
   const { user, role, isTestUser } = useAuth();
@@ -35,14 +35,6 @@ export const NotificationOpenTracker = () => {
           });
           return;
         }
-        void trackAppEvent({
-          eventName: "push_clicked",
-          status: "opened",
-          role,
-          route: location.pathname,
-          isTest: isTestUser,
-          metadata: { has_notification_id: true },
-        });
       });
   }, [location.pathname, location.search, role, isTestUser, user]);
 

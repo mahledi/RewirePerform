@@ -8,7 +8,6 @@ import TeamManagement from "@/components/coach/TeamManagement";
 import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
 import CoachToolkit from "@/components/coach/CoachToolkit";
-import { trackAppEvent } from "@/lib/monitoring";
 
 type Tab = "overview" | "mental" | "evidence" | "toolkit" | "manage";
 
@@ -23,7 +22,7 @@ interface Team {
 }
 
 const Coach = () => {
-  const { user, role, signOut, isTestUser } = useAuth();
+  const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("overview");
   const [teams, setTeams] = useState<Team[]>([]);
@@ -67,22 +66,6 @@ const Coach = () => {
       navigate(role === "admin" ? "/admin" : "/dashboard");
     }
   }, [role, loading, navigate]);
-
-  useEffect(() => {
-    if (loading || role !== "coach" || !selectedTeam) return;
-    void trackAppEvent({
-      eventName: "coach_dashboard_loaded",
-      status: "success",
-      role,
-      teamId: selectedTeam,
-      route: "/coach",
-      isTest: isTestUser,
-      metadata: {
-        team_count: teams.length,
-        active_tab: tab,
-      },
-    });
-  }, [isTestUser, loading, role, selectedTeam, tab, teams.length]);
 
   const handleSignOut = async () => {
     await signOut();

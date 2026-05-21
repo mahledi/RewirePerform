@@ -121,8 +121,9 @@ supabase db push
 ```
 
 It creates `app_event_log` plus `get_admin_ops_status()`. This is a
-privacy-safe operational layer for login, teamcode, check-in, journal,
-assessment, push and pre-training flow events.
+privacy-safe incident layer for technical failures in login, teamcode,
+check-in, journal, assessment, push and pre-training flows. It is not a
+general clickstream or activity analytics table.
 
 Operational checks after deploy:
 
@@ -130,7 +131,7 @@ Operational checks after deploy:
 2. Complete a check-in and journal.
 3. Open `/pre-training`.
 4. Log in as admin and open Systemstatus.
-5. Confirm Launch-Ops shows technical events and no private content.
+5. Confirm Launch-Ops shows technical failures and no private content.
 
 Incident and pilot rules live in `docs/LAUNCH_OPERATIONS.md`.
 

@@ -33,9 +33,17 @@ Sentry darf nicht enthalten:
 
 ## App Event Log
 
-`app_event_log` speichert privacy-safe technische Flow-Events.
+`app_event_log` ist ein privacy-safe Incident-Log. Es ist nicht als Klicktracking
+oder Aktivitätsanalyse gedacht.
 
-Erlaubte Events:
+Standard:
+
+- technische Fehler werden geloggt
+- normale erfolgreiche Nutzeraktivität wird in den Fach-Tabellen gemessen
+- keine "jeder Klick"-Events
+- keine erfolgreichen Daily-Events im Incident-Log
+
+Erlaubte Fehler-Events:
 
 - `auth_login`
 - `auth_signup`
@@ -51,7 +59,18 @@ Erlaubte Events:
 - `coach_dashboard_loaded`
 - `admin_export_downloaded`
 
-Gespeichert werden nur technische Metadaten wie Route, Status, Rolle, Team-ID, Fehlercode, Testflag und Zählwerte. Private Inhalte bleiben ausgeschlossen.
+Gespeichert werden nur technische Metadaten wie Route, Status, Rolle, Team-ID,
+Fehlercode, Testflag und Zählwerte. Private Inhalte bleiben ausgeschlossen.
+
+Normale Aktivität kommt aus bestehenden Quellen:
+
+- `daily_checkins`
+- `daily_journals`
+- `assessments`
+- `deep_profile_assessments`
+- `questionnaire_responses`
+- `notification_log`
+- Study-/Presentation-Aggregate
 
 ## Bug Severity
 

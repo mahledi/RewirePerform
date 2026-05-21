@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
-import { captureAppError, trackAppEvent } from "@/lib/monitoring";
+import { captureAppError } from "@/lib/monitoring";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
 const Journal = () => {
@@ -98,20 +98,6 @@ const Journal = () => {
       toast.error("Journal konnte nicht gespeichert werden.");
       return;
     }
-    void trackAppEvent({
-      eventName: "journal_saved",
-      status: "success",
-      role,
-      route: "/journal",
-      isTest: isTestUser,
-      metadata: {
-        day_number: resolved.matrix.dayNumber,
-        answer_count: Object.keys(answers).length,
-        has_gratitude: Boolean(gratitude),
-        has_free_reflection: Boolean(freeReflection),
-        has_program_instance: Boolean(instance?.id),
-      },
-    });
     setDone(true);
   };
 

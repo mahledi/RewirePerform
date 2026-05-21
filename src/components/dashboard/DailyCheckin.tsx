@@ -32,7 +32,7 @@ import {
   extractJournalSignals,
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
-import { captureAppError, trackAppEvent } from "@/lib/monitoring";
+import { captureAppError } from "@/lib/monitoring";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
@@ -354,20 +354,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         return;
       }
     }
-
-    void trackAppEvent({
-      eventName: "daily_checkin_saved",
-      status: "success",
-      role,
-      route: "/dashboard",
-      isTest: isTestUser,
-      metadata: {
-        day_number: resolved?.matrix.dayNumber ?? null,
-        event_type: eventType,
-        task_count: completedTitles.length,
-        has_program_instance: Boolean(instance?.id),
-      },
-    });
 
     setSaving(false);
 

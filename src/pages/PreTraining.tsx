@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import type { ResolvedDay } from "@/content/matrixDayTypes";
-import { captureAppError, trackAppEvent } from "@/lib/monitoring";
+import { captureAppError } from "@/lib/monitoring";
 
 const PreTraining = () => {
   const { user, role, isTestUser } = useAuth();
@@ -23,17 +23,6 @@ const PreTraining = () => {
       const eff = await getEffectiveProgramStart(user.id);
       const info = getCurrentProgramDay(eff.startDate);
       if (!info) {
-        if (!trackedRef.current) {
-          trackedRef.current = true;
-          void trackAppEvent({
-            eventName: "pre_training_opened",
-            status: "skipped",
-            role,
-            route: "/pre-training",
-            isTest: isTestUser,
-            metadata: { reason: "program_not_started" },
-          });
-        }
         setLoading(false);
         return;
       }
@@ -47,20 +36,6 @@ const PreTraining = () => {
         position: profile?.position,
       });
       setResolved(day);
-      if (!trackedRef.current) {
-        trackedRef.current = true;
-        void trackAppEvent({
-          eventName: "pre_training_opened",
-          status: "success",
-          role,
-          route: "/pre-training",
-          isTest: isTestUser,
-          metadata: {
-            day_number: info.dayNumber,
-            has_profile_context: Boolean(profile?.sport || profile?.position),
-          },
-        });
-      }
       setLoading(false);
     };
     load().catch((error) => {
