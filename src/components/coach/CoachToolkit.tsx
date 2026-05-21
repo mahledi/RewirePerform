@@ -22,6 +22,13 @@ interface TeamRow {
   program_start_date: string | null;
 }
 
+type CoachJournalKey =
+  | "gratitude"
+  | "reflection_1"
+  | "reflection_2"
+  | "reflection_3"
+  | "action_commitment";
+
 const Section = ({
   icon,
   title,
@@ -285,19 +292,19 @@ const CoachToolkit = ({ teamId }: Props) => {
             </select>
           </div>
 
-          {[
+          {([
             { key: "gratitude", label: COACH_JOURNAL_QUESTIONS.gratitude },
             { key: "reflection_1", label: COACH_JOURNAL_QUESTIONS.reflection_1 },
             { key: "reflection_2", label: COACH_JOURNAL_QUESTIONS.reflection_2 },
             { key: "reflection_3", label: COACH_JOURNAL_QUESTIONS.reflection_3 },
             { key: "action_commitment", label: COACH_JOURNAL_QUESTIONS.action_commitment },
-          ].map((q) => (
+          ] satisfies { key: CoachJournalKey; label: string }[]).map((q) => (
             <div key={q.key}>
               <label className="text-xs font-medium text-muted-foreground block mb-1">
                 {q.label}
               </label>
               <textarea
-                value={(journal as any)[q.key]}
+                value={journal[q.key]}
                 onChange={(e) =>
                   setJournal((prev) => ({ ...prev, [q.key]: e.target.value }))
                 }
