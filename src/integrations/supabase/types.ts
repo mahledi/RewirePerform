@@ -721,6 +721,301 @@ export type Database = {
         }
         Relationships: []
       }
+      study_aggregate_snapshots: {
+        Row: {
+          claim_boundary: string
+          cohort_id: string | null
+          data_quality: Json
+          generated_at: string
+          generated_by: string | null
+          id: string
+          metrics: Json
+          n_active: number
+          n_participants: number
+          privacy_level: string
+        }
+        Insert: {
+          claim_boundary?: string
+          cohort_id?: string | null
+          data_quality?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          metrics?: Json
+          n_active?: number
+          n_participants?: number
+          privacy_level?: string
+        }
+        Update: {
+          claim_boundary?: string
+          cohort_id?: string | null
+          data_quality?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          metrics?: Json
+          n_active?: number
+          n_participants?: number
+          privacy_level?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_aggregate_snapshots_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "study_cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_aggregate_snapshots_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_cohorts: {
+        Row: {
+          cohort_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          include_test_data: boolean
+          min_aggregate_n: number
+          name: string
+          organization: string | null
+          sport: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cohort_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          include_test_data?: boolean
+          min_aggregate_n?: number
+          name: string
+          organization?: string | null
+          sport?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cohort_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          include_test_data?: boolean
+          min_aggregate_n?: number
+          name?: string
+          organization?: string | null
+          sport?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_cohorts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_export_manifests: {
+        Row: {
+          claim_boundary: string
+          cohort_id: string | null
+          export_type: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          included_exports: string[]
+          metadata: Json
+          privacy_exclusions: string[]
+          snapshot_id: string | null
+          source_version: string
+        }
+        Insert: {
+          claim_boundary?: string
+          cohort_id?: string | null
+          export_type?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          included_exports?: string[]
+          metadata?: Json
+          privacy_exclusions?: string[]
+          snapshot_id?: string | null
+          source_version?: string
+        }
+        Update: {
+          claim_boundary?: string
+          cohort_id?: string | null
+          export_type?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          included_exports?: string[]
+          metadata?: Json
+          privacy_exclusions?: string[]
+          snapshot_id?: string | null
+          source_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_export_manifests_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "study_cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_export_manifests_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_export_manifests_snapshot_id_fkey"
+            columns: ["snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "study_aggregate_snapshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_measurement_windows: {
+        Row: {
+          actual_completed_count: number
+          cohort_id: string
+          created_at: string
+          id: string
+          label: string
+          planned_end_date: string | null
+          planned_start_date: string | null
+          status: string
+          target_count: number
+          updated_at: string
+        }
+        Insert: {
+          actual_completed_count?: number
+          cohort_id: string
+          created_at?: string
+          id?: string
+          label: string
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          status?: string
+          target_count?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_completed_count?: number
+          cohort_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          planned_end_date?: string | null
+          planned_start_date?: string | null
+          status?: string
+          target_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_measurement_windows_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "study_cohorts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_participants: {
+        Row: {
+          anonymized_key: string
+          cohort_id: string
+          consent_status: string
+          created_at: string
+          exclusion_reason: string | null
+          id: string
+          included: boolean
+          program_instance_id: string | null
+          role: string
+          team_id: string | null
+          user_id: string
+        }
+        Insert: {
+          anonymized_key?: string
+          cohort_id: string
+          consent_status?: string
+          created_at?: string
+          exclusion_reason?: string | null
+          id?: string
+          included?: boolean
+          program_instance_id?: string | null
+          role?: string
+          team_id?: string | null
+          user_id: string
+        }
+        Update: {
+          anonymized_key?: string
+          cohort_id?: string
+          consent_status?: string
+          created_at?: string
+          exclusion_reason?: string | null
+          id?: string
+          included?: boolean
+          program_instance_id?: string | null
+          role?: string
+          team_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_participants_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "study_cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_participants_program_instance_id_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           id: string
@@ -984,6 +1279,10 @@ export type Database = {
         Args: { min_n?: number; team_id_param: string }
         Returns: Json
       }
+      create_study_aggregate_snapshot: {
+        Args: { _cohort_id?: string; include_test?: boolean }
+        Returns: Json
+      }
       get_admin_overview_stats:
         | { Args: never; Returns: Json }
         | { Args: { include_test?: boolean }; Returns: Json }
@@ -1026,10 +1325,6 @@ export type Database = {
       is_creator_of_team: { Args: { _team_id: string }; Returns: boolean }
       is_member_of_team: { Args: { _team_id: string }; Returns: boolean }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
-      create_study_aggregate_snapshot: {
-        Args: { _cohort_id?: string | null; include_test?: boolean }
-        Returns: Json
-      }
       update_feedback_status: {
         Args: { feedback_id: string; new_note?: string; new_status: string }
         Returns: undefined
