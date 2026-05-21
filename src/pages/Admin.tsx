@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck, LogOut } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -148,7 +149,8 @@ const formatPercent = (value: number | null) => {
 };
 
 const Admin = () => {
-  const { role, loading: authLoading, user } = useAuth();
+  const { role, loading: authLoading, user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
@@ -275,6 +277,16 @@ const Admin = () => {
             </a>
             <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
               <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await signOut();
+                navigate("/", { replace: true });
+              }}
+            >
+              <LogOut className="w-4 h-4 mr-2" />Abmelden
             </Button>
           </div>
         </div>

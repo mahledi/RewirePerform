@@ -99,7 +99,7 @@ const Auth = () => {
         : roleData?.role === "coach"
           ? "/coach"
           : "/dashboard";
-      navigate(safeRedirect ?? nextRoute);
+      navigate(safeRedirect ?? nextRoute, { replace: true });
     }
     setLoading(false);
   };
