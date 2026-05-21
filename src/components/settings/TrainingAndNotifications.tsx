@@ -56,7 +56,7 @@ export const TrainingAndNotifications = () => {
   // Training schedule state
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [savingSchedule, setSavingSchedule] = useState(false);
-  // Stored as UTC hour. Display converts.
+  // Stored in local display time. Persisted rows also keep UTC fallback fields.
   const [schedule, setSchedule] = useState<Record<number, number | null>>({});
 
   // Notification time UI state (local for display)
@@ -70,14 +70,15 @@ export const TrainingAndNotifications = () => {
       if (!user) return;
       const { data } = await supabase
         .from("training_schedule")
-        .select("day_of_week,training_hour,training_local_hour")
+        .select("day_of_week,training_hour,training_local_hour,training_local_minute")
         .eq("user_id", user.id);
       const map: Record<number, number | null> = {};
       DAYS.forEach((d) => (map[d.idx] = null));
       (data ?? []).forEach((r) => {
-        const localHour = r.training_local_hour ?? utcToLocal(r.training_hour, 0).h;
-        const { h: utcHour } = localToUtc(localHour, 0);
-        map[r.day_of_week] = utcHour;
+        const local = r.training_local_hour !== null && typeof r.training_local_hour === "number"
+          ? { h: r.training_local_hour, m: r.training_local_minute ?? 0 }
+          : utcToLocal(r.training_hour, 0);
+        map[r.day_of_week] = local.h;
       });
       setSchedule(map);
       setScheduleLoading(false);
@@ -97,19 +98,12 @@ export const TrainingAndNotifications = () => {
 
   const setDayHourLocal = (dayIdx: number, localHour: number | null) => {
     const next = { ...schedule };
-    if (localHour === null) {
-      next[dayIdx] = null;
-    } else {
-      // Convert local hour to UTC hour for storage
-      const { h: utcHour } = localToUtc(localHour, 0);
-      next[dayIdx] = utcHour;
-    }
+    next[dayIdx] = localHour;
     setSchedule(next);
   };
 
-  const displayHour = (utcHour: number | null) => {
-    if (utcHour === null) return null;
-    return utcToLocal(utcHour, 0).h;
+  const displayHour = (localHour: number | null) => {
+    return localHour;
   };
 
   const saveSchedule = async () => {
@@ -125,11 +119,12 @@ export const TrainingAndNotifications = () => {
       const rows = Object.entries(schedule)
         .filter(([, h]) => h !== null)
         .map(([day, h]) => {
-          const localHour = displayHour(h as number);
+          const localHour = h as number;
+          const utc = localToUtc(localHour, 0);
           return {
             user_id: user.id,
             day_of_week: Number(day),
-            training_hour: h as number,
+            training_hour: utc.h,
             training_local_hour: localHour,
             training_local_minute: 0,
             training_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
@@ -149,7 +144,15 @@ export const TrainingAndNotifications = () => {
 
   const handleEnablePush = async () => {
     try {
-      await push.subscribe();
+      const m = localToUtc(morningLocal.h, morningLocal.m);
+      const e = localToUtc(eveningLocal.h, eveningLocal.m);
+      await push.subscribe({
+        morningHour: m.h,
+        morningMinute: m.m,
+        eveningHour: e.h,
+        eveningMinute: e.m,
+        preTrainingMinutes,
+      });
       toast.success("Benachrichtigungen aktiviert.");
     } catch (e: unknown) {
       toast.error(errorMessage(e, "Fehler beim Aktivieren"));
