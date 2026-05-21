@@ -184,7 +184,7 @@ export const TrainingAndNotifications = () => {
             <h2 className="font-heading font-semibold text-lg">Trainingszeiten</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Wann trainierst du in der Regel? Wir erinnern dich ~1 Stunde vorher an deinen Tag.
+            Wann trainierst du in der Regel? Wir erinnern dich passend zu deinem gewählten Vorlauf an deinen Tag.
           </p>
           {scheduleLoading ? (
             <div className="flex justify-center py-4">

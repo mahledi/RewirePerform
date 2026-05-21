@@ -1,4 +1,5 @@
 // Half-hour cron-driven Web Push sender.
+// v2: minute-aware reminders, pre-training URLs, and notification status tracking.
 // Sends three notification types: morning, pre_training, evening.
 // Idempotent via notification_log unique (user_id, notification_type, sent_date).
 const corsHeaders = {
