@@ -826,13 +826,13 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 py-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
             <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold">RewirePerform</span>
+            <span className="font-heading font-bold text-base">RewirePerform</span>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Tests">
@@ -852,7 +852,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8">
         {/* Settings Panel */}
         <AnimatePresence>
           {showSettings && (
@@ -941,19 +941,19 @@ const Dashboard = () => {
 
         {/* Pre-Test Reminder */}
         {showPreTestReminder && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
-            <div className="flex items-start gap-3">
-              <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-5 sm:mb-6 p-4 sm:p-5 rounded-2xl bg-primary/10 border border-primary/30">
+            <div className="flex items-start gap-3 min-w-0">
+              <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-1" />
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Pre-Tests ausstehend</h3>
-                <p className="text-xs text-muted-foreground mb-3">
+                <p className="text-xs text-muted-foreground mb-4 sm:mb-3 leading-relaxed">
                   Bitte fülle die wissenschaftlichen Pre-Tests aus, um deinen Ausgangszustand zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/assessment?mode=pre")}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
+                  className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
                 >
                   <ClipboardCheck className="w-4 h-4" />
                   Pre-Tests starten
@@ -965,18 +965,18 @@ const Dashboard = () => {
 
         {/* Daily Focus & Program Progress */}
         {currentProgramDay && currentPhase && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow">
-            <div className="flex items-start justify-between gap-4 mb-4">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-5 sm:mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-card border-glow overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">Heute im Programm</p>
                 <h2 className="font-heading text-xl font-bold leading-tight">
                   Tag {currentProgramDay}/56
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1 leading-snug">
                   Phase {currentPhase}: {phaseNames[currentPhase]}
                 </p>
               </div>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 text-left sm:text-right flex sm:block items-center gap-2">
                 <p className="text-xs text-muted-foreground">Woche {Math.ceil(currentProgramDay / 7)}/8</p>
                 {todayEventType && (
                   <p className="text-xs text-primary mt-1">{eventConfig[todayEventType].label}</p>
@@ -999,11 +999,11 @@ const Dashboard = () => {
                 transition={{ duration: 0.8, ease: "easeOut" }}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span className={currentPhase === 1 ? "text-primary font-semibold" : ""}>Fundament</span>
-              <span className={currentPhase === 2 ? "text-primary font-semibold" : ""}>Skills</span>
-              <span className={currentPhase === 3 ? "text-primary font-semibold" : ""}>Transfer</span>
-              <span className={currentPhase === 4 ? "text-primary font-semibold" : ""}>Meisterschaft</span>
+            <div className="grid grid-cols-4 gap-1 text-[10px] text-muted-foreground">
+              <span className={`min-w-0 truncate ${currentPhase === 1 ? "text-primary font-semibold" : ""}`}>Fundament</span>
+              <span className={`min-w-0 truncate text-center ${currentPhase === 2 ? "text-primary font-semibold" : ""}`}>Skills</span>
+              <span className={`min-w-0 truncate text-center ${currentPhase === 3 ? "text-primary font-semibold" : ""}`}>Transfer</span>
+              <span className={`min-w-0 truncate text-right ${currentPhase === 4 ? "text-primary font-semibold" : ""}`}>Meister</span>
             </div>
           </motion.div>
         )}
