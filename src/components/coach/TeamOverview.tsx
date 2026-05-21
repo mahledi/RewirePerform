@@ -6,7 +6,11 @@ interface TeamStats {
   member_count: number;
   checkins_last_week: number;
   assessments_completed: number;
+  aggregate_ready: boolean;
+  min_n: number;
 }
+
+const MIN_AGGREGATE_SAMPLE = 5;
 
 const TeamOverview = ({ teamId }: { teamId: string }) => {
   const [stats, setStats] = useState<TeamStats | null>(null);
@@ -28,7 +32,15 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
 
         const memberIds = (members ?? []).map((m) => m.user_id);
         if (memberIds.length === 0) {
-          if (!cancelled) setStats({ member_count: 0, checkins_last_week: 0, assessments_completed: 0 });
+          if (!cancelled) {
+            setStats({
+              member_count: 0,
+              checkins_last_week: 0,
+              assessments_completed: 0,
+              aggregate_ready: false,
+              min_n: MIN_AGGREGATE_SAMPLE,
+            });
+          }
           return;
         }
 
@@ -40,13 +52,25 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         const athleteIds = (roles ?? [])
           .filter((r) => r.role === "athlete")
           .map((r) => r.user_id);
-        const scopedIds = athleteIds.length > 0 ? athleteIds : memberIds;
+
+        if (athleteIds.length === 0) {
+          if (!cancelled) {
+            setStats({
+              member_count: 0,
+              checkins_last_week: 0,
+              assessments_completed: 0,
+              aggregate_ready: false,
+              min_n: MIN_AGGREGATE_SAMPLE,
+            });
+          }
+          return;
+        }
 
         const [{ data: assessments, error: assessmentsError }, mentalState] = await Promise.all([
           supabase
             .from("assessments")
             .select("user_id")
-            .in("user_id", scopedIds),
+            .in("user_id", athleteIds),
           supabase.functions.invoke("team-mental-state", {
             body: { team_id: teamId },
           }),
@@ -55,9 +79,11 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         if (assessmentsError) throw assessmentsError;
 
         const nextStats: TeamStats = {
-          member_count: mentalState.data?.teamSize ?? scopedIds.length,
+          member_count: mentalState.data?.teamSize ?? athleteIds.length,
           checkins_last_week: mentalState.data?.participation?.total ?? 0,
           assessments_completed: assessments?.length ?? 0,
+          aggregate_ready: athleteIds.length >= MIN_AGGREGATE_SAMPLE,
+          min_n: mentalState.data?.min_n ?? MIN_AGGREGATE_SAMPLE,
         };
 
         if (cancelled) return;
@@ -129,10 +155,16 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Privatsphäre geschützt</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Du siehst nur operative Teilnahme-Zahlen. Persönliche Antworten,
-            Reflexionen, Stimmungswerte und Journale deiner Sportler sind nicht
-            einsehbar und bleiben vollständig privat.
+            Du siehst hier nur operative Teilnahme-Zahlen für Athleten.
+            Persönliche Antworten, Reflexionen, Stimmungswerte und Journale
+            bleiben privat. Sensible Team-Aggregate werden erst ab mindestens
+            {` ${stats.min_n} `}Athleten freigegeben.
           </p>
+          {!stats.aggregate_ready && (
+            <p className="text-[11px] text-primary mt-2">
+              Aktuell noch unter Mindestgruppe: sensible Teamwerte bleiben verborgen.
+            </p>
+          )}
         </div>
       </div>
     </div>
