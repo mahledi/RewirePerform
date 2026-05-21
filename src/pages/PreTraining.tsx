@@ -44,7 +44,7 @@ const PreTraining = () => {
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -61,7 +61,7 @@ const PreTraining = () => {
         ) : !resolved ? (
           <div className="text-center py-20">
             <p className="text-muted-foreground">Programm noch nicht gestartet</p>
-            <Button onClick={() => navigate("/")} className="mt-6">Zurück</Button>
+            <Button onClick={() => navigate("/dashboard")} className="mt-6">Zurück</Button>
           </div>
         ) : (
           <motion.div
@@ -113,7 +113,7 @@ const PreTraining = () => {
               ))}
             </div>
 
-            <Button onClick={() => navigate("/")} size="lg" className="w-full">
+            <Button onClick={() => navigate("/dashboard")} size="lg" className="w-full">
               <Target className="w-4 h-4 mr-2" />
               Bereit fürs Training
             </Button>
