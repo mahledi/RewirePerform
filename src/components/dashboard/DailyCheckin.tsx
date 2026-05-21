@@ -32,6 +32,7 @@ import {
   extractJournalSignals,
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
@@ -58,7 +59,7 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
 };
 
 const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
-  const { user } = useAuth();
+  const { user, role, isTestUser } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
@@ -305,6 +306,18 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     if (error) {
       setSaving(false);
       console.error("Checkin save error:", error);
+      void captureAppError({
+        eventName: "daily_checkin_saved",
+        error,
+        role,
+        route: "/dashboard",
+        isTest: isTestUser,
+        metadata: {
+          day_number: resolved?.matrix.dayNumber ?? null,
+          event_type: eventType,
+          stage: "checkin",
+        },
+      });
       const { toast } = await import("sonner");
       toast.error("Check-in konnte nicht gespeichert werden.");
       return;
@@ -324,11 +337,37 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       if (completionError) {
         setSaving(false);
         console.error("Completion save error:", completionError);
+        void captureAppError({
+          eventName: "daily_checkin_saved",
+          error: completionError,
+          role,
+          route: "/dashboard",
+          isTest: isTestUser,
+          metadata: {
+            day_number: resolved.matrix.dayNumber,
+            event_type: eventType,
+            stage: "completion",
+          },
+        });
         const { toast } = await import("sonner");
         toast.error("Fortschritt konnte nicht gespeichert werden.");
         return;
       }
     }
+
+    void trackAppEvent({
+      eventName: "daily_checkin_saved",
+      status: "success",
+      role,
+      route: "/dashboard",
+      isTest: isTestUser,
+      metadata: {
+        day_number: resolved?.matrix.dayNumber ?? null,
+        event_type: eventType,
+        task_count: completedTitles.length,
+        has_program_instance: Boolean(instance?.id),
+      },
+    });
 
     setSaving(false);
 

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { toast } from "sonner";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 type Phase = "select" | "instructions" | "items" | "results" | "sequence-done" | "comparison";
 
@@ -20,7 +21,7 @@ interface SavedResult {
 const Assessment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, role, isTestUser } = useAuth();
   const mode = searchParams.get("mode") as "pre" | "mid" | "post" | null;
 
   const [phase, setPhase] = useState<Phase>(mode ? "instructions" : "select");
@@ -97,12 +98,53 @@ const Assessment = () => {
     if (insertError) {
       // Duplicate (unique on user_id+instance+type+timing) → bereits absolviert in dieser Cohorte
       if ((insertError as any).code === "23505") {
+        void trackAppEvent({
+          eventName: "assessment_saved",
+          status: "skipped",
+          role,
+          route: "/assessment",
+          errorCode: "23505",
+          isTest: isTestUser,
+          metadata: {
+            assessment_type: selectedTest.id,
+            timing,
+            has_program_instance: Boolean(instance?.id),
+          },
+        });
         toast.info(`${selectedTest.titleShort} (${timing.toUpperCase()}) wurde bereits in diesem Programm-Zyklus gespeichert.`);
       } else {
+        void captureAppError({
+          eventName: "assessment_saved",
+          error: insertError,
+          role,
+          route: "/assessment",
+          isTest: isTestUser,
+          metadata: {
+            assessment_type: selectedTest.id,
+            timing,
+            has_program_instance: Boolean(instance?.id),
+          },
+        });
         toast.error("Speichern fehlgeschlagen.");
         setSaving(false);
         return;
       }
+    }
+
+    if (!insertError) {
+      void trackAppEvent({
+        eventName: "assessment_saved",
+        status: "success",
+        role,
+        route: "/assessment",
+        isTest: isTestUser,
+        metadata: {
+          assessment_type: selectedTest.id,
+          timing,
+          item_count: Object.keys(answers).length,
+          has_program_instance: Boolean(instance?.id),
+        },
+      });
     }
 
     const result: SavedResult = {

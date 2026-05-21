@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { setMonitoringUser } from "@/lib/monitoring";
 
 type AppRole = "athlete" | "coach" | "admin" | null;
 
@@ -9,6 +10,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   role: AppRole;
+  isTestUser: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   role: null,
+  isTestUser: false,
   signOut: async () => {},
 });
 
@@ -27,17 +30,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole>(null);
+  const [isTestUser, setIsTestUser] = useState(false);
 
-  const fetchRole = async (userId: string): Promise<AppRole> => {
+  const fetchUserContext = async (userId: string): Promise<AppRole> => {
     try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (error) throw error;
-      const r = (data?.role as AppRole) ?? null;
+      const [{ data: roleData, error: roleError }, { data: profileData, error: profileError }] = await Promise.all([
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("is_test_user")
+          .eq("id", userId)
+          .maybeSingle(),
+      ]);
+      if (roleError) throw roleError;
+      if (profileError) throw profileError;
+      const r = (roleData?.role as AppRole) ?? null;
+      const testFlag = Boolean(profileData?.is_test_user);
       setRole(r);
+      setIsTestUser(testFlag);
+      setMonitoringUser({ userId, role: r, isTest: testFlag });
       if (r) window.localStorage.setItem("cached_user_role", r);
       return r;
     } catch (err) {
@@ -46,8 +61,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const cached = window.localStorage.getItem("cached_user_role") as AppRole;
       if (cached === "athlete" || cached === "coach" || cached === "admin") {
         setRole(cached);
+        setMonitoringUser({ userId, role: cached, isTest: false });
         return cached;
       }
+      setMonitoringUser({ userId, role: null, isTest: false });
       return null;
     }
   };
@@ -60,11 +77,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (session?.user) {
           setLoading(true);
           setTimeout(async () => {
-            await fetchRole(session.user.id);
+            await fetchUserContext(session.user.id);
             setLoading(false);
           }, 0);
         } else {
           setRole(null);
+          setIsTestUser(false);
+          setMonitoringUser({ userId: null });
           setLoading(false);
         }
       }
@@ -74,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchRole(session.user.id);
+        await fetchUserContext(session.user.id);
       }
       setLoading(false);
     });
@@ -85,11 +104,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRole(null);
+    setIsTestUser(false);
+    setMonitoringUser({ userId: null });
     try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, role, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, role, isTestUser, signOut }}>
       {children}
     </AuthContext.Provider>
   );

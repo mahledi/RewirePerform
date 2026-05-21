@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 export const NotificationOpenTracker = () => {
-  const { user } = useAuth();
+  const { user, role, isTestUser } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -22,9 +23,28 @@ export const NotificationOpenTracker = () => {
       .eq("id", notificationId)
       .eq("user_id", user.id)
       .then(({ error }) => {
-        if (error) console.warn("[push] open tracking failed:", error.message);
+        if (error) {
+          console.warn("[push] open tracking failed:", error.message);
+          void captureAppError({
+            eventName: "push_clicked",
+            error,
+            role,
+            route: location.pathname,
+            isTest: isTestUser,
+            metadata: { has_notification_id: true },
+          });
+          return;
+        }
+        void trackAppEvent({
+          eventName: "push_clicked",
+          status: "opened",
+          role,
+          route: location.pathname,
+          isTest: isTestUser,
+          metadata: { has_notification_id: true },
+        });
       });
-  }, [location.pathname, location.search, user]);
+  }, [location.pathname, location.search, role, isTestUser, user]);
 
   return null;
 };

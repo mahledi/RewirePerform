@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getOptionText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 type Mode = "intent" | "signup" | "login";
 type Intent = "solo" | "join" | "create";
@@ -16,7 +17,7 @@ const Auth = () => {
   const forceSwitch = searchParams.get("switch") === "1";
   const redirectTo = searchParams.get("redirect");
   const safeRedirect = redirectTo && /^\/(?!\/)/.test(redirectTo) ? redirectTo : null;
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading, isTestUser } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
 
   useEffect(() => {
@@ -83,8 +84,15 @@ const Auth = () => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     setLoading(true);
+    void trackAppEvent({ eventName: "auth_login", status: "attempted", route: "/auth" });
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
+      void captureAppError({
+        eventName: "auth_login",
+        error,
+        route: "/auth",
+        metadata: { mode: "password" },
+      });
       toast.error(error.message === "Invalid login credentials" ? "Ungültige Anmeldedaten." : error.message);
     } else {
       await backfillProfileSport(data.user.id);
@@ -99,6 +107,14 @@ const Auth = () => {
         : roleData?.role === "coach"
           ? "/coach"
           : "/dashboard";
+      void trackAppEvent({
+        eventName: "auth_login",
+        status: "success",
+        role: (roleData?.role as "athlete" | "coach" | "admin" | null) ?? null,
+        route: "/auth",
+        isTest: isTestUser,
+        metadata: { redirect: safeRedirect ?? nextRoute },
+      });
       navigate(safeRedirect ?? nextRoute, { replace: true });
     }
     setLoading(false);
@@ -127,6 +143,13 @@ const Auth = () => {
     setLoading(true);
 
     const initialRole: "athlete" | "coach" = intent === "create" ? "coach" : "athlete";
+    void trackAppEvent({
+      eventName: "auth_signup",
+      status: "attempted",
+      role: initialRole,
+      route: "/auth",
+      metadata: { intent },
+    });
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
@@ -138,6 +161,13 @@ const Auth = () => {
     });
 
     if (error) {
+      void captureAppError({
+        eventName: "auth_signup",
+        error,
+        role: initialRole,
+        route: "/auth",
+        metadata: { intent },
+      });
       toast.error(error.message);
       setLoading(false);
       return;
@@ -155,19 +185,48 @@ const Auth = () => {
     let effectiveRole: "athlete" | "coach" = initialRole;
 
     if (intent === "join") {
+      void trackAppEvent({
+        eventName: "team_join_attempt",
+        status: "attempted",
+        role: initialRole,
+        route: "/auth",
+        metadata: { code_length: teamCode.trim().length },
+      });
       const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
         _code: teamCode.trim(),
       });
       const result = joinResult as { success?: boolean; role?: "athlete" | "coach" } | null;
       if (joinError || !result || result.success !== true) {
+        void captureAppError({
+          eventName: "team_join_attempt",
+          error: joinError ?? new Error("team_code_not_found"),
+          role: initialRole,
+          route: "/auth",
+          errorCode: joinError ? undefined : "team_code_not_found",
+          metadata: { code_length: teamCode.trim().length },
+        });
         toast.error("Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.");
         setLoading(false);
         return;
       }
       if (result.role) effectiveRole = result.role;
+      void trackAppEvent({
+        eventName: "team_join_success",
+        status: "success",
+        role: effectiveRole,
+        route: "/auth",
+        metadata: { code_length: teamCode.trim().length },
+      });
     }
 
     toast.success("Konto erstellt! Willkommen.");
+    void trackAppEvent({
+      eventName: "auth_signup",
+      status: "success",
+      role: effectiveRole,
+      route: "/auth",
+      metadata: { intent },
+    });
 
     if (intent === "create") {
       navigate("/coach");
