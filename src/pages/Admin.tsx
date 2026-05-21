@@ -16,7 +16,6 @@ import {
 } from "recharts";
 import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
-import { trackAppEvent } from "@/lib/monitoring";
 
 type Overview = {
   total_users: number; total_athletes: number; total_coaches: number; total_admins: number;
@@ -140,13 +139,6 @@ function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-  void trackAppEvent({
-    eventName: "admin_export_downloaded",
-    status: "success",
-    role: "admin",
-    route: "/admin",
-    metadata: { filename, format: "csv", row_count: rows.length },
-  });
 }
 
 function downloadJson(filename: string, payload: unknown) {
@@ -157,13 +149,6 @@ function downloadJson(filename: string, payload: unknown) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-  void trackAppEvent({
-    eventName: "admin_export_downloaded",
-    status: "success",
-    role: "admin",
-    route: "/admin",
-    metadata: { filename, format: "json" },
-  });
 }
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -935,7 +920,7 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle>Launch-Ops</CardTitle>
                 <CardDescription>
-                  Technische Flow-Events, Save-Fehler und Push-Status. Keine privaten Antworten, keine Journale, keine E-Mails.
+                  Incident-Log für technische Fehler und Push-Status. Keine normalen Klicks, keine privaten Antworten, keine Journale, keine E-Mails.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

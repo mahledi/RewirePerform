@@ -13,7 +13,7 @@ import {
 } from "@/content/questionnaireV2";
 import type { Question } from "@/data/questionnaireData";
 import { scoreDevelopmentIndex } from "@/lib/developmentIndexScoring";
-import { captureAppError, trackAppEvent } from "@/lib/monitoring";
+import { captureAppError } from "@/lib/monitoring";
 
 type Timing = "pre" | "mid" | "post";
 
@@ -98,17 +98,6 @@ const DeepProfile = () => {
       return;
     }
 
-    void trackAppEvent({
-      eventName: "deep_profile_saved",
-      status: "success",
-      role,
-      route: "/deep-profile",
-      isTest: isTestUser,
-      metadata: {
-        timing,
-        item_count: Object.keys(answers).length,
-      },
-    });
     toast.success(timing === "pre" ? "Startwert gespeichert." : "Entwicklungsindex gespeichert.");
     setSaving(false);
     setDone(true);
