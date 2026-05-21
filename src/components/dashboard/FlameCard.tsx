@@ -74,7 +74,6 @@ const FlameCard = ({ stats }: FlameCardProps) => {
         className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"
       />
 
-      <div className="relative flex items-start justify-between mb-5">
       <div className="relative flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
         <div className="flex items-center gap-3 min-w-0">
           <motion.div
