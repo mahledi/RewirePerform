@@ -51,4 +51,35 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+
+          const normalizedId = id.replace(/\\/g, "/");
+          if (normalizedId.includes("/node_modules/@sentry/")) return "vendor-sentry";
+          if (normalizedId.includes("/node_modules/@supabase/")) return "vendor-supabase";
+          if (
+            normalizedId.includes("/node_modules/recharts/") ||
+            normalizedId.includes("/node_modules/d3-")
+          ) {
+            return "vendor-charts";
+          }
+          if (normalizedId.includes("/node_modules/framer-motion/")) return "vendor-motion";
+          if (normalizedId.includes("/node_modules/@radix-ui/")) return "vendor-radix";
+          if (normalizedId.includes("/node_modules/date-fns/")) return "vendor-date";
+          if (
+            normalizedId.includes("/node_modules/react/") ||
+            normalizedId.includes("/node_modules/react-dom/") ||
+            normalizedId.includes("/node_modules/scheduler/")
+          ) {
+            return "vendor-react";
+          }
+
+          return undefined;
+        },
+      },
+    },
+  },
 }));
