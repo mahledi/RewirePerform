@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppEventName =
@@ -44,6 +43,16 @@ const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || PUBLIC_SENTRY_DSN_FALLBACK
 const APP_ENV = import.meta.env.VITE_APP_ENV || import.meta.env.MODE || "development";
 const RELEASE_SHA = import.meta.env.VITE_RELEASE_SHA;
 
+type SentryClient = typeof import("@sentry/browser");
+
+let sentryClientPromise: Promise<SentryClient> | null = null;
+
+const getSentryClient = () => {
+  if (!SENTRY_DSN) return null;
+  sentryClientPromise ??= import("@sentry/browser");
+  return sentryClientPromise;
+};
+
 const sanitizeMetadata = (metadata?: SafeMetadata) => {
   if (!metadata) return {};
 
@@ -72,23 +81,27 @@ const getErrorCode = (error: unknown) => {
 };
 
 export const initMonitoring = () => {
-  if (!SENTRY_DSN) return;
-
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    environment: APP_ENV,
-    release: RELEASE_SHA || undefined,
-    sendDefaultPii: false,
-    tracesSampleRate: 0,
-    beforeSend(event) {
-      if (event.user) {
-        event.user = { id: event.user.id };
-      }
-      delete event.request?.cookies;
-      delete event.request?.headers;
-      return event;
-    },
-  });
+  void getSentryClient()
+    ?.then((Sentry) => {
+      Sentry.init({
+        dsn: SENTRY_DSN,
+        environment: APP_ENV,
+        release: RELEASE_SHA || undefined,
+        sendDefaultPii: false,
+        tracesSampleRate: 0,
+        beforeSend(event) {
+          if (event.user) {
+            event.user = { id: event.user.id };
+          }
+          delete event.request?.cookies;
+          delete event.request?.headers;
+          return event;
+        },
+      });
+    })
+    .catch((error) => {
+      console.warn("[ops] sentry init failed", error);
+    });
 };
 
 export const setMonitoringUser = (input: {
@@ -96,19 +109,26 @@ export const setMonitoringUser = (input: {
   role?: AppRole;
   isTest?: boolean | null;
 }) => {
-  if (!SENTRY_DSN) return;
+  const sentryClient = getSentryClient();
+  if (!sentryClient) return;
 
-  if (!input.userId) {
-    Sentry.setUser(null);
-    Sentry.setContext("app_user", null);
-    return;
-  }
+  void sentryClient
+    .then((Sentry) => {
+      if (!input.userId) {
+        Sentry.setUser(null);
+        Sentry.setContext("app_user", null);
+        return;
+      }
 
-  Sentry.setUser({ id: input.userId });
-  Sentry.setContext("app_user", {
-    role: input.role ?? null,
-    is_test_user: input.isTest ?? null,
-  });
+      Sentry.setUser({ id: input.userId });
+      Sentry.setContext("app_user", {
+        role: input.role ?? null,
+        is_test_user: input.isTest ?? null,
+      });
+    })
+    .catch((error) => {
+      console.warn("[ops] sentry user context failed", error);
+    });
 };
 
 export const trackAppEvent = async ({
@@ -148,15 +168,21 @@ export const captureAppError = async ({
   isTest,
   metadata,
 }: CaptureAppErrorInput) => {
-  if (SENTRY_DSN) {
-    Sentry.captureException(error, {
-      tags: {
-        app_event: eventName,
-        role: role ?? "unknown",
-        is_test: String(Boolean(isTest)),
-      },
-      extra: sanitizeMetadata(metadata),
-    });
+  const sentryClient = getSentryClient();
+  if (sentryClient) {
+    try {
+      const Sentry = await sentryClient;
+      Sentry.captureException(error, {
+        tags: {
+          app_event: eventName,
+          role: role ?? "unknown",
+          is_test: String(Boolean(isTest)),
+        },
+        extra: sanitizeMetadata(metadata),
+      });
+    } catch (sentryError) {
+      console.warn("[ops] sentry capture failed", sentryError);
+    }
   }
 
   await trackAppEvent({
