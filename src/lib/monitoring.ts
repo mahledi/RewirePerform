@@ -78,7 +78,8 @@ export const initMonitoring = () => {
     dsn: SENTRY_DSN,
     environment: APP_ENV,
     release: RELEASE_SHA || undefined,
-    tracesSampleRate: APP_ENV === "production" ? 0.05 : 0,
+    sendDefaultPii: false,
+    tracesSampleRate: 0,
     beforeSend(event) {
       if (event.user) {
         event.user = { id: event.user.id };
@@ -112,7 +113,7 @@ export const setMonitoringUser = (input: {
 
 export const trackAppEvent = async ({
   eventName,
-  status = "success",
+  status = "failed",
   role,
   teamId,
   route,

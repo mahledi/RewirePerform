@@ -337,7 +337,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="grid grid-cols-3 md:grid-cols-9 w-full">
+          <TabsList className="grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 w-full gap-1">
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
