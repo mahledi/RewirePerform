@@ -36,7 +36,9 @@ VITE_APP_ENV production | staging | development
 VITE_RELEASE_SHA optional, current Git commit SHA
 ```
 
-If `VITE_SENTRY_DSN` is empty, monitoring is disabled and the app still starts normally.
+If `VITE_SENTRY_DSN` is empty, the app uses the public RewirePerform Sentry DSN fallback defined in `src/lib/monitoring.ts`.
+This is intentional for Lovable builds where `VITE_` environment variables are not exposed in the UI. The DSN is a public browser
+endpoint, not a private secret. For owned hosts, prefer setting `VITE_SENTRY_DSN` explicitly so the fallback can be removed later.
 When Sentry is enabled, only technical context is sent. Do not add e-mail,
 journal text, free answers, private reflections, or individual psychological
 scores to Sentry tags, contexts, breadcrumbs, or extras.
