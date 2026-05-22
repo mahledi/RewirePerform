@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_event_log: {
+        Row: {
+          created_at: string
+          error_code: string | null
+          event_name: string
+          id: string
+          is_test: boolean
+          metadata: Json
+          role: string | null
+          route: string | null
+          status: string
+          team_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_code?: string | null
+          event_name: string
+          id?: string
+          is_test?: boolean
+          metadata?: Json
+          role?: string | null
+          route?: string | null
+          status?: string
+          team_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_code?: string | null
+          event_name?: string
+          id?: string
+          is_test?: boolean
+          metadata?: Json
+          role?: string | null
+          route?: string | null
+          status?: string
+          team_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_event_log_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessments: {
         Row: {
           answers: Json
@@ -1283,6 +1333,7 @@ export type Database = {
         Args: { _cohort_id?: string; include_test?: boolean }
         Returns: Json
       }
+      get_admin_ops_status: { Args: { include_test?: boolean }; Returns: Json }
       get_admin_overview_stats:
         | { Args: never; Returns: Json }
         | { Args: { include_test?: boolean }; Returns: Json }
