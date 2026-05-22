@@ -176,6 +176,13 @@ const formatPercent = (value: number | null) => {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
 };
 
+const opsSplitLabel: Record<string, string> = {
+  production_events_24h: "Production-Incidents 24h",
+  qa_events_24h: "QA-Incidents 24h",
+  production_failures_24h: "Production-Fehler 24h",
+  qa_failures_24h: "QA-Fehler 24h",
+};
+
 const Admin = () => {
   const { role, loading: authLoading, user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -183,6 +190,7 @@ const Admin = () => {
   const [teams, setTeams] = useState<TeamRow[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [ops, setOps] = useState<OpsStatus | null>(null);
+  const [opsError, setOpsError] = useState<string | null>(null);
   const [presentation, setPresentation] = useState<PresentationMetrics | null>(null);
   const [study, setStudy] = useState<StudyOverview | null>(null);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
@@ -195,6 +203,7 @@ const Admin = () => {
 
   const loadAll = async () => {
     setLoading(true);
+    setOpsError(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = supabase as any;
     const [ov, ts, hl, pm, st, op, fb] = await Promise.all([
@@ -211,7 +220,12 @@ const Admin = () => {
     if (hl.data) setHealth(hl.data as Health);
     if (pm.data) setPresentation(pm.data as PresentationMetrics);
     if (st.data) setStudy(st.data as StudyOverview);
-    if (op.data) setOps(op.data as OpsStatus);
+    if (op.error) {
+      setOps(null);
+      setOpsError(op.error.message || "Launch-Ops konnte nicht geladen werden.");
+    } else if (op.data) {
+      setOps(op.data as OpsStatus);
+    }
     if (!fb.error && fb.data) setFeedback(fb.data as FeedbackRow[]);
     setLoading(false);
   };
@@ -920,14 +934,31 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle>Launch-Ops</CardTitle>
                 <CardDescription>
-                  Incident-Log für technische Fehler und Push-Status. Keine normalen Klicks, keine privaten Antworten, keine Journale, keine E-Mails.
+                  Incident-Log für technische Fehler und Push-Zustellung. Keine Klickhistorie, keine normalen Abschlüsse, keine privaten Antworten, keine Journale, keine E-Mails.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {loading || !ops ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : opsError ? (
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-destructive" />
+                      <div>
+                        <p className="font-medium text-destructive">Launch-Ops konnte nicht geladen werden.</p>
+                        <p className="mt-1 text-muted-foreground">
+                          Die App läuft weiter. Prüfe die Backend-Migration oder den Schema-Reload, wenn dieser Hinweis bleibt.
+                        </p>
+                        <p className="mt-2 font-mono text-xs text-muted-foreground">{opsError}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : !ops ? (
+                  <div className="rounded-lg border border-border/60 p-4 text-sm text-muted-foreground">
+                    Noch keine Launch-Ops-Daten verfügbar.
+                  </div>
+                ) : (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <StatCard label="Events 24h" value={ops.events_last_24h} />
+                      <StatCard label="Incident-Einträge 24h" value={ops.events_last_24h} />
                       <StatCard label="Fehler 24h" value={ops.failed_events_24h} />
                       <StatCard label="Kritische Fehler 24h" value={ops.critical_failed_events_24h} />
                       <StatCard label="Teams < 5" value={ops.teams_below_min_n} />
@@ -954,7 +985,7 @@ const Admin = () => {
                         <h3 className="text-sm font-medium mb-3">QA vs Production</h3>
                         <div className="space-y-2 text-sm">
                           {Object.entries(ops.qa_vs_production).map(([label, value]) => (
-                            <Row key={label} label={label} value={value} />
+                            <Row key={label} label={opsSplitLabel[label] ?? label} value={value} />
                           ))}
                         </div>
                       </div>
