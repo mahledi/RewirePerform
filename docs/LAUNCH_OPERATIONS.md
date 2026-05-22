@@ -11,7 +11,10 @@ RewirePerform startet als kontrollierter Pilot mit 1-3 Teams. Ziel ist nicht, je
 
 ## Monitoring
 
-Frontend-Fehler laufen über Sentry, wenn `VITE_SENTRY_DSN` gesetzt ist. Ohne DSN startet die App normal weiter.
+Frontend-Fehler laufen über Sentry. Die App bevorzugt `VITE_SENTRY_DSN` und nutzt
+für Lovable-Builds einen kontrollierten Public-DSN-Fallback in `src/lib/monitoring.ts`.
+Der DSN ist kein Private Key; die Privacy-Sicherheit entsteht dadurch, dass keine
+privaten Inhalte an Sentry übergeben werden.
 
 Sentry darf enthalten:
 

@@ -37,7 +37,10 @@ type CaptureAppErrorInput = Omit<TrackAppEventInput, "status"> & {
   error: unknown;
 };
 
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const PUBLIC_SENTRY_DSN_FALLBACK =
+  "https://5c55886d9d44ba4aa6d1379a09868d03@o4511431236124672.ingest.de.sentry.io/4511431305920592";
+
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || PUBLIC_SENTRY_DSN_FALLBACK;
 const APP_ENV = import.meta.env.VITE_APP_ENV || import.meta.env.MODE || "development";
 const RELEASE_SHA = import.meta.env.VITE_RELEASE_SHA;
 
