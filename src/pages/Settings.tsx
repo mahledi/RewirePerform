@@ -20,33 +20,50 @@ const feedbackTypes = [
 const faqItems = [
   {
     q: "Was ist RewirePerform?",
-    a: "RewirePerform ist ein wissenschaftlich fundiertes Mentaltraining-Programm speziell für Sportler. Es analysiert dein mentales Profil und erstellt darauf basierend personalisierte tägliche Aufgaben, die dich mental stärker machen — auf und neben dem Platz.",
+    a: "RewirePerform ist ein wissenschaftlich fundiertes 56-Tage-Mentaltraining für Athletinnen und Athleten zwischen 14 und 18. Es kombiniert Neurowissenschaft, Sportpsychologie und tägliche Reflexion zu einem klaren System: Du verstehst, wie dein Kopf funktioniert — und trainierst ihn gezielt.",
   },
   {
     q: "Wie funktioniert das Programm?",
-    a: "Nach der Registrierung füllst du einen Fragebogen aus, der dein Startprofil erfasst. Daraus entsteht eine deterministische Einordnung. Danach läuft das feste 56-Tage-System mit täglichen Aufgaben, die durch Sport, Position und Tagestyp gerahmt werden (Micro-Adjustment).",
+    a: "Nach der Registrierung füllst du einen tiefen Onboarding-Fragebogen aus (Sport, Position, mentale Ausgangslage). Daraus entsteht dein Startprofil. Anschließend läuft ein festes, deterministisches 56-Tage-System in vier neurokognitiven Phasen — jeder Tag hat eine klare Linse, einen Wissens-Input und konkrete Übungen.",
   },
   {
-    q: "Was sind die täglichen Aufgaben?",
-    a: "Jede Aufgabe besteht aus zwei Teilen: Zuerst ein kurzer Wissens-Input (Knowledge), der dir erklärt, warum die Übung wirkt. Dann eine praktische Übung (Exercise), die du direkt umsetzen kannst. Die Aufgaben dauern insgesamt 10–15 Minuten.",
+    q: "Wie sehen die täglichen Aufgaben aus?",
+    a: "Jeder Tag besteht aus drei Bausteinen: kurzer Check-in (Stimmung, Energie, Fokus), Wissens-Input zur heutigen Linse und max. 3 konkrete Aufgaben. Dazu kommt ein Journal mit Reflexion und Dankbarkeit. Zusammen ca. 10–15 Minuten.",
+  },
+  {
+    q: "Warum wird das Journal eingesprochen?",
+    a: "Sprechen aktiviert mehr neuronale Netzwerke gleichzeitig als Tippen — Sprache, Motorik, Hören und Selbstwahrnehmung feuern parallel. Diese Synchronität beschleunigt synaptische Bahnung (Hebbian Plasticity). Studien zum Generation Effect und zu Self-distancing through speech (Kross) zeigen: Laut ausgesprochene Gedanken bleiben besser hängen und führen zu klareren Einsichten. Tippen bleibt jederzeit möglich.",
+  },
+  {
+    q: "Was ist aMCC-Training?",
+    a: "Der anterior midcingulate cortex (aMCC) ist eine Hirnregion, die mit Willenskraft und Handeln-trotz-Widerstand verbunden wird. Forschung zeigt, dass freiwillige kleine Unannehmlichkeiten diesen Bereich aktivieren. Deshalb gibt es täglich eine kleine bewusste Discomfort-Challenge — kurz, konkret, machbar.",
   },
   {
     q: "Wie verändert mich das?",
-    a: "Mentales Training wirkt wie körperliches Training — durch regelmäßige Wiederholung. Die Übungen basieren auf Neuroplastizität: Dein Gehirn baut durch gezielte Übungen neue neuronale Verbindungen auf. Fokus, Stressresistenz, Selbstvertrauen und Konzentration verbessern sich nachweislich innerhalb weniger Wochen.",
+    a: "Mentales Training wirkt wie körperliches Training: durch regelmäßige Wiederholung baut dein Gehirn neue Verbindungen auf (Neuroplastizität). Über 56 Tage trainierst du systematisch Fokus, Stressresistenz, Selbstführung und mentale Stärke — gerahmt von wissenschaftlich validierten Skalen (CSAI-2R, SMTQ, Flow).",
   },
   {
-    q: "Sieht mein Coach meine Antworten?",
-    a: "Nein. Dein Coach sieht ausschließlich, ob du aktiv bist (Check-ins gemacht hast) und deinen allgemeinen Aktivitätsstatus. Deine individuellen Antworten, Reflexionen und dein detailliertes mentales Profil sind nur für dich sichtbar.",
+    q: "Was sieht mein Coach?",
+    a: "Dein Coach sieht ausschließlich aggregierte Team-Daten: ob das Team aktiv ist, wie der durchschnittliche mentale Zustand aussieht, wo das Team Unterstützung braucht. Deine individuellen Journal-Einträge, Reflexionen und detaillierten Antworten bleiben strikt privat — niemand außer dir sieht sie.",
   },
   {
-    q: "Kann ich meine Daten löschen?",
-    a: "Ja. Du kannst jederzeit die Löschung deines Accounts und aller damit verbundenen Daten anfragen. Schreib uns dazu einfach über das Feedback-Formular auf dieser Seite.",
+    q: "Wie komme ich in ein Team?",
+    a: "Dein Coach gibt dir einen 6-stelligen Zugangscode. Den trägst du beim Onboarding ein — fertig. Ohne Code nutzt du das Programm einfach individuell.",
   },
   {
     q: "Wie oft sollte ich das machen?",
-    a: "Idealerweise täglich — egal ob Trainings- oder Ruhetag. Die Aufgaben sind an deinen Tagestyp angepasst. 10–15 Minuten pro Tag reichen aus, um langfristige Ergebnisse zu erzielen. Regelmäßigkeit ist wichtiger als Dauer.",
+    a: "Täglich — Trainings- oder Ruhetag. Die Inhalte sind auf den Tagestyp abgestimmt. 10–15 Minuten reichen. Regelmäßigkeit schlägt Dauer: das 56-Tage-System ist darauf ausgelegt, dass kleine konsistente Reize Strukturen im Gehirn verändern.",
+  },
+  {
+    q: "Was passiert, wenn ich einen Tag verpasse?",
+    a: "Nichts Schlimmes. Das Programm läuft weiter und du steigst am nächsten Tag wieder ein. Es gibt keine Strafen, keine roten Zahlen — nur dein eigener Streak und die Klarheit, dass jeder Tag zählt.",
+  },
+  {
+    q: "Kann ich meine Daten löschen?",
+    a: "Ja. Du kannst jederzeit die vollständige Löschung deines Accounts und aller Daten anfragen — über das Feedback-Formular auf dieser Seite. Wir löschen alles innerhalb von 48 Stunden.",
   },
 ];
+
 
 const Settings = () => {
   const navigate = useNavigate();
