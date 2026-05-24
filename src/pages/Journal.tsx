@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowLeft, BookOpen, Check, Heart, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, Heart, Loader2, Mic, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
+import VoiceInput from "@/components/VoiceInput";
 import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
@@ -178,6 +179,26 @@ const Journal = () => {
           <p className="text-xs text-muted-foreground mt-2">{matrix.practiceFocus}</p>
         </motion.div>
 
+        {/* Speak-don't-type hint */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20"
+        >
+          <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+            <Mic className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground leading-snug">
+              Sprich deine Antworten ein.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Beim lauten Verbalisieren feuern mehr neuronale Netzwerke gleichzeitig — dein Gehirn verknüpft neue Bahnen schneller als beim Tippen.
+            </p>
+          </div>
+        </motion.div>
+
         {/* Questions */}
         {j.questions.map((q, i) => (
           <motion.div
@@ -193,6 +214,10 @@ const Journal = () => {
               onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
               placeholder={q.placeholder ?? ""}
               className="min-h-[90px] bg-secondary/40 border-border/40 resize-none"
+            />
+            <VoiceInput
+              currentValue={answers[q.id] ?? ""}
+              onTranscript={(text) => setAnswers((prev) => ({ ...prev, [q.id]: text }))}
             />
           </motion.div>
         ))}
@@ -210,6 +235,7 @@ const Journal = () => {
             placeholder="Eine konkrete Sache …"
             className="min-h-[70px] bg-background/60 border-border/40 resize-none"
           />
+          <VoiceInput currentValue={gratitude} onTranscript={setGratitude} />
         </motion.div>
 
         {/* Free reflection (optional) */}
@@ -222,6 +248,7 @@ const Journal = () => {
               placeholder="Optional …"
               className="min-h-[70px] bg-secondary/30 border-border/40 resize-none"
             />
+            <VoiceInput currentValue={freeReflection} onTranscript={setFreeReflection} />
           </motion.div>
         )}
 
