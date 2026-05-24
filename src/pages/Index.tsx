@@ -4,6 +4,7 @@ import WhySection from "@/components/WhySection";
 import ProcessSection from "@/components/ProcessSection";
 import BrainSection from "@/components/BrainSection";
 import MechanismSection from "@/components/MechanismSection";
+import SpeakingSection from "@/components/SpeakingSection";
 import CoachSection from "@/components/CoachSection";
 import EvidenceSection from "@/components/EvidenceSection";
 import CTASection from "@/components/CTASection";
@@ -24,6 +25,9 @@ const Index = () => {
       </div>
       <div id="mechanisms">
         <MechanismSection />
+      </div>
+      <div id="speaking">
+        <SpeakingSection />
       </div>
       <div id="coaches">
         <CoachSection />
