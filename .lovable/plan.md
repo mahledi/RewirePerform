@@ -1,59 +1,66 @@
-# Weg zur vollen Unabhängigkeit
+## Ziel
+1. Im Journal (`/journal`) jedes Textfeld mit Spracheingabe ausstatten und Sprechen als Standard-Modus framen.
+2. Auf der Startseite an passender Stelle eine kurze, fundierte Begründung einbauen, **warum** gesprochen statt getippt wird.
 
-Ziel: RewirePerform läuft komplett ohne Lovable — eigenes Hosting (Web + iOS App Store), eigene Backend-Kontrolle, eigene CI/CD. Lovable bleibt optional als Dev-Tool.
+---
 
-## Aktueller Stand (gut!)
+## Wissenschaftlicher Hintergrund (das geht in den Landing-Block)
 
-- Code auf GitHub synchronisiert (Single Source of Truth)
-- Vite-Build → standard `dist/` Output → läuft überall
-- Supabase ist Standard-Postgres + Auth, kein Lovable-Lock-in
-- Capacitor iOS-Shell bereits eingerichtet (`ios/`)
-- `docs/PORTABILITY.md` + `docs/DEPLOYMENT.md` existieren bereits
-- Env-Validierung (`npm run validate:env`) vorhanden
+Sprechen ≠ Tippen. Wenn man laut über sich selbst redet, sind gleichzeitig **mehr neuronale Netzwerke aktiv** als beim stillen Schreiben:
 
-**Du bist schon zu ~80% unabhängig.** Es fehlt nur die Aktivierung.
+- **Motorischer + auditorischer + sprachlicher Cortex** feuern parallel (Broca, Wernicke, prämotorisch, auditiver Rückkopplungs-Loop). Das erzeugt eine **multimodale Spur** desselben Gedankens → stärkere Konsolidierung im Hippocampus (Encoding-Variability-Effekt).
+- **"Self-distancing through speech"** (Kross et al., Univ. Michigan): Wer über sich selbst spricht, aktiviert den **medialen präfrontalen Cortex** stärker und reguliert die Amygdala runter. Folge: weniger Grübeln, klarere Einsicht.
+- **Hebbian Plasticity / "Cells that fire together wire together"** (Donald Hebb, 1949; Bliss & Lømo, LTP): Synchrone Co-Aktivierung mehrerer Netzwerke beschleunigt synaptische Bahnung. Sprechen liefert genau diese Synchronität.
+- **Generation Effect** (Slamecka & Graf, 1978): selbst-generierte verbalisierte Inhalte werden deutlich besser erinnert als gelesene.
+- **Insight via Verbalisation** (Schooler, Ohlsson): laut formulieren zwingt zur Sequenzierung impliziter Gedanken → "Aha-Momente" entstehen *während* des Sprechens, nicht davor.
 
-## Die 4 Schritte zur Unabhängigkeit
+Kurz für Athleten 14–18: *„Wenn du es laut aussprichst, baut dein Gehirn schneller neue Verbindungen. Du denkst nicht nur — du verdrahtest."*
 
-### Schritt 1: Eigenes Web-Hosting (1–2 Stunden)
-- Vercel/Netlify/Cloudflare Pages mit GitHub-Repo verbinden
-- Build-Settings: `npm ci` / `npm run build` / Output `dist`
-- Env-Variablen setzen: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
-- Custom Domain `rewireperform.com` verbinden
-- Supabase Auth → Redirect-URLs um neue Domain ergänzen
+---
 
-### Schritt 2: Supabase aus Lovable Cloud "befreien" (kritisch)
-Aktuell läuft die DB als **Lovable Cloud Managed Supabase** (`twceqincrbrenyuqukpj`). Optionen:
+## Änderungen
 
-- **Option A (empfohlen, einfach):** DB **behalten wie sie ist**. Lovable Cloud bleibt der Hoster, du nutzt sie direkt über Supabase API. Funktioniert auch ohne Lovable Editor. Risiko: Lovable könnte irgendwann den Zugriff ändern.
-- **Option B (volle Souveränität):** Migration zu eigenem Supabase-Account. Schema via `supabase db dump` exportieren, neues Projekt anlegen, Daten + Users migrieren, Edge Functions deployen, Frontend-Env umstellen. Aufwand: 1 Tag, einmal sauber dokumentiert.
+### 1. `src/pages/Journal.tsx`
+- `VoiceInput` neben jedes Textfeld einbauen:
+  - Tagesfragen (`j.questions.map`)
+  - Dankbarkeit (`gratitude`)
+  - Free Reflection (`freeReflection`)
+- `onTranscript` schreibt direkt in den jeweiligen State (akkumulierend, gemäß bestehender VoiceInput-Logik).
+- Kleiner Hinweis-Banner ganz oben unter der "Heutigen Linse":
+  > „Sprich deine Antworten ein. Beim lauten Verbalisieren verknüpft dein Gehirn neue Bahnen schneller als beim Tippen."
+  Mit `Mic`-Icon, dezent gestaltet (gleicher `bg-gradient-card` Stil).
+- Tippen bleibt jederzeit möglich (Textarea bleibt erhalten).
 
-### Schritt 3: iOS App Store (Capacitor, schon vorbereitet)
-- Apple Developer Account ($99/Jahr)
-- `npm run app:build` → `npx cap sync ios` → Xcode öffnen
-- App Icons + Splash bereits in `ios/App/App/Assets.xcassets/`
-- App Store Connect: Eintrag erstellen → TestFlight → Review → Live
-- Anleitung steht teilweise in `docs/APP_STORE.md`
+### 2. Landing — neue Mini-Section „Warum sprechen?"
+- **Platzierung:** direkt nach `MechanismSection` (passt thematisch zum Neuro-Mechanismus), vor `CoachSection`.
+- Entweder als neue Komponente `src/components/SpeakingSection.tsx` oder als Block innerhalb `MechanismSection`. **Empfehlung: neue Komponente** für klare Trennung.
+- Inhalt (kurz, max ~60 Wörter sichtbar + 3 Kacheln):
+  - Headline: *„Warum eingesprochen wird."*
+  - Sub: *„Sprechen aktiviert mehr Netzwerke gleichzeitig — Sprache, Motorik, Hören, Selbst-Reflexion. Das beschleunigt synaptische Verbindung (Hebbian Plasticity)."*
+  - 3 kleine Karten:
+    1. **Mehr Netzwerke** — Broca + Wernicke + auditiver Loop feuern parallel.
+    2. **Klarere Einsicht** — Selbst-distanzierte Sprache reguliert die Amygdala (Kross).
+    3. **Schnellere Verdrahtung** — Generation Effect + LTP: verbalisierte Gedanken bleiben.
+  - Visueller Stil: dark theme, green accent, `Space Grotesk` Heading, `Mic` + Brain-Icons, gleiche Karten-Optik wie `MechanismSection`.
+- In `src/pages/Index.tsx` einhängen mit `id="speaking"`.
 
-### Schritt 4: CI/CD ohne Lovable
-- GitHub Actions (`.github/workflows/ci.yml` existiert bereits)
-- Erweitern um: Auto-Deploy zu Vercel + Supabase Edge Functions bei Push auf `main`
-- Damit ist Lovable nur noch ein optionaler Editor
+### 3. Memory-Update
+Neue Memory-Datei `mem://features/voice-journal` ergänzen + Index updaten:
+- Journal unterstützt Voice-Input mit wissenschaftlicher Begründung (Hebbian, Generation Effect, Self-distancing). Sprechen ist der bevorzugte Modus, Tippen bleibt Fallback.
 
-## Was diese Plan-Iteration jetzt liefert
+---
 
-Ich schlage vor, **jetzt nur Schritt 1 + 4 vorzubereiten** (Web-Deploy + CI), weil das dich sofort unabhängig macht ohne DB-Migrations-Risiko. Schritt 2 (DB-Souveränität) und Schritt 3 (App Store) machen wir separat, wenn du bereit bist.
+## Was NICHT geändert wird
+- Bestehende Save-Logik, Schema (`daily_journals`) unverändert.
+- Keine Backend-Änderungen, keine STT-Server-Integration — `VoiceInput` nutzt bereits die Web Speech API.
+- `VoiceInput.tsx` selbst wird nicht angefasst.
+- Andere Landing-Sections bleiben unberührt.
 
-Konkret in diesem Loop:
-1. `docs/INDEPENDENCE.md` schreiben — eine klare Schritt-für-Schritt-Anleitung (Web-Deploy, DB-Migration, App Store, CI/CD), die du auch in einem Jahr noch verstehst, ohne mich zu fragen.
-2. `.github/workflows/deploy.yml` ergänzen — Auto-Deploy-Skeleton für Vercel + Supabase Functions (auskommentiert, du aktivierst es wenn du den Hoster gewählt hast).
-3. `scripts/export-supabase-schema.sh` — One-Click-Skript für DB-Dump (für spätere Migration).
+---
 
-Kein Refactoring, keine Code-Änderungen am App-Verhalten. Nur Doku + Tooling für Unabhängigkeit.
+## Offene Frage an dich
+Soll der Landing-Block:
+- **(a)** eine eigene neue Section sein (klar sichtbar, eigenes Scroll-Ziel), oder
+- **(b)** als Sub-Block in die bestehende `MechanismSection` integriert werden (kompakter, weniger neue Sektionen)?
 
-## Technische Details
-
-- Keine neuen Runtime-Dependencies
-- Keine DB-Migrationen
-- Keine Änderungen an `src/`, Supabase-Schema oder Edge Functions
-- Lovable-spezifisches (`lovable-tagger`, `.lovable/`) bleibt — stört Standalone-Betrieb nicht
+Default-Empfehlung: **(a)** — weil das Thema „Sprechen statt Tippen" ein eigenständiges Verkaufsargument ist und sich vom Mechanismus-Narrativ abhebt.
