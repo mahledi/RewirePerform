@@ -1,66 +1,47 @@
-## Ziel
-1. Im Journal (`/journal`) jedes Textfeld mit Spracheingabe ausstatten und Sprechen als Standard-Modus framen.
-2. Auf der Startseite an passender Stelle eine kurze, fundierte Begründung einbauen, **warum** gesprochen statt getippt wird.
+## Problem
 
----
+`rewireperform.com` zeigt komplett schwarzen Screen. Konsole vom Live-Build:
 
-## Wissenschaftlicher Hintergrund (das geht in den Landing-Block)
+```
+ReferenceError: Cannot access 'A' before initialization
+  at /assets/vendor-charts-rTwqY_xG.js:9:16763
+```
 
-Sprechen ≠ Tippen. Wenn man laut über sich selbst redet, sind gleichzeitig **mehr neuronale Netzwerke aktiv** als beim stillen Schreiben:
+Das ist ein **Temporal-Dead-Zone-Fehler durch die manualChunks-Konfiguration** in `vite.config.ts`. Recharts + d3 wurden in einen eigenen `vendor-charts`-Chunk gepackt, während React/Scheduler in `vendor-react` liegen. Recharts greift beim Initialisieren auf React-internes (react-is) zu, das durch das manuelle Splitting noch nicht initialisiert ist → Modul crasht *vor* dem ersten React-Render → leerer `<div id="root">`.
 
-- **Motorischer + auditorischer + sprachlicher Cortex** feuern parallel (Broca, Wernicke, prämotorisch, auditiver Rückkopplungs-Loop). Das erzeugt eine **multimodale Spur** desselben Gedankens → stärkere Konsolidierung im Hippocampus (Encoding-Variability-Effekt).
-- **"Self-distancing through speech"** (Kross et al., Univ. Michigan): Wer über sich selbst spricht, aktiviert den **medialen präfrontalen Cortex** stärker und reguliert die Amygdala runter. Folge: weniger Grübeln, klarere Einsicht.
-- **Hebbian Plasticity / "Cells that fire together wire together"** (Donald Hebb, 1949; Bliss & Lømo, LTP): Synchrone Co-Aktivierung mehrerer Netzwerke beschleunigt synaptische Bahnung. Sprechen liefert genau diese Synchronität.
-- **Generation Effect** (Slamecka & Graf, 1978): selbst-generierte verbalisierte Inhalte werden deutlich besser erinnert als gelesene.
-- **Insight via Verbalisation** (Schooler, Ohlsson): laut formulieren zwingt zur Sequenzierung impliziter Gedanken → "Aha-Momente" entstehen *während* des Sprechens, nicht davor.
+Das Problem hat nichts mit SpeakingSection oder FAQ zu tun. Es ist ein vorhandener Build-Konfig-Bug, der nach jedem Publish anders triggern kann, weil sich Modul-Reihenfolgen in Chunks verschieben.
 
-Kurz für Athleten 14–18: *„Wenn du es laut aussprichst, baut dein Gehirn schneller neue Verbindungen. Du denkst nicht nur — du verdrahtest."*
+## Plan
 
----
+### 1. `vite.config.ts` — manualChunks entschärfen
 
-## Änderungen
+Die manuelle Chunk-Aufteilung von Libraries, die untereinander Abhängigkeiten haben (Recharts ↔ React, Framer-Motion ↔ React, Radix ↔ React), entfernen. Rollup macht das von sich aus korrekt.
 
-### 1. `src/pages/Journal.tsx`
-- `VoiceInput` neben jedes Textfeld einbauen:
-  - Tagesfragen (`j.questions.map`)
-  - Dankbarkeit (`gratitude`)
-  - Free Reflection (`freeReflection`)
-- `onTranscript` schreibt direkt in den jeweiligen State (akkumulierend, gemäß bestehender VoiceInput-Logik).
-- Kleiner Hinweis-Banner ganz oben unter der "Heutigen Linse":
-  > „Sprich deine Antworten ein. Beim lauten Verbalisieren verknüpft dein Gehirn neue Bahnen schneller als beim Tippen."
-  Mit `Mic`-Icon, dezent gestaltet (gleicher `bg-gradient-card` Stil).
-- Tippen bleibt jederzeit möglich (Textarea bleibt erhalten).
+Konkret: den gesamten `build.rollupOptions.output.manualChunks`-Block löschen. Vite/Rollup baut dann automatisch sinnvolle Chunks pro dynamischem Import (Routes sind via `lazy()` bereits split — das ist die richtige Granularität).
 
-### 2. Landing — neue Mini-Section „Warum sprechen?"
-- **Platzierung:** direkt nach `MechanismSection` (passt thematisch zum Neuro-Mechanismus), vor `CoachSection`.
-- Entweder als neue Komponente `src/components/SpeakingSection.tsx` oder als Block innerhalb `MechanismSection`. **Empfehlung: neue Komponente** für klare Trennung.
-- Inhalt (kurz, max ~60 Wörter sichtbar + 3 Kacheln):
-  - Headline: *„Warum eingesprochen wird."*
-  - Sub: *„Sprechen aktiviert mehr Netzwerke gleichzeitig — Sprache, Motorik, Hören, Selbst-Reflexion. Das beschleunigt synaptische Verbindung (Hebbian Plasticity)."*
-  - 3 kleine Karten:
-    1. **Mehr Netzwerke** — Broca + Wernicke + auditiver Loop feuern parallel.
-    2. **Klarere Einsicht** — Selbst-distanzierte Sprache reguliert die Amygdala (Kross).
-    3. **Schnellere Verdrahtung** — Generation Effect + LTP: verbalisierte Gedanken bleiben.
-  - Visueller Stil: dark theme, green accent, `Space Grotesk` Heading, `Mic` + Brain-Icons, gleiche Karten-Optik wie `MechanismSection`.
-- In `src/pages/Index.tsx` einhängen mit `id="speaking"`.
+Falls später Chunk-Größe ein Thema wird, kommen einzelne, **nicht-React-abhängige** Pakete (z. B. `date-fns`) zurück in eigene Chunks — aber niemals UI-Libs, die React zur Init-Zeit brauchen.
 
-### 3. Memory-Update
-Neue Memory-Datei `mem://features/voice-journal` ergänzen + Index updaten:
-- Journal unterstützt Voice-Input mit wissenschaftlicher Begründung (Hebbian, Generation Effect, Self-distancing). Sprechen ist der bevorzugte Modus, Tippen bleibt Fallback.
+### 2. Globale `ErrorBoundary` einbauen
 
----
+In `src/App.tsx` einen `ErrorBoundary`-Wrapper um den Router legen. Damit sehen Nutzer beim nächsten unbekannten Fehler wenigstens eine Meldung statt einem schwarzen Bildschirm, und wir loggen den Fehler nach `monitoring.ts`.
 
-## Was NICHT geändert wird
-- Bestehende Save-Logik, Schema (`daily_journals`) unverändert.
-- Keine Backend-Änderungen, keine STT-Server-Integration — `VoiceInput` nutzt bereits die Web Speech API.
-- `VoiceInput.tsx` selbst wird nicht angefasst.
-- Andere Landing-Sections bleiben unberührt.
+Neue Datei: `src/components/ErrorBoundary.tsx` (klassisches React-Error-Boundary mit `componentDidCatch` → `captureException` aus `lib/monitoring`).
 
----
+### 3. Stale Service-Worker-Schutz (nur Doku-Hinweis)
 
-## Offene Frage an dich
-Soll der Landing-Block:
-- **(a)** eine eigene neue Section sein (klar sichtbar, eigenes Scroll-Ziel), oder
-- **(b)** als Sub-Block in die bestehende `MechanismSection` integriert werden (kompakter, weniger neue Sektionen)?
+Da bei früheren Deploys evtl. ein SW registriert wurde, kann auf manchen Geräten ein alter Bundle im Cache hängen. `registerSW.ts` nutzt bereits `autoUpdate` — nach dem neuen Publish wird der SW automatisch ersetzt. Falls einzelne Geräte weiter schwarz bleiben: 1× Hard-Reload (Ctrl/Cmd+Shift+R). Kein Code-Change nötig.
 
-Default-Empfehlung: **(a)** — weil das Thema „Sprechen statt Tippen" ein eigenständiges Verkaufsargument ist und sich vom Mechanismus-Narrativ abhebt.
+## Was du danach machst
+
+1. Plan approven → ich baue die zwei Änderungen.
+2. **Publish klicken** (Frontend-Change → muss manuell ausgerollt werden).
+3. Auf `rewireperform.com` Hard-Reload (Cmd+Shift+R).
+4. Falls noch schwarz: DevTools → Application → Service Workers → "Unregister", dann reload.
+
+## Technische Details
+
+- Datei `vite.config.ts`: Zeilen 54–84 (rollupOptions.output) ersetzen durch leeres `build: {}` oder Block ganz entfernen.
+- Datei `src/components/ErrorBoundary.tsx`: neue Klasse-Komponente, fängt Render-Errors, zeigt Fallback-UI mit "App neu laden"-Button, ruft `captureException` auf.
+- Datei `src/App.tsx`: `<ErrorBoundary>` als äußersten Wrapper innerhalb `AuthProvider`.
+
+Keine Änderungen an Business-Logik, Backend, Auth oder UI-Inhalt.
