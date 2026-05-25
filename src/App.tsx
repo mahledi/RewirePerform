@@ -38,7 +38,8 @@ const PageFallback = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
