@@ -21,7 +21,8 @@ class ErrorBoundary extends Component<Props, State> {
     console.error("[ErrorBoundary]", error, info);
     void captureAppError({
       error,
-      context: { source: "ErrorBoundary", componentStack: info.componentStack },
+      eventName: "app_event",
+      metadata: { source: "ErrorBoundary", componentStack: info.componentStack },
     }).catch(() => {});
   }
 
