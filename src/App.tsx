@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import QATestBanner from "./components/qa/QATestBanner";
 import { NotificationOpenTracker } from "./components/notifications/NotificationOpenTracker";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
