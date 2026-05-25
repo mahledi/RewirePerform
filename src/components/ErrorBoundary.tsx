@@ -1,5 +1,4 @@
 import { Component, ErrorInfo, ReactNode } from "react";
-import { captureAppError } from "@/lib/monitoring";
 
 interface Props {
   children: ReactNode;
@@ -19,11 +18,15 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary]", error, info);
-    void captureAppError({
-      error,
-      eventName: "app_event",
-      metadata: { source: "ErrorBoundary", componentStack: info.componentStack },
-    }).catch(() => {});
+    // Fire-and-forget Sentry capture without coupling to AppEventName.
+    import("@sentry/browser")
+      .then((Sentry) => {
+        Sentry.captureException(error, {
+          extra: { componentStack: info.componentStack },
+          tags: { source: "ErrorBoundary" },
+        });
+      })
+      .catch(() => {});
   }
 
   handleReload = () => {
