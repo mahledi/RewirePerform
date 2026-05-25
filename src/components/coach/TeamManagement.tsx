@@ -75,11 +75,13 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     setCreating(false);
   };
 
+  const INVITE_BASE_URL = "https://rewireperform.com";
+
   const getPlayerMessage = (team: Team) =>
-    `Hey! Ich lade dich als Sportler in unser Mentaltraining ein 🧠💪\n\nTeam: ${team.name}\nDein Spieler-Code: ${team.access_code}\n\nRegistriere dich auf RewirePerform und gib diesen Code bei der Anmeldung ein.`;
+    `Hey, ich lade dich als Spieler zu unserem gemeinsamen neurokognitiven Performance-System RewirePerform ein.\n\nTeam: ${team.name}\nDein Code: ${team.access_code}\n\nKlick auf den Link, wenn du dir Zeit für die Registrierung und den folgenden Fragebogen nehmen kannst:\n${INVITE_BASE_URL}/auth?intent=join&code=${team.access_code}`;
 
   const getCoachMessage = (team: Team) =>
-    `Hi! Ich lade dich als Co-Coach zu unserem Team ein 🎯\n\nTeam: ${team.name}\nDein Coach-Code: ${team.coach_access_code}\n\nRegistriere dich auf RewirePerform und gib diesen Code bei der Anmeldung ein – du bekommst direkt Coach-Zugang.`;
+    `Hey, ich lade dich als Coach zu unserem gemeinsamen neurokognitiven Performance-System RewirePerform ein.\n\nTeam: ${team.name}\nDein Coach-Code: ${team.coach_access_code}\n\nKlick auf den Link, wenn du dir Zeit für die Registrierung nehmen kannst:\n${INVITE_BASE_URL}/auth?intent=join&code=${team.coach_access_code}`;
 
   const shareWhatsApp = (message: string) => {
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
