@@ -37,14 +37,19 @@ const Auth = () => {
     // if role still null but user exists, wait for role to load
   }, [user, role, authLoading, switching, navigate, safeRedirect]);
 
-  const [mode, setMode] = useState<Mode>("intent");
-  const [intent, setIntent] = useState<Intent>("solo");
+  const urlIntent = searchParams.get("intent");
+  const urlCode = searchParams.get("code");
+  const initialMode: Mode = urlIntent === "join" || urlCode ? "signup" : "intent";
+  const initialIntent: Intent = urlIntent === "join" || urlCode ? "join" : "solo";
+
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [intent, setIntent] = useState<Intent>(initialIntent);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [sport, setSport] = useState("");
-  const [teamCode, setTeamCode] = useState("");
+  const [teamCode, setTeamCode] = useState(urlCode ?? "");
 
   const pickIntent = (i: Intent) => {
     setIntent(i);
