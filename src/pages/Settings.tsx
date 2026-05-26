@@ -20,7 +20,7 @@ const feedbackTypes = [
 const faqItems = [
   {
     q: "Was ist RewirePerform?",
-    a: "RewirePerform ist ein wissenschaftlich fundiertes 56-Tage-Mentaltraining für Athletinnen und Athleten zwischen 14 und 18. Es kombiniert Neurowissenschaft, Sportpsychologie und tägliche Reflexion zu einem klaren System: Du verstehst, wie dein Kopf funktioniert — und trainierst ihn gezielt.",
+    a: "RewirePerform ist ein wissenschaftlich fundiertes 56-Tage-Mentaltraining für alle Athletinnen und Athleten. Es hilft jedem, der bereit ist, seinen mentalen Ansatz zu trainieren — unabhängig von Alter oder Sportart. Ein Mindestalter zum Verstehen der Inhalte liegt natürlich nahe, wir legen es aber nicht fest.",
   },
   {
     q: "Wie funktioniert das Programm?",
@@ -36,7 +36,7 @@ const faqItems = [
   },
   {
     q: "Was ist aMCC-Training?",
-    a: "Der anterior midcingulate cortex (aMCC) ist eine Hirnregion, die mit Willenskraft und Handeln-trotz-Widerstand verbunden wird. Forschung zeigt, dass freiwillige kleine Unannehmlichkeiten diesen Bereich aktivieren. Deshalb gibt es täglich eine kleine bewusste Discomfort-Challenge — kurz, konkret, machbar.",
+    a: "Der anterior midcingulate cortex (aMCC) ist eine Hirnregion, die mit Willenskraft und Handeln-trotz-Widerstand verbunden wird. Forschung zeigt, dass freiwillige kleine Unannehmlichkeiten diesen Bereich aktivieren. Das Prinzip fließt regelmäßig in Übungen mit ein — aber es gibt keine tägliche separate aMCC-Aufgabe. Die Challenges sind kurz, konkret und machbar.",
   },
   {
     q: "Wie verändert mich das?",
@@ -56,7 +56,7 @@ const faqItems = [
   },
   {
     q: "Was passiert, wenn ich einen Tag verpasse?",
-    a: "Nichts Schlimmes. Das Programm läuft weiter und du steigst am nächsten Tag wieder ein. Es gibt keine Strafen, keine roten Zahlen — nur dein eigener Streak und die Klarheit, dass jeder Tag zählt.",
+    a: "Nichts Schlimmes. Das Programm läuft weiter und du steigst am nächsten Tag wieder ein. Es gibt keine Strafen, keine roten Zahlen — nur deine eigene Streak und die Klarheit, dass jeder Tag zählt.",
   },
   {
     q: "Kann ich meine Daten löschen?",
