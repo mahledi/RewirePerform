@@ -20,7 +20,7 @@ const feedbackTypes = [
 const faqItems = [
   {
     q: "Was ist RewirePerform?",
-    a: "RewirePerform ist ein wissenschaftlich fundiertes 56-Tage-Mentaltraining für alle Athletinnen und Athleten. Es hilft jedem, der bereit ist, seinen mentalen Ansatz zu trainieren — unabhängig von Alter oder Sportart. Ein Mindestalter zum Verstehen der Inhalte liegt natürlich nahe, wir legen es aber nicht fest.",
+    a: "RewirePerform ist ein wissenschaftlich fundiertes 56-Tage-Mentaltraining für alle Athletinnen und Athleten. Es hilft jedem, der bereit ist, seinen mentalen Ansatz zu trainieren — unabhängig von Alter oder Sportart. Empfohlen ab 15 Jahren.",
   },
   {
     q: "Wie funktioniert das Programm?",
