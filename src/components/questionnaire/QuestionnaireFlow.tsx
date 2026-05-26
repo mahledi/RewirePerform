@@ -334,9 +334,9 @@ const QuestionnaireFlow = ({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-2.5 md:py-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2 md:mb-3">
             <div className="min-h-[1rem]">
               <SaveIndicator />
             </div>
@@ -345,7 +345,7 @@ const QuestionnaireFlow = ({
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <Pause className="w-3 h-3" />
-              Pause &amp; später fortsetzen
+              Pause<span className="hidden md:inline"> &amp; später fortsetzen</span>
             </button>
           </div>
           {flowState.type === "question" && currentQuestion && (
@@ -365,7 +365,7 @@ const QuestionnaireFlow = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-start md:items-center justify-center px-5 md:px-6 py-5 md:py-12">
         <div className="max-w-2xl w-full">
           <AnimatePresence mode="wait">
             {flowState.type === "category-intro" && (
@@ -389,11 +389,11 @@ const QuestionnaireFlow = ({
 
       {/* Bottom navigation */}
       {flowState.type === "question" && (
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
+        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-2.5 md:py-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <button
               onClick={goBack}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Zurück</span>
@@ -404,7 +404,7 @@ const QuestionnaireFlow = ({
               whileTap={canProceed() ? { scale: 0.98 } : {}}
               onClick={goNext}
               disabled={!canProceed()}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
+              className={`flex items-center gap-2 px-6 py-2.5 md:py-3 rounded-xl font-heading font-semibold transition-all ${
                 canProceed()
                   ? "bg-primary text-primary-foreground hover:shadow-glow"
                   : "bg-muted text-muted-foreground cursor-not-allowed"

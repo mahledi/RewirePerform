@@ -30,7 +30,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
         className="w-full"
       >
         {/* Depth indicator */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
           {question.depth === "core" && (
             <span className="px-2.5 py-1 rounded-md bg-primary/10 text-xs font-medium text-primary">
               Kernfrage
@@ -43,20 +43,20 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
           )}
         </div>
 
-        <h2 className="font-heading text-2xl md:text-3xl font-bold mb-3 leading-tight">
+        <h2 className="font-heading text-xl md:text-3xl font-bold mb-2 md:mb-3 leading-tight">
           {question.question}
         </h2>
 
         {question.subtext && (
-          <p className="text-muted-foreground mb-8 leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-8 leading-relaxed">
             {question.subtext}
           </p>
         )}
 
         {/* Scale input */}
         {question.type === "scale" && (
-          <div className="mt-8">
-            <div className="flex justify-between text-sm text-muted-foreground mb-3">
+          <div className="mt-4 md:mt-8">
+            <div className="flex justify-between text-sm text-muted-foreground mb-2 md:mb-3">
               <span>{question.scaleLabels?.[0]}</span>
               <span>{question.scaleLabels?.[1]}</span>
             </div>
@@ -65,7 +65,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                 <button
                   key={val}
                   onClick={() => onAnswer(val)}
-                  className={`h-12 rounded-lg font-heading font-semibold text-sm transition-all ${
+                  className={`h-10 md:h-12 rounded-lg font-heading font-semibold text-sm transition-all ${
                     answer === val
                       ? "bg-primary text-primary-foreground shadow-glow"
                       : "bg-secondary text-secondary-foreground hover:bg-accent"
@@ -80,7 +80,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
 
         {/* Text input */}
         {question.type === "text" && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 md:mt-6 space-y-2 md:space-y-3">
             <VoiceInput
               currentValue={textValue}
               onTranscript={(val) => handleTextChange(val)}
@@ -90,20 +90,20 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
               value={textValue}
               onChange={(e) => handleTextChange(e.target.value)}
               placeholder={question.placeholder}
-              rows={5}
-              className="w-full p-5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none font-body leading-relaxed transition-all"
+              rows={4}
+              className="w-full p-4 md:p-5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none font-body leading-relaxed transition-all"
             />
           </div>
         )}
 
         {/* Single choice */}
         {question.type === "choice" && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-3 md:mt-6 space-y-2 md:space-y-3">
             {question.options?.map((opt) => (
               <button
                 key={opt.id}
                 onClick={() => onAnswer(opt.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                className={`w-full text-left p-3 md:p-4 rounded-xl border transition-all ${
                   answer === opt.id
                     ? "border-primary bg-primary/10 text-foreground"
                     : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
@@ -117,7 +117,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
 
         {/* Multi choice */}
         {question.type === "multi" && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-3 md:mt-6 space-y-2 md:space-y-3">
             {question.options?.map((opt) => {
               const selected = Array.isArray(answer) && answer.includes(opt.id);
               return (
@@ -130,7 +130,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                       : [...current, opt.id];
                     onAnswer(updated);
                   }}
-                  className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  className={`w-full text-left p-3 md:p-4 rounded-xl border transition-all ${
                     selected
                       ? "border-primary bg-primary/10 text-foreground"
                       : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
