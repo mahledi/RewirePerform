@@ -13,7 +13,15 @@ import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrent
 import { resolveDay } from "@/lib/getDayContent";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { captureAppError } from "@/lib/monitoring";
+import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
+
+interface JournalDraft {
+  answers: Record<string, string>;
+  gratitude: string;
+  freeReflection: string;
+  savedAt: string;
+}
 
 const Journal = () => {
   const navigate = useNavigate();
@@ -25,6 +33,9 @@ const Journal = () => {
   const [gratitude, setGratitude] = useState("");
   const [freeReflection, setFreeReflection] = useState("");
   const [done, setDone] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const draftKey = user?.id && resolved?.date ? `journal:${user.id}:${resolved.date}` : null;
 
   useEffect(() => {
     if (!user?.id) {
@@ -73,44 +84,73 @@ const Journal = () => {
       setGratitude(existing.gratitude ?? "");
       setFreeReflection(existing.free_reflection ?? "");
       setDone(true);
+    } else {
+      const local = readLocalDraft<JournalDraft>(`journal:${user.id}:${r.date}`);
+      if (local) {
+        setAnswers(local.answers ?? {});
+        setGratitude(local.gratitude ?? "");
+        setFreeReflection(local.freeReflection ?? "");
+      }
     }
     setLoading(false);
   };
 
-  const handleSave = async () => {
-    if (!user?.id || !resolved) return;
-    setSaving(true);
-    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
-    const instance = await getOrCreateActiveInstance(user.id);
-    const payload = {
-      user_id: user.id,
-      date: resolved.date,
-      day_number: resolved.matrix.dayNumber,
-      journal_title: resolved.content.journal.journalTitle,
+  useEffect(() => {
+    if (!draftKey || done) return;
+    const hasDraft =
+      Object.values(answers).some((value) => value.trim().length > 0) ||
+      gratitude.trim().length > 0 ||
+      freeReflection.trim().length > 0;
+    if (!hasDraft) return;
+    writeLocalDraft<JournalDraft>(draftKey, {
       answers,
-      gratitude: gratitude || null,
-      free_reflection: freeReflection || null,
-      program_instance_id: instance?.id ?? null,
-    };
-    let existingQuery = supabase
-      .from("daily_journals")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("date", resolved.date)
-      .limit(1);
-    existingQuery = instance?.id
-      ? existingQuery.eq("program_instance_id", instance.id)
-      : existingQuery.is("program_instance_id", null);
+      gratitude,
+      freeReflection,
+      savedAt: new Date().toISOString(),
+    });
+  }, [answers, gratitude, freeReflection, draftKey, done]);
 
-    const { data: existingRows, error: lookupError } = await existingQuery;
-    const existing = existingRows?.[0] ?? null;
-    const { error } = lookupError
-      ? { error: lookupError }
-      : existing
-        ? await supabase.from("daily_journals").update(payload).eq("id", existing.id)
-        : await supabase.from("daily_journals").insert(payload);
-    setSaving(false);
-    if (error) {
+  const handleSave = async () => {
+    if (!user?.id || !resolved || saving) return;
+    setSaveError(null);
+    setSaving(true);
+    try {
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+      const payload = {
+        user_id: user.id,
+        date: resolved.date,
+        day_number: resolved.matrix.dayNumber,
+        journal_title: resolved.content.journal.journalTitle,
+        answers,
+        gratitude: gratitude || null,
+        free_reflection: freeReflection || null,
+        program_instance_id: instance?.id ?? null,
+      };
+      let existingQuery = supabase
+        .from("daily_journals")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("date", resolved.date)
+        .limit(1);
+      existingQuery = instance?.id
+        ? existingQuery.eq("program_instance_id", instance.id)
+        : existingQuery.is("program_instance_id", null);
+
+      const { data: existingRows, error: lookupError } = await existingQuery;
+      const existing = existingRows?.[0] ?? null;
+      const { error } = lookupError
+        ? { error: lookupError }
+        : existing
+          ? await supabase.from("daily_journals").update(payload).eq("id", existing.id)
+          : await supabase.from("daily_journals").insert(payload);
+      if (error) {
+        throw error;
+      }
+      if (draftKey) clearLocalDraft(draftKey);
+      setDone(true);
+    } catch (error) {
+      setSaving(false);
       console.error(error);
       void captureAppError({
         eventName: "journal_saved",
@@ -120,13 +160,14 @@ const Journal = () => {
         isTest: isTestUser,
         metadata: {
           day_number: resolved.matrix.dayNumber,
-          has_program_instance: Boolean(instance?.id),
+          has_program_instance: null,
         },
       });
-      toast.error("Journal konnte nicht gespeichert werden.");
+      setSaveError("Dein Journal ist lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
+      toast.error("Journal lokal gesichert. Speichern bitte erneut versuchen.");
       return;
     }
-    setDone(true);
+    setSaving(false);
   };
 
   if (loading) {
@@ -220,11 +261,17 @@ const Journal = () => {
             <p className="text-sm font-medium text-foreground leading-snug">
               Sprich deine Antworten ein.
             </p>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               Beim lauten Verbalisieren feuern mehr neuronale Netzwerke gleichzeitig — dein Gehirn verknüpft neue Bahnen schneller als beim Tippen.
             </p>
           </div>
         </motion.div>
+
+        {saveError && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
+            {saveError}
+          </div>
+        )}
 
         {/* Questions */}
         {j.questions.map((q, i) => (
@@ -288,7 +335,7 @@ const Journal = () => {
           className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold bg-primary text-primary-foreground hover:shadow-glow transition-all disabled:opacity-60"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Tag abschließen
+          {saving ? "Speichert..." : saveError ? "Erneut speichern" : "Tag abschließen"}
         </motion.button>
       </div>
     </div>

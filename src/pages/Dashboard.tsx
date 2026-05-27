@@ -328,6 +328,7 @@ const Dashboard = () => {
   const [midTestDue, setMidTestDue] = useState(false);
   const [midTestsDone, setMidTestsDone] = useState(false);
   const [todayCheckinDone, setTodayCheckinDone] = useState(false);
+  const [todayJournalDone, setTodayJournalDone] = useState(false);
   const [checkinStatusLoading, setCheckinStatusLoading] = useState(true);
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const [baselineDone, setBaselineDone] = useState(false);
@@ -552,20 +553,40 @@ const Dashboard = () => {
   const checkTodayCheckin = async () => {
     setCheckinStatusLoading(true);
     const today = format(effectiveToday, "yyyy-MM-dd");
+    const instance = await getOrCreateActiveInstance(user!.id);
+    const instanceId = instance?.id ?? null;
 
-    const checkinQuery = supabase
+    let checkinQuery = supabase
       .from("daily_checkins")
       .select("id")
       .eq("date", today)
       .eq("user_id", user!.id)
       .limit(1);
+    checkinQuery = instanceId
+      ? checkinQuery.eq("program_instance_id", instanceId)
+      : checkinQuery.is("program_instance_id", null);
 
-    const { data, error } = await checkinQuery;
-    if (error) {
-      console.error("Checkin status error:", error);
+    let journalQuery = supabase
+      .from("daily_journals")
+      .select("id")
+      .eq("date", today)
+      .eq("user_id", user!.id)
+      .limit(1);
+    journalQuery = instanceId
+      ? journalQuery.eq("program_instance_id", instanceId)
+      : journalQuery.is("program_instance_id", null);
+
+    const [{ data: checkins, error: checkinError }, { data: journals, error: journalError }] = await Promise.all([
+      checkinQuery,
+      journalQuery,
+    ]);
+    if (checkinError || journalError) {
+      console.error("Daily status error:", checkinError ?? journalError);
       setTodayCheckinDone(false);
+      setTodayJournalDone(false);
     } else {
-      setTodayCheckinDone((data?.length || 0) > 0);
+      setTodayCheckinDone((checkins?.length || 0) > 0);
+      setTodayJournalDone((journals?.length || 0) > 0);
     }
     setCheckinStatusLoading(false);
   };
@@ -1129,7 +1150,11 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <button
             onClick={() => navigate("/journal")}
-            className="w-full p-6 rounded-2xl bg-gradient-card border-glow hover:shadow-glow transition-all group"
+            className={`w-full p-6 rounded-2xl transition-all group ${
+              todayJournalDone
+                ? "bg-primary/10 border border-primary/30"
+                : "bg-gradient-card border-glow hover:shadow-glow"
+            }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -1137,11 +1162,19 @@ const Dashboard = () => {
                   <BookOpen className="w-6 h-6 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="font-heading font-semibold">Tagesjournal</p>
-                  <p className="text-sm text-muted-foreground">Heute Abend reflektieren →</p>
+                  <p className="font-heading font-semibold">
+                    {todayJournalDone ? "Tagesjournal erledigt" : "Tagesjournal"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {todayJournalDone ? "Deine Reflexion ist gespeichert." : "Heute Abend reflektieren →"}
+                  </p>
                 </div>
               </div>
-              <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              {todayJournalDone ? (
+                <Check className="w-5 h-5 text-primary" />
+              ) : (
+                <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+              )}
             </div>
           </button>
         </motion.div>
