@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, CheckCircle, ClipboardCheck, Activity, Lock, Loader2 } from "lucide-react";
+import { Users, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle } from "lucide-react";
 
 interface TeamStats {
   member_count: number;
@@ -10,10 +10,25 @@ interface TeamStats {
   min_n: number;
 }
 
+interface ActivityRow {
+  user_id: string;
+  full_name: string | null;
+  last_activity_at: string | null;
+  days_completed: number | null;
+  days_available: number | null;
+  completion_rate: number | null;
+  current_streak: number | null;
+  checkins_last_7d: number;
+  last_checkin_date: string | null;
+  journal_entries_count: number;
+  inactive_risk: boolean;
+}
+
 const MIN_AGGREGATE_SAMPLE = 5;
 
 const TeamOverview = ({ teamId }: { teamId: string }) => {
   const [stats, setStats] = useState<TeamStats | null>(null);
+  const [activityRows, setActivityRows] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +55,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
               aggregate_ready: false,
               min_n: MIN_AGGREGATE_SAMPLE,
             });
+            setActivityRows([]);
           }
           return;
         }
@@ -62,11 +78,12 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
               aggregate_ready: false,
               min_n: MIN_AGGREGATE_SAMPLE,
             });
+            setActivityRows([]);
           }
           return;
         }
 
-        const [{ data: assessments, error: assessmentsError }, mentalState] = await Promise.all([
+        const [{ data: assessments, error: assessmentsError }, mentalState, activityStatus] = await Promise.all([
           supabase
             .from("assessments")
             .select("user_id")
@@ -74,9 +91,13 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           supabase.functions.invoke("team-mental-state", {
             body: { team_id: teamId },
           }),
+          supabase.rpc("get_coach_team_activity_status", {
+            _team_id: teamId,
+          }),
         ]);
 
         if (assessmentsError) throw assessmentsError;
+        if (activityStatus.error) throw activityStatus.error;
 
         const nextStats: TeamStats = {
           member_count: mentalState.data?.teamSize ?? athleteIds.length,
@@ -88,6 +109,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
 
         if (cancelled) return;
         setStats(nextStats);
+        setActivityRows((activityStatus.data ?? []) as ActivityRow[]);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Teamdaten konnten nicht geladen werden.");
@@ -149,6 +171,47 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           <p className="text-xs text-muted-foreground">Assessments abgeschlossen (gesamt)</p>
         </div>
       </div>
+
+      {activityRows.length > 0 && (
+        <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/50">
+            <p className="text-sm font-medium text-foreground">Teilnahme pro Sportler</p>
+            <p className="text-xs text-muted-foreground">
+              Nur Aktivitätsstatus. Keine Antworten, keine Stimmungswerte, keine Journale.
+            </p>
+          </div>
+          <div className="divide-y divide-border/50">
+            {activityRows.map((row) => (
+              <div key={row.user_id} className="px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {row.full_name ?? "Sportler"}
+                    </p>
+                    {row.inactive_risk && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
+                        <AlertTriangle className="w-3 h-3" />
+                        inaktiv
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {row.days_completed ?? 0}/{row.days_available ?? 0} Tage · {row.checkins_last_7d} Check-ins in 7 Tagen
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-semibold text-foreground">
+                    {row.completion_rate != null ? `${Math.round(row.completion_rate * 100)}%` : "–"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Streak {row.current_streak ?? 0}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />

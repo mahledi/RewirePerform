@@ -39,11 +39,24 @@ const Journal = () => {
     const today = await getEffectiveTodayDate(user.id);
     const dateStr = format(today, "yyyy-MM-dd");
 
-    const [effective, { data: events }, { data: existing }] = await Promise.all([
+    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+    const instance = await getOrCreateActiveInstance(user.id);
+    let existingJournalQuery = supabase
+      .from("daily_journals")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("date", dateStr)
+      .limit(1);
+    existingJournalQuery = instance?.id
+      ? existingJournalQuery.eq("program_instance_id", instance.id)
+      : existingJournalQuery.is("program_instance_id", null);
+
+    const [effective, { data: events }, { data: existingRows }] = await Promise.all([
       getEffectiveProgramStart(user.id),
       supabase.from("calendar_events").select("date,event_type").eq("user_id", user.id).eq("date", dateStr).limit(1),
-      supabase.from("daily_journals").select("*").eq("user_id", user.id).eq("date", dateStr).maybeSingle(),
+      existingJournalQuery,
     ]);
+    const existing = existingRows?.[0] ?? null;
 
     const info = getCurrentProgramDay(effective.startDate, today);
     if (!info) {
@@ -78,9 +91,23 @@ const Journal = () => {
       free_reflection: freeReflection || null,
       program_instance_id: instance?.id ?? null,
     };
-    const { error } = await supabase
+    let existingQuery = supabase
       .from("daily_journals")
-      .upsert(payload, { onConflict: "user_id,date" });
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("date", resolved.date)
+      .limit(1);
+    existingQuery = instance?.id
+      ? existingQuery.eq("program_instance_id", instance.id)
+      : existingQuery.is("program_instance_id", null);
+
+    const { data: existingRows, error: lookupError } = await existingQuery;
+    const existing = existingRows?.[0] ?? null;
+    const { error } = lookupError
+      ? { error: lookupError }
+      : existing
+        ? await supabase.from("daily_journals").update(payload).eq("id", existing.id)
+        : await supabase.from("daily_journals").insert(payload);
     setSaving(false);
     if (error) {
       console.error(error);

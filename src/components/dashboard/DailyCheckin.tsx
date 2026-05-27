@@ -154,28 +154,45 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       // ─── Micro-Adjustment Layer ─────────────────────────
       // Lädt nur bestehende Daten, kein KI-Call, undefined-safe.
       const dateStr = format(date, "yyyy-MM-dd");
-      const [{ data: todayCheckin }, { data: recentJournals }, { data: questionnaire }] = await Promise.all([
-        supabase
-          .from("daily_checkins")
-          .select("mood_before, energy_level, focus_rating")
-          .eq("user_id", user.id)
-          .eq("date", dateStr)
-          .maybeSingle(),
-        supabase
-          .from("daily_journals")
-          .select("free_reflection, gratitude, answers")
-          .eq("user_id", user.id)
-          .order("date", { ascending: false })
-          .limit(5),
-        supabase
-          .from("questionnaire_responses")
-          .select("analysis")
-          .eq("user_id", user.id)
-          .not("analysis", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+
+      let todayCheckinQuery = supabase
+        .from("daily_checkins")
+        .select("mood_before, energy_level, focus_rating")
+        .eq("user_id", user.id)
+        .eq("date", dateStr)
+        .limit(1);
+      todayCheckinQuery = instance?.id
+        ? todayCheckinQuery.eq("program_instance_id", instance.id)
+        : todayCheckinQuery.is("program_instance_id", null);
+
+      let recentJournalsQuery = supabase
+        .from("daily_journals")
+        .select("free_reflection, gratitude, answers")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+        .limit(5);
+      recentJournalsQuery = instance?.id
+        ? recentJournalsQuery.eq("program_instance_id", instance.id)
+        : recentJournalsQuery.is("program_instance_id", null);
+
+      let questionnaireQuery = supabase
+        .from("questionnaire_responses")
+        .select("analysis")
+        .eq("user_id", user.id)
+        .not("analysis", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (instance?.id) questionnaireQuery = questionnaireQuery.eq("program_instance_id", instance.id);
+
+      const [{ data: todayCheckins }, { data: recentJournals }, { data: questionnaireRows }] = await Promise.all([
+        todayCheckinQuery,
+        recentJournalsQuery,
+        questionnaireQuery,
       ]);
+      const todayCheckin = todayCheckins?.[0] ?? null;
+      const questionnaire = questionnaireRows?.[0] ?? null;
 
       const journalTexts: string[] = [];
       for (const j of recentJournals ?? []) {
@@ -283,12 +300,16 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     };
 
     let error: any = null;
-    const { data: existingRows, error: lookupError } = await supabase
+    let existingQuery = supabase
       .from("daily_checkins")
       .select("id")
       .eq("user_id", user.id)
       .eq("date", dateStr)
       .limit(1);
+    existingQuery = instance?.id
+      ? existingQuery.eq("program_instance_id", instance.id)
+      : existingQuery.is("program_instance_id", null);
+    const { data: existingRows, error: lookupError } = await existingQuery;
     if (lookupError) error = lookupError;
 
     const existing = existingRows?.[0];

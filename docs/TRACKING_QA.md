@@ -63,19 +63,54 @@ For each tested athlete/day, confirm:
 
 - `user_day_assignments` has one row for the day
 - `daily_checkins` has one row for the day
+- `daily_checkins.program_instance_id` matches the active program instance
 - `user_day_completion` is completed and scoped to the current program instance
 - `comprehension_check_instances` is completed when comprehension was answered
 - `program_progress_snapshots` updates without duplicate active-instance rows
 - `daily_journals` may contain private text, but exports only count rows
+- `daily_journals.program_instance_id` matches the active program instance
+- `questionnaire_responses.program_instance_id` is present when an active program instance exists
 
 For the team, confirm:
 
 - Coach aggregates stay hidden or low-confidence below `n < 5`
 - Coach aggregates render at `n >= 5`
+- Coach individual activity shows only operational status: last activity, days completed, completion rate, streak, recent check-in count, journal count only
 - Coach cannot access journal text or raw private answers
 - Admin overview excludes QA data when `include_test = false`
 - Admin QA/test data remains visible only in QA tooling or explicit include-test calls
 - Presentation activity metrics count athlete activity only; admin/coach test clicks must not inflate adherence or program usage.
+
+## Supabase Precheck SQL
+
+Run before applying tracking hardening migrations. All queries should return
+zero rows. If a query returns rows, stop and inspect before changing indexes.
+
+```sql
+select user_id, program_instance_id, date, count(*) as rows
+from public.daily_checkins
+where user_id is not null and program_instance_id is not null
+group by user_id, program_instance_id, date
+having count(*) > 1;
+
+select user_id, date, count(*) as rows
+from public.daily_checkins
+where user_id is not null and program_instance_id is null
+group by user_id, date
+having count(*) > 1;
+
+select user_id, program_instance_id, date, count(*) as rows
+from public.daily_journals
+where user_id is not null and program_instance_id is not null
+group by user_id, program_instance_id, date
+having count(*) > 1;
+
+select user_id, date, count(*) as rows
+from public.daily_journals
+where user_id is not null and program_instance_id is null
+group by user_id, date
+having count(*) > 1;
+```
 
 ## Presentation Exports
 
@@ -104,4 +139,5 @@ Mark the layer as launch-ready only if:
 - progress snapshots match expected completion/adherence values
 - admin exports contain no private text or individual psychological values
 - QA data does not pollute production metrics
+- App Store privacy boundaries are still true: no advertising tracking, no data brokers, no marketing pixels, no private content in diagnostics or exports
 - `npm run typecheck`, `npm test`, and `npm run build` pass
