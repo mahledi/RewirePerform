@@ -32,20 +32,26 @@ export function clearInstanceCache(userId?: string) {
   else memo = {};
 }
 
-export async function getOrCreateActiveInstance(
-  userId: string
-): Promise<ProgramInstance | null> {
-  if (memo[userId]) return memo[userId];
-
-  const { data: existing } = await supabase
+export async function getActiveInstance(userId: string): Promise<ProgramInstance | null> {
+  const { data } = await supabase
     .from("program_instances")
     .select("*")
     .eq("user_id", userId)
     .eq("status", "active")
     .maybeSingle();
 
+  return (data as ProgramInstance | null) ?? null;
+}
+
+export async function getOrCreateActiveInstance(
+  userId: string
+): Promise<ProgramInstance | null> {
+  if (memo[userId]) return memo[userId];
+
+  const existing = await getActiveInstance(userId);
+
   if (existing) {
-    memo[userId] = existing as ProgramInstance;
+    memo[userId] = existing;
     return memo[userId];
   }
 

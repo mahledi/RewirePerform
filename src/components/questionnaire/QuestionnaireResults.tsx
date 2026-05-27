@@ -82,6 +82,8 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           setIsAnalyzing(false);
           return;
         }
+        const { getActiveInstance } = await import("@/lib/programInstance");
+        const instance = await getActiveInstance(userId);
 
         // Sync sport/position to profiles table
         const sportAnswer = answers["sport-01"] as string || null;
@@ -123,6 +125,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance?.id ?? null,
               is_complete: true,
             })
             .eq("id", existingComplete.id);
@@ -139,6 +142,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance?.id ?? null,
               is_complete: true,
               last_category_index: 9999,
             });

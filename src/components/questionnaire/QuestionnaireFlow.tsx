@@ -97,6 +97,8 @@ const QuestionnaireFlow = ({
           setSaveState("error");
           return;
         }
+        const { getActiveInstance } = await import("@/lib/programInstance");
+        const instance = await getActiveInstance(user.id);
 
         // Falls noch keine draftId bekannt: prüfen ob es schon einen offenen Draft gibt
         // (z.B. parallele Sessions / weiterer Tab) und den verwenden statt neuen einzufügen.
@@ -124,6 +126,7 @@ const QuestionnaireFlow = ({
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance?.id ?? null,
             })
             .eq("id", draftIdRef.current);
           if (error) throw error;
@@ -139,6 +142,7 @@ const QuestionnaireFlow = ({
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance?.id ?? null,
               scores: {},
             })
             .select("id")
@@ -165,6 +169,7 @@ const QuestionnaireFlow = ({
                   instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
                   questionnaire_version: ONBOARDING_V2_VERSION,
                   timing: "pre",
+                  program_instance_id: instance?.id ?? null,
                 })
                 .eq("id", rescued.id);
             } else {
@@ -215,6 +220,9 @@ const QuestionnaireFlow = ({
     if (idx >= totalQuestions - 1) {
       // Final submit — mark complete
       if (draftIdRef.current) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { getActiveInstance } = await import("@/lib/programInstance");
+        const instance = user ? await getActiveInstance(user.id) : null;
         await supabase
           .from("questionnaire_responses")
           .update({
@@ -224,6 +232,7 @@ const QuestionnaireFlow = ({
             instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
             questionnaire_version: ONBOARDING_V2_VERSION,
             timing: "pre",
+            program_instance_id: instance?.id ?? null,
           })
           .eq("id", draftIdRef.current);
       }
