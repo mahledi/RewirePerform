@@ -58,6 +58,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [retryTick, setRetryTick] = useState(0);
 
   const loadingSteps = [
     "Antworten werden verarbeitet...",
@@ -73,6 +74,8 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
     }, 800);
 
     const analyze = async () => {
+      setError(null);
+      setIsAnalyzing(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         const userId = user?.id || null;
@@ -180,7 +183,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
     analyze();
     return () => clearInterval(interval);
-  }, [answers]);
+  }, [answers, retryTick]);
 
   const answeredCount = Object.keys(answers).length;
 
@@ -232,7 +235,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           </h2>
           <p className="text-muted-foreground mb-6">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => setRetryTick((value) => value + 1)}
             className="px-6 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
           >
             Erneut versuchen

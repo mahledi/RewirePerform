@@ -5,6 +5,7 @@ import QuestionnaireFlow from "@/components/questionnaire/QuestionnaireFlow";
 import QuestionnaireResults from "@/components/questionnaire/QuestionnaireResults";
 import { supabase } from "@/integrations/supabase/client";
 import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
+import { clearLocalDraft, readLocalDraft } from "@/lib/localDrafts";
 
 type Phase = "loading" | "intro" | "resume" | "flow" | "results";
 
@@ -12,6 +13,12 @@ interface DraftState {
   id: string;
   answers: Record<string, string | string[] | number>;
   lastCategoryIndex: number;
+  source?: "server" | "local";
+}
+
+interface LocalQuestionnaireDraft {
+  answers?: Record<string, string | string[] | number>;
+  lastCategoryIndex?: number;
 }
 
 const Questionnaire = () => {
@@ -22,9 +29,24 @@ const Questionnaire = () => {
   // Load any in-progress draft on mount
   useEffect(() => {
     const loadDraft = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setPhase("intro");
+      const localDraft = readLocalDraft<LocalQuestionnaireDraft>(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
+      const useLocalDraft = () => {
+        if (localDraft?.answers && Object.keys(localDraft.answers).length > 0) {
+          setDraft({
+            id: "",
+            answers: localDraft.answers,
+            lastCategoryIndex: localDraft.lastCategoryIndex ?? 0,
+            source: "local",
+          });
+          setPhase("resume");
+        } else {
+          setPhase("intro");
+        }
+      };
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (!user || userError) {
+        useLocalDraft();
         return;
       }
 
@@ -39,7 +61,7 @@ const Questionnaire = () => {
 
       if (error) {
         console.error("Error loading draft:", error);
-        setPhase("intro");
+        useLocalDraft();
         return;
       }
 
@@ -57,8 +79,11 @@ const Questionnaire = () => {
           id: latest.id,
           answers: latest.answers as Record<string, string | string[] | number>,
           lastCategoryIndex: latest.last_category_index ?? 0,
+          source: "server",
         });
         setPhase("resume");
+      } else if (localDraft?.answers && Object.keys(localDraft.answers).length > 0) {
+        useLocalDraft();
       } else {
         setPhase("intro");
       }
@@ -74,10 +99,11 @@ const Questionnaire = () => {
 
   const startFresh = async () => {
     // Discard existing draft if user chose to restart
-    if (draft) {
+    if (draft?.id) {
       await supabase.from("questionnaire_responses").delete().eq("id", draft.id);
       setDraft(null);
     }
+    clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
     setPhase("flow");
   };
 

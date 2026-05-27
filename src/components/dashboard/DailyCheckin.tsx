@@ -33,6 +33,7 @@ import {
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
 import { captureAppError } from "@/lib/monitoring";
+import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 type EventType = CalendarEventType;
@@ -45,6 +46,24 @@ interface DailyCheckinProps {
   previewMode?: boolean;
   /** Force a specific day number instead of computing from program start (preview only). */
   previewDayNumber?: number;
+}
+
+interface CheckinDraft {
+  step: number;
+  completedTasks: string[];
+  reflection: string;
+  readBites: string[];
+  moodBefore: number | null;
+  energyLevel: number | null;
+  focusClarity: number | null;
+  stress: number | null;
+  recovery: number | null;
+  sleepQuality: number | null;
+  physicalReadiness: number | null;
+  motivation: number | null;
+  pressure: number | null;
+  teamConnection: number | null;
+  savedAt: string;
 }
 
 const iconMap: Record<string, typeof Brain> = {
@@ -85,9 +104,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [pressure, setPressure] = useState<number | null>(null);
   const [teamConnection, setTeamConnection] = useState<number | null>(null);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
+  const dateKey = format(date, "yyyy-MM-dd");
+  const draftKey = user?.id ? `checkin:${user.id}:${dateKey}:${eventType}` : null;
 
   const handleBack = () => {
     if (selectedTask) {
@@ -130,6 +152,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const loadDay = async () => {
     if (!user?.id) return;
     setLoadingTasks(true);
+    const dateStr = format(date, "yyyy-MM-dd");
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -151,9 +174,26 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       setAssignmentId(result.assignment.id);
       setComprehensionQuestions(drawComprehensionQuestions(result.resolved.matrix.dayNumber, 3));
 
+      const local = readLocalDraft<CheckinDraft>(`checkin:${user.id}:${dateStr}:${eventType}`);
+      if (local) {
+        setStep(Math.min(local.step ?? 0, 5));
+        setCompletedTasks(local.completedTasks ?? []);
+        setReflection(local.reflection ?? "");
+        setReadBites(local.readBites ?? []);
+        setMoodBefore(local.moodBefore ?? null);
+        setEnergyLevel(local.energyLevel ?? null);
+        setFocusClarity(local.focusClarity ?? null);
+        setStress(local.stress ?? null);
+        setRecovery(local.recovery ?? null);
+        setSleepQuality(local.sleepQuality ?? null);
+        setPhysicalReadiness(local.physicalReadiness ?? null);
+        setMotivation(local.motivation ?? null);
+        setPressure(local.pressure ?? null);
+        setTeamConnection(local.teamConnection ?? null);
+      }
+
       // ─── Micro-Adjustment Layer ─────────────────────────
       // Lädt nur bestehende Daten, kein KI-Call, undefined-safe.
-      const dateStr = format(date, "yyyy-MM-dd");
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
 
@@ -252,18 +292,64 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     setLoadingTasks(false);
   };
 
+  useEffect(() => {
+    if (!draftKey || previewMode || step === 6) return;
+    const hasDraft =
+      completedTasks.length > 0 ||
+      readBites.length > 0 ||
+      reflection.trim().length > 0 ||
+      [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection]
+        .some((value) => value !== null);
+    if (!hasDraft) return;
+    writeLocalDraft<CheckinDraft>(draftKey, {
+      step,
+      completedTasks,
+      reflection,
+      readBites,
+      moodBefore,
+      energyLevel,
+      focusClarity,
+      stress,
+      recovery,
+      sleepQuality,
+      physicalReadiness,
+      motivation,
+      pressure,
+      teamConnection,
+      savedAt: new Date().toISOString(),
+    });
+  }, [
+    draftKey,
+    previewMode,
+    step,
+    completedTasks,
+    reflection,
+    readBites,
+    moodBefore,
+    energyLevel,
+    focusClarity,
+    stress,
+    recovery,
+    sleepQuality,
+    physicalReadiness,
+    motivation,
+    pressure,
+    teamConnection,
+  ]);
+
   const markTaskComplete = (taskId: string) => {
     setCompletedTasks((prev) => (prev.includes(taskId) ? prev : [...prev, taskId]));
     setSelectedTask(null);
   };
 
-  const saveCheckin = async () => {
+  const saveCheckin = async (): Promise<boolean> => {
     if (previewMode) {
       setStep(6);
-      return;
+      return true;
     }
-    if (!user?.id) return;
-    if (saving) return; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
+    if (!user?.id) return false;
+    if (saving) return false; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
+    setSaveError(null);
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = focusClarity ?? (tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0);
@@ -340,8 +426,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         },
       });
       const { toast } = await import("sonner");
-      toast.error("Check-in konnte nicht gespeichert werden.");
-      return;
+      setSaveError("Dein Check-in ist lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
+      toast.error("Check-in lokal gesichert. Speichern bitte erneut versuchen.");
+      return false;
     }
 
     // Persist day completion (orchestration layer)
@@ -371,14 +458,17 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           },
         });
         const { toast } = await import("sonner");
-        toast.error("Fortschritt konnte nicht gespeichert werden.");
-        return;
+        setSaveError("Dein Check-in ist lokal gesichert. Der Fortschritt konnte noch nicht bestätigt werden.");
+        toast.error("Fortschritt lokal gesichert. Bitte erneut versuchen.");
+        return false;
       }
     }
 
     setSaving(false);
 
+    if (draftKey) clearLocalDraft(draftKey);
     setStep(6);
+    return true;
   };
 
   const handleComprehensionComplete = async (
@@ -392,7 +482,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     if (assignmentId && resolved && user?.id) {
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
-      await upsertComprehension({
+      const { error } = await upsertComprehension({
         assignmentId,
         userId: user.id,
         dayNumber: resolved.matrix.dayNumber,
@@ -401,6 +491,23 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         status: "completed",
         programInstanceId: instance?.id ?? null,
       });
+      if (error) {
+        console.error("Comprehension save error:", error);
+        void captureAppError({
+          eventName: "daily_checkin_saved",
+          error,
+          role,
+          route: "/dashboard",
+          isTest: isTestUser,
+          metadata: {
+            day_number: resolved.matrix.dayNumber,
+            event_type: eventType,
+            stage: "comprehension",
+          },
+        });
+        setSaveError("Deine Antworten sind lokal gesichert. Der Verständnis-Check konnte noch nicht bestätigt werden.");
+        return;
+      }
     }
     await saveCheckin();
   };
@@ -645,6 +752,11 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
       <div className="flex-1 flex items-start justify-center px-6 py-8 overflow-y-auto">
         <div className="max-w-lg w-full">
+          {saveError && (
+            <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
+              {saveError}
+            </div>
+          )}
           <AnimatePresence mode="wait">
             {selectedTask ? (
               <TaskDetail

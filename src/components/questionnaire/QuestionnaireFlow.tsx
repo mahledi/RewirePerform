@@ -12,6 +12,7 @@ import {
   ONBOARDING_V2_INSTRUMENT_ID,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import { clearLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 
 interface QuestionnaireFlowProps {
   onComplete: (answers: Record<string, string | string[] | number>) => void;
@@ -26,6 +27,7 @@ type FlowState =
   | { type: "question"; globalIndex: number };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+const QUESTIONNAIRE_DRAFT_KEY = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`;
 
 const QuestionnaireFlow = ({
   onComplete,
@@ -41,6 +43,8 @@ const QuestionnaireFlow = ({
     categoryIndex: Math.min(initialCategoryIndex, categories.length - 1),
   });
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const draftIdRef = useRef<string | null>(draftId);
   const isSavingRef = useRef<boolean>(false);
   const pendingSaveRef = useRef<{ answers: Record<string, string | string[] | number>; categoryIndex: number; silent: boolean } | null>(null);
@@ -53,6 +57,7 @@ const QuestionnaireFlow = ({
 
   const handleAnswer = useCallback(
     (questionId: string, value: string | string[] | number) => {
+      setSubmitError(null);
       setAnswers((prev) => ({ ...prev, [questionId]: value }));
     },
     []
@@ -210,6 +215,7 @@ const QuestionnaireFlow = ({
   };
 
   const goNext = async () => {
+    if (submitting) return;
     if (flowState.type === "category-intro") {
       const startIndex = getGlobalIndexForCategoryStart(flowState.categoryIndex);
       setFlowState({ type: "question", globalIndex: startIndex });
@@ -218,14 +224,15 @@ const QuestionnaireFlow = ({
 
     const idx = flowState.globalIndex;
     if (idx >= totalQuestions - 1) {
-      // Final submit — mark complete
-      if (draftIdRef.current) {
+      setSubmitting(true);
+      setSubmitError(null);
+      setSaveState("saving");
+      try {
         const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
         const { getActiveInstance } = await import("@/lib/programInstance");
-        const instance = user ? await getActiveInstance(user.id) : null;
-        await supabase
-          .from("questionnaire_responses")
-          .update({
+        const instance = await getActiveInstance(user.id);
+        const payload = {
             answers: answers as any,
             is_complete: true,
             last_category_index: categories.length,
@@ -233,10 +240,38 @@ const QuestionnaireFlow = ({
             questionnaire_version: ONBOARDING_V2_VERSION,
             timing: "pre",
             program_instance_id: instance?.id ?? null,
-          })
-          .eq("id", draftIdRef.current);
+        };
+
+        if (draftIdRef.current) {
+          const { error } = await supabase
+            .from("questionnaire_responses")
+            .update(payload)
+            .eq("id", draftIdRef.current);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase
+            .from("questionnaire_responses")
+            .insert({
+              ...payload,
+              user_id: user.id,
+              session_id: user.id,
+              scores: {},
+            })
+            .select("id")
+            .single();
+          if (error) throw error;
+          draftIdRef.current = data.id;
+        }
+        clearLocalDraft(QUESTIONNAIRE_DRAFT_KEY);
+        setSaveState("saved");
+        onComplete(answers);
+      } catch (err) {
+        console.error("Final questionnaire save error:", err);
+        setSaveState("error");
+        setSubmitError("Deine Antworten sind lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
+      } finally {
+        setSubmitting(false);
       }
-      onComplete(answers);
       return;
     }
 
@@ -296,13 +331,18 @@ const QuestionnaireFlow = ({
   // Auto-save on answer change (debounced, silent)
   useEffect(() => {
     if (Object.keys(answers).length === 0) return;
+    const currentCatIndex =
+      flowState.type === "category-intro"
+        ? flowState.categoryIndex
+        : categories.findIndex(
+            (c) => c.id === orderedQuestions[flowState.globalIndex].category
+          );
+    writeLocalDraft(QUESTIONNAIRE_DRAFT_KEY, {
+      answers,
+      lastCategoryIndex: currentCatIndex,
+      savedAt: new Date().toISOString(),
+    });
     const handle = setTimeout(() => {
-      const currentCatIndex =
-        flowState.type === "category-intro"
-          ? flowState.categoryIndex
-          : categories.findIndex(
-              (c) => c.id === orderedQuestions[flowState.globalIndex].category
-            );
       saveDraft(answers, currentCatIndex, { silent: true });
     }, 1500);
     return () => clearTimeout(handle);
@@ -351,6 +391,7 @@ const QuestionnaireFlow = ({
             </div>
             <button
               onClick={handlePause}
+              disabled={submitting}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <Pause className="w-3 h-3" />
@@ -399,6 +440,11 @@ const QuestionnaireFlow = ({
       {/* Bottom navigation */}
       {flowState.type === "question" && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-2.5 md:py-4">
+          {submitError && (
+            <div className="max-w-2xl mx-auto mb-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-muted-foreground">
+              {submitError}
+            </div>
+          )}
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <button
               onClick={goBack}
@@ -409,17 +455,22 @@ const QuestionnaireFlow = ({
             </button>
 
             <motion.button
-              whileHover={canProceed() ? { scale: 1.02 } : {}}
-              whileTap={canProceed() ? { scale: 0.98 } : {}}
+              whileHover={canProceed() && !submitting ? { scale: 1.02 } : {}}
+              whileTap={canProceed() && !submitting ? { scale: 0.98 } : {}}
               onClick={goNext}
-              disabled={!canProceed()}
+              disabled={!canProceed() || submitting}
               className={`flex items-center gap-2 px-6 py-2.5 md:py-3 rounded-xl font-heading font-semibold transition-all ${
-                canProceed()
+                canProceed() && !submitting
                   ? "bg-primary text-primary-foreground hover:shadow-glow"
                   : "bg-muted text-muted-foreground cursor-not-allowed"
               }`}
             >
-              {isLastQuestion ? (
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Speichert...
+                </>
+              ) : isLastQuestion ? (
                 <>
                   Abschließen
                   <Check className="w-4 h-4" />
