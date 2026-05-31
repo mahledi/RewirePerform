@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-import { BookOpen, Heart, CheckCircle2, Flame } from "lucide-react";
+import { BookOpen, Heart, CheckCircle2 } from "lucide-react";
 
 const cards = [
   {
@@ -17,11 +17,6 @@ const cards = [
     icon: CheckCircle2,
     title: "Comprehension",
     text: "Spieler wiederholen, was sie tun sollen. Dadurch wird aus Information ein klarer Handlungsplan.",
-  },
-  {
-    icon: Flame,
-    title: "Discomfort & aMCC",
-    text: "Kleine freiwillige Herausforderungen trainieren Handeln trotz Widerstand — ein Prozess, der mit Anstrengung und dem anterior midcingulate cortex in Verbindung gebracht wird.",
   },
 ];
 
