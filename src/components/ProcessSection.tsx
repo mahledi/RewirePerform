@@ -24,7 +24,7 @@ const steps = [
     icon: LineChart,
     title: "Evidence Layer",
     description:
-      "Pre/Mid/Post-Assessments, Adherence, Comprehension und Teamdaten zeigen beobachtete Entwicklung über 56 Tage.",
+      "Pre/Mid/Post-Assessments, Dranbleiben, Comprehension und Teamdaten zeigen beobachtete Entwicklung über 56 Tage.",
   },
 ];
 

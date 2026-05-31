@@ -5,7 +5,7 @@ const stats = [
   { label: "Tage", value: "56" },
   { label: "Assessments", value: "Pre · Mid · Post" },
   { label: "Anonymisiert", value: "n≥5" },
-  { label: "Adherence", value: "Tracked" },
+  { label: "Dranbleiben", value: "Tracked" },
   { label: "Comprehension", value: "Tracked" },
 ];
 
@@ -17,7 +17,7 @@ const cards = [
   },
   {
     icon: CheckCircle2,
-    title: "Adherence & Verständnis",
+    title: "Dranbleiben & Verständnis",
     text: "Absolvierte Tage, Streaks, Check-ins und Comprehension zeigen, wie konsequent das System im Alltag genutzt wurde.",
   },
   {
@@ -46,7 +46,7 @@ const EvidenceSection = () => {
             <span className="text-gradient">sichtbar machen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            RewirePerform misst Nutzung, Verständnis, Adherence und beobachtete
+            RewirePerform misst Nutzung, Verständnis, Dranbleiben und beobachtete
             Veränderungen über 56 Tage — als ehrlicher Outcome-Layer für Teams.
           </p>
         </motion.div>

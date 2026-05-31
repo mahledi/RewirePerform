@@ -46,7 +46,7 @@ const CoachSection = () => {
             <span className="text-gradient">Nicht überwachen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Coaches bekommen Orientierung über Teilnahme, Team Pulse, Adherence
+            Coaches bekommen Orientierung über Teilnahme, Team Pulse, Dranbleiben
             und aggregierte Entwicklung — ohne private Journale, Einzelantworten
             oder psychologische Labels einzelner Spieler zu sehen.
           </p>
