@@ -127,7 +127,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Zurück an die Aufgabe",
         trigger: "Direkt nachdem du bemerkt hast, dass du innerlich weg bist",
         when_to_use: "Sofort nach 'Weg', bevor dein Kopf wieder in alte Gedankenschleifen springt",
-        action: "Richte deinen Fokus auf genau eine konkrete Sache: Ball, Gegenspieler, Position, Kommunikation oder nächste Bewegung.",
+        action: "Richte deinen Fokus auf genau eine konkrete Sache: Aufgabe, Gegenüber, Position, Kommunikation oder nächste Bewegung.",
         why: "Präsenz wird erst praktisch, wenn du nach dem Drift wieder an der realen Aufgabe andockst.",
         explanation: "Es geht nicht darum, dich zusammenzureißen oder sofort einen perfekten mentalen Zustand zu erzeugen. Es geht nur darum, deine Aufmerksamkeit wieder an das zu binden, was gerade wirklich zählt.",
         self_talk: "Hier. Diese Aktion.",
@@ -237,7 +237,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "In der direkt nächsten Szene nach dem Fehler",
         action: "Setze eine bewusste Gegenbewegung: aufrichten, anbieten, kommunizieren oder wieder in die Aktion gehen.",
         why: "Fehler werden oft problematisch, weil sie nicht nur Gedanken, sondern auch sofort engeres Verhalten auslösen.",
-        explanation: "Viele Spieler werden nach einem Fehler stiller, kleiner, vorsichtiger und weniger präsent. Heute trainierst du, dass der erste innere Satz nicht automatisch dein ganzes Verhalten bestimmen muss.",
+        explanation: "Viele Athleten werden nach einem Fehler stiller, kleiner, vorsichtiger und weniger präsent. Heute trainierst du, dass der erste innere Satz nicht automatisch dein ganzes Verhalten bestimmen muss.",
         self_talk: "Nicht enger.",
         micro_reframe: "Der Fehler muss nicht sofort meinen Körper und mein Verhalten codieren.",
         reframe_step: {
@@ -381,7 +381,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Nach Fehlern, bei Entscheidungen anderer, bei Gegenspielern, bei Bewertung, bei Frust über Rolle oder Ergebnisfantasie",
         action: "Frag dich klar: 'Liegt das gerade wirklich in meiner Kontrolle?' Wenn nein, markiere innerlich: 'Nicht in meiner Kontrolle.'",
         why: "Du kannst Energie erst zurückholen, wenn du erkennst, woran du sie gerade verlierst.",
-        explanation: "Viele Spieler bleiben an Dingen hängen, die längst passiert sind oder gerade nicht in ihrer Hand liegen. Heute geht es nicht darum, das sofort wegzumachen. Es geht zuerst darum, sauber zu unterscheiden, was wirklich dein Feld ist — und was nicht.",
+        explanation: "Viele Athleten bleiben an Dingen hängen, die längst passiert sind oder gerade nicht in ihrer Hand liegen. Heute geht es nicht darum, das sofort wegzumachen. Es geht zuerst darum, sauber zu unterscheiden, was wirklich dein Feld ist — und was nicht.",
         self_talk: "Nicht in meiner Kontrolle.",
         micro_reframe: "Nicht alles, woran mein Kopf hängt, verdient gerade weiter meine Energie.",
         reframe_step: {
@@ -579,7 +579,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Wenn du merkst, dass dein System fast nur noch Defizit registriert",
         action: "Benenne bewusst 2–3 Dinge, die trotzdem schon da, tragend, möglich oder wertvoll sind.",
         why: "Der Tag soll dein Wahrnehmungsfeld wieder erweitern, nicht das Problem wegzaubern.",
-        explanation: "Das kann etwas Kleines oder Großes sein: ein guter Kontakt, ein Mitspieler, eine Fähigkeit, eine Chance, eine Aufgabe, ein Lernmoment, ein Körperteil, das funktioniert, eine Beziehung, ein Raum, eine Möglichkeit. Wichtig ist: mehr sehen als nur Mangel.",
+        explanation: "Das kann etwas Kleines oder Großes sein: ein guter Kontakt, ein Trainingspartner, eine Fähigkeit, eine Chance, eine Aufgabe, ein Lernmoment, ein Körperteil, das funktioniert, eine Beziehung, ein Raum, eine Möglichkeit. Wichtig ist: mehr sehen als nur Mangel.",
         self_talk: "Es ist mehr da.",
         micro_reframe: "Weite heißt nicht, das Schwierige zu leugnen — sondern mehr als nur das Schwierige zu sehen.",
         reframe_step: {
@@ -738,7 +738,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d8-t1",
         title: "Definiere deine Version",
         trigger: "Vor dem Training oder vor einem wichtigen Abschnitt des Tages",
-        when_to_use: "Am Anfang des Tages, vor Training, vor Match oder vor relevanten Situationen",
+        when_to_use: "Am Anfang des Tages, vor Training, vor dem Wettkampf oder vor relevanten Situationen",
         action: "Formuliere für dich: 'Heute trainiere ich die Version von mir, die ...'",
         why: "Identitätscodierung braucht Klarheit. Zu ungenaue Begriffe wie 'besser' oder 'stärker' reichen nicht.",
         explanation: "Definiere nicht, was du erreichen willst, sondern wie du heute sein willst — konkret im Verhalten: ruhig nach Fehlern, präsent im Moment, klar in der Kommunikation, mutig in Entscheidungen, präzise statt bildgetrieben.",
@@ -920,7 +920,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         trigger: "Wenn du innerlich erst sicherer, ruhiger, klarer oder 'mehr drin' sein willst, bevor du handelst",
         when_to_use: "Vor wichtigen Aktionen, bei Unsicherheit, nach Fehlern, vor Gesprächen oder wenn du auf 'das richtige Gefühl' wartest",
         action: "Sag dir einmal klar: 'Ich warte gerade auf Gefühl.'",
-        why: "Viele Spieler verwechseln Confidence mit guter Energie oder perfektem inneren Zustand.",
+        why: "Viele Athleten verwechseln Confidence mit guter Energie oder perfektem inneren Zustand.",
         explanation: "Heute sollst du sichtbar machen, wie oft du Handlung an Stimmung koppelst. Genau dieses Warten macht Confidence instabil, weil sie dann nur dann da ist, wenn du dich gerade gut fühlst.",
         self_talk: "Ich warte gerade auf Gefühl.",
         micro_reframe: "Confidence hängt nicht nur daran, wie ich mich fühle, sondern auch daran, wie ich handle.",
@@ -957,7 +957,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Nach einer kleinen sauberen Handlung, besonders wenn du sie sonst übersehen würdest",
         action: "Markiere innerlich: 'Das zählt.'",
         why: "Dein System soll Handlung als echten Confidence-Beweis lesen lernen.",
-        explanation: "Viele Spieler sehen nur perfekte Szenen oder gutes Gefühl als Confidence-Beweis. Heute speicherst du etwas anderes: Ich habe trotz Unsicherheit gehandelt. Genau das ist bereits reale Handlungszuversicht.",
+        explanation: "Viele Athleten sehen nur perfekte Szenen oder gutes Gefühl als Confidence-Beweis. Heute speicherst du etwas anderes: Ich habe trotz Unsicherheit gehandelt. Genau das ist bereits reale Handlungszuversicht.",
         self_talk: "Das zählt.",
         micro_reframe: "Confidence wächst oft nicht nur vor Handlung, sondern durch sie.",
         reframe_step: {
@@ -1011,7 +1011,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Bei Übungen, in technischen Situationen, in Duellen, in Lernphasen oder wenn du lieber auf Bekanntes zurückgreifst",
         action: "Frag dich kurz: 'Bleibe ich gerade im Sicheren — oder im Lernraum?'",
         why: "Echte Entwicklung wird oft nicht nur durch Fehlervermeidung blockiert, sondern durch zu viel Sicherheitssuche.",
-        explanation: "Viele Spieler sehen nur offensichtliche Vermeidung. Schwieriger zu erkennen ist die stille Lernbremse: nur saubere Lösungen wählen, nur Bekanntes spielen, nur dort aktiv werden, wo man ordentlich wirkt. Heute machst du diese Schleife sichtbar.",
+        explanation: "Viele Athleten sehen nur offensichtliche Vermeidung. Schwieriger zu erkennen ist die stille Lernbremse: nur saubere Lösungen wählen, nur Bekanntes spielen, nur dort aktiv werden, wo man ordentlich wirkt. Heute machst du diese Schleife sichtbar.",
         self_talk: "Sicher oder Lernraum?",
         micro_reframe: "Nicht alles, was sich gut anfühlt, bringt mich gerade wirklich weiter.",
         reframe_step: {
@@ -1047,7 +1047,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Vor allem dann, wenn du dich in der herausfordernden Situation plötzlich kleiner, vorsichtiger oder defensiver machen willst",
         action: "Bleib in der Situation offen genug, dass Lernen weiter möglich bleibt.",
         why: "Der eigentliche Bruch ist nicht nur, in Unsicherheit hineinzugehen, sondern dort nicht sofort wieder in Schutzlogik zu kippen.",
-        explanation: "Viele Spieler gehen kurz in den Lernraum und springen beim ersten unangenehmen Signal direkt zurück in Bildschutz. Heute ist der entscheidende Schritt, die Offenheit kurz zu halten, statt sie sofort wieder zu schließen.",
+        explanation: "Viele Athleten gehen kurz in den Lernraum und springen beim ersten unangenehmen Signal direkt zurück in Bildschutz. Heute ist der entscheidende Schritt, die Offenheit kurz zu halten, statt sie sofort wieder zu schließen.",
         self_talk: "Offen bleiben.",
         micro_reframe: "Nicht mein Bild muss heute geschützt werden, sondern mein Lernraum.",
         reframe_step: {
@@ -1092,7 +1092,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
     primary_mechanism: "Image-to-Quality Reorientation",
     today_trigger: "Sobald du merkst, dass du eher gut wirken, beeindrucken oder dein Bild schützen willst, als sauber zu handeln, ist der Tag aktiv.",
     core_shift: "Heute verschiebst du dich von Wirkung zu Qualität — und von Selbstinszenierung zu echter Exzellenz.",
-    science_bite: "Wirkung und Qualität sind nicht dasselbe. Viele Spieler handeln so, dass sie stark, cool, sicher oder besonders wirken. Exzellenz funktioniert anders: Sie richtet Aufmerksamkeit auf die Aufgabe, die Präzision, den Beitrag und die saubere Ausführung. Sobald dein Fokus stärker an Wirkung hängt als an echter Qualität, wird Leistung oft enger, künstlicher oder defensiver.",
+    science_bite: "Wirkung und Qualität sind nicht dasselbe. Viele Athleten handeln so, dass sie stark, cool, sicher oder besonders wirken. Exzellenz funktioniert anders: Sie richtet Aufmerksamkeit auf die Aufgabe, die Präzision, den Beitrag und die saubere Ausführung. Sobald dein Fokus stärker an Wirkung hängt als an echter Qualität, wird Leistung oft enger, künstlicher oder defensiver.",
     tasks: [
       {
         id: "d12-t1",
@@ -1281,7 +1281,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Vor wichtigen Szenen, nach Fehlern, unter Beobachtung, in Druckphasen oder wenn es 'zählen' soll",
         action: "Frag dich kurz: 'Bin ich gerade beim Ausgang — oder bei der Aktion?'",
         why: "Du sollst Ergebnisbindung zuerst als Aufmerksamkeitsproblem erkennen.",
-        explanation: "Viele Spieler denken, sie müssten ans Ergebnis denken, um ernst zu sein. In Wahrheit zieht sie genau das oft aus der Gegenwart. Heute machst du diesen Ausgangs-Zug sichtbar.",
+        explanation: "Viele Athleten denken, sie müssten ans Ergebnis denken, um ernst zu sein. In Wahrheit zieht sie genau das oft aus der Gegenwart. Heute machst du diesen Ausgangs-Zug sichtbar.",
         self_talk: "Ausgang oder Aktion?",
         micro_reframe: "Ergebnisdenken fühlt sich wichtig an, zieht mich aber oft aus meiner eigentlichen Arbeit.",
         reframe_step: {
@@ -1299,7 +1299,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Direkt danach, bevor du weiter in Bewertung oder Zukunft gehst",
         action: "Bestimme eine konkrete Sache, die jetzt wirklich deine Aufgabe ist.",
         why: "Der Prozess wird nur dann handhabbar, wenn er konkret statt diffus ist.",
-        explanation: "Nicht 'mehr fokussiert sein'. Nicht 'im Moment bleiben'. Sondern etwas Klareres: erster Kontakt, Laufweg, Körperspannung, Kommunikation, Timing, Haltung, Ballattacke, nächste technische Aufgabe.",
+        explanation: "Nicht 'mehr fokussiert sein'. Nicht 'im Moment bleiben'. Sondern etwas Klareres: erster Kontakt, Laufweg, Körperspannung, Kommunikation, Timing, Haltung, Attacke auf die Aktion, nächste technische Aufgabe.",
         self_talk: "Mein Prozesspunkt ist ...",
         micro_reframe: "Ich brauche nicht den ganzen Ausgang. Ich brauche meinen nächsten Arbeitsort.",
         reframe_step: {
@@ -1389,7 +1389,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Sofort nach Aufgabe 1, bevor dein Kopf wieder in Bewertung, Ausgang oder Kommentar kippt",
         action: "Setze bewusst dein Rückkehrsignal und richte deinen Fokus sofort an einen klaren Aufmerksamkeitsanker.",
         why: "Präsenz soll ab heute nicht nur bemerkt, sondern aktiv zurückgeholt werden.",
-        explanation: "Das Rückkehrsignal ist kein Motivationsspruch, sondern ein praktischer Umschaltmoment. Es sagt deinem System: Zurück. Hier. Diese Sache. Der Anker muss konkret sein: Ball, Kontakt, Gegner, Position, Atmung, Kommunikation, Prozesspunkt.",
+        explanation: "Das Rückkehrsignal ist kein Motivationsspruch, sondern ein praktischer Umschaltmoment. Es sagt deinem System: Zurück. Hier. Diese Sache. Der Anker muss konkret sein: nächste Aktion, Kontakt, Gegenüber, Position, Atmung, Kommunikation, Prozesspunkt.",
         self_talk: "Zurück. Hier.",
         micro_reframe: "Ich muss nicht warten, bis ich wieder präsent bin. Ich kann Präsenz bewusst einleiten.",
         reframe_step: {
@@ -1678,7 +1678,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Direkt im oder nach dem Wachstumsmoment",
         action: "Bleib kurz offen genug, dass Lernen weiter möglich bleibt.",
         why: "Der eigentliche Bruch passiert nicht nur beim Hineingehen, sondern beim Nicht-sofort-Zuschließen.",
-        explanation: "Viele Spieler betreten kurz den Reiz und ziehen sich beim ersten unangenehmen Signal sofort wieder zusammen. Heute trainierst du, die Unsicherheit nicht sofort mit Schutz, Rettung oder Urteil zu verschließen.",
+        explanation: "Viele Athleten betreten kurz den Reiz und ziehen sich beim ersten unangenehmen Signal sofort wieder zusammen. Heute trainierst du, die Unsicherheit nicht sofort mit Schutz, Rettung oder Urteil zu verschließen.",
         self_talk: "Offen lassen.",
         micro_reframe: "Ich muss die Unsicherheit nicht sofort schließen, nur weil sie sich spürbar anfühlt.",
         reframe_step: {
@@ -1750,7 +1750,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Direkt in der Situation, bevor du weiter in Ärger, Widerstand oder Bedrohung kippst",
         action: "Formuliere für dich nur nüchtern, was gerade real ist — ohne Zusatzaufladung.",
         why: "Der Tag will den Unterschied zwischen Realität und Bedrohungszuschreibung trainieren.",
-        explanation: "Zum Beispiel nicht: 'Das ist katastrophal.' Sondern: 'Der Schiri entscheidet gerade anders.' Nicht: 'Ich bin ausgeliefert.' Sondern: 'Das liegt gerade nicht in meiner Hand.' Du musst die Realität nicht schönreden — nur nicht unnötig aufblasen.",
+        explanation: "Zum Beispiel nicht: 'Das ist katastrophal.' Sondern: 'Der Wertungsinstanz entscheidet gerade anders.' Nicht: 'Ich bin ausgeliefert.' Sondern: 'Das liegt gerade nicht in meiner Hand.' Du musst die Realität nicht schönreden — nur nicht unnötig aufblasen.",
         self_talk: "Das ist die Realität.",
         micro_reframe: "Klar sehen ist stärker als innerlich aufblasen.",
         reframe_step: {
@@ -1822,7 +1822,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Direkt nach Fehlern, Unsicherheiten, technischen Missmomenten oder falsch gelesenen Situationen",
         action: "Frag dich einmal: 'Was ist hier der Fehler — und was ist schon Urteil?'",
         why: "Bevor Selbstangriff gestoppt werden kann, muss sichtbar werden, dass Fehler und Urteil nicht dasselbe sind.",
-        explanation: "Es macht einen Unterschied, ob du siehst: 'Der Pass war zu ungenau' oder ob dein System sofort macht: 'Ich bin heute schlecht.' Heute trennst du Information von dem, was dein Kopf zusätzlich daraus baut.",
+        explanation: "Es macht einen Unterschied, ob du siehst: 'Die Aktion war zu ungenau' oder ob dein System sofort macht: 'Ich bin heute schlecht.' Heute trennst du Information von dem, was dein Kopf zusätzlich daraus baut.",
         self_talk: "Fehler, nicht Urteil.",
         micro_reframe: "Nicht alles, was mein Kopf nach dem Fehler hinzufügt, gehört wirklich zum Fehler selbst.",
         reframe_step: {
@@ -1895,15 +1895,15 @@ export const PLAYER_DAYS: PlayerDay[] = [
   },
   {
     day_id: 21,
-    title: "Team vor Selbstbild",
+    title: "Beitrag vor Selbstbild",
     phase: "Phase II — Umcodieren",
     week: 4,
     line: "Ego vs Inner Excellence",
-    lens: "Ich kann Aufmerksamkeit aus Bildschutz lösen und auf das richten, was die Situation oder das Team wirklich braucht.",
+    lens: "Ich kann Aufmerksamkeit aus Bildschutz lösen und auf das richten, was die Situation oder die Gruppe wirklich braucht.",
     primary_mechanism: "Prosocial Attention Shift",
-    today_trigger: "Sobald du merkst, dass du gerade eher dein Bild schützt als der Situation oder dem Team zu dienen, ist der Tag aktiv.",
+    today_trigger: "Sobald du merkst, dass du gerade eher dein Bild schützt als der Situation oder der Gruppe zu dienen, ist der Tag aktiv.",
     core_shift: "Heute verschiebst du dich von bildschützendem Handeln zu dienlichem Handeln.",
-    science_bite: "Unter Druck, Bewertung oder Unsicherheit wird Aufmerksamkeit oft stark selbstbezogen: Wie wirke ich? Was sagt das über mich? Wie komme ich rüber? Genau dieser Bildschutz macht Verhalten oft enger, künstlicher oder defensiver. Heute trainierst du die Gegenrichtung: Aufmerksamkeit weg vom Bild, hin zu dem, was die Situation, das Team oder die Aufgabe wirklich braucht.",
+    science_bite: "Unter Druck, Bewertung oder Unsicherheit wird Aufmerksamkeit oft stark selbstbezogen: Wie wirke ich? Was sagt das über mich? Wie komme ich rüber? Genau dieser Bildschutz macht Verhalten oft enger, künstlicher oder defensiver. Heute trainierst du die Gegenrichtung: Aufmerksamkeit weg vom Bild, hin zu dem, was die Situation, die Gruppe oder die Aufgabe wirklich braucht.",
     tasks: [
       {
         id: "d21-t1",
@@ -1911,10 +1911,10 @@ export const PLAYER_DAYS: PlayerDay[] = [
         trigger: "Wenn du merkst, dass es dir gerade stark um Wirkung, Status, Verteidigung oder Selbstschutz geht",
         when_to_use: "Bei Fehlern, Kritik, Vergleich, Verantwortung, Beobachtung oder sozialen Druckmomenten",
         action: "Frag dich kurz: 'Schütze ich gerade mein Bild — oder diene ich der Situation?'",
-        why: "Du kannst Teamorientierung erst praktisch wählen, wenn der Bildschutz sichtbar wird.",
+        why: "Du kannst Beitragsorientierung erst praktisch wählen, wenn der Bildschutz sichtbar wird.",
         explanation: "Tag 21 ist nicht moralisch. Es geht nicht darum, nett zu sein. Es geht darum zu erkennen, wann dein Verhalten stärker vom eigenen Bild als von echter Aufgabe oder Beitrag gesteuert ist.",
         self_talk: "Bild oder Beitrag?",
-        micro_reframe: "Nicht jede Spannung ist Teamverantwortung — oft ist sie Bildschutz.",
+        micro_reframe: "Nicht jede Spannung ist geteilte Verantwortung — oft ist sie Bildschutz.",
         reframe_step: {
           trigger: "Ich merke starken Selbstfokus oder Beweisdrang.",
           reframe: "Bevor ich handle, kläre ich: Geht es mir gerade mehr um mein Bild oder um die Sache?",
@@ -1928,7 +1928,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Frag nach dem, was gebraucht wird",
         trigger: "Nachdem du Bildschutz erkannt hast",
         when_to_use: "Direkt im Anschluss, bevor du in alte Schutzreaktionen gehst",
-        action: "Frag dich: 'Was braucht die Situation oder das Team gerade wirklich von mir?'",
+        action: "Frag dich: 'Was braucht die Situation oder die Gruppe gerade wirklich von mir?'",
         why: "Der Wechsel von Selbstbild zu Beitrag braucht einen klaren neuen Aufmerksamkeitsort.",
         explanation: "Vielleicht braucht es Präsenz. Vielleicht Kommunikation. Vielleicht Hilfe. Vielleicht Mut. Vielleicht Ruhe. Vielleicht eine saubere kleine Handlung. Heute trainierst du, nicht primär vom Ich aus zu denken.",
         self_talk: "Was wird hier gebraucht?",
@@ -1946,8 +1946,8 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Handle dienlich statt bildschützend",
         trigger: "Wenn du zwischen dienlicher und bildschützender Handlung wählen kannst",
         when_to_use: "In der direkt nächsten relevanten Szene",
-        action: "Setze bewusst die Handlung, die der Situation oder dem Team dient — auch wenn sie weniger gut für dein Bild wäre.",
-        why: "Tag 21 wird erst real, wenn Team-/Situationsfokus Verhalten übernimmt.",
+        action: "Setze bewusst die Handlung, die der Situation oder der Gruppe dient — auch wenn sie weniger gut für dein Bild wäre.",
+        why: "Tag 21 wird erst real, wenn Beitrags-/Situationsfokus Verhalten übernimmt.",
         explanation: "Das kann heißen: klar sprechen, Hilfe geben, Verantwortung übernehmen, eine Korrektur annehmen, präsent bleiben, dich nicht kleiner machen, ehrlich statt cool sein. Nicht fürs Bild. Für die Sache.",
         self_talk: "Dienlich handeln.",
         micro_reframe: "Beitrag macht oft freier als Bildschutz.",
@@ -1963,7 +1963,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
     journal: {
       title: "Wann ging es heute um mein Bild — und wann um das, was gebraucht wurde?",
       questions: [
-        { id: "d21-j1", question: "In welchen Momenten habe ich heute eher mein Bild geschützt als der Situation oder dem Team gedient?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d21-j1", question: "In welchen Momenten habe ich heute eher mein Bild geschützt als der Situation oder der Gruppe gedient?", placeholder: "Beschreibe die Szene konkret." },
         { id: "d21-j2", question: "Was wurde in dieser Situation wirklich gebraucht?", placeholder: "Präsenz, Hilfe, Mut, Klarheit, Kommunikation ..." },
         { id: "d21-j3", question: "Konnte ich heute mindestens einmal sichtbar dienlicher statt bildschützend handeln?", placeholder: "Wie sah das konkret aus?" },
         { id: "d21-j4", question: "Was zeigt mir das darüber, wie oft mein Verhalten noch an Bildschutz statt an Beitrag hängt?", placeholder: "Formuliere den Kern möglichst klar." }
@@ -1999,7 +1999,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d22-t1",
         title: "Lege deinen Prozessanker fest",
         trigger: "Vor dem Training, vor einer Einheit oder vor einer Phase, die Bedeutung bekommen könnte",
-        when_to_use: "Zu Beginn des Tages, vor Drills, vor Scrimmage, vor Matchphasen oder vor Belastungsblöcken",
+        when_to_use: "Zu Beginn des Tages, vor Übungseinheiten, vor Wettkampfsimulation, vor Wettkampfphasen oder vor Belastungsblöcken",
         action: "Bestimme genau einen klaren Prozessanker, auf den du heute immer wieder zurückkommst.",
         why: "Ein Prozessanker macht Prozessdenken konkret und handhabbar.",
         explanation: "Nicht fünf Ziele gleichzeitig. Nicht diffuse Konzentration. Sondern ein klarer Aufmerksamkeitsort: erster Kontakt, klare Kommunikation, aktiver Laufweg, saubere Körperhaltung, Timing, Prozesspunkt, Präsenz in der ersten Aktion.",
@@ -2068,7 +2068,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Arbeite von hier.", when: "In der direkt nächsten Handlung" }
     ],
     variants: {
-      training: "Nutze Drills, Belastungsblöcke, Fehlerphasen, Scrimmage und Beobachtung als Material.",
+      training: "Nutze Übungseinheiten, Belastungsblöcke, Fehlerphasen, Wettkampfsimulation und Beobachtung als Material.",
       rest: "Übertrage den Tag auf Arbeit, Studium, Gespräche, Fokusblöcke und Alltagssituationen mit Drift und innerem Lärm.",
       match: "Kurzversion: Anker festlegen → zurück an den Arbeitsort → von dort handeln."
     }
@@ -2533,7 +2533,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
     primary_mechanism: "Protest Regulation Under Non-Control",
     today_trigger: "Sobald etwas klar gegen dich läuft und dein System innerlich in Protest, Frust oder Opfermodus gehen will, ist der Tag aktiv.",
     core_shift: "Heute verschiebst du dich von Unfairness als Hauptgeschichte zu Funktion trotz Unfairness.",
-    science_bite: "Wettkämpfe kippen oft nicht nur an Fehlern, sondern daran, dass äußere Unfairness innerlich zu groß wird. Schiri-Entscheidungen, Bedingungen, Rollen, Timing, Verhalten anderer oder Pechmomente können real sein. Das Problem entsteht oft dann, wenn dein inneres System daraus die Hauptgeschichte macht. Dann wird deine Funktion kleiner als dein Protest. Heute trainierst du nicht, Unfairness gutzufinden — sondern deine Funktion größer zu halten als den inneren Kampf dagegen. ",
+    science_bite: "Wettkämpfe kippen oft nicht nur an Fehlern, sondern daran, dass äußere Unfairness innerlich zu groß wird. Wertungsinstanz-Entscheidungen, Bedingungen, Rollen, Timing, Verhalten anderer oder Pechmomente können real sein. Das Problem entsteht oft dann, wenn dein inneres System daraus die Hauptgeschichte macht. Dann wird deine Funktion kleiner als dein Protest. Heute trainierst du nicht, Unfairness gutzufinden — sondern deine Funktion größer zu halten als den inneren Kampf dagegen. ",
     tasks: [
       {
         id: "d28-t1",
@@ -2573,7 +2573,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       },
       {
         id: "d28-t3",
-        title: "Spiele die nächste funktionale Sache",
+        title: "Wettkämpfe die nächste funktionale Sache",
         trigger: "Wenn du das Steuerbare wieder etwas klarer vor dir hast",
         when_to_use: "In der direkt nächsten Szene",
         action: "Setze nur die nächste funktionale Handlung, statt weiter gegen das Ereignis zu kämpfen.",
@@ -2753,7 +2753,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       },
       {
         id: "d30-t3",
-        title: "Spiele nur die nächste Prozesshandlung",
+        title: "Wettkämpfe nur die nächste Prozesshandlung",
         trigger: "Wenn dein Prozessanker wieder vorne ist",
         when_to_use: "In der direkt nächsten relevanten Szene",
         action: "Frag dich: 'Was ist jetzt nur meine nächste Prozesshandlung?' und tue genau diese.",
@@ -2878,7 +2878,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Zurück in Funktion.", when: "In der nächsten Rückkehrhandlung" }
     ],
     variants: {
-      training: "Nutze sichtbare Fehler in relevanten Szenen, kleinen Wettbewerben, Scrimmage oder Bewertungsmomenten als Material.",
+      training: "Nutze sichtbare Fehler in relevanten Szenen, kleinen Wettbewerben, Wettkampfsimulation oder Bewertungsmomenten als Material.",
       rest: "Übertrage den Tag auf peinliche Momente, Fehler in Gesprächen, Arbeits-/Studiumsfehler und Alltagssituationen, in denen Misslingen schnell persönlich wird.",
       match: "Kurzversion: Ich-Sprung erkennen → Fehler an Handlung halten → funktional zurück."
     }
@@ -2899,7 +2899,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d32-t1",
         title: "Erkenne den Bewertungszug",
         trigger: "Wenn Beobachtung, Vergleich, Korrektur oder Sichtbarkeit dein Verhalten enger macht",
-        when_to_use: "Bei Coach-Feedback, Publikum, Mitspielern, Bewertungsszenen, Konkurrenz oder sichtbaren Fehlern",
+        when_to_use: "Bei Coach-Feedback, Publikum, Trainingspartner:innen, Bewertungsszenen, Konkurrenz oder sichtbaren Fehlern",
         action: "Frag dich kurz: 'Bin ich noch im Lernen — oder schon im Bildschutz?'",
         why: "Du musst zuerst sichtbar machen, wann soziale Bewertung deine innere Arbeitsweise kippt.",
         explanation: "Das Problem ist nicht nur, dass andere da sind. Das Problem beginnt dort, wo ihre Sicht innerlich größer wird als deine Aufgabe und dein Lernen.",
@@ -2968,7 +2968,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Offen bleiben.", when: "Wenn du nicht künstlich werden willst" }
     ],
     variants: {
-      training: "Nutze Coach-Feedback, Mitspieler, Konkurrenz, Scrimmage, Korrekturen und sichtbare Fehler als Material.",
+      training: "Nutze Coach-Feedback, Trainingspartner, Konkurrenz, Wettkampfsimulation, Korrekturen und sichtbare Fehler als Material.",
       rest: "Übertrage den Tag auf Gespräche, Arbeits-/Uni-Kontexte, soziale Situationen, Kritik und alles, bei dem du unter Blicken enger wirst.",
       match: "Kurzversion: Bewertungszug erkennen → Lernaufgabe zurückholen → offen statt künstlich."
     }
@@ -2989,7 +2989,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d33-t1",
         title: "Wähle einen alten Reflex",
         trigger: "Vor dem Training oder vor einer relevanten Phase, in der du weißt, dass ein bestimmter alter Reflex oft kommt",
-        when_to_use: "Vor Scrimmage, Druckphasen, Fehlerketten, Bewertungsszenen oder alltäglichen Schleifen",
+        when_to_use: "Vor Wettkampfsimulation, Druckphasen, Fehlerketten, Bewertungsszenen oder alltäglichen Schleifen",
         action: "Lege genau einen Reflex fest, den du heute unterbrechen willst.",
         why: "Tag 33 wird nur stark, wenn er nicht allgemein bleibt, sondern genau einen konkreten Reflex bearbeitet.",
         explanation: "Zum Beispiel: hektisch werden, kleiner werden, safe gehen, meckern, rausgehen, still werden, Handyflucht, Rückzug, Prokrastination, Selbstkritik. Nicht alles gleichzeitig. Ein Reflex.",
@@ -3163,13 +3163,13 @@ export const PLAYER_DAYS: PlayerDay[] = [
     primary_mechanism: "Visible Responsibility Under Social Risk",
     today_trigger: "Sobald eine Situation nach Initiative, Ordnung, Kommunikation oder sichtbarer Präsenz ruft und dein System lieber auf Rückzug oder Abwarten gehen will, ist der Tag aktiv.",
     core_shift: "Heute verschiebst du dich von stiller Selbstverwaltung zu sichtbarer Verantwortung für die Situation.",
-    science_bite: "Viele Spieler können sich innerlich gut sortieren, bleiben aber äußerlich passiv, sobald Verantwortung sichtbar wird. Der Grund ist oft nicht fehlendes Wissen, sondern soziales Risiko: sich zeigen, hörbar werden, etwas tragen, Initiative setzen, falsch liegen können. Heute trainierst du deshalb nicht nur Stabilität in dir, sondern Verantwortung nach außen. Genau das macht Führung trainierbar. ",
+    science_bite: "Viele Athleten können sich innerlich gut sortieren, bleiben aber äußerlich passiv, sobald Verantwortung sichtbar wird. Der Grund ist oft nicht fehlendes Wissen, sondern soziales Risiko: sich zeigen, hörbar werden, etwas tragen, Initiative setzen, falsch liegen können. Heute trainierst du deshalb nicht nur Stabilität in dir, sondern Verantwortung nach außen. Genau das macht Führung trainierbar. ",
     tasks: [
       {
         id: "d35-t1",
         title: "Erkenne die Warteschleife",
         trigger: "Wenn du merkst, dass eigentlich etwas von dir gebraucht wäre, dein System aber lieber wartet, hofft oder sich zurückhält",
-        when_to_use: "Bei Unordnung, fehlender Kommunikation, Unsicherheit im Team, offenen Situationen oder sichtbarem Bedarf nach Initiative",
+        when_to_use: "Bei Unordnung, fehlender Kommunikation, Unsicherheit im Umfeld, offenen Situationen oder sichtbarem Bedarf nach Initiative",
         action: "Frag dich kurz: 'Warte ich gerade — obwohl etwas von mir gebraucht wäre?'",
         why: "Tag 35 beginnt damit, die stille Passivität sichtbar zu machen, die sich oft als Vernunft tarnt.",
         explanation: "Nicht jede Ruhe ist Stärke. Manchmal ist sie nur sozial vorsichtige Unsichtbarkeit. Heute geht es darum, die Warteschleife zu erkennen, bevor sie wieder dein Standard wird.",
@@ -3259,7 +3259,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d36-t1",
         title: "Erkenne die Streuung",
         trigger: "Wenn viel gleichzeitig passiert und dein Kopf überall gleichzeitig sein will",
-        when_to_use: "Bei Scrimmage, lauten Phasen, Fehlerketten, hektischen Drillformen, mehreren Reizen, To-dos, Nachrichten oder mentalem Lärm",
+        when_to_use: "Bei Wettkampfsimulation, lauten Phasen, Fehlerketten, hektischen Drillformen, mehreren Reizen, To-dos, Nachrichten oder mentalem Lärm",
         action: "Markiere innerlich einmal klar: 'Streuung.'",
         why: "Bevor du Aufmerksamkeit bündeln kannst, musst du merken, wann dein System gerade auf alles gleichzeitig springt.",
         explanation: "Tag 36 fragt nicht, ob Chaos da ist. Es fragt, ob dein System im Chaos seine Priorität verliert. Genau diese Streuung machst du heute sichtbar.",
@@ -3280,7 +3280,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         when_to_use: "Sofort, bevor dein System weiter in Reizsprünge kippt",
         action: "Frag dich: 'Was ist gerade mein Kern?' und wähle genau einen funktionalen Fokuspunkt.",
         why: "Chaos wird erst handhabbar, wenn dein System wieder einen klaren Arbeitskern hat.",
-        explanation: "Nicht fünf Dinge. Nicht alles retten. Ein Kern: der Ball, dein Gegenspieler, der erste Kontakt, deine Kommunikation, deine Haltung, dein Prozessanker, die nächste Aktion.",
+        explanation: "Nicht fünf Dinge. Nicht alles retten. Ein Kern: die nächste Aktion, dein Gegenüber, der erste Kontakt, deine Kommunikation, deine Haltung, dein Prozessanker.",
         self_talk: "Was ist mein Kern?",
         micro_reframe: "Ich brauche heute nicht Ordnung überall — ich brauche Priorität an einem Punkt.",
         reframe_step: {
@@ -3328,7 +3328,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Nur aus dem Kern.", when: "In der nächsten sauberen Handlung" }
     ],
     variants: {
-      training: "Ideal bei Scrimmage, lauten Phasen, schnellen Wechseln, Fehlerketten und mehreren Reizen gleichzeitig.",
+      training: "Ideal bei Wettkampfsimulation, lauten Phasen, schnellen Wechseln, Fehlerketten und mehreren Reizen gleichzeitig.",
       rest: "Übertragbar auf To-dos, Nachrichten, Handy, Gespräche, Geräusche und mentalen Lärm.",
       match: "Kurzversion: Streuung erkennen → Kern zurückholen → nur aus dem Kern spielen."
     }
@@ -3349,7 +3349,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d37-t1",
         title: "Erkenne die zweite Welle",
         trigger: "Wenn ein nerviger oder unfairer Moment passiert und dein System nicht nur reagiert, sondern weiter auflädt",
-        when_to_use: "Bei nervigen Calls, Mitspielerfehlern, Störungen, Unfairness, nerviger Dynamik, Planänderungen oder Alltagstriggern",
+        when_to_use: "Bei nervigen Calls, Fehlern anderer, Störungen, Unfairness, nerviger Dynamik, Planänderungen oder Alltagstriggern",
         action: "Frag dich kurz: 'Ist das gerade noch das Ereignis — oder schon meine zweite Welle?'",
         why: "Du musst zuerst erkennen, wann Reibung nicht nur da ist, sondern innerlich weiter verstärkt wird.",
         explanation: "Die zweite Welle ist oft subtil: gedanklich weiterhängen, innerlich weiter argumentieren, den Trigger größer machen, ihn mit Story aufladen. Genau das machst du heute sichtbar.",
@@ -3418,7 +3418,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Funktional flach.", when: "In der nächsten funktionalen Handlung" }
     ],
     variants: {
-      training: "Ideal bei nervigen Calls, Mitspielerfehlern, störender Dynamik und Reibung, die sonst hängen bleibt.",
+      training: "Ideal bei nervigen Calls, Fehlern anderer, störender Dynamik und Reibung, die sonst hängen bleibt.",
       rest: "Sehr gut übertragbar auf kleine Ungerechtigkeiten, Wartezeiten, nervige Menschen, Planänderungen und Alltag, der nicht nach deinem Kopf läuft.",
       match: "Kurzversion: zweite Welle erkennen → nicht weiter füttern → funktional flach werden."
     }
@@ -3529,7 +3529,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d39-t1",
         title: "Erkenne den Momentum-Zug",
         trigger: "Wenn mehrere gelungene oder misslungene Aktionen, Runs oder Teamenergie stark an deinem Zustand ziehen",
-        when_to_use: "In Scrimmage, Serien, Läufen, Hoch-/Tiefphasen, Teamdynamik oder wenn ein Tag stark gut oder schlecht kippt",
+        when_to_use: "In Wettkampfsimulation, Serien, Läufen, Hoch-/Tiefphasen, Teamdynamik oder wenn ein Tag stark gut oder schlecht kippt",
         action: "Frag dich kurz: 'Zieht mich gerade der Verlauf — oder spiele ich noch meinen Standard?'",
         why: "Du musst zuerst sichtbar machen, wann der Verlauf mehr Macht bekommt als dein eigener Standard.",
         explanation: "Momentum ist nicht nur Spielverlauf. Es ist der Zug, aus dem Verlauf sofort eine Geschichte über alles zu machen.",
@@ -3563,10 +3563,10 @@ export const PLAYER_DAYS: PlayerDay[] = [
       },
       {
         id: "d39-t3",
-        title: "Spiel die nächste Szene neutral sauber",
+        title: "Wettkampf die nächste Szene neutral sauber",
         trigger: "Wenn dein Standard wieder etwas klarer ist",
         when_to_use: "In der direkt nächsten Handlung",
-        action: "Spiele die nächste Szene neutral sauber — nicht auf dem Verlauf surfend und nicht gegen ihn kämpfend.",
+        action: "Wettkämpfe die nächste Szene neutral sauber — nicht auf dem Verlauf surfend und nicht gegen ihn kämpfend.",
         why: "Tag 39 wird erst real, wenn Standard die nächste Szene wieder übernimmt.",
         explanation: "Nicht extra hart, nicht extra locker, nicht aus der Story des Laufs. Einfach neutral sauber. Genau das macht Stabilität unter Momentum praktisch.",
         self_talk: "Neutral sauber.",
@@ -3598,7 +3598,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Neutral sauber.", when: "In der nächsten Szene" }
     ],
     variants: {
-      training: "Ideal bei Scrimmage, Serien, Runs, mehreren gelungenen oder misslungenen Aktionen und Teamenergie, die hoch oder runter zieht.",
+      training: "Ideal bei Wettkampfsimulation, Serien, Runs, mehreren gelungenen oder misslungenen Aktionen und Teamenergie, die hoch oder runter zieht.",
       rest: "Übertragbar auf Tage, die gut oder schlecht laufen und deinen ganzen Zustand färben wollen.",
       match: "Kurzversion: Momentum-Zug erkennen → Standard zurückholen → nächste Szene neutral sauber spielen."
     }
@@ -3799,7 +3799,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d42-t1",
         title: "Setz oder erkenne einen Lastblock",
         trigger: "Wenn natürliche Last da ist — oder wenn du bewusst einen kleinen Belastungsblock setzen kannst",
-        when_to_use: "Bei Scrimmage, Match, hartem Trainingsblock, sichtbarer Bewertung, mehreren Druckfaktoren gleichzeitig, chaotischer fordernder Phase oder einem fokussierten Belastungsblock im Alltag",
+        when_to_use: "Bei Wettkampfsimulation, Match, hartem Trainingsblock, sichtbarer Bewertung, mehreren Druckfaktoren gleichzeitig, chaotischer fordernder Phase oder einem fokussierten Belastungsblock im Alltag",
         action: "Geh bewusst in einen Lastblock, der echt genug ist, dass dein System real reagieren muss.",
         why: "Bevor du etwas über Konsolidierung lesen kannst, brauchst du eine reale Belastungssituation.",
         explanation: "Der Tag darf nicht vom Zufall abhängen. Wenn keine natürliche Last kommt, erzeugst du einen ehrlichen kleinen Check: drei relevante Wiederholungen, eine sichtbare Serie, ein Fokusblock mit Druck, ein unangenehmes Gespräch, mehrere Anforderungen nacheinander. Nicht künstlich maximal hart. Nur echt genug.",
@@ -3868,7 +3868,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
       { text: "Das bleibt.", when: "Wenn du einen Kern bewusst bestätigst" }
     ],
     variants: {
-      training: "Ideal bei Scrimmage, Match, hartem Trainingsblock, sichtbarer Bewertung oder mehreren Druckfaktoren gleichzeitig.",
+      training: "Ideal bei Wettkampfsimulation, im Wettkampf, hartem Trainingsblock, sichtbarer Bewertung oder mehreren Druckfaktoren gleichzeitig.",
       rest: "Sehr gut übertragbar auf fokussierten Arbeitsblock, unangenehmes Gespräch, mehrere Anforderungen nacheinander oder sichtbare Aufgabe mit Druck.",
       match: "Kurzversion: Last nutzen → ehrlich lesen → einen Kern bewusst nochmal tragen."
     }
@@ -3926,7 +3926,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Lass die nächste Szene normal sein",
         trigger: "Wenn du wieder zurück bist",
         when_to_use: "In der direkt nächsten Szene",
-        action: "Spiele die nächste Szene normal, nicht als Wiedergutmachung.",
+        action: "Wettkämpfe die nächste Szene normal, nicht als Wiedergutmachung.",
         why: "Präsenz wird erst Standard, wenn Rückkehr nicht ständig Sonderstatus bekommt.",
         explanation: "Nicht extra fokussiert wirken. Nicht kompensieren. Nicht 'jetzt muss es wieder stimmen'. Einfach normal da sein und die Szene spielen.",
         self_talk: "Einfach da.",
@@ -4556,7 +4556,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Lebe die nächste Szene von dort",
         trigger: "Wenn du wieder mehr im Prozess wohnst",
         when_to_use: "In der direkt nächsten relevanten Handlung",
-        action: "Spiele die nächste Szene so, dass sichtbar wird: Mein Ort ist im Prozess, nicht im Außen.",
+        action: "Wettkämpfe die nächste Szene so, dass sichtbar wird: Mein Ort ist im Prozess, nicht im Außen.",
         why: "Tag 50 wird erst real, wenn Prozess nicht nur gedacht, sondern als Grundort gelebt wird.",
         explanation: "Nicht als Technik, nicht als Notfallmaßnahme, sondern als Basis: Aufgabe spielen, Handlung sauber halten, Standard tragen, Außen wahrnehmen, aber dort nicht leben.",
         self_talk: "Von hier leben.",

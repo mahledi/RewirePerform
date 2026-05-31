@@ -105,55 +105,27 @@ const normalizeBasketballPosition = (pos?: string | null): BasketballPosition | 
 };
 
 // ─── Sport Examples ───────────────────────────────────────
+// Bewusst sport-neutral: ein Satz, der für Einzel- und Teamsport gleich gilt
+// und in Klammern Beispiele aus unterschiedlichen Sportwelten anbietet.
+// Individualisierung pro Sportart passiert nicht hier (gem. Produktentscheidung).
 
-const pickSportExample = (sport: SportKey, contextType: MicroAdjustmentInput["contextType"]): string => {
+const pickSportExample = (_sport: SportKey, contextType: MicroAdjustmentInput["contextType"]): string => {
   if (contextType === "competition") {
-    switch (sport) {
-      case "fußball": return "Im Spiel zählt nicht der perfekte Moment, sondern die saubere nächste Aktion.";
-      case "basketball": return "Im Spiel zählt der nächste Possession-Moment, nicht der letzte Wurf.";
-      case "tennis": return "Im Match zählt der nächste Punkt, nicht der vergangene.";
-      case "leichtathletik": return "Im Wettkampf zählt der nächste Versuch, nicht der vorherige.";
-      default: return "Im Wettkampf zählt die nächste Handlung, nicht die letzte.";
-    }
+    return "Im Wettkampf zählt die nächste Handlung, nicht die vergangene (nächster Punkt, nächster Versuch, nächste Aktion, nächste Wiederholung).";
   }
   if (contextType === "rest") {
     return "Heute geht es um die mentale Vorbereitung, nicht um körperliche Belastung.";
   }
-  switch (sport) {
-    case "fußball": return "Übertrage es auf einen typischen Trainingsmoment im Spielaufbau oder Zweikampf.";
-    case "basketball": return "Übertrage es auf einen typischen Moment im Drill oder im Scrimmage.";
-    case "tennis": return "Übertrage es auf einen typischen Moment im Ballwechsel oder im Aufschlagspiel.";
-    case "leichtathletik": return "Übertrage es auf einen typischen Moment im Lauf, Sprung oder Wurf.";
-    default: return "Such dir einen Moment im Training, der dazu passt.";
-  }
+  return "Übertrage es auf einen typischen Trainingsmoment (eine Übung, ein Durchgang, ein Schlag, ein Lauf, ein direktes Duell — was bei dir passt).";
 };
 
+// Positions-Beispiele sind bewusst deaktiviert: der Basis-Content bleibt
+// sport- und positionsneutral. Individualisierung übernimmt der Athlet selbst.
 const pickPositionExample = (
-  sport: SportKey,
-  position: string | null | undefined,
+  _sport: SportKey,
+  _position: string | null | undefined,
   _mechanism: string,
-): string | null => {
-  if (sport === "fußball") {
-    const pos = normalizeFootballPosition(position);
-    switch (pos) {
-      case "iv": return "Als Innenverteidiger zählt besonders der Moment nach einem Fehler oder unklarer Kommunikation — er ist sichtbar und hat direkte Folgen.";
-      case "stürmer": return "Als Stürmer zählt besonders der Moment nach einer verpassten Chance — Erwartung und Sichtbarkeit sind hoch.";
-      case "mittelfeld": return "Im Mittelfeld zählt besonders der Moment, in dem du scannen, entscheiden und verbinden musst — auch wenn der Rhythmus bricht.";
-      case "torwart": return "Als Torwart zählt besonders der Moment nach einem Gegentor — Isolation und Reaktion entscheiden den nächsten Ball.";
-      default: return null;
-    }
-  }
-  if (sport === "basketball") {
-    const pos = normalizeBasketballPosition(position);
-    switch (pos) {
-      case "guard": return "Als Guard zählt besonders der Moment nach einem Turnover oder Fehlpass — du steuerst den nächsten Possession.";
-      case "forward": return "Als Forward zählt besonders der Moment im Mismatch oder Rebound — Präsenz vor Perfektion.";
-      case "center": return "Als Center zählt besonders der Moment im Post oder unter dem Korb — Raum vor Aktion.";
-      default: return null;
-    }
-  }
-  return null;
-};
+): string | null => null;
 
 // ─── State Emphasis (aktueller Check-in) ──────────────────
 
