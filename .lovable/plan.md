@@ -1,33 +1,72 @@
-# Fragebogen Mobile UX – kompaktes Layout
+## Ziel
 
-## Problem
-Auf dem Handy muss man im Fragebogen oft scrollen, um den Weiter-Button unten zu erreichen, und der Pause-Button oben verschwindet. Vor allem bei Single-/Multi-Choice-Fragen mit vielen Antwortoptionen. 1–10-Skalen passen meist schon.
+Den 56-Tage-Programm-Content so umschreiben, dass Sprache und Beispiele für **jede Sportart** funktionieren — Einzelsport (Boxen, Turnen, Schwimmen, Tennis, Leichtathletik, Klettern, Golf …) genauso wie Teamsport (Fußball, Basketball, Football, Volleyball, Handball …). Keine Individualisierung pro Nutzer, keine KI-Calls, kein neues Backend.
 
-## Ursache
-- `QuestionnaireFlow.tsx`: Content-Bereich nutzt `py-12 px-6` und `items-center` → großer Leerraum oben/unten, Sticky-Header und Sticky-Footer fressen zusätzlich Höhe.
-- `QuestionCard.tsx`: große Margins (`mb-8`, `mt-8`, `mt-6`), Optionen mit `p-4` + `space-y-3`, Headline `text-2xl md:text-3xl` mit `mb-3` + Subtext `mb-8`.
-- Top-Bar nutzt `py-4` + interne `mb-3` → doppelt hoch.
-- Bottom-Nav `py-4` mit Buttons `py-3` → ca. 76 px Höhe.
+## Was sich ändert
 
-## Lösung (nur Mobile, Desktop bleibt großzügig)
+Nur Text. Keine Tagesstruktur, kein Mechanismus, keine Phasenlogik, keine Anzahl Tasks/Fragen/Anker. Die `MatrixDay`-Skelette und der Resolver bleiben unverändert.
 
-### `QuestionnaireFlow.tsx`
-- Top-Bar: `py-4` → `py-2.5 md:py-4`, internes `mb-3` → `mb-2 md:mb-3`.
-- Content-Wrapper: `px-6 py-12` → `px-5 py-5 md:py-12`, `items-center` → `items-start md:items-center` (verhindert künstliche Zentrierung, die Inhalte nach unten drückt).
-- Bottom-Nav: `py-4` → `py-2.5 md:py-4`, Buttons `py-3` → `py-2.5 md:py-3`.
-- Pause-Button-Label auf Mobile kürzer: nur „Pause" sichtbar, der Zusatz „& später fortsetzen" hidden md:inline (mehr Platz für SaveIndicator, kein Umbruch).
+## Sprach-Mapping (Leitfaden)
 
-### `QuestionCard.tsx`
-- Headline: `text-2xl md:text-3xl mb-3` → `text-xl md:text-3xl mb-2 md:mb-3`, `leading-tight` bleibt.
-- Subtext: `mb-8` → `mb-4 md:mb-8`, Textgröße `text-sm md:text-base`.
-- Depth-Badge: `mb-4` → `mb-3 md:mb-4`.
-- Scale-Block: `mt-8` → `mt-4 md:mt-8`, Buttons `h-12` → `h-10 md:h-12`, Labels-Abstand `mb-3` → `mb-2 md:mb-3`.
-- Single-Choice (`choice`): `mt-6 space-y-3` → `mt-3 md:mt-6 space-y-2 md:space-y-3`, Buttons `p-4` → `p-3 md:p-4`.
-- Multi-Choice: identisch zu Single-Choice anpassen.
-- Text-Frage: `mt-6 space-y-3` → `mt-4 md:mt-6 space-y-2 md:space-y-3`, Textarea `rows={5}` → `rows={4}`, `p-5` → `p-4 md:p-5`.
+| heute (teamsport-lastig) | neutral |
+|---|---|
+| Spiel, Match | Wettkampf / Einsatz |
+| Trainer, Coach | Coach (bleibt — universell) |
+| Team, Mannschaft, Mitspieler | Umfeld / Trainingsgruppe / die anderen |
+| Gegner | Gegenüber / Anforderung / Aufgabe |
+| Pass, Schuss, Tor, Possession, Drill, Scrimmage, Zweikampf | Aktion / Versuch / nächste Bewegung / nächste Wiederholung |
+| Schiri, Schiedsrichter | Bewertende Instanz / Kampfrichter / Schiri (nur in optionalen Beispielen) |
+| „im Spiel gegen X" | „im Wettkampf / unter Druck" |
+| positionsspezifische Bilder (Innenverteidiger, Guard …) | rausziehen oder durch „in deiner Rolle" ersetzen |
 
-### Nicht ändern
-- Datenfluss, Validierung, Save-Logik, Reihenfolge der Fragen, CategoryIntro-Inhalte, Desktop-Look (alle Änderungen via `md:`-Breakpoints rückwärts kompatibel).
+Wo Bildhaftigkeit verloren geht, bekommen Sätze stattdessen **2 kurze Beispiele in Klammern** aus unterschiedlichen Sportwelten, z. B.:
+> „… nach einer misslungenen Aktion (verpasster Wurf, gefallener Stand, Fehlpass, geblockter Schlag)."
 
-## Erfolgskriterium
-Bei iPhone-Viewport (375×667 bis 414×896) ist bei einer typischen 4–6-Optionen-Choice-Frage sowohl der Pause-Button oben als auch der Weiter-Button unten ohne Scrollen sichtbar. 1–10-Skalen bleiben weiterhin auf einen Blick erfassbar.
+So fühlt sich Boxer, Turner und Footballer gleichermaßen gemeint, ohne dass der Text technisch wird.
+
+## Umfang
+
+Drei Dateien, eine bleibt nur als Doku/Anker:
+
+1. **`src/content/dailyContent.ts`** (2.476 Zeilen) — Hauptarbeit.
+   Pro Tag (1–56) anpassen:
+   - `tasks[*].title / why / detailedExplanation / concreteAction / whenToUse / microReframe / selfTalk / trigger`
+   - `journal.questions[*].question + placeholder`, `gratitudePrompt`, `freeReflectionPrompt`
+   - `selfTalkAnchors[*].text/when`
+   - `comprehensionPool[*].stem + options + explanation` (am stärksten teamsportlastig — wichtigster Teil)
+   - `variants.training / rest / match` (→ `match` bleibt Feldname, Text wird „Wettkampf")
+   - `todayTrigger`, `coreShift`
+
+2. **`src/lib/microAdjustment.ts`** — die vier hartcodierten Sport-Beispiele (Fußball/Basketball/Tennis/Leichtathletik) durch **einen neutralen Satz mit Mehrsport-Beispielen** ersetzen; Positions-Branch (`pickPositionExample`) liefert künftig immer `null` (deaktiviert), bis du das später lokal individualisierst.
+
+3. **`src/lib/getDayContent.ts`** — `applyMicroAdjustments` deaktivieren bzw. den Sport-Hint sport-neutral formulieren (kein „Übertrag auf {sport}" mehr).
+
+## Vorgehen (4 Batches, weil 2.476 Zeilen)
+
+Damit nichts kippt und du nach jedem Batch prüfen kannst:
+
+```text
+Batch 1: Tag  1–14   (Phase 1 — Seed/Return)
+Batch 2: Tag 15–28   (Phase 2 — Deepen/Convert)
+Batch 3: Tag 29–42   (Phase 3 — Stress-Test/Transfer)
+Batch 4: Tag 43–56   (Phase 4 — Integrate)
+         + microAdjustment.ts + getDayContent.ts + Memory-Update
+```
+
+Pro Batch: nur Text-Felder ändern, Struktur/IDs/Counts (3 Tasks, 5–8 Fragen, korrekte `correctOptionId`) bleiben **identisch**. Nach jedem Batch ein kurzer Build-Check.
+
+## Was bewusst NICHT passiert
+
+- Keine neue Tabelle, keine Migration, keine Edge Function.
+- Keine KI-Calls zur Laufzeit.
+- Keine Änderung an Onboarding, Coach-Dashboard, Check-in-Logik, Streak-Logik.
+- Keine Änderung der `MatrixDay`-Skelette (`primaryMechanism`, `lens`, `recurrenceType` …).
+- Keine sportartspezifischen Varianten — bewusst eine einzige neutrale Version (deine lokale KI macht später die Individualisierung).
+
+## Memory-Update danach
+
+`mem://index.md` Core anpassen: „Sprache ist sportneutral — Einzel- wie Teamsport. Keine sportspezifischen Bilder im Basis-Content." Außerdem neue Memory-Datei `mem://constraints/sport-neutral-content` mit dem Mapping oben als Referenz für zukünftige Content-Edits.
+
+## Aufwand-Realität
+
+Ehrlich: Das ist **viel Fleißarbeit, aber gut machbar**. Die Comprehension-Pools sind der zeitaufwendigste Teil (~ 6 Fragen × 4 Optionen × 56 Tage ≈ 1.300 Strings). In 4 Batches sauber durchziehbar; pro Batch ein Tool-Loop.
