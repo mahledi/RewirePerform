@@ -30,24 +30,21 @@ export interface MicroAdjustmentInput {
  * KEIN AI-Call. Hängt nur passende Sport-Beispiele an die Tasks an, falls vorhanden.
  * Tagesmechanismus / Aufgabenstruktur bleibt unangetastet.
  */
+/**
+ * Sport-neutrale Micro-Adjustment-Schicht.
+ *
+ * Bewusst KEIN sportartspezifischer Override mehr: der Basis-Content ist
+ * sport-/positionsneutral formuliert und gilt für jede Athlet:in (Einzel-
+ * wie Teamsport). Individualisierung übernimmt der Athlet selbst.
+ *
+ * Diese Funktion ist daher heute eine Identitäts-Funktion und bleibt nur
+ * als Erweiterungspunkt erhalten (z. B. künftige rein deterministische,
+ * sportneutrale Anreicherungen).
+ */
 const applyMicroAdjustments = (
   content: DailyContent,
-  adjust?: MicroAdjustmentInput
-): DailyContent => {
-  if (!adjust?.sport) return content;
-  const hint: SportAdaptationHint = {
-    sport: adjust.sport,
-    position: adjust.position ?? undefined,
-    example: `Übertrag auf ${adjust.sport}${adjust.position ? ` (${adjust.position})` : ""}: passe diese Aufgabe an einen typischen Moment deiner Sportart an.`,
-  };
-  return {
-    ...content,
-    tasks: content.tasks.map((t) => ({
-      ...t,
-      sportSpecificExamples: [...(t.sportSpecificExamples ?? []), hint],
-    })) as DailyContent["tasks"],
-  };
-};
+  _adjust?: MicroAdjustmentInput
+): DailyContent => content;
 
 export const resolveDay = (
   dayNumber: number,
