@@ -109,7 +109,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Das Abdriften der Gedanken mit einem neutralen Wort innerlich zu markieren." },
         { id: "b", text: "Mich nach einem Fehler zu bestrafen, um ihn nicht mehr zu wiederholen." },
-        { id: "c", text: "Meine Leistung gedanklich mit der meiner Mitspieler zu vergleichen." },
+        { id: "c", text: "Meine Leistung gedanklich mit der meiner Trainingspartner zu vergleichen." },
         { id: "d", text: "Den Grund für einen Fehler zu analysieren, um ihn besser zu verstehen." },
       ],
       correctOptionId: "a",
@@ -133,7 +133,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       target: "behavior",
       stem: "Was machst du, wenn du im Training merkst, dass du abgedriftet bist?",
       options: [
-        { id: "a", text: "Ich zwinge mich, meine Gedanken aggressiv auf das Spiel zu richten." },
+        { id: "a", text: "Ich zwinge mich, meine Gedanken aggressiv auf das Wettkampf zu richten." },
         { id: "b", text: "Ich markiere es innerlich mit 'Weg' und richte den Fokus auf den Ball." },
         { id: "c", text: "Ich gehe die letzten Aktionen im Kopf durch, um meinen Fehler zu finden." },
         { id: "d", text: "Ich versuche zu verhindern, dass solche Gedanken wieder auftauchen." },
@@ -301,7 +301,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       target: "lens",
       stem: "Worum geht es heute im Kern?",
       options: [
-        { id: "a", text: "Deine gesamte Energie darauf zu verwenden, das Spiel zu kontrollieren." },
+        { id: "a", text: "Deine gesamte Energie darauf zu verwenden, das Wettkampf zu kontrollieren." },
         { id: "b", text: "Wahrzunehmen, welche äusseren Umstände dir unnötig Energie rauben." },
         { id: "c", text: "Unerwünschte Gedanken und Gefühle so schnell wie möglich zu stoppen." },
         { id: "d", text: "Fehler und Probleme zu analysieren, um sie sofort zu korrigieren." },
@@ -338,9 +338,9 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
     {
       id: "d4-q4",
       target: "behavior",
-      stem: "Der Schiri trifft eine schlechte Entscheidung gegen dich. Was ist heute die saubere Reaktion?",
+      stem: "Der Wertungsinstanz trifft eine schlechte Entscheidung gegen dich. Was ist heute die saubere Reaktion?",
       options: [
-        { id: "a", text: "Dir vornehmen, es dem Schiri durch eine besonders harte Aktion zu zeigen." },
+        { id: "a", text: "Dir vornehmen, es dem Wertungsinstanz durch eine besonders harte Aktion zu zeigen." },
         { id: "b", text: "Die Entscheidung innerlich abhaken und den Fokus zur eigenen Aufgabe lenken." },
         { id: "c", text: "Die Szene im Kopf wiederholen, um zu verstehen, was falsch gelaufen ist." },
         { id: "d", text: "Deinem Captain signalisieren, dass er die Entscheidung jetzt klären muss." },
@@ -525,7 +525,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       target: "lens",
       stem: "Worum geht es heute im Kern?",
       options: [
-        { id: "a", text: "Den Coach davon überzeugen, dass du der engagierteste Spieler im Team bist." },
+        { id: "a", text: "Den Coach davon überzeugen, dass du der engagierteste Athleten im Team bist." },
         { id: "b", text: "Vor dem Training eine konkrete Verhaltensweise für die Einheit festlegen." },
         { id: "c", text: "Deine bisherigen Fehler analysieren, um sie heute nicht wiederholen zu müssen." },
         { id: "d", text: "Ein klares Leistungsziel setzen, um dich härter als sonst zu pushen." },
@@ -650,7 +650,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       target: "action",
       stem: "Was ist heute die zentrale Praxis?",
       options: [
-        { id: "a", text: "Trotz Unsicherheit eine saubere Aktion im Training oder Spiel bewusst umzusetzen." },
+        { id: "a", text: "Trotz Unsicherheit eine saubere Aktion im Training oder Wettkampf bewusst umzusetzen." },
         { id: "b", text: "Abzuwarten, bis du dich mental bereit und sicher für die nächste Aktion fühlst." },
         { id: "c", text: "Nach einer Aktion genau zu analysieren, was gut und was schlecht gelaufen ist." },
         { id: "d", text: "Dich durch positive Gedanken dazu zu pushen, dich selbstsicherer zu fühlen." },
@@ -741,7 +741,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Wie zeigt sich Qualität-vor-Wirkung in deinem Verhalten heute?",
       options: [
         { id: "a", text: "Du wählst die taktisch klügste Aktion, auch wenn sie vielleicht weniger auffällig ist." },
-        { id: "b", text: "Du versuchst eine besonders riskante Aktion, um das Spiel entscheidend zu prägen." },
+        { id: "b", text: "Du versuchst eine besonders riskante Aktion, um das Wettkampf entscheidend zu prägen." },
         { id: "c", text: "Du übernimmst die Führung und versuchst, das Team mit einer lauten Ansage zu pushen." },
         { id: "d", text: "Du konzentrierst dich darauf, deine Kernaufgaben ohne Fehler zu erledigen." },
       ],
@@ -968,7 +968,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d18-q2", target: "behavior",
       stem: "Wie sieht 'sichtbare Unsicherheit bewusst wählen' im Training aus?",
       options: [
-        { id: "a", text: "Du probierst eine neue Technik im Team-Drill, obwohl sie noch nicht perfekt sitzt und du scheitern könntest." },
+        { id: "a", text: "Du probierst eine neue Technik im Team-Übungseinheit, obwohl sie noch nicht perfekt sitzt und du scheitern könntest." },
         { id: "b", text: "Du trainierst eine schwierige Technik lange allein, bis du sie ohne Fehler beherrschst und sie zeigen kannst." },
         { id: "c", text: "Du wiederholst vor allem die Übungen, die du schon gut kannst, um dein Selbstvertrauen für den Wettkampf zu stärken." },
         { id: "d", text: "Du lässt dir von einem Coach genau jeden Schritt vorgeben, um bei neuen Übungen keine Fehler zu machen." },
@@ -1004,7 +1004,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
     },
     {
       id: "d19-q2", target: "action",
-      stem: "Was tust du heute, wenn etwas außerhalb deiner Kontrolle passiert (Wetter, Schiri, Gegner)?",
+      stem: "Was tust du heute, wenn etwas außerhalb deiner Kontrolle passiert (Wetter, Wertungsinstanz, Gegner)?",
       options: [
         { id: "a", text: "Du benennst die Fakten nüchtern und richtest deinen Fokus auf die nächste Aktion." },
         { id: "b", text: "Du kanalisierst deinen Ärger, um dich für die nächste Aufgabe härter zu pushen." },
@@ -1082,8 +1082,8 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d21-q2", target: "behavior",
       stem: "Wie sieht eine teamdienliche Aktion heute konkret aus?",
       options: [
-        { id: "a", text: "Du spielst den einfachen Pass zum freien Mitspieler, statt selbst den Abschluss zu suchen." },
-        { id: "b", text: "Du erklärst einem Mitspieler sofort lautstark, welchen Fehler er gerade gemacht hat." },
+        { id: "a", text: "Du spielst den einfachen Pass zum freien Trainingspartner, statt selbst den Abschluss zu suchen." },
+        { id: "b", text: "Du erklärst einem Trainingspartner sofort lautstark, welchen Fehler er gerade gemacht hat." },
         { id: "c", text: "Du versuchst, durch besonders riskante Alleingänge ein Zeichen für das Team zu setzen." },
         { id: "d", text: "Du vermeidest es, den entscheidenden Wurf zu nehmen, um keinen Fehler zu riskieren." },
       ],
@@ -1270,7 +1270,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
     },
     {
       id: "d26-q2", target: "action",
-      stem: "Was tust du konkret vor dem Spiel/Training gegen Stärkere?",
+      stem: "Was tust du konkret vor dem Wettkampf/Training gegen Stärkere?",
       options: [
         { id: "a", text: "Du fragst dich, was deine eine saubere Kontakt-Handlung ist." },
         { id: "b", text: "Du gehst deine Checkliste durch, um mental nichts zu vergessen." },
@@ -1334,7 +1334,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
   28: [
     {
       id: "d28-q1", target: "lens",
-      stem: "Wie behandelst du Schiri, Gegner, Umstände heute?",
+      stem: "Wie behandelst du Wertungsinstanz, Gegner, Umstände heute?",
       options: [
         { id: "a", text: "Du versuchst, die Umstände innerlich kleinzumachen, damit sie dich weniger stören." },
         { id: "b", text: "Du nutzt die Umstände als Signal, jetzt härter gegen alles anzukämpfen." },
@@ -1498,12 +1498,12 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
     },
     {
       id: "d32-q2", target: "behavior",
-      stem: "Wie sieht das heute konkret aus, wenn Coach/Scout/Mitspieler zuschauen?",
+      stem: "Wie sieht das heute konkret aus, wenn Coach/Scout/Trainingspartner zuschauen?",
       options: [
         { id: "a", text: "Du wählst Aktionen etwas sicherer, damit deine Qualität unter Beobachtung stabil bleibt." },
         { id: "b", text: "Du machst dieselben sinnvollen Aktionen wie ohne Beobachtung und bleibst bei der Lernaufgabe." },
         { id: "c", text: "Du suchst stärker sichtbare Aktionen, damit deine Entwicklung auch erkennbar wird." },
-        { id: "d", text: "Du beobachtest genau, wie Coach oder Mitspieler auf deine Aktionen reagieren." },
+        { id: "d", text: "Du beobachtest genau, wie Coach oder Trainingspartner auf deine Aktionen reagieren." },
       ],
       correctOptionId: "b",
       explanation: "Soziale Defusion zeigt sich, wenn Beobachtung dein Verhalten nicht übernimmt. Sicherer, sichtbarer oder beobachterorientierter zu handeln bedeutet, dass Außenwirkung steuert.",
@@ -1591,7 +1591,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Du zwingst dir Dankbarkeit auf, obwohl du innerlich nur weiter durchhalten willst." },
         { id: "b", text: "Du erkennst eine konkrete Möglichkeit, ohne den schweren Moment wegzuleugnen." },
         { id: "c", text: "Du nimmst deinen Atem wahr und holst dadurch wieder etwas Weite zurück." },
-        { id: "d", text: "Du sprichst kurz mit einem Mitspieler und kommst dadurch wieder in Verbindung." },
+        { id: "d", text: "Du sprichst kurz mit einem Trainingspartner und kommst dadurch wieder in Verbindung." },
       ],
       correctOptionId: "a",
       explanation: "Pseudo-Dankbarkeit ist aufgesetzt und verändert die Aufmerksamkeit nicht wirklich. Konkretes Wahrnehmen, Atmen oder Verbindung kann echte Weite zurückgeben.",
@@ -1667,7 +1667,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Wenn du dich auf eine konkrete nächste Aktion begrenzt und sie sauber ausführst." },
         { id: "b", text: "Wenn du gleichzeitig mehrere Probleme mental lösen willst und dadurch streust." },
         { id: "c", text: "Wenn du deinen Trigger nutzt, obwohl um dich herum weiter Hektik bleibt." },
-        { id: "d", text: "Wenn du einem Mitspieler kurz hilfst, ohne deine eigene Aufgabe zu verlieren." },
+        { id: "d", text: "Wenn du einem Trainingspartner kurz hilfst, ohne deine eigene Aufgabe zu verlieren." },
       ],
       correctOptionId: "b",
       explanation: "Multitasking unter Druck zerstört Präsenz. Begrenzen, triggern oder kurz helfen kann funktional sein, wenn die eigene nächste Aufgabe klar bleibt.",
@@ -1692,7 +1692,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Du reagierst kurz und wechselst dann zurück in die Aufgabe, ohne wiederzukehren." },
         { id: "b", text: "Du sprichst es öffentlich an, damit dein Team die Situation richtig einordnet." },
-        { id: "c", text: "Du erinnerst Mitspieler daran, damit ihr nicht so tut, als wäre es egal." },
+        { id: "c", text: "Du erinnerst Trainingspartner daran, damit ihr nicht so tut, als wäre es egal." },
         { id: "d", text: "Du machst einen sarkastischen Kommentar, um den Frust kurz rauszulassen." },
       ],
       correctOptionId: "a",
@@ -1703,9 +1703,9 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was ist die typische Frust-Falle?",
       options: [
         { id: "a", text: "Du spielst die nächste Aktion sauber, obwohl die vorherige Szene unfair war." },
-        { id: "b", text: "Du beruhigst einen Mitspieler, ohne die alte Szene wieder groß zu machen." },
+        { id: "b", text: "Du beruhigst einen Trainingspartner, ohne die alte Szene wieder groß zu machen." },
         { id: "c", text: "Du führst innerlich Bilanz, wie viele unfaire Momente sich schon gesammelt haben." },
-        { id: "d", text: "Du atmest einmal und bringst deine Aufmerksamkeit zurück ins Spiel." },
+        { id: "d", text: "Du atmest einmal und bringst deine Aufmerksamkeit zurück ins Wettkampf." },
       ],
       correctOptionId: "c",
       explanation: "Bilanzführen hält Aufmerksamkeit dauerhaft im Außen und lädt Frust auf. Die anderen Antworten führen zurück in Funktion oder helfen, ohne die Szene weiter zu vergrößern.",
@@ -1767,7 +1767,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Woran sieht man, dass du nicht stabil bist?",
       options: [
         { id: "a", text: "Bei Führung verlierst du Schärfe, bei Rückstand wirst du hektisch oder resignierst." },
-        { id: "b", text: "Du hältst deinen Anker, obwohl das Spiel gerade klar in eine Richtung kippt." },
+        { id: "b", text: "Du hältst deinen Anker, obwohl das Wettkampf gerade klar in eine Richtung kippt." },
         { id: "c", text: "Du sprichst in Führung und Rückstand ähnlich klar mit deinen Mitspielern." },
         { id: "d", text: "Du atmest in beiden Phasen gleich und gehst zurück zur nächsten Szene." },
       ],
@@ -1779,7 +1779,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was ist die typische Momentum-Falle bei Führung?",
       options: [
         { id: "a", text: "Du spielst konzentriert weiter, obwohl das Ergebnis gerade für dich spricht." },
-        { id: "b", text: "Du beruhigst Mitspieler, ohne selbst aus deinem Standard zu fallen." },
+        { id: "b", text: "Du beruhigst Trainingspartner, ohne selbst aus deinem Standard zu fallen." },
         { id: "c", text: "Du hältst deinen Anker und behandelst die nächste Szene normal." },
         { id: "d", text: "Du beginnst, das Ergebnis zu verwalten, statt weiter Aktionen sauber zu wählen." },
       ],
@@ -1818,7 +1818,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Du wählst in jeder Drucksituation automatisch die kleinste und sicherste Aktion." },
         { id: "b", text: "Du baust eine kleine Variante ein, die zur Situation und Aufgabe passt." },
-        { id: "c", text: "Du reflektierst nach dem Spiel, was unter Druck wirklich möglich war." },
+        { id: "c", text: "Du reflektierst nach dem Wettkampf, was unter Druck wirklich möglich war." },
         { id: "d", text: "Du sprichst mit dem Coach, um eine gezielte nächste Lernkante zu finden." },
       ],
       correctOptionId: "a",
@@ -1856,7 +1856,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Du benennst den Fehler sachlich und leitest daraus eine konkrete Korrektur ab." },
         { id: "b", text: "Du spielst weiter, obwohl du merkst, dass die Szene nicht sauber war." },
-        { id: "c", text: "Du machst aus einem Fehler eine Aussage über deinen Wert als Spieler oder Mensch." },
+        { id: "c", text: "Du machst aus einem Fehler eine Aussage über deinen Wert als Athleten oder Mensch." },
         { id: "d", text: "Du lernst aus der Situation, ohne dich innerlich komplett darüber zu definieren." },
       ],
       correctOptionId: "c",
@@ -1947,7 +1947,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Du redest dich kleiner, damit deine Stärke nicht zu viel Aufmerksamkeit bekommt." },
         { id: "b", text: "Du versteckst deine Stärke, weil Demut bedeutet, nicht zu sehr aufzufallen." },
         { id: "c", text: "Du lieferst hohe Qualität, ohne daraus einen Beweis über dich machen zu müssen." },
-        { id: "d", text: "Du hältst dich zurück, damit Mitspieler neben dir nicht schlechter wirken." },
+        { id: "d", text: "Du hältst dich zurück, damit Trainingspartner neben dir nicht schlechter wirken." },
       ],
       correctOptionId: "c",
       explanation: "Demut in Stärke heißt nicht klein werden, sondern Stärke ohne Beweisdrang tragen. Kleinreden, Verstecken oder Zurückhalten verwechselt Demut mit Selbstbegrenzung.",
@@ -1969,12 +1969,12 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was wäre die Ego-Variante derselben Aktion?",
       options: [
         { id: "a", text: "Du machst eine starke Aktion, weil sie in der Situation wirklich gebraucht wird." },
-        { id: "b", text: "Du bindest einen Mitspieler ein, obwohl du selbst gerade sehr stark bist." },
+        { id: "b", text: "Du bindest einen Trainingspartner ein, obwohl du selbst gerade sehr stark bist." },
         { id: "c", text: "Du bleibst konzentriert und wählst die nächste passende Aktion." },
         { id: "d", text: "Du wiederholst die starke Aktion, weil sie geklappt hat und dein Bild stärkt." },
       ],
       correctOptionId: "d",
-      explanation: "Ego zeigt sich, wenn du aus Beweisdrang wiederholst statt situativ zu wählen. Starke Aktionen, Einbindung und Fokus können dem Spiel dienen.",
+      explanation: "Ego zeigt sich, wenn du aus Beweisdrang wiederholst statt situativ zu wählen. Starke Aktionen, Einbindung und Fokus können dem Wettkampf dienen.",
     },
   ],
   45: [
@@ -1997,7 +1997,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Du wartest auf einen guten Moment, damit deine Dankbarkeit nicht aufgesetzt wirkt." },
         { id: "b", text: "Du benennst eine reale Möglichkeit, die genau jetzt da ist, ohne besonderen Anlass." },
         { id: "c", text: "Du sammelst am Abend mehrere Dinge, damit die Übung vollständiger wird." },
-        { id: "d", text: "Du sagst einem Mitspieler etwas Positives, damit Verbindung im Team entsteht." },
+        { id: "d", text: "Du sagst einem Trainingspartner etwas Positives, damit Verbindung im Team entsteht." },
       ],
       correctOptionId: "b",
       explanation: "Default-Dankbarkeit wird in neutralen Momenten trainiert. Warten, nur abends sammeln oder nach außen geben kann gut sein, ersetzt aber nicht den inneren Grundzustand.",
@@ -2261,7 +2261,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Woran erkennst du heute Purpose-Modus?",
       options: [
         { id: "a", text: "Deine Aktionen orientieren sich an Beitrag und Aufgabe, nicht an Wirkung oder Schutz." },
-        { id: "b", text: "Du machst spektakulärere Aktionen, weil du dich stärker mit dem Spiel verbunden fühlst." },
+        { id: "b", text: "Du machst spektakulärere Aktionen, weil du dich stärker mit dem Wettkampf verbunden fühlst." },
         { id: "c", text: "Du wählst sicherere Aktionen, damit du dem Team auf keinen Fall schadest." },
         { id: "d", text: "Du redest mehr, weil Purpose vor allem über klare Kommunikation sichtbar wird." },
       ],
@@ -2388,7 +2388,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Du kippst nach einer starken Aktion kurz in Selbstinszenierung statt im Prozess zu bleiben." },
         { id: "b", text: "Du spielst konzentriert weiter, obwohl die starke Aktion sichtbar war." },
-        { id: "c", text: "Du hilfst danach einem Mitspieler, weil die nächste Situation das gerade braucht." },
+        { id: "c", text: "Du hilfst danach einem Trainingspartner, weil die nächste Situation das gerade braucht." },
         { id: "d", text: "Du führst eine schwere Aktion sauber aus, ohne daraus eine Geschichte über dich zu machen." },
       ],
       correctOptionId: "a",
