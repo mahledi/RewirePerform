@@ -959,7 +959,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Das Gefühl von Unsicherheit ist das klare Zeichen, dass du gerade deine Fähigkeiten erweiterst." },
         { id: "b", text: "Wenn du dich unsicher fühlst, solltest du eine Pause machen und die Situation genau analysieren." },
         { id: "c", text: "Momente der Unsicherheit musst du schnell überwinden, um deine Topleistung abrufen zu können." },
-        { id: "d", text: "Echte Stärke bedeutet, seine aufkommende Unsicherheit vor den Mitspielern zu verbergen." },
+        { id: "d", text: "Echte Stärke bedeutet, seine aufkommende Unsicherheit vor den Trainingspartner:innen zu verbergen." },
       ],
       correctOptionId: "a",
       explanation: "Unsicherheit ist das direkte Signal für eine Wachstumschance, während die häufigste falsche Wahl sie als Leistungsproblem sieht, das man sofort abstellen muss.",
@@ -1068,12 +1068,12 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
   21: [
     {
       id: "d21-q1", target: "lens",
-      stem: "Was bedeutet 'Team vor Selbstbild'?",
+      stem: "Was bedeutet 'Beitrag vor Selbstbild'?",
       options: [
         { id: "a", text: "Du richtest deine Handlungen danach aus, was die Situation für den Gruppenerfolg erfordert." },
         { id: "b", text: "Du befolgst immer genau die Anweisungen des Trainers, ohne diese zu hinterfragen." },
         { id: "c", text: "Du stellst sicher, dass deine eigenen Erfolge vom restlichen Team anerkannt werden." },
-        { id: "d", text: "Du unterdrückst deine Impulse und überlässt die Initiative komplett deinen Mitspielern." },
+        { id: "d", text: "Du unterdrückst deine Impulse und überlässt die Initiative komplett deinen Trainingspartner:innen." },
       ],
       correctOptionId: "a",
       explanation: "Die richtige Antwort fokussiert auf den teambezogenen Nutzen einer Handlung, während die falsche Wahl des passiven Abwartens eine häufige Fehlinterpretation von 'Ego zurücknehmen' darstellt.",
@@ -1088,7 +1088,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "d", text: "Du vermeidest es, den entscheidenden Wurf zu nehmen, um keinen Fehler zu riskieren." },
       ],
       correctOptionId: "a",
-      explanation: "Die richtige Antwort beschreibt eine Handlung, bei der der Gruppennutzen über die persönliche Geltung gestellt wird, während das laute Korrigieren von Mitspielern oft mehr dem eigenen Image als der Gruppe dient.",
+      explanation: "Die richtige Antwort beschreibt eine Handlung, bei der der Gruppennutzen über die persönliche Geltung gestellt wird, während das laute Korrigieren von Trainingspartner:innen oft mehr dem eigenen Image als der Gruppe dient.",
     },
     {
       id: "d21-q3", target: "mistake",
@@ -1768,7 +1768,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Bei Führung verlierst du Schärfe, bei Rückstand wirst du hektisch oder resignierst." },
         { id: "b", text: "Du hältst deinen Anker, obwohl das Wettkampf gerade klar in eine Richtung kippt." },
-        { id: "c", text: "Du sprichst in Führung und Rückstand ähnlich klar mit deinen Mitspielern." },
+        { id: "c", text: "Du sprichst in Führung und Rückstand ähnlich klar mit deinen Trainingspartner:innen." },
         { id: "d", text: "Du atmest in beiden Phasen gleich und gehst zurück zur nächsten Szene." },
       ],
       correctOptionId: "a",
