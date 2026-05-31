@@ -733,7 +733,6 @@ export type Database = {
           is_complete: boolean
           last_category_index: number
           progress_updated_at: string
-          program_instance_id: string | null
           questionnaire_version: string | null
           scores: Json
           session_id: string
@@ -749,7 +748,6 @@ export type Database = {
           is_complete?: boolean
           last_category_index?: number
           progress_updated_at?: string
-          program_instance_id?: string | null
           questionnaire_version?: string | null
           scores?: Json
           session_id: string
@@ -765,7 +763,6 @@ export type Database = {
           is_complete?: boolean
           last_category_index?: number
           progress_updated_at?: string
-          program_instance_id?: string | null
           questionnaire_version?: string | null
           scores?: Json
           session_id?: string
@@ -1360,22 +1357,6 @@ export type Database = {
           is_complete: boolean
           last_category_index: number
           progress_updated_at: string
-          user_id: string
-        }[]
-      }
-      get_coach_team_activity_status: {
-        Args: { _team_id: string }
-        Returns: {
-          checkins_last_7d: number
-          completion_rate: number | null
-          current_streak: number | null
-          days_available: number | null
-          days_completed: number | null
-          full_name: string | null
-          inactive_risk: boolean
-          journal_entries_count: number
-          last_activity_at: string | null
-          last_checkin_date: string | null
           user_id: string
         }[]
       }
