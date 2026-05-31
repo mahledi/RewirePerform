@@ -16,7 +16,6 @@ import type {
   ResolvedDay,
   DailyContent,
   CalendarEventType,
-  SportAdaptationHint,
 } from "@/content/matrixDayTypes";
 
 export interface MicroAdjustmentInput {
