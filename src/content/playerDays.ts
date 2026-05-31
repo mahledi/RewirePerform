@@ -1899,11 +1899,11 @@ export const PLAYER_DAYS: PlayerDay[] = [
     phase: "Phase II — Umcodieren",
     week: 4,
     line: "Ego vs Inner Excellence",
-    lens: "Ich kann Aufmerksamkeit aus Bildschutz lösen und auf das richten, was die Situation oder das Team wirklich braucht.",
+    lens: "Ich kann Aufmerksamkeit aus Bildschutz lösen und auf das richten, was die Situation oder die Gruppe wirklich braucht.",
     primary_mechanism: "Prosocial Attention Shift",
-    today_trigger: "Sobald du merkst, dass du gerade eher dein Bild schützt als der Situation oder dem Team zu dienen, ist der Tag aktiv.",
+    today_trigger: "Sobald du merkst, dass du gerade eher dein Bild schützt als der Situation oder der Gruppe zu dienen, ist der Tag aktiv.",
     core_shift: "Heute verschiebst du dich von bildschützendem Handeln zu dienlichem Handeln.",
-    science_bite: "Unter Druck, Bewertung oder Unsicherheit wird Aufmerksamkeit oft stark selbstbezogen: Wie wirke ich? Was sagt das über mich? Wie komme ich rüber? Genau dieser Bildschutz macht Verhalten oft enger, künstlicher oder defensiver. Heute trainierst du die Gegenrichtung: Aufmerksamkeit weg vom Bild, hin zu dem, was die Situation, das Team oder die Aufgabe wirklich braucht.",
+    science_bite: "Unter Druck, Bewertung oder Unsicherheit wird Aufmerksamkeit oft stark selbstbezogen: Wie wirke ich? Was sagt das über mich? Wie komme ich rüber? Genau dieser Bildschutz macht Verhalten oft enger, künstlicher oder defensiver. Heute trainierst du die Gegenrichtung: Aufmerksamkeit weg vom Bild, hin zu dem, was die Situation, die Gruppe oder die Aufgabe wirklich braucht.",
     tasks: [
       {
         id: "d21-t1",
@@ -1911,10 +1911,10 @@ export const PLAYER_DAYS: PlayerDay[] = [
         trigger: "Wenn du merkst, dass es dir gerade stark um Wirkung, Status, Verteidigung oder Selbstschutz geht",
         when_to_use: "Bei Fehlern, Kritik, Vergleich, Verantwortung, Beobachtung oder sozialen Druckmomenten",
         action: "Frag dich kurz: 'Schütze ich gerade mein Bild — oder diene ich der Situation?'",
-        why: "Du kannst Teamorientierung erst praktisch wählen, wenn der Bildschutz sichtbar wird.",
+        why: "Du kannst Beitragsorientierung erst praktisch wählen, wenn der Bildschutz sichtbar wird.",
         explanation: "Tag 21 ist nicht moralisch. Es geht nicht darum, nett zu sein. Es geht darum zu erkennen, wann dein Verhalten stärker vom eigenen Bild als von echter Aufgabe oder Beitrag gesteuert ist.",
         self_talk: "Bild oder Beitrag?",
-        micro_reframe: "Nicht jede Spannung ist Teamverantwortung — oft ist sie Bildschutz.",
+        micro_reframe: "Nicht jede Spannung ist geteilte Verantwortung — oft ist sie Bildschutz.",
         reframe_step: {
           trigger: "Ich merke starken Selbstfokus oder Beweisdrang.",
           reframe: "Bevor ich handle, kläre ich: Geht es mir gerade mehr um mein Bild oder um die Sache?",
@@ -1928,7 +1928,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Frag nach dem, was gebraucht wird",
         trigger: "Nachdem du Bildschutz erkannt hast",
         when_to_use: "Direkt im Anschluss, bevor du in alte Schutzreaktionen gehst",
-        action: "Frag dich: 'Was braucht die Situation oder das Team gerade wirklich von mir?'",
+        action: "Frag dich: 'Was braucht die Situation oder die Gruppe gerade wirklich von mir?'",
         why: "Der Wechsel von Selbstbild zu Beitrag braucht einen klaren neuen Aufmerksamkeitsort.",
         explanation: "Vielleicht braucht es Präsenz. Vielleicht Kommunikation. Vielleicht Hilfe. Vielleicht Mut. Vielleicht Ruhe. Vielleicht eine saubere kleine Handlung. Heute trainierst du, nicht primär vom Ich aus zu denken.",
         self_talk: "Was wird hier gebraucht?",
@@ -1946,7 +1946,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         title: "Handle dienlich statt bildschützend",
         trigger: "Wenn du zwischen dienlicher und bildschützender Handlung wählen kannst",
         when_to_use: "In der direkt nächsten relevanten Szene",
-        action: "Setze bewusst die Handlung, die der Situation oder dem Team dient — auch wenn sie weniger gut für dein Bild wäre.",
+        action: "Setze bewusst die Handlung, die der Situation oder der Gruppe dient — auch wenn sie weniger gut für dein Bild wäre.",
         why: "Tag 21 wird erst real, wenn Team-/Situationsfokus Verhalten übernimmt.",
         explanation: "Das kann heißen: klar sprechen, Hilfe geben, Verantwortung übernehmen, eine Korrektur annehmen, präsent bleiben, dich nicht kleiner machen, ehrlich statt cool sein. Nicht fürs Bild. Für die Sache.",
         self_talk: "Dienlich handeln.",
@@ -1963,7 +1963,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
     journal: {
       title: "Wann ging es heute um mein Bild — und wann um das, was gebraucht wurde?",
       questions: [
-        { id: "d21-j1", question: "In welchen Momenten habe ich heute eher mein Bild geschützt als der Situation oder dem Team gedient?", placeholder: "Beschreibe die Szene konkret." },
+        { id: "d21-j1", question: "In welchen Momenten habe ich heute eher mein Bild geschützt als der Situation oder der Gruppe gedient?", placeholder: "Beschreibe die Szene konkret." },
         { id: "d21-j2", question: "Was wurde in dieser Situation wirklich gebraucht?", placeholder: "Präsenz, Hilfe, Mut, Klarheit, Kommunikation ..." },
         { id: "d21-j3", question: "Konnte ich heute mindestens einmal sichtbar dienlicher statt bildschützend handeln?", placeholder: "Wie sah das konkret aus?" },
         { id: "d21-j4", question: "Was zeigt mir das darüber, wie oft mein Verhalten noch an Bildschutz statt an Beitrag hängt?", placeholder: "Formuliere den Kern möglichst klar." }
@@ -3169,7 +3169,7 @@ export const PLAYER_DAYS: PlayerDay[] = [
         id: "d35-t1",
         title: "Erkenne die Warteschleife",
         trigger: "Wenn du merkst, dass eigentlich etwas von dir gebraucht wäre, dein System aber lieber wartet, hofft oder sich zurückhält",
-        when_to_use: "Bei Unordnung, fehlender Kommunikation, Unsicherheit im Team, offenen Situationen oder sichtbarem Bedarf nach Initiative",
+        when_to_use: "Bei Unordnung, fehlender Kommunikation, Unsicherheit im Umfeld, offenen Situationen oder sichtbarem Bedarf nach Initiative",
         action: "Frag dich kurz: 'Warte ich gerade — obwohl etwas von mir gebraucht wäre?'",
         why: "Tag 35 beginnt damit, die stille Passivität sichtbar zu machen, die sich oft als Vernunft tarnt.",
         explanation: "Nicht jede Ruhe ist Stärke. Manchmal ist sie nur sozial vorsichtige Unsichtbarkeit. Heute geht es darum, die Warteschleife zu erkennen, bevor sie wieder dein Standard wird.",

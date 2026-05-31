@@ -134,7 +134,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was machst du, wenn du im Training merkst, dass du abgedriftet bist?",
       options: [
         { id: "a", text: "Ich zwinge mich, meine Gedanken aggressiv auf das Wettkampf zu richten." },
-        { id: "b", text: "Ich markiere es innerlich mit 'Weg' und richte den Fokus auf den Ball." },
+        { id: "b", text: "Ich markiere es innerlich mit 'Weg' und richte den Fokus auf die Aufgabe." },
         { id: "c", text: "Ich gehe die letzten Aktionen im Kopf durch, um meinen Fehler zu finden." },
         { id: "d", text: "Ich versuche zu verhindern, dass solche Gedanken wieder auftauchen." },
       ],
@@ -525,7 +525,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       target: "lens",
       stem: "Worum geht es heute im Kern?",
       options: [
-        { id: "a", text: "Den Coach davon überzeugen, dass du der engagierteste Athleten im Team bist." },
+        { id: "a", text: "Den Coach davon überzeugen, dass du der engagierteste:r Athlet:in im Umfeld bist." },
         { id: "b", text: "Vor dem Training eine konkrete Verhaltensweise für die Einheit festlegen." },
         { id: "c", text: "Deine bisherigen Fehler analysieren, um sie heute nicht wiederholen zu müssen." },
         { id: "d", text: "Ein klares Leistungsziel setzen, um dich härter als sonst zu pushen." },
@@ -729,7 +729,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was unterscheidet Exzellenz von Selbstdarstellung?",
       options: [
         { id: "a", text: "Der Fokus liegt auf der Qualität der Aktion, unabhängig vom Ergebnis oder wer zusieht." },
-        { id: "b", text: "Der Fokus liegt darauf, durch besondere Leistungen den eigenen Wert für das Team zu beweisen." },
+        { id: "b", text: "Der Fokus liegt darauf, durch besondere Leistungen den eigenen Wert für die Gruppe zu beweisen." },
         { id: "c", text: "Der Fokus liegt darauf, die eigenen Fehler schonungslos zu analysieren und zu beheben." },
         { id: "d", text: "Der Fokus liegt darauf, härter als alle anderen zu arbeiten, um sich ständig zu verbessern." },
       ],
@@ -742,7 +742,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Du wählst die taktisch klügste Aktion, auch wenn sie vielleicht weniger auffällig ist." },
         { id: "b", text: "Du versuchst eine besonders riskante Aktion, um das Wettkampf entscheidend zu prägen." },
-        { id: "c", text: "Du übernimmst die Führung und versuchst, das Team mit einer lauten Ansage zu pushen." },
+        { id: "c", text: "Du übernimmst die Führung und versuchst, die Gruppe mit einer lauten Ansage zu pushen." },
         { id: "d", text: "Du konzentrierst dich darauf, deine Kernaufgaben ohne Fehler zu erledigen." },
       ],
       correctOptionId: "a",
@@ -868,7 +868,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Wenn der Trigger nicht direkt an eine konkrete Handlung oder einen Aufmerksamkeitsanker gekoppelt ist." },
         { id: "b", text: "Wenn man ihn nicht jedes Mal absolut perfekt ausführt und sich danach unmittelbar besser fühlen muss." },
-        { id: "c", text: "Wenn Teamkollegen oder der Trainer nicht bemerken, dass man gerade mental an etwas arbeitet." },
+        { id: "c", text: "Wenn Trainingspartner oder der Trainer nicht bemerken, dass man gerade mental an etwas arbeitet." },
         { id: "d", text: "Wenn man nicht genug Willenskraft aufwendet, um alle ablenkenden Gedanken damit zu unterdrücken." },
       ],
       correctOptionId: "a",
@@ -882,7 +882,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Ein Grund, der über dich hinausgeht, ist weniger von deiner Tagesform und deinen Gefühlen abhängig." },
         { id: "b", text: "Ein größerer Grund motiviert dich, deine persönlichen Leistungsgrenzen konstanter zu verschieben." },
-        { id: "c", text: "Ein größerer Grund wird vom Coach und vom Team positiver wahrgenommen und deshalb stärker bestärkt." },
+        { id: "c", text: "Ein größerer Grund wird vom Coach und vom Umfeld positiver wahrgenommen und deshalb stärker bestärkt." },
         { id: "d", text: "Ein größerer Grund hilft dir, dich nach Fehlern nicht ablenken zu lassen und dranzubleiben." },
       ],
       correctOptionId: "a",
@@ -892,7 +892,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d16-q2", target: "action",
       stem: "Was setzt du heute konkret vor dem Training?",
       options: [
-        { id: "a", text: "Einen konkreten Grund für dein Team, der dein Handeln im Training leiten soll." },
+        { id: "a", text: "Einen konkreten Grund für dein Umfeld, der dein Handeln im Training leiten soll." },
         { id: "b", text: "Ein messbares Leistungsziel, das dich motiviert, dein volles Potenzial abzurufen." },
         { id: "c", text: "Einen klaren mentalen Vorsatz, im Training unter Druck emotional stabil zu bleiben." },
         { id: "d", text: "Einen wichtigen technischen Fokuspunkt, den du bei jeder Aktion bewusst umsetzen willst." },
@@ -904,13 +904,13 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d16-q3", target: "mistake",
       stem: "Was ist ein Schein-'größerer Grund', der trotzdem Ego ist?",
       options: [
-        { id: "a", text: "\"Ich will, dass das Team sieht, wie wichtig ich bin\"" },
+        { id: "a", text: "\"Ich will, dass die Gruppe sieht, wie wichtig ich bin\"" },
         { id: "b", text: "\"Ich will heute meinem Nebenmann den Rücken freihalten\"" },
         { id: "c", text: "\"Ich will als Team die Defensivarbeit verbessern\"" },
         { id: "d", text: "\"Ich will meinem jüngeren Bruder zeigen, wie man verliert\"" },
       ],
       correctOptionId: "a",
-      explanation: "Die richtige Antwort entlarvt den Ego-Fokus (Anerkennung bekommen), während die häufigste falsche Antwort ein echtes, auf das Team ausgerichtetes Ziel beschreibt.",
+      explanation: "Die richtige Antwort entlarvt den Ego-Fokus (Anerkennung bekommen), während die häufigste falsche Antwort ein echtes, auf die Gruppe ausgerichtetes Ziel beschreibt.",
     },
   ],
   17: [
@@ -968,7 +968,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d18-q2", target: "behavior",
       stem: "Wie sieht 'sichtbare Unsicherheit bewusst wählen' im Training aus?",
       options: [
-        { id: "a", text: "Du probierst eine neue Technik im Team-Übungseinheit, obwohl sie noch nicht perfekt sitzt und du scheitern könntest." },
+        { id: "a", text: "Du probierst eine neue Technik im Übung in der Gruppe, obwohl sie noch nicht perfekt sitzt und du scheitern könntest." },
         { id: "b", text: "Du trainierst eine schwierige Technik lange allein, bis du sie ohne Fehler beherrschst und sie zeigen kannst." },
         { id: "c", text: "Du wiederholst vor allem die Übungen, die du schon gut kannst, um dein Selbstvertrauen für den Wettkampf zu stärken." },
         { id: "d", text: "Du lässt dir von einem Coach genau jeden Schritt vorgeben, um bei neuen Übungen keine Fehler zu machen." },
@@ -1057,7 +1057,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was ist hier die typische Selbstangriff-Form?",
       options: [
         { id: "a", text: "Innerlich Sätze wie \"Ich bin einfach zu schlecht dafür\" zu denken" },
-        { id: "b", text: "Sich über den Spielfehler zu ärgern und kurz innerlich darauf zu fluchen." },
+        { id: "b", text: "Sich über den Aktionsfehler zu ärgern und kurz innerlich darauf zu fluchen." },
         { id: "c", text: "Enttäuscht zu sein, weil das Ergebnis der Übung jetzt schlechter aussieht." },
         { id: "d", text: "Zu befürchten, dass dir dieser Fehler in einem Wettkampf auch passiert." },
       ],
@@ -1070,7 +1070,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d21-q1", target: "lens",
       stem: "Was bedeutet 'Team vor Selbstbild'?",
       options: [
-        { id: "a", text: "Du richtest deine Handlungen danach aus, was die Situation für den Teamerfolg erfordert." },
+        { id: "a", text: "Du richtest deine Handlungen danach aus, was die Situation für den Gruppenerfolg erfordert." },
         { id: "b", text: "Du befolgst immer genau die Anweisungen des Trainers, ohne diese zu hinterfragen." },
         { id: "c", text: "Du stellst sicher, dass deine eigenen Erfolge vom restlichen Team anerkannt werden." },
         { id: "d", text: "Du unterdrückst deine Impulse und überlässt die Initiative komplett deinen Mitspielern." },
@@ -1082,21 +1082,21 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d21-q2", target: "behavior",
       stem: "Wie sieht eine teamdienliche Aktion heute konkret aus?",
       options: [
-        { id: "a", text: "Du spielst den einfachen Pass zum freien Trainingspartner, statt selbst den Abschluss zu suchen." },
+        { id: "a", text: "Du spielst den einfachen Pass zur klügeren Aktion eines Trainingspartners, statt selbst den Abschluss zu suchen." },
         { id: "b", text: "Du erklärst einem Trainingspartner sofort lautstark, welchen Fehler er gerade gemacht hat." },
-        { id: "c", text: "Du versuchst, durch besonders riskante Alleingänge ein Zeichen für das Team zu setzen." },
+        { id: "c", text: "Du versuchst, durch besonders riskante Alleingänge ein Zeichen für die Gruppe zu setzen." },
         { id: "d", text: "Du vermeidest es, den entscheidenden Wurf zu nehmen, um keinen Fehler zu riskieren." },
       ],
       correctOptionId: "a",
-      explanation: "Die richtige Antwort beschreibt eine Handlung, bei der der Teamnutzen über die persönliche Geltung gestellt wird, während das laute Korrigieren von Mitspielern oft mehr dem eigenen Image als dem Team dient.",
+      explanation: "Die richtige Antwort beschreibt eine Handlung, bei der der Gruppennutzen über die persönliche Geltung gestellt wird, während das laute Korrigieren von Mitspielern oft mehr dem eigenen Image als der Gruppe dient.",
     },
     {
       id: "d21-q3", target: "mistake",
       stem: "Wann kippt 'teamdienlich' wieder ins Ego?",
       options: [
         { id: "a", text: "Sobald du insgeheim hoffst, dass dein 'teamdienliches' Verhalten bemerkt wird." },
-        { id: "b", text: "Wenn deine Aktion vom Coach oder dem Team nicht direkt gelobt oder anerkannt wird." },
-        { id: "c", text: "Sobald dir bei einer Aktion, die dem Team helfen sollte, ein technischer Fehler passiert." },
+        { id: "b", text: "Wenn deine Aktion vom Coach oder der Gruppe nicht direkt gelobt oder anerkannt wird." },
+        { id: "c", text: "Sobald dir bei einer Aktion, die der Gruppe helfen sollte, ein technischer Fehler passiert." },
         { id: "d", text: "Wenn du nach einer Aktion darüber nachdenkst, ob sie die richtige Entscheidung war." },
       ],
       correctOptionId: "a",
@@ -1346,9 +1346,9 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
     },
     {
       id: "d28-q2", target: "action",
-      stem: "Was machst du nach einer Fehlentscheidung gegen dich/dein Team?",
+      stem: "Was machst du nach einer Fehlentscheidung gegen dich/dein Umfeld?",
       options: [
-        { id: "a", text: "Du zeigst kurz, dass es unfair war, damit dein Team die Situation ernst nimmt." },
+        { id: "a", text: "Du zeigst kurz, dass es unfair war, damit dein Umfeld die Situation ernst nimmt." },
         { id: "b", text: "Du registrierst die Szene und führst dich direkt zur nächsten beeinflussbaren Aktion zurück." },
         { id: "c", text: "Du nutzt den Ärger als Energie, damit du danach noch entschlossener spielst." },
         { id: "d", text: "Du merkst dir die Entscheidung, um sie später sachlich einordnen zu können." },
@@ -1427,7 +1427,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Ein kurzer Prozess-Trigger, der dich direkt zurück zur nächsten Aktion bringt." },
         { id: "b", text: "Ein Blick auf das Ergebnis, damit du dein Risiko passend anpassen kannst." },
         { id: "c", text: "Ein Vergleich mit dem Gegner, damit du die Intensität richtig einschätzt." },
-        { id: "d", text: "Eine kurze Diskussion im Team, damit ihr unter Druck alles neu sortiert." },
+        { id: "d", text: "Eine kurze Diskussion im Umfeld, damit ihr unter Druck alles neu sortiert." },
       ],
       correctOptionId: "a",
       explanation: "Unter Ergebnisdruck muss der Anker kurz, einfach und handlungsnah sein. Ergebnis, Vergleich oder Diskussion ziehen dich schnell wieder aus der nächsten Aktion.",
@@ -1603,7 +1603,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Worum geht es heute?",
       options: [
         { id: "a", text: "Du bleibst im Hintergrund stabil, damit du keine unnötige Bewertung auslöst." },
-        { id: "b", text: "Du sorgst dafür, dass andere ihre Verantwortung im Team klarer übernehmen." },
+        { id: "b", text: "Du sorgst dafür, dass andere ihre Verantwortung im Umfeld klarer übernehmen." },
         { id: "c", text: "Du übernimmst sichtbar Initiative, wenn die Situation eine klare Handlung von dir braucht." },
         { id: "d", text: "Du vermeidest Bewertung, indem du nur dann handelst, wenn es sicher richtig ist." },
       ],
@@ -1617,7 +1617,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Du erklärst klar, was andere besser machen sollten, wenn die Situation Führung braucht." },
         { id: "b", text: "Du setzt eine Aktion, Ansage oder Rolle, die du sonst eher abgegeben hättest." },
         { id: "c", text: "Du machst das, was von außen am stärksten nach Verantwortung aussieht." },
-        { id: "d", text: "Du sprichst öffentlich an, was gerade im Team nicht gut genug läuft." },
+        { id: "d", text: "Du sprichst öffentlich an, was gerade im Umfeld nicht gut genug läuft." },
       ],
       correctOptionId: "b",
       explanation: "Sichtbare Verantwortung heißt, selbst eine sinnvolle Handlung zu übernehmen. Kommentieren, wirken wollen oder öffentlich kritisieren ersetzt keine eigene Verantwortung.",
@@ -1691,7 +1691,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Woran sieht man, dass du Unfairness nicht fütterst?",
       options: [
         { id: "a", text: "Du reagierst kurz und wechselst dann zurück in die Aufgabe, ohne wiederzukehren." },
-        { id: "b", text: "Du sprichst es öffentlich an, damit dein Team die Situation richtig einordnet." },
+        { id: "b", text: "Du sprichst es öffentlich an, damit dein Umfeld die Situation richtig einordnet." },
         { id: "c", text: "Du erinnerst Trainingspartner daran, damit ihr nicht so tut, als wäre es egal." },
         { id: "d", text: "Du machst einen sarkastischen Kommentar, um den Frust kurz rauszulassen." },
       ],
@@ -1755,7 +1755,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was heißt 'Stabil trotz Spielverlauf'?",
       options: [
         { id: "a", text: "Du wirst bei Führung lockerer und bei Rückstand härter, weil der Verlauf es verlangt." },
-        { id: "b", text: "Du passt deinen Zustand an den Spielstand an, damit du die Situation ernst nimmst." },
+        { id: "b", text: "Du passt deinen Zustand an den Zwischenstand an, damit du die Situation ernst nimmst." },
         { id: "c", text: "Du bleibst funktional im Standard, egal ob der Verlauf gerade hoch oder tief ist." },
         { id: "d", text: "Du verwaltest gute Phasen und kämpfst schlechte Phasen mit mehr Willen weg." },
       ],
@@ -1997,7 +1997,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
         { id: "a", text: "Du wartest auf einen guten Moment, damit deine Dankbarkeit nicht aufgesetzt wirkt." },
         { id: "b", text: "Du benennst eine reale Möglichkeit, die genau jetzt da ist, ohne besonderen Anlass." },
         { id: "c", text: "Du sammelst am Abend mehrere Dinge, damit die Übung vollständiger wird." },
-        { id: "d", text: "Du sagst einem Trainingspartner etwas Positives, damit Verbindung im Team entsteht." },
+        { id: "d", text: "Du sagst einem Trainingspartner etwas Positives, damit Verbindung im Umfeld entsteht." },
       ],
       correctOptionId: "b",
       explanation: "Default-Dankbarkeit wird in neutralen Momenten trainiert. Warten, nur abends sammeln oder nach außen geben kann gut sein, ersetzt aber nicht den inneren Grundzustand.",
@@ -2248,7 +2248,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       id: "d52-q1", target: "lens",
       stem: "Was heißt 'Liebe/Purpose als Performance State'?",
       options: [
-        { id: "a", text: "Du versuchst, alle im Team emotional positiv zu sehen und weniger hart zu bewerten." },
+        { id: "a", text: "Du versuchst, alle im Umfeld emotional positiv zu sehen und weniger hart zu bewerten." },
         { id: "b", text: "Du brauchst keine Strategie mehr, weil Sinn automatisch bessere Aktionen erzeugt." },
         { id: "c", text: "Du handelst aus Beitrag, Aufgabe und Team statt aus Angst, Schutz oder Ego." },
         { id: "d", text: "Du willst gefallen, weil soziale Verbindung deine Leistung stabiler machen kann." },
@@ -2262,7 +2262,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       options: [
         { id: "a", text: "Deine Aktionen orientieren sich an Beitrag und Aufgabe, nicht an Wirkung oder Schutz." },
         { id: "b", text: "Du machst spektakulärere Aktionen, weil du dich stärker mit dem Wettkampf verbunden fühlst." },
-        { id: "c", text: "Du wählst sicherere Aktionen, damit du dem Team auf keinen Fall schadest." },
+        { id: "c", text: "Du wählst sicherere Aktionen, damit du der Gruppe auf keinen Fall schadest." },
         { id: "d", text: "Du redest mehr, weil Purpose vor allem über klare Kommunikation sichtbar wird." },
       ],
       correctOptionId: "a",
@@ -2273,7 +2273,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Was wäre ein verstecktes Fear-Motiv?",
       options: [
         { id: "a", text: "Du wählst eine Aktion, weil sie der Aufgabe in diesem Moment wirklich dient." },
-        { id: "b", text: "Du wählst eine Aktion, weil sie deinem Team jetzt konkret weiterhilft." },
+        { id: "b", text: "Du wählst eine Aktion, weil sie deinem Umfeld jetzt konkret weiterhilft." },
         { id: "c", text: "Du wählst eine Aktion, weil sie einen ehrlichen Beitrag zur Situation leistet." },
         { id: "d", text: "Du wählst eine Aktion, weil ein Fehler dabei für dein Bild am wenigsten wehtut." },
       ],
@@ -2375,7 +2375,7 @@ const COMPREHENSION_POOLS: Record<number, NonNullable<DailyContent["comprehensio
       stem: "Woran erkennst du diese Verschmelzung heute?",
       options: [
         { id: "a", text: "Du genießt eine starke Aktion ausführlich, damit sie dein Selbstvertrauen vertieft." },
-        { id: "b", text: "Du erinnerst andere an die Aktion, wenn sie für das Team wichtig war." },
+        { id: "b", text: "Du erinnerst andere an die Aktion, wenn sie für die Gruppe wichtig war." },
         { id: "c", text: "Du analysierst dich selbst direkt, damit du die Qualität später wiederholen kannst." },
         { id: "d", text: "Du bist während der starken Aktion so bei der Aufgabe, dass das Ich kaum Thema ist." },
       ],
