@@ -131,7 +131,13 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
           </AnimatePresence>
           {reframeStep < reframeSteps.length && (
             <button
-              onClick={() => setReframeStep((s) => Math.min(s + 1, reframeSteps.length))}
+              onClick={() => {
+                if (reframeStep === reframeSteps.length - 1) {
+                  onComplete();
+                  return;
+                }
+                setReframeStep((s) => Math.min(s + 1, reframeSteps.length));
+              }}
               className="mt-4 inline-flex items-center gap-2 text-sm text-primary font-medium"
             >
               {reframeStep === reframeSteps.length - 1 ? "Verstanden" : "Weiter"}

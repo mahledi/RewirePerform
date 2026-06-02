@@ -105,19 +105,24 @@ export async function upsertCompletion(args: {
 }) {
   const { data: existing } = await supabase
     .from("user_day_completion")
-    .select("id")
+    .select("id, completion_status, completed_at")
     .eq("assignment_id", args.assignmentId)
     .maybeSingle();
 
+  const keepCompleted = existing?.completion_status === "completed" && args.status === "in_progress";
   const base: any = {
     assignment_id: args.assignmentId,
     user_id: args.userId,
     day_number: args.dayNumber,
     task_completion: args.completedTaskTitles,
-    completion_status: args.status,
+    completion_status: keepCompleted ? "completed" : args.status,
     variant_used: args.variantUsed ?? null,
     opened_at: existing ? undefined : new Date().toISOString(),
-    completed_at: args.status === "completed" ? new Date().toISOString() : null,
+    completed_at: keepCompleted
+      ? existing.completed_at
+      : args.status === "completed"
+        ? new Date().toISOString()
+        : null,
     program_instance_id: args.programInstanceId ?? null,
   };
 

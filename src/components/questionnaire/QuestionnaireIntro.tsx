@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import {
   ONBOARDING_V2_QUESTIONS,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import type { Json } from "@/integrations/supabase/types";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -62,9 +63,9 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
         .insert({
           user_id: user.id,
           session_id: user.id,
-          answers: answers as any,
-          analysis: analysis as any,
-          scores: analysis.scores as any,
+          answers: answers as Json,
+          analysis: analysis as Json,
+          scores: analysis.scores as Json,
           instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
           questionnaire_version: ONBOARDING_V2_VERSION,
           timing: "pre",
@@ -125,6 +126,16 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
 
           {/* Preparation cards */}
           <div className="space-y-4 mb-12">
+            <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
+              <Save className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <h3 className="font-heading font-semibold mb-1">Jederzeit speichern und pausieren</h3>
+                <p className="text-sm text-muted-foreground">
+                  Deine Antworten werden zwischengespeichert. Wenn etwas dazwischenkommt, kannst du später weitermachen.
+                </p>
+              </div>
+            </div>
+
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
               <Clock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>

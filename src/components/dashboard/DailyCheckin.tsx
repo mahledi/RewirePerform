@@ -110,6 +110,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
   const dateKey = format(date, "yyyy-MM-dd");
   const draftKey = user?.id ? `checkin:${user.id}:${dateKey}:${eventType}` : null;
+  const getCompletedTaskTitles = (taskIds: string[] = completedTasks) =>
+    taskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
   const handleBack = () => {
     if (selectedTask) {
@@ -174,10 +176,22 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       setAssignmentId(result.assignment.id);
       setComprehensionQuestions(drawComprehensionQuestions(result.resolved.matrix.dayNumber, 3));
 
+      const { data: existingCompletion } = await supabase
+        .from("user_day_completion")
+        .select("task_completion")
+        .eq("assignment_id", result.assignment.id)
+        .maybeSingle();
+      const persistedTaskTitles = Array.isArray(existingCompletion?.task_completion)
+        ? existingCompletion.task_completion
+        : [];
+      const persistedTaskIds = result.resolved.content.tasks
+        .filter((task) => persistedTaskTitles.includes(task.title) || persistedTaskTitles.includes(task.id))
+        .map((task) => task.id);
+
       const local = readLocalDraft<CheckinDraft>(`checkin:${user.id}:${dateStr}:${eventType}`);
       if (local) {
         setStep(Math.min(local.step ?? 0, 5));
-        setCompletedTasks(local.completedTasks ?? []);
+        setCompletedTasks(Array.from(new Set([...persistedTaskIds, ...(local.completedTasks ?? [])])));
         setReflection(local.reflection ?? "");
         setReadBites(local.readBites ?? []);
         setMoodBefore(local.moodBefore ?? null);
@@ -190,6 +204,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         setMotivation(local.motivation ?? null);
         setPressure(local.pressure ?? null);
         setTeamConnection(local.teamConnection ?? null);
+      } else if (persistedTaskIds.length > 0) {
+        setCompletedTasks(persistedTaskIds);
       }
 
       // ─── Micro-Adjustment Layer ─────────────────────────
@@ -337,9 +353,45 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     teamConnection,
   ]);
 
+  const persistTaskProgress = async (taskIds: string[]) => {
+    if (previewMode || !user?.id || !assignmentId || !resolved) return;
+    try {
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+      const { error } = await upsertCompletion({
+        assignmentId,
+        userId: user.id,
+        dayNumber: resolved.matrix.dayNumber,
+        completedTaskTitles: getCompletedTaskTitles(taskIds),
+        status: "in_progress",
+        variantUsed: eventType,
+        programInstanceId: instance?.id ?? null,
+      });
+      if (error) throw error;
+      setSaveError(null);
+    } catch (error) {
+      console.error("Task progress save error:", error);
+      void captureAppError({
+        eventName: "daily_checkin_saved",
+        error,
+        role,
+        route: "/dashboard",
+        isTest: isTestUser,
+        metadata: {
+          day_number: resolved?.matrix.dayNumber ?? null,
+          event_type: eventType,
+          stage: "task_progress",
+        },
+      });
+      setSaveError("Deine Aufgabe ist lokal als verstanden markiert. Der Fortschritt wird beim nächsten Speichern erneut bestätigt.");
+    }
+  };
+
   const markTaskComplete = (taskId: string) => {
-    setCompletedTasks((prev) => (prev.includes(taskId) ? prev : [...prev, taskId]));
+    const next = completedTasks.includes(taskId) ? completedTasks : [...completedTasks, taskId];
+    setCompletedTasks(next);
     setSelectedTask(null);
+    void persistTaskProgress(next);
   };
 
   const saveCheckin = async (): Promise<boolean> => {
@@ -705,22 +757,33 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           <div className="space-y-3">
             {tasks.map((task) => {
               const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
+              const taskDone = completedTasks.includes(task.id);
               return (
                 <button
                   key={task.id}
                   data-testid={`task-card-${task.id}`}
                   onClick={() => setSelectedTask(task)}
-                  className="w-full text-left p-4 rounded-2xl transition-all bg-gradient-card border-glow hover:bg-secondary/50 active:scale-[0.98]"
+                  className={`w-full text-left p-4 rounded-2xl border transition-all active:scale-[0.98] ${
+                    taskDone
+                      ? "bg-primary/10 border-primary/30"
+                      : "bg-gradient-card border-border/50 hover:bg-secondary/50"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-secondary">
-                      <IconComp className="w-5 h-5 text-muted-foreground" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      taskDone ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                    }`}>
+                      {taskDone ? <CheckCircle2 className="w-5 h-5" /> : <IconComp className="w-5 h-5" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold">{task.title}</p>
+                      <p className={`text-sm font-semibold ${taskDone ? "text-primary" : ""}`}>{task.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.whenToUse}</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                    {taskDone ? (
+                      <span className="text-xs font-semibold text-primary shrink-0">Erledigt</span>
+                    ) : (
+                      <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                    )}
                   </div>
                 </button>
               );
@@ -929,7 +992,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
             </div>
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
-              const blocked = saving || (step === 1 && !pulseComplete);
+              const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
+              const blocked = saving || (step === 1 && !pulseComplete) || (step === 4 && !tasksComplete);
               return (
                 <motion.button
                   data-testid={`daily-next-step-${step}`}
@@ -939,7 +1003,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     if (blocked) return;
                     if (step === 1) setStep(2);
                     else if (step === 2) setStep(3);
-                    else if (step === 4) setStep(5);
+                    else if (step === 4 && tasksComplete) setStep(5);
                   }}
                   disabled={blocked}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
@@ -948,7 +1012,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                       : "bg-primary text-primary-foreground hover:shadow-glow"
                   }`}
                 >
-                  Weiter<ArrowRight className="w-4 h-4" />
+                  {step === 4 && !tasksComplete ? "Alle Aufgaben verstehen" : "Weiter"}
+                  <ArrowRight className="w-4 h-4" />
                 </motion.button>
               );
             })()}

@@ -7,9 +7,17 @@ interface QuestionCardProps {
   question: Question;
   answer: string | string[] | number | undefined;
   onAnswer: (value: string | string[] | number) => void;
+  isRequired?: boolean;
+  validationError?: string | null;
 }
 
-const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
+const QuestionCard = ({
+  question,
+  answer,
+  onAnswer,
+  isRequired = true,
+  validationError = null,
+}: QuestionCardProps) => {
   const [textValue, setTextValue] = useState(
     typeof answer === "string" ? answer : ""
   );
@@ -30,7 +38,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
         className="w-full"
       >
         {/* Depth indicator */}
-        <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-3 md:mb-4">
           {question.depth === "core" && (
             <span className="px-2.5 py-1 rounded-md bg-primary/10 text-xs font-medium text-primary">
               Kernfrage
@@ -41,6 +49,9 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
               Tiefgehend
             </span>
           )}
+          <span className="px-2.5 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
+            {isRequired ? "Pflicht" : "Optional"}
+          </span>
         </div>
 
         <h2 className="font-heading text-xl md:text-3xl font-bold mb-2 md:mb-3 leading-tight">
@@ -65,10 +76,11 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                 <button
                   key={val}
                   onClick={() => onAnswer(val)}
+                  aria-pressed={answer === val}
                   className={`h-10 md:h-12 rounded-lg font-heading font-semibold text-sm transition-all ${
                     answer === val
                       ? "bg-primary text-primary-foreground shadow-glow"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent"
+                      : "bg-secondary text-secondary-foreground hover:bg-muted"
                   }`}
                 >
                   {val}
@@ -91,8 +103,18 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
               onChange={(e) => handleTextChange(e.target.value)}
               placeholder={question.placeholder}
               rows={4}
-              className="w-full p-4 md:p-5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none font-body leading-relaxed transition-all"
+              aria-invalid={!!validationError}
+              className={`w-full p-4 md:p-5 rounded-xl bg-secondary border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 resize-none font-body leading-relaxed transition-all ${
+                validationError
+                  ? "border-destructive/60 focus:ring-destructive/20 focus:border-destructive/70"
+                  : "border-border focus:ring-muted-foreground/20 focus:border-muted-foreground/40"
+              }`}
             />
+            {validationError && (
+              <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                {validationError}
+              </p>
+            )}
           </div>
         )}
 
@@ -103,10 +125,11 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
               <button
                 key={opt.id}
                 onClick={() => onAnswer(opt.id)}
+                aria-pressed={answer === opt.id}
                 className={`w-full text-left p-3 md:p-4 rounded-xl border transition-all ${
                   answer === opt.id
                     ? "border-primary bg-primary/10 text-foreground"
-                    : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
+                    : "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground/40 hover:bg-muted"
                 }`}
               >
                 <span className="text-sm">{opt.text}</span>
@@ -130,10 +153,11 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                       : [...current, opt.id];
                     onAnswer(updated);
                   }}
+                  aria-pressed={selected}
                   className={`w-full text-left p-3 md:p-4 rounded-xl border transition-all ${
                     selected
                       ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
+                      : "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground/40 hover:bg-muted"
                   }`}
                 >
                   <div className="flex items-center gap-3">
