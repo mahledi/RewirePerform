@@ -13,12 +13,14 @@ import {
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
 import { clearLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
+import type { Json } from "@/integrations/supabase/types";
 
 interface QuestionnaireFlowProps {
   onComplete: (answers: Record<string, string | string[] | number>) => void;
   onBack: () => void;
   initialAnswers?: Record<string, string | string[] | number>;
   initialCategoryIndex?: number;
+  initialGlobalIndex?: number;
   draftId?: string | null;
 }
 
@@ -34,16 +36,14 @@ const QuestionnaireFlow = ({
   onBack,
   initialAnswers = {},
   initialCategoryIndex = 0,
+  initialGlobalIndex,
   draftId = null,
 }: QuestionnaireFlowProps) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>(initialAnswers);
-  const [flowState, setFlowState] = useState<FlowState>({
-    type: "category-intro",
-    categoryIndex: Math.min(initialCategoryIndex, categories.length - 1),
-  });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const draftIdRef = useRef<string | null>(draftId);
   const isSavingRef = useRef<boolean>(false);
@@ -53,11 +53,26 @@ const QuestionnaireFlow = ({
     return categories.flatMap((cat) => getQuestionsByCategory(cat.id));
   }, []);
 
+  const [flowState, setFlowState] = useState<FlowState>(() => {
+    if (
+      typeof initialGlobalIndex === "number" &&
+      initialGlobalIndex >= 0 &&
+      initialGlobalIndex < orderedQuestions.length
+    ) {
+      return { type: "question", globalIndex: initialGlobalIndex };
+    }
+    return {
+      type: "category-intro",
+      categoryIndex: Math.min(initialCategoryIndex, categories.length - 1),
+    };
+  });
+
   const totalQuestions = orderedQuestions.length;
 
   const handleAnswer = useCallback(
     (questionId: string, value: string | string[] | number) => {
       setSubmitError(null);
+      setValidationError(null);
       setAnswers((prev) => ({ ...prev, [questionId]: value }));
     },
     []
@@ -81,6 +96,46 @@ const QuestionnaireFlow = ({
 
   const currentQuestion =
     flowState.type === "question" ? orderedQuestions[flowState.globalIndex] : null;
+
+  const isOptionalTextQuestion = (question: typeof currentQuestion) => {
+    if (!question || question.type !== "text") return false;
+    const helper = `${question.subtext ?? ""} ${question.placeholder ?? ""}`.toLowerCase();
+    return helper.includes("optional");
+  };
+
+  const isRequiredQuestion = (question: typeof currentQuestion) => {
+    if (!question) return false;
+    return question.type !== "text" || !isOptionalTextQuestion(question);
+  };
+
+  const validateQuestion = (question: typeof currentQuestion) => {
+    if (!question) return "Diese Frage konnte nicht geladen werden.";
+    const answer = answers[question.id];
+
+    if (question.type === "text") {
+      if (isOptionalTextQuestion(question) && (!answer || String(answer).trim() === "")) {
+        return null;
+      }
+      const text = typeof answer === "string" ? answer.trim() : "";
+      const normalized = text.toLowerCase();
+      const throwawayAnswers = new Set(["-", ".", "..", "...", "ka", "k.a.", "idk", "egal", "nichts", "keine ahnung"]);
+      if (!text) {
+        return "Diese Antwort ist wichtig für dein Startprofil. Ein kurzer ehrlicher Satz reicht.";
+      }
+      if (throwawayAnswers.has(normalized) || text.length < 4) {
+        return "Schreib bitte etwas Konkreteres. Es muss nicht perfekt sein, nur ehrlich genug.";
+      }
+      return null;
+    }
+
+    if (answer === undefined || answer === "") {
+      return "Bitte wähle eine Antwort aus.";
+    }
+    if (Array.isArray(answer) && answer.length === 0) {
+      return "Bitte wähle mindestens eine passende Antwort aus.";
+    }
+    return null;
+  };
 
   // Persist draft to Supabase
   const saveDraft = useCallback(
@@ -125,7 +180,7 @@ const QuestionnaireFlow = ({
           const { error } = await supabase
             .from("questionnaire_responses")
             .update({
-              answers: currentAnswers as any,
+              answers: currentAnswers as Json,
               last_category_index: categoryIndex,
               progress_updated_at: new Date().toISOString(),
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
@@ -141,7 +196,7 @@ const QuestionnaireFlow = ({
             .insert({
               user_id: user.id,
               session_id: user.id,
-              answers: currentAnswers as any,
+              answers: currentAnswers as Json,
               last_category_index: categoryIndex,
               is_complete: false,
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
@@ -168,7 +223,7 @@ const QuestionnaireFlow = ({
               await supabase
                 .from("questionnaire_responses")
                 .update({
-                  answers: currentAnswers as any,
+                  answers: currentAnswers as Json,
                   last_category_index: categoryIndex,
                   progress_updated_at: new Date().toISOString(),
                   instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
@@ -197,7 +252,6 @@ const QuestionnaireFlow = ({
         const pending = pendingSaveRef.current;
         pendingSaveRef.current = null;
         if (pending) {
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
           saveDraft(pending.answers, pending.categoryIndex, { silent: pending.silent });
         }
       }
@@ -208,6 +262,7 @@ const QuestionnaireFlow = ({
   const canProceed = () => {
     if (flowState.type === "category-intro") return true;
     if (!currentQuestion) return false;
+    if (currentQuestion.type === "text") return true;
     const answer = answers[currentQuestion.id];
     if (answer === undefined || answer === "") return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
@@ -218,7 +273,14 @@ const QuestionnaireFlow = ({
     if (submitting) return;
     if (flowState.type === "category-intro") {
       const startIndex = getGlobalIndexForCategoryStart(flowState.categoryIndex);
+      setValidationError(null);
       setFlowState({ type: "question", globalIndex: startIndex });
+      return;
+    }
+
+    const error = validateQuestion(currentQuestion);
+    if (error) {
+      setValidationError(error);
       return;
     }
 
@@ -233,7 +295,7 @@ const QuestionnaireFlow = ({
         const { getActiveInstance } = await import("@/lib/programInstance");
         const instance = await getActiveInstance(user.id);
         const payload = {
-            answers: answers as any,
+            answers: answers as Json,
             is_complete: true,
             last_category_index: categories.length,
             instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
@@ -283,11 +345,13 @@ const QuestionnaireFlow = ({
       await saveDraft(answers, nextCatIndex);
       setFlowState({ type: "category-intro", categoryIndex: nextCatIndex });
     } else {
+      setValidationError(null);
       setFlowState({ type: "question", globalIndex: idx + 1 });
     }
   };
 
   const goBack = () => {
+    setValidationError(null);
     if (flowState.type === "category-intro") {
       if (flowState.categoryIndex === 0) {
         onBack();
@@ -340,6 +404,7 @@ const QuestionnaireFlow = ({
     writeLocalDraft(QUESTIONNAIRE_DRAFT_KEY, {
       answers,
       lastCategoryIndex: currentCatIndex,
+      lastGlobalIndex: flowState.type === "question" ? flowState.globalIndex : undefined,
       savedAt: new Date().toISOString(),
     });
     const handle = setTimeout(() => {
@@ -347,7 +412,7 @@ const QuestionnaireFlow = ({
     }, 1500);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers]);
+  }, [answers, flowState]);
 
   const isLastQuestion =
     flowState.type === "question" && flowState.globalIndex === totalQuestions - 1;
@@ -383,21 +448,24 @@ const QuestionnaireFlow = ({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-2.5 md:py-4">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-5 md:px-6 py-2.5 md:py-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-2 md:mb-3">
+          <div className="flex items-center justify-between gap-3 mb-2 md:mb-3">
             <div className="min-h-[1rem]">
               <SaveIndicator />
             </div>
             <button
               onClick={handlePause}
               disabled={submitting}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 rounded-xl border border-border bg-secondary/70 px-3 py-2 text-xs font-medium text-secondary-foreground hover:bg-muted transition-colors disabled:opacity-60"
             >
-              <Pause className="w-3 h-3" />
-              Pause<span className="hidden md:inline"> &amp; später fortsetzen</span>
+              <Pause className="w-3.5 h-3.5" />
+              Speichern &amp; Pause
             </button>
           </div>
+          <p className="mb-2 text-[11px] leading-snug text-muted-foreground md:text-xs">
+            Deine Antworten werden zwischengespeichert. Du kannst jederzeit pausieren und später weiterarbeiten.
+          </p>
           {flowState.type === "question" && currentQuestion && (
             <QuestionnaireProgress
               current={flowState.globalIndex}
@@ -415,7 +483,7 @@ const QuestionnaireFlow = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-start md:items-center justify-center px-5 md:px-6 py-5 md:py-12">
+      <div className="flex-1 flex items-start md:items-center justify-center px-5 md:px-6 py-5 pb-28 md:py-12">
         <div className="max-w-2xl w-full">
           <AnimatePresence mode="wait">
             {flowState.type === "category-intro" && (
@@ -423,6 +491,7 @@ const QuestionnaireFlow = ({
                 key={`cat-${flowState.categoryIndex}`}
                 categoryId={categories[flowState.categoryIndex].id}
                 onContinue={goNext}
+                showInlineButton={false}
               />
             )}
             {flowState.type === "question" && currentQuestion && (
@@ -431,6 +500,8 @@ const QuestionnaireFlow = ({
                 question={currentQuestion}
                 answer={answers[currentQuestion.id]}
                 onAnswer={(val) => handleAnswer(currentQuestion.id, val)}
+                isRequired={isRequiredQuestion(currentQuestion)}
+                validationError={validationError}
               />
             )}
           </AnimatePresence>
@@ -438,8 +509,8 @@ const QuestionnaireFlow = ({
       </div>
 
       {/* Bottom navigation */}
-      {flowState.type === "question" && (
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-2.5 md:py-4">
+      {(flowState.type === "question" || flowState.type === "category-intro") && (
+        <div className="sticky bottom-0 bg-background/90 backdrop-blur-xl border-t border-border/50 px-5 md:px-6 pt-2.5 md:pt-4 pb-[calc(env(safe-area-inset-bottom)+0.625rem)] md:pb-4">
           {submitError && (
             <div className="max-w-2xl mx-auto mb-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-muted-foreground">
               {submitError}
@@ -459,7 +530,7 @@ const QuestionnaireFlow = ({
               whileTap={canProceed() && !submitting ? { scale: 0.98 } : {}}
               onClick={goNext}
               disabled={!canProceed() || submitting}
-              className={`flex items-center gap-2 px-6 py-2.5 md:py-3 rounded-xl font-heading font-semibold transition-all ${
+              className={`flex min-w-[8.5rem] items-center justify-center gap-2 px-6 py-3 md:py-3.5 rounded-xl font-heading font-semibold transition-all ${
                 canProceed() && !submitting
                   ? "bg-primary text-primary-foreground hover:shadow-glow"
                   : "bg-muted text-muted-foreground cursor-not-allowed"

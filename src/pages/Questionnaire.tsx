@@ -13,12 +13,14 @@ interface DraftState {
   id: string;
   answers: Record<string, string | string[] | number>;
   lastCategoryIndex: number;
+  lastGlobalIndex?: number;
   source?: "server" | "local";
 }
 
 interface LocalQuestionnaireDraft {
   answers?: Record<string, string | string[] | number>;
   lastCategoryIndex?: number;
+  lastGlobalIndex?: number;
 }
 
 const Questionnaire = () => {
@@ -30,12 +32,13 @@ const Questionnaire = () => {
   useEffect(() => {
     const loadDraft = async () => {
       const localDraft = readLocalDraft<LocalQuestionnaireDraft>(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
-      const useLocalDraft = () => {
+      const applyLocalDraft = () => {
         if (localDraft?.answers && Object.keys(localDraft.answers).length > 0) {
           setDraft({
             id: "",
             answers: localDraft.answers,
             lastCategoryIndex: localDraft.lastCategoryIndex ?? 0,
+            lastGlobalIndex: localDraft.lastGlobalIndex,
             source: "local",
           });
           setPhase("resume");
@@ -46,7 +49,7 @@ const Questionnaire = () => {
 
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (!user || userError) {
-        useLocalDraft();
+        applyLocalDraft();
         return;
       }
 
@@ -61,7 +64,7 @@ const Questionnaire = () => {
 
       if (error) {
         console.error("Error loading draft:", error);
-        useLocalDraft();
+        applyLocalDraft();
         return;
       }
 
@@ -79,11 +82,12 @@ const Questionnaire = () => {
           id: latest.id,
           answers: latest.answers as Record<string, string | string[] | number>,
           lastCategoryIndex: latest.last_category_index ?? 0,
+          lastGlobalIndex: localDraft?.lastGlobalIndex,
           source: "server",
         });
         setPhase("resume");
       } else if (localDraft?.answers && Object.keys(localDraft.answers).length > 0) {
-        useLocalDraft();
+        applyLocalDraft();
       } else {
         setPhase("intro");
       }
@@ -156,6 +160,7 @@ const Questionnaire = () => {
         <QuestionnaireFlow
           initialAnswers={answers}
           initialCategoryIndex={draft?.lastCategoryIndex ?? 0}
+          initialGlobalIndex={draft?.lastGlobalIndex}
           draftId={draft?.id ?? null}
           onComplete={handleComplete}
           onBack={() => setPhase("intro")}
