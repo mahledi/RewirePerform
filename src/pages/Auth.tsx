@@ -196,11 +196,11 @@ const Auth = () => {
   // ─── INTENT SELECTION ──────────────────────────────────────────
   if (mode === "intent") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6 py-10">
+      <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md min-w-0"
         >
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-6 cursor-pointer" onClick={() => navigate("/")}>
@@ -251,11 +251,11 @@ const Auth = () => {
   // ─── LOGIN ────────────────────────────────────────────────────
   if (mode === "login") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md min-w-0"
         >
           <div className="text-center mb-10">
             <div className="flex items-center justify-center gap-2 mb-6 cursor-pointer" onClick={() => navigate("/")}>
@@ -297,11 +297,11 @@ const Auth = () => {
     : "Du legst dein Team direkt nach der Anmeldung im Coach-Bereich an.";
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-6 py-10">
+    <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md min-w-0"
       >
         <button
           onClick={() => setMode("intent")}
@@ -332,7 +332,7 @@ const Auth = () => {
           </div>
 
           {intent !== "create" && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <SportButton label="⚽ Fußball" value="Fußball" current={sport} onClick={setSport} />
               <SportButton label="🏈 American Football" value="American Football" current={sport} onClick={setSport} />
             </div>
@@ -389,16 +389,16 @@ const IntentCard = ({
   <button
     type="button"
     onClick={onClick}
-    className="w-full text-left flex items-start gap-4 p-5 rounded-2xl bg-secondary/50 border border-border/50 hover:border-primary/60 hover:bg-secondary transition-all group"
+    className="group flex w-full min-w-0 items-start gap-3 rounded-2xl border border-border/50 bg-secondary/50 p-4 text-left transition-all hover:border-primary/60 hover:bg-secondary sm:gap-4 sm:p-5"
   >
     <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
       {icon}
     </div>
-    <div className="flex-1">
+    <div className="min-w-0 flex-1">
       <div className="font-heading font-semibold text-base mb-1">{title}</div>
       <div className="text-xs text-muted-foreground leading-relaxed">{description}</div>
     </div>
-    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors mt-1" />
+    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
   </button>
 );
 
@@ -408,7 +408,7 @@ const SportButton = ({
   <button
     type="button"
     onClick={() => onClick(value)}
-    className={`flex items-center justify-center gap-2 py-3.5 rounded-xl border text-sm font-medium transition-all ${
+    className={`flex min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-3.5 text-sm font-medium transition-all ${
       current === value
         ? "bg-primary/10 border-primary text-primary"
         : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"

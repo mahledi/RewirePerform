@@ -216,45 +216,45 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       {teams.map((team) => (
-        <div key={team.id} className="bg-card border border-border/50 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="font-heading font-semibold text-foreground">{team.name}</h3>
+        <div key={team.id} className="min-w-0 rounded-2xl border border-border/50 bg-card p-4 sm:p-5">
+          <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="truncate font-heading font-semibold text-foreground">{team.name}</h3>
               {team.sport && <p className="text-xs text-muted-foreground">{team.sport}</p>}
             </div>
           </div>
 
           {/* Player Invitation */}
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Spieler einladen</span>
+            <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Spieler einladen</span>
               <span className="text-[10px] text-muted-foreground">Sportler-Zugang</span>
             </div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex-1 bg-secondary/50 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-primary font-bold">
+            <div className="mb-2 flex min-w-0 items-center gap-2">
+              <div className="min-w-0 flex-1 break-all rounded-xl bg-secondary/50 px-3 py-3 text-center font-mono text-base font-bold tracking-[0.18em] text-primary sm:px-4 sm:text-lg sm:tracking-[0.3em]">
                 {team.access_code}
               </div>
               <button
                 onClick={() => copyCode(team.access_code, "Spieler-Code")}
-                className="p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary transition-colors hover:bg-primary/20"
                 aria-label="Spieler-Code kopieren"
               >
                 <Copy className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 onClick={() => shareWhatsApp(getPlayerMessage(team))}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-medium"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-[#25D366]/10 py-2 text-xs font-medium text-[#25D366] transition-colors hover:bg-[#25D366]/20"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 WhatsApp
               </button>
               <button
                 onClick={() => shareNative(`Team ${team.name} – Spieler einladen`, getPlayerMessage(team))}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs font-medium"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-primary/10 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
               >
                 <Share2 className="w-3.5 h-3.5" />
                 Teilen
@@ -264,33 +264,33 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
 
           {/* Coach Invitation */}
           <div className="mb-2 pt-3 border-t border-border/40">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Co-Coach einladen</span>
+            <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Co-Coach einladen</span>
               <span className="text-[10px] text-amber-500/80">Coach-Zugang</span>
             </div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex-1 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3 font-mono text-lg tracking-[0.3em] text-center text-amber-500 font-bold">
+            <div className="mb-2 flex min-w-0 items-center gap-2">
+              <div className="min-w-0 flex-1 break-all rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-3 text-center font-mono text-base font-bold tracking-[0.18em] text-amber-500 sm:px-4 sm:text-lg sm:tracking-[0.3em]">
                 {team.coach_access_code}
               </div>
               <button
                 onClick={() => copyCode(team.coach_access_code, "Coach-Code")}
-                className="p-3 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors"
+                className="shrink-0 rounded-xl bg-amber-500/10 p-3 text-amber-500 transition-colors hover:bg-amber-500/20"
                 aria-label="Coach-Code kopieren"
               >
                 <Copy className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 onClick={() => shareWhatsApp(getCoachMessage(team))}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-xs font-medium"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-[#25D366]/10 py-2 text-xs font-medium text-[#25D366] transition-colors hover:bg-[#25D366]/20"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 WhatsApp
               </button>
               <button
                 onClick={() => shareNative(`Team ${team.name} – Co-Coach einladen`, getCoachMessage(team))}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors text-xs font-medium"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-amber-500/10 py-2 text-xs font-medium text-amber-500 transition-colors hover:bg-amber-500/20"
               >
                 <Share2 className="w-3.5 h-3.5" />
                 Teilen
@@ -305,9 +305,9 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
             {team.program_start_date ? (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-primary/10 text-primary text-sm">
+                <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-sm text-primary sm:flex-row sm:items-center">
                   <CalendarCheck className="w-4 h-4 shrink-0" />
-                  <span className="font-medium flex-1">
+                  <span className="min-w-0 flex-1 font-medium">
                     Programm startet am {format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}
                   </span>
                   <button
@@ -321,12 +321,12 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                   </button>
                 </div>
                 {editingStartId === team.id && (
-                  <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/40">
+                  <div className="flex flex-col gap-2 rounded-xl bg-secondary/40 px-3 py-2.5 sm:flex-row sm:items-center">
                     <input
                       type="date"
                       value={startDateDraft}
                       onChange={(e) => setStartDateDraft(e.target.value)}
-                      className="flex-1 px-3 py-2 rounded-lg bg-background border border-border/50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="min-w-0 flex-1 rounded-lg border border-border/50 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                     <button
                       onClick={() => updateTeamStartDate(team.id, startDateDraft)}
@@ -438,7 +438,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
       ))}
 
       {showForm ? (
-        <div className="bg-card border border-border/50 rounded-2xl p-5 space-y-3">
+        <div className="min-w-0 space-y-3 rounded-2xl border border-border/50 bg-card p-4 sm:p-5">
           <input
             type="text"
             placeholder="Teamname"
@@ -453,17 +453,17 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
             onChange={(e) => setTeamSport(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
           />
-          <div className="flex gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <button
               onClick={() => setShowForm(false)}
-              className="flex-1 py-3 rounded-xl border border-border/50 text-muted-foreground text-sm hover:bg-secondary/50 transition-colors"
+              className="rounded-xl border border-border/50 py-3 text-sm text-muted-foreground transition-colors hover:bg-secondary/50"
             >
               Abbrechen
             </button>
             <button
               onClick={handleCreate}
               disabled={creating || !teamName.trim()}
-              className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Erstellen"}
             </button>
