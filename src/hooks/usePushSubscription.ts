@@ -184,7 +184,7 @@ export const usePushSubscription = () => {
       setEveningHour(eh);
       setEveningMinute(em);
       setPreTrainingMinutes(preMinutes);
-      await supabase
+      const { error } = await supabase
         .from("push_subscriptions")
         .update({
           morning_hour: mh,
@@ -195,6 +195,7 @@ export const usePushSubscription = () => {
           timezone: getBrowserTimeZone(),
         })
         .eq("user_id", user.id);
+      if (error) throw error;
     },
     [user],
   );
