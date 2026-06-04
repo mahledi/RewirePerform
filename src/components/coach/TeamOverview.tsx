@@ -153,8 +153,8 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+    <div className="w-full min-w-0 space-y-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
           <Users className="w-5 h-5 text-primary mx-auto mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.member_count}</p>
@@ -165,7 +165,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           <p className="text-2xl font-bold text-foreground">{stats.checkins_last_week}</p>
           <p className="text-xs text-muted-foreground">Aktive Sportler (7 Tage)</p>
         </div>
-        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center col-span-2">
+        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center sm:col-span-2">
           <ClipboardCheck className="w-5 h-5 text-primary mx-auto mb-2" />
           <p className="text-2xl font-bold text-foreground">{stats.assessments_completed}</p>
           <p className="text-xs text-muted-foreground">Assessments abgeschlossen (gesamt)</p>
@@ -180,11 +180,11 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
               Nur Aktivitätsstatus. Keine Antworten, keine Stimmungswerte, keine Journale.
             </p>
           </div>
-          <div className="divide-y divide-border/50">
+          <div className="min-w-0 divide-y divide-border/50">
             {activityRows.map((row) => (
-              <div key={row.user_id} className="px-4 py-3 flex items-center justify-between gap-3">
+              <div key={row.user_id} className="flex min-w-0 flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-foreground truncate">
                       {row.full_name ?? "Sportler"}
                     </p>
@@ -195,11 +195,11 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="break-words text-xs text-muted-foreground">
                     {row.days_completed ?? 0}/{row.days_available ?? 0} Tage · {row.checkins_last_7d} Check-ins in 7 Tagen
                   </p>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="shrink-0 text-left sm:text-right">
                   <p className="text-sm font-semibold text-foreground">
                     {row.completion_rate != null ? `${Math.round(row.completion_rate * 100)}%` : "–"}
                   </p>
@@ -213,7 +213,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         </div>
       )}
 
-      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Privatsphäre geschützt</p>

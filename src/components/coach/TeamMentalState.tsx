@@ -323,7 +323,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const lensMatchpoints = buildLensMatchpoints(data.wellbeing?.today, resolvedToday);
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       {/* Stress Warning */}
       {data.stressWarning && (
         <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 flex items-start gap-3 animate-pulse">
@@ -340,8 +340,8 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       {/* ─── Team Pulse — Heutige aggregierte Werte ─── */}
       {data.wellbeing && (
         <div className="bg-card border border-primary/20 rounded-2xl p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Activity className="w-4 h-4 text-primary" />
                 Team Pulse — heute
@@ -351,7 +351,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
               </p>
             </div>
             {typeof data.readiness_index === "number" && (
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Team-Bereitschaft</p>
                 <p className="text-2xl font-bold text-primary">{data.readiness_index}<span className="text-xs text-muted-foreground">/100</span></p>
               </div>
@@ -363,7 +363,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
               Zu wenig Daten für anonymisierte Auswertung. ({data.wellbeing.today.n_users}/{data.min_n ?? 5})
             </p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:grid-cols-3">
               {[
                 { k: "mood", label: "Stimmung" },
                 { k: "energy", label: "Energie" },
@@ -410,7 +410,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
               </p>
             </div>
             {resolvedToday && (
-              <div className="text-right shrink-0">
+            <div className="shrink-0 text-left sm:text-right">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tag</p>
                 <p className="text-lg font-bold text-primary">{resolvedToday.matrix.dayNumber}/56</p>
               </div>
@@ -503,7 +503,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       )}
 
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <MetricCard
           icon={<Zap className="w-4 h-4" />}
           label="Energie"
@@ -552,12 +552,12 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       </div>
 
       {/* Participation Badge */}
-      <div className="bg-card border border-border/50 rounded-2xl p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border/50 bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <Users className="w-4 h-4 text-primary" />
           <span className="text-sm text-muted-foreground">Teilnahme (7 Tage)</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:justify-end">
           <span className="text-lg font-bold text-foreground">{data.participation.rate}%</span>
           <span className="text-xs text-muted-foreground">({data.participation.total}/{data.teamSize})</span>
         </div>
@@ -614,7 +614,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex items-center justify-center gap-4 mt-2">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-yellow-400" /> Energie
           </span>

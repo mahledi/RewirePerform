@@ -141,9 +141,9 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
     const Icon = improved === true ? ArrowUp : improved === false ? ArrowDown : Minus;
     const cls = improved === true ? "text-primary" : improved === false ? "text-yellow-400" : "text-muted-foreground";
     return (
-      <div key={`${label}-${row.assessment_type}-${row.subscale}`} className="bg-card border border-border/50 rounded-2xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div>
+      <div key={`${label}-${row.assessment_type}-${row.subscale}`} className="min-w-0 rounded-2xl border border-border/50 bg-card p-4">
+        <div className="mb-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
               {ASSESSMENT_LABELS[row.assessment_type] ?? row.assessment_type}
             </p>
@@ -162,7 +162,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
               )}
             </span>
             {row.cohens_d_z != null && (
-              <span className="text-xs text-muted-foreground ml-auto">
+              <span className="text-xs text-muted-foreground sm:ml-auto">
                 d_z = {row.cohens_d_z}
                 {row.low_confidence && " · niedrige Konfidenz"}
               </span>
@@ -178,7 +178,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="w-full min-w-0 space-y-5">
       {/* Privacy banner */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
@@ -193,7 +193,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Cohort breakdown */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Teilnahme-Status</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="bg-card border border-border/50 rounded-2xl p-3">
             <p className="text-xs text-muted-foreground">Pre + Post abgeschlossen</p>
             <p className="text-xl font-bold text-foreground">{cb.completed_pre_post}</p>
@@ -218,7 +218,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-primary" /> Assessment-Status
         </h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[
             { label: "Pre", n: data.assessment_completion.pre_n },
             { label: "Mid", n: data.assessment_completion.mid_n },
@@ -245,7 +245,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
               Zu wenig Daten für anonymisierte Auswertung (mind. {data.min_n} Spieler).
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="bg-card border border-border/50 rounded-2xl p-4">
                 <p className="text-xs text-muted-foreground mb-1">Ø Completion-Rate</p>
                 <p className="text-xl font-bold text-foreground">
@@ -314,10 +314,10 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         ) : (
           <div className="space-y-2">
             {data.weekly_trend.map((w) => (
-              <div key={w.week_start} className="bg-card border border-border/50 rounded-xl p-3 flex items-center gap-3 text-xs">
-                <span className="text-muted-foreground w-24 shrink-0">{w.week_start}</span>
+              <div key={w.week_start} className="flex min-w-0 flex-col gap-2 rounded-xl border border-border/50 bg-card p-3 text-xs sm:flex-row sm:items-center sm:gap-3">
+                <span className="text-muted-foreground sm:w-24 sm:shrink-0">{w.week_start}</span>
                 {w.sufficient_data ? (
-                  <div className="flex gap-3 flex-1">
+                  <div className="flex min-w-0 flex-1 flex-wrap gap-3">
                     <span>😊 {w.avg_mood ?? "—"}</span>
                     <span>⚡ {w.avg_energy ?? "—"}</span>
                     <span>🎯 {w.avg_focus ?? "—"}</span>
@@ -325,7 +325,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
                 ) : (
                   <span className="text-muted-foreground italic">Zu wenig Daten</span>
                 )}
-                <span className="text-muted-foreground ml-auto">n={w.n_users}</span>
+                <span className="text-muted-foreground sm:ml-auto">n={w.n_users}</span>
               </div>
             ))}
           </div>

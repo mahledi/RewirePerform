@@ -73,17 +73,17 @@ const Coach = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen overflow-x-hidden bg-background">
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-border/60 bg-background/86 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 md:px-6">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-5 md:px-6">
+          <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card premium-hairline">
               <Brain className="w-5 h-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <span className="font-heading text-base font-semibold leading-none">Coach</span>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Team Performance Console</p>
+              <p className="mt-1 truncate text-[10px] uppercase tracking-wider text-muted-foreground">Team Performance Console</p>
             </div>
           </div>
           <button
@@ -97,11 +97,11 @@ const Coach = () => {
       </div>
 
       {/* Tabs */}
-      <div className="mx-auto max-w-5xl px-5 pt-5 md:px-6">
-        <div className="flex gap-1 overflow-x-auto rounded-xl border border-border/70 bg-muted/50 p-1 shadow-card">
+      <div className="mx-auto w-full max-w-5xl px-4 pt-5 sm:px-5 md:px-6">
+        <div className="grid grid-cols-1 gap-1 rounded-xl border border-border/70 bg-muted/50 p-1 shadow-card sm:grid-cols-5">
           <button
             onClick={() => setTab("overview")}
-            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+            className={`premium-press flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
               tab === "overview" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
@@ -110,7 +110,7 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("mental")}
-            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+            className={`premium-press flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
               tab === "mental" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
@@ -119,7 +119,7 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("evidence")}
-            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+            className={`premium-press flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
               tab === "evidence" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
@@ -128,7 +128,7 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("toolkit")}
-            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+            className={`premium-press flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
               tab === "toolkit" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
@@ -137,7 +137,7 @@ const Coach = () => {
           </button>
           <button
             onClick={() => setTab("manage")}
-            className={`premium-press flex-1 min-w-fit flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-xs font-medium transition-all ${
+            className={`premium-press flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
               tab === "manage" ? "bg-card text-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.05)]" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
             }`}
           >
@@ -149,7 +149,7 @@ const Coach = () => {
 
       {/* Team selector if multiple teams */}
       {teams.length > 1 && (tab === "overview" || tab === "mental" || tab === "evidence" || tab === "toolkit") && (
-        <div className="mx-auto max-w-5xl px-5 pt-4 md:px-6">
+        <div className="mx-auto w-full max-w-5xl px-4 pt-4 sm:px-5 md:px-6">
           <select
             value={selectedTeam ?? ""}
             onChange={(e) => setSelectedTeam(e.target.value)}
@@ -163,7 +163,7 @@ const Coach = () => {
       )}
 
       {/* Content */}
-      <div className="mx-auto max-w-5xl px-5 py-6 md:px-6 md:pb-12">
+      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-5 md:px-6 md:pb-12">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />

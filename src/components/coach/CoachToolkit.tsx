@@ -38,10 +38,10 @@ const Section = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="bg-secondary/40 border border-border/50 rounded-2xl p-5 space-y-4">
-    <div className="flex items-center gap-2">
+  <div className="min-w-0 space-y-4 rounded-2xl border border-border/50 bg-secondary/40 p-4 sm:p-5">
+    <div className="flex min-w-0 items-center gap-2">
       {icon}
-      <h3 className="font-heading text-base font-semibold">{title}</h3>
+      <h3 className="min-w-0 font-heading text-base font-semibold">{title}</h3>
     </div>
     {children}
   </div>
@@ -152,7 +152,7 @@ const CoachToolkit = ({ teamId }: Props) => {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="w-full min-w-0 space-y-5">
       {/* SECTION 1 — HEUTE IM SPIELERPROGRAMM */}
       <Section
         icon={<BookOpen className="w-5 h-5 text-primary" />}
@@ -277,12 +277,12 @@ const CoachToolkit = ({ teamId }: Props) => {
         title="Coach Journal"
       >
         <div className="space-y-4 text-sm">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <label className="text-xs text-muted-foreground">Woche</label>
             <select
               value={weekNumber}
               onChange={(e) => setWeekNumber(Number(e.target.value))}
-              className="bg-secondary/60 border border-border/50 rounded-lg px-3 py-1.5 text-sm"
+              className="min-w-0 rounded-lg border border-border/50 bg-secondary/60 px-3 py-1.5 text-sm"
             >
               {Array.from({ length: 8 }).map((_, i) => (
                 <option key={i + 1} value={i + 1}>
