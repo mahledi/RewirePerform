@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Calendar, Loader2 } from "lucide-react";
+import { Bell, BellOff, Calendar, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,6 +19,7 @@ const DAYS = [
 ];
 
 const TRAIN_HOURS = Array.from({ length: 17 }, (_, i) => 6 + i); // 6..22
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 // Local hour helpers (for stored UTC -> local display)
 const utcToLocal = (h: number, m: number) => {
@@ -55,7 +56,7 @@ export const TrainingAndNotifications = () => {
 
   // Training schedule state
   const [scheduleLoading, setScheduleLoading] = useState(true);
-  const [savingSchedule, setSavingSchedule] = useState(false);
+  const [scheduleSaveState, setScheduleSaveState] = useState<SaveState>("idle");
   // Stored in local display time. Persisted rows also keep UTC fallback fields.
   const [schedule, setSchedule] = useState<Record<number, number | null>>({});
 
@@ -63,7 +64,7 @@ export const TrainingAndNotifications = () => {
   const [morningLocal, setMorningLocal] = useState({ h: 7, m: 30 });
   const [eveningLocal, setEveningLocal] = useState({ h: 21, m: 0 });
   const [preTrainingMinutes, setPreTrainingMinutes] = useState(60);
-  const [savingTimes, setSavingTimes] = useState(false);
+  const [timesSaveState, setTimesSaveState] = useState<SaveState>("idle");
 
   useEffect(() => {
     const load = async () => {
@@ -75,9 +76,9 @@ export const TrainingAndNotifications = () => {
       const map: Record<number, number | null> = {};
       DAYS.forEach((d) => (map[d.idx] = null));
       (data ?? []).forEach((r) => {
-        const local = r.training_local_hour !== null && typeof r.training_local_hour === "number"
+        const local = typeof r.training_local_hour === "number"
           ? { h: r.training_local_hour, m: r.training_local_minute ?? 0 }
-          : utcToLocal(r.training_hour, 0);
+          : { h: r.training_hour, m: 0 };
         map[r.day_of_week] = local.h;
       });
       setSchedule(map);
@@ -100,6 +101,7 @@ export const TrainingAndNotifications = () => {
     const next = { ...schedule };
     next[dayIdx] = localHour;
     setSchedule(next);
+    setScheduleSaveState("idle");
   };
 
   const displayHour = (localHour: number | null) => {
@@ -108,7 +110,7 @@ export const TrainingAndNotifications = () => {
 
   const saveSchedule = async () => {
     if (!user) return;
-    setSavingSchedule(true);
+    setScheduleSaveState("saving");
     try {
       // Delete all existing rows for this user, then insert fresh set.
       const { error: delErr } = await supabase
@@ -120,11 +122,11 @@ export const TrainingAndNotifications = () => {
         .filter(([, h]) => h !== null)
         .map(([day, h]) => {
           const localHour = h as number;
-          const utc = localToUtc(localHour, 0);
           return {
             user_id: user.id,
             day_of_week: Number(day),
-            training_hour: utc.h,
+            // Keep the canonical local value and legacy fallback aligned.
+            training_hour: localHour,
             training_local_hour: localHour,
             training_local_minute: 0,
             training_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
@@ -134,11 +136,11 @@ export const TrainingAndNotifications = () => {
         const { error: insErr } = await supabase.from("training_schedule").insert(rows);
         if (insErr) throw insErr;
       }
+      setScheduleSaveState("saved");
       toast.success("Trainingszeiten gespeichert.");
     } catch (e: unknown) {
+      setScheduleSaveState("error");
       toast.error("Speichern fehlgeschlagen: " + errorMessage(e));
-    } finally {
-      setSavingSchedule(false);
     }
   };
 
@@ -164,18 +166,30 @@ export const TrainingAndNotifications = () => {
   };
 
   const saveTimes = async () => {
-    setSavingTimes(true);
+    setTimesSaveState("saving");
     try {
       const m = localToUtc(morningLocal.h, morningLocal.m);
       const e = localToUtc(eveningLocal.h, eveningLocal.m);
       await push.saveTimes(m.h, m.m, e.h, e.m, preTrainingMinutes);
+      setTimesSaveState("saved");
       toast.success("Zeiten gespeichert.");
     } catch (err: unknown) {
+      setTimesSaveState("error");
       toast.error(errorMessage(err));
-    } finally {
-      setSavingTimes(false);
     }
   };
+
+  useEffect(() => {
+    if (scheduleSaveState !== "saved") return;
+    const handle = window.setTimeout(() => setScheduleSaveState("idle"), 2500);
+    return () => window.clearTimeout(handle);
+  }, [scheduleSaveState]);
+
+  useEffect(() => {
+    if (timesSaveState !== "saved") return;
+    const handle = window.setTimeout(() => setTimesSaveState("idle"), 2500);
+    return () => window.clearTimeout(handle);
+  }, [timesSaveState]);
 
   return (
     <>
@@ -208,7 +222,7 @@ export const TrainingAndNotifications = () => {
                     {has ? (
                       <Select
                         value={String(localH)}
-                        onValueChange={(v) => setDayHourLocal(d.idx, Number(v))}
+                        onValueChange={(v) => setDayHourLocal(d.idx, Number.parseInt(v, 10))}
                       >
                         <SelectTrigger className="w-28 bg-secondary/50">
                           <SelectValue />
@@ -227,9 +241,16 @@ export const TrainingAndNotifications = () => {
                   </div>
                 );
               })}
-              <Button onClick={saveSchedule} disabled={savingSchedule} className="w-full mt-2">
-                {savingSchedule && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Trainingszeiten speichern
+              <Button onClick={saveSchedule} disabled={scheduleSaveState === "saving"} className="w-full mt-2">
+                {scheduleSaveState === "saving" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {scheduleSaveState === "saved" && <Check className="w-4 h-4 mr-2" />}
+                {scheduleSaveState === "saving"
+                  ? "Speichert..."
+                  : scheduleSaveState === "saved"
+                    ? "Gespeichert"
+                    : scheduleSaveState === "error"
+                      ? "Erneut speichern"
+                      : "Trainingszeiten speichern"}
               </Button>
             </div>
           )}
@@ -275,6 +296,7 @@ export const TrainingAndNotifications = () => {
                   onValueChange={(v) => {
                     const [h, m] = v.split(":").map(Number);
                     setMorningLocal({ h, m });
+                    setTimesSaveState("idle");
                   }}
                 >
                   <SelectTrigger className="bg-secondary/50">
@@ -296,6 +318,7 @@ export const TrainingAndNotifications = () => {
                   onValueChange={(v) => {
                     const [h, m] = v.split(":").map(Number);
                     setEveningLocal({ h, m });
+                    setTimesSaveState("idle");
                   }}
                 >
                   <SelectTrigger className="bg-secondary/50">
@@ -314,7 +337,10 @@ export const TrainingAndNotifications = () => {
                 <label className="text-xs text-muted-foreground mb-1 block">Pre-Training-Reminder</label>
                 <Select
                   value={String(preTrainingMinutes)}
-                  onValueChange={(v) => setPreTrainingMinutes(Number(v))}
+                  onValueChange={(v) => {
+                    setPreTrainingMinutes(Number(v));
+                    setTimesSaveState("idle");
+                  }}
                 >
                   <SelectTrigger className="bg-secondary/50">
                     <SelectValue />
@@ -325,9 +351,16 @@ export const TrainingAndNotifications = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={saveTimes} disabled={savingTimes} className="w-full">
-                {savingTimes && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Zeiten speichern
+              <Button onClick={saveTimes} disabled={timesSaveState === "saving"} className="w-full">
+                {timesSaveState === "saving" && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {timesSaveState === "saved" && <Check className="w-4 h-4 mr-2" />}
+                {timesSaveState === "saving"
+                  ? "Speichert..."
+                  : timesSaveState === "saved"
+                    ? "Gespeichert"
+                    : timesSaveState === "error"
+                      ? "Erneut speichern"
+                      : "Zeiten speichern"}
               </Button>
               <Button variant="outline" onClick={handleDisablePush} className="w-full">
                 <BellOff className="w-4 h-4 mr-2" />
