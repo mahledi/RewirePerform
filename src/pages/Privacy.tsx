@@ -24,12 +24,46 @@ const Privacy = () => {
         </p>
 
         <div className="space-y-8 text-sm leading-relaxed text-muted-foreground">
+          <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Warum RewirePerform Daten braucht</h2>
+            <p>
+              RewirePerform ist kein reines Inhaltsarchiv. Das System soll verstehen, wo du startest,
+              wie du durch das Programm gehst und welche Rückmeldungen für deinen Fortschritt relevant sind.
+              Deine Angaben helfen dabei, Aufgaben, Erinnerungen, Auswertungen und Rückblicke in einen sinnvollen
+              Zusammenhang zu bringen.
+            </p>
+            <p className="mt-3">
+              Der Zweck ist nicht, möglichst viel zu sammeln. Der Zweck ist, aus notwendigen Trainings- und
+              Fortschrittsdaten eine nachvollziehbare Begleitung zu machen: Was wurde bearbeitet, was fehlt noch,
+              wo zeigt sich Entwicklung und welche Inhalte passen zum aktuellen Programmstand?
+            </p>
+          </section>
+
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Welche Daten verarbeitet werden</h2>
             <p>
               RewirePerform verarbeitet Accountdaten, Sportprofil-Angaben, Programmfortschritt, tägliche Check-ins,
               private Journal-Einträge, Fragebogenantworten, validierte Assessments, Trainingszeiten und optionale
               Push-Benachrichtigungseinstellungen.
+            </p>
+            <ul className="mt-3 space-y-2">
+              <li><span className="text-foreground">Fragebogen und Assessments:</span> helfen, Ausgangslage, Retests und Entwicklung über Zeit einzuordnen.</li>
+              <li><span className="text-foreground">Check-ins:</span> zeigen Tageszustand, Bereitschaft und ob der tägliche Ablauf funktioniert.</li>
+              <li><span className="text-foreground">Journaleinträge:</span> unterstützen persönliche Reflexion und können dem System helfen, wiederkehrende Themen vorsichtig zu erkennen.</li>
+              <li><span className="text-foreground">Trainingszeiten und Fortschritt:</span> steuern Erinnerungen, Tageslogik, Streaks, Aufgabenstatus und Programmrhythmus.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Wie die Angaben im Hintergrundsystem genutzt werden</h2>
+            <p>
+              Das Hintergrundsystem nutzt deine Angaben, um den 56-Tage-Prozess technisch und inhaltlich konsistent zu halten:
+              Es speichert Zwischenschritte, erkennt erledigte Aufgaben, ordnet Check-ins und Journale dem richtigen Programmtag zu
+              und bereitet Fortschritt so auf, dass du später verstehen kannst, was du tatsächlich trainiert hast.
+            </p>
+            <p className="mt-3">
+              Für Coaches und Admin-Bereiche werden private Inhalte nicht als Rohtexte sichtbar gemacht. Dort geht es um
+              Aktivität, Datenqualität, Programmstatus und, wo ausreichend viele Teammitglieder vorhanden sind, geschützte Aggregate.
             </p>
           </section>
 
@@ -38,6 +72,10 @@ const Privacy = () => {
             <p>
               Private Journaltexte, Freitextantworten und individuelle mentale Muster werden nicht an Coaches angezeigt.
               Coaches erhalten nur Status- und Team-Aggregate, sofern die notwendige Mindestgruppengröße erreicht ist.
+            </p>
+            <p className="mt-3">
+              Sensible Eingaben sollen mit Respekt behandelt werden: Sie sollen dir helfen, ehrlich zu reflektieren,
+              ohne dass daraus eine öffentliche Bewertung oder ein einzelner Coach-Bericht entsteht.
             </p>
           </section>
 
