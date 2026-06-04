@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
   const navigate = useNavigate();
   const [isTestUser, setIsTestUser] = useState(false);
   const [skipping, setSkipping] = useState(false);
+  const [showDataDetails, setShowDataDetails] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -149,10 +150,32 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
               <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <h3 className="font-heading font-semibold mb-1">Absolute Ehrlichkeit</h3>
+                <h3 className="font-heading font-semibold mb-1">Warum wir dich fragen</h3>
                 <p className="text-sm text-muted-foreground">
-                  Es gibt keine richtigen Antworten. Private Texte bleiben privat und werden Coaches nicht angezeigt.
+                  Deine Angaben helfen dem System, dein Startprofil, deine Fortschrittslogik und passende Tagesimpulse besser einzuordnen.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setShowDataDetails((open) => !open)}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary"
+                >
+                  Mehr erfahren
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showDataDetails ? "rotate-180" : ""}`} />
+                </button>
+                {showDataDetails && (
+                  <div className="mt-3 space-y-2 rounded-xl border border-border/50 bg-background/40 p-3 text-xs leading-relaxed text-muted-foreground">
+                    <p>
+                      Relevant sind vor allem Fragebogenantworten, Check-ins, Journaleinträge, Trainingszeiten und Programmfortschritt.
+                      Daraus entstehen Hinweise für Aufgaben, Rückblick, Erinnerungen und Fortschrittsauswertung.
+                    </p>
+                    <p>
+                      Sensible freie Texte werden mit besonderer Zurückhaltung behandelt: Sie sind für deine Reflexion gedacht und werden Coaches nicht als Rohinhalt angezeigt.
+                    </p>
+                    <p>
+                      Es geht nicht darum, dich zu bewerten. Die Daten sollen nachvollziehbar machen, wo du startest, wie du arbeitest und welche nächsten Schritte sinnvoll sind.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

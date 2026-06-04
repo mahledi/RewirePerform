@@ -273,17 +273,22 @@ const Settings = () => {
             <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
               <div>
                 <h3 className="font-medium text-foreground mb-1">Was wird gespeichert?</h3>
-                <p>Deine Fragebogen-Antworten, täglichen Check-ins, Kalender-Einträge und die daraus deterministisch berechnete Auswertung. Alles wird verschlüsselt in einer sicheren Datenbank gespeichert.</p>
+                <p>Deine Fragebogen-Antworten, täglichen Check-ins, Journaleinträge, Trainingszeiten, Programmfortschritte und daraus berechnete Auswertungen. Diese Daten helfen dem System, deinen Startpunkt, deine Aufgabenlogik, Erinnerungen und Fortschritte sinnvoll abzubilden.</p>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-foreground mb-1">Warum wird das abgefragt?</h3>
+                <p>RewirePerform nutzt Angaben nicht als Selbstzweck. Sie machen sichtbar, wo du startest, welche Schritte abgeschlossen sind, wie dein Tagesrhythmus funktioniert und welche Rückmeldungen für deinen weiteren Verlauf relevant sind.</p>
               </div>
 
               <div>
                 <h3 className="font-medium text-foreground mb-1">Wer hat Zugriff?</h3>
-                <p>Nur du. Deine Daten sind durch Row-Level-Security geschützt — das bedeutet, technisch kann niemand außer dir auf deine Einträge zugreifen. Nicht einmal Administratoren sehen deine individuellen Antworten.</p>
+                <p>Persönliche Inhalte sind auf private Nutzung ausgelegt und werden nicht als Rohdaten in Coach-Ansichten angezeigt. Technische Schutzmechanismen begrenzen Zugriffe im Produkt; Admin-Bereiche sind auf Betrieb, Datenqualität und aggregierte Übersichten ausgerichtet.</p>
               </div>
 
               <div>
                 <h3 className="font-medium text-foreground mb-1">Was sieht mein Coach?</h3>
-                <p>Dein Coach sieht ausschließlich deinen <strong className="text-foreground">Aktivitätsstatus</strong>: Ob du deine Check-ins machst und aktiv am Programm teilnimmst. Deine Antworten, Reflexionen und dein mentales Profil bleiben privat.</p>
+                <p>Dein Coach sieht operative Aktivität wie Teilnahme, erledigte Tage und Programmstatus. Sensible Antworten, private Reflexionen, Journaltexte und individuelle mentale Rohwerte werden Coaches nicht angezeigt; Teamwerte erscheinen nur geschützt und aggregiert.</p>
               </div>
 
               <div>
@@ -292,8 +297,16 @@ const Settings = () => {
               </div>
 
               <div>
-                <h3 className="font-medium text-foreground mb-1">DSGVO</h3>
-                <p>RewirePerform entspricht der Datenschutz-Grundverordnung (DSGVO). Deine Daten werden ausschließlich in der EU verarbeitet und nicht an Dritte weitergegeben.</p>
+                <h3 className="font-medium text-foreground mb-1">Mehr Details</h3>
+                <p>
+                  Die{" "}
+                  <a href="/privacy" className="text-primary hover:underline">
+                    ausführlichere Datenschutzseite
+                  </a>{" "}
+                  erklärt genauer, welche Datenarten relevant sind und wie sie für Aufgaben, Erinnerungen, Fortschritt
+                  und geschützte Teamübersichten genutzt werden. Vor einer App-Store-Veröffentlichung wird diese
+                  Kommunikation final geprüft.
+                </p>
               </div>
             </div>
           </div>
