@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import QATestBanner from "./components/qa/QATestBanner";
 import { NotificationOpenTracker } from "./components/notifications/NotificationOpenTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
+import IosInputPolish from "./components/IosInputPolish";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
         <BrowserRouter>
           <QATestBanner />
           <NotificationOpenTracker />
+          <IosInputPolish />
           <Suspense fallback={<PageFallback />}>
             <Routes>
               <Route path="/" element={<Index />} />

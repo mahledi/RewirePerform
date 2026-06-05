@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import QuestionnaireIntro from "@/components/questionnaire/QuestionnaireIntro";
 import QuestionnaireFlow from "@/components/questionnaire/QuestionnaireFlow";
 import QuestionnaireResults from "@/components/questionnaire/QuestionnaireResults";
@@ -24,6 +25,7 @@ interface LocalQuestionnaireDraft {
 }
 
 const Questionnaire = () => {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("loading");
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [draft, setDraft] = useState<DraftState | null>(null);
@@ -50,6 +52,26 @@ const Questionnaire = () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (!user || userError) {
         applyLocalDraft();
+        return;
+      }
+
+      const { data: completedResponse, error: completedError } = await supabase
+        .from("questionnaire_responses")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_complete", true)
+        .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (completedError) {
+        console.error("Error loading completed questionnaire:", completedError);
+      }
+
+      if (completedResponse?.id) {
+        clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
+        navigate("/dashboard", { replace: true });
         return;
       }
 
@@ -93,7 +115,7 @@ const Questionnaire = () => {
       }
     };
     loadDraft();
-  }, []);
+  }, [navigate]);
 
   const handleComplete = (finalAnswers: Record<string, string | string[] | number>) => {
     setAnswers(finalAnswers);
