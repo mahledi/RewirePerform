@@ -97,6 +97,18 @@
     touch-action: manipulation;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
   button:disabled {
     cursor: not-allowed;
   }

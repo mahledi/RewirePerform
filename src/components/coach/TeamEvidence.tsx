@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Loader2, Info, ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Loader2, Info, ArrowDown, ArrowUp, Minus, RefreshCw } from "lucide-react";
+import { captureAppError } from "@/lib/monitoring";
 
 // Direction per subscale: which direction = improvement
 type Dir = "higher_is_better" | "lower_is_better";
@@ -98,23 +99,35 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
   const [data, setData] = useState<OutcomeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setData(null);
     supabase
       .rpc("compute_team_outcomes", { team_id_param: teamId, min_n: 5 })
       .then(({ data: rpcData, error: rpcError }) => {
         if (cancelled) return;
-        if (rpcError) setError(rpcError.message);
-        else setData(rpcData as unknown as OutcomeData);
+        if (rpcError) {
+          setError("Wirksamkeitsdaten konnten gerade nicht geladen werden.");
+          void captureAppError({
+            eventName: "coach_evidence_load_failed",
+            error: rpcError,
+            role: "coach",
+            route: "/coach",
+            metadata: { source: "compute_team_outcomes" },
+          });
+        } else {
+          setData(rpcData as unknown as OutcomeData);
+        }
         setLoading(false);
       });
     return () => {
       cancelled = true;
     };
-  }, [teamId]);
+  }, [teamId, reloadKey]);
 
   if (loading) {
     return (
@@ -124,16 +137,55 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
     );
   }
 
-  if (error || !data) {
+  if (error) {
     return (
-      <div className="text-center py-12 text-muted-foreground text-sm">
-        {error ?? "Keine Daten verfügbar."}
+      <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-5 text-sm text-muted-foreground">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
+          <div className="min-w-0">
+            <p className="font-heading font-semibold text-foreground mb-1">Wirksamkeitsdaten gerade nicht verfügbar</p>
+            <p className="leading-relaxed">{error} Die restliche Coach-Übersicht bleibt nutzbar.</p>
+            <button
+              type="button"
+              onClick={() => setReloadKey((value) => value + 1)}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border/60 px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Erneut laden
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const enoughTeam = data.total_athletes >= data.min_n;
-  const cb = data.cohort_breakdown;
+  const totalAthletes = Number(data?.total_athletes ?? 0);
+  const minN = Number(data?.min_n ?? 5);
+
+  if (!data || totalAthletes === 0) {
+    return (
+      <div className="rounded-2xl border border-border/50 bg-card p-6 text-center">
+        <BarChart3 className="mx-auto mb-4 h-10 w-10 text-primary" />
+        <h3 className="font-heading text-lg font-semibold text-foreground mb-2">
+          Noch keine Wirksamkeitsdaten verfügbar
+        </h3>
+        <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+          Wirksamkeit wird erst sichtbar, wenn Spieler registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen.
+        </p>
+      </div>
+    );
+  }
+
+  const enoughTeam = totalAthletes >= minN;
+  const cb = data.cohort_breakdown ?? {
+    never_started: 0,
+    only_pre: 0,
+    pre_and_mid_no_post: 0,
+    completed_pre_post: 0,
+  };
+  const assessmentCompletion = data.assessment_completion ?? { pre_n: 0, mid_n: 0, post_n: 0 };
+  const changes = data.changes ?? { pre_post: [], pre_mid: [] };
+  const weeklyTrend = data.weekly_trend ?? [];
 
   const renderChangeRow = (row: ChangeRow, label: "Pre → Post" | "Pre → Mid") => {
     const second = row.avg_post ?? row.avg_mid ?? 0;
@@ -170,7 +222,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Zu wenig Paare ({row.n_pairs}/{data.min_n}) für anonymisierte Auswertung.
+            Zu wenig Paare ({row.n_pairs}/{minN}) für anonymisierte Auswertung.
           </p>
         )}
       </div>
@@ -185,7 +237,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Du siehst nur Aggregate (mind. {data.min_n} Spieler). Keine Einzelwerte, keine Reflexionen, keine Journale.
+            Du siehst nur Aggregate (mind. {minN} Spieler). Keine Einzelwerte, keine Reflexionen, keine Journale.
           </p>
         </div>
       </div>
@@ -220,14 +272,14 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[
-            { label: "Pre", n: data.assessment_completion.pre_n },
-            { label: "Mid", n: data.assessment_completion.mid_n },
-            { label: "Post", n: data.assessment_completion.post_n },
+            { label: "Pre", n: assessmentCompletion.pre_n },
+            { label: "Mid", n: assessmentCompletion.mid_n },
+            { label: "Post", n: assessmentCompletion.post_n },
           ].map((item) => (
             <div key={item.label} className="bg-card border border-border/50 rounded-2xl p-4 text-center">
               <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
               <p className="text-2xl font-bold text-foreground">
-                {item.n}<span className="text-xs text-muted-foreground"> / {data.total_athletes}</span>
+                {item.n}<span className="text-xs text-muted-foreground"> / {totalAthletes}</span>
               </p>
             </div>
           ))}
@@ -242,7 +294,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
           </h3>
           {!enoughTeam ? (
             <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
-              Zu wenig Daten für anonymisierte Auswertung (mind. {data.min_n} Spieler).
+              Zu wenig Daten für anonymisierte Auswertung (mind. {minN} Spieler).
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -290,14 +342,14 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-primary" /> Beobachtete Veränderung pro Subskala
         </h3>
-        {data.changes.pre_post.length === 0 && data.changes.pre_mid.length === 0 ? (
+        {changes.pre_post.length === 0 && changes.pre_mid.length === 0 ? (
           <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
             Noch keine ausreichenden Pre/Mid- oder Pre/Post-Paare verfügbar.
           </p>
         ) : (
           <div className="space-y-3">
-            {data.changes.pre_post.map((row) => renderChangeRow(row, "Pre → Post"))}
-            {data.changes.pre_mid.map((row) => renderChangeRow(row, "Pre → Mid"))}
+            {changes.pre_post.map((row) => renderChangeRow(row, "Pre → Post"))}
+            {changes.pre_mid.map((row) => renderChangeRow(row, "Pre → Mid"))}
           </div>
         )}
       </section>
@@ -307,13 +359,13 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" /> Wochentrend (Stimmung / Energie / Fokus)
         </h3>
-        {data.weekly_trend.length === 0 ? (
+        {weeklyTrend.length === 0 ? (
           <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
             Noch keine Check-in-Daten.
           </p>
         ) : (
           <div className="space-y-2">
-            {data.weekly_trend.map((w) => (
+            {weeklyTrend.map((w) => (
               <div key={w.week_start} className="flex min-w-0 flex-col gap-2 rounded-xl border border-border/50 bg-card p-3 text-xs sm:flex-row sm:items-center sm:gap-3">
                 <span className="text-muted-foreground sm:w-24 sm:shrink-0">{w.week_start}</span>
                 {w.sufficient_data ? (
@@ -348,7 +400,9 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Disclaimer */}
       <div className="bg-muted/40 border border-border/40 rounded-2xl p-4 flex items-start gap-3">
         <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-        <p className="text-xs text-muted-foreground leading-relaxed">{data.disclaimer}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {data.disclaimer ?? "Wirksamkeitsdaten werden nur aggregiert angezeigt und erst ab ausreichender Gruppengröße belastbar."}
+        </p>
       </div>
     </div>
   );

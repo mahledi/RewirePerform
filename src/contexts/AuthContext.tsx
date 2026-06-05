@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { setMonitoringUser } from "@/lib/monitoring";
@@ -31,6 +31,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole>(null);
   const [isTestUser, setIsTestUser] = useState(false);
+  const activeUserIdRef = useRef<string | null>(null);
+
+  const readCachedRole = (): AppRole => {
+    const cached = window.localStorage.getItem("cached_user_role");
+    return cached === "athlete" || cached === "coach" || cached === "admin" ? cached : null;
+  };
 
   const fetchUserContext = async (userId: string): Promise<AppRole> => {
     try {
@@ -58,8 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
       console.error("Failed to fetch user role", err);
       // Offline-Fallback: gecachte Rolle aus localStorage verwenden
-      const cached = window.localStorage.getItem("cached_user_role") as AppRole;
-      if (cached === "athlete" || cached === "coach" || cached === "admin") {
+      const cached = readCachedRole();
+      if (cached) {
         setRole(cached);
         setMonitoringUser({ userId, role: cached, isTest: false });
         return cached;
@@ -75,12 +81,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setLoading(true);
+          const sameUser = activeUserIdRef.current === session.user.id;
+          activeUserIdRef.current = session.user.id;
+          const cachedRole = readCachedRole();
+          if (cachedRole) {
+            setRole(cachedRole);
+            setMonitoringUser({ userId: session.user.id, role: cachedRole, isTest: false });
+          }
+          if (!sameUser && !cachedRole) setLoading(true);
+          else setLoading(false);
           setTimeout(async () => {
             await fetchUserContext(session.user.id);
             setLoading(false);
           }, 0);
         } else {
+          activeUserIdRef.current = null;
           setRole(null);
           setIsTestUser(false);
           setMonitoringUser({ userId: null });
@@ -93,6 +108,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        activeUserIdRef.current = session.user.id;
+        const cachedRole = readCachedRole();
+        if (cachedRole) {
+          setRole(cachedRole);
+          setMonitoringUser({ userId: session.user.id, role: cachedRole, isTest: false });
+          setLoading(false);
+          await fetchUserContext(session.user.id);
+          return;
+        }
         await fetchUserContext(session.user.id);
       }
       setLoading(false);
@@ -103,6 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    activeUserIdRef.current = null;
     setRole(null);
     setIsTestUser(false);
     setMonitoringUser({ userId: null });

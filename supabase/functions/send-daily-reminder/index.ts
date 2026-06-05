@@ -70,6 +70,11 @@ interface TrainingScheduleRow {
   training_timezone: string | null;
 }
 
+interface ProgramInstanceRow {
+  user_id: string;
+  started_at: string | null;
+}
+
 const toMinuteOfDay = (hour: number, minute: number) => hour * 60 + minute;
 
 const minutesMatch = (target: number, now: Date) => {
@@ -118,14 +123,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Filter to users with active program instance
+  // Filter to users with an effectively started active program instance.
+  // Future-started team/solo programs must not receive morning, evening or pre-training pushes.
   const userIds = [...new Set((subs ?? []).map((s) => s.user_id))];
   const { data: instances } = await supa
     .from("program_instances")
-    .select("user_id")
+    .select("user_id,started_at")
     .eq("status", "active")
     .in("user_id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
-  const activeUsers = new Set((instances ?? []).map((i) => i.user_id));
+  const activeUsers = new Set(
+    ((instances ?? []) as ProgramInstanceRow[])
+      .filter((instance) => {
+        if (!instance.started_at) return false;
+        return instance.started_at.slice(0, 10) <= today;
+      })
+      .map((instance) => instance.user_id),
+  );
 
   const { data: schedule } = await supa
     .from("training_schedule")
