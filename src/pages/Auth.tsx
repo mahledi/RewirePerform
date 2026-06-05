@@ -51,6 +51,8 @@ const Auth = () => {
   const [sport, setSport] = useState("");
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
 
+  const normalizedTeamCode = () => teamCode.trim().toUpperCase();
+
   const pickIntent = (i: Intent) => {
     setIntent(i);
     if (i !== "join") setTeamCode("");
@@ -74,25 +76,77 @@ const Auth = () => {
         .maybeSingle();
 
       if (qr?.answers && typeof qr.answers === "object") {
-        const answers = qr.answers as Record<string, any>;
+        const answers = qr.answers as Record<string, unknown>;
         const s = answers["sport-01"] || null;
         const position = answers["sport-02"] || null;
-        if (s) {
-          await supabase.from("profiles").update({ sport: getOptionText("sport-01", s), team: position }).eq("id", userId);
+        if (typeof s === "string") {
+          await supabase
+            .from("profiles")
+            .update({ sport: getOptionText("sport-01", s), team: typeof position === "string" ? position : null })
+            .eq("id", userId);
         }
       }
     }
   };
 
+  const joinTeamWithCode = async () => {
+    const code = normalizedTeamCode();
+    if (code.length !== 6) {
+      return { success: false as const, message: "Bitte gib einen gültigen 6-stelligen Teamcode ein." };
+    }
+
+    const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
+      _code: code,
+    });
+    const result = joinResult as { success?: boolean; role?: "athlete" | "coach"; error?: string } | null;
+
+    if (joinError) {
+      console.error("Team join error:", joinError);
+      return {
+        success: false as const,
+        message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",
+      };
+    }
+
+    if (!result || result.success !== true) {
+      return {
+        success: false as const,
+        message: "Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.",
+      };
+    }
+
+    return { success: true as const, role: result.role ?? "athlete" };
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+    if (intent === "join" && normalizedTeamCode().length !== 6) {
+      toast.error("Bitte gib den 6-stelligen Teamcode ein, um den Teambeitritt abzuschließen.");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
       toast.error(error.message === "Invalid login credentials" ? "Ungültige Anmeldedaten." : error.message);
     } else {
       await backfillProfileSport(data.user.id);
+      if (intent === "join") {
+        const join = await joinTeamWithCode();
+        if (!join.success) {
+          toast.error(join.message);
+          setLoading(false);
+          return;
+        }
+        if (sport) {
+          await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
+        }
+        toast.success("Teambeitritt abgeschlossen.");
+        navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
+        setLoading(false);
+        return;
+      }
+
       toast.success("Willkommen zurück!");
       const { data: roleData } = await supabase
         .from("user_roles")
@@ -143,6 +197,18 @@ const Auth = () => {
     });
 
     if (error) {
+      const lowerMessage = error.message.toLowerCase();
+      if (
+        intent === "join" &&
+        (lowerMessage.includes("already registered") ||
+          lowerMessage.includes("already exists") ||
+          lowerMessage.includes("already been registered"))
+      ) {
+        toast.error("Dieses Konto existiert bereits. Melde dich bitte an, dann schließen wir den Teambeitritt mit deinem Code ab.");
+        setMode("login");
+        setLoading(false);
+        return;
+      }
       toast.error(error.message);
       setLoading(false);
       return;
@@ -160,16 +226,13 @@ const Auth = () => {
     let effectiveRole: "athlete" | "coach" = initialRole;
 
     if (intent === "join") {
-      const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
-        _code: teamCode.trim(),
-      });
-      const result = joinResult as { success?: boolean; role?: "athlete" | "coach" } | null;
-      if (joinError || !result || result.success !== true) {
-        toast.error("Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.");
+      const join = await joinTeamWithCode();
+      if (!join.success) {
+        toast.error(`Konto erstellt, aber Teambeitritt offen: ${join.message}`);
         setLoading(false);
         return;
       }
-      if (result.role) effectiveRole = result.role;
+      effectiveRole = join.role;
     }
 
     toast.success("Konto erstellt! Willkommen.");
@@ -263,10 +326,32 @@ const Auth = () => {
               <span className="font-heading text-xl font-bold">RewirePerform</span>
             </div>
             <h1 className="font-heading text-3xl font-bold mb-2">Willkommen zurück.</h1>
-            <p className="text-muted-foreground text-sm">Melde dich an, um dein Programm fortzusetzen.</p>
+            <p className="text-muted-foreground text-sm">
+              {intent === "join"
+                ? "Melde dich an, um den Teambeitritt mit deinem Code abzuschließen."
+                : "Melde dich an, um dein Programm fortzusetzen."}
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {intent === "join" && (
+              <div>
+                <div className="relative">
+                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Teamcode (6 Zeichen)"
+                    value={teamCode}
+                    onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
+                    maxLength={6}
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm uppercase tracking-widest"
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-2 px-1">
+                  Der Code wird nach dem Login erneut geprüft und deinem Konto zugeordnet.
+                </p>
+              </div>
+            )}
             <FieldEmail value={email} onChange={setEmail} />
             <FieldPassword value={password} onChange={setPassword} />
             <SubmitButton loading={loading} label="Anmelden" />
@@ -275,7 +360,7 @@ const Auth = () => {
           <p className="text-center text-sm text-muted-foreground mt-6">
             Noch kein Konto?{" "}
             <button
-              onClick={() => setMode("intent")}
+              onClick={() => setMode(intent === "join" ? "signup" : "intent")}
               className="text-primary font-medium hover:underline"
             >
               Registrieren
@@ -374,7 +459,7 @@ const Auth = () => {
             onClick={() => setMode("login")}
             className="text-primary font-medium hover:underline"
           >
-            Anmelden
+            {intent === "join" ? "Anmelden und Teambeitritt abschließen" : "Anmelden"}
           </button>
         </p>
       </motion.div>

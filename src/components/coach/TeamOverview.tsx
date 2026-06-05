@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle } from "lucide-react";
+import { Users, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { captureAppError } from "@/lib/monitoring";
 
 interface TeamStats {
   member_count: number;
@@ -31,12 +32,15 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
   const [activityRows, setActivityRows] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [partialWarnings, setPartialWarnings] = useState<string[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     const loadStats = async () => {
       setLoading(true);
       setError(null);
+      setPartialWarnings([]);
       try {
         const { data: members, error: membersError } = await supabase
           .from("team_members")
@@ -60,10 +64,11 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           return;
         }
 
-        const { data: roles } = await supabase
+        const { data: roles, error: rolesError } = await supabase
           .from("user_roles")
           .select("user_id, role")
           .in("user_id", memberIds);
+        if (rolesError) throw rolesError;
 
         const athleteIds = (roles ?? [])
           .filter((r) => r.role === "athlete")
@@ -79,11 +84,12 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
               min_n: MIN_AGGREGATE_SAMPLE,
             });
             setActivityRows([]);
+            setPartialWarnings([]);
           }
           return;
         }
 
-        const [{ data: assessments, error: assessmentsError }, mentalState, activityStatus] = await Promise.all([
+        const [assessmentsResult, mentalState, activityStatus] = await Promise.all([
           supabase
             .from("assessments")
             .select("user_id")
@@ -96,8 +102,41 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           }),
         ]);
 
-        if (assessmentsError) throw assessmentsError;
-        if (activityStatus.error) throw activityStatus.error;
+        const warnings: string[] = [];
+        const assessments = assessmentsResult.error ? [] : assessmentsResult.data;
+
+        if (assessmentsResult.error) {
+          warnings.push("Assessment-Zähler konnten gerade nicht geladen werden.");
+          void captureAppError({
+            eventName: "coach_dashboard_loaded",
+            error: assessmentsResult.error,
+            role: "coach",
+            route: "/coach",
+            metadata: { stage: "team_overview_assessments" },
+          });
+        }
+
+        if (mentalState.error) {
+          warnings.push("7-Tage-Aktivität konnte gerade nicht geladen werden.");
+          void captureAppError({
+            eventName: "coach_dashboard_loaded",
+            error: mentalState.error,
+            role: "coach",
+            route: "/coach",
+            metadata: { stage: "team_overview_mental_state" },
+          });
+        }
+
+        if (activityStatus.error) {
+          warnings.push("Teilnahme pro Sportler konnte gerade nicht geladen werden.");
+          void captureAppError({
+            eventName: "coach_dashboard_loaded",
+            error: activityStatus.error,
+            role: "coach",
+            route: "/coach",
+            metadata: { stage: "team_overview_activity_status" },
+          });
+        }
 
         const nextStats: TeamStats = {
           member_count: mentalState.data?.teamSize ?? athleteIds.length,
@@ -109,9 +148,17 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
 
         if (cancelled) return;
         setStats(nextStats);
-        setActivityRows((activityStatus.data ?? []) as ActivityRow[]);
+        setActivityRows(activityStatus.error ? [] : ((activityStatus.data ?? []) as ActivityRow[]));
+        setPartialWarnings(warnings);
       } catch (err) {
         if (!cancelled) {
+          void captureAppError({
+            eventName: "coach_dashboard_loaded",
+            error: err,
+            role: "coach",
+            route: "/coach",
+            metadata: { stage: "team_overview_base_load" },
+          });
           setError(err instanceof Error ? err.message : "Teamdaten konnten nicht geladen werden.");
         }
       } finally {
@@ -122,7 +169,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
     return () => {
       cancelled = true;
     };
-  }, [teamId]);
+  }, [teamId, reloadKey]);
 
   if (loading) {
     return (
@@ -134,8 +181,17 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
 
   if (error || !stats) {
     return (
-      <div className="text-center py-12 text-muted-foreground text-sm">
-        {error ?? "Keine Daten verfügbar."}
+      <div className="space-y-4 rounded-2xl border border-border/50 bg-card p-5 text-center text-sm text-muted-foreground">
+        <AlertTriangle className="mx-auto h-8 w-8 text-amber-500" />
+        <p>{error ?? "Keine Daten verfügbar."}</p>
+        <button
+          type="button"
+          onClick={() => setReloadKey((key) => key + 1)}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Teamdaten erneut laden
+        </button>
       </div>
     );
   }
@@ -154,6 +210,28 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
 
   return (
     <div className="w-full min-w-0 space-y-4">
+      {partialWarnings.length > 0 && (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-muted-foreground">
+          <div className="mb-2 flex items-center gap-2 font-medium text-foreground">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            Einzelne Teamdaten sind gerade nicht vollständig verfügbar.
+          </div>
+          <div className="space-y-1 text-xs leading-relaxed">
+            {partialWarnings.map((warning) => (
+              <p key={warning}>{warning}</p>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setReloadKey((key) => key + 1)}
+            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Erneut laden
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
           <Users className="w-5 h-5 text-primary mx-auto mb-2" />
