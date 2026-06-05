@@ -219,6 +219,13 @@ const Auth = () => {
       return;
     }
 
+    if (intent === "join" && !data.session) {
+      toast.error("Falls dieses Konto schon existiert, melde dich bitte an. Danach schließen wir den Teambeitritt mit deinem Code ab.");
+      setMode("login");
+      setLoading(false);
+      return;
+    }
+
     if (sport) {
       await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
     }
