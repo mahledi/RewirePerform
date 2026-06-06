@@ -70,6 +70,14 @@ interface TrainingScheduleRow {
   training_timezone: string | null;
 }
 
+interface TeamScheduleRow {
+  team_id: string;
+  day_of_week: number;
+  training_local_hour: number;
+  training_local_minute: number;
+  training_timezone: string;
+}
+
 interface ProgramInstanceRow {
   user_id: string;
   started_at: string | null;
@@ -115,7 +123,7 @@ Deno.serve(async (req) => {
   // Load all subscriptions
   const { data: subs, error: subsErr } = await supa
     .from("push_subscriptions")
-    .select("id,user_id,endpoint,p256dh,auth,morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes");
+    .select("id,user_id,endpoint,p256dh,auth,morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes,timezone");
   if (subsErr) {
     return new Response(JSON.stringify({ error: subsErr.message }), {
       status: 500,
@@ -151,6 +159,29 @@ Deno.serve(async (req) => {
     scheduleByUser.set(r.user_id, rows);
   });
 
+  const { data: memberships } = await supa
+    .from("team_members")
+    .select("team_id,user_id")
+    .in("user_id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
+  const teamIds = [...new Set((memberships ?? []).map((m) => m.team_id))];
+  const teamIdsByUser = new Map<string, string[]>();
+  (memberships ?? []).forEach((membership) => {
+    const rows = teamIdsByUser.get(membership.user_id) ?? [];
+    rows.push(membership.team_id);
+    teamIdsByUser.set(membership.user_id, rows);
+  });
+
+  const { data: teamSchedule } = await supa
+    .from("team_training_schedule")
+    .select("team_id,day_of_week,training_local_hour,training_local_minute,training_timezone")
+    .in("team_id", teamIds.length ? teamIds : ["00000000-0000-0000-0000-000000000000"]);
+  const scheduleByTeam = new Map<string, TeamScheduleRow[]>();
+  ((teamSchedule ?? []) as TeamScheduleRow[]).forEach((row) => {
+    const rows = scheduleByTeam.get(row.team_id) ?? [];
+    rows.push(row);
+    scheduleByTeam.set(row.team_id, rows);
+  });
+
   let sent = 0;
   let skipped = 0;
   const removed: string[] = [];
@@ -167,7 +198,20 @@ Deno.serve(async (req) => {
     if (minutesMatch(eveningTarget, now)) {
       types.push({ type: "evening", scheduledFor: now, sentDate: today });
     }
-    for (const row of scheduleByUser.get(sub.user_id) ?? []) {
+    const userRows = scheduleByUser.get(sub.user_id) ?? [];
+    const teamRows = (teamIdsByUser.get(sub.user_id) ?? []).flatMap((teamId) => scheduleByTeam.get(teamId) ?? []);
+    const effectiveTrainingRows = userRows.length > 0
+      ? userRows
+      : teamRows.map((row) => ({
+          user_id: sub.user_id,
+          day_of_week: row.day_of_week,
+          training_hour: row.training_local_hour,
+          training_local_hour: row.training_local_hour,
+          training_local_minute: row.training_local_minute,
+          training_timezone: row.training_timezone,
+        }));
+
+    for (const row of effectiveTrainingRows) {
       if (typeof row.training_local_hour === "number") {
         const timeZone = sub.timezone || row.training_timezone || "UTC";
         const trainingMoment = new Date(now.getTime() + sub.pre_training_minutes * 60_000);

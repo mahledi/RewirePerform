@@ -313,7 +313,7 @@ const Settings = () => {
         </motion.section>
 
         {/* App Installation */}
-        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <motion.section id="app-install-guide" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Smartphone className="w-5 h-5 text-primary" />
