@@ -19,6 +19,7 @@ import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
 import CoachToolkit from "@/components/coach/CoachToolkit";
 import { useIsMobile } from "@/hooks/use-mobile";
+import MobileNavCard from "@/components/MobileNavCard";
 
 type Tab = "home" | "overview" | "mental" | "evidence" | "toolkit" | "manage";
 
