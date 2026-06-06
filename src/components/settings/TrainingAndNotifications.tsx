@@ -243,7 +243,8 @@ export const TrainingAndNotifications = () => {
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-foreground">Teamkalender aktiv</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Dein Coach steuert den Teamkalender. Eigene Kalenderänderungen sind im Teammodus nicht nötig.
+                    Dein Coach steuert Training, Wettkämpfe und Ruhetage. Du findest den Teamkalender auf deinem Dashboard;
+                    eigene Kalenderänderungen sind im Teammodus nicht nötig.
                   </p>
                 </div>
               </div>
