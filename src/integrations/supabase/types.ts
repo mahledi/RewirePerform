@@ -732,6 +732,7 @@ export type Database = {
           instrument_id: string | null
           is_complete: boolean
           last_category_index: number
+          program_instance_id: string | null
           progress_updated_at: string
           questionnaire_version: string | null
           scores: Json
@@ -747,6 +748,7 @@ export type Database = {
           instrument_id?: string | null
           is_complete?: boolean
           last_category_index?: number
+          program_instance_id?: string | null
           progress_updated_at?: string
           questionnaire_version?: string | null
           scores?: Json
@@ -762,6 +764,7 @@ export type Database = {
           instrument_id?: string | null
           is_complete?: boolean
           last_category_index?: number
+          program_instance_id?: string | null
           progress_updated_at?: string
           questionnaire_version?: string | null
           scores?: Json
@@ -769,7 +772,15 @@ export type Database = {
           timing?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_responses_program_instance_id_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_aggregate_snapshots: {
         Row: {
@@ -1095,6 +1106,50 @@ export type Database = {
           },
         ]
       }
+      team_training_schedule: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          day_of_week: number
+          id: string
+          team_id: string
+          training_local_hour: number
+          training_local_minute: number
+          training_timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          day_of_week: number
+          id?: string
+          team_id: string
+          training_local_hour: number
+          training_local_minute?: number
+          training_timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          day_of_week?: number
+          id?: string
+          team_id?: string
+          training_local_hour?: number
+          training_local_minute?: number
+          training_timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_training_schedule_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           access_code: string
@@ -1349,6 +1404,22 @@ export type Database = {
       get_admin_teams_summary:
         | { Args: never; Returns: Json }
         | { Args: { include_test?: boolean }; Returns: Json }
+      get_coach_team_activity_status: {
+        Args: { _team_id: string }
+        Returns: {
+          checkins_last_7d: number
+          completion_rate: number
+          current_streak: number
+          days_available: number
+          days_completed: number
+          full_name: string
+          inactive_risk: boolean
+          journal_entries_count: number
+          last_activity_at: string
+          last_checkin_date: string
+          user_id: string
+        }[]
+      }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
       get_team_questionnaire_status: {
         Args: { _team_id: string }
