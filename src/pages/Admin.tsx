@@ -325,44 +325,116 @@ const Admin = () => {
   } : null;
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen overflow-x-hidden bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Admin Control Center</h1>
-            <p className="text-sm text-muted-foreground">
-              Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe.
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+              {isMobile ? "Admin" : "Admin Control Center"}
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+              {isMobile
+                ? "Control Center · aggregierte Daten."
+                : "Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe."}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <a href="/admin/content">
-              <Button variant="outline" size="sm">
-                📚 Content offline
-              </Button>
-            </a>
-            <a href="/admin/qa">
-              <Button variant="outline" size="sm">
-                🧪 QA Test Lab
-              </Button>
-            </a>
-            <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
-              <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                await signOut();
-                navigate("/", { replace: true });
-              }}
-            >
-              <LogOut className="w-4 h-4 mr-2" />Abmelden
-            </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            {!isMobile && (
+              <>
+                <a href="/admin/content">
+                  <Button variant="outline" size="sm">📚 Content offline</Button>
+                </a>
+                <a href="/admin/qa">
+                  <Button variant="outline" size="sm">🧪 QA Test Lab</Button>
+                </a>
+                <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
+                  <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/", { replace: true });
+                  }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />Abmelden
+                </Button>
+              </>
+            )}
+            {isMobile && (
+              <>
+                <button
+                  onClick={loadAll}
+                  disabled={loading}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground disabled:opacity-50"
+                  title="Neu laden"
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/", { replace: true });
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+                  title="Abmelden"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        <Tabs defaultValue="overview">
-          <TabsList className="grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 w-full gap-1">
+        {/* Mobile back + section header */}
+        {showMobileBack && activeAdminSection && (
+          <div className="min-w-0">
+            <button
+              onClick={() => setTab("home")}
+              className="mb-3 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 -ml-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground active:scale-95"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Dashboard
+            </button>
+            <h2 className="font-heading text-xl font-semibold leading-tight text-foreground">
+              {activeAdminSection.title}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {activeAdminSection.description}
+            </p>
+          </div>
+        )}
+
+        {/* Mobile home: vertical card nav */}
+        {showMobileHome ? (
+          <div className="w-full min-w-0 space-y-3">
+            {ADMIN_SECTIONS.map((s) => (
+              <MobileNavCard
+                key={s.id}
+                icon={s.icon}
+                title={s.title}
+                description={s.description}
+                onClick={() => setTab(s.id)}
+              />
+            ))}
+            <MobileNavCard
+              icon={BookOpen}
+              title="Content offline"
+              description="Content offline bearbeiten und vorbereiten."
+              onClick={() => navigate("/admin/content")}
+            />
+            <MobileNavCard
+              icon={TestTube2}
+              title="QA Test Lab"
+              description="Testumgebung und QA-Tools."
+              onClick={() => navigate("/admin/qa")}
+            />
+          </div>
+        ) : (
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 w-full gap-1`}>
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -373,6 +445,7 @@ const Admin = () => {
             <TabsTrigger value="exports">Exporte</TabsTrigger>
             <TabsTrigger value="health">Systemstatus</TabsTrigger>
           </TabsList>
+
 
           {/* OVERVIEW */}
           <TabsContent value="overview" className="space-y-4 mt-4">
