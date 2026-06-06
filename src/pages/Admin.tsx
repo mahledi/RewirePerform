@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck, LogOut } from "lucide-react";
+import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, Presentation, FlaskConical, MessageSquare, FileDown, HeartPulse, BookOpen, TestTube2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -16,6 +16,8 @@ import {
 } from "recharts";
 import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileNavCard from "@/components/MobileNavCard";
 
 type Overview = {
   total_users: number; total_athletes: number; total_coaches: number; total_admins: number;
@@ -198,6 +200,29 @@ const Admin = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
+  const isMobile = useIsMobile();
+  const [tab, setTab] = useState<string>("overview");
+  const [didInitDevice, setDidInitDevice] = useState(false);
+  useEffect(() => {
+    if (didInitDevice) return;
+    setTab(isMobile ? "home" : "overview");
+    setDidInitDevice(true);
+  }, [isMobile, didInitDevice]);
+
+  const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
+    { id: "overview", title: "Übersicht", description: "Aggregierte Programm- und Systemkennzahlen.", icon: LayoutGrid },
+    { id: "days", title: "Tage", description: "Spieler-Vorschau jedes Programmtags.", icon: CalendarDays },
+    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzelspieler.", icon: UsersIcon },
+    { id: "evidence", title: "Wirksamkeit", description: "Pre/Mid/Post-Veränderungen.", icon: BarChart3 },
+    { id: "presentation", title: "Präsentation", description: "Kennzahlen für Stakeholder.", icon: Presentation },
+    { id: "study", title: "Study", description: "Launch-Study-Übersicht und Snapshots.", icon: FlaskConical },
+    { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
+    { id: "exports", title: "Exporte", description: "CSV/JSON Datenexporte.", icon: FileDown },
+    { id: "health", title: "Systemstatus", description: "Systemgesundheit und Launch-Ops.", icon: HeartPulse },
+  ];
+  const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
+  const showMobileHome = isMobile && tab === "home";
+  const showMobileBack = isMobile && tab !== "home";
 
   const isAdmin = role === "admin";
 
@@ -300,44 +325,116 @@ const Admin = () => {
   } : null;
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen overflow-x-hidden bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Admin Control Center</h1>
-            <p className="text-sm text-muted-foreground">
-              Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe.
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+              {isMobile ? "Admin" : "Admin Control Center"}
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+              {isMobile
+                ? "Control Center · aggregierte Daten."
+                : "Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe."}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <a href="/admin/content">
-              <Button variant="outline" size="sm">
-                📚 Content offline
-              </Button>
-            </a>
-            <a href="/admin/qa">
-              <Button variant="outline" size="sm">
-                🧪 QA Test Lab
-              </Button>
-            </a>
-            <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
-              <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                await signOut();
-                navigate("/", { replace: true });
-              }}
-            >
-              <LogOut className="w-4 h-4 mr-2" />Abmelden
-            </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            {!isMobile && (
+              <>
+                <a href="/admin/content">
+                  <Button variant="outline" size="sm">📚 Content offline</Button>
+                </a>
+                <a href="/admin/qa">
+                  <Button variant="outline" size="sm">🧪 QA Test Lab</Button>
+                </a>
+                <Button variant="outline" size="sm" onClick={loadAll} disabled={loading}>
+                  <RefreshCcw className="w-4 h-4 mr-2" />Neu laden
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/", { replace: true });
+                  }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />Abmelden
+                </Button>
+              </>
+            )}
+            {isMobile && (
+              <>
+                <button
+                  onClick={loadAll}
+                  disabled={loading}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground disabled:opacity-50"
+                  title="Neu laden"
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/", { replace: true });
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground"
+                  title="Abmelden"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
-        <Tabs defaultValue="overview">
-          <TabsList className="grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 w-full gap-1">
+        {/* Mobile back + section header */}
+        {showMobileBack && activeAdminSection && (
+          <div className="min-w-0">
+            <button
+              onClick={() => setTab("home")}
+              className="mb-3 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 -ml-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground active:scale-95"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Dashboard
+            </button>
+            <h2 className="font-heading text-xl font-semibold leading-tight text-foreground">
+              {activeAdminSection.title}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {activeAdminSection.description}
+            </p>
+          </div>
+        )}
+
+        {/* Mobile home: vertical card nav */}
+        {showMobileHome ? (
+          <div className="w-full min-w-0 space-y-3">
+            {ADMIN_SECTIONS.map((s) => (
+              <MobileNavCard
+                key={s.id}
+                icon={s.icon}
+                title={s.title}
+                description={s.description}
+                onClick={() => setTab(s.id)}
+              />
+            ))}
+            <MobileNavCard
+              icon={BookOpen}
+              title="Content offline"
+              description="Content offline bearbeiten und vorbereiten."
+              onClick={() => navigate("/admin/content")}
+            />
+            <MobileNavCard
+              icon={TestTube2}
+              title="QA Test Lab"
+              description="Testumgebung und QA-Tools."
+              onClick={() => navigate("/admin/qa")}
+            />
+          </div>
+        ) : (
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 w-full gap-1`}>
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -348,6 +445,7 @@ const Admin = () => {
             <TabsTrigger value="exports">Exporte</TabsTrigger>
             <TabsTrigger value="health">Systemstatus</TabsTrigger>
           </TabsList>
+
 
           {/* OVERVIEW */}
           <TabsContent value="overview" className="space-y-4 mt-4">
@@ -1037,6 +1135,7 @@ const Admin = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </div>
   );
