@@ -1,23 +1,60 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Check, Loader2 } from "lucide-react";
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
+  subMonths,
+} from "date-fns";
+import { de } from "date-fns/locale";
+import {
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Dumbbell,
+  Loader2,
+  Moon,
+  Trash2,
+  Trophy,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 
-const DAYS = [
-  { idx: 1, label: "Mo" },
-  { idx: 2, label: "Di" },
-  { idx: 3, label: "Mi" },
-  { idx: 4, label: "Do" },
-  { idx: 5, label: "Fr" },
-  { idx: 6, label: "Sa" },
-  { idx: 0, label: "So" },
-];
+type EventType = "training" | "rest" | "competition";
+type SaveState = "idle" | "saving" | "saved" | "error";
+type LocalTime = { h: number; m: number };
+
+type LocalEvent = {
+  id?: string;
+  date: string;
+  event_type: EventType;
+  title: string;
+  training_local_hour: number | null;
+  training_local_minute: number | null;
+  training_timezone: string | null;
+};
+
+interface TeamTrainingScheduleProps {
+  teamId: string;
+}
+
+const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; dot: string; bg: string; text: string }> = {
+  training: { label: "Training", icon: Dumbbell, dot: "bg-primary", bg: "bg-primary/15", text: "text-primary" },
+  rest: { label: "Ruhetag", icon: Moon, dot: "bg-blue-400", bg: "bg-blue-400/15", text: "text-blue-400" },
+  competition: { label: "Wettkampf", icon: Trophy, dot: "bg-yellow-400", bg: "bg-yellow-400/15", text: "text-yellow-400" },
+};
 
 const TRAINING_TIMES = (() => {
-  const out: Array<{ h: number; m: number }> = [];
+  const out: LocalTime[] = [];
   for (let h = 6; h <= 22; h++) {
     out.push({ h, m: 0 });
     out.push({ h, m: 30 });
@@ -25,17 +62,7 @@ const TRAINING_TIMES = (() => {
   return out;
 })();
 
-type SaveState = "idle" | "saving" | "saved" | "error";
-type LocalTime = { h: number; m: number };
-type ScheduleMap = Record<number, LocalTime | null>;
-
-const emptySchedule = (): ScheduleMap => {
-  const map: ScheduleMap = {};
-  DAYS.forEach((day) => {
-    map[day.idx] = null;
-  });
-  return map;
-};
+const weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 const formatHM = (h: number, m: number) =>
   `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
@@ -45,16 +72,17 @@ const parseTimeValue = (value: string): LocalTime => {
   return { h, m };
 };
 
+const defaultTitle = (eventType: EventType) => eventConfig[eventType].label;
+
 const errorMessage = (err: unknown, fallback = "Speichern fehlgeschlagen") =>
   err instanceof Error ? err.message : fallback;
 
-interface TeamTrainingScheduleProps {
-  teamId: string;
-}
-
 const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
   const { user } = useAuth();
-  const [schedule, setSchedule] = useState<ScheduleMap>(() => emptySchedule());
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedTool, setSelectedTool] = useState<EventType>("training");
+  const [eventsByDate, setEventsByDate] = useState<Map<string, LocalEvent>>(() => new Map());
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
@@ -62,32 +90,45 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
     [],
   );
+  const selectedKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
+  const selectedEvent = selectedKey ? eventsByDate.get(selectedKey) ?? null : null;
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       setLoading(true);
-      const next = emptySchedule();
       const { data, error } = await supabase
-        .from("team_training_schedule")
-        .select("day_of_week,training_local_hour,training_local_minute")
+        .from("team_calendar_events")
+        .select("id,date,event_type,title,training_local_hour,training_local_minute,training_timezone")
         .eq("team_id", teamId)
-        .order("day_of_week", { ascending: true });
+        .order("date", { ascending: true });
 
-      if (!cancelled) {
-        if (error) {
-          toast.error("Team-Trainingszeiten konnten nicht geladen werden.");
-        } else {
-          (data ?? []).forEach((row) => {
-            next[row.day_of_week] = {
-              h: row.training_local_hour,
-              m: row.training_local_minute ?? 0,
-            };
+      if (cancelled) return;
+      if (error) {
+        toast.error("Teamkalender konnte nicht geladen werden.");
+      } else {
+        const next = new Map<string, LocalEvent>();
+        (data ?? []).forEach((row) => {
+          const eventType = row.event_type as EventType;
+          next.set(row.date, {
+            id: row.id,
+            date: row.date,
+            event_type: eventType,
+            title: row.title || defaultTitle(eventType),
+            training_local_hour: row.training_local_hour,
+            training_local_minute: row.training_local_minute,
+            training_timezone: row.training_timezone,
           });
-          setSchedule(next);
-        }
-        setLoading(false);
+        });
+        setEventsByDate(next);
       }
+      setLoading(false);
     };
     load();
     return () => {
@@ -101,8 +142,51 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
     return () => window.clearTimeout(handle);
   }, [saveState]);
 
-  const setDayTime = (dayIdx: number, time: LocalTime | null) => {
-    setSchedule((current) => ({ ...current, [dayIdx]: time }));
+  const upsertDay = (day: Date, eventType = selectedTool) => {
+    const key = format(day, "yyyy-MM-dd");
+    setSelectedDate(day);
+    setEventsByDate((current) => {
+      const next = new Map(current);
+      const existing = next.get(key);
+      const isSameType = existing?.event_type === eventType;
+
+      if (isSameType) {
+        return next;
+      } else {
+        next.set(key, {
+          id: existing?.id,
+          date: key,
+          event_type: eventType,
+          title: existing?.title && existing.event_type === eventType ? existing.title : defaultTitle(eventType),
+          training_local_hour: eventType === "rest" ? null : existing?.training_local_hour ?? 17,
+          training_local_minute: eventType === "rest" ? null : existing?.training_local_minute ?? 0,
+          training_timezone: eventType === "rest" ? null : existing?.training_timezone ?? timezone,
+        });
+      }
+      return next;
+    });
+    setSaveState("idle");
+  };
+
+  const updateSelectedEvent = (patch: Partial<LocalEvent>) => {
+    if (!selectedKey) return;
+    setEventsByDate((current) => {
+      const existing = current.get(selectedKey);
+      if (!existing) return current;
+      const next = new Map(current);
+      next.set(selectedKey, { ...existing, ...patch });
+      return next;
+    });
+    setSaveState("idle");
+  };
+
+  const removeSelectedEvent = () => {
+    if (!selectedKey) return;
+    setEventsByDate((current) => {
+      const next = new Map(current);
+      next.delete(selectedKey);
+      return next;
+    });
     setSaveState("idle");
   };
 
@@ -110,30 +194,32 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
     if (!user) return;
     setSaveState("saving");
     try {
-      const { error: delErr } = await supabase
-        .from("team_training_schedule")
+      const { error: deleteError } = await supabase
+        .from("team_calendar_events")
         .delete()
         .eq("team_id", teamId);
-      if (delErr) throw delErr;
+      if (deleteError) throw deleteError;
 
-      const rows = Object.entries(schedule)
-        .filter(([, value]) => value !== null)
-        .map(([day, value]) => ({
+      const rows = Array.from(eventsByDate.values())
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map((event) => ({
           team_id: teamId,
-          day_of_week: Number(day),
-          training_local_hour: value!.h,
-          training_local_minute: value!.m,
-          training_timezone: timezone,
+          date: event.date,
+          event_type: event.event_type,
+          title: event.title?.trim() || defaultTitle(event.event_type),
+          training_local_hour: event.event_type === "rest" ? null : event.training_local_hour,
+          training_local_minute: event.event_type === "rest" ? null : event.training_local_minute ?? 0,
+          training_timezone: event.event_type === "rest" ? null : event.training_timezone || timezone,
           created_by: user.id,
         }));
 
       if (rows.length > 0) {
-        const { error: insertErr } = await supabase.from("team_training_schedule").insert(rows);
-        if (insertErr) throw insertErr;
+        const { error: insertError } = await supabase.from("team_calendar_events").insert(rows);
+        if (insertError) throw insertError;
       }
 
       setSaveState("saved");
-      toast.success("Team-Trainingsplan gespeichert.");
+      toast.success("Teamkalender gespeichert. Du kannst jederzeit weitere Events nachtragen.");
     } catch (err) {
       setSaveState("error");
       toast.error(errorMessage(err));
@@ -142,12 +228,12 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
 
   return (
     <div className="mt-4 rounded-2xl border border-border/50 bg-secondary/20 p-4">
-      <div className="mb-3 flex items-start gap-3">
+      <div className="mb-4 flex items-start gap-3">
         <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
         <div className="min-w-0">
-          <h4 className="font-heading text-sm font-semibold text-foreground">Team-Trainingsplan</h4>
+          <h4 className="font-heading text-sm font-semibold text-foreground">Teamkalender</h4>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Diese Zeiten dienen Spielern als Standard für Pre-Training-Erinnerungen. Spieler können sie in ihren Einstellungen übernehmen oder individuell anpassen.
+            Plane Training, Ruhetage und Wettkämpfe für bekannte Zeiträume. Du kannst jederzeit weitere Tage ergänzen.
           </p>
         </div>
       </div>
@@ -157,43 +243,197 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="space-y-2">
-          {DAYS.map((day) => {
-            const value = schedule[day.idx];
-            return (
-              <div key={day.idx} className="flex min-w-0 items-center gap-3">
-                <div className="w-10 shrink-0 text-sm font-medium">{day.label}</div>
-                <Switch
-                  checked={value !== null}
-                  onCheckedChange={(checked) => setDayTime(day.idx, checked ? { h: 17, m: 0 } : null)}
-                />
-                {value ? (
-                  <Select
-                    value={`${value.h}:${value.m}`}
-                    onValueChange={(next) => setDayTime(day.idx, parseTimeValue(next))}
+        <div className="space-y-4">
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => {
+              const Icon = config.icon;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setSelectedTool(type)}
+                  className={`rounded-xl p-3 text-center text-xs font-semibold transition-all ${
+                    selectedTool === type
+                      ? `${config.bg} ${config.text} ring-1 ring-current`
+                      : "bg-background/70 text-muted-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <Icon className={`mx-auto mb-1 h-4 w-4 ${selectedTool === type ? config.text : "text-muted-foreground"}`} />
+                  {config.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="rounded-lg p-2 transition-colors hover:bg-secondary"
+                aria-label="Vorheriger Monat"
+              >
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <h5 className="font-heading text-sm font-semibold">
+                {format(currentMonth, "MMMM yyyy", { locale: de })}
+              </h5>
+              <button
+                type="button"
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="rounded-lg p-2 transition-colors hover:bg-secondary"
+                aria-label="Nächster Monat"
+              >
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="mb-1 grid grid-cols-7 gap-1">
+              {weekDays.map((day) => (
+                <div key={day} className="py-1 text-center text-[11px] font-medium text-muted-foreground">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {calendarDays.map((day) => {
+                const key = format(day, "yyyy-MM-dd");
+                const event = eventsByDate.get(key);
+                const inMonth = isSameMonth(day, currentMonth);
+                const isSelected = selectedDate && isSameDay(day, selectedDate);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => upsertDay(day)}
+                    className={`relative aspect-square rounded-lg text-xs transition-all ${
+                      !inMonth ? "opacity-30" : ""
+                    } ${isToday(day) ? "ring-1 ring-primary" : ""} ${
+                      isSelected ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-secondary"
+                    } ${event ? eventConfig[event.event_type].bg : ""}`}
                   >
-                    <SelectTrigger className="w-32 bg-background/70">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TRAINING_TIMES.map((time) => (
-                        <SelectItem key={`${time.h}:${time.m}`} value={`${time.h}:${time.m}`}>
-                          {formatHM(time.h, time.m)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <span className="text-sm text-muted-foreground">kein Training</span>
+                    <span className={isToday(day) ? "font-semibold text-primary" : "font-medium"}>
+                      {format(day, "d")}
+                    </span>
+                    {event && (
+                      <span className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${eventConfig[event.event_type].dot}`} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {selectedDate && (
+            <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">
+                    {format(selectedDate, "EEEE, d. MMMM", { locale: de })}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedEvent ? eventConfig[selectedEvent.event_type].label : "Noch kein Team-Event"}
+                  </p>
+                </div>
+                {selectedEvent && (
+                  <button
+                    type="button"
+                    onClick={removeSelectedEvent}
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    aria-label="Event entfernen"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 )}
               </div>
-            );
-          })}
+
+              {selectedEvent ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => updateSelectedEvent({
+                            event_type: type,
+                            title: selectedEvent.title === defaultTitle(selectedEvent.event_type)
+                              ? defaultTitle(type)
+                              : selectedEvent.title || defaultTitle(type),
+                            training_local_hour: type === "rest" ? null : selectedEvent.training_local_hour ?? 17,
+                            training_local_minute: type === "rest" ? null : selectedEvent.training_local_minute ?? 0,
+                            training_timezone: type === "rest" ? null : selectedEvent.training_timezone ?? timezone,
+                          })}
+                          className={`rounded-lg p-2 text-center text-xs font-semibold transition-all ${
+                            selectedEvent.event_type === type
+                              ? `${config.bg} ${config.text} ring-1 ring-current`
+                              : "bg-secondary/50 text-muted-foreground"
+                          }`}
+                        >
+                          <Icon className={`mx-auto mb-1 h-4 w-4 ${selectedEvent.event_type === type ? config.text : "text-muted-foreground"}`} />
+                          {config.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <input
+                    type="text"
+                    value={selectedEvent.title}
+                    onChange={(e) => updateSelectedEvent({ title: e.target.value })}
+                    placeholder="Titel"
+                    className="w-full rounded-xl border border-border/50 bg-secondary/50 px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  {selectedEvent.event_type !== "rest" && (
+                    <Select
+                      value={`${selectedEvent.training_local_hour ?? 17}:${selectedEvent.training_local_minute ?? 0}`}
+                      onValueChange={(next) => {
+                        const parsed = parseTimeValue(next);
+                        updateSelectedEvent({
+                          training_local_hour: parsed.h,
+                          training_local_minute: parsed.m,
+                          training_timezone: timezone,
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="bg-secondary/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TRAINING_TIMES.map((time) => (
+                          <SelectItem key={`${time.h}:${time.m}`} value={`${time.h}:${time.m}`}>
+                            {formatHM(time.h, time.m)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => upsertDay(selectedDate)}
+                  className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+                >
+                  {eventConfig[selectedTool].label} für diesen Tag setzen
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+            <span>{eventsByDate.size} Team-Events geplant</span>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Training</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-400" />Ruhetag</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-yellow-400" />Wettkampf</span>
+            </div>
+          </div>
 
           <button
+            type="button"
             onClick={save}
             disabled={saveState === "saving"}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:shadow-glow disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:shadow-glow disabled:opacity-50"
           >
             {saveState === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}
             {saveState === "saved" && <Check className="h-4 w-4" />}
@@ -203,7 +443,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                 ? "Gespeichert"
                 : saveState === "error"
                   ? "Erneut speichern"
-                  : "Team-Trainingsplan speichern"}
+                  : "Teamkalender speichern"}
           </button>
         </div>
       )}

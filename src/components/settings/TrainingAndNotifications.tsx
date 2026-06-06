@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { getProgramModeInfo } from "@/lib/programMode";
 import { toast } from "sonner";
 
 const DAYS = [
@@ -82,9 +83,7 @@ export const TrainingAndNotifications = () => {
   const [scheduleSaveState, setScheduleSaveState] = useState<SaveState>("idle");
   // Stored in local display time. Persisted rows also keep UTC fallback fields.
   const [schedule, setSchedule] = useState<ScheduleMap>(() => emptySchedule());
-  const [teamSchedule, setTeamSchedule] = useState<ScheduleMap>(() => emptySchedule());
-  const [teamScheduleName, setTeamScheduleName] = useState<string | null>(null);
-  const [teamScheduleLoading, setTeamScheduleLoading] = useState(true);
+  const [isTeamMode, setIsTeamMode] = useState(false);
 
   // Notification time UI state (local for display)
   const [morningLocal, setMorningLocal] = useState({ h: 7, m: 30 });
@@ -95,6 +94,13 @@ export const TrainingAndNotifications = () => {
   useEffect(() => {
     const load = async () => {
       if (!user) return;
+      const modeInfo = await getProgramModeInfo(user.id);
+      setIsTeamMode(modeInfo.mode === "team");
+      if (modeInfo.mode === "team") {
+        setScheduleLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from("training_schedule")
         .select("day_of_week,training_hour,training_local_hour,training_local_minute")
@@ -110,45 +116,6 @@ export const TrainingAndNotifications = () => {
       setScheduleLoading(false);
     };
     load();
-  }, [user]);
-
-  useEffect(() => {
-    const loadTeamSchedule = async () => {
-      if (!user) return;
-      setTeamScheduleLoading(true);
-      const empty = emptySchedule();
-      const { data: memberships } = await supabase
-        .from("team_members")
-        .select("team_id")
-        .eq("user_id", user.id)
-        .limit(1);
-      const teamId = memberships?.[0]?.team_id;
-      if (!teamId) {
-        setTeamSchedule(empty);
-        setTeamScheduleName(null);
-        setTeamScheduleLoading(false);
-        return;
-      }
-
-      const [{ data: team }, { data: rows }] = await Promise.all([
-        supabase.from("teams").select("name").eq("id", teamId).maybeSingle(),
-        supabase
-          .from("team_training_schedule")
-          .select("day_of_week,training_local_hour,training_local_minute")
-          .eq("team_id", teamId),
-      ]);
-
-      (rows ?? []).forEach((row) => {
-        empty[row.day_of_week] = {
-          h: row.training_local_hour,
-          m: row.training_local_minute ?? 0,
-        };
-      });
-      setTeamSchedule(empty);
-      setTeamScheduleName(team?.name ?? "deinem Team");
-      setTeamScheduleLoading(false);
-    };
-    loadTeamSchedule();
   }, [user]);
 
   useEffect(() => {
@@ -203,14 +170,6 @@ export const TrainingAndNotifications = () => {
       toast.error("Speichern fehlgeschlagen: " + errorMessage(e));
     }
   };
-
-  const applyTeamSchedule = () => {
-    setSchedule({ ...teamSchedule });
-    setScheduleSaveState("idle");
-    toast.success("Team-Trainingsplan übernommen. Bitte speichern, damit Reminder ihn nutzen.");
-  };
-
-  const hasTeamSchedule = Object.values(teamSchedule).some(Boolean);
 
   const scrollToInstallGuide = () => {
     document.getElementById("app-install-guide")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -273,29 +232,24 @@ export const TrainingAndNotifications = () => {
             <h2 className="font-heading font-semibold text-lg">Trainingszeiten</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Wann trainierst du in der Regel? Diese Zeiten steuern deinen Pre-Training-Reminder.
+            {isTeamMode
+              ? "Im Teammodus kommt der Trainings- und Wettkampfplan vom Coach."
+              : "Wann trainierst du in der Regel? Diese Zeiten steuern deinen Pre-Training-Reminder."}
           </p>
-          {!teamScheduleLoading && hasTeamSchedule && (
+          {isTeamMode && (
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
               <div className="flex items-start gap-2">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-foreground">Teamplan von {teamScheduleName}</p>
+                  <p className="text-xs font-semibold text-foreground">Teamkalender aktiv</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Dein Coach hat Trainingszeiten hinterlegt. Du kannst sie übernehmen und danach individuell anpassen.
+                    Dein Coach steuert den Teamkalender. Eigene Kalenderänderungen sind im Teammodus nicht nötig.
                   </p>
-                  <button
-                    type="button"
-                    onClick={applyTeamSchedule}
-                    className="mt-3 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"
-                  >
-                    Teamplan übernehmen
-                  </button>
                 </div>
               </div>
             </div>
           )}
-          {scheduleLoading ? (
+          {isTeamMode ? null : scheduleLoading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
             </div>

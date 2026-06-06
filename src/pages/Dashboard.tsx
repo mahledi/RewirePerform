@@ -386,12 +386,8 @@ const Dashboard = () => {
   }, [user?.id]);
 
   const checkSetup = async (referenceDate = effectiveToday) => {
-    const eventsQuery = supabase.from("calendar_events").select("*").eq("user_id", user!.id);
-    const settingsQuery = supabase.from("program_settings").select("*").eq("user_id", user!.id);
-
-    const [{ data: eventData }, { data: settingsArr }, modeInfo] = await Promise.all([
-      eventsQuery,
-      settingsQuery,
+    const [{ data: settingsArr }, modeInfo] = await Promise.all([
+      supabase.from("program_settings").select("*").eq("user_id", user!.id),
       getProgramModeInfo(user!.id),
     ]);
     const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
@@ -417,13 +413,33 @@ const Dashboard = () => {
         return;
       }
       setWaitingForCoach(false);
-      // Echte Team-Calendar-Events optional übernehmen, aber NICHT erzwingen
-      setEvents((eventData ?? []) as CalendarEvent[]);
+      if (modeInfo.teamId) {
+        const { data: teamEvents, error: teamEventsError } = await supabase
+          .from("team_calendar_events")
+          .select("id,date,event_type,title")
+          .eq("team_id", modeInfo.teamId)
+          .order("date", { ascending: true });
+        if (teamEventsError) {
+          toast.error("Teamkalender konnte nicht geladen werden. Standard-Trainingstage bleiben aktiv.");
+          setEvents([]);
+        } else {
+          setEvents((teamEvents ?? []).map((event) => ({
+            id: event.id,
+            date: event.date,
+            event_type: event.event_type as EventType,
+            title: event.title,
+            notes: null,
+          })));
+        }
+      } else {
+        setEvents([]);
+      }
       setLoading(false);
       return;
     }
 
     // Solo-Mode
+    const { data: eventData } = await supabase.from("calendar_events").select("*").eq("user_id", user!.id);
     if (eventData && eventData.length > 0) {
       setEvents(eventData as CalendarEvent[]);
       if (settingsData) {
@@ -1177,9 +1193,22 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Calendar + Selected-Date Panel + Legend — nur Solo-Modus */}
-        {programMode === "solo" && (
+        {/* Calendar + Selected-Date Panel + Legend */}
+        {(programMode === "solo" || (programMode === "team" && teamProgramStart)) && (
           <>
+            {programMode === "team" && (
+              <div className="rounded-2xl bg-gradient-card border-glow p-5 mb-6 flex items-start gap-3">
+                <Calendar className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-heading font-semibold mb-1">Teammodus aktiv</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Dein Programmkalender wird vom Coach gesteuert. Tage ohne Coach-Eintrag laufen als Standard-Trainingstag.
+                    Programmstart: {format(new Date(teamProgramStart), "d. MMMM yyyy", { locale: de })}.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Calendar */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
               <div className="flex items-center justify-between mb-6">
@@ -1223,9 +1252,11 @@ const Dashboard = () => {
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-heading font-semibold">{format(selectedDate, "EEEE, d. MMMM", { locale: de })}</h3>
-                    <button onClick={() => { setShowAddEvent(true); setNewEventType("training"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
-                      <Plus className="w-4 h-4" />Hinzufügen
-                    </button>
+                    {programMode === "solo" && (
+                      <button onClick={() => { setShowAddEvent(true); setNewEventType("training"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">
+                        <Plus className="w-4 h-4" />Hinzufügen
+                      </button>
+                    )}
                   </div>
 
                   {getEventsForDate(selectedDate).length > 0 ? (
@@ -1243,17 +1274,24 @@ const Dashboard = () => {
                                 <p className="text-xs text-muted-foreground">{config.label}</p>
                               </div>
                             </div>
-                            <button onClick={() => removeEvent(event.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors">
-                              <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                            </button>
+                            {programMode === "solo" && (
+                              <button onClick={() => removeEvent(event.id)} className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors">
+                                <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                              </button>
+                            )}
                           </div>
                         );
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground mb-4">Kein Eintrag für diesen Tag.</p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {programMode === "team"
+                        ? "Kein Coach-Eintrag. Dieser Tag läuft als Standard-Trainingstag."
+                        : "Kein Eintrag für diesen Tag."}
+                    </p>
                   )}
 
+                  {programMode === "solo" && (
                   <AnimatePresence>
                     {showAddEvent && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
@@ -1280,6 +1318,7 @@ const Dashboard = () => {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1291,20 +1330,6 @@ const Dashboard = () => {
               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />Wettkampf</div>
             </div>
           </>
-        )}
-
-        {/* Team-Modus Hinweis statt Solo-Kalender */}
-        {programMode === "team" && teamProgramStart && (
-          <div className="rounded-2xl bg-gradient-card border-glow p-5 mb-6 flex items-start gap-3">
-            <Calendar className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-            <div>
-              <p className="text-sm font-heading font-semibold mb-1">Teammodus aktiv</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Dein Programmkalender wird vom Coach gesteuert. Tage ohne speziellen Eintrag laufen als Standard-Trainingstag.
-                Programmstart: {format(new Date(teamProgramStart), "d. MMMM yyyy", { locale: de })}.
-              </p>
-            </div>
-          </div>
         )}
         {/* Privacy notice for athletes in teams */}
         <div className="mt-6 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
