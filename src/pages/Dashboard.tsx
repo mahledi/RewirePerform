@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
@@ -18,6 +18,7 @@ import { buildFlameStats, type FlameStats } from "@/lib/flameStats";
 import FlameCard from "@/components/dashboard/FlameCard";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
+import AppLoadingShell from "@/components/AppLoadingShell";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -342,6 +343,7 @@ const Dashboard = () => {
   const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
   const [effectiveToday, setEffectiveToday] = useState<Date>(new Date());
   const [showTeamCalendar, setShowTeamCalendar] = useState(false);
+  const lastStatusRefreshAt = useRef(0);
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
@@ -623,6 +625,7 @@ const Dashboard = () => {
   };
 
   const refreshDashboardStatus = async () => {
+    lastStatusRefreshAt.current = Date.now();
     await Promise.all([checkAssessments(), checkTodayCheckin(), checkDeepProfile()]);
   };
 
@@ -633,6 +636,7 @@ const Dashboard = () => {
   // Re-check assessments when navigating back to dashboard
   useEffect(() => {
     const handleFocus = () => {
+      if (Date.now() - lastStatusRefreshAt.current < 60_000) return;
       if (!setupMode && !loading) refreshDashboardStatus();
     };
     window.addEventListener("focus", handleFocus);
@@ -796,9 +800,11 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-      </div>
+      <AppLoadingShell
+        variant="dashboard"
+        title="RewirePerform"
+        subtitle="Lade deinen heutigen Flow..."
+      />
     );
   }
 

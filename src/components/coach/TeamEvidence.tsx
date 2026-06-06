@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Loader2, Info, ArrowDown, ArrowUp, Minus, RefreshCw } from "lucide-react";
+import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Info, ArrowDown, ArrowUp, Minus, RefreshCw } from "lucide-react";
 import { captureAppError } from "@/lib/monitoring";
 
 // Direction per subscale: which direction = improvement
@@ -131,8 +131,16 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border/50 bg-card p-5">
+          <div className="mb-4 h-5 w-44 rounded-full bg-secondary/70" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+          </div>
+        </div>
+        <div className="h-48 animate-pulse rounded-2xl border border-border/50 bg-card" />
       </div>
     );
   }

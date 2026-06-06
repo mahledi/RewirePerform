@@ -10,6 +10,7 @@ import QATestBanner from "./components/qa/QATestBanner";
 import { NotificationOpenTracker } from "./components/notifications/NotificationOpenTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 import IosInputPolish from "./components/IosInputPolish";
+import AppLoadingShell from "./components/AppLoadingShell";
 
 const queryClient = new QueryClient();
 
@@ -32,9 +33,7 @@ const Support = lazy(() => import("./pages/Support.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
-  <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-    <div className="h-9 w-9 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-  </div>
+  <AppLoadingShell subtitle="Öffne deinen Bereich..." />
 );
 
 const App = () => (

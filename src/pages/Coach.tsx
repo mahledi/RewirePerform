@@ -41,6 +41,8 @@ interface SectionMeta {
   requiresTeam: boolean;
 }
 
+const coachTeamsCache = new Map<string, { teams: Team[]; selectedTeam: string | null }>();
+
 const SECTIONS: SectionMeta[] = [
   {
     id: "overview",
@@ -112,9 +114,17 @@ const Coach = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [visitedTabs, setVisitedTabs] = useState<Set<Tab>>(new Set(["overview"]));
 
   const fetchTeams = async () => {
     if (!user) return;
+    const cached = coachTeamsCache.get(user.id);
+    if (cached) {
+      setTeams(cached.teams);
+      setSelectedTeam((current) => current ?? cached.selectedTeam);
+      setLoading(false);
+    }
+
     const { data: memberships } = await supabase
       .from("team_members")
       .select("team_id")
@@ -134,9 +144,12 @@ const Coach = () => {
     const { data } = await query;
     const teamList = (data ?? []) as Team[];
     setTeams(teamList);
-    if (teamList.length > 0 && !selectedTeam) {
-      setSelectedTeam(teamList[0].id);
-    }
+    const nextSelectedTeam =
+      selectedTeam && teamList.some((team) => team.id === selectedTeam)
+        ? selectedTeam
+        : teamList[0]?.id ?? null;
+    setSelectedTeam(nextSelectedTeam);
+    coachTeamsCache.set(user.id, { teams: teamList, selectedTeam: nextSelectedTeam });
     setLoading(false);
   };
 
@@ -164,6 +177,18 @@ const Coach = () => {
     navigate("/");
   };
 
+  const openTab = (nextTab: Tab) => {
+    setVisitedTabs((current) => new Set(current).add(nextTab));
+    setTab(nextTab);
+  };
+
+  const selectTeam = (teamId: string) => {
+    setSelectedTeam(teamId);
+    if (user) {
+      coachTeamsCache.set(user.id, { teams, selectedTeam: teamId });
+    }
+  };
+
   const activeSection = SECTIONS.find((s) => s.id === tab);
   const showMobileHome = isMobile && tab === "home";
   const showMobileBack = isMobile && tab !== "home";
@@ -174,8 +199,15 @@ const Coach = () => {
   const renderSection = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-border/50 bg-card p-5">
+            <div className="mb-4 h-5 w-40 rounded-full bg-secondary/70" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+              <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            </div>
+          </div>
+          <div className="h-36 animate-pulse rounded-2xl border border-border/50 bg-card" />
         </div>
       );
     }
@@ -209,6 +241,35 @@ const Coach = () => {
     }
   };
 
+  const renderCachedTeamSections = () => {
+    if (loading || tab === "manage" || !selectedTeam) return renderSection();
+
+    return (
+      <div className="min-w-0">
+        {visitedTabs.has("overview") && (
+          <div className={tab === "overview" ? "block" : "hidden"}>
+            <TeamOverview key={`overview-${selectedTeam}`} teamId={selectedTeam} />
+          </div>
+        )}
+        {visitedTabs.has("mental") && (
+          <div className={tab === "mental" ? "block" : "hidden"}>
+            <TeamMentalState key={`mental-${selectedTeam}`} teamId={selectedTeam} />
+          </div>
+        )}
+        {visitedTabs.has("evidence") && (
+          <div className={tab === "evidence" ? "block" : "hidden"}>
+            <TeamEvidence key={`evidence-${selectedTeam}`} teamId={selectedTeam} />
+          </div>
+        )}
+        {visitedTabs.has("toolkit") && (
+          <div className={tab === "toolkit" ? "block" : "hidden"}>
+            <CoachToolkit key={`toolkit-${selectedTeam}`} teamId={selectedTeam} />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
       {/* Header */}
@@ -239,11 +300,11 @@ const Coach = () => {
       {!isMobile && (
         <div className="mx-auto w-full max-w-5xl px-4 pt-5 sm:px-5 md:px-6">
           <div className="grid grid-cols-5 gap-1 rounded-xl border border-border/70 bg-muted/50 p-1 shadow-card">
-            <TabButton active={tab === "overview"} onClick={() => setTab("overview")} icon={Users} label="Übersicht" />
-            <TabButton active={tab === "mental"} onClick={() => setTab("mental")} icon={Activity} label="Mental" />
-            <TabButton active={tab === "evidence"} onClick={() => setTab("evidence")} icon={BarChart3} label="Wirksamkeit" />
-            <TabButton active={tab === "toolkit"} onClick={() => setTab("toolkit")} icon={Sparkles} label="Toolkit" />
-            <TabButton active={tab === "manage"} onClick={() => setTab("manage")} icon={Settings} label="Teams" />
+            <TabButton active={tab === "overview"} onClick={() => openTab("overview")} icon={Users} label="Übersicht" />
+            <TabButton active={tab === "mental"} onClick={() => openTab("mental")} icon={Activity} label="Mental" />
+            <TabButton active={tab === "evidence"} onClick={() => openTab("evidence")} icon={BarChart3} label="Wirksamkeit" />
+            <TabButton active={tab === "toolkit"} onClick={() => openTab("toolkit")} icon={Sparkles} label="Toolkit" />
+            <TabButton active={tab === "manage"} onClick={() => openTab("manage")} icon={Settings} label="Teams" />
           </div>
         </div>
       )}
@@ -252,7 +313,7 @@ const Coach = () => {
       {showMobileBack && activeSection && (
         <div className="mx-auto w-full max-w-5xl px-4 pt-4 sm:px-5">
           <button
-            onClick={() => setTab("home")}
+            onClick={() => openTab("home")}
             className="mb-3 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 -ml-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -274,7 +335,7 @@ const Coach = () => {
         <div className="mx-auto w-full max-w-5xl px-4 pt-4 sm:px-5 md:px-6">
           <select
             value={selectedTeam ?? ""}
-            onChange={(e) => setSelectedTeam(e.target.value)}
+            onChange={(e) => selectTeam(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-card border border-border/70 text-foreground text-sm shadow-card focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {teams.map((t) => (
@@ -309,7 +370,7 @@ const Coach = () => {
             {teams.length > 1 && (
               <select
                 value={selectedTeam ?? ""}
-                onChange={(e) => setSelectedTeam(e.target.value)}
+                onChange={(e) => selectTeam(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-card border border-border/70 text-foreground text-sm shadow-card focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {teams.map((t) => (
@@ -326,13 +387,13 @@ const Coach = () => {
                   icon={s.icon}
                   title={s.title}
                   description={s.description}
-                  onClick={() => setTab(s.id)}
+                  onClick={() => openTab(s.id)}
                 />
               ))}
             </div>
           </div>
         ) : (
-          renderSection()
+          renderCachedTeamSections()
         )}
       </div>
     </div>

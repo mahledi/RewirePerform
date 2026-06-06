@@ -34,6 +34,7 @@ import {
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import type { ResolvedDay } from "@/content/matrixDayTypes";
+import { captureAppError } from "@/lib/monitoring";
 
 interface TrendPoint {
   week: string;
@@ -219,14 +220,26 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
 
         if (resp.error) {
           setError("Daten konnten nicht geladen werden.");
-          console.error(resp.error);
+          void captureAppError({
+            eventName: "coach_mental_state_load_failed",
+            error: resp.error,
+            role: "coach",
+            route: "/coach",
+            metadata: { source: "team-mental-state" },
+          });
         } else {
           setData(resp.data);
           setTeam((teamResp.data as TeamRow | null) ?? null);
         }
       } catch (e) {
         setError("Verbindungsfehler.");
-        console.error(e);
+        void captureAppError({
+          eventName: "coach_mental_state_load_failed",
+          error: e,
+          role: "coach",
+          route: "/coach",
+          metadata: { source: "team-mental-state" },
+        });
       } finally {
         setLoading(false);
       }
@@ -237,8 +250,16 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border/50 bg-card p-5">
+          <div className="mb-4 h-5 w-40 rounded-full bg-secondary/70" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+          </div>
+        </div>
+        <div className="h-48 animate-pulse rounded-2xl border border-border/50 bg-card" />
       </div>
     );
   }
