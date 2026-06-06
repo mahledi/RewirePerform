@@ -27,6 +27,9 @@ interface CalendarEvent {
   event_type: EventType;
   title: string | null;
   notes: string | null;
+  training_local_hour?: number | null;
+  training_local_minute?: number | null;
+  training_timezone?: string | null;
 }
 
 interface Analysis {
@@ -338,6 +341,7 @@ const Dashboard = () => {
   const [programMode, setProgramMode] = useState<ProgramMode>("solo");
   const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
   const [effectiveToday, setEffectiveToday] = useState<Date>(new Date());
+  const [showTeamCalendar, setShowTeamCalendar] = useState(false);
   
 
   const hasCompletedAllAssessments = (types: Set<string>) =>
@@ -416,7 +420,7 @@ const Dashboard = () => {
       if (modeInfo.teamId) {
         const { data: teamEvents, error: teamEventsError } = await supabase
           .from("team_calendar_events")
-          .select("id,date,event_type,title")
+          .select("id,date,event_type,title,training_local_hour,training_local_minute,training_timezone")
           .eq("team_id", modeInfo.teamId)
           .order("date", { ascending: true });
         if (teamEventsError) {
@@ -429,6 +433,9 @@ const Dashboard = () => {
             event_type: event.event_type as EventType,
             title: event.title,
             notes: null,
+            training_local_hour: event.training_local_hour,
+            training_local_minute: event.training_local_minute,
+            training_timezone: event.training_timezone,
           })));
         }
       } else {
@@ -706,6 +713,19 @@ const Dashboard = () => {
     return events.filter((e) => e.date === dateStr);
   };
 
+  const parseCalendarDate = (date: string) => new Date(`${date}T00:00:00`);
+
+  const formatEventTime = (event: CalendarEvent) => {
+    if (event.event_type === "rest" || typeof event.training_local_hour !== "number") return null;
+    const minute = event.training_local_minute ?? 0;
+    return `${String(event.training_local_hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+  };
+
+  const formatEventLabel = (event: CalendarEvent) => {
+    const time = formatEventTime(event);
+    return time ? `${eventConfig[event.event_type].label} · ${time}` : eventConfig[event.event_type].label;
+  };
+
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -759,6 +779,20 @@ const Dashboard = () => {
   const trainingCount = events.filter((e) => e.event_type === "training").length;
   const restCount = events.filter((e) => e.event_type === "rest").length;
   const competitionCount = events.filter((e) => e.event_type === "competition").length;
+  const nextTeamEvent = programMode === "team"
+    ? [...events]
+        .filter((event) => !isBefore(parseCalendarDate(event.date), startOfDay(effectiveToday)))
+        .sort((a, b) => a.date.localeCompare(b.date))[0] ?? null
+    : null;
+  const nextTeamEventSummary = nextTeamEvent
+    ? `Nächster Termin: ${eventConfig[nextTeamEvent.event_type].label} · ${format(parseCalendarDate(nextTeamEvent.date), "EEE, d. MMMM", { locale: de })}${formatEventTime(nextTeamEvent) ? ` · ${formatEventTime(nextTeamEvent)}` : ""}`
+    : "Noch kein Coach-Termin geplant. Nicht geplante Tage laufen als Standard-Training.";
+  const toggleTeamCalendar = () => {
+    if (!showTeamCalendar && !selectedDate) {
+      setSelectedDate(nextTeamEvent ? parseCalendarDate(nextTeamEvent.date) : effectiveToday);
+    }
+    setShowTeamCalendar((current) => !current);
+  };
 
   if (loading) {
     return (
@@ -1193,22 +1227,9 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Calendar + Selected-Date Panel + Legend */}
-        {(programMode === "solo" || (programMode === "team" && teamProgramStart)) && (
+        {/* Solo calendar */}
+        {programMode === "solo" && (
           <>
-            {programMode === "team" && (
-              <div className="rounded-2xl bg-gradient-card border-glow p-5 mb-6 flex items-start gap-3">
-                <Calendar className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-heading font-semibold mb-1">Teammodus aktiv</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Dein Programmkalender wird vom Coach gesteuert. Tage ohne Coach-Eintrag laufen als Standard-Trainingstag.
-                    Programmstart: {format(new Date(teamProgramStart), "d. MMMM yyyy", { locale: de })}.
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Calendar */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl bg-gradient-card border-glow p-6 mb-8">
               <div className="flex items-center justify-between mb-6">
@@ -1330,6 +1351,121 @@ const Dashboard = () => {
               <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />Wettkampf</div>
             </div>
           </>
+        )}
+
+        {/* Team calendar */}
+        {programMode === "team" && teamProgramStart && (
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl bg-gradient-card border-glow p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Calendar className="w-5 h-5 text-primary" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-heading font-semibold mb-1">Teamkalender</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Dein Coach plant Training, Wettkämpfe und Ruhetage. {nextTeamEventSummary}
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Tage ohne Coach-Eintrag laufen als Standard-Trainingstag. Programmstart: {format(new Date(teamProgramStart), "d. MMMM yyyy", { locale: de })}.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleTeamCalendar}
+              className="mt-4 w-full rounded-xl border border-border/60 bg-secondary/40 px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              {showTeamCalendar ? "Teamkalender ausblenden" : "Teamkalender anzeigen"}
+            </button>
+
+            <AnimatePresence>
+              {showTeamCalendar && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-4 rounded-xl border border-border/50 bg-background/50 p-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                        <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                      <h2 className="font-heading font-semibold text-sm">{format(currentMonth, "MMMM yyyy", { locale: de })}</h2>
+                      <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary transition-colors">
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {weekDays.map((d) => (<div key={d} className="text-center text-[11px] text-muted-foreground font-medium py-1">{d}</div>))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {calendarDays.map((day) => {
+                        const dayEvents = getEventsForDate(day);
+                        const primaryEvent = dayEvents[0] ?? null;
+                        const isSelected = selectedDate && isSameDay(day, selectedDate);
+                        const inMonth = isSameMonth(day, currentMonth);
+                        const eventColor = primaryEvent?.event_type === "training"
+                          ? "bg-primary/15"
+                          : primaryEvent?.event_type === "rest"
+                            ? "bg-blue-400/15"
+                            : primaryEvent?.event_type === "competition"
+                              ? "bg-yellow-400/15"
+                              : "";
+                        return (
+                          <button
+                            key={day.toISOString()}
+                            onClick={() => setSelectedDate(day)}
+                            className={`relative aspect-square rounded-lg text-xs transition-all ${!inMonth ? "opacity-30" : ""} ${eventColor} ${isToday(day) ? "ring-1 ring-primary" : ""} ${isSelected ? "ring-2 ring-primary" : "hover:bg-secondary"}`}
+                          >
+                            <span className={`font-medium ${isToday(day) ? "text-primary" : ""}`}>{format(day, "d")}</span>
+                            {primaryEvent && (
+                              <span className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${
+                                primaryEvent.event_type === "training" ? "bg-primary" : primaryEvent.event_type === "rest" ? "bg-blue-400" : "bg-yellow-400"
+                              }`} />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="mt-3 rounded-xl bg-secondary/30 p-3">
+                    <p className="text-sm font-semibold mb-2">
+                      {selectedDate ? format(selectedDate, "EEEE, d. MMMM", { locale: de }) : "Ausgewählter Tag"}
+                    </p>
+                    {selectedDate && getEventsForDate(selectedDate).length > 0 ? (
+                      <div className="space-y-2">
+                        {getEventsForDate(selectedDate).map((event) => {
+                          const config = eventConfig[event.event_type as EventType];
+                          return (
+                            <div key={event.id} className="flex items-center gap-3 rounded-xl bg-background/60 p-3">
+                              <div className={`w-9 h-9 rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
+                                <config.icon className={`w-4 h-4 ${config.color}`} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium">{event.title || config.label}</p>
+                                <p className="text-xs text-muted-foreground">{formatEventLabel(event)}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Kein Coach-Eintrag. Dieser Tag läuft als Standard-Trainingstag.</p>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-primary" />Training</div>
+                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-400" />Ruhetag</div>
+                    <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />Wettkampf</div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
         {/* Privacy notice for athletes in teams */}
         <div className="mt-6 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
