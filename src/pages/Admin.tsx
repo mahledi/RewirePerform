@@ -200,6 +200,29 @@ const Admin = () => {
   const [snapshotLoading, setSnapshotLoading] = useState(false);
   const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
+  const isMobile = useIsMobile();
+  const [tab, setTab] = useState<string>("overview");
+  const [didInitDevice, setDidInitDevice] = useState(false);
+  useEffect(() => {
+    if (didInitDevice) return;
+    setTab(isMobile ? "home" : "overview");
+    setDidInitDevice(true);
+  }, [isMobile, didInitDevice]);
+
+  const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
+    { id: "overview", title: "Übersicht", description: "Aggregierte Programm- und Systemkennzahlen.", icon: LayoutGrid },
+    { id: "days", title: "Tage", description: "Spieler-Vorschau jedes Programmtags.", icon: CalendarDays },
+    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzelspieler.", icon: UsersIcon },
+    { id: "evidence", title: "Wirksamkeit", description: "Pre/Mid/Post-Veränderungen.", icon: BarChart3 },
+    { id: "presentation", title: "Präsentation", description: "Kennzahlen für Stakeholder.", icon: Presentation },
+    { id: "study", title: "Study", description: "Launch-Study-Übersicht und Snapshots.", icon: FlaskConical },
+    { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
+    { id: "exports", title: "Exporte", description: "CSV/JSON Datenexporte.", icon: FileDown },
+    { id: "health", title: "Systemstatus", description: "Systemgesundheit und Launch-Ops.", icon: HeartPulse },
+  ];
+  const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
+  const showMobileHome = isMobile && tab === "home";
+  const showMobileBack = isMobile && tab !== "home";
 
   const isAdmin = role === "admin";
 
