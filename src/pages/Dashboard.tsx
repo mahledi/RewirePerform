@@ -1306,9 +1306,7 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground mb-4">
-                      {programMode === "team"
-                        ? "Kein Coach-Eintrag. Dieser Tag läuft als Standard-Trainingstag."
-                        : "Kein Eintrag für diesen Tag."}
+                      Kein Eintrag für diesen Tag.
                     </p>
                   )}
 
