@@ -78,6 +78,15 @@ interface TeamScheduleRow {
   training_timezone: string;
 }
 
+interface TeamCalendarEventRow {
+  team_id: string;
+  date: string;
+  event_type: "training" | "rest" | "competition";
+  training_local_hour: number | null;
+  training_local_minute: number | null;
+  training_timezone: string | null;
+}
+
 interface ProgramInstanceRow {
   user_id: string;
   started_at: string | null;
@@ -98,6 +107,9 @@ const dateForOffset = (now: Date, offsetMinutes: number) => {
 const localParts = (date: Date, timeZone: string) => {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
@@ -106,7 +118,11 @@ const localParts = (date: Date, timeZone: string) => {
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const rawHour = Number(get("hour"));
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
   return {
+    date: year && month && day ? `${year}-${month}-${day}` : date.toISOString().slice(0, 10),
     dayOfWeek: dayMap[get("weekday")] ?? date.getUTCDay(),
     hour: rawHour === 24 ? 0 : rawHour,
     minute: Number(get("minute")),
@@ -182,6 +198,17 @@ Deno.serve(async (req) => {
     scheduleByTeam.set(row.team_id, rows);
   });
 
+  const { data: teamCalendarEvents } = await supa
+    .from("team_calendar_events")
+    .select("team_id,date,event_type,training_local_hour,training_local_minute,training_timezone")
+    .in("team_id", teamIds.length ? teamIds : ["00000000-0000-0000-0000-000000000000"]);
+  const calendarEventsByTeam = new Map<string, TeamCalendarEventRow[]>();
+  ((teamCalendarEvents ?? []) as TeamCalendarEventRow[]).forEach((row) => {
+    const rows = calendarEventsByTeam.get(row.team_id) ?? [];
+    rows.push(row);
+    calendarEventsByTeam.set(row.team_id, rows);
+  });
+
   let sent = 0;
   let skipped = 0;
   const removed: string[] = [];
@@ -199,22 +226,52 @@ Deno.serve(async (req) => {
       types.push({ type: "evening", scheduledFor: now, sentDate: today });
     }
     const userRows = scheduleByUser.get(sub.user_id) ?? [];
-    const teamRows = (teamIdsByUser.get(sub.user_id) ?? []).flatMap((teamId) => scheduleByTeam.get(teamId) ?? []);
-    const effectiveTrainingRows = userRows.length > 0
-      ? userRows
-      : teamRows.map((row) => ({
-          user_id: sub.user_id,
-          day_of_week: row.day_of_week,
-          training_hour: row.training_local_hour,
-          training_local_hour: row.training_local_hour,
-          training_local_minute: row.training_local_minute,
-          training_timezone: row.training_timezone,
-        }));
+    const teamIdsForUser = teamIdsByUser.get(sub.user_id) ?? [];
+    const teamRows = teamIdsForUser.flatMap((teamId) => scheduleByTeam.get(teamId) ?? []);
+    const trainingMoment = new Date(now.getTime() + sub.pre_training_minutes * 60_000);
+    const teamCalendarMatches = teamIdsForUser.flatMap((teamId) =>
+      (calendarEventsByTeam.get(teamId) ?? []).filter((event) => {
+        const timeZone = event.training_timezone || sub.timezone || "UTC";
+        return localParts(trainingMoment, timeZone).date === event.date;
+      }),
+    );
+    const restDayFromTeamCalendar = teamCalendarMatches.some((event) => event.event_type === "rest");
+    const timedTeamEvents = teamCalendarMatches.filter(
+      (event) =>
+        (event.event_type === "training" || event.event_type === "competition") &&
+        typeof event.training_local_hour === "number",
+    );
+
+    for (const event of timedTeamEvents) {
+      const timeZone = event.training_timezone || sub.timezone || "UTC";
+      const local = localParts(trainingMoment, timeZone);
+      const localMinute = event.training_local_minute ?? 0;
+      if (event.training_local_hour === local.hour && localMinute === local.minute) {
+        types.push({
+          type: "pre_training",
+          scheduledFor: now,
+          sentDate: event.date,
+        });
+      }
+    }
+
+    const shouldUseWeeklyFallback = timedTeamEvents.length === 0 && !restDayFromTeamCalendar;
+    const effectiveTrainingRows = shouldUseWeeklyFallback
+      ? teamIdsForUser.length > 0
+        ? teamRows.map((row) => ({
+            user_id: sub.user_id,
+            day_of_week: row.day_of_week,
+            training_hour: row.training_local_hour,
+            training_local_hour: row.training_local_hour,
+            training_local_minute: row.training_local_minute,
+            training_timezone: row.training_timezone,
+          }))
+        : userRows
+      : [];
 
     for (const row of effectiveTrainingRows) {
       if (typeof row.training_local_hour === "number") {
         const timeZone = sub.timezone || row.training_timezone || "UTC";
-        const trainingMoment = new Date(now.getTime() + sub.pre_training_minutes * 60_000);
         const local = localParts(trainingMoment, timeZone);
         const localMinute = row.training_local_minute ?? 0;
         if (

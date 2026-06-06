@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
+import { getProgramModeInfo } from "@/lib/programMode";
 import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
@@ -63,9 +64,9 @@ const Journal = () => {
       ? existingJournalQuery.eq("program_instance_id", instance.id)
       : existingJournalQuery.is("program_instance_id", null);
 
-    const [effective, { data: events }, { data: existingRows }] = await Promise.all([
+    const [effective, modeInfo, { data: existingRows }] = await Promise.all([
       getEffectiveProgramStart(user.id),
-      supabase.from("calendar_events").select("date,event_type").eq("user_id", user.id).eq("date", dateStr).limit(1),
+      getProgramModeInfo(user.id),
       existingJournalQuery,
     ]);
     const existing = existingRows?.[0] ?? null;
@@ -75,6 +76,19 @@ const Journal = () => {
       setLoading(false);
       return;
     }
+    const { data: events } = modeInfo.mode === "team" && modeInfo.teamId
+      ? await supabase
+          .from("team_calendar_events")
+          .select("date,event_type")
+          .eq("team_id", modeInfo.teamId)
+          .eq("date", dateStr)
+          .limit(1)
+      : await supabase
+          .from("calendar_events")
+          .select("date,event_type")
+          .eq("user_id", user.id)
+          .eq("date", dateStr)
+          .limit(1);
     const eventType = (events?.[0]?.event_type ?? "training") as CalendarEventType;
     const r = resolveDay(info.dayNumber, today, eventType);
     setResolved(r);
