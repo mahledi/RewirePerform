@@ -17,6 +17,7 @@ import {
   CalendarDays,
   Check,
   ChevronLeft,
+  ChevronRight,
   Dumbbell,
   Loader2,
   Moon,
