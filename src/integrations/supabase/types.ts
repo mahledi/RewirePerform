@@ -1148,57 +1148,6 @@ export type Database = {
           },
         ]
       }
-      team_training_schedule: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          day_of_week: number
-          id: string
-          team_id: string
-          training_local_hour: number
-          training_local_minute: number
-          training_timezone: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          day_of_week: number
-          id?: string
-          team_id: string
-          training_local_hour: number
-          training_local_minute?: number
-          training_timezone?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          day_of_week?: number
-          id?: string
-          team_id?: string
-          training_local_hour?: number
-          training_local_minute?: number
-          training_timezone?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_training_schedule_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_training_schedule_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       training_schedule: {
         Row: {
           created_at: string
