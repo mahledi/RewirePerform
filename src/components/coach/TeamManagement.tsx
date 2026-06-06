@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
+import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -300,6 +301,8 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
               Co-Coaches haben vollen Coach-Zugriff. Teile diesen Code nur mit Personen, denen du vertraust.
             </p>
           </div>
+
+          <TeamTrainingSchedule teamId={team.id} />
 
           {/* Program Start Activation */}
           <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
