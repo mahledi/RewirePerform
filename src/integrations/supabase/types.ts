@@ -1077,35 +1077,6 @@ export type Database = {
           },
         ]
       }
-      team_members: {
-        Row: {
-          id: string
-          joined_at: string | null
-          team_id: string
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          joined_at?: string | null
-          team_id: string
-          user_id: string
-        }
-        Update: {
-          id?: string
-          joined_at?: string | null
-          team_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_members_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       team_calendar_events: {
         Row: {
           created_at: string
@@ -1149,6 +1120,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_calendar_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          id: string
+          joined_at: string | null
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
@@ -1430,6 +1430,7 @@ export type Database = {
     }
     Functions: {
       archive_qa_cohort: { Args: { _team_id: string }; Returns: Json }
+      can_manage_team_calendar: { Args: { _team_id: string }; Returns: boolean }
       compute_team_outcomes: {
         Args: { min_n?: number; team_id_param: string }
         Returns: Json
