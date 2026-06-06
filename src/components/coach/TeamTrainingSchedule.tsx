@@ -75,7 +75,11 @@ const parseTimeValue = (value: string): LocalTime => {
 const defaultTitle = (eventType: EventType) => eventConfig[eventType].label;
 
 const errorMessage = (err: unknown, fallback = "Speichern fehlgeschlagen") =>
-  err instanceof Error ? err.message : fallback;
+  err instanceof Error
+    ? err.message
+    : typeof err === "object" && err !== null && "message" in err && typeof err.message === "string"
+      ? err.message
+      : fallback;
 
 const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
   const { user } = useAuth();
@@ -83,6 +87,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTool, setSelectedTool] = useState<EventType>("training");
   const [eventsByDate, setEventsByDate] = useState<Map<string, LocalEvent>>(() => new Map());
+  const [persistedDates, setPersistedDates] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
@@ -127,6 +132,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
           });
         });
         setEventsByDate(next);
+        setPersistedDates(new Set(next.keys()));
       }
       setLoading(false);
     };
@@ -194,12 +200,6 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
     if (!user) return;
     setSaveState("saving");
     try {
-      const { error: deleteError } = await supabase
-        .from("team_calendar_events")
-        .delete()
-        .eq("team_id", teamId);
-      if (deleteError) throw deleteError;
-
       const rows = Array.from(eventsByDate.values())
         .sort((a, b) => a.date.localeCompare(b.date))
         .map((event) => ({
@@ -214,15 +214,35 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
         }));
 
       if (rows.length > 0) {
-        const { error: insertError } = await supabase.from("team_calendar_events").insert(rows);
-        if (insertError) throw insertError;
+        const { error: upsertError } = await supabase
+          .from("team_calendar_events")
+          .upsert(rows, { onConflict: "team_id,date" });
+        if (upsertError) throw upsertError;
       }
 
+      const currentDates = new Set(eventsByDate.keys());
+      const removedDates = Array.from(persistedDates).filter((date) => !currentDates.has(date));
+      if (removedDates.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("team_calendar_events")
+          .delete()
+          .eq("team_id", teamId)
+          .in("date", removedDates);
+        if (deleteError) throw deleteError;
+      }
+
+      setPersistedDates(currentDates);
       setSaveState("saved");
       toast.success("Teamkalender gespeichert. Du kannst jederzeit weitere Events nachtragen.");
     } catch (err) {
       setSaveState("error");
-      toast.error(errorMessage(err));
+      console.error("team calendar save error", err);
+      const message = errorMessage(err);
+      toast.error(
+        message === "Speichern fehlgeschlagen"
+          ? "Teamkalender konnte nicht gespeichert werden. Bitte prüfe, ob die neue Datenbank-Migration live ist."
+          : message,
+      );
     }
   };
 
@@ -308,7 +328,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                     className={`relative aspect-square rounded-lg text-xs transition-all ${
                       !inMonth ? "opacity-30" : ""
                     } ${isToday(day) ? "ring-1 ring-primary" : ""} ${
-                      isSelected ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-secondary"
+                      isSelected ? "ring-2 ring-primary" : "hover:bg-secondary"
                     } ${event ? eventConfig[event.event_type].bg : ""}`}
                   >
                     <span className={isToday(day) ? "font-semibold text-primary" : "font-medium"}>
@@ -348,33 +368,14 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
 
               {selectedEvent ? (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
-                    {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => {
-                      const Icon = config.icon;
-                      return (
-                        <button
-                          key={type}
-                          type="button"
-                          onClick={() => updateSelectedEvent({
-                            event_type: type,
-                            title: selectedEvent.title === defaultTitle(selectedEvent.event_type)
-                              ? defaultTitle(type)
-                              : selectedEvent.title || defaultTitle(type),
-                            training_local_hour: type === "rest" ? null : selectedEvent.training_local_hour ?? 17,
-                            training_local_minute: type === "rest" ? null : selectedEvent.training_local_minute ?? 0,
-                            training_timezone: type === "rest" ? null : selectedEvent.training_timezone ?? timezone,
-                          })}
-                          className={`rounded-lg p-2 text-center text-xs font-semibold transition-all ${
-                            selectedEvent.event_type === type
-                              ? `${config.bg} ${config.text} ring-1 ring-current`
-                              : "bg-secondary/50 text-muted-foreground"
-                          }`}
-                        >
-                          <Icon className={`mx-auto mb-1 h-4 w-4 ${selectedEvent.event_type === type ? config.text : "text-muted-foreground"}`} />
-                          {config.label}
-                        </button>
-                      );
-                    })}
+                  <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${eventConfig[selectedEvent.event_type].bg}`}>
+                    {(() => {
+                      const Icon = eventConfig[selectedEvent.event_type].icon;
+                      return <Icon className={`h-4 w-4 ${eventConfig[selectedEvent.event_type].text}`} />;
+                    })()}
+                    <span className={`text-sm font-semibold ${eventConfig[selectedEvent.event_type].text}`}>
+                      {eventConfig[selectedEvent.event_type].label}
+                    </span>
                   </div>
                   <input
                     type="text"
