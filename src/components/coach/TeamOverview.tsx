@@ -31,6 +31,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
   const [stats, setStats] = useState<TeamStats | null>(null);
   const [activityRows, setActivityRows] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [partialWarnings, setPartialWarnings] = useState<string[]>([]);
   const [reloadKey, setReloadKey] = useState(0);
@@ -39,8 +40,10 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
     let cancelled = false;
     const loadStats = async () => {
       setLoading(true);
+      setDetailsLoading(false);
       setError(null);
       setPartialWarnings([]);
+      setActivityRows([]);
       try {
         const { data: members, error: membersError } = await supabase
           .from("team_members")
@@ -60,6 +63,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
               min_n: MIN_AGGREGATE_SAMPLE,
             });
             setActivityRows([]);
+            setLoading(false);
           }
           return;
         }
@@ -85,8 +89,21 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
             });
             setActivityRows([]);
             setPartialWarnings([]);
+            setLoading(false);
           }
           return;
+        }
+
+        if (!cancelled) {
+          setStats({
+            member_count: athleteIds.length,
+            checkins_last_week: 0,
+            assessments_completed: 0,
+            aggregate_ready: athleteIds.length >= MIN_AGGREGATE_SAMPLE,
+            min_n: MIN_AGGREGATE_SAMPLE,
+          });
+          setLoading(false);
+          setDetailsLoading(true);
         }
 
         const [assessmentsResult, mentalState, activityStatus] = await Promise.all([
@@ -150,8 +167,10 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         setStats(nextStats);
         setActivityRows(activityStatus.error ? [] : ((activityStatus.data ?? []) as ActivityRow[]));
         setPartialWarnings(warnings);
+        setDetailsLoading(false);
       } catch (err) {
         if (!cancelled) {
+          setDetailsLoading(false);
           void captureAppError({
             eventName: "coach_dashboard_loaded",
             error: err,
@@ -162,7 +181,10 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           setError(err instanceof Error ? err.message : "Teamdaten konnten nicht geladen werden.");
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setDetailsLoading(false);
+        }
       }
     };
     loadStats();
@@ -240,17 +262,21 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         </div>
         <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
           <Activity className="w-5 h-5 text-primary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-foreground">{stats.checkins_last_week}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {detailsLoading && stats.checkins_last_week === 0 ? "..." : stats.checkins_last_week}
+          </p>
           <p className="text-xs text-muted-foreground">Aktive Sportler (7 Tage)</p>
         </div>
         <div className="bg-card border border-border/50 rounded-2xl p-5 text-center sm:col-span-2">
           <ClipboardCheck className="w-5 h-5 text-primary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-foreground">{stats.assessments_completed}</p>
+          <p className="text-2xl font-bold text-foreground">
+            {detailsLoading && stats.assessments_completed === 0 ? "..." : stats.assessments_completed}
+          </p>
           <p className="text-xs text-muted-foreground">Assessments abgeschlossen (gesamt)</p>
         </div>
       </div>
 
-      {activityRows.length > 0 && (
+      {(detailsLoading || activityRows.length > 0) && (
         <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
           <div className="px-4 py-3 border-b border-border/50">
             <p className="text-sm font-medium text-foreground">Teilnahme pro Sportler</p>
@@ -259,7 +285,13 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
             </p>
           </div>
           <div className="min-w-0 divide-y divide-border/50">
-            {activityRows.map((row) => (
+            {detailsLoading && activityRows.length === 0 ? (
+              <div className="space-y-3 px-4 py-4">
+                {[0, 1, 2].map((item) => (
+                  <div key={item} className="h-11 animate-pulse rounded-xl bg-secondary/50" />
+                ))}
+              </div>
+            ) : activityRows.map((row) => (
               <div key={row.user_id} className="flex min-w-0 flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
