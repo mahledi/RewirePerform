@@ -9,20 +9,51 @@ import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrent
 import { resolveDay } from "@/lib/getDayContent";
 import type { ResolvedDay } from "@/content/matrixDayTypes";
 import { captureAppError } from "@/lib/monitoring";
+import { getEffectiveTodayDate } from "@/lib/qaTime";
+import { getProgramModeInfo } from "@/lib/programMode";
+import { format } from "date-fns";
+
+type EventType = "training" | "rest" | "competition";
 
 const PreTraining = () => {
   const { user, role, isTestUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
+  const [eventType, setEventType] = useState<EventType | null>(null);
   const trackedRef = useRef(false);
 
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      const eff = await getEffectiveProgramStart(user.id);
-      const info = getCurrentProgramDay(eff.startDate);
+      const today = await getEffectiveTodayDate(user.id);
+      const dateStr = format(today, "yyyy-MM-dd");
+      const [eff, modeInfo] = await Promise.all([
+        getEffectiveProgramStart(user.id),
+        getProgramModeInfo(user.id),
+      ]);
+      const info = getCurrentProgramDay(eff.startDate, today);
       if (!info) {
+        setLoading(false);
+        return;
+      }
+      const { data: events } = modeInfo.mode === "team" && modeInfo.teamId
+        ? await supabase
+            .from("team_calendar_events")
+            .select("date,event_type")
+            .eq("team_id", modeInfo.teamId)
+            .eq("date", dateStr)
+            .limit(1)
+        : await supabase
+            .from("calendar_events")
+            .select("date,event_type")
+            .eq("user_id", user.id)
+            .eq("date", dateStr)
+            .limit(1);
+      const resolvedEventType = (events?.[0]?.event_type ?? "training") as EventType;
+      setEventType(resolvedEventType);
+      if (resolvedEventType === "rest") {
+        setResolved(null);
         setLoading(false);
         return;
       }
@@ -31,7 +62,7 @@ const PreTraining = () => {
         .select("sport,position")
         .eq("id", user.id)
         .maybeSingle();
-      const day = resolveDay(info.dayNumber, new Date(), "training", {
+      const day = resolveDay(info.dayNumber, today, resolvedEventType, {
         sport: profile?.sport,
         position: profile?.position,
       });
@@ -74,7 +105,11 @@ const PreTraining = () => {
           </div>
         ) : !resolved ? (
           <div className="text-center py-20">
-            <p className="text-muted-foreground">Programm noch nicht gestartet</p>
+            <p className="text-muted-foreground">
+              {eventType === "rest"
+                ? "Heute ist ein Ruhetag. Dafür gibt es keine Pre-Training-Vorbereitung."
+                : "Programm noch nicht gestartet"}
+            </p>
             <Button onClick={() => navigate("/dashboard")} className="mt-6">Zurück</Button>
           </div>
         ) : (
@@ -85,11 +120,15 @@ const PreTraining = () => {
           >
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-3">
-                Pre-Training
+                {eventType === "competition" ? "Pre-Wettkampf" : "Pre-Training"}
               </p>
-              <h1 className="font-heading font-bold text-3xl mb-2">Bereit für die nächste Einheit</h1>
+              <h1 className="font-heading font-bold text-3xl mb-2">
+                {eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit für die nächste Einheit"}
+              </h1>
               <p className="text-muted-foreground">
-                Kurz sortieren, klare Linse setzen, dann raus in die Arbeit.
+                {eventType === "competition"
+                  ? "Kurz sortieren, klare Linse setzen, dann in deinen Wettkampfmodus."
+                  : "Kurz sortieren, klare Linse setzen, dann raus in die Arbeit."}
               </p>
             </div>
 
@@ -129,7 +168,7 @@ const PreTraining = () => {
 
             <Button onClick={() => navigate("/dashboard")} size="lg" className="w-full">
               <Target className="w-4 h-4 mr-2" />
-              Bereit fürs Training
+              {eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit fürs Training"}
             </Button>
           </motion.div>
         )}

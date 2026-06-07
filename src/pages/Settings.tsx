@@ -320,7 +320,10 @@ const Settings = () => {
               <h2 className="font-heading font-semibold text-lg">Als App installieren</h2>
             </div>
 
-            <p className="text-sm text-muted-foreground">Du kannst RewirePerform wie eine echte App auf deinem Handy nutzen — ohne App Store. So geht's:</p>
+            <p className="text-sm text-muted-foreground">
+              Du kannst RewirePerform wie eine echte App auf deinem Handy nutzen. Auf iPhone/iPad sind Push-Benachrichtigungen
+              nur zuverlässig möglich, wenn du die App über den Home-Bildschirm öffnest.
+            </p>
 
             <div className="space-y-4">
               <div className="rounded-lg bg-secondary/50 p-4 space-y-2">
@@ -333,6 +336,7 @@ const Settings = () => {
                   <li>Tippe auf das <strong className="text-foreground">Teilen-Symbol</strong> (Quadrat mit Pfeil nach oben)</li>
                   <li>Scrolle runter und wähle <strong className="text-foreground">"Zum Home-Bildschirm"</strong></li>
                   <li>Tippe auf <strong className="text-foreground">"Hinzufügen"</strong></li>
+                  <li>Öffne RewirePerform danach über das neue App-Symbol und aktiviere Push in den Einstellungen</li>
                 </ol>
               </div>
 
@@ -349,7 +353,10 @@ const Settings = () => {
                 </ol>
               </div>
 
-              <p className="text-xs text-muted-foreground">Nach der Installation öffnet sich RewirePerform im Vollbildmodus — genau wie eine normale App. Du bleibst eingeloggt und bekommst direkten Zugriff.</p>
+              <p className="text-xs text-muted-foreground">
+                Nach der Installation öffnet sich RewirePerform im Vollbildmodus. Wichtig: Benachrichtigungen immer aus
+                dieser installierten App heraus aktivieren, nicht aus einem normalen Safari-Tab.
+              </p>
             </div>
           </div>
         </motion.section>

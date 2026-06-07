@@ -172,7 +172,13 @@ export const TrainingAndNotifications = () => {
   };
 
   const scrollToInstallGuide = () => {
-    document.getElementById("app-install-guide")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const guide = document.getElementById("app-install-guide");
+    if (!guide) return;
+    guide.scrollIntoView({ behavior: "smooth", block: "start" });
+    guide.classList.add("ring-2", "ring-primary/50", "rounded-xl");
+    window.setTimeout(() => {
+      guide.classList.remove("ring-2", "ring-primary/50", "rounded-xl");
+    }, 2400);
   };
 
   const handleEnablePush = async () => {
@@ -324,15 +330,15 @@ export const TrainingAndNotifications = () => {
                     ? "Push ist in Lovable-Preview-Umgebungen deaktiviert. Teste Benachrichtigungen später auf rewireperform.com oder lokal."
                     : push.supportReason === "insecure"
                       ? "Push benötigt eine sichere HTTPS-Verbindung."
-                      : "Dieser Browser unterstützt keine Push-Benachrichtigungen. Auf iPhone/iPad funktioniert Web-Push als installierte Home-Screen-App."}
+                      : "Dieser Browser unterstützt keine Push-Benachrichtigungen. Auf iPhone/iPad: Füge RewirePerform zuerst zum Home-Bildschirm hinzu, öffne die App von dort und aktiviere dann Push."}
               </p>
               <button
                 type="button"
                 onClick={scrollToInstallGuide}
-                className="inline-flex items-center gap-2 rounded-lg border border-border/70 bg-background px-3 py-2 text-xs font-semibold text-foreground"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-primary/15"
               >
                 <Smartphone className="h-3.5 w-3.5" />
-                Anleitung anzeigen
+                iPhone-Anleitung anzeigen
               </button>
             </div>
           ) : push.loading ? (
