@@ -28,6 +28,7 @@ type PushError = {
 };
 
 type NotifType = "morning" | "pre_training" | "evening";
+type NotifSource = "time" | "team_calendar" | "team_weekly_schedule" | "solo_schedule";
 
 const PAYLOADS: Record<NotifType, { title: string; body: string; url: string }> = {
   morning: {
@@ -129,6 +130,8 @@ const localParts = (date: Date, timeZone: string) => {
   };
 };
 
+const localDateFor = (date: Date, timeZone: string) => localParts(date, timeZone).date;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -216,14 +219,15 @@ Deno.serve(async (req) => {
   for (const sub of (subs ?? []) as Subscription[]) {
     if (!activeUsers.has(sub.user_id)) continue;
 
-    const types: Array<{ type: NotifType; scheduledFor: Date; sentDate: string }> = [];
+    const types: Array<{ type: NotifType; scheduledFor: Date; sentDate: string; source: NotifSource }> = [];
+    const localToday = localDateFor(now, sub.timezone || "UTC");
     const morningTarget = toMinuteOfDay(sub.morning_hour, sub.morning_minute);
     if (minutesMatch(morningTarget, now)) {
-      types.push({ type: "morning", scheduledFor: now, sentDate: today });
+      types.push({ type: "morning", scheduledFor: now, sentDate: localToday, source: "time" });
     }
     const eveningTarget = toMinuteOfDay(sub.evening_hour, sub.evening_minute);
     if (minutesMatch(eveningTarget, now)) {
-      types.push({ type: "evening", scheduledFor: now, sentDate: today });
+      types.push({ type: "evening", scheduledFor: now, sentDate: localToday, source: "time" });
     }
     const userRows = scheduleByUser.get(sub.user_id) ?? [];
     const teamIdsForUser = teamIdsByUser.get(sub.user_id) ?? [];
@@ -251,6 +255,7 @@ Deno.serve(async (req) => {
           type: "pre_training",
           scheduledFor: now,
           sentDate: event.date,
+          source: "team_calendar",
         });
       }
     }
@@ -282,7 +287,8 @@ Deno.serve(async (req) => {
           types.push({
             type: "pre_training",
             scheduledFor: now,
-            sentDate: trainingMoment.toISOString().slice(0, 10),
+            sentDate: local.date,
+            source: teamIdsForUser.length > 0 ? "team_weekly_schedule" : "solo_schedule",
           });
         }
         continue;
@@ -295,6 +301,7 @@ Deno.serve(async (req) => {
           type: "pre_training",
           scheduledFor: now,
           sentDate: dateForOffset(now, reminderTarget < 0 ? 24 * 60 : 0),
+          source: "solo_schedule",
         });
       }
     }
@@ -324,6 +331,7 @@ Deno.serve(async (req) => {
           status: "pending",
           scheduled_for: item.scheduledFor.toISOString(),
           target_url: payload.url,
+          metadata: { source: item.source },
         })
         .select("id")
         .single();
@@ -333,7 +341,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const url = `${payload.url}${payload.url.includes("?") ? "&" : "?"}notification_id=${pending.id}&notification_type=${t}`;
+      const url = `${payload.url}${payload.url.includes("?") ? "&" : "?"}notification_id=${pending.id}&notification_type=${t}&notification_user_id=${sub.user_id}`;
       try {
         await webpush.sendNotification(
           {
