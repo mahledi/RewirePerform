@@ -19,7 +19,7 @@ import FlameCard from "@/components/dashboard/FlameCard";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
 import AppLoadingShell from "@/components/AppLoadingShell";
-import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
+import { hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -369,21 +369,22 @@ const Dashboard = () => {
     const loadCompletedQuestionnaire = async (): Promise<boolean> => {
       const { data, error } = await supabase
         .from("questionnaire_responses")
-        .select("id, analysis")
+        .select("id, analysis, answers, is_complete, instrument_id")
         .eq("user_id", user!.id)
         .eq("is_complete", true)
-        .or(`instrument_id.eq.${ONBOARDING_V2_INSTRUMENT_ID},instrument_id.is.null`)
         .not("analysis", "is", null)
         .order("created_at", { ascending: false })
-        .limit(1);
+        .limit(5);
 
       if (error) {
         console.error("Error loading completed questionnaire:", error);
       }
 
-      if (data && data.length > 0 && data[0].analysis) {
+      const completedOnboarding = (data ?? []).find(hasValidCompletedOnboarding);
+
+      if (completedOnboarding?.analysis) {
         if (cancelled) return false;
-        setAnalysis(data[0].analysis as unknown as Analysis);
+        setAnalysis(completedOnboarding.analysis as unknown as Analysis);
         return true;
       } else {
         if (!cancelled) {

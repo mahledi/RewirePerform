@@ -7,6 +7,7 @@ import QuestionnaireResults from "@/components/questionnaire/QuestionnaireResult
 import { supabase } from "@/integrations/supabase/client";
 import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
 import { clearLocalDraft, readLocalDraft } from "@/lib/localDrafts";
+import { hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
 
 type Phase = "loading" | "intro" | "resume" | "flow" | "results";
 
@@ -55,21 +56,19 @@ const Questionnaire = () => {
         return;
       }
 
-      const { data: completedResponse, error: completedError } = await supabase
+      const { data: completedResponses, error: completedError } = await supabase
         .from("questionnaire_responses")
-        .select("id")
+        .select("id, answers, analysis, is_complete, instrument_id")
         .eq("user_id", user.id)
         .eq("is_complete", true)
-        .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(5);
 
       if (completedError) {
         console.error("Error loading completed questionnaire:", completedError);
       }
 
-      if (completedResponse?.id) {
+      if ((completedResponses ?? []).some(hasValidCompletedOnboarding)) {
         clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
         navigate("/dashboard", { replace: true });
         return;
