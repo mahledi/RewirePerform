@@ -44,7 +44,7 @@ const Index = () => {
       <div id="mechanisms">
         <MechanismSection />
       </div>
-      <div id="speaking">
+      <div id="speaking" className="scroll-mt-20">
         <SpeakingSection />
       </div>
       <div id="coaches">

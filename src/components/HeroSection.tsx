@@ -62,9 +62,12 @@ const HeroSection = () => {
               Zugang sichern
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
-            <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-border font-heading font-medium text-foreground transition-all hover:bg-secondary">
-              Demo anfragen
-            </button>
+            <a
+              href="#speaking"
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-border font-heading font-medium text-foreground transition-all hover:bg-secondary"
+            >
+              Warum Einsprechen?
+            </a>
           </motion.div>
         </div>
       </div>
