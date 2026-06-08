@@ -14,6 +14,7 @@ export type AppEventName =
   | "push_clicked"
   | "coach_dashboard_loaded"
   | "coach_evidence_load_failed"
+  | "coach_mental_state_load_failed"
   | "admin_export_downloaded";
 
 export type AppEventStatus = "attempted" | "success" | "failed" | "opened" | "skipped";
