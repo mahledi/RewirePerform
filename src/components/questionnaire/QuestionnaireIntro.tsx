@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save, ChevronDown, HeartHandshake } from "lucide-react";
+import { ArrowRight, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save, ChevronDown, HeartHandshake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,19 +142,6 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Back button */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
-        <div className="max-w-2xl mx-auto">
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Zurück</span>
-          </button>
-        </div>
-      </div>
-
       <div className="flex-1 flex items-center justify-center px-6 py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
