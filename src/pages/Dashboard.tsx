@@ -19,6 +19,7 @@ import FlameCard from "@/components/dashboard/FlameCard";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
 import AppLoadingShell from "@/components/AppLoadingShell";
+import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -363,32 +364,49 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const loadAnalysis = async () => {
-      const { data } = await supabase
+    let cancelled = false;
+
+    const loadCompletedQuestionnaire = async (): Promise<boolean> => {
+      const { data, error } = await supabase
         .from("questionnaire_responses")
         .select("id, analysis")
         .eq("user_id", user!.id)
+        .eq("is_complete", true)
+        .or(`instrument_id.eq.${ONBOARDING_V2_INSTRUMENT_ID},instrument_id.is.null`)
         .not("analysis", "is", null)
         .order("created_at", { ascending: false })
         .limit(1);
 
+      if (error) {
+        console.error("Error loading completed questionnaire:", error);
+      }
+
       if (data && data.length > 0 && data[0].analysis) {
+        if (cancelled) return false;
         setAnalysis(data[0].analysis as unknown as Analysis);
+        return true;
       } else {
-        toast.error("Keine Analyse gefunden. Bitte fülle den Fragebogen aus.");
-        navigate("/questionnaire");
-        return;
+        if (!cancelled) {
+          toast.info("Bitte schließe zuerst dein Startprofil ab.");
+          navigate("/questionnaire", { replace: true });
+        }
+        return false;
       }
     };
 
     const initializeDashboard = async () => {
-      await loadAnalysis();
+      const hasCompletedQuestionnaire = await loadCompletedQuestionnaire();
+      if (!hasCompletedQuestionnaire || cancelled) return;
       const resolvedToday = await getEffectiveTodayDate(user.id).catch(() => new Date());
+      if (cancelled) return;
       setEffectiveToday(resolvedToday);
       await checkSetup(resolvedToday);
     };
 
     initializeDashboard();
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const checkSetup = async (referenceDate = effectiveToday) => {
