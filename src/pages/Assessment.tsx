@@ -6,6 +6,7 @@ import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/va
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import { getRetestStatus } from "@/lib/programProgress";
 import { toast } from "sonner";
 import { captureAppError } from "@/lib/monitoring";
 
@@ -40,11 +41,44 @@ const Assessment = () => {
 
   const isSequentialMode = mode !== null;
 
+  const timingLabel = (t: "pre" | "mid" | "post") =>
+    t === "pre" ? "Pre" : t === "mid" ? "Mid" : "Post";
+
   useEffect(() => {
     if (mode === "post") {
       loadPreResults();
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (!user?.id || !mode || mode === "pre") return;
+
+    const guardRetestAccess = async () => {
+      const instance = await getOrCreateActiveInstance(user.id);
+      let preQ = supabase
+        .from("assessments")
+        .select("assessment_type")
+        .eq("timing", "pre")
+        .eq("user_id", user.id);
+      if (instance?.id) preQ = preQ.eq("program_instance_id", instance.id);
+      const [{ data: preRows }, retest] = await Promise.all([preQ, getRetestStatus(user.id)]);
+      const preTypes = new Set((preRows ?? []).map((row) => row.assessment_type));
+      const preDone = allAssessments.every((test) => preTypes.has(test.id));
+      const allowed = mode === "mid" ? retest.midDue : retest.postDue;
+
+      if (!preDone || !allowed) {
+        toast.error(
+          !preDone
+            ? "Zuerst müssen die Pre-Tests abgeschlossen sein."
+            : `${timingLabel(mode)}-Tests sind noch nicht freigegeben.`,
+          { duration: 2600 },
+        );
+        navigate("/dashboard", { replace: true });
+      }
+    };
+
+    guardRetestAccess();
+  }, [mode, navigate, user?.id]);
 
   const loadPreResults = async () => {
     if (!user?.id) return;
@@ -160,7 +194,7 @@ const Assessment = () => {
       setPhase("results");
     }
 
-    toast.success(`${selectedTest.titleShort} ${timing === "pre" ? "Pre" : "Post"}-Test gespeichert!`);
+    toast.success(`${selectedTest.titleShort} ${timingLabel(timing)}-Test gespeichert!`);
   };
 
   const nextInSequence = () => {
@@ -228,9 +262,11 @@ const Assessment = () => {
                       ))}
                     </div>
                     <p className="text-xs text-muted-foreground mb-4 italic">{test.citation}</p>
-                    <div className="flex gap-2">
-                      <button onClick={() => startTest(test, "pre")} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">Pre-Test</button>
-                      <button onClick={() => startTest(test, "post")} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-secondary text-muted-foreground text-sm font-medium hover:bg-secondary/80 transition-colors">Post-Test</button>
+                    <div className="space-y-2">
+                      <button onClick={() => startTest(test, "pre")} className="flex w-full items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">Pre-Test starten</button>
+                      <p className="text-[11px] leading-relaxed text-muted-foreground">
+                        Mid- und Post-Tests werden später automatisch im Dashboard freigegeben.
+                      </p>
                     </div>
                   </div>
                 ))}

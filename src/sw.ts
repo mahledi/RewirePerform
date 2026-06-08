@@ -21,7 +21,7 @@ registerRoute(
       try {
         const network = new NetworkFirst({
           cacheName: "html",
-          networkTimeoutSeconds: 3,
+          networkTimeoutSeconds: 1.5,
         });
         return await network.handle(params);
       } catch {

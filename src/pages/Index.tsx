@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import WhySection from "@/components/WhySection";
@@ -8,8 +10,24 @@ import SpeakingSection from "@/components/SpeakingSection";
 import CoachSection from "@/components/CoachSection";
 import EvidenceSection from "@/components/EvidenceSection";
 import CTASection from "@/components/CTASection";
+import { useAuth } from "@/contexts/AuthContext";
+import AppLoadingShell from "@/components/AppLoadingShell";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, role, loading } = useAuth();
+
+  useEffect(() => {
+    if (loading || !user || !role) return;
+    if (role === "admin") navigate("/admin", { replace: true });
+    else if (role === "coach") navigate("/coach", { replace: true });
+    else navigate("/dashboard", { replace: true });
+  }, [loading, navigate, role, user]);
+
+  if (loading || (user && role)) {
+    return <AppLoadingShell subtitle="Öffne deinen Bereich..." />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
