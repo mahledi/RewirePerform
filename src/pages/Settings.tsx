@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User, HeartHandshake } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User, HeartHandshake, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,7 @@ const Settings = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [dataContributionConsent, setDataContributionConsent] = useState<DataContributionConsentState>(null);
   const [savingDataContribution, setSavingDataContribution] = useState(false);
+  const [showDataContribution, setShowDataContribution] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -246,49 +247,67 @@ const Settings = () => {
         </motion.section>
 
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-          <div className="rounded-xl border border-primary/20 bg-card p-5 space-y-4">
-            <div className="flex items-start gap-3">
+          <div className="rounded-xl border border-primary/20 bg-card">
+            <button
+              type="button"
+              onClick={() => setShowDataContribution((open) => !open)}
+              className="flex w-full items-center gap-3 p-5 text-left"
+              aria-expanded={showDataContribution}
+            >
               <div className="rounded-xl bg-primary/10 p-2">
                 <HeartHandshake className="w-5 h-5 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h2 className="font-heading font-semibold text-lg">Datenbeitrag für zukünftige Teams</h2>
-                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {dataContributionConsent === true
+                    ? "Aktiviert. Du kannst die Entscheidung jederzeit ändern."
+                    : dataContributionConsent === false
+                      ? "Nicht aktiviert. Du kannst später freiwillig beitragen."
+                      : "Noch keine Entscheidung gespeichert."}
+                </p>
+              </div>
+              <ChevronDown className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${showDataContribution ? "rotate-180" : ""}`} />
+            </button>
+
+            {showDataContribution && (
+              <div className="space-y-4 border-t border-border/60 px-5 pb-5 pt-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Wenn du zustimmst, dürfen anonymisierte oder aggregierte Nutzungs- und Fortschrittsdaten helfen,
                   RewirePerform zu verbessern und die Wirkung des Projekts in Präsentationen, Pilotberichten und Gesprächen
                   mit Teams verständlich darzustellen.
                 </p>
+
+                <div className="rounded-xl border border-border/60 bg-secondary/30 p-4 text-sm text-muted-foreground leading-relaxed">
+                  Private Journaltexte, freie Antworten und persönliche Einzelprofile werden dafür nicht identifizierbar verwendet.
+                  Deine Entscheidung ist freiwillig und hat keinen Einfluss darauf, ob du RewirePerform nutzen kannst.
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    onClick={() => updateDataContributionConsent(true)}
+                    disabled={savingDataContribution || dataContributionConsent === true}
+                    className="flex-1"
+                  >
+                    {savingDataContribution ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    {dataContributionConsent === true ? "Datenbeitrag aktiviert" : "Ja, ich möchte beitragen"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => updateDataContributionConsent(false)}
+                    disabled={savingDataContribution || dataContributionConsent === false}
+                    className="flex-1"
+                  >
+                    {dataContributionConsent === false ? "Nicht aktiviert" : "Deaktivieren"}
+                  </Button>
+                </div>
+
+                {dataContributionConsent === null && (
+                  <p className="text-xs text-muted-foreground">
+                    Ohne Zustimmung werden deine Daten nicht für Präsentations- oder Pilotwirkungsberichte gezählt.
+                  </p>
+                )}
               </div>
-            </div>
-
-            <div className="rounded-xl border border-border/60 bg-secondary/30 p-4 text-sm text-muted-foreground leading-relaxed">
-              Private Journaltexte, freie Antworten und persönliche Einzelprofile werden dafür nicht identifizierbar verwendet.
-              Deine Entscheidung ist freiwillig und hat keinen Einfluss darauf, ob du RewirePerform nutzen kannst.
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                onClick={() => updateDataContributionConsent(true)}
-                disabled={savingDataContribution || dataContributionConsent === true}
-                className="flex-1"
-              >
-                {savingDataContribution ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {dataContributionConsent === true ? "Datenbeitrag aktiviert" : "Ja, ich möchte beitragen"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => updateDataContributionConsent(false)}
-                disabled={savingDataContribution || dataContributionConsent === false}
-                className="flex-1"
-              >
-                {dataContributionConsent === false ? "Nicht aktiviert" : "Deaktivieren"}
-              </Button>
-            </div>
-
-            {dataContributionConsent === null && (
-              <p className="text-xs text-muted-foreground">
-                Du hast noch keine Entscheidung gespeichert. Ohne Zustimmung werden deine Daten nicht für Präsentations- oder Pilotwirkungsberichte gezählt.
-              </p>
             )}
           </div>
         </motion.section>
