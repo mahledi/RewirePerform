@@ -15,7 +15,10 @@ import {
 } from "@/content/questionnaireV2";
 import type { Json } from "@/integrations/supabase/types";
 import {
+  isConsentSchemaMissingError,
+  rememberPendingDataContributionConsent,
   saveDataContributionConsent,
+  syncPendingDataContributionConsent,
   type DataContributionConsentState,
 } from "@/lib/dataContributionConsent";
 
@@ -37,13 +40,26 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase
+        const { data: profileData } = await supabase
           .from("profiles")
-          .select("is_test_user, data_contribution_consent")
+          .select("is_test_user")
           .eq("id", user.id)
           .maybeSingle();
-        setIsTestUser(!!data?.is_test_user);
-        setConsent(typeof data?.data_contribution_consent === "boolean" ? data.data_contribution_consent : null);
+        setIsTestUser(!!profileData?.is_test_user);
+
+        const syncedPending = await syncPendingDataContributionConsent(user.id).catch(() => null);
+        const { data: consentData } = await supabase
+          .from("profiles")
+          .select("data_contribution_consent")
+          .eq("id", user.id)
+          .maybeSingle();
+        setConsent(
+          typeof syncedPending === "boolean"
+            ? syncedPending
+            : typeof consentData?.data_contribution_consent === "boolean"
+              ? consentData.data_contribution_consent
+              : null,
+        );
       } finally {
         setProfileReady(true);
       }
@@ -65,7 +81,14 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
       onStart();
     } catch (err) {
       console.error("Data contribution consent error:", err);
-      toast.error("Deine Entscheidung konnte gerade nicht gespeichert werden. Bitte versuche es noch einmal.");
+      if (isConsentSchemaMissingError(err)) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) rememberPendingDataContributionConsent(user.id, choice);
+        toast.info("Du kannst weitermachen. Deine Entscheidung wird gespeichert, sobald das System-Update vollständig aktiv ist.");
+        onStart();
+      } else {
+        toast.error("Deine Entscheidung konnte gerade nicht gespeichert werden. Bitte versuche es noch einmal.");
+      }
     } finally {
       setSavingConsent(null);
     }
