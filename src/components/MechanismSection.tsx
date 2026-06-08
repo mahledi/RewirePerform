@@ -41,8 +41,7 @@ const MechanismSection = () => {
           <p className="text-muted-foreground text-lg leading-relaxed mb-4">
             Jeder Teil von RewirePerform hat eine Funktion: Reflexion stärkt
             Selbstwahrnehmung, Dankbarkeit verändert Aufmerksamkeit,
-            Comprehension verwandelt Wissen in Anwendung, kleine Challenges
-            trainieren Handeln trotz Widerstand.
+            Comprehension verwandelt Wissen in Anwendung.
           </p>
           <p className="text-sm text-muted-foreground/80 italic">
             Das Tool ist neu. Die Mechanismen dahinter sind nicht zufällig: Sie
