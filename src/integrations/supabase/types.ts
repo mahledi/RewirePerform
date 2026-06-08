@@ -471,6 +471,10 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          data_contribution_consent: boolean | null
+          data_contribution_consent_version: string | null
+          data_contribution_consented_at: string | null
+          data_contribution_updated_at: string | null
           full_name: string | null
           id: string
           is_test_user: boolean
@@ -481,6 +485,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data_contribution_consent?: boolean | null
+          data_contribution_consent_version?: string | null
+          data_contribution_consented_at?: string | null
+          data_contribution_updated_at?: string | null
           full_name?: string | null
           id: string
           is_test_user?: boolean
@@ -491,6 +499,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data_contribution_consent?: boolean | null
+          data_contribution_consent_version?: string | null
+          data_contribution_consented_at?: string | null
+          data_contribution_updated_at?: string | null
           full_name?: string | null
           id?: string
           is_test_user?: boolean

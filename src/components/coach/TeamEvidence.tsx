@@ -61,6 +61,7 @@ interface OutcomeData {
   total_athletes: number;
   sufficient_data: boolean;
   reason?: string;
+  consent_scope?: string;
   cohort_breakdown: {
     never_started: number;
     only_pre: number;
@@ -245,7 +246,8 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Du siehst nur Aggregate (mind. {minN} Spieler). Keine Einzelwerte, keine Reflexionen, keine Journale.
+            Du siehst nur Aggregate (mind. {minN} Spieler) aus freiwillig freigegebenen Datenbeiträgen.
+            Keine Einzelwerte, keine Reflexionen, keine Journale.
           </p>
         </div>
       </div>
