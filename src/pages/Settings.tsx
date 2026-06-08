@@ -11,7 +11,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TrainingAndNotifications } from "@/components/settings/TrainingAndNotifications";
 import { toast } from "sonner";
 import {
+  isConsentSchemaMissingError,
+  rememberPendingDataContributionConsent,
   saveDataContributionConsent,
+  syncPendingDataContributionConsent,
   type DataContributionConsentState,
 } from "@/lib/dataContributionConsent";
 
@@ -89,15 +92,28 @@ const Settings = () => {
       if (!user) return;
       const { data } = await supabase
         .from("profiles")
-        .select("sport, position, team, data_contribution_consent")
+        .select("sport, position, team")
         .eq("id", user.id)
         .maybeSingle();
       if (data) {
         setSport(data.sport ?? "");
         // Fallback auf Legacy-"team"-Feld, falls position noch leer ist
         setPosition(data.position ?? data.team ?? "");
+      }
+
+      const syncedPending = await syncPendingDataContributionConsent(user.id).catch(() => null);
+      if (typeof syncedPending === "boolean") {
+        setDataContributionConsent(syncedPending);
+      } else {
+        const { data: consentData } = await supabase
+          .from("profiles")
+          .select("data_contribution_consent")
+          .eq("id", user.id)
+          .maybeSingle();
         setDataContributionConsent(
-          typeof data.data_contribution_consent === "boolean" ? data.data_contribution_consent : null,
+          typeof consentData?.data_contribution_consent === "boolean"
+            ? consentData.data_contribution_consent
+            : null,
         );
       }
       setProfileLoading(false);
@@ -156,7 +172,13 @@ const Settings = () => {
       toast.success(consent ? "Danke. Dein Datenbeitrag ist aktiviert." : "Datenbeitrag deaktiviert.");
     } catch (error) {
       console.error("Data contribution consent update failed:", error);
-      toast.error("Die Entscheidung konnte gerade nicht gespeichert werden.");
+      if (isConsentSchemaMissingError(error)) {
+        rememberPendingDataContributionConsent(user.id, consent);
+        setDataContributionConsent(consent);
+        toast.info("Deine Entscheidung wird gespeichert, sobald das System-Update vollständig aktiv ist.");
+      } else {
+        toast.error("Die Entscheidung konnte gerade nicht gespeichert werden.");
+      }
     } finally {
       setSavingDataContribution(false);
     }
