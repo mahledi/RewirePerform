@@ -14,6 +14,7 @@ const Navbar = () => {
           <a href="#process" className="hover:text-foreground transition-colors">System</a>
           <a href="#science" className="hover:text-foreground transition-colors">Wissenschaft</a>
           <a href="#mechanisms" className="hover:text-foreground transition-colors">Mechanismen</a>
+          <a href="#speaking" className="hover:text-foreground transition-colors">Einsprechen</a>
           <a href="#coaches" className="hover:text-foreground transition-colors">Coaches</a>
           <a href="#evidence" className="hover:text-foreground transition-colors">Evidenz</a>
         </div>
