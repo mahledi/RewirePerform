@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getOptionText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import AppLoadingShell from "@/components/AppLoadingShell";
 
 type Mode = "intent" | "signup" | "login";
 type Intent = "solo" | "join" | "create";
@@ -24,6 +25,11 @@ const Auth = () => {
     // Sign out any existing session so the login form is shown
     supabase.auth.signOut().finally(() => {
       try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
+      try {
+        const cachedUserId = window.localStorage.getItem("cached_user_id");
+        if (cachedUserId) window.localStorage.removeItem(`cached_user_role:${cachedUserId}`);
+        window.localStorage.removeItem("cached_user_id");
+      } catch { /* noop */ }
       setSwitching(false);
     });
   }, [forceSwitch]);
@@ -204,7 +210,7 @@ const Auth = () => {
           lowerMessage.includes("already exists") ||
           lowerMessage.includes("already been registered"))
       ) {
-        toast.error("Dieses Konto existiert bereits. Melde dich bitte an, dann schließen wir den Teambeitritt mit deinem Code ab.");
+        toast.error("Dieses Konto existiert bereits. Melde dich bitte an.", { duration: 2200 });
         setMode("login");
         setLoading(false);
         return;
@@ -220,7 +226,7 @@ const Auth = () => {
     }
 
     if (intent === "join" && !data.session) {
-      toast.error("Falls dieses Konto schon existiert, melde dich bitte an. Danach schließen wir den Teambeitritt mit deinem Code ab.");
+      toast.error("Konto existiert wahrscheinlich schon. Bitte anmelden.", { duration: 2200 });
       setMode("login");
       setLoading(false);
       return;
@@ -257,9 +263,7 @@ const Auth = () => {
   // Don't flash login UI while restoring session or while a logged-in user is being redirected
   if (authLoading || switching || (user && !forceSwitch)) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-      </div>
+      <AppLoadingShell subtitle="Stelle deine Sitzung wieder her..." />
     );
   }
 

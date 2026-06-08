@@ -11,6 +11,7 @@ import { NotificationOpenTracker } from "./components/notifications/Notification
 import ErrorBoundary from "./components/ErrorBoundary";
 import IosInputPolish from "./components/IosInputPolish";
 import AppLoadingShell from "./components/AppLoadingShell";
+import ConnectionStatus from "./components/ConnectionStatus";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
           <QATestBanner />
           <NotificationOpenTracker />
           <IosInputPolish />
+          <ConnectionStatus />
           <Suspense fallback={<PageFallback />}>
             <Routes>
               <Route path="/" element={<Index />} />

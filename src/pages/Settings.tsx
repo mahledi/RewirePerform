@@ -321,8 +321,9 @@ const Settings = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">
-              Du kannst RewirePerform wie eine echte App auf deinem Handy nutzen. Auf iPhone/iPad sind Push-Benachrichtigungen
-              nur zuverlässig möglich, wenn du die App über den Home-Bildschirm öffnest.
+              Du kannst RewirePerform wie eine echte App auf deinem Handy nutzen. In der Home-Screen-App bleibst du
+              normalerweise eingeloggt und kommst schneller zurück in deinen Flow. Auf iPhone/iPad sind
+              Push-Benachrichtigungen nur zuverlässig möglich, wenn du die App über den Home-Bildschirm öffnest.
             </p>
 
             <div className="space-y-4">
@@ -354,8 +355,9 @@ const Settings = () => {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Nach der Installation öffnet sich RewirePerform im Vollbildmodus. Wichtig: Benachrichtigungen immer aus
-                dieser installierten App heraus aktivieren, nicht aus einem normalen Safari-Tab.
+                Nach der Installation öffnet sich RewirePerform im Vollbildmodus. Dein Login bleibt in der installierten
+                App gespeichert, solange du dich nicht selbst abmeldest oder iOS/WebKit die Website-Daten löscht.
+                Wichtig: Benachrichtigungen immer aus dieser installierten App heraus aktivieren, nicht aus einem normalen Safari-Tab.
               </p>
             </div>
           </div>
