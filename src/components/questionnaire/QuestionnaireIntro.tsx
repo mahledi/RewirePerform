@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save, ChevronDown } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save, ChevronDown, HeartHandshake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,10 @@ import {
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
 import type { Json } from "@/integrations/supabase/types";
+import {
+  saveDataContributionConsent,
+  type DataContributionConsentState,
+} from "@/lib/dataContributionConsent";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -24,19 +28,48 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
   const [isTestUser, setIsTestUser] = useState(false);
   const [skipping, setSkipping] = useState(false);
   const [showDataDetails, setShowDataDetails] = useState(false);
+  const [consent, setConsent] = useState<DataContributionConsentState>(null);
+  const [profileReady, setProfileReady] = useState(false);
+  const [savingConsent, setSavingConsent] = useState<"yes" | "no" | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("is_test_user")
-        .eq("id", user.id)
-        .maybeSingle();
-      setIsTestUser(!!data?.is_test_user);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from("profiles")
+          .select("is_test_user, data_contribution_consent")
+          .eq("id", user.id)
+          .maybeSingle();
+        setIsTestUser(!!data?.is_test_user);
+        setConsent(typeof data?.data_contribution_consent === "boolean" ? data.data_contribution_consent : null);
+      } finally {
+        setProfileReady(true);
+      }
     })();
   }, []);
+
+  const handleStart = async (choice?: boolean) => {
+    if (choice === undefined || consent !== null) {
+      onStart();
+      return;
+    }
+
+    setSavingConsent(choice ? "yes" : "no");
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      await saveDataContributionConsent(user.id, choice);
+      setConsent(choice);
+      onStart();
+    } catch (err) {
+      console.error("Data contribution consent error:", err);
+      toast.error("Deine Entscheidung konnte gerade nicht gespeichert werden. Bitte versuche es noch einmal.");
+    } finally {
+      setSavingConsent(null);
+    }
+  };
 
   const handleQASkip = async () => {
     setSkipping(true);
@@ -207,18 +240,77 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onStart}
-            className="group w-full flex items-center justify-center gap-3 px-8 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow"
-          >
-            Ich bin bereit
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </motion.button>
+          {!profileReady ? (
+            <button
+              type="button"
+              disabled
+              className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-xl bg-primary/70 font-heading font-semibold text-lg text-primary-foreground"
+            >
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Wird vorbereitet...
+            </button>
+          ) : consent === null ? (
+            <div className="mb-6 rounded-2xl border border-primary/25 bg-primary/5 p-5 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="mt-1 rounded-2xl bg-primary/15 p-3">
+                  <HeartHandshake className="h-6 w-6 text-primary" />
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-heading text-xl font-semibold">
+                      Hilf mit, RewirePerform für zukünftige Athleten besser zu machen
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Deine Nutzung kann uns helfen zu verstehen, welche mentalen Trainingsbausteine wirklich tragen:
+                      welche Aufgaben abgeschlossen werden, wo Fortschritt sichtbar wird und welche Muster Teams unterstützen.
+                    </p>
+                  </div>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Wenn du zustimmst, dürfen wir anonymisierte oder aggregierte Daten nutzen, um RewirePerform zu verbessern
+                    und die Wirkung des Projekts in Präsentationen, Pilotberichten und Gesprächen mit Teams verständlich darzustellen.
+                  </p>
+                  <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
+                    Private Journaltexte, freie Antworten und persönliche Einzelprofile werden dafür nicht identifizierbar verwendet.
+                    Du kannst ablehnen und RewirePerform trotzdem nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => handleStart(true)}
+                  disabled={savingConsent !== null}
+                  className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-heading font-semibold text-primary-foreground transition-all hover:shadow-glow disabled:opacity-60"
+                >
+                  {savingConsent === "yes" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Ja, ich möchte beitragen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleStart(false)}
+                  disabled={savingConsent !== null}
+                  className="flex min-h-14 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 font-heading font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+                >
+                  {savingConsent === "no" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Nicht jetzt
+                </button>
+              </div>
+            </div>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleStart()}
+              className="group w-full flex items-center justify-center gap-3 px-8 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow"
+            >
+              Ich bin bereit
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </motion.button>
+          )}
 
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Deine Antworten sind vertraulich und werden ausschließlich für dein Programm verwendet.
+            Deine Antworten sind vertraulich. Optionale Wirkungsdaten werden nur nach deiner Zustimmung für Präsentationen und Pilotberichte genutzt.
           </p>
 
           {isTestUser && (

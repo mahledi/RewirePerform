@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User } from "lucide-react";
+import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User, HeartHandshake } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { TrainingAndNotifications } from "@/components/settings/TrainingAndNotifications";
 import { toast } from "sonner";
+import {
+  saveDataContributionConsent,
+  type DataContributionConsentState,
+} from "@/lib/dataContributionConsent";
 
 const feedbackTypes = [
   { value: "bug", label: "Bug melden", icon: Bug },
@@ -77,19 +81,24 @@ const Settings = () => {
   const [position, setPosition] = useState("");
   const [profileLoading, setProfileLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [dataContributionConsent, setDataContributionConsent] = useState<DataContributionConsentState>(null);
+  const [savingDataContribution, setSavingDataContribution] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
       const { data } = await supabase
         .from("profiles")
-        .select("sport, position, team")
+        .select("sport, position, team, data_contribution_consent")
         .eq("id", user.id)
         .maybeSingle();
       if (data) {
         setSport(data.sport ?? "");
         // Fallback auf Legacy-"team"-Feld, falls position noch leer ist
         setPosition(data.position ?? data.team ?? "");
+        setDataContributionConsent(
+          typeof data.data_contribution_consent === "boolean" ? data.data_contribution_consent : null,
+        );
       }
       setProfileLoading(false);
     };
@@ -135,6 +144,21 @@ const Settings = () => {
       toast.error("Feedback konnte nicht gesendet werden.");
     } finally {
       setSending(false);
+    }
+  };
+
+  const updateDataContributionConsent = async (consent: boolean) => {
+    if (!user) return;
+    setSavingDataContribution(true);
+    try {
+      await saveDataContributionConsent(user.id, consent);
+      setDataContributionConsent(consent);
+      toast.success(consent ? "Danke. Dein Datenbeitrag ist aktiviert." : "Datenbeitrag deaktiviert.");
+    } catch (error) {
+      console.error("Data contribution consent update failed:", error);
+      toast.error("Die Entscheidung konnte gerade nicht gespeichert werden.");
+    } finally {
+      setSavingDataContribution(false);
     }
   };
 
@@ -197,6 +221,54 @@ const Settings = () => {
 
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <TrainingAndNotifications />
+        </motion.section>
+
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+          <div className="rounded-xl border border-primary/20 bg-card p-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-primary/10 p-2">
+                <HeartHandshake className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-heading font-semibold text-lg">Datenbeitrag für zukünftige Teams</h2>
+                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                  Wenn du zustimmst, dürfen anonymisierte oder aggregierte Nutzungs- und Fortschrittsdaten helfen,
+                  RewirePerform zu verbessern und die Wirkung des Projekts in Präsentationen, Pilotberichten und Gesprächen
+                  mit Teams verständlich darzustellen.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border/60 bg-secondary/30 p-4 text-sm text-muted-foreground leading-relaxed">
+              Private Journaltexte, freie Antworten und persönliche Einzelprofile werden dafür nicht identifizierbar verwendet.
+              Deine Entscheidung ist freiwillig und hat keinen Einfluss darauf, ob du RewirePerform nutzen kannst.
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                onClick={() => updateDataContributionConsent(true)}
+                disabled={savingDataContribution || dataContributionConsent === true}
+                className="flex-1"
+              >
+                {savingDataContribution ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                {dataContributionConsent === true ? "Datenbeitrag aktiviert" : "Ja, ich möchte beitragen"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => updateDataContributionConsent(false)}
+                disabled={savingDataContribution || dataContributionConsent === false}
+                className="flex-1"
+              >
+                {dataContributionConsent === false ? "Nicht aktiviert" : "Deaktivieren"}
+              </Button>
+            </div>
+
+            {dataContributionConsent === null && (
+              <p className="text-xs text-muted-foreground">
+                Du hast noch keine Entscheidung gespeichert. Ohne Zustimmung werden deine Daten nicht für Präsentations- oder Pilotwirkungsberichte gezählt.
+              </p>
+            )}
+          </div>
         </motion.section>
 
         {/* Feedback */}
