@@ -38,7 +38,7 @@ export function buildQASyntheticAnswers(): Record<string, string | string[] | nu
   }
 
   // Sport defaults so downstream personalization has signal
-  answers["sport-01"] = "football";
+  answers["sport-01"] = "Fußball";
   answers["sport-02"] = "Mittelfeldspieler";
   answers["sport-03"] = "youth";
 

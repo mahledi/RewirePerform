@@ -13,12 +13,16 @@ interface TodayForYouProps {
  * Felder mit null werden ausgelassen, keine Platzhalter.
  */
 const TodayForYou = ({ data, compact = false }: TodayForYouProps) => {
-  // Wähle den stärksten verfügbaren "third line"-Inhalt.
-  const thirdLine =
-    data.stateEmphasis ?? data.profileEmphasis ?? data.journalPatternEmphasis ?? null;
-
-  // Wähle Sport- vs. Positionsbezug — Position gewinnt, weil spezifischer.
-  const secondLine = data.positionExample ?? data.sportExample;
+  const contextLine = data.roleContextLine ?? data.sportContextLine ?? data.sportExample;
+  const emphasisLine =
+    data.stateLine ??
+    data.profileLine ??
+    data.journalPatternLine ??
+    data.relevanceLine ??
+    data.stateEmphasis ??
+    data.profileEmphasis ??
+    data.journalPatternEmphasis ??
+    null;
 
   if (compact) {
     return (
@@ -45,9 +49,9 @@ const TodayForYou = ({ data, compact = false }: TodayForYouProps) => {
 
       <div className="space-y-2">
         <p className="text-sm text-foreground leading-relaxed">{data.athleteAddressLine}</p>
-        <p className="text-sm text-muted-foreground leading-relaxed">{secondLine}</p>
-        {thirdLine && (
-          <p className="text-sm text-muted-foreground leading-relaxed">{thirdLine}</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{contextLine}</p>
+        {emphasisLine && (
+          <p className="text-sm text-muted-foreground leading-relaxed">{emphasisLine}</p>
         )}
       </div>
 

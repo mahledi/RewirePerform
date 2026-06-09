@@ -29,7 +29,6 @@ import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
 import {
   buildMicroAdjustmentContext,
-  extractJournalSignals,
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
 import { captureAppError } from "@/lib/monitoring";
@@ -223,16 +222,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         ? todayCheckinQuery.eq("program_instance_id", instance.id)
         : todayCheckinQuery.is("program_instance_id", null);
 
-      let recentJournalsQuery = supabase
-        .from("daily_journals")
-        .select("free_reflection, gratitude, answers")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false })
-        .limit(5);
-      recentJournalsQuery = instance?.id
-        ? recentJournalsQuery.eq("program_instance_id", instance.id)
-        : recentJournalsQuery.is("program_instance_id", null);
-
       let questionnaireQuery = supabase
         .from("questionnaire_responses")
         .select("analysis")
@@ -242,24 +231,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         .limit(1);
       if (instance?.id) questionnaireQuery = questionnaireQuery.eq("program_instance_id", instance.id);
 
-      const [{ data: todayCheckins }, { data: recentJournals }, { data: questionnaireRows }] = await Promise.all([
+      const [{ data: todayCheckins }, { data: questionnaireRows }] = await Promise.all([
         todayCheckinQuery,
-        recentJournalsQuery,
         questionnaireQuery,
       ]);
       const todayCheckin = todayCheckins?.[0] ?? null;
       const questionnaire = questionnaireRows?.[0] ?? null;
-
-      const journalTexts: string[] = [];
-      for (const j of recentJournals ?? []) {
-        if (j.free_reflection) journalTexts.push(j.free_reflection);
-        if (j.gratitude) journalTexts.push(j.gratitude);
-        if (j.answers && typeof j.answers === "object") {
-          for (const v of Object.values(j.answers as Record<string, unknown>)) {
-            if (typeof v === "string") journalTexts.push(v);
-          }
-        }
-      }
 
       // Sehr leichte, optionale Signal-Extraktion aus der bestehenden Analyse.
       // Erwartet KEINE bestimmte Schema-Form — alles optional.
@@ -301,7 +278,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               stress: null,
             }
           : undefined,
-        recentJournalSignals: extractJournalSignals(journalTexts),
+        recentJournalSignals: undefined,
       });
       setMicroAdjustment(micro);
     }
