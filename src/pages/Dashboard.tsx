@@ -41,8 +41,6 @@ interface Analysis {
   development_areas: { title: string; priority: string }[];
   patterns: { title: string }[];
   recommendations: { title: string; description: string; duration: string; frequency: string }[];
-  mental_score: number;
-  dominant_category: string;
 }
 
 

@@ -172,14 +172,17 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
   const minN = Number(data?.min_n ?? 5);
 
   if (!data || totalAthletes === 0) {
+    const noConsentedData = data?.reason === "no_consented_athletes";
     return (
       <div className="rounded-2xl border border-border/50 bg-card p-6 text-center">
         <BarChart3 className="mx-auto mb-4 h-10 w-10 text-primary" />
         <h3 className="font-heading text-lg font-semibold text-foreground mb-2">
-          Noch keine Wirksamkeitsdaten verfügbar
+          {noConsentedData ? "Noch keine freigegebenen Wirksamkeitsdaten" : "Noch keine Wirksamkeitsdaten verfügbar"}
         </h3>
         <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
-          Wirksamkeit wird erst sichtbar, wenn Spieler registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen.
+          {noConsentedData
+            ? "Diese Ansicht nutzt nur freiwillig freigegebene, aggregierte Datenbeiträge. Das Team kann normal trainieren; Auswertung erscheint erst, wenn genügend freigegebene Messdaten vorliegen."
+            : "Wirksamkeit wird erst sichtbar, wenn Spieler registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen."}
         </p>
       </div>
     );
@@ -244,17 +247,17 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
+          <p className="text-sm font-medium text-foreground mb-1">Aggregierte, freigegebene Teamdaten</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Du siehst nur Aggregate (mind. {minN} Spieler) aus freiwillig freigegebenen Datenbeiträgen.
-            Keine Einzelwerte, keine Reflexionen, keine Journale.
+            Diese Ansicht zeigt nur beobachtete Teammuster ab mindestens {minN} Spielern und nur aus freiwillig freigegebenen Datenbeiträgen.
+            Keine Einzelwerte, keine psychologischen Labels, keine Reflexionen, keine Journale.
           </p>
         </div>
       </div>
 
       {/* Cohort breakdown */}
       <section>
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Teilnahme-Status</h3>
+        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Messstatus im Team</h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="bg-card border border-border/50 rounded-2xl p-3">
             <p className="text-xs text-muted-foreground">Pre + Post abgeschlossen</p>
@@ -269,7 +272,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
             <p className="text-xl font-bold text-foreground">{cb.only_pre}</p>
           </div>
           <div className="bg-card border border-border/50 rounded-2xl p-3">
-            <p className="text-xs text-muted-foreground">Pre-Test offen</p>
+            <p className="text-xs text-muted-foreground">Pre-Messung offen</p>
             <p className="text-xl font-bold text-foreground">{cb.never_started}</p>
           </div>
         </div>
@@ -278,7 +281,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Assessment counts */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-primary" /> Assessment-Status
+          <BarChart3 className="w-4 h-4 text-primary" /> Messfenster-Readiness
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[
@@ -300,7 +303,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {data.adherence && (
         <section>
           <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-primary" /> Adherence (Team-Schnitt)
+            <Activity className="w-4 h-4 text-primary" /> Nutzung & Fortschritt (aggregiert)
           </h3>
           {!enoughTeam ? (
             <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
@@ -350,7 +353,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Subscale changes */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-primary" /> Beobachtete Veränderung pro Subskala
+          <TrendingUp className="w-4 h-4 text-primary" /> Beobachtete Veränderung pro Messbereich
         </h3>
         {changes.pre_post.length === 0 && changes.pre_mid.length === 0 ? (
           <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
@@ -367,11 +370,11 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Weekly trend */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" /> Wochentrend (Stimmung / Energie / Fokus)
+          <Activity className="w-4 h-4 text-primary" /> Teamzustand über Wochen (aggregiert)
         </h3>
         {weeklyTrend.length === 0 ? (
           <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
-            Noch keine Check-in-Daten.
+            Noch keine ausreichend aggregierten Check-in-Daten.
           </p>
         ) : (
           <div className="space-y-2">
@@ -399,10 +402,10 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-2xl p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
           <div className="text-xs text-muted-foreground leading-relaxed">
-            <p className="text-foreground font-medium mb-1">Fehlende Daten</p>
-            {cb.never_started > 0 && <p>{cb.never_started} Spieler ohne Pre-Test.</p>}
-            {cb.only_pre > 0 && <p>{cb.only_pre} Spieler nur mit Pre-Test.</p>}
-            {cb.pre_and_mid_no_post > 0 && <p>{cb.pre_and_mid_no_post} Spieler ohne Post-Test.</p>}
+            <p className="text-foreground font-medium mb-1">Datenlücken</p>
+            {cb.never_started > 0 && <p>{cb.never_started} offene Pre-Messungen.</p>}
+            {cb.only_pre > 0 && <p>{cb.only_pre} Teilnahmen bisher nur mit Pre-Messung.</p>}
+            {cb.pre_and_mid_no_post > 0 && <p>{cb.pre_and_mid_no_post} Teilnahmen noch ohne Post-Messung.</p>}
           </div>
         </div>
       )}
