@@ -1,0 +1,102 @@
+import { describe, expect, it } from "vitest";
+import { buildMicroAdjustmentContext, extractJournalSignals } from "@/lib/microAdjustment";
+import type { MicroAdjustmentInput } from "@/lib/microAdjustment";
+
+const baseInput = (overrides: Partial<MicroAdjustmentInput> = {}): MicroAdjustmentInput => ({
+  day: {
+    dayNumber: 14,
+    lens: "Ergebnisdenken raubt Gegenwart",
+    primaryMechanism: "Outcome Detachment",
+    recurrenceType: "Grundöffnung",
+    phase: 1,
+  },
+  contextType: "training",
+  ...overrides,
+});
+
+describe("personalization engine", () => {
+  it("falls back cleanly for missing profile and unknown sport", () => {
+    const out = buildMicroAdjustmentContext(baseInput());
+    expect(out.athleteAddressLine).toContain("Trainingstag");
+    expect(out.sportContextLine).toContain("deinen Sport");
+    expect(out.roleContextLine).toBeNull();
+    expect(out.microCue).toBeTruthy();
+  });
+
+  it("supports football without making it the only sport", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ profile: { sport: "Fußball", position: "Innenverteidiger" } }));
+    expect(out.sportContextLine).toContain("Teamsport");
+    expect(out.roleContextLine).toContain("Raum");
+    expect(out.sourceTags).toContain("sport:invasion_team_sport");
+  });
+
+  it("supports basketball as an invasion team sport", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ profile: { sport: "Basketball", position: "Point Guard" } }));
+    expect(out.sportContextLine).toContain("Teamsport");
+    expect(out.roleContextLine).toContain("Kommunikation");
+  });
+
+  it("supports boxing and combat sport language", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ profile: { sport: "Boxen", position: "Southpaw" } }));
+    expect(out.sportContextLine).toContain("Kampfsport");
+    expect(out.roleContextLine).toContain("Distanz");
+    expect(out.roleContextLine).toContain("Timing");
+  });
+
+  it("supports gymnastics and technical sport language", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ profile: { sport: "Turnen", position: "Boden" } }));
+    expect(out.sportContextLine).toContain("technische Sportarten");
+    expect(out.roleContextLine).toContain("Körperspannung");
+    expect(out.roleContextLine).toContain("Versuch");
+  });
+
+  it("supports endurance sport language", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ profile: { sport: "Schwimmen", position: "Freistil" } }));
+    expect(out.sportContextLine).toContain("Ausdauer");
+    expect(out.roleContextLine).toContain("Pace");
+    expect(out.roleContextLine).toContain("Atmung");
+  });
+
+  it("frames competition days with next-action language", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ contextType: "competition", profile: { sport: "Tennis" } }));
+    expect(out.athleteAddressLine).toContain("Wettkampftag");
+    expect(out.sportContextLine).toContain("nächste");
+    expect(out.microCue).toBe("Nur die nächste.");
+  });
+
+  it("frames rest days without extra pressure", () => {
+    const out = buildMicroAdjustmentContext(baseInput({ contextType: "rest", profile: { sport: "Triathlon" } }));
+    expect(out.athleteAddressLine).toContain("Ruhetag");
+    expect(out.sportContextLine).toContain("Regeneration");
+  });
+
+  it("prioritizes low energy and high stress check-in signals", () => {
+    const lowEnergy = buildMicroAdjustmentContext(baseInput({ checkin: { energy: 2, focus: 7, mood: 6, stress: 3 } }));
+    expect(lowEnergy.stateLine).toContain("niedriger Energie");
+    expect(lowEnergy.microCue).toBe("Klein und sauber.");
+
+    const highStress = buildMicroAdjustmentContext(baseInput({ checkin: { energy: 6, focus: 6, mood: 6, stress: 8 } }));
+    expect(highStress.stateLine).toContain("hoher Anspannung");
+    expect(highStress.microCue).toBe("Ein Anker reicht.");
+  });
+
+  it("uses strong questionnaire signals without diagnostic language", () => {
+    const resultFocus = buildMicroAdjustmentContext(baseInput({ questionnaireSignals: { resultFocus: 0.9 } }));
+    expect(resultFocus.profileLine).toContain("Ergebnis");
+    expect(resultFocus.profileLine).not.toMatch(/Diagnose|Problem|Angststörung|instabil/i);
+
+    const selfCriticism = buildMicroAdjustmentContext(baseInput({ questionnaireSignals: { selfCriticism: 0.85 } }));
+    expect(selfCriticism.profileLine).toContain("Selbstkritik");
+    expect(selfCriticism.microCue).toBe("Aktion, nicht Urteil.");
+  });
+
+  it("extracts repeated journal signals cautiously", () => {
+    const signals = extractJournalSignals([
+      "Nach dem Fehler hatte ich direkt Zweifel.",
+      "Ich dachte wieder: nicht gut genug nach diesem Fehler.",
+    ]);
+    const out = buildMicroAdjustmentContext(baseInput({ recentJournalSignals: signals }));
+    expect(out.journalPatternLine).toContain("häufiger");
+    expect(out.journalPatternLine).toContain("Hinweis");
+  });
+});

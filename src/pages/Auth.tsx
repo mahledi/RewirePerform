@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Users, Shield, UserPlus, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getOptionText } from "@/data/questionnaireData";
+import { getSportAnswerText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
@@ -83,12 +83,12 @@ const Auth = () => {
 
       if (qr?.answers && typeof qr.answers === "object") {
         const answers = qr.answers as Record<string, unknown>;
-        const s = answers["sport-01"] || null;
+        const s = getSportAnswerText(answers["sport-01"]);
         const position = answers["sport-02"] || null;
-        if (typeof s === "string") {
+        if (s) {
           await supabase
             .from("profiles")
-            .update({ sport: getOptionText("sport-01", s), team: typeof position === "string" ? position : null })
+            .update({ sport: s, team: typeof position === "string" ? position : null })
             .eq("id", userId);
         }
       }

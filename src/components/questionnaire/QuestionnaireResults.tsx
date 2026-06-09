@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
-import { getOptionText } from "@/data/questionnaireData";
+import { getSportAnswerText } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 import {
@@ -74,13 +74,13 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         const { getActiveInstance } = await import("@/lib/programInstance");
         const instance = await getActiveInstance(userId);
 
-        const sportAnswer = answers["sport-01"] as string || null;
+        const sportAnswer = getSportAnswerText(answers["sport-01"]);
         const positionAnswer = answers["sport-02"] as string || null;
         const levelAnswer = answers["sport-03"] as string || null;
         if (sportAnswer) {
           await supabase
             .from("profiles")
-            .update({ sport: getOptionText("sport-01", sportAnswer), team: positionAnswer })
+            .update({ sport: sportAnswer, team: positionAnswer })
             .eq("id", userId);
         }
 

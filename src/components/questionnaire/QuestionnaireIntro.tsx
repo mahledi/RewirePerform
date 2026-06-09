@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildQASyntheticAnswers } from "@/lib/qaSyntheticAnswers";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 import { toast } from "sonner";
-import { getOptionText } from "@/data/questionnaireData";
+import { getSportAnswerText } from "@/data/questionnaireData";
 import {
   ONBOARDING_V2_CATEGORIES,
   ONBOARDING_V2_INSTRUMENT_ID,
@@ -101,8 +101,9 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
       if (!user) throw new Error("Not authenticated");
 
       const answers = buildQASyntheticAnswers();
+      const sportAnswer = getSportAnswerText(answers["sport-01"]);
       const analysis = buildDeterministicQuestionnaireAnalysis(answers, {
-        sport: answers["sport-01"] as string,
+        sport: sportAnswer,
         position: answers["sport-02"] as string,
         level: answers["sport-03"] as string,
       });
@@ -110,7 +111,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
       await supabase
         .from("profiles")
         .update({
-          sport: getOptionText("sport-01", answers["sport-01"] as string),
+          sport: sportAnswer,
           team: answers["sport-02"] as string,
         })
         .eq("id", user.id);
