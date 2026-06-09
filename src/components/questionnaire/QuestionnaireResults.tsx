@@ -35,8 +35,8 @@ interface Analysis {
   }[];
   training_day_tasks: string[];
   rest_day_tasks: string[];
-  mental_score: number;
-  dominant_category: string;
+  score_visibility?: "internal_only";
+  measurement_boundary?: string;
   scores?: Record<string, unknown>;
 }
 

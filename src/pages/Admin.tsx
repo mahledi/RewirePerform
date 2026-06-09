@@ -74,6 +74,7 @@ type PresentationMetrics = {
   generated_at: string;
   include_test: boolean;
   privacy_level: string;
+  consent_scope?: string;
   claim_boundary: string;
   summary: Record<string, number | null>;
   activity: Record<string, number | null>;
@@ -88,6 +89,7 @@ type StudyOverview = {
   generated_at: string;
   include_test: boolean;
   privacy_level: string;
+  consent_scope?: string;
   claim_boundary: string;
   summary: Record<string, number | boolean | null>;
   activation: Record<string, number | null>;
@@ -210,15 +212,15 @@ const Admin = () => {
   }, [isMobile, didInitDevice]);
 
   const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
-    { id: "overview", title: "Übersicht", description: "Aggregierte Programm- und Systemkennzahlen.", icon: LayoutGrid },
+    { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
     { id: "days", title: "Tage", description: "Spieler-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzelspieler.", icon: UsersIcon },
-    { id: "evidence", title: "Wirksamkeit", description: "Pre/Mid/Post-Veränderungen.", icon: BarChart3 },
-    { id: "presentation", title: "Präsentation", description: "Kennzahlen für Stakeholder.", icon: Presentation },
-    { id: "study", title: "Study", description: "Launch-Study-Übersicht und Snapshots.", icon: FlaskConical },
+    { id: "evidence", title: "Coach-Wirkung", description: "Teamweite Pre/Mid/Post-Readiness und beobachtete Veränderung.", icon: BarChart3 },
+    { id: "presentation", title: "Pilot-Reporting", description: "Consent-aware Kennzahlen für Präsentationen.", icon: Presentation },
+    { id: "study", title: "Wirkungsdaten", description: "Study-Übersicht, Missingness und Snapshots.", icon: FlaskConical },
     { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
-    { id: "exports", title: "Exporte", description: "CSV/JSON Datenexporte.", icon: FileDown },
-    { id: "health", title: "Systemstatus", description: "Systemgesundheit und Launch-Ops.", icon: HeartPulse },
+    { id: "exports", title: "Exportpakete", description: "Gruppierte, privacy-sichere CSV/JSON-Pakete.", icon: FileDown },
+    { id: "health", title: "Datenqualität & System", description: "Operative Vollständigkeit, Systemgesundheit und Launch-Ops.", icon: HeartPulse },
   ];
   const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
   const showMobileHome = isMobile && tab === "home";
@@ -319,6 +321,7 @@ const Admin = () => {
     export_type: "launch_study_v1",
     include_test: study.include_test,
     privacy_level: study.privacy_level,
+    consent_scope: study.consent_scope,
     claim_boundary: study.claim_boundary,
     included_exports: study.export_catalog,
     privacy_exclusions: study.privacy_exclusions,
@@ -438,12 +441,12 @@ const Admin = () => {
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
-            <TabsTrigger value="evidence">Wirksamkeit</TabsTrigger>
-            <TabsTrigger value="presentation">Präsentation</TabsTrigger>
-            <TabsTrigger value="study">Study</TabsTrigger>
+            <TabsTrigger value="evidence">Coach-Wirkung</TabsTrigger>
+            <TabsTrigger value="presentation">Pilot-Reporting</TabsTrigger>
+            <TabsTrigger value="study">Wirkungsdaten</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="exports">Exporte</TabsTrigger>
-            <TabsTrigger value="health">Systemstatus</TabsTrigger>
+            <TabsTrigger value="exports">Exportpakete</TabsTrigger>
+            <TabsTrigger value="health">Datenqualität</TabsTrigger>
           </TabsList>
 
 
@@ -452,26 +455,50 @@ const Admin = () => {
             {loading || !overview ? (
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <StatCard label="Nutzer gesamt" value={overview.total_users} />
-                <StatCard label="Athleten" value={overview.total_athletes} />
-                <StatCard label="Coaches" value={overview.total_coaches} />
-                <StatCard label="Teams" value={overview.total_teams} />
-                <StatCard label="Aktive Teams" value={overview.active_teams} />
-                <StatCard label="Abgeschlossene Tage" value={overview.total_completed_days} />
-                <StatCard label="Check-ins" value={overview.total_checkins} />
-                <StatCard label="Assessments" value={overview.total_assessments} />
-                <StatCard label="Comprehension Checks" value={overview.total_comprehension} />
-                <StatCard
-                  label="Ø Adherence"
-                  value={formatPercent(overview.avg_adherence)}
-                />
-                <StatCard
-                  label="Ø Comprehension"
-                  value={formatPercent(overview.avg_comprehension_score)}
-                />
-                <StatCard label="Admins" value={overview.total_admins} />
-              </div>
+              <>
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="grid gap-3 p-4 text-sm md:grid-cols-3">
+                    <div>
+                      <p className="font-medium text-foreground">Coach-Wirkung</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        Teamweite Readiness, Pre/Mid/Post und beobachtete Veränderung. Keine Einzelprofile.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">Pilot-Reporting</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        Präsentationsfähige Kennzahlen aus freiwillig freigegebenen, aggregierten Daten.
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">Datenqualität</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        Fehlende Rollen, Programmläufe, Messfenster und technische Incidents vor Pilot-Terminen prüfen.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <StatCard label="Nutzer gesamt" value={overview.total_users} />
+                  <StatCard label="Athleten" value={overview.total_athletes} />
+                  <StatCard label="Coaches" value={overview.total_coaches} />
+                  <StatCard label="Teams" value={overview.total_teams} />
+                  <StatCard label="Aktive Teams" value={overview.active_teams} />
+                  <StatCard label="Abgeschlossene Tage" value={overview.total_completed_days} />
+                  <StatCard label="Check-ins" value={overview.total_checkins} />
+                  <StatCard label="Assessments" value={overview.total_assessments} />
+                  <StatCard label="Comprehension Checks" value={overview.total_comprehension} />
+                  <StatCard
+                    label="Ø Adherence"
+                    value={formatPercent(overview.avg_adherence)}
+                  />
+                  <StatCard
+                    label="Ø Comprehension"
+                    value={formatPercent(overview.avg_comprehension_score)}
+                  />
+                  <StatCard label="Admins" value={overview.total_admins} />
+                </div>
+              </>
             )}
           </TabsContent>
 
@@ -636,6 +663,11 @@ const Admin = () => {
                         <h3 className="text-sm font-medium mb-3">Privacy Boundary</h3>
                         <div className="space-y-2">
                           <Badge variant="outline">{presentation.privacy_level}</Badge>
+                          {presentation.consent_scope && (
+                            <p className="text-xs text-primary leading-relaxed">
+                              Consent-Scope: {presentation.consent_scope}
+                            </p>
+                          )}
                           <p className="text-xs text-muted-foreground leading-relaxed">
                             {presentation.claim_boundary}
                           </p>
@@ -770,7 +802,14 @@ const Admin = () => {
                           <h3 className="text-sm font-medium">Kohorten</h3>
                           <p className="text-xs text-muted-foreground">QA, Demo, Pilot und Production bleiben getrennt. Sensible Aggregate erst ab n ≥ 5.</p>
                         </div>
-                        <Badge variant="outline">{study.privacy_level}</Badge>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="outline">{study.privacy_level}</Badge>
+                          {study.consent_scope && (
+                            <Badge variant="secondary" className="text-[10px]">
+                              Consent-aware
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       <div className="overflow-x-auto">
                         <Table>
@@ -829,6 +868,11 @@ const Admin = () => {
 
                     <div className="rounded-lg border border-border/60 p-4">
                       <h3 className="text-sm font-medium mb-2">Claim Boundary</h3>
+                      {study.consent_scope && (
+                        <p className="mb-2 text-xs text-primary leading-relaxed">
+                          Consent-Scope: {study.consent_scope}
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground leading-relaxed">{study.claim_boundary}</p>
                       <p className="text-xs text-muted-foreground mt-2">
                         Ausgeschlossen: {study.privacy_exclusions.join(", ")}.
@@ -898,102 +942,140 @@ const Admin = () => {
                   CSV-Exporte enthalten ausschließlich aggregierte/anonymisierte Daten. Keine Journale, keine freien Reflexionen.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid gap-2 md:grid-cols-2">
-                  <Button variant="outline" onClick={() => downloadCsv("teams_summary.csv",
-                    teams.map(t => ({
-                      team: t.name, sport: t.sport, coach: t.coach_name,
-                      members: t.member_count, athletes: t.athlete_count,
-                      pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
-                      avg_adherence: t.avg_completion, avg_days_completed: t.avg_days_completed,
-                      evidence_status: t.evidence_status,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Teams-Übersicht
-                  </Button>
-                  <Button variant="outline" onClick={() => downloadCsv("evidence_aggregate.csv",
-                    teams.map(t => ({
-                      team: t.name, athletes: t.athlete_count,
-                      pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
-                      evidence_status: t.evidence_status,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Wirksamkeit aggregiert
-                  </Button>
-                  <Button variant="outline" onClick={() => downloadCsv("adherence.csv",
-                    teams.map(t => ({
-                      team: t.name, athletes: t.athlete_count,
-                      avg_completion_rate: t.avg_completion,
-                      avg_days_completed: t.avg_days_completed,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Adherence
-                  </Button>
-                  <Button variant="outline" onClick={() => downloadCsv("assessments_aggregate.csv",
-                    teams.map(t => ({
-                      team: t.name, pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Assessments aggregiert
-                  </Button>
-                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("program_progress.csv",
-                    presentation.team_summaries.map(t => ({
-                      team: t.team,
-                      sport: t.sport,
-                      athlete_count: t.athlete_count,
-                      avg_completion_rate: t.avg_completion_rate,
-                      avg_days_completed: t.avg_days_completed,
-                      avg_days_available: t.avg_days_available,
-                      avg_current_streak: t.avg_current_streak,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Program Progress
-                  </Button>
-                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("checkin_activity.csv",
-                    presentation.team_summaries.map(t => ({
-                      team: t.team,
-                      athlete_count: t.athlete_count,
-                      checkins: t.checkins,
-                      completed_days: t.completed_days,
-                      journal_entries_count_only: t.journal_entries_count_only,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Check-in Aktivität
-                  </Button>
-                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("comprehension_summary.csv",
-                    presentation.team_summaries.map(t => ({
-                      team: t.team,
-                      athlete_count: t.athlete_count,
-                      comprehension_checks: t.comprehension_checks,
-                      avg_comprehension: t.avg_comprehension,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Verständnis
-                  </Button>
-                  <Button variant="outline" disabled={!health} onClick={() => health && downloadCsv("system_health.csv", [health as unknown as Record<string, unknown>])}>
-                    <Download className="w-4 h-4 mr-2" />System Health
-                  </Button>
-                  <Button variant="outline" disabled={!presentation} onClick={() => presentation && downloadJson("presentation_metrics.json", presentation)}>
-                    <Download className="w-4 h-4 mr-2" />Presentation JSON
-                  </Button>
-                  <Button variant="outline" disabled={!study} onClick={() => study && downloadJson("study_summary.json", study)}>
-                    <Download className="w-4 h-4 mr-2" />Study Summary
-                  </Button>
-                  <Button variant="outline" disabled={!study} onClick={() => study && downloadCsv("cohort_metrics.csv", study.team_summaries)}>
-                    <Download className="w-4 h-4 mr-2" />Study Cohort Metrics
-                  </Button>
-                  <Button variant="outline" disabled={!study} onClick={() => study && downloadCsv("data_quality.csv", [study.data_quality])}>
-                    <Download className="w-4 h-4 mr-2" />Study Data Quality
-                  </Button>
-                  <Button variant="outline" onClick={() => downloadCsv("feedback.csv",
-                    feedback.map(f => ({
-                      created_at: f.created_at, type: f.type, status: f.status,
-                      message: f.message, admin_note: f.admin_note,
-                    }))
-                  )}>
-                    <Download className="w-4 h-4 mr-2" />Feedback
-                  </Button>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-sm font-medium text-foreground">Export-Grenze</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Pilot- und Study-Exporte sind consent-aware und enthalten nur aggregierte Kennzahlen.
+                    Keine E-Mails, keine Journaltexte, keine freien Antworten, keine Rohantworten und keine individuellen psychologischen Scores.
+                  </p>
                 </div>
+
+                <div className="grid gap-3 lg:grid-cols-3">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <h3 className="text-sm font-medium">Pilot-Reporting</h3>
+                    <p className="mb-3 mt-1 text-xs text-muted-foreground">
+                      Für Vereinsgespräche: Nutzung, Fortschritt und Team-Summaries.
+                    </p>
+                    <div className="space-y-2">
+                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadJson("presentation_metrics.json", presentation)}>
+                        <Download className="w-4 h-4 mr-2" />Presentation JSON
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("program_progress.csv",
+                        presentation.team_summaries.map(t => ({
+                          team: t.team,
+                          sport: t.sport,
+                          athlete_count: t.athlete_count,
+                          avg_completion_rate: t.avg_completion_rate,
+                          avg_days_completed: t.avg_days_completed,
+                          avg_days_available: t.avg_days_available,
+                          avg_current_streak: t.avg_current_streak,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Program Progress
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("checkin_activity.csv",
+                        presentation.team_summaries.map(t => ({
+                          team: t.team,
+                          athlete_count: t.athlete_count,
+                          checkins: t.checkins,
+                          completed_days: t.completed_days,
+                          journal_entries_count_only: t.journal_entries_count_only,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Check-in Aktivität
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("comprehension_summary.csv",
+                        presentation.team_summaries.map(t => ({
+                          team: t.team,
+                          athlete_count: t.athlete_count,
+                          comprehension_checks: t.comprehension_checks,
+                          avg_comprehension: t.avg_comprehension,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Verständnis
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <h3 className="text-sm font-medium">Wirkungsdaten / Study</h3>
+                    <p className="mb-3 mt-1 text-xs text-muted-foreground">
+                      Für Auswertung: Messfenster, Missingness und aggregierte Cohort-Daten.
+                    </p>
+                    <div className="space-y-2">
+                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("teams_summary.csv",
+                        teams.map(t => ({
+                          team: t.name, sport: t.sport, coach: t.coach_name,
+                          members: t.member_count, athletes: t.athlete_count,
+                          pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
+                          avg_adherence: t.avg_completion, avg_days_completed: t.avg_days_completed,
+                          evidence_status: t.evidence_status,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Teams-Übersicht
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("evidence_aggregate.csv",
+                        teams.map(t => ({
+                          team: t.name, athletes: t.athlete_count,
+                          pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
+                          evidence_status: t.evidence_status,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Wirksamkeit aggregiert
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadJson("study_summary.json", study)}>
+                        <Download className="w-4 h-4 mr-2" />Study Summary
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadCsv("cohort_metrics.csv", study.team_summaries)}>
+                        <Download className="w-4 h-4 mr-2" />Study Cohort Metrics
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadCsv("measurement_windows.csv", study.measurement_windows)}>
+                        <Download className="w-4 h-4 mr-2" />Measurement Windows
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <h3 className="text-sm font-medium">Operative Datenqualität</h3>
+                    <p className="mb-3 mt-1 text-xs text-muted-foreground">
+                      Für interne Prüfung vor Pilot- oder Präsentationsterminen.
+                    </p>
+                    <div className="space-y-2">
+                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("adherence.csv",
+                        teams.map(t => ({
+                          team: t.name, athletes: t.athlete_count,
+                          avg_completion_rate: t.avg_completion,
+                          avg_days_completed: t.avg_days_completed,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Adherence
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("assessments_aggregate.csv",
+                        teams.map(t => ({
+                          team: t.name, pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Assessments aggregiert
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadCsv("data_quality.csv", [study.data_quality])}>
+                        <Download className="w-4 h-4 mr-2" />Study Data Quality
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" disabled={!health} onClick={() => health && downloadCsv("system_health.csv", [health as unknown as Record<string, unknown>])}>
+                        <Download className="w-4 h-4 mr-2" />System Health
+                      </Button>
+                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("feedback.csv",
+                        feedback.map(f => ({
+                          created_at: f.created_at, type: f.type, status: f.status,
+                          message: f.message, admin_note: f.admin_note,
+                        }))
+                      )}>
+                        <Download className="w-4 h-4 mr-2" />Feedback intern
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 <p className="text-xs text-muted-foreground pt-2">
                   Exporte enthalten keine individuellen Mood/Energy-Verläufe, keine Assessment-Antworten und keine Reflexionen.
                 </p>
@@ -1005,8 +1087,8 @@ const Admin = () => {
           <TabsContent value="health" className="space-y-4 mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Systemstatus</CardTitle>
-                <CardDescription>Datenqualität und operationelle Hinweise.</CardDescription>
+                <CardTitle>Datenqualität & Systemstatus</CardTitle>
+                <CardDescription>Operative Vollständigkeit, technische Gesundheit und Launch-Ops.</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading || !health ? <Loader2 className="w-5 h-5 animate-spin" /> : (

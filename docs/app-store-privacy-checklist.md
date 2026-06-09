@@ -98,3 +98,4 @@ Vor finalem Submit erneut prüfen:
 - Settings können Zustimmung aktivieren/deaktivieren.
 - Admin-Präsentationsmetriken zählen nur zugestimmte Nutzer.
 - Study-Snapshots enthalten `consent_scope` in den Metadaten.
+- Der Fragebogen-Score bleibt eine interne Fortschrittsbaseline und wird Spielern nicht als Mental Score, Diagnose oder Ranking angezeigt.
