@@ -101,14 +101,6 @@ export const evidenceBars = [
   { label: "Druckregulation", pre: 39, mid: 54, post: 62 },
 ];
 
-export const timelineSteps = [
-  "Science Bite ordnet den Mechanismus ein",
-  "Heute für dich rahmt den Tag",
-  "Check-in setzt den Tageszustand",
-  "Denkaufgabe trainiert die Anwendung",
-  "Verständnis und Journal schließen ab",
-];
-
 export const coachSees = [
   "Teilnahme und Adherence",
   "aggregierte Team-Signale",

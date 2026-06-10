@@ -5,7 +5,7 @@ import { CoachDashboardDemo } from "./components/CoachDashboardDemo";
 import { MockDesktopFrame, MockPhoneFrame } from "./components/DemoFrames";
 import { PlayerFlowDemo } from "./components/PlayerFlowDemo";
 import { PrivacyTrustSection } from "./components/PrivacyTrustSection";
-import { demoHighlights, timelineSteps } from "./data/demoData";
+import { demoHighlights } from "./data/demoData";
 
 const navItems = [
   { label: "Überblick", target: "overview" },
@@ -128,34 +128,12 @@ const DemoPage = () => {
       </section>
 
       <PlayerFlowDemo />
-      <DayInSystemSection />
       <CoachDashboardDemo />
       <PrivacyTrustSection />
       <FinalCTA />
     </main>
   );
 };
-
-const DayInSystemSection = () => (
-  <section className="py-20">
-    <div className="container mx-auto px-6">
-      <div className="mx-auto max-w-3xl text-center">
-        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-primary">Alltagspraxis</p>
-        <h2 className="font-heading text-3xl font-bold md:text-5xl">Ein Tag im System.</h2>
-      </div>
-      <div className="mt-10 grid gap-4 md:grid-cols-5">
-        {timelineSteps.map((step, index) => (
-          <div key={step} className="rounded-3xl border border-border bg-card/70 p-5">
-            <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-              {index + 1}
-            </div>
-            <p className="text-sm leading-relaxed text-muted-foreground">{step}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
 
 const FinalCTA = () => {
   const navigate = useNavigate();
