@@ -22,6 +22,7 @@ interface QuestionnaireFlowProps {
   initialCategoryIndex?: number;
   initialGlobalIndex?: number;
   draftId?: string | null;
+  onPauseExit?: () => void | Promise<void>;
 }
 
 type FlowState =
@@ -38,6 +39,7 @@ const QuestionnaireFlow = ({
   initialCategoryIndex = 0,
   initialGlobalIndex,
   draftId = null,
+  onPauseExit,
 }: QuestionnaireFlowProps) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>(initialAnswers);
@@ -353,7 +355,11 @@ const QuestionnaireFlow = ({
       title: "Fortschritt gespeichert",
       description: "Du kannst jederzeit zurückkommen und weitermachen.",
     });
-    navigate("/dashboard");
+    if (onPauseExit) {
+      await onPauseExit();
+      return;
+    }
+    navigate("/auth?switch=1", { replace: true });
   };
 
   // Auto-save on answer change (debounced, silent)

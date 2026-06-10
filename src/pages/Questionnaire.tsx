@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import QuestionnaireIntro from "@/components/questionnaire/QuestionnaireIntro";
 import QuestionnaireFlow from "@/components/questionnaire/QuestionnaireFlow";
@@ -30,6 +30,7 @@ const Questionnaire = () => {
   const [phase, setPhase] = useState<Phase>("loading");
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [draft, setDraft] = useState<DraftState | null>(null);
+  const [exiting, setExiting] = useState(false);
 
   // Load any in-progress draft on mount
   useEffect(() => {
@@ -142,6 +143,45 @@ const Questionnaire = () => {
     setPhase("flow");
   };
 
+  const clearCachedAuthState = () => {
+    try {
+      const cachedUserId = window.localStorage.getItem("cached_user_id");
+      window.localStorage.removeItem("cached_user_role");
+      window.localStorage.removeItem("cached_user_id");
+      if (cachedUserId) {
+        window.localStorage.removeItem(`cached_user_role:${cachedUserId}`);
+      }
+    } catch {
+      // localStorage can be unavailable in strict browser modes.
+    }
+  };
+
+  const handleSignOutToStart = async () => {
+    if (exiting) return;
+    setExiting(true);
+    try {
+      await supabase.auth.signOut();
+      clearCachedAuthState();
+      navigate("/", { replace: true });
+    } finally {
+      setExiting(false);
+    }
+  };
+
+  const ExitButton = () => (
+    <button
+      type="button"
+      onClick={handleSignOutToStart}
+      disabled={exiting}
+      className="fixed right-4 top-[calc(env(safe-area-inset-top)+1rem)] z-[70] inline-flex items-center gap-2 rounded-xl border border-border bg-background/90 px-3 py-2 text-xs font-medium text-muted-foreground shadow-lg backdrop-blur-xl transition-colors hover:text-foreground disabled:opacity-60 sm:right-6 sm:px-4 sm:text-sm"
+      aria-label="Abmelden und zur Startseite"
+    >
+      {exiting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}
+      <span>Abmelden</span>
+      <span className="hidden sm:inline">&amp; Startseite</span>
+    </button>
+  );
+
   if (phase === "loading") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -153,6 +193,7 @@ const Questionnaire = () => {
   if (phase === "resume" && draft) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <ExitButton />
         <div className="max-w-md w-full text-center">
           <h1 className="font-heading text-3xl font-bold mb-4">
             Willkommen zurück.
@@ -184,6 +225,7 @@ const Questionnaire = () => {
 
   return (
     <>
+      {phase !== "flow" && <ExitButton />}
       {phase === "intro" && (
         <QuestionnaireIntro onStart={() => setPhase("flow")} />
       )}
@@ -195,6 +237,7 @@ const Questionnaire = () => {
           draftId={draft?.id ?? null}
           onComplete={handleComplete}
           onBack={() => setPhase("intro")}
+          onPauseExit={handleSignOutToStart}
         />
       )}
       {phase === "results" && <QuestionnaireResults answers={answers} />}
