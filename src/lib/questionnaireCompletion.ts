@@ -27,11 +27,14 @@ const onboardingAnswerCount = (answers: unknown): number => {
   return ONBOARDING_V2_QUESTIONS.filter((question) => hasValue(answerMap[question.id])).length;
 };
 
+export const hasCompleteOnboardingAnswerSet = (answers: unknown): boolean =>
+  onboardingAnswerCount(answers) >= ONBOARDING_V2_QUESTIONS.length;
+
 export const hasValidCompletedOnboarding = (row: QuestionnaireCompletionRow | null | undefined): boolean => {
   if (!row?.is_complete || !row.analysis) return false;
 
   if (row.instrument_id === ONBOARDING_V2_INSTRUMENT_ID) {
-    return onboardingAnswerCount(row.answers) >= ONBOARDING_V2_QUESTIONS.length;
+    return hasCompleteOnboardingAnswerSet(row.answers);
   }
 
   // Legacy rows had no instrument id. They must still contain a substantial answer set;

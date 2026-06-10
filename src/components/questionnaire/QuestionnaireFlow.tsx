@@ -289,51 +289,15 @@ const QuestionnaireFlow = ({
       setSubmitting(true);
       setSubmitError(null);
       setSaveState("saving");
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
-        const { getActiveInstance } = await import("@/lib/programInstance");
-        const instance = await getActiveInstance(user.id);
-        const payload = {
-            answers: answers as Json,
-            is_complete: true,
-            last_category_index: categories.length,
-            instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
-            questionnaire_version: ONBOARDING_V2_VERSION,
-            timing: "pre",
-            program_instance_id: instance?.id ?? null,
-        };
-
-        if (draftIdRef.current) {
-          const { error } = await supabase
-            .from("questionnaire_responses")
-            .update(payload)
-            .eq("id", draftIdRef.current);
-          if (error) throw error;
-        } else {
-          const { data, error } = await supabase
-            .from("questionnaire_responses")
-            .insert({
-              ...payload,
-              user_id: user.id,
-              session_id: user.id,
-              scores: {},
-            })
-            .select("id")
-            .single();
-          if (error) throw error;
-          draftIdRef.current = data.id;
-        }
-        clearLocalDraft(QUESTIONNAIRE_DRAFT_KEY);
-        setSaveState("saved");
-        onComplete(answers);
-      } catch (err) {
-        console.error("Final questionnaire save error:", err);
-        setSaveState("error");
-        setSubmitError("Deine Antworten sind lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
-      } finally {
-        setSubmitting(false);
-      }
+      writeLocalDraft(QUESTIONNAIRE_DRAFT_KEY, {
+        answers,
+        lastCategoryIndex: categories.length,
+        lastGlobalIndex: totalQuestions - 1,
+        savedAt: new Date().toISOString(),
+      });
+      setSaveState("saved");
+      setSubmitting(false);
+      onComplete(answers);
       return;
     }
 
