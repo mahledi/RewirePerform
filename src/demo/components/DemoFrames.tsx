@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, Lock, Target, Trophy } from "lucide-react";
+import { Brain, Clock, Lightbulb, Lock, Target, Trophy } from "lucide-react";
 
 export const MockPhoneFrame = () => (
   <div className="mx-auto w-full max-w-[340px] rounded-[2rem] border border-white/15 bg-black/60 p-3 shadow-2xl">
@@ -7,26 +7,35 @@ export const MockPhoneFrame = () => (
       <div className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-primary">Tag 12</p>
-          <h3 className="mt-1 font-heading text-2xl font-bold">Fehlererholung</h3>
+          <h3 className="mt-1 font-heading text-2xl font-bold">Urteil zu Information</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Heute trainierst du die Rückkehr zur nächsten Aktion.
+            Science Bite, Tagesrahmen, Check-in und Denkaufgabe.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center gap-2 text-primary">
+            <Brain className="h-4 w-4" />
+            <span className="text-sm font-semibold">Science Bite</span>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Ein Fehler ist zuerst Information, nicht Identität.
           </p>
         </div>
         <div className="rounded-2xl border border-primary/25 bg-primary/10 p-4">
           <div className="flex items-center gap-2 text-primary">
             <Target className="h-4 w-4" />
-            <span className="text-sm font-semibold">Micro Cue</span>
+            <span className="text-sm font-semibold">Heute für dich</span>
           </div>
           <p className="mt-3 text-sm leading-relaxed">
-            Nach jedem Fehler: ausatmen, Blick heben, nächste Aufgabe benennen.
+            Suche heute nach der nächsten nutzbaren Information.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            ["Energie", "mittel"],
-            ["Fokus", "stabil"],
-            ["Druck", "erhöht"],
-            ["Bereit", "ja"],
+            ["Energie", "6/10"],
+            ["Fokus", "7/10"],
+            ["Druck", "6/10"],
+            ["Bereit", "6/10"],
           ].map(([label, value]) => (
             <div key={label} className="rounded-xl border border-border bg-card p-3">
               <p className="text-xs text-muted-foreground">{label}</p>
@@ -36,11 +45,11 @@ export const MockPhoneFrame = () => (
         </div>
         <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <p className="font-heading font-semibold">Tagesaufgabe bereit</p>
+            <Lightbulb className="h-4 w-4 text-primary" />
+            <p className="font-heading font-semibold">Denkaufgabe</p>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            2 Minuten vor dem Training. Ein Mechanismus, eine Handlung.
+            Warum heute · Wann aktiv · Reframing · Self-Talk
           </p>
         </div>
       </div>
@@ -98,7 +107,7 @@ export const MockDesktopFrame = () => (
             <p className="font-heading font-semibold">Heutiger Coach-Impuls</p>
           </div>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            Nach Fehlern heute nicht sofort korrigieren. Erst die nächste Aktion benennen lassen.
+            Nach Fehlern heute erst fragen: Welche Information war nutzbar? Dann die nächste Aktion benennen lassen.
           </p>
           <div className="mt-4 flex items-start gap-2 rounded-xl border border-border bg-background/70 p-3 text-sm">
             <Lock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -109,4 +118,3 @@ export const MockDesktopFrame = () => (
     </div>
   </div>
 );
-

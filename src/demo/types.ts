@@ -9,11 +9,6 @@ export type DemoFlowStep = {
 
 export type DemoCheckinKey = "energy" | "focus" | "pressure" | "readiness";
 
-export type DemoCheckinOption = {
-  label: string;
-  value: "low" | "medium" | "high";
-};
-
 export type DemoCoachTabId = "overview" | "readiness" | "evidence" | "toolkit" | "teams";
 
 export type DemoCoachTab = {
@@ -27,4 +22,3 @@ export type DemoMetric = {
   value: string;
   detail: string;
 };
-
