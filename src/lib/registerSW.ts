@@ -42,7 +42,22 @@ export async function registerSW() {
 
   try {
     const { registerSW: register } = await import("virtual:pwa-register");
-    register({ immediate: true });
+    let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined;
+    updateSW = register({
+      immediate: true,
+      onNeedRefresh() {
+        void updateSW?.(true);
+      },
+      onRegistered(registration) {
+        if (!registration) return;
+        const interval = window.setInterval(() => {
+          if (document.visibilityState === "visible") {
+            void registration.update();
+          }
+        }, 60 * 60 * 1000);
+        window.addEventListener("beforeunload", () => window.clearInterval(interval), { once: true });
+      },
+    });
   } catch (err) {
     console.warn("[pwa] SW registration failed:", err);
   }
