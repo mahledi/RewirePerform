@@ -7,7 +7,7 @@ import QuestionnaireResults from "@/components/questionnaire/QuestionnaireResult
 import { supabase } from "@/integrations/supabase/client";
 import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
 import { clearLocalDraft, readLocalDraft } from "@/lib/localDrafts";
-import { hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
+import { hasCompleteOnboardingAnswerSet, hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
 
 type Phase = "loading" | "intro" | "resume" | "flow" | "results";
 
@@ -71,6 +71,16 @@ const Questionnaire = () => {
       if ((completedResponses ?? []).some(hasValidCompletedOnboarding)) {
         clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
         navigate("/dashboard", { replace: true });
+        return;
+      }
+
+      const recoverableComplete = (completedResponses ?? []).find((response) =>
+        response.instrument_id === ONBOARDING_V2_INSTRUMENT_ID &&
+        hasCompleteOnboardingAnswerSet(response.answers)
+      );
+      if (recoverableComplete?.answers) {
+        setAnswers(recoverableComplete.answers as Record<string, string | string[] | number>);
+        setPhase("results");
         return;
       }
 
