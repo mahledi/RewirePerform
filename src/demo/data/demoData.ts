@@ -7,69 +7,77 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import type { DemoCheckinKey, DemoCoachTab, DemoCheckinOption, DemoFlowStep, DemoMetric } from "../types";
+import type { DemoCheckinKey, DemoCoachTab, DemoFlowStep, DemoMetric } from "../types";
 
 export const demoFlowSteps: DemoFlowStep[] = [
   {
-    id: "context",
+    id: "science",
     eyebrow: "Step 1",
-    title: "Tageskontext",
-    description: "Der Athlet sieht, welcher Mechanismus heute trainiert wird und was vor dem Training zählt.",
+    title: "Science Bite",
+    description: "Der Tag startet mit einem kurzen Mechanismus, der die Denkaufgabe fachlich einordnet.",
+  },
+  {
+    id: "today",
+    eyebrow: "Step 2",
+    title: "Heute für dich",
+    description: "Der Athlet bekommt einen ruhigen Tagesrahmen, ohne dass Tasks oder Inhalte verändert werden.",
   },
   {
     id: "checkin",
-    eyebrow: "Step 2",
+    eyebrow: "Step 3",
     title: "Check-in",
-    description: "Ein kurzer Zustand setzt den Tagesrahmen, ohne private Einzelprofile für den Coach zu öffnen.",
+    description: "Der echte Flow arbeitet mit Skalen und Tageszustand, nicht mit einem privaten Coach-Profil.",
   },
   {
     id: "task",
-    eyebrow: "Step 3",
-    title: "Aufgabe",
-    description: "Eine klare mentale Aufgabe übersetzt den Mechanismus in eine konkrete Handlung.",
-  },
-  {
-    id: "science",
     eyebrow: "Step 4",
-    title: "Science Bite",
-    description: "Kurz, ruhig und mechanismusnah: warum diese Aufgabe im Training relevant ist.",
+    title: "Denkaufgabe",
+    description: "Die Aufgabe besteht aus Warum, Auslöser, konkreter Handlung, Reframing und Self-Talk.",
   },
   {
     id: "journal",
     eyebrow: "Step 5",
-    title: "Reflexion",
-    description: "Private Reflexion schließt den Tag ab. Der Coach sieht keine einzelnen Journaltexte.",
+    title: "Verständnis & Reflexion",
+    description: "Verständnis-Check und Journal schließen den Tag ab; private Texte bleiben privat.",
   },
 ];
 
-export const checkinOptions: Record<DemoCheckinKey, DemoCheckinOption[]> = {
-  energy: [
-    { label: "niedrig", value: "low" },
-    { label: "mittel", value: "medium" },
-    { label: "hoch", value: "high" },
-  ],
-  focus: [
-    { label: "unklar", value: "low" },
-    { label: "stabil", value: "medium" },
-    { label: "klar", value: "high" },
-  ],
-  pressure: [
-    { label: "niedrig", value: "low" },
-    { label: "mittel", value: "medium" },
-    { label: "hoch", value: "high" },
-  ],
-  readiness: [
-    { label: "schwer", value: "low" },
-    { label: "bereit", value: "medium" },
-    { label: "frisch", value: "high" },
-  ],
+export const checkinDefaults: Record<DemoCheckinKey, number> = {
+  energy: 6,
+  focus: 7,
+  pressure: 6,
+  readiness: 6,
 };
 
 export const checkinLabels: Record<DemoCheckinKey, string> = {
   energy: "Energie",
-  focus: "Fokus",
+  focus: "Fokusklarheit",
   pressure: "Druck",
   readiness: "Körperliche Bereitschaft",
+};
+
+export const demoDailyTask = {
+  title: "Information statt Urteil",
+  why:
+    "Diese Aufgabe trainiert, einen Fehler nicht sofort als Bewertung über dich zu lesen, sondern als konkrete Information für die nächste Handlung.",
+  trigger:
+    "Wenn heute im Training ein Fehler passiert oder du merkst, dass dein Kopf im Urteil hängen bleibt.",
+  concreteAction:
+    "Benenne innerlich eine Sache, die du aus der Situation lernen kannst, und richte dich dann auf die nächste kontrollierbare Aktion aus.",
+  reframeStep: {
+    trigger: "Wenn ein Fehler passiert, will dein Kopf daraus schnell ein Urteil machen.",
+    reframe: "Ein Fehler ist zuerst Information, nicht Identität.",
+    anchor: "Heute gilt: Ich suche die nächste nutzbare Information.",
+  },
+  selfTalk: "Information, dann nächste Aktion.",
+  microReframe:
+    "Du musst den Fehler nicht schönreden. Du nutzt ihn nur präziser, damit er nicht länger als nötig dein Verhalten steuert.",
+};
+
+export const demoScienceBite = {
+  title: "Dein Gehirn bewertet schneller, als du bewusst denkst.",
+  body:
+    "Nach Fehlern springt Aufmerksamkeit oft zu Bedeutung und Bewertung: Was war das? Was sagt das über mich? RewirePerform trainiert an solchen Tagen den Wechsel von Urteil zu Information. Dadurch wird die nächste Handlung wieder greifbarer.",
 };
 
 export const coachTabs: DemoCoachTab[] = [
@@ -94,11 +102,11 @@ export const evidenceBars = [
 ];
 
 export const timelineSteps = [
-  "Athlet öffnet Daily Flow",
-  "Check-in setzt den Tageskontext",
-  "Aufgabe trainiert einen Mechanismus",
-  "Science Bite erklärt den Hintergrund",
-  "Journal schließt den Tag ruhig ab",
+  "Science Bite ordnet den Mechanismus ein",
+  "Heute für dich rahmt den Tag",
+  "Check-in setzt den Tageszustand",
+  "Denkaufgabe trainiert die Anwendung",
+  "Verständnis und Journal schließen ab",
 ];
 
 export const coachSees = [
@@ -122,4 +130,3 @@ export const demoHighlights = [
   { Icon: ShieldCheck, title: "Rollenbasiert", text: "Orientierung für Coaches, Privatsphäre für Athleten" },
   { Icon: BarChart3, title: "Entwicklung sichtbar", text: "Beispielwerte, Missingness und Fortschritt ohne Rohinhalte" },
 ];
-
