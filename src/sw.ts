@@ -4,10 +4,12 @@ import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
+import { clientsClaim } from "workbox-core";
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
 self.skipWaiting();
+clientsClaim();
 cleanupOutdatedCaches();
 
 // Precache the build output (HTML, JS, CSS, assets)
@@ -21,7 +23,7 @@ registerRoute(
       try {
         const network = new NetworkFirst({
           cacheName: "html",
-          networkTimeoutSeconds: 1.5,
+          networkTimeoutSeconds: 10,
         });
         return await network.handle(params);
       } catch {
