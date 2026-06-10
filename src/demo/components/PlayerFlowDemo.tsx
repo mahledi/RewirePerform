@@ -56,12 +56,15 @@ export const PlayerFlowDemo = () => {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="rounded-3xl border border-border bg-card/70 p-5">
-            <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="mx-auto mt-10 max-w-4xl">
+          <div className="mb-5 rounded-3xl border border-border bg-card/70 p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Demo-Fortschritt</p>
-                <p className="mt-1 font-heading text-2xl font-bold">{progress}%</p>
+                <p className="mt-1 font-heading text-2xl font-bold">{demoFlowSteps[activeStep].title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Schritt {activeStep + 1} von {demoFlowSteps.length} · {progress}% abgeschlossen
+                </p>
               </div>
               <button
                 type="button"
@@ -72,26 +75,8 @@ export const PlayerFlowDemo = () => {
                 Neu starten
               </button>
             </div>
-            <div className="h-2 rounded-full bg-muted">
+            <div className="mt-5 h-2 rounded-full bg-muted">
               <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-            </div>
-            <div className="mt-6 space-y-3">
-              {demoFlowSteps.map((step, index) => (
-                <button
-                  key={step.id}
-                  type="button"
-                  onClick={() => setActiveStep(index)}
-                  className={`w-full rounded-2xl border p-4 text-left transition-all ${
-                    activeStep === index
-                      ? "border-primary/60 bg-primary/10"
-                      : "border-border bg-background/60 hover:bg-secondary/60"
-                  }`}
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{step.eyebrow}</p>
-                  <p className="mt-1 font-heading text-lg font-semibold">{step.title}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
-                </button>
-              ))}
             </div>
           </div>
 
@@ -99,7 +84,7 @@ export const PlayerFlowDemo = () => {
             {currentStep === "science" && (
               <div className="flex h-full flex-col justify-between gap-8">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Science Bite · Tag 12</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 1 · Science Bite</p>
                   <div className="mt-5 rounded-3xl border border-border bg-background/70">
                     <div className="flex items-start justify-between gap-4 border-b border-border/50 p-5">
                       <div>
@@ -120,7 +105,7 @@ export const PlayerFlowDemo = () => {
             {currentStep === "today" && (
               <div className="flex h-full flex-col justify-between gap-8">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Tag 12 · Trainingstag</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 2 · Heute für dich</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">Urteil zu Information</h3>
                   <p className="mt-4 max-w-xl text-muted-foreground">
                     Der echte `Heute für dich`-Block rahmt den Tag. Er ersetzt keine Aufgabe und verändert keine Inhalte,
@@ -148,7 +133,7 @@ export const PlayerFlowDemo = () => {
             {currentStep === "checkin" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Check-in</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 3 · Check-in</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">Wie ist dein Zustand heute?</h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                     In der echten App werden diese Werte als Tageszustand gespeichert. Sie sind kein privates
@@ -193,7 +178,7 @@ export const PlayerFlowDemo = () => {
             {currentStep === "task" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Denkaufgabe</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 4 · Denkaufgabe</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">{demoDailyTask.title}</h3>
                 </div>
                 <button
@@ -283,7 +268,7 @@ export const PlayerFlowDemo = () => {
             {currentStep === "journal" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Verständnis & Reflexion</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 5 · Verständnis & Reflexion</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">Der Abschluss bleibt ruhig und privat.</h3>
                 </div>
                 <div className="rounded-3xl border border-border bg-background/70 p-5">
