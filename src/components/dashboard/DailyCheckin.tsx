@@ -5,7 +5,7 @@ import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
   Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
-  Lightbulb, ChevronDown, CheckCircle2,
+  CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +52,6 @@ interface CheckinDraft {
   step: number;
   completedTasks: string[];
   reflection: string;
-  readBites: string[];
   moodBefore: number | null;
   energyLevel: number | null;
   focusClarity: number | null;
@@ -154,6 +153,18 @@ const collectJournalTexts = (row: Record<string, unknown>) => {
   return texts;
 };
 
+const normalizeDraftStep = (draftStep: number | null | undefined) => {
+  const safeStep = typeof draftStep === "number" && Number.isFinite(draftStep) ? draftStep : 0;
+
+  // Der alte Flow hatte einen eigenen Pflichtschritt "Wissen zuerst".
+  // Bestehende lokale Drafts werden in den neuen, kürzeren Ablauf geschoben.
+  if (safeStep === 4) return 3;
+  if (safeStep === 5) return 4;
+  if (safeStep > 5) return 5;
+
+  return Math.max(0, safeStep);
+};
+
 const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
   const { user, role, isTestUser } = useAuth();
   const navigate = useNavigate();
@@ -164,7 +175,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DailyTask | null>(null);
-  const [readBites, setReadBites] = useState<string[]>([]);
   const [assignmentId, setAssignmentId] = useState<string | null>(null);
   const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
   const [comprehensionDone, setComprehensionDone] = useState(false);
@@ -267,10 +277,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
       const local = readLocalDraft<CheckinDraft>(`checkin:${user.id}:${dateStr}:${eventType}`);
       if (local) {
-        setStep(Math.min(local.step ?? 0, 5));
+        setStep(normalizeDraftStep(local.step));
         setCompletedTasks(Array.from(new Set([...persistedTaskIds, ...(local.completedTasks ?? [])])));
         setReflection(local.reflection ?? "");
-        setReadBites(local.readBites ?? []);
         setMoodBefore(local.moodBefore ?? null);
         setEnergyLevel(local.energyLevel ?? null);
         setFocusClarity(local.focusClarity ?? null);
@@ -371,10 +380,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   };
 
   useEffect(() => {
-    if (!draftKey || previewMode || step === 6) return;
+    if (!draftKey || previewMode || step === 5) return;
     const hasDraft =
       completedTasks.length > 0 ||
-      readBites.length > 0 ||
       reflection.trim().length > 0 ||
       [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection]
         .some((value) => value !== null);
@@ -383,7 +391,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       step,
       completedTasks,
       reflection,
-      readBites,
       moodBefore,
       energyLevel,
       focusClarity,
@@ -402,7 +409,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     step,
     completedTasks,
     reflection,
-    readBites,
     moodBefore,
     energyLevel,
     focusClarity,
@@ -458,7 +464,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
   const saveCheckin = async (): Promise<boolean> => {
     if (previewMode) {
-      setStep(6);
+      setStep(5);
       return true;
     }
     if (!user?.id) return false;
@@ -581,7 +587,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     setSaving(false);
 
     if (draftKey) clearLocalDraft(draftKey);
-    setStep(6);
+    setStep(5);
     return true;
   };
 
@@ -680,122 +686,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     );
   };
 
-  // ─── Knowledge Bite Card (Science Bite + Why per Task) ───
-  const KnowledgeBiteCard = ({ task, isRead, onRead }: { task: DailyTask; isRead: boolean; onRead: () => void }) => {
-    const [expanded, setExpanded] = useState(false);
-    const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
-
-    return (
-      <motion.div
-        layout
-        className={`rounded-2xl transition-all overflow-hidden ${
-          expanded ? "bg-accent/10 border border-accent/20" : "bg-gradient-card border-glow"
-        }`}
-      >
-        <button
-          data-testid={`knowledge-card-${task.id}`}
-          onClick={() => setExpanded(!expanded)}
-          className="w-full text-left p-4 flex items-center gap-3"
-        >
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-            isRead ? "bg-primary" : "bg-secondary"
-          }`}>
-            {isRead ? <CheckCircle2 className="w-5 h-5 text-primary-foreground" /> : <IconComp className="w-5 h-5 text-muted-foreground" />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className={`text-sm font-semibold ${isRead ? "text-primary" : ""}`}>{task.title}</p>
-            <p className="text-xs text-muted-foreground truncate">{task.why}</p>
-          </div>
-          <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`} />
-        </button>
-
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4 pt-0 space-y-3">
-                <div className="flex items-start gap-2 p-4 rounded-xl bg-primary/5 border border-primary/10">
-                  <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <p className="text-xs text-muted-foreground leading-relaxed">{task.detailedExplanation}</p>
-                </div>
-                <button
-                  data-testid={`knowledge-read-${task.id}`}
-                  onClick={onRead}
-                  disabled={isRead}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-heading font-semibold text-sm transition-all ${
-                    isRead
-                      ? "bg-primary/15 text-primary cursor-default"
-                      : "bg-primary text-primary-foreground hover:shadow-glow active:scale-[0.98]"
-                  }`}
-                >
-                  {isRead ? (<><CheckCircle2 className="w-4 h-4" /> Verstanden</>) : (<>Verstanden</>)}
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
-  };
-
-  // ─── Knowledge Step (Step 2) ─────────────────────────────
-  const KnowledgeStep = () => {
-    const allRead = tasks.length > 0 && tasks.every((t) => readBites.includes(t.id));
-
-    return (
-      <motion.div key="knowledge" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-        <h2 className="font-heading text-2xl font-bold mb-2">Wissen zuerst.</h2>
-        <p className="text-muted-foreground mb-6 text-sm">
-          Lies, warum die heutigen Aufgaben relevant sind. Erst dann wirst du sie freischalten.
-        </p>
-
-        {loadingTasks ? (
-          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
-        ) : (
-          <div className="space-y-3 mb-8">
-            {tasks.map((task) => (
-              <KnowledgeBiteCard
-                key={task.id}
-                task={task}
-                isRead={readBites.includes(task.id)}
-                onRead={() => setReadBites((prev) => (prev.includes(task.id) ? prev : [...prev, task.id]))}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
-          <span>{readBites.length} / {tasks.length} gelesen</span>
-          {!allRead && <span className="text-primary">Alle lesen um fortzufahren</span>}
-        </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
-          <motion.div
-            className="h-full bg-primary rounded-full"
-            animate={{ width: `${tasks.length > 0 ? (readBites.length / tasks.length) * 100 : 0}%` }}
-          />
-        </div>
-
-        <motion.button
-          data-testid="knowledge-unlock"
-          whileHover={allRead ? { scale: 1.02 } : {}}
-          whileTap={allRead ? { scale: 0.98 } : {}}
-          onClick={() => allRead && setStep(4)}
-          disabled={!allRead}
-          className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
-            allRead ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
-          }`}
-        >
-          {allRead ? (<>Aufgaben freischalten <Sparkles className="w-5 h-5" /></>) : (<>Alle lesen</>)}
-        </motion.button>
-      </motion.div>
-    );
-  };
-
-  // ─── Task Dashboard (Step 3) ─────────────────────────────
+  // ─── Task Dashboard ─────────────────────────────
   const TaskDashboard = () => {
     return (
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
@@ -975,9 +866,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     />
                   </motion.div>
                 )}
-                {step === 3 && <KnowledgeStep />}
-                {step === 4 && <TaskDashboard />}
-                {step === 5 && (
+                {step === 3 && <TaskDashboard />}
+                {step === 4 && (
                   <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
                     <p className="text-muted-foreground mb-6 text-sm">
@@ -1002,7 +892,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     )}
                   </motion.div>
                 )}
-                {step === 6 && (
+                {step === 5 && (
                   <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
                       <Check className="w-10 h-10 text-primary" />
@@ -1040,7 +930,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         </div>
       </div>
 
-      {(step === 1 || step === 2 || step === 4) && !selectedTask && (
+      {(step === 1 || step === 2 || step === 3) && !selectedTask && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={handleBack} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
@@ -1048,14 +938,14 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               Zurück
             </button>
             <div className="flex gap-1.5">
-              {[0, 1, 2, 3, 4, 5].map((s) => (
+              {[0, 1, 2, 3, 4].map((s) => (
                 <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
               ))}
             </div>
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
-              const blocked = saving || (step === 1 && !pulseComplete) || (step === 4 && !tasksComplete);
+              const blocked = saving || (step === 1 && !pulseComplete) || (step === 3 && !tasksComplete);
               return (
                 <motion.button
                   data-testid={`daily-next-step-${step}`}
@@ -1065,7 +955,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     if (blocked) return;
                     if (step === 1) setStep(2);
                     else if (step === 2) setStep(3);
-                    else if (step === 4 && tasksComplete) setStep(5);
+                    else if (step === 3 && tasksComplete) setStep(4);
                   }}
                   disabled={blocked}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
@@ -1074,7 +964,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                       : "bg-primary text-primary-foreground hover:shadow-glow"
                   }`}
                 >
-                  {step === 4 && !tasksComplete ? "Alle Aufgaben verstehen" : "Weiter"}
+                  {step === 3 && !tasksComplete ? "Alle Aufgaben verstehen" : "Weiter"}
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               );
