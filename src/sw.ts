@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
-import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from "workbox-strategies";
+import { NetworkFirst, CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { clientsClaim } from "workbox-core";
 
@@ -11,6 +11,18 @@ declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames
+          .filter((cacheName) => cacheName === "html" || cacheName === "assets")
+          .map((cacheName) => caches.delete(cacheName))
+      )
+    )
+  );
+});
 
 // Precache the build output (HTML, JS, CSS, assets)
 precacheAndRoute(self.__WB_MANIFEST || []);
@@ -21,11 +33,7 @@ registerRoute(
   new NavigationRoute(
     async (params) => {
       try {
-        const network = new NetworkFirst({
-          cacheName: "html",
-          networkTimeoutSeconds: 10,
-        });
-        return await network.handle(params);
+        return await fetch(params.request, { cache: "no-store" });
       } catch {
         return navHandler(params);
       }
@@ -34,10 +42,13 @@ registerRoute(
   )
 );
 
-// Static assets: SWR
+// Static app assets: prefer fresh network assets; fall back to cache/offline if needed.
 registerRoute(
   ({ request }) => ["style", "script", "worker"].includes(request.destination),
-  new StaleWhileRevalidate({ cacheName: "assets" })
+  new NetworkFirst({
+    cacheName: "assets",
+    networkTimeoutSeconds: 8,
+  })
 );
 
 // Images: CacheFirst, capped
