@@ -68,6 +68,8 @@ export interface PersonalizationOutput {
   relevanceLine: string | null;
   microCue: string;
   sourceTags: string[];
+  primaryAdaptationLine: string;
+  secondaryAdaptationLine: string | null;
 
   // Backward-compatible names used by TodayForYou.
   sportExample: string;
