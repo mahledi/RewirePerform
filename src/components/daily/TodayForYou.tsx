@@ -13,16 +13,18 @@ interface TodayForYouProps {
  * Felder mit null werden ausgelassen, keine Platzhalter.
  */
 const TodayForYou = ({ data, compact = false }: TodayForYouProps) => {
-  const contextLine = data.roleContextLine ?? data.sportContextLine ?? data.sportExample;
-  const emphasisLine =
-    data.stateLine ??
-    data.profileLine ??
-    data.journalPatternLine ??
-    data.relevanceLine ??
-    data.stateEmphasis ??
-    data.profileEmphasis ??
-    data.journalPatternEmphasis ??
-    null;
+  const adaptationLines = [
+    data.primaryAdaptationLine,
+    data.secondaryAdaptationLine,
+  ].filter((line, index, lines): line is string =>
+    Boolean(
+      line &&
+      line.trim() &&
+      line !== data.sportContextLine &&
+      line !== data.roleContextLine &&
+      lines.indexOf(line) === index
+    )
+  );
 
   if (compact) {
     return (
@@ -49,10 +51,13 @@ const TodayForYou = ({ data, compact = false }: TodayForYouProps) => {
 
       <div className="space-y-2">
         <p className="text-sm text-foreground leading-relaxed">{data.athleteAddressLine}</p>
-        <p className="text-sm text-muted-foreground leading-relaxed">{contextLine}</p>
-        {emphasisLine && (
-          <p className="text-sm text-muted-foreground leading-relaxed">{emphasisLine}</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{data.sportContextLine}</p>
+        {data.roleContextLine && (
+          <p className="text-sm text-muted-foreground leading-relaxed">{data.roleContextLine}</p>
         )}
+        {adaptationLines.map((line) => (
+          <p key={line} className="text-sm text-muted-foreground leading-relaxed">{line}</p>
+        ))}
       </div>
 
       <div className="mt-4 pt-3 border-t border-border/50">

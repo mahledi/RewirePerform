@@ -29,6 +29,7 @@ import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
 import {
   buildMicroAdjustmentContext,
+  extractJournalSignals,
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
 import { captureAppError } from "@/lib/monitoring";
@@ -74,6 +75,83 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
   training: { label: "Trainingstag", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
   rest: { label: "Ruhetag", icon: Moon, color: "text-blue-400", bg: "bg-blue-400/20" },
   competition: { label: "Wettkampftag", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
+};
+
+const numberOrUndefined = (value: unknown): number | undefined => (
+  typeof value === "number" && Number.isFinite(value) ? value : undefined
+);
+
+const asRecord = (value: unknown): Record<string, unknown> | null => (
+  value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null
+);
+
+const score100ToSignal = (score: unknown): number | undefined => {
+  const n = numberOrUndefined(score);
+  if (typeof n !== "number") return undefined;
+  return Math.max(0, Math.min(1, (100 - n) / 100));
+};
+
+const score100ToStrength = (score: unknown): number | undefined => {
+  const n = numberOrUndefined(score);
+  if (typeof n !== "number") return undefined;
+  return Math.max(0, Math.min(1, n / 100));
+};
+
+const maxSignal = (...values: Array<number | undefined>) => {
+  const valid = values.filter((value): value is number => typeof value === "number");
+  return valid.length ? Math.max(...valid) : undefined;
+};
+
+const buildQuestionnaireSignals = (analysis: Record<string, unknown> | null) => {
+  if (!analysis) return undefined;
+  const scores = asRecord(analysis.scores);
+  const categoryScores = asRecord(analysis.category_scores) ?? asRecord(scores?.category_scores);
+  const itemScores = asRecord(scores?.item_scores);
+  const inner = asRecord(analysis.inner_excellence_profile);
+
+  return {
+    resultFocus: maxSignal(
+      score100ToSignal(categoryScores?.focus_presence),
+      score100ToSignal(categoryScores?.motivation_purpose),
+      score100ToSignal(itemScores?.["mot-05"])
+    ),
+    selfCriticism: maxSignal(
+      score100ToSignal(categoryScores?.identity_selfworth),
+      score100ToSignal(categoryScores?.mistakes_evaluation),
+      score100ToSignal(itemScores?.["id-01"]),
+      score100ToSignal(itemScores?.["id-02"])
+    ),
+    judgementFear: maxSignal(
+      score100ToSignal(itemScores?.["err-04"]),
+      score100ToSignal(itemScores?.["id-04"]),
+      score100ToSignal(categoryScores?.environment_team)
+    ),
+    egoVisibility: maxSignal(
+      score100ToSignal(itemScores?.["id-04"]),
+      score100ToSignal(itemScores?.["id-05"]),
+      score100ToSignal(inner?.ego_freedom_score)
+    ),
+    confidence: maxSignal(
+      score100ToStrength(analysis.start_profile_score),
+      score100ToStrength(scores?.start_profile_score),
+      score100ToStrength(inner?.presence_level)
+    ),
+  };
+};
+
+const collectJournalTexts = (row: Record<string, unknown>) => {
+  const texts: string[] = [];
+  const answers = asRecord(row.answers);
+  if (answers) {
+    for (const value of Object.values(answers)) {
+      if (typeof value === "string") texts.push(value);
+    }
+  }
+  for (const key of ["gratitude", "free_reflection"]) {
+    const value = row[key];
+    if (typeof value === "string") texts.push(value);
+  }
+  return texts;
 };
 
 const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
@@ -214,7 +292,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
       let todayCheckinQuery = supabase
         .from("daily_checkins")
-        .select("mood_before, energy_level, focus_rating")
+        .select("mood_before, energy_level, focus_rating, wellbeing_metrics")
         .eq("user_id", user.id)
         .eq("date", dateStr)
         .limit(1);
@@ -231,28 +309,35 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         .limit(1);
       if (instance?.id) questionnaireQuery = questionnaireQuery.eq("program_instance_id", instance.id);
 
-      const [{ data: todayCheckins }, { data: questionnaireRows }] = await Promise.all([
+      let journalQuery = supabase
+        .from("daily_journals")
+        .select("answers, gratitude, free_reflection")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+        .limit(5);
+      if (instance?.id) journalQuery = journalQuery.eq("program_instance_id", instance.id);
+
+      const [{ data: todayCheckins }, { data: questionnaireRows }, { data: journalRows }] = await Promise.all([
         todayCheckinQuery,
         questionnaireQuery,
+        journalQuery,
       ]);
       const todayCheckin = todayCheckins?.[0] ?? null;
       const questionnaire = questionnaireRows?.[0] ?? null;
+      const wellbeingMetrics = asRecord(todayCheckin?.wellbeing_metrics);
 
-      // Sehr leichte, optionale Signal-Extraktion aus der bestehenden Analyse.
-      // Erwartet KEINE bestimmte Schema-Form — alles optional.
+      // Robuste, optionale Signal-Extraktion aus der bestehenden Analyse.
+      // Keine Diagnosen, keine privaten Rohantworten im UI — nur grobe Musterlinien.
       const analysis = (questionnaire?.analysis ?? null) as Record<string, unknown> | null;
-      const num = (v: unknown): number | undefined => (typeof v === "number" ? v : undefined);
-      const score10 = (v: unknown): number | undefined => {
-        const n = num(v);
-        return typeof n === "number" ? Math.max(0, Math.min(1, n / 10)) : undefined;
-      };
-      const questionnaireSignals = analysis
+      const questionnaireSignals = buildQuestionnaireSignals(analysis);
+      const journalTexts = (journalRows ?? []).flatMap((row) => collectJournalTexts(row as Record<string, unknown>));
+      const journalSignals = extractJournalSignals(journalTexts);
+      const localCheckin = local
         ? {
-            resultFocus: score10((analysis as any).result_focus ?? (analysis as any).resultFocus),
-            selfCriticism: score10((analysis as any).self_criticism ?? (analysis as any).selfCriticism),
-            judgementFear: score10((analysis as any).judgement_fear ?? (analysis as any).judgementFear),
-            egoVisibility: score10((analysis as any).ego_visibility ?? (analysis as any).egoVisibility),
-            confidence: score10((analysis as any).confidence),
+            mood: local.moodBefore,
+            energy: local.energyLevel,
+            focus: local.focusClarity,
+            stress: local.stress ?? local.pressure,
           }
         : undefined;
 
@@ -275,10 +360,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               mood: todayCheckin.mood_before ?? null,
               energy: todayCheckin.energy_level ?? null,
               focus: todayCheckin.focus_rating ?? null,
-              stress: null,
+              stress: numberOrUndefined(wellbeingMetrics?.stress) ?? numberOrUndefined(wellbeingMetrics?.pressure) ?? null,
             }
-          : undefined,
-        recentJournalSignals: undefined,
+          : localCheckin,
+        recentJournalSignals: journalSignals,
       });
       setMicroAdjustment(micro);
     }

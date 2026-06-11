@@ -38,6 +38,15 @@ export function buildPersonalization(input: PersonalizationInput): Personalizati
     profileLine,
     journalSignals: input.recentJournalSignals,
   });
+  const primaryAdaptationLine = stateLine ?? profileLine ?? journalLine ?? relevanceLine ?? sportLine;
+  const secondaryAdaptationLine =
+    primaryAdaptationLine === stateLine
+      ? profileLine ?? journalLine ?? relevanceLine
+      : primaryAdaptationLine === profileLine
+        ? stateLine ?? journalLine ?? relevanceLine
+        : primaryAdaptationLine === journalLine
+          ? stateLine ?? profileLine ?? relevanceLine
+          : stateLine ?? profileLine ?? journalLine;
 
   return {
     athleteAddressLine,
@@ -49,6 +58,8 @@ export function buildPersonalization(input: PersonalizationInput): Personalizati
     relevanceLine,
     microCue,
     sourceTags,
+    primaryAdaptationLine,
+    secondaryAdaptationLine,
     sportExample: sportLine,
     positionExample: roleLine,
     stateEmphasis: stateLine,

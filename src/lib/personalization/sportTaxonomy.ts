@@ -60,27 +60,49 @@ export function resolveSportContext(sport?: string | null): SportContext {
 export function buildRoleContextLine(category: SportCategory, position?: string | null): string | null {
   const role = position?.trim();
   if (!role || role.length < 2) return null;
+  const normalized = role.toLowerCase();
 
   if (category === "aesthetic_or_technical_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Ausführung, Körperspannung, Rhythmus und den nächsten sauberen Versuch.`;
+    if (/boden|floor/i.test(normalized)) {
+      return `Für ${role} heißt das heute: Rhythmus halten, Körperspannung früh setzen und nach jedem Element zum nächsten sauberen Versuch zurückkehren.`;
+    }
+    if (/barren|reck|beam|balken|sprung|vault|ringe/i.test(normalized)) {
+      return `Für ${role} zählt heute die nächste Ausführung: Setup, Spannung, Linie und Landung klarer lesen als die Wertung.`;
+    }
+    return `Für ${role} heißt das heute: Ausführung, Körperspannung, Rhythmus und der nächste saubere Versuch stehen vor Wirkung oder Wertung.`;
   }
   if (category === "combat_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Distanz, Timing, Runde und die nächste klare Aktion.`;
+    return `Für ${role} übersetzt du den Fokus heute in Distanz, Timing, Deckung und die nächste klare Aktion statt in Reaktion aus Engzug.`;
   }
   if (category === "endurance_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Rhythmus, Pace, Atmung und den nächsten Abschnitt.`;
+    return `Für ${role} wird der Fokus heute konkret: Rhythmus finden, Pace lesen, Atmung stabilisieren und nur den nächsten Abschnitt laufen lassen.`;
   }
   if (category === "strength_power_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Spannung, Setup, Explosivität und die nächste technische Wiederholung.`;
+    return `Für ${role} zählt heute dein Setup: Spannung aufbauen, Explosivität sauber abrufen und die nächste Wiederholung technisch halten.`;
   }
   if (category === "precision_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Routine, Zielbild, Ruhe und die nächste präzise Ausführung.`;
+    return `Für ${role} übersetzt du den Fokus heute in Routine, Zielbild, Ruhe und eine präzise Ausführung statt in Ergebnisdruck.`;
   }
   if (category === "net_or_target_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Aufschlag, Return, Ballwechsel oder den nächsten Punkt.`;
+    return `Für ${role} bleibt es heute klein: Aufschlag, Return, Ballwechsel oder der nächste Punkt statt die Geschichte des letzten Fehlers.`;
   }
   if (category === "invasion_team_sport") {
-    return `Wenn deine Rolle heute "${role}" ist, übersetze den Fokus in Raum, Entscheidung, Kommunikation und die nächste Aktion.`;
+    if (/torwart|keeper|goal/i.test(normalized)) {
+      return `Für ${role} heißt das heute: Position klären, Kommunikation früh setzen und nach jeder Aktion sofort wieder Spielinformation lesen.`;
+    }
+    if (/quarterback|point guard|aufbau|spielmacher/i.test(normalized)) {
+      return `Für ${role} heißt das heute: Übersicht behalten, Tempo steuern, nächste Entscheidung treffen und nicht am letzten Play hängen.`;
+    }
+    if (/innenverteid|verteid|defen|corner|safety|linebacker/i.test(normalized)) {
+      return `Für ${role} heißt das heute: Raum sichern, Körperstellung prüfen, Kommunikation halten und nach Fehlern sofort wieder Ordnung geben.`;
+    }
+    if (/mittel|midfield|wing|flügel/i.test(normalized)) {
+      return `Für ${role} heißt das heute: Anschlussaktion sehen, Raum öffnen, Kommunikation nutzen und die nächste Entscheidung spielbar machen.`;
+    }
+    if (/stürmer|striker|forward|receiver|running back/i.test(normalized)) {
+      return `Für ${role} heißt das heute: Timing, Tiefe, Abschluss oder Laufweg sauber halten, ohne jeden Moment zum Beweis zu machen.`;
+    }
+    return `Für ${role} übersetzt du den Fokus heute in Raum, Entscheidung, Kommunikation und eine nächste Aktion, die dem Spiel hilft.`;
   }
   return null;
 }
