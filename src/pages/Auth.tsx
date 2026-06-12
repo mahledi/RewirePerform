@@ -389,7 +389,7 @@ const Auth = () => {
     : "Du erstellst dein Team.";
   const intentSub =
     intent === "solo" ? "Dein personalisiertes Mental-Performance-Programm beginnt gleich."
-    : intent === "join" ? "Gib deinen Teamcode ein — dieser bestimmt deine Rolle (Athlet:innen oder Co-Coach)."
+    : intent === "join" ? "Gib deinen Teamcode ein — dieser bestimmt deine Rolle (Athlet:in oder Co-Coach)."
     : "Du legst dein Team direkt nach der Anmeldung im Coach-Bereich an.";
 
   return (
@@ -448,7 +448,7 @@ const Auth = () => {
                 />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 px-1">
-                Dein Code legt fest, ob du als Athlet:innen oder Co-Coach beitrittst.
+                Dein Code legt fest, ob du als Athlet:in oder Co-Coach beitrittst.
               </p>
             </div>
           )}
