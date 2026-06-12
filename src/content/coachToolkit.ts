@@ -15,7 +15,7 @@ export const COACH_SCIENCE_BITES: CoachScienceBite[] = [
     id: "growth-mindset",
     title: "Growth Mindset",
     explanation:
-      "Spieler profitieren, wenn Aufwand, Strategie, Lernverhalten und Erholung nach Fehlern verstärkt werden — nicht nur Talent oder Ergebnis. Verhaltensbezogenes Feedback ist mit stabileren Lernkurven verbunden. Identitätslob kann kurzfristig motivieren, aber Fehler später bedrohlicher wirken lassen.",
+      "Athlet:innen profitieren, wenn Aufwand, Strategie, Lernverhalten und Erholung nach Fehlern verstärkt werden — nicht nur Talent oder Ergebnis. Verhaltensbezogenes Feedback ist mit stabileren Lernkurven verbunden. Identitätslob kann kurzfristig motivieren, aber Fehler später bedrohlicher wirken lassen.",
     coachAngle:
       "Lobe spezifisches Verhalten: \u201eDu bist nach dem Fehler direkt wieder in die n\u00e4chste Aktion gegangen.\u201c",
   },
@@ -23,7 +23,7 @@ export const COACH_SCIENCE_BITES: CoachScienceBite[] = [
     id: "error-climate",
     title: "Fehlerkultur",
     explanation:
-      "Wie ein Team auf Fehler reagiert, kann beeinflussen, ob Spieler Risiken vermeiden oder im Lernen bleiben. Ein stabiles Fehlerklima ist mit h\u00f6herer Lernbereitschaft verbunden.",
+      "Wie ein Team auf Fehler reagiert, kann beeinflussen, ob Athlet:innen Risiken vermeiden oder im Lernen bleiben. Ein stabiles Fehlerklima ist mit h\u00f6herer Lernbereitschaft verbunden.",
     coachAngle:
       "Stabilisiere nach Fehlern zuerst das Verhalten, bevor du tief analysierst.",
   },
@@ -47,7 +47,7 @@ export const COACH_SCIENCE_BITES: CoachScienceBite[] = [
     id: "ego-self-worth",
     title: "Ego, Selbstwert & Bewertung",
     explanation:
-      "Wenn Spieler Leistung zu stark mit Selbstwert verkn\u00fcpfen, k\u00f6nnen Druck und Angst vor Bewertung steigen. Identit\u00e4tslabels k\u00f6nnen diese Verkn\u00fcpfung verst\u00e4rken.",
+      "Wenn Athlet:innen Leistung zu stark mit Selbstwert verkn\u00fcpfen, k\u00f6nnen Druck und Angst vor Bewertung steigen. Identit\u00e4tslabels k\u00f6nnen diese Verkn\u00fcpfung verst\u00e4rken.",
     coachAngle:
       "Vermeide Identit\u00e4tslabels. Sprich \u00fcber beobachtbares Verhalten und n\u00e4chste Handlung.",
   },
@@ -96,7 +96,7 @@ export const TEAM_STANDARDS: TeamStandard[] = [
     id: "mistakes-not-identity",
     title: "Fehler sind Information, nicht Identit\u00e4t.",
     explanation:
-      "Ein Spieler sollte einen Fehler nicht so verlassen, als w\u00fcrde er definieren, wer er ist.",
+      "Athlet:innen sollten einen Fehler nicht so verlassen, als w\u00fcrde er definieren, wer er ist.",
     coachBehavior: "Sprich \u00fcber n\u00e4chste Handlung, nicht \u00fcber Charakter.",
   },
   {
@@ -105,7 +105,7 @@ export const TEAM_STANDARDS: TeamStandard[] = [
     explanation:
       "Das Programm trainiert wiederholt Return-to-Task-Verhalten.",
     coachBehavior:
-      "F\u00fchre den Spieler nach einem Fehler zur\u00fcck zu einer sauberen Aktion.",
+      "F\u00fchre den Athlet:innen nach einem Fehler zur\u00fcck zu einer sauberen Aktion.",
   },
   {
     id: "praise-behavior",
@@ -126,8 +126,8 @@ export const TEAM_STANDARDS: TeamStandard[] = [
     id: "private-stays-private",
     title: "Private Reflexion bleibt privat.",
     explanation:
-      "Spieler reflektieren nur ehrlich, wenn sie vertrauen, dass verletzliche Reflexionen nicht gegen sie verwendet werden.",
-    coachBehavior: "Nutze aggregierte Team-Daten, nicht private Spielertexte.",
+      "Athlet:innen reflektieren nur ehrlich, wenn sie vertrauen, dass verletzliche Reflexionen nicht gegen sie verwendet werden.",
+    coachBehavior: "Nutze aggregierte Team-Daten, nicht private Athlet:innen-Texte.",
   },
 ];
 
@@ -139,7 +139,7 @@ export const COACH_JOURNAL_QUESTIONS = {
   reflection_2:
     "Wo habe ich m\u00f6glicherweise unbewusst Ergebnisdruck, Angst vor Fehlern oder Selbstbewertung verst\u00e4rkt?",
   reflection_3:
-    "Welche Team-Situation h\u00e4tte ich besser f\u00fchren k\u00f6nnen, ohne Spieler \u00f6ffentlich zu besch\u00e4men oder kleinzumachen?",
+    "Welche Team-Situation h\u00e4tte ich besser f\u00fchren k\u00f6nnen, ohne Athlet:innen \u00f6ffentlich zu besch\u00e4men oder kleinzumachen?",
   action_commitment:
     "Welche eine Kommunikationsgewohnheit will ich n\u00e4chste Woche bewusst setzen?",
 };
@@ -165,9 +165,9 @@ export const getCoachDayGuidance = (
   if (/(process|prozess|result|ergebnis)/.test(hay)) {
     return {
       support:
-        "Heute hilft es, Spieler nach Fehlern oder wichtigen Aktionen kurz auf die n\u00e4chste kontrollierbare Handlung zur\u00fcckzuf\u00fchren.",
+        "Heute hilft es, Athlet:innen nach Fehlern oder wichtigen Aktionen kurz auf die n\u00e4chste kontrollierbare Handlung zur\u00fcckzuf\u00fchren.",
       avoid:
-        "Spieler nicht \u00fcber Ergebnis, Charakter oder Mentalit\u00e4t definieren. Besser \u00fcber Verhalten sprechen.",
+        "Athlet:innen nicht \u00fcber Ergebnis, Charakter oder Mentalit\u00e4t definieren. Besser \u00fcber Verhalten sprechen.",
       integration60s:
         "Vor dem Training kurz sagen: \u201eHeute z\u00e4hlt, wie schnell wir nach Ergebnisdruck wieder in die Aufgabe zur\u00fcckkommen.\u201c",
     };
@@ -175,7 +175,7 @@ export const getCoachDayGuidance = (
   if (/(pressure|druck|threat|challenge)/.test(hay)) {
     return {
       support:
-        "Heute ist wichtig, dass Spieler Druck als Handlungssituation erleben, nicht als Bewertung ihrer Identit\u00e4t.",
+        "Heute ist wichtig, dass Athlet:innen Druck als Handlungssituation erleben, nicht als Bewertung ihrer Identit\u00e4t.",
       avoid:
         "Druck nicht moralisch aufladen oder als Charaktertest framen.",
       integration60s:
@@ -185,9 +185,9 @@ export const getCoachDayGuidance = (
   if (/(mistake|fehler|error|return)/.test(hay)) {
     return {
       support:
-        "Heute hilft es, Fehler nicht gro\u00df zu machen, sondern Spieler schnell zur\u00fcck in die n\u00e4chste Handlung zu f\u00fchren.",
+        "Heute hilft es, Fehler nicht gro\u00df zu machen, sondern Athlet:innen schnell zur\u00fcck in die n\u00e4chste Handlung zu f\u00fchren.",
       avoid:
-        "Nicht sofort Charakter oder Mentalit\u00e4t bewerten. Nicht lange erkl\u00e4ren, bevor der Spieler wieder handeln darf.",
+        "Nicht sofort Charakter oder Mentalit\u00e4t bewerten. Nicht lange erkl\u00e4ren, bevor Athlet:innen wieder handeln dürfen.",
       integration60s:
         "W\u00e4hrend des Trainings auf den Reset nach Fehlern achten — eine kurze, klare Cue.",
     };
@@ -195,7 +195,7 @@ export const getCoachDayGuidance = (
   if (/(identity|identit|self|selbst|ego)/.test(hay)) {
     return {
       support:
-        "Heute hilft es, Spieler \u00fcber konkretes Verhalten zu spiegeln, nicht \u00fcber Etiketten.",
+        "Heute hilft es, Athlet:innen \u00fcber konkretes Verhalten zu spiegeln, nicht \u00fcber Etiketten.",
       avoid: "Keine Identit\u00e4tslabels (\u201egut\u201c, \u201eschwach\u201c, \u201eMentalit\u00e4t\u201c).",
       integration60s:
         "Nach dem Training eine Frage stellen, die auf Handlung zielt: \u201eWelche Aktion ist dir heute klar gelungen?\u201c",
@@ -207,7 +207,7 @@ export const getCoachDayGuidance = (
         "Heute kann eine kurze Wertsch\u00e4tzung im Team das Klima stabilisieren.",
       avoid: "Keine ironischen oder vergleichenden Kommentare im Plenum.",
       integration60s:
-        "Am Ende: ein Spieler benennt eine konkrete Handlung eines anderen, die heute geholfen hat.",
+        "Am Ende: eine Athlet:in benennt eine konkrete Handlung eines anderen, die heute geholfen hat.",
     };
   }
   if (/(effort|anstreng|discomfort|unbehagen|amcc)/.test(hay)) {
@@ -221,7 +221,7 @@ export const getCoachDayGuidance = (
   }
   return {
     support:
-      "Heute hilft es, den Tagesinhalt kurz vor dem Training zu benennen und Spieler in die Anwendung zu f\u00fchren.",
+      "Heute hilft es, den Tagesinhalt kurz vor dem Training zu benennen und Athlet:innen in die Anwendung zu f\u00fchren.",
     avoid:
       "Den Tagesinhalt nicht als zus\u00e4tzlichen Druck framen.",
     integration60s:

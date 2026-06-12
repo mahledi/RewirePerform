@@ -6,7 +6,7 @@ const cards = [
   {
     icon: BookOpen,
     title: "Journaling & Reflexion",
-    text: "Reflexion hilft Spielern, Muster zu erkennen, Abstand zu Gedanken zu gewinnen und Verhalten bewusster zu steuern.",
+    text: "Reflexion hilft Athlet:innen, Muster zu erkennen, Abstand zu Gedanken zu gewinnen und Verhalten bewusster zu steuern.",
   },
   {
     icon: Heart,
@@ -16,7 +16,7 @@ const cards = [
   {
     icon: CheckCircle2,
     title: "Comprehension",
-    text: "Spieler wiederholen, was sie tun sollen. Dadurch wird aus Information ein klarer Handlungsplan.",
+    text: "Athlet:innen wiederholen, was sie tun sollen. Dadurch wird aus Information ein klarer Handlungsplan.",
   },
 ];
 

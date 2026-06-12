@@ -89,9 +89,9 @@ const AdminDayBrowser = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Programmtage 1–{MATRIX_DAYS.length} · Spieler-Simulator</CardTitle>
+        <CardTitle>Programmtage 1–{MATRIX_DAYS.length} · Athleten-Simulator</CardTitle>
         <CardDescription>
-          Klicke einen Tag an, um den vollständigen Spieler-Check-in 1:1 durchzugehen — gleiche Komponente, Schritt für Schritt,
+          Klicke einen Tag an, um den vollständigen Athleten-Check-in 1:1 durchzugehen — gleiche Komponente, Schritt für Schritt,
           inklusive Slider, Tasks, Journal-Fragen und Comprehension Check. <strong>Read-only — nichts wird gespeichert.</strong>
         </CardDescription>
       </CardHeader>
@@ -195,7 +195,7 @@ const AdminDayBrowser = () => {
                     {!hasContent && (
                       <div className="flex items-center gap-1 mt-2 text-[10px] text-amber-500">
                         <AlertCircle className="w-3 h-3" />
-                        <span>Kein Spieler-Content</span>
+                        <span>Kein Athleten-Content</span>
                       </div>
                     )}
                   </button>
@@ -211,10 +211,10 @@ const AdminDayBrowser = () => {
         </div>
       </CardContent>
 
-      {/* Vollbild-Spieler-Simulator */}
+      {/* Vollbild-Athleten-Simulator */}
       <Dialog open={openDay !== null} onOpenChange={(o) => !o && setOpenDay(null)}>
         <DialogContent className="max-w-none w-screen h-screen sm:rounded-none p-0 gap-0 flex flex-col [&>button]:hidden">
-          {/* Admin-Toolbar oberhalb der Spieler-UI */}
+          {/* Admin-Toolbar oberhalb der Athleten-UI */}
           <div className="shrink-0 border-b border-border bg-muted/40 px-4 py-2 flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="default" className="text-[10px] uppercase tracking-widest">Preview</Badge>
@@ -258,7 +258,7 @@ const AdminDayBrowser = () => {
             </div>
           </div>
 
-          {/* Echte Spieler-Komponente, im Preview-Mode */}
+          {/* Echte Athleten-Komponente, im Preview-Mode */}
           <div className="flex-1 overflow-y-auto">
             {openDay !== null && (
               <DailyCheckin

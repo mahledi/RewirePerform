@@ -213,8 +213,8 @@ const Admin = () => {
 
   const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
     { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
-    { id: "days", title: "Tage", description: "Spieler-Vorschau jedes Programmtags.", icon: CalendarDays },
-    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzelspieler.", icon: UsersIcon },
+    { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
+    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
     { id: "evidence", title: "Coach-Wirkung", description: "Teamweite Pre/Mid/Post-Readiness und beobachtete Veränderung.", icon: BarChart3 },
     { id: "presentation", title: "Pilot-Reporting", description: "Consent-aware Kennzahlen für Präsentationen.", icon: Presentation },
     { id: "study", title: "Wirkungsdaten", description: "Study-Übersicht, Missingness und Snapshots.", icon: FlaskConical },
@@ -502,7 +502,7 @@ const Admin = () => {
             )}
           </TabsContent>
 
-          {/* DAYS — Spieler-Vorschau jedes Programmtags */}
+          {/* DAYS — Athleten-Vorschau jedes Programmtags */}
           <TabsContent value="days" className="mt-4">
             <AdminDayBrowser />
           </TabsContent>
@@ -512,7 +512,7 @@ const Admin = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Teams</CardTitle>
-                <CardDescription>Aggregierte Teamdaten – keine individuellen Spielerdaten.</CardDescription>
+                <CardDescription>Aggregierte Teamdaten – keine individuellen Athlet:innen-Daten.</CardDescription>
               </CardHeader>
               <CardContent>
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (

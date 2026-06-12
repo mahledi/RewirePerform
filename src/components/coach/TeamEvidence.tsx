@@ -182,7 +182,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
           {noConsentedData
             ? "Diese Ansicht nutzt nur freiwillig freigegebene, aggregierte Datenbeiträge. Das Team kann normal trainieren; Auswertung erscheint erst, wenn genügend freigegebene Messdaten vorliegen."
-            : "Wirksamkeit wird erst sichtbar, wenn Spieler registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen."}
+            : "Wirksamkeit wird erst sichtbar, wenn Athlet:innen registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen."}
         </p>
       </div>
     );
@@ -249,7 +249,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Aggregierte, freigegebene Teamdaten</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Diese Ansicht zeigt nur beobachtete Teammuster ab mindestens {minN} Spielern und nur aus freiwillig freigegebenen Datenbeiträgen.
+            Diese Ansicht zeigt nur beobachtete Teammuster ab mindestens {minN} Athlet:innen und nur aus freiwillig freigegebenen Datenbeiträgen.
             Keine Einzelwerte, keine psychologischen Labels, keine Reflexionen, keine Journale.
           </p>
         </div>
@@ -307,7 +307,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
           </h3>
           {!enoughTeam ? (
             <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
-              Zu wenig Daten für anonymisierte Auswertung (mind. {minN} Spieler).
+              Zu wenig Daten für anonymisierte Auswertung (mind. {minN} Athlet:innen).
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

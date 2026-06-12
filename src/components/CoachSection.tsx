@@ -10,7 +10,7 @@ const features = [
   {
     icon: BookOpen,
     title: "Heute im Programm",
-    text: "Coaches sehen, welchen mentalen Inhalt die Spieler heute bearbeiten, damit Training und Kommunikation das System unterstützen.",
+    text: "Coaches sehen, welchen mentalen Inhalt die Athlet:innen heute bearbeiten, damit Training und Kommunikation das System unterstützen.",
   },
   {
     icon: BarChart3,
@@ -24,7 +24,7 @@ const privacyItems = [
   "Freitexte bleiben privat",
   "Coach sieht nur Aggregate",
   "Teamdaten ab n≥5",
-  "Keine psychologischen Labels einzelner Spieler",
+  "Keine psychologischen Labels einzelner Athlet:innen",
 ];
 
 const CoachSection = () => {
@@ -48,7 +48,7 @@ const CoachSection = () => {
           <p className="text-muted-foreground text-lg leading-relaxed">
             Coaches bekommen Orientierung über Teilnahme, Team Pulse, Dranbleiben
             und aggregierte Entwicklung — ohne private Journale, Einzelantworten
-            oder psychologische Labels einzelner Spieler zu sehen.
+            oder psychologische Labels einzelner Athlet:innen zu sehen.
           </p>
         </motion.div>
 
@@ -87,9 +87,9 @@ const CoachSection = () => {
               <span className="text-gradient">braucht Schutz.</span>
             </h3>
             <p className="text-muted-foreground leading-relaxed">
-              Spieler sollen sich selbst verstehen lernen, ohne Angst zu haben,
+              Athlet:innen sollen sich selbst verstehen lernen, ohne Angst zu haben,
               dass private Gedanken gegen sie verwendet werden. Deshalb trennt
-              RewirePerform klar zwischen Spieler-Privatsphäre und
+              RewirePerform klar zwischen Athlet:innen-Privatsphäre und
               Coach-Überblick.
             </p>
           </motion.div>

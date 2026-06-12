@@ -290,7 +290,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
           <div>
             <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Du siehst nur Aggregate (mind. {data.min_n ?? 5} Spieler). Keine Einzelwerte,
+              Du siehst nur Aggregate (mind. {data.min_n ?? 5} Athlet:innen). Keine Einzelwerte,
               keine Reflexionen, keine Journale.
             </p>
           </div>
@@ -445,7 +445,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
               <p className="text-xs text-muted-foreground leading-relaxed">{teamMirror.body}</p>
             </div>
             <div className="bg-primary/5 border border-primary/15 rounded-xl p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Linse im Spielerprogramm</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Linse im Athleten-Programm</p>
               <p className="text-sm font-semibold text-foreground mb-2">
                 {resolvedToday?.matrix.lens ?? "Noch keine heutige Linse verfügbar"}
               </p>

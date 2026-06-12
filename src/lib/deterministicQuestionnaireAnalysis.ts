@@ -269,7 +269,7 @@ export function buildDeterministicQuestionnaireAnalysis(
     mental_score: start_profile_score,
     start_profile_score,
     score_visibility: "internal_only",
-    measurement_boundary: "Interne Startprofil- und Fortschrittsbaseline; keine Diagnose, kein Ranking, nicht spieler-facing.",
+    measurement_boundary: "Interne Startprofil- und Fortschrittsbaseline; keine Diagnose, kein Ranking, nicht athlet-facing.",
     category_scores,
     strongest_dimensions,
     dominant_category,

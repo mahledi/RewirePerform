@@ -794,7 +794,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Team Pulse</p>
                     <p className="text-muted-foreground mb-6 text-sm">
                       Wie fühlst du dich heute? Kurze Skala von 1 bis 10. Deine Antworten bleiben privat —
-                      Coaches sehen nur anonymisierte Team-Tendenzen (mind. 5 Spieler).
+                      Coaches sehen nur anonymisierte Team-Tendenzen (mind. 5 Athlet:innen).
                     </p>
 
                     <div className="space-y-7">

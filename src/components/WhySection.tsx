@@ -5,7 +5,7 @@ const cards = [
   {
     icon: Activity,
     title: "Druck verstehen",
-    text: "Druck wird nicht romantisiert. Spieler lernen, ihn zu erkennen, einzuordnen und handlungsfähig zu bleiben.",
+    text: "Druck wird nicht romantisiert. Athlet:innen lernen, ihn zu erkennen, einzuordnen und handlungsfähig zu bleiben.",
   },
   {
     icon: HeartPulse,
@@ -38,10 +38,10 @@ const WhySection = () => {
             <span className="text-gradient">dem Zufall überlassen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Spieler trainieren Technik, Taktik, Athletik und Ernährung. Aber der
+            Athlet:innen trainieren Technik, Taktik, Athletik und Ernährung. Aber der
             Umgang mit Druck, Fehlern, Selbstzweifel und Fokusverlust wird oft
             erst dann thematisiert, wenn es zu spät ist. RewirePerform bringt
-            diese Arbeit in den Alltag — und Spieler üben täglich, anders zu
+            diese Arbeit in den Alltag — und Athlet:innen üben täglich, anders zu
             reagieren: nach Fehlern, unter Druck, bei Müdigkeit und in Momenten,
             in denen das Ego die Kontrolle übernehmen will.
           </p>

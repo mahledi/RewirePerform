@@ -9,7 +9,7 @@ import { demoHighlights } from "./data/demoData";
 
 const navItems = [
   { label: "Überblick", target: "overview" },
-  { label: "Spieler-Flow", target: "player-flow" },
+  { label: "Athleten-Flow", target: "player-flow" },
   { label: "Coach-Dashboard", target: "coach-demo" },
   { label: "Datenschutz", target: "privacy-demo" },
 ];

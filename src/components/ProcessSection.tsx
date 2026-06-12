@@ -12,7 +12,7 @@ const steps = [
     icon: Repeat,
     title: "Tägliche Praxis",
     description:
-      "Jeden Tag trainieren Spieler konkrete Skills: Fokus, Prozessdenken, Fehlerreaktion, Selbstgespräch, Druckinterpretation, Discomfort und Reflexion.",
+      "Jeden Tag trainieren Athlet:innen konkrete Skills: Fokus, Prozessdenken, Fehlerreaktion, Selbstgespräch, Druckinterpretation, Discomfort und Reflexion.",
   },
   {
     icon: Users,

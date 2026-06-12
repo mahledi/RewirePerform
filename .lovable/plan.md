@@ -1,63 +1,58 @@
-# Admin Dashboard — Mobile UI Refactor
+## Ziel
 
-Mirror the Coach mobile pattern in `src/pages/Admin.tsx`. UI only — no changes to data fetching, RPC calls, exports, feedback logic, or any section content.
+Die gesamte App spricht final sportneutral. Ein Boxer, Turnerin, Schwimmer, Tennisspielerin oder Fußballer soll sich gleichermaßen angesprochen fühlen — in Landing, Auth, Onboarding, Daily Flow, Coach-Bereich, Admin, Demo und Inhalten.
 
-## Goal
+## Sprachregeln (für alle Stellen)
 
-On mobile (<768px), replace the cramped 9-tab strip with a calm vertical card home. Tapping a card opens that section full-width with a back button. Desktop layout stays exactly as it is today.
+- „Spieler" → „Athlet:innen" / „du" (je nach Kontext: Marketing → Athlet:innen, App-UI → du)
+- „Mitspieler" / „Teamkamerad" → „Trainingspartner" oder „andere im Training"
+- „Gegenspieler" → „Gegner" oder „Gegenüber"
+- „Mannschaft" → „Team" (bleibt, ist sportneutral)
+- Konkrete Ballsport-Beispiele („Pass spielen", „Tor", „Ballwechsel" als Pflichtbeispiel) → ersetzen durch neutrale Formulierungen („nächste saubere Handlung", „nächster Versuch", „nächste Aktion") oder offen halten („z. B. nächster Sprint, nächste Runde, nächster Punkt, nächster Versuch")
+- Sport-Auswahl: bestehende Liste in Questionnaire (Turnen/Boxen/Schwimmen/Football/Tennis…) bleibt, ist bereits breit
 
-## Approach
+Sport-/Positions-Anpassung im Hintergrund (personalization engine, copyBank, sportTaxonomy) bleibt unverändert — diese passen sich dynamisch dem Sport an. Es geht nur um Basis-Texte, die für alle gleich erscheinen.
 
-1. **Controlled Tabs**: Convert `<Tabs defaultValue="overview">` to `<Tabs value={tab} onValueChange={setTab}>` with `const [tab, setTab] = useState<string>(isMobile ? "home" : "overview")`. All existing `<TabsContent value="...">` blocks remain untouched.
+## Betroffene Stellen
 
-2. **Mobile detection**: Use existing `useIsMobile()` hook. Normalize tab once on first render based on device (same `didInitDevice` pattern from `Coach.tsx`) so user choice is preserved when resizing.
+### 1. Marketing / Landing Components
+- `src/components/PlayersSection.tsx` — Überschrift „Für Spieler" → „Für Athlet:innen"; alle „Spieler" → „Athlet:innen"
+- `src/components/MechanismSection.tsx` — „Spielern/Spieler" → „Athlet:innen"
+- `src/components/CoachSection.tsx` — „Spieler" → „Athlet:innen" (Privacy-Begründung bleibt inhaltlich)
+- `src/components/ProcessSection.tsx` — „Spieler trainieren" → „Athlet:innen trainieren"
+- weitere Landing-Components prüfen (HeroSection, DailySection, BrainSection, CTASection, EvidenceSection, WhySection, SpeakingSection, PrivacySection) und alle Treffer ersetzen
 
-3. **Header (mobile)**: Compact version of the current header.
-   - Title "Admin" + tiny uppercase subtitle "Control Center".
-   - Action row collapses: a single overflow row with refresh + sign-out as 36px icon buttons. Links to `/admin/content` and `/admin/qa` move down into the mobile card grid as their own nav cards.
-   - Desktop header unchanged.
+### 2. App-UI
+- `src/pages/Auth.tsx` — „Spieler oder Co-Coach" → „Athlet:in oder Co-Coach"
+- `src/pages/Admin.tsx` + `src/components/admin/AdminDayBrowser.tsx` — „Spieler-Vorschau / Spieler-Simulator / Spieler-Komponente" → „Athleten-Vorschau / Athleten-Simulator / Athleten-Komponente"
+- `src/lib/programProgress.ts` (Code-Kommentar) — „pro Spieler" → „pro Athlet:in"
 
-4. **Section meta array** (mirrors Coach `SECTIONS`):
-   - overview → "Übersicht" / "Aggregierte Programm- und Systemkennzahlen."
-   - days → "Tage" / "Spieler-Vorschau jedes Programmtags."
-   - teams → "Teams" / "Aggregierte Teamdaten, keine Einzelspieler."
-   - evidence → "Wirksamkeit" / "Pre/Mid/Post-Veränderungen."
-   - presentation → "Präsentation" / "Kennzahlen für Stakeholder."
-   - study → "Study" / "Launch-Study-Übersicht und Snapshots."
-   - feedback → "Feedback" / "Nutzerfeedback prüfen und beantworten."
-   - exports → "Exporte" / "CSV/JSON Datenexporte."
-   - health → "Systemstatus" / "Systemgesundheit und Launch-Ops."
-   - Plus two link-cards (mobile only): "Content offline" → `/admin/content`, "QA Test Lab" → `/admin/qa`.
+### 3. Demo
+- `src/demo/DemoPage.tsx`, `src/demo/components/PlayerFlowDemo.tsx`, `src/demo/data/demoData.ts` — „Spieler-Flow" → „Athleten-Flow"; „Spieler" Vorkommen ersetzen. Dateinamen bleiben (kein User-Impact).
 
-5. **Mobile rendering branch**:
-   - When `isMobile && tab === "home"`: render hero ("Admin Control Center" / privacy disclaimer) + vertical stack of `MobileNavCard`s. Hide `<Tabs>` entirely.
-   - When `isMobile && tab !== "home"`: render a sticky sub-header with back chevron ("Dashboard") + section title/description, then render the existing `<Tabs>` with `TabsList` visually hidden (`className="hidden"`) and the active `<TabsContent>` shown via Radix's controlled value. No content components are modified.
-   - Desktop: render the existing `<TabsList>` + `<TabsContent>` exactly as today.
+### 4. Inhaltliche Texte (Content)
+- `src/content/playerDays.ts` (~71 Treffer) — alle „Gegenspieler" → „Gegner", „Mitspieler" → „Trainingspartner", „Spieler" → „Athlet:in/du"; ballsportspezifische Beispielsätze sportneutral umschreiben
+- `src/content/scienceBites.ts` — vereinzelte „Gegner"-Stellen bleiben (sportneutral), explizite Ball-/Pass-Beispiele entfernen
+- `src/content/matrixDays.ts` — „Gegner"-Lens bleibt; „Schiri" → „Schiedsrichter:in / Wertung / Schiri" oder neutraler („externe Bewertung")
+- `src/content/coachToolkit.ts` — alle „Spieler" → „Athlet:innen"; Inhalt bleibt, da der Coach-Kontext sportübergreifend gilt
+- `src/content/questionnaireV2.ts` — Option „Trainingspartner / Konkurrenz" bleibt (sportneutral); andere Fragen prüfen
 
-6. **New shared component**: reuse the visual language of Coach's `MobileNavCard`. Either:
-   - extract `src/components/coach/MobileNavCard.tsx` into `src/components/MobileNavCard.tsx` and re-import from both pages, OR
-   - define a small inline `MobileNavCard` in `Admin.tsx` (same styling). Pick extraction so we have one source of truth.
+### 5. QA / Helper
+- `src/lib/qaSyntheticAnswers.ts` — Sportwert „Mittelfeldspieler" → neutraler Default („Athlet:in" oder leer); ist nur QA-Testdaten, niedrige Priorität
 
-7. **Overflow hygiene** (mobile only, presentation-only):
-   - Page root gets `overflow-x-hidden`.
-   - Existing tables inside `TabsContent` already sit in `overflow-x-auto` wrappers — leave them as-is (no logic touched), they remain horizontally scrollable on small screens which is acceptable for dense admin tables.
-   - Stat grids keep `grid-cols-2 md:grid-cols-4` (already responsive).
+### 6. Was NICHT angefasst wird
+- `src/content/dailyContent.backup.ts` — Backup, nicht aktiv
+- `src/lib/personalization/copyBank.ts`, `sportTaxonomy.ts` — Sport-spezifische dynamische Personalisierung, soll genau das tun
+- Dateinamen (`PlayersSection.tsx`, `PlayerFlowDemo.tsx`, `playerDays.ts`) — nur Inhalte, keine Renames, um Git-Diffs und Imports klein zu halten
 
-## Files touched
+## Vorgehen
 
-- `src/pages/Admin.tsx` — controlled Tabs, mobile branch with card home + back header, mobile-friendly header actions.
-- `src/components/MobileNavCard.tsx` (new) — extracted shared card.
-- `src/pages/Coach.tsx` — swap local `MobileNavCard` for the shared import (no visual change).
+1. Komponenten + Pages in parallelen Edits umschreiben (Punkt 1–3, 5)
+2. Content-Dateien systematisch durchgehen (Punkt 4) — `playerDays.ts` ist der größte Block; dort pro Tag-Block prüfen, dass keine sport-fremden Bilder mehr stehen
+3. Nach den Edits: `rg -ni "spieler|mitspieler|gegenspieler|ballwechsel|pass spielen"` über `src/` (ohne backup) — Ergebnis muss leer/nur false positives sein
+4. Build/Typecheck läuft automatisch
+5. Visuelle Stichprobe in Preview: Landing, Auth, Admin, Demo
 
-## Out of scope
+## Offene Frage
 
-- No changes to `loadAll`, RPC names, CSV/JSON export functions, feedback update flow, snapshot creation, or any `TabsContent` children.
-- No changes to `AdminContent`, `AdminQA`, or any admin sub-page.
-- Desktop layout untouched.
-
-## Verification
-
-- `/admin` at 390px: card home renders, header is compact, tapping a card opens that section, back button returns to home, no horizontal page scroll.
-- `/admin` at 1280px: identical to current (9-tab strip, full header).
-- `/coach` at 390px: still works (shared `MobileNavCard` import).
-- Build passes; no TS errors; no removed imports.
+Bevor ich starte: Soll ich konsequent „Athlet:innen" (Gendersternchen-Variante) nehmen, oder lieber neutral „Athleten" (generisches Maskulinum, kürzer) oder „du" (direkte Ansprache)? Aktuell lese ich auf eurer Seite eine Mischung; ich würde **„Athlet:innen" im Marketing** und **„du" in der App-UI** empfehlen — sag mir, falls du etwas anderes willst.
