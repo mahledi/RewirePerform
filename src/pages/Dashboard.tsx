@@ -22,6 +22,7 @@ import AppLoadingShell from "@/components/AppLoadingShell";
 import { hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
 
 type EventType = "training" | "rest" | "competition";
+type SetupState = "ready" | "setup" | "waiting";
 
 interface CalendarEvent {
   id: string;
@@ -399,7 +400,12 @@ const Dashboard = () => {
       const resolvedToday = await getEffectiveTodayDate(user.id).catch(() => new Date());
       if (cancelled) return;
       setEffectiveToday(resolvedToday);
-      await checkSetup(resolvedToday);
+      const setupState = await checkSetup(resolvedToday);
+      if (cancelled) return;
+      if (setupState === "ready") {
+        await refreshDashboardStatus(resolvedToday);
+      }
+      if (!cancelled) setLoading(false);
     };
 
     initializeDashboard();
@@ -408,7 +414,7 @@ const Dashboard = () => {
     };
   }, [user?.id]);
 
-  const checkSetup = async (referenceDate = effectiveToday) => {
+  const checkSetup = async (referenceDate = effectiveToday): Promise<SetupState> => {
     const [{ data: settingsArr }, modeInfo] = await Promise.all([
       supabase.from("program_settings").select("*").eq("user_id", user!.id),
       getProgramModeInfo(user!.id),
@@ -425,15 +431,13 @@ const Dashboard = () => {
       if (!modeInfo.teamStartDate) {
         // Coach hat Programm noch nicht gestartet
         setWaitingForCoach(true);
-        setLoading(false);
-        return;
+        return "waiting";
       }
 
       const today = format(referenceDate, "yyyy-MM-dd");
       if (modeInfo.teamStartDate > today) {
         setWaitingForCoach(true);
-        setLoading(false);
-        return;
+        return "waiting";
       }
       setWaitingForCoach(false);
       if (modeInfo.teamId) {
@@ -460,8 +464,7 @@ const Dashboard = () => {
       } else {
         setEvents([]);
       }
-      setLoading(false);
-      return;
+      return "ready";
     }
 
     // Solo-Mode
@@ -473,10 +476,11 @@ const Dashboard = () => {
         setCompetitionName(settingsData.competition_name || "");
       }
       setSetupMode(false);
+      return "ready";
     } else {
       setSetupMode(true);
+      return "setup";
     }
-    setLoading(false);
   };
 
   const handleSetupComplete = (newEvents: CalendarEvent[]) => {
@@ -486,7 +490,7 @@ const Dashboard = () => {
   };
 
 
-  const loadFlameStats = async () => {
+  const loadFlameStats = async (referenceDate = effectiveToday) => {
     if (!user?.id) return;
     try {
       const instance = await getOrCreateActiveInstance(user.id);
@@ -513,7 +517,7 @@ const Dashboard = () => {
 
       const snapshot = snapshots && snapshots.length > 0 ? snapshots[0] : null;
       const effectiveStart = await getEffectiveProgramStart(user.id);
-      const dayInfo = getCurrentProgramDay(effectiveStart.startDate, effectiveToday);
+      const dayInfo = getCurrentProgramDay(effectiveStart.startDate, referenceDate);
       const daysAvailable = dayInfo?.dayNumber ?? snapshot?.days_available ?? 0;
       const stats = buildFlameStats({
         completions: (completions ?? []) as any,
@@ -526,7 +530,7 @@ const Dashboard = () => {
               program_day: snapshot.program_day,
             }
           : null,
-        today: effectiveToday,
+        today: referenceDate,
       });
       setFlameStats({
         ...stats,
@@ -540,7 +544,7 @@ const Dashboard = () => {
     }
   };
 
-  const checkAssessments = async () => {
+  const checkAssessments = async (referenceDate = effectiveToday) => {
     const [{ data: settingsArr }, effectiveStart] = await Promise.all([
       supabase
         .from("program_settings")
@@ -553,7 +557,7 @@ const Dashboard = () => {
 
     if (startDate) {
       setProgramStartDate(startDate);
-      const daysSince = differenceInDays(effectiveToday, new Date(startDate));
+      const daysSince = differenceInDays(referenceDate, new Date(startDate));
 
       const { data: preTests } = await supabase
         .from("assessments")
@@ -582,9 +586,8 @@ const Dashboard = () => {
       setPostTestDue(retest.postDue || (daysSince >= 56 && !postDone));
 
       // Idempotenter Adherence-Snapshot für heute
-      upsertTodaySnapshot(user!.id)
-        .then(() => loadFlameStats())
-        .catch((e) => console.error("snapshot error", e));
+      await upsertTodaySnapshot(user!.id).catch((e) => console.error("snapshot error", e));
+      await loadFlameStats(referenceDate);
     } else {
       setProgramStartDate(null);
       setPostTestDue(false);
@@ -592,9 +595,9 @@ const Dashboard = () => {
     }
   };
 
-  const checkTodayCheckin = async () => {
+  const checkTodayCheckin = async (referenceDate = effectiveToday) => {
     setCheckinStatusLoading(true);
-    const today = format(effectiveToday, "yyyy-MM-dd");
+    const today = format(referenceDate, "yyyy-MM-dd");
     const instance = await getOrCreateActiveInstance(user!.id);
     const instanceId = instance?.id ?? null;
 
@@ -641,14 +644,10 @@ const Dashboard = () => {
     setRetestDone(timings.has("post") || timings.has("retest"));
   };
 
-  const refreshDashboardStatus = async () => {
+  const refreshDashboardStatus = async (referenceDate = effectiveToday) => {
     lastStatusRefreshAt.current = Date.now();
-    await Promise.all([checkAssessments(), checkTodayCheckin(), checkDeepProfile()]);
+    await Promise.all([checkAssessments(referenceDate), checkTodayCheckin(referenceDate), checkDeepProfile()]);
   };
-
-  useEffect(() => {
-    if (!setupMode && !loading) refreshDashboardStatus();
-  }, [setupMode, loading, user?.id, effectiveToday]);
 
   // Re-check assessments when navigating back to dashboard
   useEffect(() => {
