@@ -96,7 +96,7 @@ export const TEAM_STANDARDS: TeamStandard[] = [
     id: "mistakes-not-identity",
     title: "Fehler sind Information, nicht Identit\u00e4t.",
     explanation:
-      "Ein Athlet:innen sollte einen Fehler nicht so verlassen, als w\u00fcrde er definieren, wer er ist.",
+      "Athlet:innen sollten einen Fehler nicht so verlassen, als w\u00fcrde er definieren, wer er ist.",
     coachBehavior: "Sprich \u00fcber n\u00e4chste Handlung, nicht \u00fcber Charakter.",
   },
   {
@@ -187,7 +187,7 @@ export const getCoachDayGuidance = (
       support:
         "Heute hilft es, Fehler nicht gro\u00df zu machen, sondern Athlet:innen schnell zur\u00fcck in die n\u00e4chste Handlung zu f\u00fchren.",
       avoid:
-        "Nicht sofort Charakter oder Mentalit\u00e4t bewerten. Nicht lange erkl\u00e4ren, bevor der Athlet:innen wieder handeln darf.",
+        "Nicht sofort Charakter oder Mentalit\u00e4t bewerten. Nicht lange erkl\u00e4ren, bevor Athlet:innen wieder handeln dürfen.",
       integration60s:
         "W\u00e4hrend des Trainings auf den Reset nach Fehlern achten — eine kurze, klare Cue.",
     };
@@ -207,7 +207,7 @@ export const getCoachDayGuidance = (
         "Heute kann eine kurze Wertsch\u00e4tzung im Team das Klima stabilisieren.",
       avoid: "Keine ironischen oder vergleichenden Kommentare im Plenum.",
       integration60s:
-        "Am Ende: ein Athlet:innen benennt eine konkrete Handlung eines anderen, die heute geholfen hat.",
+        "Am Ende: eine Athlet:in benennt eine konkrete Handlung eines anderen, die heute geholfen hat.",
     };
   }
   if (/(effort|anstreng|discomfort|unbehagen|amcc)/.test(hay)) {
