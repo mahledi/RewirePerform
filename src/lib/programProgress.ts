@@ -1,7 +1,7 @@
 /**
  * Program Progress / Adherence Service
  *
- * Idempotent berechneter täglicher Snapshot pro Athlet:innen:
+ * Idempotent berechneter täglicher Snapshot pro Athlet:in:
  *   - days_available, days_completed, completion_rate
  *   - current_streak, longest_streak
  *   - comprehension_average
