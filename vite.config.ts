@@ -22,12 +22,6 @@ export default defineConfig(({ mode }) => ({
       filename: "sw.ts",
       registerType: "autoUpdate",
       injectRegister: false, // we register manually with iframe/preview guard
-      workbox: {
-        // not used in injectManifest, but harmless
-      },
-      // Safari/iOS: nie den SW selbst aus dem HTTP-Cache laden, sonst sieht der
-      // Browser eine neue SW-Version oft tagelang nicht.
-      useCredentials: false,
       devOptions: {
         enabled: false, // never in dev/preview
       },
