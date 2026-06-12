@@ -372,7 +372,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                           </span>
                           {!ready && (
                             <p className="mt-1 text-[11px] opacity-80">
-                              {pending} {pending === 1 ? "Athlet:innen hat" : "Athlet:innen haben"} den Fragebogen noch nicht ausgefüllt.
+                              {pending} {pending === 1 ? "Athlet:in hat" : "Athlet:innen haben"} den Fragebogen noch nicht ausgefüllt.
                             </p>
                           )}
                           {!ready && r.pendingNames.length > 0 && (
