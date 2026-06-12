@@ -214,7 +214,7 @@ const Admin = () => {
   const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
     { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
-    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzelspieler.", icon: UsersIcon },
+    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
     { id: "evidence", title: "Coach-Wirkung", description: "Teamweite Pre/Mid/Post-Readiness und beobachtete Veränderung.", icon: BarChart3 },
     { id: "presentation", title: "Pilot-Reporting", description: "Consent-aware Kennzahlen für Präsentationen.", icon: Presentation },
     { id: "study", title: "Wirkungsdaten", description: "Study-Übersicht, Missingness und Snapshots.", icon: FlaskConical },

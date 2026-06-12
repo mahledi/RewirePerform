@@ -153,7 +153,7 @@ const CoachToolkit = ({ teamId }: Props) => {
 
   return (
     <div className="w-full min-w-0 space-y-5">
-      {/* SECTION 1 — HEUTE IM SPIELERPROGRAMM */}
+      {/* SECTION 1 — HEUTE IM ATHLETEN-PROGRAMM */}
       <Section
         icon={<BookOpen className="w-5 h-5 text-primary" />}
         title="Heute im Athleten-Programm"
