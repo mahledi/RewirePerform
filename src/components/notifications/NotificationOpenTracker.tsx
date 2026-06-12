@@ -93,7 +93,7 @@ export const NotificationOpenTracker = () => {
           Falscher Account aktiv
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Diese Erinnerung gehört zu einem anderen Spieleraccount. Bitte melde dich mit dem richtigen Account an,
+          Diese Erinnerung gehört zu einem anderen Athlet:innen-Account. Bitte melde dich mit dem richtigen Account an,
           damit du im passenden Tagesflow landest.
         </p>
         <div className="mt-5 space-y-2">

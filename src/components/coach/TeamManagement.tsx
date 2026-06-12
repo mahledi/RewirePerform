@@ -79,7 +79,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   const INVITE_BASE_URL = "https://rewireperform.com";
 
   const getPlayerMessage = (team: Team) =>
-    `Hey, ich lade dich als Spieler zu unserem gemeinsamen neurokognitiven Performance-System RewirePerform ein.\n\nTeam: ${team.name}\nDein Code: ${team.access_code}\n\nKlick auf den Link, wenn du dir Zeit für die Registrierung und den folgenden Fragebogen nehmen kannst:\n${INVITE_BASE_URL}/auth?intent=join&code=${team.access_code}`;
+    `Hey, ich lade dich als Athlet:innen zu unserem gemeinsamen neurokognitiven Performance-System RewirePerform ein.\n\nTeam: ${team.name}\nDein Code: ${team.access_code}\n\nKlick auf den Link, wenn du dir Zeit für die Registrierung und den folgenden Fragebogen nehmen kannst:\n${INVITE_BASE_URL}/auth?intent=join&code=${team.access_code}`;
 
   const getCoachMessage = (team: Team) =>
     `Hey, ich lade dich als Coach zu unserem gemeinsamen neurokognitiven Performance-System RewirePerform ein.\n\nTeam: ${team.name}\nDein Coach-Code: ${team.coach_access_code}\n\nKlick auf den Link, wenn du dir Zeit für die Registrierung nehmen kannst:\n${INVITE_BASE_URL}/auth?intent=join&code=${team.coach_access_code}`;
@@ -190,11 +190,11 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     if (!user) return;
     const r = readiness[team.id];
     if (!r || r.athleteCount === 0) {
-      toast.error("Es sind noch keine Spieler im Team registriert.");
+      toast.error("Es sind noch keine Athlet:innen im Team registriert.");
       return;
     }
     if (r.completedCount < r.athleteCount) {
-      toast.error("Es haben noch nicht alle Spieler den Fragebogen abgeschlossen.");
+      toast.error("Es haben noch nicht alle Athlet:innen den Fragebogen abgeschlossen.");
       return;
     }
     setActivatingId(team.id);
@@ -230,7 +230,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
           {/* Player Invitation */}
           <div className="mb-4">
             <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Spieler einladen</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Athlet:innen einladen</span>
               <span className="text-[10px] text-muted-foreground">Sportler-Zugang</span>
             </div>
             <div className="mb-2 flex min-w-0 items-center gap-2">
@@ -238,9 +238,9 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                 {team.access_code}
               </div>
               <button
-                onClick={() => copyCode(team.access_code, "Spieler-Code")}
+                onClick={() => copyCode(team.access_code, "Team-Code")}
                 className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary transition-colors hover:bg-primary/20"
-                aria-label="Spieler-Code kopieren"
+                aria-label="Team-Code kopieren"
               >
                 <Copy className="w-5 h-5" />
               </button>
@@ -254,7 +254,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                 WhatsApp
               </button>
               <button
-                onClick={() => shareNative(`Team ${team.name} – Spieler einladen`, getPlayerMessage(team))}
+                onClick={() => shareNative(`Team ${team.name} – Athlet:innen einladen`, getPlayerMessage(team))}
                 className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-primary/10 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
               >
                 <Share2 className="w-3.5 h-3.5" />
@@ -364,15 +364,15 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                       {readinessLoading || !r ? (
                         <span>Lade Fragebogen-Status…</span>
                       ) : noAthletes ? (
-                        <span>Noch keine Spieler im Team registriert.</span>
+                        <span>Noch keine Athlet:innen im Team registriert.</span>
                       ) : (
                         <>
                           <span className="font-medium">
-                            Fragebogen: {r.completedCount} / {r.athleteCount} Spieler abgeschlossen
+                            Fragebogen: {r.completedCount} / {r.athleteCount} Athlet:innen abgeschlossen
                           </span>
                           {!ready && (
                             <p className="mt-1 text-[11px] opacity-80">
-                              {pending} {pending === 1 ? "Spieler hat" : "Spieler haben"} den Fragebogen noch nicht ausgefüllt.
+                              {pending} {pending === 1 ? "Athlet:innen hat" : "Athlet:innen haben"} den Fragebogen noch nicht ausgefüllt.
                             </p>
                           )}
                           {!ready && r.pendingNames.length > 0 && (
@@ -411,7 +411,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Programm starten?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Alle {r.athleteCount} Spieler haben den Fragebogen abgeschlossen.
+                            Alle {r.athleteCount} Athlet:innen haben den Fragebogen abgeschlossen.
                             Das Programm startet morgen für dein Team. Bist du sicher?
                           </AlertDialogDescription>
                         </AlertDialogHeader>
@@ -427,10 +427,10 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                     <button
                       disabled
                       className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-muted text-muted-foreground font-semibold text-sm cursor-not-allowed"
-                      title="Erst freigeben, wenn alle Spieler den Fragebogen ausgefüllt haben."
+                      title="Erst freigeben, wenn alle Athlet:innen den Fragebogen ausgefüllt haben."
                     >
                       <AlertTriangle className="w-4 h-4" />
-                      {noAthletes ? "Noch keine Spieler" : "Warte auf Fragebögen"}
+                      {noAthletes ? "Noch keine Athlet:innen" : "Warte auf Fragebögen"}
                     </button>
                   )}
                 </>

@@ -156,7 +156,7 @@ const CoachToolkit = ({ teamId }: Props) => {
       {/* SECTION 1 — HEUTE IM SPIELERPROGRAMM */}
       <Section
         icon={<BookOpen className="w-5 h-5 text-primary" />}
-        title="Heute im Spielerprogramm"
+        title="Heute im Athleten-Programm"
       >
         {!team?.program_start_date ? (
           <p className="text-sm text-muted-foreground">
@@ -188,7 +188,7 @@ const CoachToolkit = ({ teamId }: Props) => {
 
                 <div>
                   <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute lernen die Spieler
+                    Heute lernen die Athlet:innen
                   </div>
                   <p className="text-foreground/90">
                     {resolved.matrix.practiceFocus}
@@ -197,7 +197,7 @@ const CoachToolkit = ({ teamId }: Props) => {
 
                 <div>
                   <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute üben die Spieler
+                    Heute üben die Athlet:innen
                   </div>
                   <ol className="list-decimal list-inside space-y-1 text-foreground/90">
                     {resolved.content.tasks.map((t) => (

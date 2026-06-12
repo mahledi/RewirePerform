@@ -48,7 +48,7 @@ export const PlayerFlowDemo = () => {
     <section id="player-flow" className="py-20 scroll-mt-24">
       <div className="container mx-auto px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-primary">Spieler-Flow</p>
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-primary">Athleten-Flow</p>
           <h2 className="font-heading text-3xl font-bold md:text-5xl">Ein Daily Flow, der sofort verständlich wirkt.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
             Diese Demo speichert nichts. Sie zeigt die echte Logik: Science Bite, Heute für dich, Check-in,
