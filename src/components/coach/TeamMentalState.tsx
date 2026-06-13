@@ -5,35 +5,20 @@ import {
   Activity,
   AlertTriangle,
   Brain,
+  CheckCircle2,
+  Compass,
   Flame,
+  Lock,
+  Minus,
+  ShieldCheck,
   Sparkles,
   TrendingDown,
   TrendingUp,
-  Minus,
   Users,
   Zap,
-  Lock,
-  Compass,
-  Target,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  AreaChart,
-  Area,
-} from "recharts";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
-import type { ResolvedDay } from "@/content/matrixDayTypes";
 import { captureAppError } from "@/lib/monitoring";
 
 interface TrendPoint {
@@ -93,109 +78,81 @@ interface TeamRow {
   program_start_date: string | null;
 }
 
-type Tone = "stabil" | "aktiviert" | "belastet" | "fragil" | "unklar";
+type WellbeingKey =
+  | "mood"
+  | "energy"
+  | "focus"
+  | "stress"
+  | "recovery"
+  | "sleep_quality"
+  | "pressure"
+  | "team_connection";
 
-const valueLabel = (value: number | null | undefined, high = "hoch", mid = "mittel", low = "niedrig") => {
-  if (typeof value !== "number") return "nicht ausreichend sichtbar";
-  if (value >= 7) return high;
-  if (value >= 5) return mid;
-  return low;
+const valueLabel = (value: number | null | undefined) => {
+  if (typeof value !== "number") return "nicht sichtbar";
+  if (value >= 7) return "hoch";
+  if (value >= 5) return "mittel";
+  return "niedrig";
 };
 
-const buildTeamMirror = (today?: WellbeingDay): { tone: Tone; headline: string; body: string; load: string; resources: string } => {
-  if (!today?.sufficient_data) {
-    return {
-      tone: "unklar",
-      headline: "Noch kein belastbares Tagesbild",
-      body: "Für ein anonymisiertes Lagebild braucht es ausreichend Check-ins. Einzelwerte bleiben verborgen.",
-      load: "nicht ausreichend sichtbar",
-      resources: "nicht ausreichend sichtbar",
-    };
-  }
-
-  const readiness = today.readiness_index;
-  const stress = today.stress;
-  const pressure = today.pressure;
-  const recovery = today.recovery;
-  const focus = today.focus;
-  const energy = today.energy;
-  const connection = today.team_connection;
-  const loadAvg = [stress, pressure].filter((v): v is number => typeof v === "number").reduce((a, b) => a + b, 0) / Math.max(1, [stress, pressure].filter((v) => typeof v === "number").length);
-  const resourceAvg = [energy, focus, recovery, connection].filter((v): v is number => typeof v === "number").reduce((a, b) => a + b, 0) / Math.max(1, [energy, focus, recovery, connection].filter((v) => typeof v === "number").length);
-
-  let tone: Tone = "stabil";
-  if (typeof readiness === "number" && readiness < 45) tone = "fragil";
-  else if (loadAvg >= 7 && resourceAvg < 5.5) tone = "belastet";
-  else if (resourceAvg >= 7 && loadAvg <= 5.5) tone = "aktiviert";
-
-  const headlineByTone: Record<Tone, string> = {
-    stabil: "Stabiles Arbeitsfenster",
-    aktiviert: "Gute Aktivierung im Team",
-    belastet: "Erhöhte Last bei begrenzten Ressourcen",
-    fragil: "Sensibles Tagesfenster",
-    unklar: "Noch kein belastbares Tagesbild",
-  };
-
-  const body = [
-    `Bereitschaft: ${typeof readiness === "number" ? `${readiness}/100` : "nicht ausreichend sichtbar"}.`,
-    `Fokus wirkt ${valueLabel(focus)}; Energie wirkt ${valueLabel(energy)}.`,
-    `Druck/Spannung wirkt ${valueLabel(loadAvg, "hoch", "mittel", "niedrig")}; Erholung wirkt ${valueLabel(recovery)}.`,
-    `Teamverbundenheit wirkt ${valueLabel(connection)}.`,
-  ].join(" ");
-
-  return {
-    tone,
-    headline: headlineByTone[tone],
-    body,
-    load: valueLabel(loadAvg, "hoch", "mittel", "niedrig"),
-    resources: valueLabel(resourceAvg, "hoch", "mittel", "niedrig"),
-  };
+const pressureLabel = (value: number | null | undefined) => {
+  if (typeof value !== "number") return "nicht sichtbar";
+  if (value >= 7) return "erhöht";
+  if (value >= 5) return "mittel";
+  return "niedrig";
 };
 
-const buildLensMatchpoints = (today: WellbeingDay | undefined, resolved: ResolvedDay | null): string[] => {
-  if (!today?.sufficient_data) return ["Noch keine belastbare Team-Tendenz für einen Abgleich mit der heutigen Linse."];
-  if (!resolved) return ["Die heutige Programmlinie ist noch nicht verfügbar. Das Team-Bild bleibt trotzdem anonymisiert interpretierbar."];
+const formatDecimal = (value: number | null | undefined) =>
+  typeof value === "number" ? value.toFixed(1).replace(".", ",") : "—";
 
-  const items: string[] = [];
-  const lens = resolved.matrix.lens;
-  const lowFocus = typeof today.focus === "number" && today.focus <= 5;
-  const highPressure = typeof today.pressure === "number" && today.pressure >= 7;
-  const highStress = typeof today.stress === "number" && today.stress >= 7;
-  const lowRecovery = typeof today.recovery === "number" && today.recovery <= 5;
-  const lowConnection = typeof today.team_connection === "number" && today.team_connection <= 5;
-  const goodReadiness = typeof today.readiness_index === "number" && today.readiness_index >= 65;
-
-  items.push(`Heutige Linse: ${lens}. Der sinnvollste Match ist, Training und Ansprache auf diese Wahrnehmungsqualität auszurichten, ohne daraus eine Pflichtübung zu machen.`);
-
-  if (highPressure || highStress) {
-    items.push("Wenn Druck oder innere Spannung heute sichtbar sind, könnte eine ruhige Prozesssprache besonders gut zur Linse passen: weniger Bewertung, mehr klare Ausführungskriterien.");
-  }
-  if (lowFocus) {
-    items.push("Wenn Fokus heute schwächer wirkt, könnte ein einzelner gemeinsamer Cue reichen. Mehrere parallele Botschaften würden wahrscheinlich eher zerstreuen.");
-  }
-  if (lowRecovery) {
-    items.push("Bei niedriger Erholung könnte es passen, mentale Qualität über Präzision und Rhythmus zu steuern, nicht über zusätzliche Intensität.");
-  }
-  if (lowConnection) {
-    items.push("Wenn Teamverbundenheit niedrig wirkt, könnte ein kurzer gemeinsamer Standard vor der Einheit helfen, ohne daraus ein großes Teamgespräch zu machen.");
-  }
-  if (goodReadiness && !highPressure && !highStress) {
-    items.push("Das Team wirkt heute aufnahmefähig. Falls es in die Einheit passt, kann die Linse etwas expliziter in Coaching-Sprache und Feedback auftauchen.");
-  }
-  if (items.length === 1) {
-    items.push("Die aggregierten Werte wirken heute unauffällig. Die Linse kann leise mitlaufen: kurz benennen, im Training beobachten, nicht übererklären.");
-  }
-  return items;
+const formatSigned = (value: number) => {
+  const rounded = Math.round(value * 10) / 10;
+  if (rounded === 0) return "stabil";
+  return `${rounded > 0 ? "+" : ""}${rounded.toFixed(1).replace(".", ",")}`;
 };
 
-const softenCoachObservation = (text: string) =>
-  text
-    .replace(/^Team-Energie wirkt niedrig\. Fokus:\s*/i, "Team-Energie wirkt niedrig. Möglich anschlussfähig wäre: ")
-    .replace(/^Fokus wirkt niedrig\. Hilfreich:\s*/i, "Fokus wirkt niedrig. Möglich anschlussfähig wäre: ")
-    .replace(/^Bewertungsdruck wirkt hoch\. Hilfreich:\s*/i, "Bewertungsdruck wirkt hoch. Möglich anschlussfähig wäre: ")
-    .replace(/^Teamverbundenheit wirkt niedrig\. Hilfreich:\s*/i, "Teamverbundenheit wirkt niedrig. Möglich anschlussfähig wäre: ")
-    .replace(/^Hohe Spannung bei niedriger Erholung\.\s*/i, "Hohe Spannung bei niedriger Erholung ist sichtbar. ")
-    .replace(/^Aggregierte Werte wirken stabil\. Weiter wie geplant\./i, "Aggregierte Werte wirken stabil. Die heutige Linse kann ruhig mitlaufen, ohne besondere Anpassung zu verlangen.");
+const getPreviousDailyValue = (days: WellbeingDay[] | undefined, key: WellbeingKey) => {
+  const previous = (days ?? [])
+    .filter((day) => day.sufficient_data && typeof day[key] === "number")
+    .slice(0, -1)
+    .at(-1);
+  return previous ? (previous[key] as number) : null;
+};
+
+const getDailyDelta = (today: WellbeingDay | undefined, days: WellbeingDay[] | undefined, key: WellbeingKey) => {
+  if (!today?.sufficient_data || typeof today[key] !== "number") return null;
+  const previous = getPreviousDailyValue(days, key);
+  if (typeof previous !== "number") return null;
+  return (today[key] as number) - previous;
+};
+
+const getTrendDelta = (trend: TrendPoint[]) => {
+  const valid = trend.filter((item) => item.sufficient_data !== false && typeof item.value === "number");
+  if (valid.length < 2) return null;
+  return valid[valid.length - 1].value! - valid[valid.length - 2].value!;
+};
+
+const getResilienceDelta = (trend: TeamMentalData["resilience"]["trend"]) => {
+  const valid = trend.filter((item) => item.sufficient_data !== false && typeof item.score === "number");
+  if (valid.length < 2) return null;
+  return valid[valid.length - 1].score! - valid[valid.length - 2].score!;
+};
+
+const deltaTone = (delta: number | null, inverse = false) => {
+  if (delta === null || Math.abs(delta) < 0.05) return "text-muted-foreground";
+  const positive = inverse ? delta < 0 : delta > 0;
+  return positive ? "text-primary" : "text-amber-400";
+};
+
+const compactHint = (text: string) => {
+  if (/spannung/i.test(text) && /erholung/i.test(text)) return "Spannung erhöht, Erholung niedrig";
+  if (/energie/i.test(text) && /niedrig/i.test(text)) return "Energie niedrig";
+  if (/fokus/i.test(text) && /niedrig/i.test(text)) return "Fokus niedrig";
+  if (/bewertungsdruck|druck/i.test(text) && /hoch/i.test(text)) return "Druck erhöht";
+  if (/teamverbundenheit/i.test(text) && /niedrig/i.test(text)) return "Teamverbundenheit niedrig";
+  if (/stabil/i.test(text)) return "Aggregierte Werte stabil";
+  return text.split(".")[0]?.trim() || text;
+};
 
 const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const { session } = useAuth();
@@ -290,7 +247,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
           <div>
             <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Du siehst nur Aggregate (mind. {data.min_n ?? 5} Athlet:innen). Keine Einzelwerte,
+              Du siehst nur Aggregate ab mindestens {data.min_n ?? 5} Athlet:innen. Keine Einzelwerte,
               keine Reflexionen, keine Journale.
             </p>
           </div>
@@ -301,495 +258,328 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
             Zu wenig Daten für anonymisierte Auswertung.
           </p>
           <p className="text-muted-foreground text-xs">
-            Aktuell {data.teamSize} Athlet{data.teamSize === 1 ? "" : "en"} im Team —
-            mindestens {data.min_n ?? 5} mit Daten erforderlich.
+            Aktuell {data.teamSize} Athlet{data.teamSize === 1 ? "" : "en"} im Team, mindestens {data.min_n ?? 5} mit Daten erforderlich.
           </p>
         </div>
       </div>
     );
   }
 
-
-
-
-  const getTrendIcon = (trend: TrendPoint[]) => {
-    const valid = trend.filter((t) => t.value !== null);
-    if (valid.length < 2) return <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
-    const last = valid[valid.length - 1].value!;
-    const prev = valid[valid.length - 2].value!;
-    if (last > prev) return <TrendingUp className="w-3.5 h-3.5 text-primary" />;
-    if (last < prev) return <TrendingDown className="w-3.5 h-3.5 text-destructive" />;
-    return <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
-  };
-
-  const radarData = data.teamChemistry
-    ? [
-        { metric: "Growth Mindset", value: data.teamChemistry.growthMindset },
-        { metric: "Präsenz", value: data.teamChemistry.presence },
-        { metric: "Ego-Freiheit", value: data.teamChemistry.egoFreedom },
-        { metric: "Emotionskontrolle", value: data.teamChemistry.emotionalControl },
-      ]
-    : null;
-
-  // Combined trend for heatmap-style area chart
-  const combinedTrend = data.energy.trend.map((e, i) => ({
-    week: e.week,
-    energy: e.value ?? 0,
-    mood: data.mood.trend[i]?.value ?? 0,
-    focus: data.focus.trend[i]?.value ?? 0,
-  }));
+  const today = data.wellbeing?.today;
+  const hasToday = Boolean(today?.sufficient_data);
+  const minN = data.min_n ?? 5;
   const dayInfo = team?.program_start_date ? getCurrentProgramDay(team.program_start_date) : null;
   const resolvedToday = dayInfo ? resolveDay(dayInfo.dayNumber, new Date(), "training") : null;
-  const teamMirror = buildTeamMirror(data.wellbeing?.today);
-  const lensMatchpoints = buildLensMatchpoints(data.wellbeing?.today, resolvedToday);
+
+  const dailyMetrics: Array<{
+    key: WellbeingKey;
+    label: string;
+    value: number | null | undefined;
+    inverse?: boolean;
+    status: string;
+  }> = [
+    { key: "mood", label: "Stimmung", value: today?.mood, status: valueLabel(today?.mood) },
+    { key: "energy", label: "Energie", value: today?.energy, status: valueLabel(today?.energy) },
+    { key: "focus", label: "Fokus", value: today?.focus, status: valueLabel(today?.focus) },
+    { key: "stress", label: "Stress", value: today?.stress, inverse: true, status: pressureLabel(today?.stress) },
+    { key: "recovery", label: "Erholung", value: today?.recovery, status: valueLabel(today?.recovery) },
+    { key: "pressure", label: "Druck", value: today?.pressure, inverse: true, status: pressureLabel(today?.pressure) },
+    { key: "team_connection", label: "Teamverbundenheit", value: today?.team_connection, status: valueLabel(today?.team_connection) },
+    { key: "sleep_quality", label: "Schlaf", value: today?.sleep_quality, status: valueLabel(today?.sleep_quality) },
+  ];
+
+  const weeklyMetrics = [
+    {
+      icon: <Zap className="w-4 h-4" />,
+      label: "Energie",
+      value: data.energy.current,
+      suffix: "/10",
+      delta: getTrendDelta(data.energy.trend),
+    },
+    {
+      icon: <Brain className="w-4 h-4" />,
+      label: "Stimmung",
+      value: data.mood.current,
+      suffix: "/10",
+      delta: getTrendDelta(data.mood.trend),
+    },
+    {
+      icon: <Activity className="w-4 h-4" />,
+      label: "Fokus",
+      value: data.focus.current,
+      suffix: "/10",
+      delta: getTrendDelta(data.focus.trend),
+    },
+    {
+      icon: <Flame className="w-4 h-4" />,
+      label: "Umsetzungsrate",
+      value: data.resilience.current,
+      suffix: "%",
+      delta: getResilienceDelta(data.resilience.trend),
+    },
+  ];
+
+  const teamProfile = data.teamChemistry
+    ? [
+        { label: "Growth Mindset", value: data.teamChemistry.growthMindset },
+        { label: "Präsenz", value: data.teamChemistry.presence },
+        { label: "Ego-Freiheit", value: data.teamChemistry.egoFreedom },
+        { label: "Emotionskontrolle", value: data.teamChemistry.emotionalControl },
+      ]
+    : [];
 
   return (
     <div className="w-full min-w-0 space-y-4">
-      {/* Stress Warning */}
       {data.stressWarning && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 flex items-start gap-3 animate-pulse">
-          <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-destructive">Erhöhtes Stresslevel</p>
+            <p className="text-sm font-semibold text-foreground">Auffälliger Teamzustand</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Durchschnittliche Stimmung oder Energie liegt unter dem kritischen Schwellenwert.
+              Stimmung oder Energie liegen im aktuellen Wochenbild niedrig.
             </p>
           </div>
         </div>
       )}
 
-      {/* ─── Team Pulse — Heutige aggregierte Werte ─── */}
-      {data.wellbeing && (
-        <div className="bg-card border border-primary/20 rounded-2xl p-4 space-y-4">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Activity className="w-4 h-4 text-primary" />
-                Team Pulse — heute
-              </h3>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Aggregierte Teamdaten · keine Einzelwerte
-              </p>
-            </div>
-            {typeof data.readiness_index === "number" && (
-              <div className="text-left sm:text-right">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Team-Bereitschaft</p>
-                <p className="text-2xl font-bold text-primary">{data.readiness_index}<span className="text-xs text-muted-foreground">/100</span></p>
-              </div>
-            )}
-          </div>
-
-          {!data.wellbeing.today.sufficient_data ? (
-            <p className="text-xs text-muted-foreground py-4 text-center">
-              Zu wenig Daten für anonymisierte Auswertung. ({data.wellbeing.today.n_users}/{data.min_n ?? 5})
+      <section className="rounded-2xl border border-primary/20 bg-gradient-card p-5 shadow-card">
+        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-primary/80">
+              Teamzustand
             </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:grid-cols-3">
-              {[
-                { k: "mood", label: "Stimmung" },
-                { k: "energy", label: "Energie" },
-                { k: "focus", label: "Fokus" },
-                { k: "stress", label: "Stress" },
-                { k: "recovery", label: "Erholung" },
-                { k: "sleep_quality", label: "Schlaf" },
-                { k: "physical_readiness", label: "Körperl. Bereit." },
-                { k: "motivation", label: "Motivation" },
-                { k: "pressure", label: "Druck" },
-                { k: "team_connection", label: "Teamverb." },
-              ].map(({ k, label }) => {
-                const v = (data.wellbeing!.today as any)[k] as number | null;
-                return (
-                  <div key={k} className="bg-secondary/30 rounded-xl px-3 py-2">
-                    <p className="text-[10px] text-muted-foreground">{label}</p>
-                    <p className="text-base font-semibold text-foreground">
-                      {typeof v === "number" ? v.toFixed(1) : "—"}
-                      {typeof v === "number" && <span className="text-[10px] text-muted-foreground font-normal">/10</span>}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+            <h2 className="font-heading text-2xl font-semibold leading-tight text-foreground">
+              Heutiges Lagebild
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Aggregierte Check-in-Werte. Keine Einzelwerte, keine Reflexionen, keine Journale.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-w-[360px]">
+            <StatusTile label="Teamgröße" value={data.teamSize} />
+            <StatusTile label="Mindestgruppe" value={minN} />
+            <StatusTile label="Heute n" value={today?.n_users ?? 0} muted={!hasToday} />
+          </div>
+        </div>
+      </section>
 
-          <p className="text-[10px] text-muted-foreground italic">
-            Interner Team-Pulse-Wert aus aggregierten Check-in-Daten. Keine Diagnose. Keine Kausalaussage.
+      {!hasToday ? (
+        <div className="rounded-2xl border border-border/50 bg-card p-6 text-center">
+          <ShieldCheck className="mx-auto mb-3 h-9 w-9 text-primary" />
+          <p className="text-sm font-medium text-foreground">Heute noch kein belastbares Tagesbild</p>
+          <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted-foreground">
+            Für anonymisierte Teamwerte braucht es mindestens {minN} Check-ins. Aktuell sichtbar: {today?.n_users ?? 0}/{minN}.
           </p>
         </div>
+      ) : (
+        <section className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
+          {dailyMetrics.map((metric) => (
+            <DailyMetricCard
+              key={metric.key}
+              label={metric.label}
+              value={metric.value}
+              status={metric.status}
+              delta={getDailyDelta(today, data.wellbeing?.daily_trends, metric.key)}
+              inverse={metric.inverse}
+            />
+          ))}
+        </section>
       )}
 
-      {/* ─── Team State x Today's Lens ─── */}
-      {data.wellbeing && (
-        <div className="bg-card border border-primary/20 rounded-2xl p-4 space-y-4">
-          <div className="flex items-start justify-between gap-3">
+      <section className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr]">
+        <div className="rounded-2xl border border-border/50 bg-card p-4">
+          <div className="mb-4 flex items-center gap-2">
+            <Users className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Teilnahme</h3>
+          </div>
+          <div className="flex min-w-0 items-end justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Compass className="w-4 h-4 text-primary" />
-                Teamzustand × heutige Linse
-              </h3>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Neutraler Spiegel · mögliche Matchpoints · keine Handlungsanweisung
-              </p>
+              <p className="text-3xl font-semibold text-foreground">{data.participation.rate}%</p>
+              <p className="mt-1 text-xs text-muted-foreground">aktive Athleten in 7 Tagen</p>
             </div>
-            {resolvedToday && (
-            <div className="shrink-0 text-left sm:text-right">
+            <p className="text-sm font-medium text-muted-foreground">
+              {data.participation.total}/{data.teamSize}
+            </p>
+          </div>
+        </div>
+
+        {resolvedToday ? (
+          <div className="rounded-2xl border border-border/50 bg-card p-4">
+            <div className="mb-4 flex items-center gap-2">
+              <Compass className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Heutige Programmlinse</h3>
+            </div>
+            <div className="flex min-w-0 items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-base font-semibold text-foreground">{resolvedToday.matrix.lens}</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {resolvedToday.matrix.practiceFocus}
+                </p>
+              </div>
+              <div className="shrink-0 text-right">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Tag</p>
-                <p className="text-lg font-bold text-primary">{resolvedToday.matrix.dayNumber}/56</p>
+                <p className="text-xl font-semibold text-primary">{resolvedToday.matrix.dayNumber}/56</p>
               </div>
-            )}
-          </div>
-
-          <div className="grid md:grid-cols-[1fr_1.2fr] gap-3">
-            <div className="bg-secondary/30 border border-border/40 rounded-xl p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Aktuelles Team-Bild</p>
-              <p className="text-sm font-semibold text-foreground mb-2">{teamMirror.headline}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">{teamMirror.body}</p>
-            </div>
-            <div className="bg-primary/5 border border-primary/15 rounded-xl p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Linse im Athleten-Programm</p>
-              <p className="text-sm font-semibold text-foreground mb-2">
-                {resolvedToday?.matrix.lens ?? "Noch keine heutige Linse verfügbar"}
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {resolvedToday?.matrix.practiceFocus ?? "Sobald das Teamprogramm läuft, wird die Tageslinie hier mit dem Teamzustand abgeglichen."}
-              </p>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Mögliche Matchpoints</p>
-            {lensMatchpoints.map((item, i) => (
-              <div key={i} className="flex gap-2 text-xs text-muted-foreground leading-relaxed">
-                <Target className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
-                <p>{item}</p>
-              </div>
-            ))}
+        ) : (
+          <div className="rounded-2xl border border-border/50 bg-card p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <Compass className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Heutige Programmlinse</h3>
+            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Sobald das Teamprogramm läuft, erscheint hier der Tageskontext.
+            </p>
           </div>
-        </div>
-      )}
+        )}
+      </section>
 
-      {/* ─── Coach-Hinweise (deterministisch, aggregiert) ─── */}
-      {data.coach_hints && data.coach_hints.length > 0 && (
-        <div className="bg-card border border-border/50 rounded-2xl p-4 space-y-2">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            Weitere Beobachtungen
-          </h3>
-          <p className="text-[10px] text-muted-foreground">
-            Deterministisch aus aggregierten Tageswerten. Als Gesprächs- und Trainingskontext gedacht, nicht als Vorgabe.
-          </p>
-          <ul className="space-y-2">
-            {data.coach_hints.map((h, i) => (
-              <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
-                <span className="text-primary mt-0.5">•</span>
-                <span>{softenCoachObservation(h)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* ─── 14-Tage Wellbeing Trend ─── */}
-      {data.wellbeing && data.wellbeing.daily_trends.some((d) => d.sufficient_data) && (
-        <div className="bg-card border border-border/50 rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-primary" />
-            14-Tage Trend (Stimmung · Energie · Stress · Erholung)
-          </h3>
-          <div className="h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.wellbeing.daily_trends.map((d) => ({
-                date: d.date?.slice(5) ?? "",
-                mood: d.sufficient_data ? d.mood : null,
-                energy: d.sufficient_data ? d.energy : null,
-                stress: d.sufficient_data ? d.stress : null,
-                recovery: d.sufficient_data ? d.recovery : null,
-              }))}>
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 10]} tick={{ fontSize: 9, fill: "hsl(220 10% 55%)" }} axisLine={false} tickLine={false} width={22} />
-                <Tooltip contentStyle={{ background: "hsl(220 18% 10%)", border: "1px solid hsl(220 14% 18%)", borderRadius: "12px", fontSize: "12px", color: "hsl(0 0% 95%)" }} />
-                <Line type="monotone" dataKey="mood" stroke="hsl(217, 91%, 60%)" strokeWidth={2} dot={false} name="Stimmung" connectNulls />
-                <Line type="monotone" dataKey="energy" stroke="hsl(48, 96%, 53%)" strokeWidth={2} dot={false} name="Energie" connectNulls />
-                <Line type="monotone" dataKey="stress" stroke="hsl(0, 84%, 60%)" strokeWidth={2} dot={false} name="Stress" connectNulls />
-                <Line type="monotone" dataKey="recovery" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} name="Erholung" connectNulls />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-blue-400" /> Stimmung</span>
-            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Energie</span>
-            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-red-500" /> Stress</span>
-            <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-primary" /> Erholung</span>
-          </div>
-        </div>
-      )}
-
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <MetricCard
-          icon={<Zap className="w-4 h-4" />}
-          label="Energie"
-          value={data.energy.current}
-          max={10}
-          trend={getTrendIcon(data.energy.trend)}
-          color="text-yellow-400"
-        />
-        <MetricCard
-          icon={<Brain className="w-4 h-4" />}
-          label="Stimmung"
-          value={data.mood.current}
-          max={10}
-          trend={getTrendIcon(data.mood.trend)}
-          color="text-blue-400"
-        />
-        <MetricCard
-          icon={<Activity className="w-4 h-4" />}
-          label="Fokus"
-          value={data.focus.current}
-          max={10}
-          trend={getTrendIcon(data.focus.trend)}
-          color="text-purple-400"
-        />
-        <MetricCard
-          icon={<Flame className="w-4 h-4" />}
-          label="Umsetzungsrate"
-          value={data.resilience.current}
-          max={100}
-          suffix="%"
-          trend={
-            data.resilience.trend.length >= 2 ? (
-              (() => {
-                const valid = data.resilience.trend.filter((t) => t.score !== null);
-                if (valid.length < 2) return <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
-                const last = valid[valid.length - 1].score!;
-                const prev = valid[valid.length - 2].score!;
-                if (last > prev) return <TrendingUp className="w-3.5 h-3.5 text-primary" />;
-                if (last < prev) return <TrendingDown className="w-3.5 h-3.5 text-destructive" />;
-                return <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
-              })()
-            ) : <Minus className="w-3.5 h-3.5 text-muted-foreground" />
-          }
-          color="text-orange-400"
-        />
-      </div>
-
-      {/* Participation Badge */}
-      <div className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border/50 bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <Users className="w-4 h-4 text-primary" />
-          <span className="text-sm text-muted-foreground">Teilnahme (7 Tage)</span>
-        </div>
-        <div className="flex items-center gap-2 sm:justify-end">
-          <span className="text-lg font-bold text-foreground">{data.participation.rate}%</span>
-          <span className="text-xs text-muted-foreground">({data.participation.total}/{data.teamSize})</span>
-        </div>
-      </div>
-
-      {/* Trend Chart */}
-      <div className="bg-card border border-border/50 rounded-2xl p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      <section className="rounded-2xl border border-border/50 bg-card p-4">
+        <div className="mb-4 flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
-          4-Wochen-Trend
-        </h3>
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={combinedTrend}>
-              <defs>
-                <linearGradient id="energyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(48, 96%, 53%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(48, 96%, 53%)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="focusGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(271, 91%, 65%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(271, 91%, 65%)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="week"
-                tick={{ fontSize: 10, fill: "hsl(220 10% 55%)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                domain={[0, 10]}
-                tick={{ fontSize: 10, fill: "hsl(220 10% 55%)" }}
-                axisLine={false}
-                tickLine={false}
-                width={24}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(220 18% 10%)",
-                  border: "1px solid hsl(220 14% 18%)",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  color: "hsl(0 0% 95%)",
-                }}
-              />
-              <Area type="monotone" dataKey="energy" stroke="hsl(48, 96%, 53%)" fill="url(#energyGrad)" strokeWidth={2} name="Energie" />
-              <Area type="monotone" dataKey="mood" stroke="hsl(217, 91%, 60%)" fill="url(#moodGrad)" strokeWidth={2} name="Stimmung" />
-              <Area type="monotone" dataKey="focus" stroke="hsl(271, 91%, 65%)" fill="url(#focusGrad)" strokeWidth={2} name="Fokus" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <h3 className="text-sm font-semibold text-foreground">Wochenbild</h3>
         </div>
-        <div className="mt-2 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-yellow-400" /> Energie
-          </span>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-blue-400" /> Stimmung
-          </span>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="w-2 h-2 rounded-full bg-purple-400" /> Fokus
-          </span>
+        <div className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
+          {weeklyMetrics.map((metric) => (
+            <WeeklyMetricCard
+              key={metric.label}
+              icon={metric.icon}
+              label={metric.label}
+              value={metric.value}
+              suffix={metric.suffix}
+              delta={metric.delta}
+            />
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* Team Chemistry Radar */}
-      {radarData && (
-        <div className="bg-card border border-border/50 rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      {teamProfile.length > 0 && (
+        <section className="rounded-2xl border border-border/50 bg-card p-4">
+          <div className="mb-4 flex items-center gap-2">
             <Brain className="w-4 h-4 text-primary" />
-            Team-Profil (Inner Excellence)
-          </h3>
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-                <PolarGrid stroke="hsl(220 14% 18%)" />
-                <PolarAngleAxis
-                  dataKey="metric"
-                  tick={{ fontSize: 10, fill: "hsl(220 10% 55%)" }}
-                />
-                <PolarRadiusAxis
-                  domain={[0, 100]}
-                  tick={{ fontSize: 9, fill: "hsl(220 10% 55%)" }}
-                  axisLine={false}
-                />
-                <Radar
-                  dataKey="value"
-                  stroke="hsl(160 84% 39%)"
-                  fill="hsl(160 84% 39%)"
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+            <h3 className="text-sm font-semibold text-foreground">Team-Profil</h3>
           </div>
-        </div>
+          <div className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
+            {teamProfile.map((item) => (
+              <div key={item.label} className="rounded-xl border border-border/40 bg-secondary/25 p-3">
+                <p className="text-[11px] text-muted-foreground">{item.label}</p>
+                <p className="mt-2 text-2xl font-semibold text-foreground">
+                  {item.value}
+                  <span className="text-xs font-normal text-muted-foreground">/100</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* Deterministic Team Summary */}
-      {data.vibe && (
-        <div className="bg-card border border-primary/20 rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      {data.coach_hints && data.coach_hints.length > 0 && (
+        <section className="rounded-2xl border border-border/50 bg-card p-4">
+          <div className="mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            Team-Zusammenfassung
-          </h3>
+            <h3 className="text-sm font-semibold text-foreground">Beobachtungen</h3>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {data.coach_hints.map((hint) => (
+              <span
+                key={hint}
+                className="inline-flex items-center rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 text-xs font-medium text-secondary-foreground"
+              >
+                {compactHint(hint)}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data.vibe && (
+        <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-semibold text-foreground">Kurzbild</h3>
+          </div>
           <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
             {data.vibe}
           </p>
-          <p className="text-xs text-muted-foreground/50 mt-3">
-            Deterministische Auswertung. Basierend auf aggregierten Team-Pulse-Werten der letzten 7 Tage.
+          <p className="text-xs text-muted-foreground/60 mt-3">
+            Deterministische Auswertung aus aggregierten Zahlen. Keine Diagnose.
           </p>
-        </div>
+        </section>
       )}
-
-      {/* Resilience Trend */}
-      <div className="bg-card border border-border/50 rounded-2xl p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Flame className="w-4 h-4 text-orange-400" />
-          Umsetzungsrate Trend
-        </h3>
-        <div className="h-32">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data.resilience.trend.map((t) => ({
-                week: t.week,
-                score: t.score ?? 0,
-              }))}
-            >
-              <XAxis
-                dataKey="week"
-                tick={{ fontSize: 10, fill: "hsl(220 10% 55%)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                domain={[0, 100]}
-                tick={{ fontSize: 10, fill: "hsl(220 10% 55%)" }}
-                axisLine={false}
-                tickLine={false}
-                width={30}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(220 18% 10%)",
-                  border: "1px solid hsl(220 14% 18%)",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  color: "hsl(0 0% 95%)",
-                }}
-                formatter={(value: number) => [`${value}%`, "Abschlussrate"]}
-              />
-              <Line
-                type="monotone"
-                dataKey="score"
-                stroke="hsl(25, 95%, 53%)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: "hsl(25, 95%, 53%)" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
     </div>
   );
 };
 
-// Sub-component for metric cards
-const MetricCard = ({
+const StatusTile = ({ label, value, muted = false }: { label: string; value: number; muted?: boolean }) => (
+  <div className="rounded-xl border border-border/50 bg-background/35 px-3 py-2">
+    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
+    <p className={`mt-1 text-xl font-semibold ${muted ? "text-muted-foreground" : "text-foreground"}`}>{value}</p>
+  </div>
+);
+
+const DailyMetricCard = ({
+  label,
+  value,
+  status,
+  delta,
+  inverse = false,
+}: {
+  label: string;
+  value: number | null | undefined;
+  status: string;
+  delta: number | null;
+  inverse?: boolean;
+}) => (
+  <div className="rounded-2xl border border-border/50 bg-card p-4 premium-hairline">
+    <div className="mb-5 flex items-start justify-between gap-3">
+      <div>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="mt-1 text-xs uppercase tracking-wide text-primary/80">{status}</p>
+      </div>
+      <DeltaBadge delta={delta} inverse={inverse} />
+    </div>
+    <p className="text-3xl font-semibold tracking-normal text-foreground">
+      {formatDecimal(value)}
+      {typeof value === "number" && <span className="text-sm font-normal text-muted-foreground">/10</span>}
+    </p>
+  </div>
+);
+
+const WeeklyMetricCard = ({
   icon,
   label,
   value,
-  max,
-  trend,
-  color,
-  suffix = "",
+  suffix,
+  delta,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | null;
-  max: number;
-  trend: React.ReactNode;
-  color: string;
-  suffix?: string;
-}) => {
-  const hasValue = typeof value === "number";
-  const percentage = hasValue && max > 0 ? (value! / max) * 100 : 0;
-  const barColor =
-    percentage >= 70 ? "bg-primary" : percentage >= 40 ? "bg-yellow-500" : "bg-destructive";
-
-  return (
-    <div className="bg-card border border-border/50 rounded-2xl p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className={color}>{icon}</span>
-        {trend}
-      </div>
-      <p className="text-xl font-bold text-foreground">
-        {hasValue ? value : <span className="text-muted-foreground">—</span>}
-        {hasValue && (suffix || <span className="text-xs text-muted-foreground font-normal">/{max}</span>)}
-      </p>
-      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-      <div className="w-full h-1 bg-secondary/50 rounded-full mt-2">
-        <div
-          className={`h-1 rounded-full transition-all ${barColor}`}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
-        />
-      </div>
+  suffix: string;
+  delta: number | null;
+}) => (
+  <div className="rounded-xl border border-border/40 bg-secondary/25 p-3">
+    <div className="mb-3 flex items-center justify-between gap-2">
+      <span className="text-primary">{icon}</span>
+      <DeltaBadge delta={delta} small />
     </div>
+    <p className="text-2xl font-semibold text-foreground">
+      {typeof value === "number" ? formatDecimal(value) : "—"}
+      {typeof value === "number" && <span className="text-xs font-normal text-muted-foreground">{suffix}</span>}
+    </p>
+    <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+  </div>
+);
+
+const DeltaBadge = ({ delta, inverse = false, small = false }: { delta: number | null; inverse?: boolean; small?: boolean }) => {
+  const stable = delta === null || Math.abs(delta) < 0.05;
+  const Icon = stable ? Minus : delta > 0 ? TrendingUp : TrendingDown;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-lg bg-secondary/50 px-2 py-1 ${small ? "text-[10px]" : "text-xs"} ${deltaTone(delta, inverse)}`}>
+      <Icon className="h-3 w-3" />
+      {delta === null ? "—" : formatSigned(delta)}
+    </span>
   );
 };
 
