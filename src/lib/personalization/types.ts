@@ -10,16 +10,6 @@ export type SportCategory =
 
 export type PersonalizationContextType = "training" | "rest" | "competition";
 
-export type JournalSignal =
-  | "self_doubt"
-  | "pressure_after_mistake"
-  | "fear_of_judgement"
-  | "low_energy"
-  | "result_focus"
-  | "comparison"
-  | "avoidance"
-  | "frustration_uncontrollable";
-
 export interface PersonalizationDay {
   dayNumber: number;
   lens: string;
@@ -49,7 +39,6 @@ export interface PersonalizationInput {
     focus?: number | null;
     stress?: number | null;
   };
-  recentJournalSignals?: JournalSignal[];
 }
 
 export interface SportContext {

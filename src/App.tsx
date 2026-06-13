@@ -26,6 +26,7 @@ const DeepProfile = lazy(() => import("./pages/DeepProfile.tsx"));
 const Progress = lazy(() => import("./pages/Progress.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const Journal = lazy(() => import("./pages/Journal.tsx"));
+const JournalHistory = lazy(() => import("./pages/JournalHistory.tsx"));
 const PreTraining = lazy(() => import("./pages/PreTraining.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const AdminContent = lazy(() => import("./pages/AdminContent.tsx"));
@@ -95,6 +96,9 @@ const AppRoutes = () => {
             } />
             <Route path="/journal" element={
               <ProtectedRoute><Journal /></ProtectedRoute>
+            } />
+            <Route path="/journal/history" element={
+              <ProtectedRoute><JournalHistory /></ProtectedRoute>
             } />
             <Route path="/pre-training" element={
               <ProtectedRoute><PreTraining /></ProtectedRoute>

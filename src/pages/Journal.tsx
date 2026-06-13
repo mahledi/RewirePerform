@@ -224,10 +224,16 @@ const Journal = () => {
           Deine Reflexion bleibt privat. Morgen wartet die nächste Linse auf dem Dashboard.
         </p>
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/journal/history")}
           className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium"
         >
-          Zurück
+          Einträge ansehen
+        </button>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="mt-3 px-6 py-3 rounded-xl text-muted-foreground hover:text-foreground font-medium"
+        >
+          Zurück zum Dashboard
         </button>
       </div>
     );
@@ -260,6 +266,21 @@ const Journal = () => {
           <p className="text-base font-heading font-semibold leading-snug">{matrix.lens}</p>
           <p className="text-xs text-muted-foreground mt-2">{matrix.practiceFocus}</p>
         </motion.div>
+
+        <button
+          type="button"
+          onClick={() => navigate("/journal/history")}
+          className="w-full rounded-2xl border border-border/50 bg-secondary/25 px-5 py-4 text-left transition-colors hover:bg-secondary/40 flex items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <BookOpen className="w-5 h-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-heading font-semibold">Frühere Einträge ansehen</p>
+              <p className="text-xs text-muted-foreground">Privater Rückblick, nach Tagen geordnet.</p>
+            </div>
+          </div>
+          <ArrowLeft className="w-4 h-4 text-muted-foreground rotate-180 shrink-0" />
+        </button>
 
         {/* Speak-don't-type hint */}
         <motion.div

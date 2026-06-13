@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMicroAdjustmentContext, extractJournalSignals } from "@/lib/microAdjustment";
+import { buildMicroAdjustmentContext } from "@/lib/microAdjustment";
 import type { MicroAdjustmentInput } from "@/lib/microAdjustment";
 
 const baseInput = (overrides: Partial<MicroAdjustmentInput> = {}): MicroAdjustmentInput => ({
@@ -119,13 +119,10 @@ describe("personalization engine", () => {
     expect(selfCriticism.microCue).toBe("Aktion, nicht Urteil.");
   });
 
-  it("extracts repeated journal signals cautiously", () => {
-    const signals = extractJournalSignals([
-      "Nach dem Fehler hatte ich direkt Zweifel.",
-      "Ich dachte wieder: nicht gut genug nach diesem Fehler.",
-    ]);
-    const out = buildMicroAdjustmentContext(baseInput({ recentJournalSignals: signals }));
-    expect(out.journalPatternLine).toContain("häufiger");
-    expect(out.journalPatternLine).toContain("Hinweis");
+  it("does not use journal patterns for personalization", () => {
+    const out = buildMicroAdjustmentContext(baseInput());
+    expect(out.journalPatternLine).toBeNull();
+    expect(out.journalPatternEmphasis).toBeNull();
+    expect(out.sourceTags).not.toContain("journal_pattern");
   });
 });

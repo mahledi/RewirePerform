@@ -1,6 +1,5 @@
 import {
   buildAddressLine,
-  buildJournalLine,
   buildMicroCue,
   buildProfileLine,
   buildRelevanceLine,
@@ -19,7 +18,6 @@ export function buildPersonalization(input: PersonalizationInput): Personalizati
   const roleLine = buildRoleContextLine(sport.category, input.profile?.position);
   const stateLine = buildStateLine(input.checkin);
   const profileLine = buildProfileLine(input.questionnaireSignals);
-  const journalLine = buildJournalLine(input.recentJournalSignals);
   const relevanceLine = buildRelevanceLine(input.day, input.contextType);
   const sourceTags = compact([
     `day:${input.day.dayNumber}`,
@@ -29,24 +27,20 @@ export function buildPersonalization(input: PersonalizationInput): Personalizati
     roleLine ? "role" : null,
     stateLine ? "checkin" : null,
     profileLine ? "questionnaire" : null,
-    journalLine ? "journal_pattern" : null,
   ]);
   const microCue = buildMicroCue({
     contextType: input.contextType,
     phase: input.day.phase,
     stateLine,
     profileLine,
-    journalSignals: input.recentJournalSignals,
   });
-  const primaryAdaptationLine = stateLine ?? profileLine ?? journalLine ?? relevanceLine ?? sportLine;
+  const primaryAdaptationLine = stateLine ?? profileLine ?? relevanceLine ?? sportLine;
   const secondaryAdaptationLine =
     primaryAdaptationLine === stateLine
-      ? profileLine ?? journalLine ?? relevanceLine
+      ? profileLine ?? relevanceLine
       : primaryAdaptationLine === profileLine
-        ? stateLine ?? journalLine ?? relevanceLine
-        : primaryAdaptationLine === journalLine
-          ? stateLine ?? profileLine ?? relevanceLine
-          : stateLine ?? profileLine ?? journalLine;
+        ? stateLine ?? relevanceLine
+        : stateLine ?? profileLine;
 
   return {
     athleteAddressLine,
@@ -54,7 +48,7 @@ export function buildPersonalization(input: PersonalizationInput): Personalizati
     roleContextLine: roleLine,
     stateLine,
     profileLine,
-    journalPatternLine: journalLine,
+    journalPatternLine: null,
     relevanceLine,
     microCue,
     sourceTags,
@@ -64,6 +58,6 @@ export function buildPersonalization(input: PersonalizationInput): Personalizati
     positionExample: roleLine,
     stateEmphasis: stateLine,
     profileEmphasis: profileLine ?? relevanceLine,
-    journalPatternEmphasis: journalLine,
+    journalPatternEmphasis: null,
   };
 }

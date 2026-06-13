@@ -1,4 +1,4 @@
-import type { JournalSignal, PersonalizationContextType, PersonalizationDay, SportCategory } from "./types";
+import type { PersonalizationContextType, PersonalizationDay, SportCategory } from "./types";
 
 export const sportContextLine: Record<SportCategory, Record<PersonalizationContextType, string>> = {
   invasion_team_sport: {
@@ -89,29 +89,8 @@ export function buildProfileLine(signals?: { resultFocus?: number; selfCriticism
   return strongest?.text ?? null;
 }
 
-const journalSignalLabel: Record<JournalSignal, string> = {
-  self_doubt: "Selbstzweifel",
-  pressure_after_mistake: "Druck nach Fehlern",
-  fear_of_judgement: "Bewertung von außen",
-  low_energy: "wenig Energie",
-  result_focus: "starker Ergebnisbezug",
-  comparison: "Vergleich",
-  avoidance: "Vermeidung",
-  frustration_uncontrollable: "Frust über Unkontrollierbares",
-};
-
-export function buildJournalLine(signals?: JournalSignal[]): string | null {
-  if (!signals?.length) return null;
-  const counts = new Map<JournalSignal, number>();
-  for (const signal of signals) counts.set(signal, (counts.get(signal) ?? 0) + 1);
-  const top = [...counts.entries()].filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1])[0];
-  if (!top) return null;
-  return `In deinen letzten Reflexionen tauchte häufiger ${journalSignalLabel[top[0]]} auf. Nimm das nur als Hinweis: einmal bemerken, dann zurück zur heutigen Aufgabe.`;
-}
-
-export function buildMicroCue(input: { contextType: PersonalizationContextType; phase: 1 | 2 | 3 | 4; stateLine: string | null; profileLine: string | null; journalSignals?: JournalSignal[] }): string {
-  if (input.journalSignals?.includes("pressure_after_mistake")) return "Fehler, nicht Ich.";
-  if (input.journalSignals?.includes("result_focus") || input.contextType === "competition") return "Nur die nächste.";
+export function buildMicroCue(input: { contextType: PersonalizationContextType; phase: 1 | 2 | 3 | 4; stateLine: string | null; profileLine: string | null }): string {
+  if (input.contextType === "competition") return "Nur die nächste.";
   if (input.stateLine?.includes("niedriger Energie")) return "Klein und sauber.";
   if (input.stateLine?.includes("hoher Anspannung")) return "Ein Anker reicht.";
   if (input.profileLine?.includes("Selbstkritik")) return "Aktion, nicht Urteil.";
