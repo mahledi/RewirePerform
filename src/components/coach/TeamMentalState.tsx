@@ -5,13 +5,10 @@ import {
   Activity,
   AlertTriangle,
   Brain,
-  CheckCircle2,
   Compass,
-  Flame,
   Lock,
   Minus,
   ShieldCheck,
-  Sparkles,
   TrendingDown,
   TrendingUp,
   Users,
@@ -42,7 +39,6 @@ interface WellbeingDay {
   motivation: number | null;
   pressure: number | null;
   team_connection: number | null;
-  readiness_index: number | null;
 }
 
 interface TeamMentalData {
@@ -52,24 +48,14 @@ interface TeamMentalData {
   energy: { current: number | null; trend: TrendPoint[] };
   mood: { current: number | null; trend: TrendPoint[] };
   focus: { current: number | null; trend: TrendPoint[] };
-  resilience: { current: number | null; trend: { week: string; score: number | null; n_users?: number; sufficient_data?: boolean }[] };
   participation: { rate: number; total: number };
   stressWarning: boolean;
   teamSize: number;
-  teamChemistry: {
-    growthMindset: number;
-    presence: number;
-    egoFreedom: number;
-    emotionalControl: number;
-  } | null;
-  vibe: string | null;
   wellbeing?: {
     today: WellbeingDay;
     daily_trends: WellbeingDay[];
     weekly_trends: (WellbeingDay & { week: string })[];
   };
-  readiness_index?: number | null;
-  coach_hints?: string[];
 }
 
 interface TeamRow {
@@ -132,26 +118,10 @@ const getTrendDelta = (trend: TrendPoint[]) => {
   return valid[valid.length - 1].value! - valid[valid.length - 2].value!;
 };
 
-const getResilienceDelta = (trend: TeamMentalData["resilience"]["trend"]) => {
-  const valid = trend.filter((item) => item.sufficient_data !== false && typeof item.score === "number");
-  if (valid.length < 2) return null;
-  return valid[valid.length - 1].score! - valid[valid.length - 2].score!;
-};
-
 const deltaTone = (delta: number | null, inverse = false) => {
   if (delta === null || Math.abs(delta) < 0.05) return "text-muted-foreground";
   const positive = inverse ? delta < 0 : delta > 0;
   return positive ? "text-primary" : "text-amber-400";
-};
-
-const compactHint = (text: string) => {
-  if (/spannung/i.test(text) && /erholung/i.test(text)) return "Spannung erhöht, Erholung niedrig";
-  if (/energie/i.test(text) && /niedrig/i.test(text)) return "Energie niedrig";
-  if (/fokus/i.test(text) && /niedrig/i.test(text)) return "Fokus niedrig";
-  if (/bewertungsdruck|druck/i.test(text) && /hoch/i.test(text)) return "Druck erhöht";
-  if (/teamverbundenheit/i.test(text) && /niedrig/i.test(text)) return "Teamverbundenheit niedrig";
-  if (/stabil/i.test(text)) return "Aggregierte Werte stabil";
-  return text.split(".")[0]?.trim() || text;
 };
 
 const TeamMentalState = ({ teamId }: { teamId: string }) => {
@@ -310,23 +280,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
       suffix: "/10",
       delta: getTrendDelta(data.focus.trend),
     },
-    {
-      icon: <Flame className="w-4 h-4" />,
-      label: "Umsetzungsrate",
-      value: data.resilience.current,
-      suffix: "%",
-      delta: getResilienceDelta(data.resilience.trend),
-    },
   ];
-
-  const teamProfile = data.teamChemistry
-    ? [
-        { label: "Growth Mindset", value: data.teamChemistry.growthMindset },
-        { label: "Präsenz", value: data.teamChemistry.presence },
-        { label: "Ego-Freiheit", value: data.teamChemistry.egoFreedom },
-        { label: "Emotionskontrolle", value: data.teamChemistry.emotionalControl },
-      ]
-    : [];
 
   return (
     <div className="w-full min-w-0 space-y-4">
@@ -454,59 +408,6 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         </div>
       </section>
 
-      {teamProfile.length > 0 && (
-        <section className="rounded-2xl border border-border/50 bg-card p-4">
-          <div className="mb-4 flex items-center gap-2">
-            <Brain className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Team-Profil</h3>
-          </div>
-          <div className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
-            {teamProfile.map((item) => (
-              <div key={item.label} className="rounded-xl border border-border/40 bg-secondary/25 p-3">
-                <p className="text-[11px] text-muted-foreground">{item.label}</p>
-                <p className="mt-2 text-2xl font-semibold text-foreground">
-                  {item.value}
-                  <span className="text-xs font-normal text-muted-foreground">/100</span>
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {data.coach_hints && data.coach_hints.length > 0 && (
-        <section className="rounded-2xl border border-border/50 bg-card p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Beobachtungen</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {data.coach_hints.map((hint) => (
-              <span
-                key={hint}
-                className="inline-flex items-center rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 text-xs font-medium text-secondary-foreground"
-              >
-                {compactHint(hint)}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {data.vibe && (
-        <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Kurzbild</h3>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-            {data.vibe}
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-3">
-            Deterministische Auswertung aus aggregierten Zahlen. Keine Diagnose.
-          </p>
-        </section>
-      )}
     </div>
   );
 };
