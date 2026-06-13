@@ -29,7 +29,6 @@ import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
 import {
   buildMicroAdjustmentContext,
-  extractJournalSignals,
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
 import { captureAppError } from "@/lib/monitoring";
@@ -136,21 +135,6 @@ const buildQuestionnaireSignals = (analysis: Record<string, unknown> | null) => 
       score100ToStrength(inner?.presence_level)
     ),
   };
-};
-
-const collectJournalTexts = (row: Record<string, unknown>) => {
-  const texts: string[] = [];
-  const answers = asRecord(row.answers);
-  if (answers) {
-    for (const value of Object.values(answers)) {
-      if (typeof value === "string") texts.push(value);
-    }
-  }
-  for (const key of ["gratitude", "free_reflection"]) {
-    const value = row[key];
-    if (typeof value === "string") texts.push(value);
-  }
-  return texts;
 };
 
 const normalizeDraftStep = (draftStep: number | null | undefined) => {
@@ -318,18 +302,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         .limit(1);
       if (instance?.id) questionnaireQuery = questionnaireQuery.eq("program_instance_id", instance.id);
 
-      let journalQuery = supabase
-        .from("daily_journals")
-        .select("answers, gratitude, free_reflection")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false })
-        .limit(5);
-      if (instance?.id) journalQuery = journalQuery.eq("program_instance_id", instance.id);
-
-      const [{ data: todayCheckins }, { data: questionnaireRows }, { data: journalRows }] = await Promise.all([
+      const [{ data: todayCheckins }, { data: questionnaireRows }] = await Promise.all([
         todayCheckinQuery,
         questionnaireQuery,
-        journalQuery,
       ]);
       const todayCheckin = todayCheckins?.[0] ?? null;
       const questionnaire = questionnaireRows?.[0] ?? null;
@@ -339,8 +314,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       // Keine Diagnosen, keine privaten Rohantworten im UI — nur grobe Musterlinien.
       const analysis = (questionnaire?.analysis ?? null) as Record<string, unknown> | null;
       const questionnaireSignals = buildQuestionnaireSignals(analysis);
-      const journalTexts = (journalRows ?? []).flatMap((row) => collectJournalTexts(row as Record<string, unknown>));
-      const journalSignals = extractJournalSignals(journalTexts);
       const localCheckin = local
         ? {
             mood: local.moodBefore,
@@ -372,7 +345,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               stress: numberOrUndefined(wellbeingMetrics?.stress) ?? numberOrUndefined(wellbeingMetrics?.pressure) ?? null,
             }
           : localCheckin,
-        recentJournalSignals: journalSignals,
       });
       setMicroAdjustment(micro);
     }

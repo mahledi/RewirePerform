@@ -1227,6 +1227,13 @@ const Dashboard = () => {
               )}
             </div>
           </button>
+          <button
+            type="button"
+            onClick={() => navigate("/journal/history")}
+            className="mt-3 w-full rounded-xl border border-border/50 bg-secondary/25 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/40 hover:text-foreground"
+          >
+            Frühere Journal-Einträge ansehen
+          </button>
         </motion.div>
 
         {/* Science Bite */}
