@@ -8,7 +8,18 @@ interface Props {
   onComplete: (results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]) => void;
 }
 
+export const shuffleComprehensionOptions = (questions: ComprehensionQuestion[]) =>
+  questions.map((question) => {
+    const options = [...question.options];
+    for (let i = options.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    return { ...question, options };
+  });
+
 export default function ComprehensionCheck({ questions, onComplete }: Props) {
+  const shuffledQuestions = useMemo(() => shuffleComprehensionOptions(questions), [questions]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -16,8 +27,8 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
     { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
   >([]);
 
-  const q = questions[index];
-  const total = questions.length;
+  const q = shuffledQuestions[index];
+  const total = shuffledQuestions.length;
   const isLast = index === total - 1;
   const correct = useMemo(() => (selected ? selected === q.correctOptionId : false), [selected, q]);
 
