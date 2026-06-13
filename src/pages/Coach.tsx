@@ -53,8 +53,8 @@ const SECTIONS: SectionMeta[] = [
   },
   {
     id: "mental",
-    title: "Mental & Bereitschaft",
-    description: "Aggregierter Teamzustand und Tageslinse.",
+    title: "Teamzustand",
+    description: "Aggregierte Tageswerte, Deltas und Programmlinse.",
     icon: Activity,
     requiresTeam: true,
   },
@@ -301,7 +301,7 @@ const Coach = () => {
         <div className="mx-auto w-full max-w-5xl px-4 pt-5 sm:px-5 md:px-6">
           <div className="grid grid-cols-5 gap-1 rounded-xl border border-border/70 bg-muted/50 p-1 shadow-card">
             <TabButton active={tab === "overview"} onClick={() => openTab("overview")} icon={Users} label="Übersicht" />
-            <TabButton active={tab === "mental"} onClick={() => openTab("mental")} icon={Activity} label="Mental" />
+            <TabButton active={tab === "mental"} onClick={() => openTab("mental")} icon={Activity} label="Zustand" />
             <TabButton active={tab === "evidence"} onClick={() => openTab("evidence")} icon={BarChart3} label="Wirksamkeit" />
             <TabButton active={tab === "toolkit"} onClick={() => openTab("toolkit")} icon={Sparkles} label="Toolkit" />
             <TabButton active={tab === "manage"} onClick={() => openTab("manage")} icon={Settings} label="Teams" />
