@@ -1,41 +1,67 @@
 /// <reference lib="webworker" />
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from "workbox-precaching";
+import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { NetworkFirst, CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
-import { clientsClaim } from "workbox-core";
+import { clientsClaim, setCacheNameDetails } from "workbox-core";
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
-self.skipWaiting();
+const CACHE_SUFFIX = "v2";
+const OFFLINE_URL = "/offline.html";
+
+setCacheNameDetails({
+  prefix: "rewireperform",
+  suffix: CACHE_SUFFIX,
+});
+
 clientsClaim();
 cleanupOutdatedCaches();
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames
-          .filter((cacheName) => cacheName === "html" || cacheName === "assets")
+          .filter((cacheName) =>
+            cacheName === "html" ||
+            cacheName === "assets" ||
+            cacheName.startsWith("workbox-") ||
+            (cacheName.startsWith("rewireperform-") && !cacheName.endsWith(CACHE_SUFFIX))
+          )
           .map((cacheName) => caches.delete(cacheName))
       )
     )
   );
 });
 
-// Precache the build output (HTML, JS, CSS, assets)
-precacheAndRoute(self.__WB_MANIFEST || []);
+const precacheManifest = (self.__WB_MANIFEST || []).filter((entry: { url?: string }) => {
+  if (!entry?.url) return false;
+  return !entry.url.endsWith("/index.html") && entry.url !== "index.html";
+});
 
-// SPA navigations -> NetworkFirst with offline fallback to cached index.html
-const navHandler = createHandlerBoundToURL("/index.html");
+// Precache static build output only. The app shell HTML must stay network-first.
+precacheAndRoute(precacheManifest);
+
+// SPA navigations -> live network app shell; offline fallback is static and chunk-free.
 registerRoute(
   new NavigationRoute(
     async (params) => {
       try {
         return await fetch(params.request, { cache: "no-store" });
       } catch {
-        return navHandler(params);
+        const offline = await caches.match(OFFLINE_URL);
+        return offline ?? new Response("RewirePerform ist gerade offline.", {
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+          status: 503,
+        });
       }
     },
     { denylist: [/^\/~oauth/, /^\/api\//] }
@@ -46,7 +72,7 @@ registerRoute(
 registerRoute(
   ({ request }) => ["style", "script", "worker"].includes(request.destination),
   new NetworkFirst({
-    cacheName: "assets",
+    cacheName: `rewireperform-assets-${CACHE_SUFFIX}`,
     networkTimeoutSeconds: 8,
   })
 );
@@ -55,7 +81,7 @@ registerRoute(
 registerRoute(
   ({ request }) => request.destination === "image",
   new CacheFirst({
-    cacheName: "images",
+    cacheName: `rewireperform-images-${CACHE_SUFFIX}`,
     plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 })],
   })
 );
