@@ -123,14 +123,14 @@ const Journal = () => {
 
     if (existing) {
       setAnswers((existing.answers as Record<string, string>) ?? {});
-      setGratitude(existing.gratitude ?? "");
+      setGratitudeList(parseGratitude(existing.gratitude));
       setFreeReflection(existing.free_reflection ?? "");
       setDone(true);
     } else {
       const local = readLocalDraft<JournalDraft>(`journal:${user.id}:${r.date}`);
       if (local) {
         setAnswers(local.answers ?? {});
-        setGratitude(local.gratitude ?? "");
+        setGratitudeList(parseGratitude(local.gratitude));
         setFreeReflection(local.freeReflection ?? "");
       }
     }
@@ -141,16 +141,16 @@ const Journal = () => {
     if (!draftKey || done) return;
     const hasDraft =
       Object.values(answers).some((value) => value.trim().length > 0) ||
-      gratitude.trim().length > 0 ||
+      gratitudeList.some((line) => line.trim().length > 0) ||
       freeReflection.trim().length > 0;
     if (!hasDraft) return;
     writeLocalDraft<JournalDraft>(draftKey, {
       answers,
-      gratitude,
+      gratitude: gratitudeList,
       freeReflection,
       savedAt: new Date().toISOString(),
     });
-  }, [answers, gratitude, freeReflection, draftKey, done]);
+  }, [answers, gratitudeList, freeReflection, draftKey, done]);
 
   const handleSave = async () => {
     if (!user?.id || !resolved || saving) return;
