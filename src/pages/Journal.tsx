@@ -371,20 +371,51 @@ const Journal = () => {
           </motion.div>
         ))}
 
-        {/* Gratitude */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2 p-5 rounded-2xl bg-secondary/30 border border-border/30">
+        {/* Gratitude — 5 Pflichtzeilen */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 p-5 rounded-2xl bg-secondary/30 border border-border/30">
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-primary" />
             <label className="text-sm font-medium">Dankbarkeit</label>
           </div>
-          <p className="text-xs text-muted-foreground">{j.gratitudeInstruction}</p>
-          <Textarea
-            value={gratitude}
-            onChange={(e) => setGratitude(e.target.value)}
-            placeholder="Eine konkrete Sache …"
-            className="min-h-[70px] bg-background/60 border-border/40 resize-none"
-          />
-          <VoiceInput currentValue={gratitude} onTranscript={setGratitude} />
+          <p className="text-xs text-muted-foreground">
+            Fünf konkrete Dinge. Jeweils mindestens ein paar Worte.
+          </p>
+          <div className="space-y-2">
+            {gratitudeList.map((value, idx) => {
+              const ok = countLetters(value) >= GRATITUDE_MIN_LETTERS;
+              return (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-5 shrink-0 tabular-nums">
+                    {idx + 1}.
+                  </span>
+                  <Input
+                    value={value}
+                    onChange={(e) =>
+                      setGratitudeList((prev) => {
+                        const next = [...prev];
+                        next[idx] = e.target.value;
+                        return next;
+                      })
+                    }
+                    placeholder="Eine konkrete Sache …"
+                    className={`flex-1 bg-background/60 border-border/40 h-10 ${
+                      ok ? "" : ""
+                    }`}
+                  />
+                  <VoiceInput
+                    currentValue={value}
+                    onTranscript={(text) =>
+                      setGratitudeList((prev) => {
+                        const next = [...prev];
+                        next[idx] = text;
+                        return next;
+                      })
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
         </motion.div>
 
         {/* Free reflection (optional) */}
@@ -406,11 +437,17 @@ const Journal = () => {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || !gratitudeReady}
           className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold bg-primary text-primary-foreground hover:shadow-glow transition-all disabled:opacity-60"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {saving ? "Speichert..." : saveError ? "Erneut speichern" : "Tag abschließen"}
+          {saving
+            ? "Speichert..."
+            : !gratitudeReady
+              ? `Noch ${incompleteCount} Dankbarkeit${incompleteCount === 1 ? "" : "en"} ausfüllen`
+              : saveError
+                ? "Erneut speichern"
+                : "Tag abschließen"}
         </motion.button>
       </div>
     </div>
