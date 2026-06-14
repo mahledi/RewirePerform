@@ -59,7 +59,7 @@ const Journal = () => {
   const [saving, setSaving] = useState(false);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [gratitude, setGratitude] = useState("");
+  const [gratitudeList, setGratitudeList] = useState<string[]>(emptyGratitudeList);
   const [freeReflection, setFreeReflection] = useState("");
   const [done, setDone] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
