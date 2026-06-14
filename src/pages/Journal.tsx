@@ -7,6 +7,7 @@ import { ArrowLeft, BookOpen, Check, Heart, Loader2, Mic, Sparkles } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import VoiceInput from "@/components/VoiceInput";
 import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
@@ -17,9 +18,36 @@ import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
+const GRATITUDE_COUNT = 5;
+const GRATITUDE_MIN_LETTERS = 6;
+
+const emptyGratitudeList = (): string[] => Array.from({ length: GRATITUDE_COUNT }, () => "");
+
+const parseGratitude = (raw: unknown): string[] => {
+  const list = emptyGratitudeList();
+  if (Array.isArray(raw)) {
+    raw.slice(0, GRATITUDE_COUNT).forEach((v, i) => {
+      list[i] = typeof v === "string" ? v : "";
+    });
+    return list;
+  }
+  if (typeof raw === "string" && raw.trim().length > 0) {
+    const parts = raw.split("\n");
+    parts.slice(0, GRATITUDE_COUNT).forEach((v, i) => {
+      list[i] = v;
+    });
+  }
+  return list;
+};
+
+const serializeGratitude = (list: string[]): string =>
+  list.map((line) => line.trim()).join("\n");
+
+const countLetters = (value: string): number => (value.match(/\p{L}/gu) ?? []).length;
+
 interface JournalDraft {
   answers: Record<string, string>;
-  gratitude: string;
+  gratitude: string[] | string;
   freeReflection: string;
   savedAt: string;
 }
