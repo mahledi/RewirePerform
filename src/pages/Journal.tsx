@@ -152,20 +152,32 @@ const Journal = () => {
     });
   }, [answers, gratitudeList, freeReflection, draftKey, done]);
 
+  const incompleteCount = gratitudeList.filter(
+    (line) => countLetters(line) < GRATITUDE_MIN_LETTERS,
+  ).length;
+  const gratitudeReady = incompleteCount === 0;
+
   const handleSave = async () => {
     if (!user?.id || !resolved || saving) return;
+    if (!gratitudeReady) {
+      toast.error(
+        `Bitte alle 5 Dankbarkeiten ausfüllen (mind. ${GRATITUDE_MIN_LETTERS} Buchstaben je Zeile).`,
+      );
+      return;
+    }
     setSaveError(null);
     setSaving(true);
     try {
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
+      const serializedGratitude = serializeGratitude(gratitudeList);
       const payload = {
         user_id: user.id,
         date: resolved.date,
         day_number: resolved.matrix.dayNumber,
         journal_title: resolved.content.journal.journalTitle,
         answers,
-        gratitude: gratitude || null,
+        gratitude: serializedGratitude || null,
         free_reflection: freeReflection || null,
         program_instance_id: instance?.id ?? null,
       };
