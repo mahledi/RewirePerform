@@ -115,7 +115,7 @@ export const usePushSubscription = () => {
 
     const reg =
       (await navigator.serviceWorker.getRegistration("/sw.js")) ??
-      (await navigator.serviceWorker.register("/sw.js"));
+      (await navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" }));
     await navigator.serviceWorker.ready;
 
     const { data: keyData, error: keyErr } = await supabase.functions.invoke(

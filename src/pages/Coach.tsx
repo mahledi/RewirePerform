@@ -74,8 +74,8 @@ const SECTIONS: SectionMeta[] = [
   },
   {
     id: "manage",
-    title: "Teams",
-    description: "Teams erstellen, einladen und Programm starten.",
+    title: "Team",
+    description: "Team erstellen, einladen und Programm starten.",
     icon: Settings,
     requiresTeam: false,
   },
@@ -222,7 +222,7 @@ const Coach = () => {
       return (
         <div className="text-center py-12">
           <Icon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Erstelle zuerst ein Team unter „Teams".</p>
+          <p className="text-muted-foreground">Erstelle zuerst ein Team unter „Team".</p>
         </div>
       );
     }
@@ -304,7 +304,7 @@ const Coach = () => {
             <TabButton active={tab === "mental"} onClick={() => openTab("mental")} icon={Activity} label="Zustand" />
             <TabButton active={tab === "evidence"} onClick={() => openTab("evidence")} icon={BarChart3} label="Wirksamkeit" />
             <TabButton active={tab === "toolkit"} onClick={() => openTab("toolkit")} icon={Sparkles} label="Toolkit" />
-            <TabButton active={tab === "manage"} onClick={() => openTab("manage")} icon={Settings} label="Teams" />
+            <TabButton active={tab === "manage"} onClick={() => openTab("manage")} icon={Settings} label="Team" />
           </div>
         </div>
       )}

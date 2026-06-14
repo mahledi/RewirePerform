@@ -4,13 +4,33 @@
  * - Niemals in einem iframe (Lovable-Preview)
  * - Niemals auf Lovable-Preview-Hostnamen
  *
- * In allen "verbotenen" Kontexten werden vorhandene SWs deregistriert,
- * damit kein veralteter Cache hängen bleibt.
- *
- * Produktion: aggressive Update-Strategie, damit Safari & Co. neue Deploys
- * sofort übernehmen (Update-Check bei Tab-Fokus/Sichtbarkeitswechsel +
- * automatischer Reload, sobald ein neuer SW die Kontrolle übernimmt).
+ * Produktion: Safari/iOS-sicherer Update-Flow.
+ * sw.js wird mit updateViaCache: "none" registriert, Updates werden bei
+ * Fokus/Sichtbarkeit geprüft, aber erst per SKIP_WAITING-Message aktiviert.
  */
+type UpdateApplyFn = () => void;
+
+declare global {
+  interface WindowEventMap {
+    "rewireperform:update-available": CustomEvent<{ applyUpdate: UpdateApplyFn }>;
+  }
+}
+
+const dispatchUpdateAvailable = (registration: ServiceWorkerRegistration) => {
+  const waiting = registration.waiting;
+  if (!waiting) return;
+
+  const applyUpdate = () => {
+    waiting.postMessage({ type: "SKIP_WAITING" });
+  };
+
+  window.dispatchEvent(
+    new CustomEvent("rewireperform:update-available", {
+      detail: { applyUpdate },
+    })
+  );
+};
+
 export async function registerSW() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
@@ -34,7 +54,6 @@ export async function registerSW() {
   const isDev = import.meta.env.DEV;
 
   if (isDev || isInIframe || isPreviewHost) {
-    // Cleanup any leftover SW registrations to avoid stale caches in preview/dev.
     try {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map((r) => r.unregister()));
@@ -57,8 +76,6 @@ export async function registerSW() {
     return;
   }
 
-  // Reload, sobald ein neuer Service Worker die Kontrolle übernimmt – so sehen
-  // Nutzer in Safari/iOS direkt die neue Version statt der gecachten alten.
   let hasReloaded = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (hasReloaded) return;
@@ -67,45 +84,49 @@ export async function registerSW() {
   });
 
   try {
-    const { registerSW: register } = await import("virtual:pwa-register");
-    let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined;
-    updateSW = register({
-      immediate: true,
-      onNeedRefresh() {
-        void updateSW?.(true);
-      },
-      onRegistered(registration) {
-        if (!registration) return;
-
-        const checkForUpdate = () => {
-          if (document.visibilityState === "visible") {
-            void registration.update().catch(() => {});
-          }
-        };
-
-        // Periodisch (alle 15 Minuten) auf neue Builds prüfen.
-        const interval = window.setInterval(checkForUpdate, 15 * 60 * 1000);
-
-        // Sofortiger Check bei Tab-Fokus & Sichtbarkeitswechsel – wichtig für
-        // Safari, das sonst sehr lange am alten SW kleben bleibt.
-        const onVisibility = () => checkForUpdate();
-        const onFocus = () => checkForUpdate();
-        document.addEventListener("visibilitychange", onVisibility);
-        window.addEventListener("focus", onFocus);
-        window.addEventListener(
-          "beforeunload",
-          () => {
-            window.clearInterval(interval);
-            document.removeEventListener("visibilitychange", onVisibility);
-            window.removeEventListener("focus", onFocus);
-          },
-          { once: true },
-        );
-
-        // Initial gleich einmal prüfen, falls schon ein neuer Build live ist.
-        checkForUpdate();
-      },
+    const registration = await navigator.serviceWorker.register("/sw.js", {
+      updateViaCache: "none",
     });
+
+    const watchInstallingWorker = () => {
+      const installing = registration.installing;
+      if (!installing) return;
+
+      installing.addEventListener("statechange", () => {
+        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          dispatchUpdateAvailable(registration);
+        }
+      });
+    };
+
+    registration.addEventListener("updatefound", watchInstallingWorker);
+
+    const checkForUpdate = () => {
+      if (document.visibilityState !== "visible") return;
+      if (registration.waiting) {
+        dispatchUpdateAvailable(registration);
+        return;
+      }
+      void registration.update().catch(() => {});
+    };
+
+    const interval = window.setInterval(checkForUpdate, 15 * 60 * 1000);
+    const onVisibility = () => checkForUpdate();
+    const onFocus = () => checkForUpdate();
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        window.clearInterval(interval);
+        document.removeEventListener("visibilitychange", onVisibility);
+        window.removeEventListener("focus", onFocus);
+      },
+      { once: true }
+    );
+
+    checkForUpdate();
   } catch (err) {
     console.warn("[pwa] SW registration failed:", err);
   }

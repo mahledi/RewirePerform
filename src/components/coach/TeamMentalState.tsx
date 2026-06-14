@@ -71,6 +71,8 @@ type WellbeingKey =
   | "stress"
   | "recovery"
   | "sleep_quality"
+  | "physical_readiness"
+  | "motivation"
   | "pressure"
   | "team_connection";
 
@@ -253,9 +255,11 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
     { key: "focus", label: "Fokus", value: today?.focus, status: valueLabel(today?.focus) },
     { key: "stress", label: "Stress", value: today?.stress, inverse: true, status: pressureLabel(today?.stress) },
     { key: "recovery", label: "Erholung", value: today?.recovery, status: valueLabel(today?.recovery) },
+    { key: "sleep_quality", label: "Schlaf", value: today?.sleep_quality, status: valueLabel(today?.sleep_quality) },
+    { key: "physical_readiness", label: "Körper", value: today?.physical_readiness, status: valueLabel(today?.physical_readiness) },
+    { key: "motivation", label: "Motivation", value: today?.motivation, status: valueLabel(today?.motivation) },
     { key: "pressure", label: "Druck", value: today?.pressure, inverse: true, status: pressureLabel(today?.pressure) },
     { key: "team_connection", label: "Teamverbundenheit", value: today?.team_connection, status: valueLabel(today?.team_connection) },
-    { key: "sleep_quality", label: "Schlaf", value: today?.sleep_quality, status: valueLabel(today?.sleep_quality) },
   ];
 
   const weeklyMetrics = [
@@ -326,7 +330,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
           </p>
         </div>
       ) : (
-        <section className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-5">
           {dailyMetrics.map((metric) => (
             <DailyMetricCard
               key={metric.key}

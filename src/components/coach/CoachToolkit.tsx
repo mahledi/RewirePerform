@@ -6,10 +6,8 @@ import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import {
   COACH_JOURNAL_QUESTIONS,
   TEAM_STANDARDS,
-  getCoachDayGuidance,
-  getWeeklyScienceBite,
 } from "@/content/coachToolkit";
-import { BookOpen, Sparkles, ShieldCheck, NotebookPen, Loader2, Save } from "lucide-react";
+import { BookOpen, ShieldCheck, NotebookPen, Loader2, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Props {
@@ -141,8 +139,6 @@ const CoachToolkit = ({ teamId }: Props) => {
     }
   };
 
-  const scienceBite = getWeeklyScienceBite();
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -167,89 +163,43 @@ const CoachToolkit = ({ teamId }: Props) => {
             Außerhalb des 56-Tage-Fensters.
           </p>
         ) : (
-          (() => {
-            const guidance = getCoachDayGuidance(
-              resolved.matrix.primaryMechanism,
-              resolved.matrix.lens
-            );
-            return (
-              <div className="space-y-4 text-sm">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Tag {resolved.matrix.dayNumber}
-                  </div>
-                  <div className="font-heading text-lg font-semibold mt-1">
-                    {resolved.content.coreShift || resolved.matrix.lens}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Linie: {resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute lernen die Athlet:innen
-                  </div>
-                  <p className="text-foreground/90">
-                    {resolved.matrix.practiceFocus}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute üben die Athlet:innen
-                  </div>
-                  <ol className="list-decimal list-inside space-y-1 text-foreground/90">
-                    {resolved.content.tasks.map((t) => (
-                      <li key={t.id}>{t.title}</li>
-                    ))}
-                  </ol>
-                </div>
-
-                <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
-                  <div className="text-xs font-medium text-primary mb-1">
-                    Als Coach unterstützen
-                  </div>
-                  <p className="text-foreground/90">{guidance.support}</p>
-                </div>
-
-                <div className="bg-secondary/60 border border-border/50 rounded-xl p-3">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute vermeiden
-                  </div>
-                  <p className="text-foreground/90">{guidance.avoid}</p>
-                </div>
-
-                <div className="bg-secondary/60 border border-border/50 rounded-xl p-3">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    60 Sekunden Integration
-                  </div>
-                  <p className="text-foreground/90">{guidance.integration60s}</p>
-                </div>
+          <div className="space-y-4 text-sm">
+            <div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                Tag {resolved.matrix.dayNumber}
               </div>
-            );
-          })()
+              <div className="font-heading text-lg font-semibold mt-1">
+                {resolved.content.coreShift || resolved.matrix.lens}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Linie: {resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">
+                Inhalt
+              </div>
+              <p className="text-foreground/90">
+                {resolved.matrix.practiceFocus}
+              </p>
+            </div>
+
+            <div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">
+                Aufgaben
+              </div>
+              <ol className="list-decimal list-inside space-y-1 text-foreground/90">
+                {resolved.content.tasks.map((t) => (
+                  <li key={t.id}>{t.title}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
         )}
       </Section>
 
-      {/* SECTION 2 — SCIENCE BITE */}
-      <Section
-        icon={<Sparkles className="w-5 h-5 text-primary" />}
-        title="Science Bite für Coaches"
-      >
-        <div className="space-y-3 text-sm">
-          <div className="font-heading text-base font-semibold">{scienceBite.title}</div>
-          <p className="text-foreground/90">{scienceBite.explanation}</p>
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
-            <div className="text-xs font-medium text-primary mb-1">
-              Was bedeutet das für dich als Coach?
-            </div>
-            <p className="text-foreground/90">{scienceBite.coachAngle}</p>
-          </div>
-        </div>
-      </Section>
-
-      {/* SECTION 3 — TEAM STANDARDS */}
+      {/* SECTION 2 — TEAM STANDARDS */}
       <Section
         icon={<ShieldCheck className="w-5 h-5 text-primary" />}
         title="Team Standards"
@@ -262,16 +212,12 @@ const CoachToolkit = ({ teamId }: Props) => {
             >
               <div className="font-medium">{s.title}</div>
               <p className="text-muted-foreground text-xs mt-1">{s.explanation}</p>
-              <p className="text-foreground/90 text-xs mt-2">
-                <span className="text-primary font-medium">Coach-Verhalten:</span>{" "}
-                {s.coachBehavior}
-              </p>
             </li>
           ))}
         </ul>
       </Section>
 
-      {/* SECTION 4 — COACH JOURNAL */}
+      {/* SECTION 3 — COACH JOURNAL */}
       <Section
         icon={<NotebookPen className="w-5 h-5 text-primary" />}
         title="Coach Journal"
