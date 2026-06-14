@@ -7,6 +7,7 @@ import { ArrowLeft, BookOpen, Check, Heart, Loader2, Mic, Sparkles } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import VoiceInput from "@/components/VoiceInput";
 import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
@@ -17,9 +18,36 @@ import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
+const GRATITUDE_COUNT = 5;
+const GRATITUDE_MIN_LETTERS = 6;
+
+const emptyGratitudeList = (): string[] => Array.from({ length: GRATITUDE_COUNT }, () => "");
+
+const parseGratitude = (raw: unknown): string[] => {
+  const list = emptyGratitudeList();
+  if (Array.isArray(raw)) {
+    raw.slice(0, GRATITUDE_COUNT).forEach((v, i) => {
+      list[i] = typeof v === "string" ? v : "";
+    });
+    return list;
+  }
+  if (typeof raw === "string" && raw.trim().length > 0) {
+    const parts = raw.split("\n");
+    parts.slice(0, GRATITUDE_COUNT).forEach((v, i) => {
+      list[i] = v;
+    });
+  }
+  return list;
+};
+
+const serializeGratitude = (list: string[]): string =>
+  list.map((line) => line.trim()).join("\n");
+
+const countLetters = (value: string): number => (value.match(/\p{L}/gu) ?? []).length;
+
 interface JournalDraft {
   answers: Record<string, string>;
-  gratitude: string;
+  gratitude: string[] | string;
   freeReflection: string;
   savedAt: string;
 }
@@ -31,7 +59,7 @@ const Journal = () => {
   const [saving, setSaving] = useState(false);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [gratitude, setGratitude] = useState("");
+  const [gratitudeList, setGratitudeList] = useState<string[]>(emptyGratitudeList);
   const [freeReflection, setFreeReflection] = useState("");
   const [done, setDone] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -95,14 +123,14 @@ const Journal = () => {
 
     if (existing) {
       setAnswers((existing.answers as Record<string, string>) ?? {});
-      setGratitude(existing.gratitude ?? "");
+      setGratitudeList(parseGratitude(existing.gratitude));
       setFreeReflection(existing.free_reflection ?? "");
       setDone(true);
     } else {
       const local = readLocalDraft<JournalDraft>(`journal:${user.id}:${r.date}`);
       if (local) {
         setAnswers(local.answers ?? {});
-        setGratitude(local.gratitude ?? "");
+        setGratitudeList(parseGratitude(local.gratitude));
         setFreeReflection(local.freeReflection ?? "");
       }
     }
@@ -113,31 +141,43 @@ const Journal = () => {
     if (!draftKey || done) return;
     const hasDraft =
       Object.values(answers).some((value) => value.trim().length > 0) ||
-      gratitude.trim().length > 0 ||
+      gratitudeList.some((line) => line.trim().length > 0) ||
       freeReflection.trim().length > 0;
     if (!hasDraft) return;
     writeLocalDraft<JournalDraft>(draftKey, {
       answers,
-      gratitude,
+      gratitude: gratitudeList,
       freeReflection,
       savedAt: new Date().toISOString(),
     });
-  }, [answers, gratitude, freeReflection, draftKey, done]);
+  }, [answers, gratitudeList, freeReflection, draftKey, done]);
+
+  const incompleteCount = gratitudeList.filter(
+    (line) => countLetters(line) < GRATITUDE_MIN_LETTERS,
+  ).length;
+  const gratitudeReady = incompleteCount === 0;
 
   const handleSave = async () => {
     if (!user?.id || !resolved || saving) return;
+    if (!gratitudeReady) {
+      toast.error(
+        `Bitte alle 5 Dankbarkeiten ausfüllen (mind. ${GRATITUDE_MIN_LETTERS} Buchstaben je Zeile).`,
+      );
+      return;
+    }
     setSaveError(null);
     setSaving(true);
     try {
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
+      const serializedGratitude = serializeGratitude(gratitudeList);
       const payload = {
         user_id: user.id,
         date: resolved.date,
         day_number: resolved.matrix.dayNumber,
         journal_title: resolved.content.journal.journalTitle,
         answers,
-        gratitude: gratitude || null,
+        gratitude: serializedGratitude || null,
         free_reflection: freeReflection || null,
         program_instance_id: instance?.id ?? null,
       };
@@ -331,20 +371,51 @@ const Journal = () => {
           </motion.div>
         ))}
 
-        {/* Gratitude */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2 p-5 rounded-2xl bg-secondary/30 border border-border/30">
+        {/* Gratitude — 5 Pflichtzeilen */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 p-5 rounded-2xl bg-secondary/30 border border-border/30">
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-primary" />
             <label className="text-sm font-medium">Dankbarkeit</label>
           </div>
-          <p className="text-xs text-muted-foreground">{j.gratitudeInstruction}</p>
-          <Textarea
-            value={gratitude}
-            onChange={(e) => setGratitude(e.target.value)}
-            placeholder="Eine konkrete Sache …"
-            className="min-h-[70px] bg-background/60 border-border/40 resize-none"
-          />
-          <VoiceInput currentValue={gratitude} onTranscript={setGratitude} />
+          <p className="text-xs text-muted-foreground">
+            Fünf konkrete Dinge. Jeweils mindestens ein paar Worte.
+          </p>
+          <div className="space-y-2">
+            {gratitudeList.map((value, idx) => {
+              const ok = countLetters(value) >= GRATITUDE_MIN_LETTERS;
+              return (
+                <div key={idx} className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-5 shrink-0 tabular-nums">
+                    {idx + 1}.
+                  </span>
+                  <Input
+                    value={value}
+                    onChange={(e) =>
+                      setGratitudeList((prev) => {
+                        const next = [...prev];
+                        next[idx] = e.target.value;
+                        return next;
+                      })
+                    }
+                    placeholder="Eine konkrete Sache …"
+                    className={`flex-1 bg-background/60 border-border/40 h-10 ${
+                      ok ? "" : ""
+                    }`}
+                  />
+                  <VoiceInput
+                    currentValue={value}
+                    onTranscript={(text) =>
+                      setGratitudeList((prev) => {
+                        const next = [...prev];
+                        next[idx] = text;
+                        return next;
+                      })
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
         </motion.div>
 
         {/* Free reflection (optional) */}
@@ -366,11 +437,17 @@ const Journal = () => {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || !gratitudeReady}
           className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold bg-primary text-primary-foreground hover:shadow-glow transition-all disabled:opacity-60"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {saving ? "Speichert..." : saveError ? "Erneut speichern" : "Tag abschließen"}
+          {saving
+            ? "Speichert..."
+            : !gratitudeReady
+              ? `Noch ${incompleteCount} Dankbarkeit${incompleteCount === 1 ? "" : "en"} ausfüllen`
+              : saveError
+                ? "Erneut speichern"
+                : "Tag abschließen"}
         </motion.button>
       </div>
     </div>
