@@ -33,6 +33,7 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 const AdminContent = lazy(() => import("./pages/AdminContent.tsx"));
 const AdminQA = lazy(() => import("./pages/AdminQA.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
@@ -71,6 +72,8 @@ const AppRoutes = () => {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/presentation" element={<Presentation />} />
+            <Route path="/coach-pitch" element={<Presentation />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/support" element={<Support />} />
             <Route path="/auth" element={<Auth />} />
