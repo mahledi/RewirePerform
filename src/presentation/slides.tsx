@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
 import {
-  Brain, Eye, Gauge, Heart, Target, Users, Layers, Activity,
-  Sparkles, ShieldCheck, Lock, CalendarRange, LineChart, Compass,
-  Zap, RefreshCcw, Repeat, BookOpen, Trophy, Network,
+  Brain, Eye, Gauge, Heart, Target, Users, Activity,
+  ShieldCheck, Lock, Compass, Zap, RefreshCcw, Trophy,
 } from "lucide-react";
 import { ReactNode } from "react";
 
