@@ -96,17 +96,17 @@ const HeroSection = () => {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: hideHint ? 0 : 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
-        className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 px-3 py-2 rounded-full"
+        className="md:hidden absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 px-4 py-2.5 rounded-full bg-background/40 backdrop-blur-sm border border-border/30"
       >
-        <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
           Mehr erfahren
         </span>
         <motion.span
-          animate={prefersReducedMotion ? undefined : { y: [0, 4, 0] }}
+          animate={prefersReducedMotion ? undefined : { y: [0, 5, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           className="flex"
         >
-          <ChevronDown className="w-4 h-4 text-primary/80" />
+          <ChevronDown className="w-5 h-5 text-primary" />
         </motion.span>
       </motion.button>
     </section>
