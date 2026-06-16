@@ -12,7 +12,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import IosInputPolish from "./components/IosInputPolish";
 import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
-import UpdateAvailableToast from "./components/UpdateAvailableToast";
 
 const queryClient = new QueryClient();
 
@@ -126,7 +125,6 @@ const App = () => (
     <ErrorBoundary>
       <BrowserRouter>
         <AppRoutes />
-        <UpdateAvailableToast />
       </BrowserRouter>
     </ErrorBoundary>
   </QueryClientProvider>

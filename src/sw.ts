@@ -1,90 +1,54 @@
 /// <reference lib="webworker" />
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
-import { registerRoute, NavigationRoute } from "workbox-routing";
-import { NetworkFirst, CacheFirst } from "workbox-strategies";
-import { ExpirationPlugin } from "workbox-expiration";
-import { clientsClaim, setCacheNameDetails } from "workbox-core";
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
-const CACHE_SUFFIX = "v2";
 const OFFLINE_URL = "/offline.html";
 
-setCacheNameDetails({
-  prefix: "rewireperform",
-  suffix: CACHE_SUFFIX,
-});
+// Vite injects this at build time. We intentionally do not precache app assets:
+// Safari/iOS can otherwise serve stale index/chunk combinations after deploys.
+const ignoredPrecacheManifest = self.__WB_MANIFEST;
+if (!Array.isArray(ignoredPrecacheManifest)) {
+  // Keep the injected manifest reference visible to Workbox without caching it.
+  console.warn("[pwa] Missing precache manifest.");
+}
 
-clientsClaim();
-cleanupOutdatedCaches();
-
-self.addEventListener("message", (event) => {
-  if (event.data?.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
+self.skipWaiting();
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((cacheName) =>
-            cacheName === "html" ||
-            cacheName === "assets" ||
-            cacheName.startsWith("workbox-") ||
-            (cacheName.startsWith("rewireperform-") && !cacheName.endsWith(CACHE_SUFFIX))
-          )
-          .map((cacheName) => caches.delete(cacheName))
-      )
-    )
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) =>
+        Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
+      ),
+    ])
   );
 });
 
-const precacheManifest = (self.__WB_MANIFEST || []).filter((entry: { url?: string }) => {
-  if (!entry?.url) return false;
-  return !entry.url.endsWith("/index.html") && entry.url !== "index.html";
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode !== "navigate") return;
+
+  event.respondWith(
+    fetch(event.request).catch(async () => {
+      const offline = await fetch(OFFLINE_URL, { cache: "no-store" }).catch(() => null);
+      return offline ?? new Response("RewirePerform ist gerade offline.", {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+        status: 503,
+      });
+    })
+  );
 });
 
-// Precache static build output only. The app shell HTML must stay network-first.
-precacheAndRoute(precacheManifest);
-
-// SPA navigations -> live network app shell; offline fallback is static and chunk-free.
-registerRoute(
-  new NavigationRoute(
-    async (params) => {
-      try {
-        return await fetch(params.request, { cache: "no-store" });
-      } catch {
-        const offline = await caches.match(OFFLINE_URL);
-        return offline ?? new Response("RewirePerform ist gerade offline.", {
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-          status: 503,
-        });
-      }
-    },
-    { denylist: [/^\/~oauth/, /^\/api\//] }
-  )
-);
-
-// Static app assets: prefer fresh network assets; fall back to cache/offline if needed.
-registerRoute(
-  ({ request }) => ["style", "script", "worker"].includes(request.destination),
-  new NetworkFirst({
-    cacheName: `rewireperform-assets-${CACHE_SUFFIX}`,
-    networkTimeoutSeconds: 8,
-  })
-);
-
-// Images: CacheFirst, capped
-registerRoute(
-  ({ request }) => request.destination === "image",
-  new CacheFirst({
-    cacheName: `rewireperform-images-${CACHE_SUFFIX}`,
-    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 })],
-  })
-);
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "CLEAR_APP_CACHE") {
+    event.waitUntil(
+      caches.keys().then((cacheNames) =>
+        Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
+      )
+    );
+  }
+});
 
 // ---- Push notifications (kept from previous public/sw.js) ----
 self.addEventListener("push", (event: PushEvent) => {
