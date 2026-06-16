@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { ArrowRight, Brain } from "lucide-react";
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, Brain, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-athlete.jpg";
 

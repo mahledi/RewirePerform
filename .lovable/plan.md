@@ -1,38 +1,48 @@
-# 5 Dankbarkeits-Zeilen im Journal – mit Pflicht-Minimum
+# Mobile Hero: Scroll-Hint (Peek + Pfeil)
 
-## Was sich ändert
-Das eine große Dankbarkeits-Textfeld im Tagesjournal (`/journal`) wird durch **5 kompakte einzeilige Eingaben** ersetzt – knapp untereinander. So entsteht visuell und psychologisch der Druck, wirklich fünf Dinge zu benennen.
+Nur Mobile. Desktop bleibt unverändert.
 
-„Tag abschließen" lässt sich erst speichern, wenn **jede der 5 Zeilen mindestens 6 Buchstaben** enthält. Solange das nicht erfüllt ist, ist der Button deaktiviert und zeigt: „Noch N Dankbarkeiten ausfüllen".
+## Ziel
+Beim Einloggen / Landen auf der Startseite soll auf Mobile sofort klar sein: hier geht es weiter nach unten — ohne dass der Hero unruhig oder „self-made" wirkt.
 
-Pro Zeile bleibt Voice-Input (kompaktes Mic-Icon) erhalten.
+## Was geändert wird
 
-## Keine Doppel-Abfrage anderswo
-Geprüft: Dankbarkeit erscheint im User-Flow nur an dieser einen Stelle im Journal. Die normalen Tages-Reflexionsfragen (`questions`) enthalten keine zweite Dankbarkeitsfrage, und das ungenutzte `gratitudePrompt`-Feld wird nirgendwo gerendert. Programminhalte, Coach-Toolkit, Landing-Bezüge bleiben wie sie sind.
+**Datei:** `src/components/HeroSection.tsx` (einzige Datei)
 
-## UX-Detail
-- Überschrift „Dankbarkeit" + 1-Zeilen-Hinweis: „Fünf konkrete Dinge. Jeweils mindestens ein paar Worte."
-- 5 nummerierte schmale Inputs (`1.` … `5.`), kompakter Block, `gap-2`.
-- Pro Zeile rechts ein kleines Mic-Icon, das in genau diese Zeile diktiert.
-- Save-Button-Label dynamisch: „Noch 2 Dankbarkeiten ausfüllen" → „Tag abschließen".
+### 1. Hero-Höhe (Section-Peek)
+- Aktuell: `min-h-screen`
+- Neu: `min-h-[88svh] md:min-h-screen`
+- Wirkung: Auf Mobile ragt der obere Rand der nächsten Section (`WhySection`) ca. 12 % ins Viewport — klassisches „Content peek"-Signal. `svh` statt `vh` verhindert das iOS-URL-Bar-Springen. Desktop bleibt 100vh.
 
-## Speicherung
-DB-Feld `daily_journals.gratitude` bleibt `string` (keine Migration). 5 Zeilen werden als Klartext mit `\n` getrennt gespeichert und beim Laden in 5 Felder zerlegt. Alte Einträge landen in Zeile 1, die übrigen bleiben leer.
+### 2. Animierter Scroll-Indikator (Mobile only)
+Neues Element am unteren Hero-Rand, oberhalb des bestehenden `bg-gradient-to-t`-Fades, sichtbar nur `< md`:
 
-Lokaler Draft speichert die 5 Zeilen ebenfalls als Array.
+- Position: `absolute bottom-6 left-1/2 -translate-x-1/2`, `z-20`, `md:hidden`
+- Inhalt:
+  - Mikro-Label `Mehr erfahren` in `text-[11px] uppercase tracking-[0.18em] text-muted-foreground`
+  - `ChevronDown`-Icon (lucide-react, bereits verfügbar), `w-4 h-4 text-primary/80`
+- Animation: sanftes vertikales Bouncen des Icons (2 px, 1.8s loop, ease-in-out), respektiert `prefers-reduced-motion` → Animation aus.
+- Interaktion: `<button>` mit `onClick` → smooth-scroll zu `#why` via `document.getElementById('why')?.scrollIntoView({ behavior: 'smooth', block: 'start' })`
+- Erscheinen: Framer-Motion fade-in mit `delay: 0.6`, damit es nach den CTAs kommt und nicht ablenkt.
+- Fade-out beim Scrollen: optional, sobald `window.scrollY > 80` → `opacity-0` (verhindert, dass der Pfeil später noch sichtbar über Hero schwebt). Nur wenn schlank umsetzbar mit einem `useEffect` + `useState`.
 
-## Was nicht verändert wird
-- Keine DB-Migration.
-- Coach-Sichtbarkeit unverändert (Dankbarkeit bleibt privat).
-- Andere Journal-Fragen, freie Reflexion, Verständnis-Check, restliches Layout, Auth, Check-in, Programmlogik – alles unverändert.
+### 3. CTA-Reihenfolge unverändert
+Beide Buttons bleiben wie sie sind — der Scroll-Pfad wird nur durch den Indikator + Peek kommuniziert, nicht durch Umbau der CTAs. So bleibt die Hierarchie clean.
 
 ## Technische Details
-Datei: `src/pages/Journal.tsx`
-- State `gratitude: string` → `gratitudeList: string[]` (Länge 5).
-- Helpers: `parseGratitude` / `serializeGratitude` / `countLetters` (Regex `\p{L}`, Min-6).
-- `JournalDraft.gratitude` wird `string[]`; alte Drafts werden tolerant geparst.
-- `handleSave` speichert `serializeGratitude(...)` und blockt, wenn nicht alle 5 Zeilen `countLetters >= 6`.
-- UI: ersetzt das Gratitude-`<Textarea>` durch 5 `<Input>` + jeweils kompakter `<VoiceInput>`.
-- Save-Button-`disabled` + Label an Vollständigkeit gekoppelt.
 
-Keine weiteren Dateien betroffen.
+- Bounce-Animation: inline via `style={{ animation: 'hero-bounce 1.8s ease-in-out infinite' }}` oder über eine kleine Keyframe-Erweiterung. Vorschlag: lokal mit Framer-Motion `animate={{ y: [0, 4, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}` — keine Tailwind-Config-Änderung nötig, konsistent mit den anderen Motion-Komponenten im Hero.
+- Reduced-Motion: Framer respektiert das automatisch über `useReducedMotion()`-Hook.
+- Bestehende `#why`-ID auf `Index.tsx` (`<div id="why">`) ist bereits vorhanden — kein Routing/IDs-Setup nötig.
+- Keine neuen Dependencies, keine Änderung an Navbar, keine Touch von Desktop-Styles.
+
+## Was NICHT angefasst wird
+- Desktop-Hero (bleibt `min-h-screen`, kein Pfeil)
+- Navbar (Mobile/Desktop)
+- CTAs, Hero-Bild, Headline, Subtitle
+- Andere Sections
+
+## Verifikation
+- Mobile (375 / 390 px): Beim Laden ist Pfeil sichtbar, oberer Rand der nächsten Section ragt knapp ins Bild, Tap auf Pfeil scrollt smooth zu `#why`.
+- Desktop (≥768 px): visuell identisch zu jetzt.
+- `prefers-reduced-motion`: Pfeil sichtbar, kein Bouncen.
