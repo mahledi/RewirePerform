@@ -6,8 +6,21 @@ import heroImage from "@/assets/hero-athlete.jpg";
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
+  const [hideHint, setHideHint] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setHideHint(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToWhy = () => {
+    document.getElementById("why")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-[88svh] md:min-h-screen flex items-center overflow-hidden">
       <div className="absolute inset-0">
         <img
           src={heroImage}
