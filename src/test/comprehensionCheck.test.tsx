@@ -5,6 +5,7 @@ import type { ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 const question: ComprehensionQuestion = {
   id: "q1",
+  target: "lens",
   stem: "Was ist die beste Antwort?",
   options: [
     { id: "a", text: "Richtig" },
