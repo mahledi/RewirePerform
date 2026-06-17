@@ -35,10 +35,16 @@ export const demoFlowSteps: DemoFlowStep[] = [
     description: "Die Aufgabe besteht aus Warum, Auslöser, konkreter Handlung, Reframing und Self-Talk.",
   },
   {
-    id: "journal",
+    id: "reflection",
     eyebrow: "Step 5",
-    title: "Verständnis & Reflexion",
-    description: "Verständnis-Check und Journal schließen den Tag ab; private Texte bleiben privat.",
+    title: "Reflexion",
+    description: "Eine kurze Reflexionskarte prüft, ob die Tagesaufgabe wirklich verstanden wurde.",
+  },
+  {
+    id: "journal",
+    eyebrow: "Step 6",
+    title: "Journal",
+    description: "Danach kommt das private Journal zum Erleben des Tages und zur Dankbarkeit.",
   },
 ];
 
