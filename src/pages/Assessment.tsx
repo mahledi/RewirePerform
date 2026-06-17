@@ -105,7 +105,7 @@ const Assessment = () => {
     const newAnswers = { ...answers, [itemId]: value };
     setAnswers(newAnswers);
     if (selectedTest && currentItem < selectedTest.items.length - 1) {
-      setTimeout(() => setCurrentItem((prev) => prev + 1), 300);
+      setCurrentItem((prev) => Math.min(prev + 1, selectedTest.items.length - 1));
     }
   };
 
@@ -208,6 +208,23 @@ const Assessment = () => {
   };
 
   const allAnswered = selectedTest ? selectedTest.items.every((item) => answers[item.id] != null) : false;
+  const selectedItem = selectedTest?.items[currentItem] ?? null;
+  const itemCount = selectedTest?.items.length ?? 0;
+  const currentItemNumber = itemCount > 0 ? Math.min(currentItem + 1, itemCount) : 0;
+  const itemProgress = itemCount > 0 ? (currentItemNumber / itemCount) * 100 : 0;
+
+  useEffect(() => {
+    if (!selectedTest || phase !== "items") return;
+    if (selectedTest.items.length === 0) {
+      setPhase("instructions");
+      setCurrentItem(0);
+      toast.error("Dieser Test konnte gerade nicht geladen werden.");
+      return;
+    }
+    if (currentItem < 0 || currentItem >= selectedTest.items.length) {
+      setCurrentItem(Math.max(0, Math.min(currentItem, selectedTest.items.length - 1)));
+    }
+  }, [currentItem, phase, selectedTest]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -318,26 +335,26 @@ const Assessment = () => {
           )}
 
           {/* ─── Items ─── */}
-          {phase === "items" && selectedTest && (
+          {phase === "items" && selectedTest && selectedItem && (
             <motion.div key="items" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-muted-foreground">{currentItem + 1} / {selectedTest.items.length}</span>
+                  <span className="text-xs text-muted-foreground">{currentItemNumber} / {itemCount}</span>
                   <span className="text-xs text-primary font-medium">{selectedTest.titleShort} · {timing === "pre" ? "Pre" : "Post"}</span>
                 </div>
                 <div className="h-1 bg-secondary rounded-full overflow-hidden">
-                  <motion.div className="h-full bg-primary rounded-full" animate={{ width: `${((currentItem + 1) / selectedTest.items.length) * 100}%` }} />
+                  <motion.div className="h-full bg-primary rounded-full" animate={{ width: `${itemProgress}%` }} />
                 </div>
               </div>
               <AnimatePresence mode="wait">
                 <motion.div key={currentItem} initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="mb-8">
-                  <p className="font-heading text-lg font-semibold mb-6 leading-relaxed">{selectedTest.items[currentItem].text}</p>
+                  <p className="font-heading text-lg font-semibold mb-6 leading-relaxed">{selectedItem.text}</p>
                   <div className="space-y-2">
                     {selectedTest.scaleLabels.map((label, i) => {
                       const value = i + selectedTest.scaleRange[0];
-                      const isSelected = answers[selectedTest.items[currentItem].id] === value;
+                      const isSelected = answers[selectedItem.id] === value;
                       return (
-                        <button key={value} onClick={() => answerItem(selectedTest.items[currentItem].id, value)} className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all text-left ${isSelected ? "bg-primary/10 ring-1 ring-primary/30 text-primary" : "bg-gradient-card border-glow hover:bg-secondary/50"}`}>
+                        <button key={value} onClick={() => answerItem(selectedItem.id, value)} className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all text-left ${isSelected ? "bg-primary/10 ring-1 ring-primary/30 text-primary" : "bg-gradient-card border-glow hover:bg-secondary/50"}`}>
                           <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium shrink-0 ${isSelected ? "bg-primary text-primary-foreground" : "bg-secondary"}`}>{value}</span>
                           <span className="text-sm">{label}</span>
                         </button>

@@ -36,6 +36,7 @@ type TrackAppEventInput = {
 
 type CaptureAppErrorInput = Omit<TrackAppEventInput, "status"> & {
   error: unknown;
+  sentry?: boolean;
 };
 
 const PUBLIC_SENTRY_DSN_FALLBACK =
@@ -80,6 +81,59 @@ const getErrorCode = (error: unknown) => {
   }
   if (error instanceof Error) return error.name;
   return "unknown_error";
+};
+
+const getErrorName = (error: unknown) => {
+  if (error instanceof Error) return error.name;
+  if (error && typeof error === "object" && "name" in error) {
+    const name = (error as { name?: unknown }).name;
+    if (typeof name === "string" && name.trim()) return name;
+  }
+  return null;
+};
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  if (typeof error === "string" && error.trim()) return error;
+  return "Unknown application error";
+};
+
+const toError = (error: unknown) => {
+  if (error instanceof Error) return error;
+
+  const normalized = new Error(getErrorMessage(error));
+  normalized.name = getErrorName(error) ?? getErrorCode(error);
+
+  if (error && typeof error === "object") {
+    const source = error as Record<string, unknown>;
+    normalized.cause = Object.fromEntries(
+      Object.entries(source).filter(([, value]) =>
+        ["string", "number", "boolean"].includes(typeof value) || value === null
+      )
+    );
+  }
+
+  return normalized;
+};
+
+const isSupabaseFunctionsTransportError = (error: unknown) => {
+  const name = getErrorName(error);
+  return name === "FunctionsFetchError" || name === "FunctionsHttpError" || name === "FunctionsRelayError";
+};
+
+const shouldSendToSentry = (input: CaptureAppErrorInput) => {
+  if (input.sentry === false) return false;
+  if (
+    (input.eventName === "coach_dashboard_loaded" || input.eventName === "coach_mental_state_load_failed") &&
+    isSupabaseFunctionsTransportError(input.error)
+  ) {
+    return false;
+  }
+  return true;
 };
 
 export const initMonitoring = () => {
@@ -169,12 +223,13 @@ export const captureAppError = async ({
   errorCode,
   isTest,
   metadata,
+  sentry,
 }: CaptureAppErrorInput) => {
   const sentryClient = getSentryClient();
-  if (sentryClient) {
+  if (sentryClient && shouldSendToSentry({ error, eventName, role, teamId, route, errorCode, isTest, metadata, sentry })) {
     try {
       const Sentry = await sentryClient;
-      Sentry.captureException(error, {
+      Sentry.captureException(toError(error), {
         tags: {
           app_event: eventName,
           role: role ?? "unknown",
