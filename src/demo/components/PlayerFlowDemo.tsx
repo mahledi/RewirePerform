@@ -52,7 +52,7 @@ export const PlayerFlowDemo = () => {
           <h2 className="font-heading text-3xl font-bold md:text-5xl">Ein Daily Flow, der sofort verständlich wirkt.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
             Diese Demo speichert nichts. Sie zeigt die echte Logik: Science Bite, Heute für dich, Check-in,
-            Denkaufgabe, Verständnis und Reflexion.
+            Denkaufgabe, Reflexion und Journal.
           </p>
         </div>
 
@@ -261,36 +261,61 @@ export const PlayerFlowDemo = () => {
                   <CheckCircle2 className="h-5 w-5" />
                   {taskDone ? "Verstanden" : "Verstanden"}
                 </button>
-                <DemoNextButton onClick={goNext} label="Verständnis & Reflexion ansehen" />
+                <DemoNextButton onClick={goNext} label="Reflexion ansehen" />
+              </div>
+            )}
+
+            {currentStep === "reflection" && (
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 5 · Reflexion</p>
+                  <h3 className="mt-3 font-heading text-3xl font-bold">Hast du die Aufgabe verstanden?</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    Diese Karte gehört zur Tagesaufgabe. Sie prüft nicht dein Leben, sondern ob der Mechanismus klar ist:
+                    Fehler werden zu Information, bevor du in Bewertung rutschst.
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-border bg-background/70 p-5">
+                  <div className="mb-4 flex items-center gap-3 text-primary">
+                    <Check className="h-5 w-5" />
+                    <p className="font-heading font-semibold">Kurze Aufgaben-Reflexion</p>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      "Was bedeutet heute: Fehler ist zuerst Information, nicht Identität?",
+                      "Welche nächste kontrollierbare Aktion passt nach einem Fehler?",
+                      "Welcher Self-Talk-Anker hilft dir, wieder in die Handlung zu kommen?",
+                    ].map((question) => (
+                      <div key={question} className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+                        {question}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <DemoNextButton onClick={goNext} label="Journal öffnen" />
               </div>
             )}
 
             {currentStep === "journal" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 5 · Verständnis & Reflexion</p>
-                  <h3 className="mt-3 font-heading text-3xl font-bold">Der Abschluss bleibt ruhig und privat.</h3>
-                </div>
-                <div className="rounded-3xl border border-border bg-background/70 p-5">
-                  <div className="mb-4 flex items-center gap-3 text-primary">
-                    <Check className="h-5 w-5" />
-                    <p className="font-heading font-semibold">Verständnis-Check</p>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Im echten Flow beantwortet der Athlet kurze Verständnisfragen zum Tagesmechanismus. Die Demo zeigt
-                    nur den Ausschnitt, ohne etwas zu speichern.
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 6 · Journal</p>
+                  <h3 className="mt-3 font-heading text-3xl font-bold">Privater Tagesabschluss.</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    Erst nach der Aufgaben-Reflexion kommt das Journal. Hier geht es um dein Erleben, was hängen bleibt
+                    und wofür du heute konkret dankbar bist.
                   </p>
                 </div>
                 <div className="rounded-3xl border border-border bg-background/70 p-5">
                   <div className="mb-5 flex items-center gap-3 text-primary">
                     <BookOpen className="h-5 w-5" />
-                    <p className="font-heading font-semibold">Beispiel-Fragen</p>
+                    <p className="font-heading font-semibold">Journal zum Tag</p>
                   </div>
                   <div className="space-y-3">
                     {[
-                      "Welche Information konntest du heute aus einem Fehler ziehen?",
-                      "Wann bist du vom Urteil zurück zur nächsten Handlung gekommen?",
-                      "Welcher Self-Talk-Anker war morgen wieder nutzbar?",
+                      "Wie war es heute, Fehler eher als Information zu lesen?",
+                      "Was hast du über dich im Training oder Spiel bemerkt?",
+                      "Wofür bist du heute konkret dankbar?",
                     ].map((question) => (
                       <div key={question} className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
                         {question}
