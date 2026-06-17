@@ -47,11 +47,47 @@ interface Analysis {
 
 const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
 const DEEP_PROFILE_BASELINE_AVAILABLE_FROM_DAY = 7;
+const DASHBOARD_MEMORY_CACHE_TTL_MS = 5 * 60 * 1000;
 
 const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { label: "Training", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
   rest: { label: "Ruhetag", icon: Moon, color: "text-blue-400", bg: "bg-blue-400/20" },
   competition: { label: "Wettkampf", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
+};
+
+interface DashboardMemoryCache {
+  userId: string;
+  cachedAt: number;
+  currentMonthIso: string;
+  events: CalendarEvent[];
+  setupMode: boolean;
+  waitingForCoach: boolean;
+  teamProgramStart: string | null;
+  programMode: ProgramMode;
+  competitionDate: string;
+  competitionName: string;
+  analysis: Analysis | null;
+  preTestsDone: boolean;
+  postTestsDone: boolean;
+  postTestDue: boolean;
+  midTestDue: boolean;
+  midTestsDone: boolean;
+  todayCheckinDone: boolean;
+  todayJournalDone: boolean;
+  checkinStatusLoading: boolean;
+  programStartDate: string | null;
+  baselineDone: boolean;
+  retestDone: boolean;
+  flameStats: FlameStats | null;
+  effectiveTodayIso: string;
+}
+
+let dashboardMemoryCache: DashboardMemoryCache | null = null;
+
+const getDashboardMemoryCache = (userId?: string | null) => {
+  if (!userId || !dashboardMemoryCache || dashboardMemoryCache.userId !== userId) return null;
+  if (Date.now() - dashboardMemoryCache.cachedAt > DASHBOARD_MEMORY_CACHE_TTL_MS) return null;
+  return dashboardMemoryCache;
 };
 
 // ─── Calendar Setup ─────────────────────────────────────
@@ -349,6 +385,32 @@ const Dashboard = () => {
   const hasCompletedAllAssessments = (types: Set<string>) =>
     REQUIRED_ASSESSMENTS.every((id) => types.has(id));
 
+  const applyDashboardCache = (cache: DashboardMemoryCache) => {
+    setCurrentMonth(new Date(cache.currentMonthIso));
+    setEvents(cache.events);
+    setSetupMode(cache.setupMode);
+    setWaitingForCoach(cache.waitingForCoach);
+    setTeamProgramStart(cache.teamProgramStart);
+    setProgramMode(cache.programMode);
+    setCompetitionDate(cache.competitionDate);
+    setCompetitionName(cache.competitionName);
+    setAnalysis(cache.analysis);
+    setPreTestsDone(cache.preTestsDone);
+    setPostTestsDone(cache.postTestsDone);
+    setPostTestDue(cache.postTestDue);
+    setMidTestDue(cache.midTestDue);
+    setMidTestsDone(cache.midTestsDone);
+    setTodayCheckinDone(cache.todayCheckinDone);
+    setTodayJournalDone(cache.todayJournalDone);
+    setCheckinStatusLoading(cache.checkinStatusLoading);
+    setProgramStartDate(cache.programStartDate);
+    setBaselineDone(cache.baselineDone);
+    setRetestDone(cache.retestDone);
+    setFlameStats(cache.flameStats);
+    setEffectiveToday(new Date(cache.effectiveTodayIso));
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (role === "admin") {
       navigate("/admin");
@@ -364,6 +426,17 @@ const Dashboard = () => {
     if (!user?.id) return;
 
     let cancelled = false;
+    const cachedDashboard = getDashboardMemoryCache(user.id);
+    const canUseCachedStatus =
+      Boolean(cachedDashboard) &&
+      Date.now() - (cachedDashboard?.cachedAt ?? 0) < 60_000;
+
+    if (cachedDashboard) {
+      applyDashboardCache(cachedDashboard);
+      lastStatusRefreshAt.current = cachedDashboard.cachedAt;
+    } else {
+      setLoading(true);
+    }
 
     const loadCompletedQuestionnaire = async (): Promise<boolean> => {
       const { data, error } = await supabase
@@ -402,10 +475,12 @@ const Dashboard = () => {
       setEffectiveToday(resolvedToday);
       const setupState = await checkSetup(resolvedToday);
       if (cancelled) return;
+      setLoading(false);
       if (setupState === "ready") {
-        await refreshDashboardStatus(resolvedToday);
+        if (!canUseCachedStatus) {
+          void refreshDashboardStatus(resolvedToday);
+        }
       }
-      if (!cancelled) setLoading(false);
     };
 
     initializeDashboard();
@@ -413,6 +488,62 @@ const Dashboard = () => {
       cancelled = true;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || loading) return;
+
+    dashboardMemoryCache = {
+      userId: user.id,
+      cachedAt: Date.now(),
+      currentMonthIso: currentMonth.toISOString(),
+      events,
+      setupMode,
+      waitingForCoach,
+      teamProgramStart,
+      programMode,
+      competitionDate,
+      competitionName,
+      analysis,
+      preTestsDone,
+      postTestsDone,
+      postTestDue,
+      midTestDue,
+      midTestsDone,
+      todayCheckinDone,
+      todayJournalDone,
+      checkinStatusLoading,
+      programStartDate,
+      baselineDone,
+      retestDone,
+      flameStats,
+      effectiveTodayIso: effectiveToday.toISOString(),
+    };
+  }, [
+    user?.id,
+    loading,
+    currentMonth,
+    events,
+    setupMode,
+    waitingForCoach,
+    teamProgramStart,
+    programMode,
+    competitionDate,
+    competitionName,
+    analysis,
+    preTestsDone,
+    postTestsDone,
+    postTestDue,
+    midTestDue,
+    midTestsDone,
+    todayCheckinDone,
+    todayJournalDone,
+    checkinStatusLoading,
+    programStartDate,
+    baselineDone,
+    retestDone,
+    flameStats,
+    effectiveToday,
+  ]);
 
   const checkSetup = async (referenceDate = effectiveToday): Promise<SetupState> => {
     const [{ data: settingsArr }, modeInfo] = await Promise.all([
@@ -474,6 +605,7 @@ const Dashboard = () => {
       if (settingsData) {
         setCompetitionDate(settingsData.competition_date || "");
         setCompetitionName(settingsData.competition_name || "");
+        setProgramStartDate(settingsData.program_start || null);
       }
       setSetupMode(false);
       return "ready";
