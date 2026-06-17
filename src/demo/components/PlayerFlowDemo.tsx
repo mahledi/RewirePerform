@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -21,6 +21,7 @@ import type { DemoCheckinKey } from "../types";
 const stepIds = demoFlowSteps.map((step) => step.id);
 
 export const PlayerFlowDemo = () => {
+  const flowContainerRef = useRef<HTMLDivElement>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [checkin, setCheckin] = useState(checkinDefaults);
   const [taskDone, setTaskDone] = useState(false);
@@ -35,13 +36,34 @@ export const PlayerFlowDemo = () => {
     { label: "Heute", Icon: Target, text: demoDailyTask.reframeStep.anchor },
   ];
 
-  const goNext = () => setActiveStep((step) => Math.min(step + 1, demoFlowSteps.length - 1));
+  const scrollToFlowStart = () => {
+    window.requestAnimationFrame(() => {
+      const flowContainer = flowContainerRef.current;
+      if (!flowContainer) return;
+
+      const offset = window.innerWidth < 768 ? 76 : 96;
+      const top = Math.max(0, flowContainer.getBoundingClientRect().top + window.scrollY - offset);
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      window.scrollTo({
+        top,
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    });
+  };
+
+  const goNext = () => {
+    setActiveStep((step) => Math.min(step + 1, demoFlowSteps.length - 1));
+    scrollToFlowStart();
+  };
+
   const reset = () => {
     setActiveStep(0);
     setCheckin(checkinDefaults);
     setTaskDone(false);
     setShowWhy(true);
     setReframeStep(0);
+    scrollToFlowStart();
   };
 
   return (
@@ -56,7 +78,7 @@ export const PlayerFlowDemo = () => {
           </p>
         </div>
 
-        <div className="mx-auto mt-10 max-w-4xl">
+        <div ref={flowContainerRef} data-testid="player-flow-demo" className="mx-auto mt-10 max-w-4xl">
           <div className="mb-5 rounded-3xl border border-border bg-card/70 p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
