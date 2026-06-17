@@ -1,6 +1,7 @@
 import {
   ONBOARDING_V2_INSTRUMENT_ID,
   ONBOARDING_V2_QUESTIONS,
+  type RewireQuestion,
 } from "@/content/questionnaireV2";
 
 type QuestionnaireCompletionRow = {
@@ -10,25 +11,37 @@ type QuestionnaireCompletionRow = {
   analysis?: unknown;
 };
 
-const hasValue = (value: unknown): boolean => {
+export const hasQuestionAnswerValue = (value: unknown): boolean => {
   if (Array.isArray(value)) return value.length > 0;
   if (typeof value === "string") return value.trim().length > 0;
   return value !== null && value !== undefined;
 };
 
+export const isOptionalOnboardingQuestion = (question: Pick<RewireQuestion, "type" | "helper">): boolean => {
+  if (question.type !== "text") return false;
+  return (question.helper ?? "").toLowerCase().includes("optional");
+};
+
+export const isRequiredOnboardingQuestion = (question: Pick<RewireQuestion, "type" | "helper">): boolean =>
+  !isOptionalOnboardingQuestion(question);
+
 const answerCount = (answers: unknown): number => {
   if (!answers || typeof answers !== "object" || Array.isArray(answers)) return 0;
-  return Object.values(answers as Record<string, unknown>).filter(hasValue).length;
+  return Object.values(answers as Record<string, unknown>).filter(hasQuestionAnswerValue).length;
 };
 
 const onboardingAnswerCount = (answers: unknown): number => {
   if (!answers || typeof answers !== "object" || Array.isArray(answers)) return 0;
   const answerMap = answers as Record<string, unknown>;
-  return ONBOARDING_V2_QUESTIONS.filter((question) => hasValue(answerMap[question.id])).length;
+  return ONBOARDING_V2_QUESTIONS.filter(
+    (question) => isRequiredOnboardingQuestion(question) && hasQuestionAnswerValue(answerMap[question.id])
+  ).length;
 };
 
+const requiredOnboardingQuestionCount = ONBOARDING_V2_QUESTIONS.filter(isRequiredOnboardingQuestion).length;
+
 export const hasCompleteOnboardingAnswerSet = (answers: unknown): boolean =>
-  onboardingAnswerCount(answers) >= ONBOARDING_V2_QUESTIONS.length;
+  onboardingAnswerCount(answers) >= requiredOnboardingQuestionCount;
 
 export const hasValidCompletedOnboarding = (row: QuestionnaireCompletionRow | null | undefined): boolean => {
   if (!row?.is_complete || !row.analysis) return false;

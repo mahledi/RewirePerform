@@ -13,6 +13,7 @@ import {
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
 import { clearLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
+import { isOptionalOnboardingQuestion, isRequiredOnboardingQuestion } from "@/lib/questionnaireCompletion";
 import type { Json } from "@/integrations/supabase/types";
 
 interface QuestionnaireFlowProps {
@@ -100,14 +101,13 @@ const QuestionnaireFlow = ({
     flowState.type === "question" ? orderedQuestions[flowState.globalIndex] : null;
 
   const isOptionalTextQuestion = (question: typeof currentQuestion) => {
-    if (!question || question.type !== "text") return false;
-    const helper = `${question.subtext ?? ""} ${question.placeholder ?? ""}`.toLowerCase();
-    return helper.includes("optional");
+    if (!question) return false;
+    return isOptionalOnboardingQuestion(question);
   };
 
   const isRequiredQuestion = (question: typeof currentQuestion) => {
     if (!question) return false;
-    return question.type !== "text" || !isOptionalTextQuestion(question);
+    return isRequiredOnboardingQuestion(question);
   };
 
   const validateQuestion = (question: typeof currentQuestion) => {
@@ -264,8 +264,11 @@ const QuestionnaireFlow = ({
   const canProceed = () => {
     if (flowState.type === "category-intro") return true;
     if (!currentQuestion) return false;
-    if (currentQuestion.type === "text") return true;
     const answer = answers[currentQuestion.id];
+    if (currentQuestion.type === "text") {
+      if (!isRequiredQuestion(currentQuestion)) return true;
+      return typeof answer === "string" && answer.trim().length > 0;
+    }
     if (answer === undefined || answer === "") return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
     return true;
