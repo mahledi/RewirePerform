@@ -110,11 +110,12 @@ const toError = (error: unknown) => {
 
   if (error && typeof error === "object") {
     const source = error as Record<string, unknown>;
-    normalized.cause = Object.fromEntries(
+    const cause = Object.fromEntries(
       Object.entries(source).filter(([, value]) =>
         ["string", "number", "boolean"].includes(typeof value) || value === null
       )
     );
+    (normalized as Error & { cause?: unknown }).cause = cause;
   }
 
   return normalized;
