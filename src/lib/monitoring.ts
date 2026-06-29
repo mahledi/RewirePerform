@@ -105,17 +105,20 @@ const getErrorMessage = (error: unknown) => {
 const toError = (error: unknown) => {
   if (error instanceof Error) return error;
 
-  const normalized = new Error(getErrorMessage(error));
-  normalized.name = getErrorName(error) ?? getErrorCode(error);
-
+  let cause: Record<string, unknown> | undefined;
   if (error && typeof error === "object") {
     const source = error as Record<string, unknown>;
-    normalized.cause = Object.fromEntries(
+    cause = Object.fromEntries(
       Object.entries(source).filter(([, value]) =>
         ["string", "number", "boolean"].includes(typeof value) || value === null
       )
     );
   }
+
+  const normalized = cause
+    ? new Error(getErrorMessage(error), { cause })
+    : new Error(getErrorMessage(error));
+  normalized.name = getErrorName(error) ?? getErrorCode(error);
 
   return normalized;
 };
