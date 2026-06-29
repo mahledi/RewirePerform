@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, Presentation, FlaskConical, MessageSquare, FileDown, HeartPulse, BookOpen, TestTube2 } from "lucide-react";
+import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, Presentation, FlaskConical, MessageSquare, FileDown, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -103,6 +103,34 @@ type StudyOverview = {
   privacy_exclusions: string[];
 };
 
+type NlzEvidenceDossier = {
+  generated_at: string;
+  include_test: boolean;
+  cohort_id: string | null;
+  privacy_level: string;
+  consent_scope?: string;
+  claim_boundary: string;
+  readiness: { stage: string; next_focus: string };
+  summary: Record<string, number | string | boolean | null>;
+  usage: Record<string, number | null>;
+  adherence: Record<string, number | null>;
+  state_28d: Record<string, number | boolean | null>;
+  measurement: {
+    validated_assessments: Record<string, number | null>;
+    development_index: Record<string, number | null>;
+    measurement_windows: Array<Record<string, unknown>>;
+  };
+  outcomes: {
+    validated_assessments: Record<string, unknown>;
+    development_index: Record<string, unknown>;
+  };
+  teams: Array<Record<string, unknown>>;
+  outcome_definitions: Array<Record<string, unknown>>;
+  data_quality: Record<string, number | boolean | null>;
+  export_catalog: string[];
+  privacy_exclusions: string[];
+};
+
 type FeedbackRow = {
   id: string; created_at: string; type: string; message: string;
   user_id: string; status: string; admin_note: string | null; reviewed_at: string | null;
@@ -155,6 +183,16 @@ function downloadJson(filename: string, payload: unknown) {
   URL.revokeObjectURL(url);
 }
 
+function downloadText(filename: string, text: string) {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <Card>
@@ -175,10 +213,128 @@ function Row({ label, value }: { label: string; value: string | number | null })
   );
 }
 
+function EvidenceMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="min-w-0 rounded-lg border border-border/60 bg-secondary/25 p-3">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground truncate">{label}</p>
+      <p className="mt-1 font-heading text-xl font-semibold leading-none truncate">{value}</p>
+    </div>
+  );
+}
+
 const formatPercent = (value: number | null) => {
   if (value == null || !Number.isFinite(value)) return "–";
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
 };
+
+const formatCount = (value: number | null | undefined) => {
+  if (value == null || !Number.isFinite(value)) return "–";
+  return new Intl.NumberFormat("de-DE").format(value);
+};
+
+const formatDecimal = (value: number | null | undefined, digits = 1) => {
+  if (value == null || !Number.isFinite(value)) return "–";
+  return new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
+};
+
+const asRecordArray = (value: unknown): Array<Record<string, unknown>> =>
+  Array.isArray(value) ? value.filter((row): row is Record<string, unknown> => !!row && typeof row === "object" && !Array.isArray(row)) : [];
+
+type EvidenceStageKey = "early" | "collecting" | "presentable" | "strong";
+
+type EvidenceStage = {
+  key: EvidenceStageKey;
+  label: string;
+  description: string;
+  badgeVariant: "secondary" | "default" | "outline";
+};
+
+const EVIDENCE_STAGES: Record<EvidenceStageKey, EvidenceStage> = {
+  early: {
+    key: "early",
+    label: "Noch früh",
+    description: "Die Datenlage ist noch klein. Fokus: Aktivierung, Day 1 und Pre-Messung sauber machen.",
+    badgeVariant: "outline",
+  },
+  collecting: {
+    key: "collecting",
+    label: "Pilotdaten sammeln",
+    description: "Nutzung und erste Messpunkte sind sichtbar. Jetzt Messfenster und Wiederkehr stabilisieren.",
+    badgeVariant: "secondary",
+  },
+  presentable: {
+    key: "presentable",
+    label: "Präsentationsfähig",
+    description: "Aggregierte Nutzung und Messbereitschaft reichen für ehrliche Pilot- und Vereinsgespräche.",
+    badgeVariant: "default",
+  },
+  strong: {
+    key: "strong",
+    label: "Starke Datenlage",
+    description: "Mehrere Teams oder Kohorten liefern robuste aggregierte Signale über Nutzung und Entwicklung.",
+    badgeVariant: "default",
+  },
+};
+
+const asNumber = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value) ? value : 0;
+
+function getEvidenceStage(
+  study: StudyOverview | null,
+  presentation: PresentationMetrics | null,
+  teams: TeamRow[],
+  health: Health | null
+): EvidenceStage {
+  const athletes = asNumber(study?.summary.athletes_total ?? presentation?.summary.athletes_total);
+  const active7d = asNumber(study?.activation.active_7d ?? presentation?.activity.active_users_7d);
+  const preN = asNumber(study?.measurement_readiness.validated_assessments_pre_n);
+  const postN = asNumber(study?.measurement_readiness.validated_assessments_post_n);
+  const developmentPostN = asNumber(study?.measurement_readiness.development_index_post_n);
+  const teamsWithMinN = asNumber(presentation?.evidence_readiness.teams_with_min_5_athletes);
+  const prePostTeams = asNumber(presentation?.evidence_readiness.teams_with_pre_post_n_5);
+  const fullTeams = teams.filter((team) => team.evidence_status === "full_pre_post").length;
+
+  if (athletes >= 20 && active7d >= 10 && preN >= 10 && (postN >= 10 || developmentPostN >= 10) && prePostTeams >= 2) {
+    return EVIDENCE_STAGES.strong;
+  }
+
+  if (athletes >= 5 && active7d >= 3 && preN >= 5 && (postN >= 5 || developmentPostN >= 5 || prePostTeams >= 1 || fullTeams >= 1)) {
+    return EVIDENCE_STAGES.presentable;
+  }
+
+  if (athletes >= 3 || active7d > 0 || preN > 0 || teamsWithMinN > 0) {
+    return EVIDENCE_STAGES.collecting;
+  }
+
+  return EVIDENCE_STAGES.early;
+}
+
+function getMissingEvidenceItems(
+  study: StudyOverview | null,
+  presentation: PresentationMetrics | null,
+  health: Health | null
+) {
+  const items: string[] = [];
+  const athletes = asNumber(study?.summary.athletes_total ?? presentation?.summary.athletes_total);
+  const active7d = asNumber(study?.activation.active_7d ?? presentation?.activity.active_users_7d);
+  const preN = asNumber(study?.measurement_readiness.validated_assessments_pre_n);
+  const postN = asNumber(study?.measurement_readiness.validated_assessments_post_n);
+  const developmentPostN = asNumber(study?.measurement_readiness.development_index_post_n);
+  const prePostTeams = asNumber(presentation?.evidence_readiness.teams_with_pre_post_n_5);
+
+  if (athletes < 5) items.push("Mindestens 5 echte Athleten für sensible Aggregate.");
+  if (active7d < 3) items.push("Mehr aktive Nutzung in den letzten 7 Tagen.");
+  if (preN < 5) items.push("Mehr vollständige Pre-Messungen.");
+  if (postN < 5 && developmentPostN < 5) items.push("Post- oder Development-Index-Re-Tests für Veränderung.");
+  if (prePostTeams < 1) items.push("Mindestens ein Team mit Pre/Post n ≥ 5.");
+  if (health?.athletes_without_program_instance) items.push("Athleten ohne aktiven Programmlauf bereinigen.");
+  if (health?.assessments_missing_instance) items.push("Assessments ohne Programmbezug prüfen.");
+
+  return items.slice(0, 5);
+}
 
 const opsSplitLabel: Record<string, string> = {
   production_events_24h: "Production-Incidents 24h",
@@ -197,9 +353,11 @@ const Admin = () => {
   const [opsError, setOpsError] = useState<string | null>(null);
   const [presentation, setPresentation] = useState<PresentationMetrics | null>(null);
   const [study, setStudy] = useState<StudyOverview | null>(null);
+  const [nlzDossier, setNlzDossier] = useState<NlzEvidenceDossier | null>(null);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [snapshotLoading, setSnapshotLoading] = useState(false);
+  const [nlzSnapshotLoading, setNlzSnapshotLoading] = useState(false);
   const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const isMobile = useIsMobile();
@@ -216,6 +374,7 @@ const Admin = () => {
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
     { id: "evidence", title: "Coach-Wirkung", description: "Teamweite Pre/Mid/Post-Readiness und beobachtete Veränderung.", icon: BarChart3 },
+    { id: "nlz", title: "NLZ Evidence", description: "Studienorientiertes Dossier, Outcome-Matrix und Exportpaket.", icon: ShieldCheck },
     { id: "presentation", title: "Pilot-Reporting", description: "Consent-aware Kennzahlen für Präsentationen.", icon: Presentation },
     { id: "study", title: "Wirkungsdaten", description: "Study-Übersicht, Missingness und Snapshots.", icon: FlaskConical },
     { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
@@ -233,12 +392,13 @@ const Admin = () => {
     setOpsError(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sb = supabase as any;
-    const [ov, ts, hl, pm, st, op, fb] = await Promise.all([
+    const [ov, ts, hl, pm, st, nlz, op, fb] = await Promise.all([
       sb.rpc("get_admin_overview_stats", { include_test: false }),
       sb.rpc("get_admin_teams_summary", { include_test: false }),
       sb.rpc("get_admin_system_health"),
       sb.rpc("get_admin_presentation_metrics", { include_test: false }),
       sb.rpc("get_admin_study_overview", { include_test: studyIncludeTest }),
+      sb.rpc("get_admin_nlz_evidence_dossier", { include_test: studyIncludeTest, cohort_id: null }),
       sb.rpc("get_admin_ops_status", { include_test: studyIncludeTest }),
       sb.from("feedback").select("*").order("created_at", { ascending: false }),
     ]);
@@ -247,6 +407,7 @@ const Admin = () => {
     if (hl.data) setHealth(hl.data as Health);
     if (pm.data) setPresentation(pm.data as PresentationMetrics);
     if (st.data) setStudy(st.data as StudyOverview);
+    if (nlz.data) setNlzDossier(nlz.data as NlzEvidenceDossier);
     if (op.error) {
       setOps(null);
       setOpsError(op.error.message || "Launch-Ops konnte nicht geladen werden.");
@@ -315,6 +476,22 @@ const Admin = () => {
     loadAll();
   };
 
+  const createNlzEvidenceSnapshot = async () => {
+    setNlzSnapshotLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).rpc("create_nlz_evidence_snapshot", {
+      cohort_id: null,
+      include_test: studyIncludeTest,
+    });
+    setNlzSnapshotLoading(false);
+    if (error) {
+      toast({ title: "NLZ-Snapshot konnte nicht erstellt werden", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "NLZ Evidence Snapshot erstellt", description: "Der aktuelle Dossier-Stand wurde auditierbar gespeichert." });
+    loadAll();
+  };
+
   const studyExportManifest = study ? {
     generated_at: new Date().toISOString(),
     source_generated_at: study.generated_at,
@@ -326,6 +503,31 @@ const Admin = () => {
     included_exports: study.export_catalog,
     privacy_exclusions: study.privacy_exclusions,
   } : null;
+  const evidenceStage = getEvidenceStage(study, presentation, teams, health);
+  const missingEvidenceItems = getMissingEvidenceItems(study, presentation, health);
+  const generatedAt = study?.generated_at ?? presentation?.generated_at ?? ops?.generated_at ?? null;
+  const claimBoundary = study?.claim_boundary ?? presentation?.claim_boundary ?? "Interne Programmevaluation; beobachtete Entwicklung; keine Diagnose; keine medizinische Wirkung; keine Kausalaussage ohne Kontrollgruppe.";
+  const nlzValidatedPrePost = asRecordArray(nlzDossier?.outcomes.validated_assessments?.pre_post);
+  const nlzValidatedPreMid = asRecordArray(nlzDossier?.outcomes.validated_assessments?.pre_mid);
+  const nlzDevelopmentSubscores = asRecordArray(nlzDossier?.outcomes.development_index?.subscores);
+  const nlzClaimBoundaryText = nlzDossier
+    ? [
+        "# RewirePerform NLZ Evidence Claim Boundary",
+        "",
+        nlzDossier.claim_boundary,
+        "",
+        `Datenstand: ${new Date(nlzDossier.generated_at).toLocaleString("de-DE")}`,
+        `Readiness: ${nlzDossier.readiness.stage}`,
+        "",
+        "Erlaubte Sprache: beobachtete Entwicklung, Messqualität, Adherence, Datenlage.",
+        "Nicht erlaubt: Diagnose, medizinische Wirkung, Kausalbehauptung ohne Kontrollgruppe.",
+        "",
+        `Privacy-Level: ${nlzDossier.privacy_level}`,
+        nlzDossier.consent_scope ? `Consent-Scope: ${nlzDossier.consent_scope}` : "",
+        "",
+        `Ausgeschlossen: ${nlzDossier.privacy_exclusions.join(", ")}.`,
+      ].filter(Boolean).join("\n")
+    : "";
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background p-4 md:p-8">
@@ -437,11 +639,12 @@ const Admin = () => {
           </div>
         ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 w-full gap-1`}>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 w-full gap-1`}>
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="evidence">Coach-Wirkung</TabsTrigger>
+            <TabsTrigger value="nlz">NLZ Evidence</TabsTrigger>
             <TabsTrigger value="presentation">Pilot-Reporting</TabsTrigger>
             <TabsTrigger value="study">Wirkungsdaten</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
@@ -452,52 +655,193 @@ const Admin = () => {
 
           {/* OVERVIEW */}
           <TabsContent value="overview" className="space-y-4 mt-4">
-            {loading || !overview ? (
+            {loading || !overview || !presentation || !study ? (
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
             ) : (
               <>
                 <Card className="border-primary/20 bg-primary/5">
-                  <CardContent className="grid gap-3 p-4 text-sm md:grid-cols-3">
-                    <div>
-                      <p className="font-medium text-foreground">Coach-Wirkung</p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Teamweite Readiness, Pre/Mid/Post und beobachtete Veränderung. Keine Einzelprofile.
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">Pilot-Reporting</p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Präsentationsfähige Kennzahlen aus freiwillig freigegebenen, aggregierten Daten.
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">Datenqualität</p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        Fehlende Rollen, Programmläufe, Messfenster und technische Incidents vor Pilot-Terminen prüfen.
-                      </p>
+                  <CardContent className="p-5 md:p-6">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="max-w-3xl">
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <Badge variant={evidenceStage.badgeVariant}>{evidenceStage.label}</Badge>
+                          <Badge variant="outline">Production ohne QA</Badge>
+                          {generatedAt && (
+                            <span className="text-xs text-muted-foreground">
+                              Datenstand {new Date(generatedAt).toLocaleString("de-DE")}
+                            </span>
+                          )}
+                        </div>
+                        <h2 className="font-heading text-2xl font-semibold leading-tight md:text-3xl">
+                          Wirkungsstand
+                        </h2>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                          {evidenceStage.description}
+                        </p>
+                        <p className="mt-3 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+                          {claimBoundary}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 sm:min-w-[280px]">
+                        <div className="rounded-lg border border-border/60 bg-background/50 p-3">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Athleten</p>
+                          <p className="mt-1 font-heading text-2xl font-semibold">{formatCount(study.summary.athletes_total as number)}</p>
+                        </div>
+                        <div className="rounded-lg border border-border/60 bg-background/50 p-3">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Teams n ≥ 5</p>
+                          <p className="mt-1 font-heading text-2xl font-semibold">{formatCount(presentation.evidence_readiness.teams_with_min_5_athletes)}</p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <StatCard label="Nutzer gesamt" value={overview.total_users} />
-                  <StatCard label="Athleten" value={overview.total_athletes} />
-                  <StatCard label="Coaches" value={overview.total_coaches} />
-                  <StatCard label="Teams" value={overview.total_teams} />
-                  <StatCard label="Aktive Teams" value={overview.active_teams} />
-                  <StatCard label="Abgeschlossene Tage" value={overview.total_completed_days} />
-                  <StatCard label="Check-ins" value={overview.total_checkins} />
-                  <StatCard label="Assessments" value={overview.total_assessments} />
-                  <StatCard label="Comprehension Checks" value={overview.total_comprehension} />
-                  <StatCard
-                    label="Ø Adherence"
-                    value={formatPercent(overview.avg_adherence)}
-                  />
-                  <StatCard
-                    label="Ø Comprehension"
-                    value={formatPercent(overview.avg_comprehension_score)}
-                  />
-                  <StatCard label="Admins" value={overview.total_admins} />
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-sm">
+                        <Activity className="h-4 w-4 text-primary" />
+                        Nutzung
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-3">
+                      <EvidenceMetric label="7d aktiv" value={formatPercent(study.activation.active_7d_rate)} />
+                      <EvidenceMetric label="28d aktiv" value={formatPercent(study.activation.active_28d_rate)} />
+                      <EvidenceMetric label="Check-ins" value={formatCount(presentation.activity.checkins_total)} />
+                      <EvidenceMetric label="Journals" value={formatCount(presentation.activity.journal_entries_total)} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-sm">
+                        <Target className="h-4 w-4 text-primary" />
+                        Adherence
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-3">
+                      <EvidenceMetric label="Tage erledigt" value={formatCount(study.activity.completed_days_total as number)} />
+                      <EvidenceMetric label="Ø Completion" value={formatPercent(study.activity.avg_completion_rate)} />
+                      <EvidenceMetric label="Ø Streak" value={formatCount(presentation.activity.avg_current_streak)} />
+                      <EvidenceMetric label="Day 56" value={formatPercent(study.activation.day_56_completion_rate)} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-sm">
+                        <Shield className="h-4 w-4 text-primary" />
+                        Präsentationsreife
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="rounded-lg bg-secondary/40 p-3">
+                        <p className="text-xs text-muted-foreground">Aktueller Status</p>
+                        <p className="mt-1 font-heading text-xl font-semibold">{evidenceStage.label}</p>
+                      </div>
+                      <div className="text-xs leading-relaxed text-muted-foreground">
+                        Aggregate ab n ≥ 5. Keine Einzelprofile, keine Journaltexte, keine freien Reflexionen.
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1.25fr_1fr]">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Messbereitschaft</CardTitle>
+                      <CardDescription>Welche Messfenster bereits genug Substanz für ehrliche Auswertung haben.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                      <EvidenceMetric label="Validated Pre n" value={formatCount(study.measurement_readiness.validated_assessments_pre_n as number)} />
+                      <EvidenceMetric label="Validated Mid n" value={formatCount(study.measurement_readiness.validated_assessments_mid_n as number)} />
+                      <EvidenceMetric label="Validated Post n" value={formatCount(study.measurement_readiness.validated_assessments_post_n as number)} />
+                      <EvidenceMetric label="Pre/Post Teams" value={formatCount(presentation.evidence_readiness.teams_with_pre_post_n_5)} />
+                      <EvidenceMetric label="DI Pre n" value={formatCount(study.measurement_readiness.development_index_pre_n as number)} />
+                      <EvidenceMetric label="DI Post n" value={formatCount(study.measurement_readiness.development_index_post_n as number)} />
+                      <EvidenceMetric label="Teams mit Daten" value={formatCount(teams.filter(t => t.evidence_status === "full_pre_post" || t.evidence_status === "mid_available").length)} />
+                      <EvidenceMetric label="Assessments" value={formatCount(overview.total_assessments)} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Was noch fehlt</CardTitle>
+                      <CardDescription>Konkrete Lücken vor stärkeren Vereinsgesprächen.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {missingEvidenceItems.length ? (
+                        <div className="space-y-2">
+                          {missingEvidenceItems.map((item) => (
+                            <div key={item} className="flex items-start gap-2 rounded-lg border border-border/60 p-3 text-sm">
+                              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                              <span className="leading-relaxed text-muted-foreground">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm">
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span className="leading-relaxed text-primary">Die wichtigsten Datenlücken für V1 sind geschlossen.</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Datenqualität</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <Row label="Ohne Programmlauf" value={study.data_quality.athletes_without_program_instance as number} />
+                      <Row label="Ohne Day 1" value={study.data_quality.athletes_without_day_1 as number} />
+                      <Row label="Ohne Pre" value={study.data_quality.athletes_without_pre_assessment as number} />
+                      <Row label="Low Confidence" value={study.data_quality.low_confidence ? "ja" : "nein"} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Claim Boundary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <Badge variant="outline">{study.privacy_level}</Badge>
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        Beobachtete Entwicklung und Programmevaluation. Keine Diagnose, keine medizinische Wirkung, keine Kausalbehauptung ohne Kontrollgruppe.
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Nächste Bereiche</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-2">
+                      <Button variant="outline" className="justify-start" onClick={() => setTab("study")}>Wirkungsdaten öffnen</Button>
+                      <Button variant="outline" className="justify-start" onClick={() => setTab("presentation")}>Pilot-Reporting öffnen</Button>
+                      <Button variant="outline" className="justify-start" onClick={() => setTab("exports")}>Exportpakete öffnen</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Programm-Sammlung</CardTitle>
+                    <CardDescription>Was RewirePerform aktuell für deine Beweisführung sammelt.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-3 md:grid-cols-4">
+                    <EvidenceMetric label="Athleten" value={formatCount(overview.total_athletes)} />
+                    <EvidenceMetric label="Coaches" value={formatCount(overview.total_coaches)} />
+                    <EvidenceMetric label="Teams" value={formatCount(overview.total_teams)} />
+                    <EvidenceMetric label="Aktive Teams" value={formatCount(overview.active_teams)} />
+                    <EvidenceMetric label="Comprehension" value={formatCount(overview.total_comprehension)} />
+                    <EvidenceMetric label="Ø Verständnis" value={formatPercent(overview.avg_comprehension_score)} />
+                    <EvidenceMetric label="Ø Adherence" value={formatPercent(overview.avg_adherence)} />
+                    <EvidenceMetric label="Nutzer gesamt" value={formatCount(overview.total_users)} />
+                  </CardContent>
+                </Card>
               </>
             )}
           </TabsContent>
@@ -614,6 +958,321 @@ const Admin = () => {
                 </p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* NLZ EVIDENCE */}
+          <TabsContent value="nlz" className="space-y-4 mt-4">
+            {loading || !nlzDossier ? (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    NLZ Evidence Dossier wird geladen.
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="p-5 md:p-6">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="max-w-3xl">
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          <Badge variant="default">{nlzDossier.readiness.stage}</Badge>
+                          <Badge variant="outline">{nlzDossier.include_test ? "QA eingeschlossen" : "Production ohne QA"}</Badge>
+                          <Badge variant="secondary">Consent-aware</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Datenstand {new Date(nlzDossier.generated_at).toLocaleString("de-DE")}
+                          </span>
+                        </div>
+                        <h2 className="font-heading text-2xl font-semibold leading-tight md:text-3xl">
+                          NLZ Evidence Dossier
+                        </h2>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                          Studienorientierte Übersicht für Vereins- und NLZ-Gespräche: Nutzung, Adherence, Zustand,
+                          Development Index, validierte Skalen und Messqualität in einer Claim-sicheren Struktur.
+                        </p>
+                        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                          {nlzDossier.claim_boundary}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 sm:min-w-[320px]">
+                        <div className="rounded-lg border border-border/60 bg-background/50 p-3">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Consented Athleten</p>
+                          <p className="mt-1 font-heading text-2xl font-semibold">{formatCount(nlzDossier.summary.consented_athletes as number)}</p>
+                        </div>
+                        <div className="rounded-lg border border-border/60 bg-background/50 p-3">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Consent Rate</p>
+                          <p className="mt-1 font-heading text-2xl font-semibold">{formatPercent(nlzDossier.summary.consent_rate as number | null)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Readiness</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="rounded-lg bg-secondary/40 p-3">
+                        <p className="text-xs text-muted-foreground">Aktuelle Stufe</p>
+                        <p className="mt-1 font-heading text-xl font-semibold">{nlzDossier.readiness.stage}</p>
+                      </div>
+                      <p className="text-xs leading-relaxed text-muted-foreground">{nlzDossier.readiness.next_focus}</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Nutzung</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-3">
+                      <EvidenceMetric label="7d aktiv" value={formatCount(nlzDossier.summary.active_7d as number)} />
+                      <EvidenceMetric label="28d aktiv" value={formatCount(nlzDossier.summary.active_28d as number)} />
+                      <EvidenceMetric label="Day 1" value={formatCount(nlzDossier.summary.day_1_completed as number)} />
+                      <EvidenceMetric label="Day 56" value={formatCount(nlzDossier.summary.day_56_completed as number)} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Adherence</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-3">
+                      <EvidenceMetric label="Ø Completion" value={formatPercent(nlzDossier.adherence.avg_completion_rate)} />
+                      <EvidenceMetric label="Ø Tage" value={formatDecimal(nlzDossier.adherence.avg_days_completed)} />
+                      <EvidenceMetric label="Ø Streak" value={formatDecimal(nlzDossier.adherence.avg_current_streak)} />
+                      <EvidenceMetric label="Ø Verständnis" value={formatPercent(nlzDossier.adherence.avg_comprehension)} />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr]">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Messprotokoll</CardTitle>
+                      <CardDescription>Pre/Mid/Post-Stand für validierte Skalen und Development Index.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                      <EvidenceMetric label="Validated Pre n" value={formatCount(nlzDossier.measurement.validated_assessments.pre_n)} />
+                      <EvidenceMetric label="Validated Mid n" value={formatCount(nlzDossier.measurement.validated_assessments.mid_n)} />
+                      <EvidenceMetric label="Validated Post n" value={formatCount(nlzDossier.measurement.validated_assessments.post_n)} />
+                      <EvidenceMetric label="DI Pre n" value={formatCount(nlzDossier.measurement.development_index.pre_n)} />
+                      <EvidenceMetric label="DI Mid n" value={formatCount(nlzDossier.measurement.development_index.mid_n)} />
+                      <EvidenceMetric label="DI Post n" value={formatCount(nlzDossier.measurement.development_index.post_n)} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Teamzustand 28 Tage</CardTitle>
+                      <CardDescription>Aggregierte Check-in-Werte; psychologische Werte erst ab n ≥ 5.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {nlzDossier.state_28d.sufficient_data ? (
+                        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                          <EvidenceMetric label="Stimmung" value={`${formatDecimal(nlzDossier.state_28d.mood as number | null)}/10`} />
+                          <EvidenceMetric label="Energie" value={`${formatDecimal(nlzDossier.state_28d.energy as number | null)}/10`} />
+                          <EvidenceMetric label="Fokus" value={`${formatDecimal(nlzDossier.state_28d.focus as number | null)}/10`} />
+                          <EvidenceMetric label="Stress" value={`${formatDecimal(nlzDossier.state_28d.stress as number | null)}/10`} />
+                          <EvidenceMetric label="Erholung" value={`${formatDecimal(nlzDossier.state_28d.recovery as number | null)}/10`} />
+                          <EvidenceMetric label="Druck" value={`${formatDecimal(nlzDossier.state_28d.pressure as number | null)}/10`} />
+                          <EvidenceMetric label="Verbundenheit" value={`${formatDecimal(nlzDossier.state_28d.team_connection as number | null)}/10`} />
+                          <EvidenceMetric label="Schlaf" value={`${formatDecimal(nlzDossier.state_28d.sleep as number | null)}/10`} />
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-border/60 bg-secondary/25 p-4 text-sm text-muted-foreground">
+                          Noch zu wenig freigegebene Check-in-Daten für aggregierte Zustandswerte.
+                          Sichtbar: n={formatCount(nlzDossier.state_28d.n_users as number)} / 5.
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Development Index Outcomes</CardTitle>
+                      <CardDescription>Pre/Post-Paare aus dem RewirePerform Development Index.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="rounded-lg border border-border/60 bg-secondary/25 p-3">
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <span className="text-muted-foreground">Overall Pre → Post</span>
+                          <span className="font-medium">
+                            {formatCount((nlzDossier.outcomes.development_index.overall as Record<string, number | boolean | null> | undefined)?.n_pre_post as number)}
+                            {" "}Paare
+                          </span>
+                        </div>
+                      </div>
+                      {nlzDevelopmentSubscores.length ? (
+                        <div className="space-y-2">
+                          {nlzDevelopmentSubscores.slice(0, 6).map((row) => (
+                            <div key={String(row.metric)} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-3 text-sm">
+                              <span className="min-w-0 truncate text-muted-foreground">{String(row.metric)}</span>
+                              <span className="font-medium">
+                                {formatDecimal(row.avg_pre as number | null)} → {formatDecimal(row.avg_post as number | null)}
+                                {" · "}
+                                {Number(row.abs_change ?? 0) >= 0 ? "+" : ""}{formatDecimal(row.abs_change as number | null)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="rounded-lg bg-secondary/25 p-3 text-sm text-muted-foreground">
+                          Noch keine ausreichenden Development-Index-Paare.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Validierte Skalen</CardTitle>
+                      <CardDescription>CSAI-2R, SMTQ und Flow als gepaarte Pre/Mid/Post-Werte.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {[...nlzValidatedPrePost, ...nlzValidatedPreMid].slice(0, 7).map((row, index) => (
+                        <div key={`${String(row.assessment_type)}-${String(row.subscale)}-${index}`} className="rounded-lg border border-border/60 p-3 text-sm">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="min-w-0 truncate font-medium">{String(row.assessment_type)} · {String(row.subscale)}</span>
+                            <Badge variant={row.sufficient_data ? "default" : "outline"}>n={formatCount(row.n_pairs as number)}</Badge>
+                          </div>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {formatDecimal(row.avg_pre as number | null)} → {formatDecimal((row.avg_post ?? row.avg_mid) as number | null)}
+                            {" · Veränderung "}
+                            {Number(row.abs_change ?? 0) >= 0 ? "+" : ""}{formatDecimal(row.abs_change as number | null)}
+                            {row.effect_size_d != null ? ` · d=${formatDecimal(row.effect_size_d as number, 2)}` : ""}
+                          </p>
+                        </div>
+                      ))}
+                      {nlzValidatedPrePost.length === 0 && nlzValidatedPreMid.length === 0 && (
+                        <p className="rounded-lg bg-secondary/25 p-3 text-sm text-muted-foreground">
+                          Noch keine ausreichenden Paare aus validierten Skalen.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1.1fr]">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Datenqualität</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <Row label="Ohne Consent" value={nlzDossier.data_quality.athletes_without_consent as number} />
+                      <Row label="Ohne Programmlauf" value={nlzDossier.data_quality.athletes_without_program_instance as number} />
+                      <Row label="Ohne Day 1" value={nlzDossier.data_quality.athletes_without_day_1 as number} />
+                      <Row label="Ohne Pre-Messung" value={nlzDossier.data_quality.athletes_without_pre_measurement as number} />
+                      <Row label="Post fällig offen" value={nlzDossier.data_quality.post_due_missing as number} />
+                      <Row label="Teams n < 5" value={nlzDossier.data_quality.teams_below_min_n as number} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Outcome-Landkarte</CardTitle>
+                      <CardDescription>Feste Struktur für spätere NLZ-Gespräche.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {nlzDossier.outcome_definitions.slice(0, 6).map((definition) => (
+                        <div key={String(definition.id)} className="rounded-lg border border-border/60 p-3 text-sm">
+                          <p className="font-medium">{String(definition.label)}</p>
+                          <p className="text-xs text-muted-foreground">{String(definition.domain)} · n ≥ {String(definition.min_aggregate_n)}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">NLZ Exportpaket</CardTitle>
+                      <CardDescription>Privacy-sichere Dateien für Gespräch, Prüfung und Archiv.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-2">
+                      <Button variant="outline" className="justify-start" onClick={() => downloadJson("nlz_evidence_dossier.json", nlzDossier)}>
+                        <Download className="w-4 h-4 mr-2" />Dossier JSON
+                      </Button>
+                      <Button variant="outline" className="justify-start" onClick={() => downloadCsv("nlz_summary.csv", [nlzDossier.summary])}>
+                        <Download className="w-4 h-4 mr-2" />Summary CSV
+                      </Button>
+                      <Button variant="outline" className="justify-start" onClick={() => downloadCsv("nlz_outcomes.csv", [
+                        ...nlzValidatedPrePost,
+                        ...nlzValidatedPreMid,
+                        ...nlzDevelopmentSubscores,
+                      ])}>
+                        <Download className="w-4 h-4 mr-2" />Outcomes CSV
+                      </Button>
+                      <Button variant="outline" className="justify-start" onClick={() => downloadCsv("nlz_data_quality.csv", [nlzDossier.data_quality])}>
+                        <Download className="w-4 h-4 mr-2" />Data Quality CSV
+                      </Button>
+                      <Button variant="outline" className="justify-start" onClick={() => downloadText("claim_boundary.md", nlzClaimBoundaryText)}>
+                        <Download className="w-4 h-4 mr-2" />Claim Boundary
+                      </Button>
+                      <Button onClick={createNlzEvidenceSnapshot} disabled={nlzSnapshotLoading || loading} className="justify-start">
+                        {nlzSnapshotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                        Snapshot speichern
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Team-Readiness</CardTitle>
+                    <CardDescription>Aggregierte Teamfähigkeit für NLZ-Gespräche, ohne Einzelprofile.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Team</TableHead>
+                            <TableHead className="text-right">n</TableHead>
+                            <TableHead className="text-right">Pre</TableHead>
+                            <TableHead className="text-right">Post</TableHead>
+                            <TableHead className="text-right">DI Post</TableHead>
+                            <TableHead className="text-right">Ø Completion</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {nlzDossier.teams.map((team) => (
+                            <TableRow key={String(team.team_id ?? team.team)}>
+                              <TableCell className="font-medium">{String(team.team ?? "–")}</TableCell>
+                              <TableCell className="text-right">{formatCount(team.athlete_count as number)}</TableCell>
+                              <TableCell className="text-right">{formatCount(team.pre_n as number)}</TableCell>
+                              <TableCell className="text-right">{formatCount(team.post_n as number)}</TableCell>
+                              <TableCell className="text-right">{formatCount(team.development_post_n as number)}</TableCell>
+                              <TableCell className="text-right">{formatPercent(team.avg_completion_rate as number | null)}</TableCell>
+                              <TableCell>
+                                <Badge variant={team.evidence_ready ? "default" : team.aggregate_visible ? "secondary" : "outline"}>
+                                  {team.evidence_ready ? "Pre/Post bereit" : team.aggregate_visible ? "n ≥ 5" : "n < 5"}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {!nlzDossier.teams.length && (
+                            <TableRow>
+                              <TableCell colSpan={7} className="py-6 text-center text-muted-foreground">
+                                Noch keine Team-Readiness verfügbar.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Ausgeschlossen: {nlzDossier.privacy_exclusions.join(", ")}.
+                    </p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </TabsContent>
 
           {/* PRESENTATION DATA */}
