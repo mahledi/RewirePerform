@@ -51,6 +51,8 @@ CREATE TRIGGER touch_team_training_schedule_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 -- 3) get_coach_team_activity_status RPC
+DROP FUNCTION IF EXISTS public.get_coach_team_activity_status(uuid);
+
 CREATE OR REPLACE FUNCTION public.get_coach_team_activity_status(_team_id uuid)
 RETURNS TABLE (
   user_id uuid,

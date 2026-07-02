@@ -58,6 +58,10 @@ VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_SUPABASE_PROJECT_ID
 ```
 
+There is no hard-coded Supabase runtime fallback. If these variables are
+missing on a new host, the app should fail loudly instead of connecting to an
+unintended backend.
+
 Required for Supabase Edge Functions:
 
 ```text
