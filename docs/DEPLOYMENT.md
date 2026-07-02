@@ -36,6 +36,11 @@ VITE_APP_ENV production | staging | development
 VITE_RELEASE_SHA optional, current Git commit SHA
 ```
 
+The Supabase client intentionally has no production fallback. Every host
+must set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and
+`VITE_SUPABASE_PROJECT_ID` explicitly. This prevents a new host from silently
+talking to the wrong Supabase project.
+
 If `VITE_SENTRY_DSN` is empty, the app uses the public RewirePerform Sentry DSN fallback defined in `src/lib/monitoring.ts`.
 This is intentional for Lovable builds where `VITE_` environment variables are not exposed in the UI. The DSN is a public browser
 endpoint, not a private secret. For owned hosts, prefer setting `VITE_SENTRY_DSN` explicitly so the fallback can be removed later.

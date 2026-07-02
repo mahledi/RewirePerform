@@ -2,12 +2,22 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ||
-  "https://twceqincrbrenyuqukpj.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Y2VxaW5jcmJyZW55dXF1a3BqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwODUyMjgsImV4cCI6MjA4OTY2MTIyOH0.TqtJeXEd6zL6FV_trDyoh8pCDwPrY2fzr4I5n71LN_o";
+type RequiredClientEnv =
+  | "VITE_SUPABASE_URL"
+  | "VITE_SUPABASE_PUBLISHABLE_KEY"
+  | "VITE_SUPABASE_PROJECT_ID";
+
+function requireClientEnv(key: RequiredClientEnv) {
+  const value = import.meta.env[key];
+  if (!value) {
+    throw new Error(`Missing ${key}. Configure RewirePerform runtime environment before deploying this build.`);
+  }
+  return value;
+}
+
+const SUPABASE_URL = requireClientEnv("VITE_SUPABASE_URL");
+const SUPABASE_PUBLISHABLE_KEY = requireClientEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
+requireClientEnv("VITE_SUPABASE_PROJECT_ID");
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
