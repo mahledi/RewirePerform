@@ -965,9 +965,18 @@ const Dashboard = () => {
               <Brain className="w-5 h-5 text-primary" />
               <span className="font-heading font-bold">RewirePerform</span>
             </div>
-            <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Einstellungen">
-              <Settings className="w-4 h-4 text-muted-foreground" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Einstellungen">
+                <Settings className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={async () => { await signOut(); navigate("/"); }}
+                className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
+                title="Abmelden"
+              >
+                <LogOut className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1005,6 +1014,19 @@ const Dashboard = () => {
                 <div>
                   <p className="text-sm font-heading font-semibold">Einstellungen öffnen</p>
                   <p className="text-xs text-muted-foreground">Trainingszeiten, Erinnerungen und App-Infos</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={async () => { await signOut(); navigate("/"); }}
+              className="w-full p-4 rounded-2xl border border-border/70 hover:bg-secondary/70 transition-all flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-3">
+                <LogOut className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-heading font-semibold">Abmelden</p>
+                  <p className="text-xs text-muted-foreground">Zur Startseite zurückkehren</p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-muted-foreground" />
