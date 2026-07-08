@@ -44,6 +44,17 @@ interface Analysis {
   recommendations: { title: string; description: string; duration: string; frequency: string }[];
 }
 
+interface MissedDayReview {
+  key: string;
+  dayNumber: number;
+  date: string;
+  eventType: EventType;
+  lens: string;
+  scienceFact: string;
+  coreShift: string;
+  tasks: string[];
+}
+
 
 const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
 const DEEP_PROFILE_BASELINE_AVAILABLE_FROM_DAY = 7;
@@ -88,6 +99,27 @@ const getDashboardMemoryCache = (userId?: string | null) => {
   if (!userId || !dashboardMemoryCache || dashboardMemoryCache.userId !== userId) return null;
   if (Date.now() - dashboardMemoryCache.cachedAt > DASHBOARD_MEMORY_CACHE_TTL_MS) return null;
   return dashboardMemoryCache;
+};
+
+const getMissedReviewStorageKey = (userId: string, instanceId: string | null) =>
+  `missed-day-review:${userId}:${instanceId ?? "legacy"}`;
+
+const readAcknowledgedMissedReviews = (userId: string, instanceId: string | null) => {
+  try {
+    const raw = window.localStorage.getItem(getMissedReviewStorageKey(userId, instanceId));
+    const parsed = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : []);
+  } catch {
+    return new Set<string>();
+  }
+};
+
+const writeAcknowledgedMissedReviews = (userId: string, instanceId: string | null, keys: Set<string>) => {
+  try {
+    window.localStorage.setItem(getMissedReviewStorageKey(userId, instanceId), JSON.stringify(Array.from(keys)));
+  } catch {
+    // localStorage can be unavailable in strict browser modes.
+  }
 };
 
 // ─── Calendar Setup ─────────────────────────────────────
@@ -378,6 +410,7 @@ const Dashboard = () => {
   const [teamProgramStart, setTeamProgramStart] = useState<string | null>(null);
   const [programMode, setProgramMode] = useState<ProgramMode>("solo");
   const [flameStats, setFlameStats] = useState<FlameStats | null>(null);
+  const [missedDayReviews, setMissedDayReviews] = useState<MissedDayReview[]>([]);
   const [effectiveToday, setEffectiveToday] = useState<Date>(new Date());
   const [showTeamCalendar, setShowTeamCalendar] = useState(false);
   const lastStatusRefreshAt = useRef(0);
@@ -480,6 +513,8 @@ const Dashboard = () => {
       if (setupState === "ready") {
         if (!canUseCachedStatus) {
           void refreshDashboardStatus(resolvedToday);
+        } else {
+          void loadMissedDayReviews(resolvedToday);
         }
       }
     };
@@ -777,9 +812,97 @@ const Dashboard = () => {
     setRetestDone(timings.has("post") || timings.has("retest"));
   };
 
+  const resolveEventTypeForProgramDate = (dateStr: string): EventType => {
+    const explicitEvent = events.find((event) => event.date === dateStr);
+    return explicitEvent?.event_type ?? "training";
+  };
+
+  const loadMissedDayReviews = async (referenceDate = effectiveToday) => {
+    if (!user?.id) return;
+
+    try {
+      const [effectiveStart, instance] = await Promise.all([
+        getEffectiveProgramStart(user.id),
+        getOrCreateActiveInstance(user.id),
+      ]);
+      const startDate = effectiveStart.startDate;
+      const dayInfo = getCurrentProgramDay(startDate, referenceDate);
+
+      if (!startDate || !dayInfo || dayInfo.dayNumber <= 1) {
+        setMissedDayReviews([]);
+        return;
+      }
+
+      const instanceId = instance?.id ?? null;
+      let completedQuery = supabase
+        .from("user_day_completion")
+        .select("day_number")
+        .eq("user_id", user.id)
+        .eq("completion_status", "completed");
+      completedQuery = instanceId
+        ? completedQuery.eq("program_instance_id", instanceId)
+        : completedQuery.is("program_instance_id", null);
+
+      const { data: completedRows, error } = await completedQuery;
+      if (error) {
+        console.error("missed day review load error", error);
+        setMissedDayReviews([]);
+        return;
+      }
+
+      const completedDays = new Set((completedRows ?? [])
+        .map((row) => row.day_number)
+        .filter((value): value is number => typeof value === "number"));
+      const acknowledged = readAcknowledgedMissedReviews(user.id, instanceId);
+      const start = new Date(`${startDate}T00:00:00`);
+
+      const reviews: MissedDayReview[] = [];
+      for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= 1 && reviews.length < 3; dayNumber -= 1) {
+        if (completedDays.has(dayNumber)) continue;
+
+        const dayDate = addDays(start, dayNumber - 1);
+        const dateStr = format(dayDate, "yyyy-MM-dd");
+        const key = `${dateStr}:${dayNumber}`;
+        if (acknowledged.has(key)) continue;
+
+        const eventType = resolveEventTypeForProgramDate(dateStr);
+        const resolved = resolveDay(dayNumber, dayDate, eventType);
+        if (!resolved) continue;
+
+        reviews.push({
+          key,
+          dayNumber,
+          date: dateStr,
+          eventType,
+          lens: resolved.matrix.lens,
+          scienceFact: resolved.content.scienceBite.fact,
+          coreShift: resolved.content.coreShift,
+          tasks: resolved.content.tasks.map((task) => task.title),
+        });
+      }
+
+      setMissedDayReviews(reviews);
+    } catch (e) {
+      console.error("loadMissedDayReviews error", e);
+      setMissedDayReviews([]);
+    }
+  };
+
+  const acknowledgeMissedDay = async (review: MissedDayReview) => {
+    if (!user?.id) return;
+    const instance = await getOrCreateActiveInstance(user.id);
+    const instanceId = instance?.id ?? null;
+    const acknowledged = readAcknowledgedMissedReviews(user.id, instanceId);
+    acknowledged.add(review.key);
+    writeAcknowledgedMissedReviews(user.id, instanceId, acknowledged);
+    setMissedDayReviews((prev) => prev.filter((item) => item.key !== review.key));
+    await loadMissedDayReviews(effectiveToday);
+  };
+
   const refreshDashboardStatus = async (referenceDate = effectiveToday) => {
     lastStatusRefreshAt.current = Date.now();
     await Promise.all([checkAssessments(referenceDate), checkTodayCheckin(referenceDate), checkDeepProfile()]);
+    await loadMissedDayReviews(referenceDate);
   };
 
   // Re-check assessments when navigating back to dashboard
@@ -1310,6 +1433,57 @@ const Dashboard = () => {
               <ArrowRight className="w-4 h-4 text-muted-foreground" />
             </button>
           </motion.div>
+        )}
+
+        {missedDayReviews.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 rounded-2xl bg-gradient-card border-glow p-5 sm:p-6"
+          >
+            <div className="flex items-start gap-4 mb-5">
+              <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                <BookOpen className="w-5 h-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-heading font-semibold">
+                  {missedDayReviews.length === 1 ? "Verpasster Programmtag" : `${missedDayReviews.length} verpasste Programmtage`}
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Heute bleibt im Fokus. Diese Kurzreview gibt dir nur den wichtigsten Kontext, damit du wieder sauber anschließt.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {missedDayReviews.map((review) => (
+                <div key={review.key} className="rounded-xl border border-border/60 bg-background/45 p-4">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="text-xs font-heading font-semibold text-primary">Tag {review.dayNumber}</span>
+                    <span className="text-xs text-muted-foreground">{format(new Date(`${review.date}T00:00:00`), "EEE, d. MMM", { locale: de })}</span>
+                    <span className="text-xs text-muted-foreground">· {eventConfig[review.eventType].label}</span>
+                  </div>
+                  <h3 className="font-heading font-semibold text-sm mb-2">{review.lens}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">{review.scienceFact}</p>
+                  <div className="rounded-lg bg-secondary/40 p-3 mb-3">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Worum es ging</p>
+                    <p className="text-sm leading-relaxed">{review.coreShift}</p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Kurzaufgabe: {review.tasks.slice(0, 2).join(" · ")}
+                    </p>
+                    <button
+                      onClick={() => acknowledgeMissedDay(review)}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-heading font-semibold text-primary transition-colors hover:bg-primary/20"
+                    >
+                      Verstanden <Check className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.section>
         )}
 
         {/* Today's Check-in CTA */}
