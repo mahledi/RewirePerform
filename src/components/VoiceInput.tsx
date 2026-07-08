@@ -34,6 +34,7 @@ const VoiceInput = ({
   const recognitionRef = useRef<any>(null);
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentValueRef = useRef(currentValue);
+  const interimTextRef = useRef("");
   const isListeningRef = useRef(false); // Ref-Spiegel für stabile Closures
   const onTranscriptRef = useRef(onTranscript);
   const startingRef = useRef(false); // Schutz gegen doppelten Start
@@ -88,6 +89,7 @@ const VoiceInput = ({
       pulseIntervalRef.current = null;
     }
     setPulseLevel(0);
+    interimTextRef.current = "";
     setInterimText("");
   }, []);
 
@@ -134,13 +136,16 @@ const VoiceInput = ({
         }
       }
 
+      interimTextRef.current = interim;
       setInterimText(interim);
 
       if (final) {
         const cur = currentValueRef.current;
         const separator = cur && !cur.endsWith(" ") ? " " : "";
         const newValue = cur + separator + final;
+        currentValueRef.current = newValue;
         onTranscriptRef.current(newValue);
+        interimTextRef.current = "";
         setInterimText("");
       }
     };
@@ -203,6 +208,14 @@ const VoiceInput = ({
 
   const stopListening = useCallback(() => {
     isListeningRef.current = false;
+    const pending = interimTextRef.current.trim();
+    if (pending) {
+      const cur = currentValueRef.current;
+      const separator = cur && !cur.endsWith(" ") ? " " : "";
+      const newValue = cur + separator + pending;
+      currentValueRef.current = newValue;
+      onTranscriptRef.current(newValue);
+    }
     cleanupRecognition();
     setIsListening(false);
   }, [cleanupRecognition]);
