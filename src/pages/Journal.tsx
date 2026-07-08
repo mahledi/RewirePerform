@@ -367,6 +367,7 @@ const Journal = () => {
             <VoiceInput
               currentValue={answers[q.id] ?? ""}
               onTranscript={(text) => setAnswers((prev) => ({ ...prev, [q.id]: text }))}
+              showHint={false}
             />
           </motion.div>
         ))}
@@ -411,6 +412,7 @@ const Journal = () => {
                         return next;
                       })
                     }
+                    showHint={false}
                   />
                 </div>
               );
@@ -428,7 +430,7 @@ const Journal = () => {
               placeholder="Optional …"
               className="min-h-[70px] bg-secondary/30 border-border/40 resize-none"
             />
-            <VoiceInput currentValue={freeReflection} onTranscript={setFreeReflection} />
+            <VoiceInput currentValue={freeReflection} onTranscript={setFreeReflection} showHint={false} />
           </motion.div>
         )}
 

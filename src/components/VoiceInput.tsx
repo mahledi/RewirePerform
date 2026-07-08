@@ -7,6 +7,7 @@ interface VoiceInputProps {
   currentValue?: string;
   language?: string;
   placeholder?: string;
+  showHint?: boolean;
 }
 
 // Check for browser support
@@ -23,6 +24,7 @@ const VoiceInput = ({
   onTranscript,
   currentValue = "",
   language = "de-DE",
+  showHint = true,
 }: VoiceInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
@@ -210,7 +212,7 @@ const VoiceInput = ({
   return (
     <div className="space-y-3">
       {/* Voice CTA — encourage speaking */}
-      {!isListening && !currentValue && (
+      {showHint && !isListening && !currentValue && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
