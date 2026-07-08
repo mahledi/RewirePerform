@@ -180,7 +180,7 @@ const Auth = () => {
       toast.error("Bitte gib deinen Namen ein.");
       return;
     }
-    if (intent !== "create" && !sport) {
+    if (intent === "join" && !sport) {
       toast.error("Bitte wähle deine Sportart.");
       return;
     }
@@ -427,7 +427,7 @@ const Auth = () => {
             />
           </div>
 
-          {intent !== "create" && (
+          {intent === "join" && (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <SportButton label="⚽ Fußball" value="Fußball" current={sport} onClick={setSport} />
               <SportButton label="🏈 American Football" value="American Football" current={sport} onClick={setSport} />

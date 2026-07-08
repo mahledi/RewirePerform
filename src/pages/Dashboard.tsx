@@ -132,7 +132,6 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
   const { user } = useAuth();
 
   const handleSave = async () => {
-    if (filledDays < 56) return;
     setSaving(true);
 
     const inserts = Array.from(localEvents.entries()).map(([date, type]) => ({
@@ -145,10 +144,12 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
 
     await supabase.from("calendar_events").delete().eq("user_id", user!.id);
 
-    const { data: eventData, error: eventError } = await supabase
-      .from("calendar_events")
-      .insert(inserts)
-      .select();
+    const { data: eventData, error: eventError } = inserts.length > 0
+      ? await supabase
+          .from("calendar_events")
+          .insert(inserts)
+          .select()
+      : { data: [], error: null };
 
     if (eventError) {
       toast.error("Fehler beim Speichern des Kalenders.");
@@ -210,7 +211,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
             Plane deine nächsten <span className="text-gradient">8 Wochen.</span>
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-          Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
+            Optional: Trage ein, wann du trainierst, wann du dich erholst und wann Wettkämpfe stattfinden.
             Dein 56-Tage-Programm folgt einer festen, neurokognitiven Struktur in 4 Phasen.
           </p>
         </motion.div>
@@ -243,7 +244,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10 mb-6">
           <Info className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Wähle unten ein Tool und tippe auf alle 56 Programmtage. Du kannst den Kalender später jederzeit anpassen.
+            Du kannst deinen Kalender jetzt vorbereiten oder direkt starten und ihn später jederzeit in den Einstellungen anpassen.
           </p>
         </motion.div>
 
@@ -328,15 +329,15 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSave}
-          disabled={filledDays < 56 || saving}
+          disabled={saving}
           className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
-            filledDays >= 56 ? "bg-primary text-primary-foreground hover:shadow-glow" : "bg-muted text-muted-foreground cursor-not-allowed"
+            saving ? "bg-muted text-muted-foreground cursor-wait" : "bg-primary text-primary-foreground hover:shadow-glow"
           }`}
         >
           {saving ? (<><Loader2 className="w-5 h-5 animate-spin" />Programm wird angelegt...</>) : (<>Programm starten<ArrowRight className="w-5 h-5" /></>)}
         </motion.button>
         {filledDays < 56 && (
-          <p className="text-xs text-muted-foreground text-center mt-3">Alle 56 Tage eintragen, damit dein Programm täglich trägt.</p>
+          <p className="text-xs text-muted-foreground text-center mt-3">Kalender optional. Nicht geplante Tage laufen als normaler Trainingstag.</p>
         )}
       </div>
     </div>
@@ -1066,7 +1067,7 @@ const Dashboard = () => {
             <span className="font-heading font-bold text-base">RewirePerform</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Tests">
+            <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Messungen">
               <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
             </button>
             <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Info & Hilfe">
@@ -1122,15 +1123,15 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* Mid-Test Banner (Tag 28) */}
+        {/* Mid measurement banner (day 28) */}
         {midTestDue && !midTestsDone && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-primary/10 border border-primary/30">
             <div className="flex items-start gap-3">
               <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deinen Mid-Program Re-Test.</h3>
+                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deine Zwischenmessung.</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Du hast Halbzeit erreicht. Wiederhole die Tests, um beobachtete Veränderungen zu dokumentieren.
+                  Du hast Halbzeit erreicht. Wiederhole die Fragebögen, um beobachtete Veränderungen zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -1139,22 +1140,22 @@ const Dashboard = () => {
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
                 >
                   <ClipboardCheck className="w-4 h-4" />
-                  Mid-Tests starten
+                  Zwischenmessung starten
                 </motion.button>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* Post-Test Banner */}
+        {/* Post measurement banner */}
         {postTestDue && !postTestsDone && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-yellow-400/10 border border-yellow-400/30">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deinen Abschluss-Re-Test.</h3>
+                <h3 className="font-heading font-semibold text-sm mb-1">Zeit für deine Abschlussmessung.</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 8-Wochen-Programm ist abgeschlossen. Wiederhole jetzt die Tests, um die beobachtete Veränderung zu dokumentieren.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Wiederhole jetzt die Fragebögen, um die beobachtete Veränderung zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -1163,22 +1164,22 @@ const Dashboard = () => {
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-400 text-background font-heading font-semibold text-sm hover:bg-yellow-300 transition-colors"
                 >
                   <ClipboardCheck className="w-4 h-4" />
-                  Post-Tests starten
+                  Abschlussmessung starten
                 </motion.button>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* Pre-Test Reminder */}
+        {/* Pre measurement reminder */}
         {showPreTestReminder && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-5 sm:mb-6 p-4 sm:p-5 rounded-2xl bg-primary/10 border border-primary/30">
             <div className="flex items-start gap-3 min-w-0">
               <ClipboardCheck className="w-5 h-5 text-primary shrink-0 mt-1" />
               <div className="flex-1">
-                <h3 className="font-heading font-semibold text-sm mb-1">Pre-Tests ausstehend</h3>
+                <h3 className="font-heading font-semibold text-sm mb-1">Startmessung ausstehend</h3>
                 <p className="text-xs text-muted-foreground mb-4 sm:mb-3 leading-relaxed">
-                  Bitte fülle die wissenschaftlichen Pre-Tests aus, um deinen Ausgangszustand zu dokumentieren.
+                  Bitte fülle die wissenschaftlichen Fragebögen aus, um deinen Ausgangspunkt zu dokumentieren.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -1187,7 +1188,7 @@ const Dashboard = () => {
                   className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-sm hover:shadow-glow transition-all"
                 >
                   <ClipboardCheck className="w-4 h-4" />
-                  Pre-Tests starten
+                  Startmessung beginnen
                 </motion.button>
               </div>
             </div>
@@ -1250,7 +1251,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Baseline erstellen</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Erstelle dein detailliertes Athleten-Profil als Ausgangspunkt – nach 8 Wochen misst du deinen Fortschritt.
+                  Erstelle dein detailliertes Profil als Ausgangspunkt. Nach 8 Wochen kannst du deine Entwicklung vergleichen.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -1266,15 +1267,15 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-        {/* Deep Profile Re-Test Banner */}
+        {/* Deep profile retest banner */}
         {baselineDone && !retestDone && postTestDue && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-5 rounded-2xl bg-yellow-400/10 border border-yellow-400/30">
             <div className="flex items-start gap-3">
               <TrendingUp className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Re-Test verfügbar!</h3>
+                <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive erneut verfügbar.</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 8-Wochen-Programm ist abgeschlossen. Mache den Re-Test und sieh, wie sich dein Mindset verändert hat.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Beantworte den Deep-Dive erneut und vergleiche deine Entwicklung.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -1283,7 +1284,7 @@ const Dashboard = () => {
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-yellow-400 text-background font-heading font-semibold text-sm hover:bg-yellow-300 transition-colors"
                 >
                   <TrendingUp className="w-4 h-4" />
-                  Re-Test starten
+                  Deep-Dive starten
                 </motion.button>
               </div>
             </div>
@@ -1303,7 +1304,7 @@ const Dashboard = () => {
                 </div>
                 <div className="text-left">
                   <p className="text-sm font-heading font-semibold">Dein Fortschritt (Deep Dive)</p>
-                  <p className="text-xs text-muted-foreground">{retestDone ? "Baseline vs. Re-Test ansehen" : "Baseline-Profil ansehen"}</p>
+                  <p className="text-xs text-muted-foreground">{retestDone ? "Baseline und Entwicklung ansehen" : "Baseline-Profil ansehen"}</p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-muted-foreground" />
