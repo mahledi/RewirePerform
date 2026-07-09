@@ -23,12 +23,7 @@ const WhySection = () => {
   return (
     <section className="pt-8 pb-24 md:py-32 relative">
       <div className="container mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-3xl mb-16"
-        >
+        <div className="max-w-3xl mb-16">
           <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
             Warum es existiert
           </span>
@@ -45,7 +40,7 @@ const WhySection = () => {
             reagieren: nach Fehlern, unter Druck, bei Müdigkeit und in Momenten,
             in denen das Ego die Kontrolle übernehmen will.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-5">
           {cards.map((c, i) => (
