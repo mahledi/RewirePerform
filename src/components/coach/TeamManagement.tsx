@@ -117,6 +117,25 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   }>>({});
   const [readinessLoading, setReadinessLoading] = useState(true);
 
+  const notifyProgramStart = async (teamId: string, startDate: string) => {
+    const { data, error } = await supabase.functions.invoke("send-program-start-notification", {
+      body: { teamId, startDate },
+    });
+
+    if (error) {
+      console.warn("program start push failed", error);
+      toast.info("Programmstart gespeichert. Push konnte gerade nicht bestätigt werden.");
+      return;
+    }
+
+    const sent = typeof data?.sent === "number" ? data.sent : 0;
+    if (sent > 0) {
+      toast.success(`${sent} Start-Benachrichtigung${sent === 1 ? "" : "en"} gesendet.`);
+    } else {
+      toast.info("Programmstart gespeichert. Es wurden keine aktiven Push-Abos gefunden.");
+    }
+  };
+
   const updateTeamStartDate = async (teamId: string, date: string) => {
     if (!date) {
       toast.error("Bitte ein Datum auswählen.");
@@ -212,6 +231,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
       toast.error("Programm konnte nicht gestartet werden: " + error.message);
     } else {
       toast.success(`Programm startet am ${format(addDays(new Date(), 1), "d. MMMM yyyy", { locale: de })}`);
+      await notifyProgramStart(team.id, tomorrow);
       onTeamCreated();
     }
   };

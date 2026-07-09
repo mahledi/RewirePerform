@@ -52,7 +52,7 @@ self.addEventListener("message", (event) => {
 
 // ---- Push notifications (kept from previous public/sw.js) ----
 self.addEventListener("push", (event: PushEvent) => {
-  let data: any = { title: "RewirePerform", body: "", url: "/" };
+  let data: any = { title: "Neue Nachricht", body: "", url: "/" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch {

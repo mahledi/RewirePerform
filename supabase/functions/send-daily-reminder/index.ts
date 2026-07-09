@@ -32,17 +32,17 @@ type NotifSource = "time" | "team_calendar" | "team_weekly_schedule" | "solo_sch
 
 const PAYLOADS: Record<NotifType, { title: string; body: string; url: string }> = {
   morning: {
-    title: "RewirePerform - Guten Morgen",
+    title: "Guten Morgen",
     body: "Dein Check-in wartet. Starte bewusst in deinen Tag.",
     url: "/dashboard",
   },
   pre_training: {
-    title: "RewirePerform - Pre-Training",
+    title: "Pre-Training",
     body: "Eine kurze Vorbereitung: Fokus, Aufgabe, nächste Aktion.",
     url: "/pre-training",
   },
   evening: {
-    title: "RewirePerform - Tagesabschluss",
+    title: "Tagesabschluss",
     body: "Dein Journal wartet. Drei ruhige Minuten für deinen Abschluss.",
     url: "/journal",
   },
