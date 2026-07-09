@@ -54,7 +54,6 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [sport, setSport] = useState("");
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
 
   const normalizedTeamCode = () => teamCode.trim().toUpperCase();
@@ -144,9 +143,6 @@ const Auth = () => {
           setLoading(false);
           return;
         }
-        if (sport) {
-          await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
-        }
         toast.success("Teambeitritt abgeschlossen.");
         navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
         setLoading(false);
@@ -180,10 +176,6 @@ const Auth = () => {
       toast.error("Bitte gib deinen Namen ein.");
       return;
     }
-    if (intent === "join" && !sport) {
-      toast.error("Bitte wähle deine Sportart.");
-      return;
-    }
     if (intent === "join" && teamCode.trim().length !== 6) {
       toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
       return;
@@ -197,7 +189,7 @@ const Auth = () => {
       email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName.trim(), sport: sport.trim(), role: initialRole },
+        data: { full_name: fullName.trim(), role: initialRole },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -230,10 +222,6 @@ const Auth = () => {
       setMode("login");
       setLoading(false);
       return;
-    }
-
-    if (sport) {
-      await supabase.from("profiles").update({ sport }).eq("id", data.user.id);
     }
 
     let effectiveRole: "athlete" | "coach" = initialRole;
@@ -428,13 +416,6 @@ const Auth = () => {
           </div>
 
           {intent === "join" && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <SportButton label="⚽ Fußball" value="Fußball" current={sport} onClick={setSport} />
-              <SportButton label="🏈 American Football" value="American Football" current={sport} onClick={setSport} />
-            </div>
-          )}
-
-          {intent === "join" && (
             <div>
               <div className="relative">
                 <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -495,22 +476,6 @@ const IntentCard = ({
       <div className="text-xs text-muted-foreground leading-relaxed">{description}</div>
     </div>
     <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
-  </button>
-);
-
-const SportButton = ({
-  label, value, current, onClick,
-}: { label: string; value: string; current: string; onClick: (v: string) => void }) => (
-  <button
-    type="button"
-    onClick={() => onClick(value)}
-    className={`flex min-w-0 items-center justify-center gap-2 rounded-xl border px-3 py-3.5 text-sm font-medium transition-all ${
-      current === value
-        ? "bg-primary/10 border-primary text-primary"
-        : "bg-secondary/50 border-border/50 text-muted-foreground hover:border-border"
-    }`}
-  >
-    {label}
   </button>
 );
 

@@ -859,14 +859,16 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                         onComplete={handleComprehensionComplete}
                       />
                     ) : (
-                      <button
+                      <motion.button
                         data-testid="comprehension-empty-finish"
                         onClick={() => saveCheckin()}
                         disabled={saving}
-                        className="w-full px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold disabled:opacity-60"
+                        whileTap={!saving ? { scale: 0.98 } : undefined}
+                        className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold transition-all active:scale-[0.98] disabled:opacity-60"
                       >
+                        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                         {saving ? "Speichert..." : "Check-in abschließen"}
-                      </button>
+                      </motion.button>
                     )}
                   </motion.div>
                 )}

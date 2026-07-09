@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, ArrowRight } from "lucide-react";
+import { Check, X, ArrowRight, Loader2 } from "lucide-react";
 import type { ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 interface Props {
   questions: ComprehensionQuestion[];
-  onComplete: (results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]) => void;
+  onComplete: (results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]) => void | Promise<void>;
 }
 
 export const shuffleComprehensionOptions = (questions: ComprehensionQuestion[]) =>
@@ -26,6 +26,7 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
   const [results, setResults] = useState<
     { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
   >([]);
+  const [completing, setCompleting] = useState(false);
 
   const q = shuffledQuestions[index];
   const total = shuffledQuestions.length;
@@ -52,7 +53,8 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
     const next = [...results, newResult];
     setResults(next);
     if (isLast) {
-      onComplete(next);
+      setCompleting(true);
+      Promise.resolve(onComplete(next)).catch(() => setCompleting(false));
       return;
     }
     setIndex(index + 1);
@@ -125,18 +127,28 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
             )}
           </AnimatePresence>
 
-          <button
+          <motion.button
             data-testid={isLast ? "comprehension-finish" : "comprehension-next"}
             onClick={handleNext}
-            disabled={!showFeedback}
+            disabled={!showFeedback || completing}
+            whileTap={showFeedback && !completing ? { scale: 0.98 } : undefined}
             className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold transition-all ${
-              showFeedback
+              showFeedback && !completing
                 ? "bg-primary text-primary-foreground hover:shadow-glow"
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             }`}
           >
-            {isLast ? "Check abschließen" : "Weiter"} <ArrowRight className="w-4 h-4" />
-          </button>
+            {completing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Speichert...
+              </>
+            ) : (
+              <>
+                {isLast ? "Check abschließen" : "Weiter"} <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </motion.button>
         </motion.div>
       </AnimatePresence>
     </div>

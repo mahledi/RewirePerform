@@ -358,21 +358,29 @@ const Settings = () => {
 
         {/* FAQ */}
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <HelpCircle className="w-5 h-5 text-primary" />
-              <h2 className="font-heading font-semibold text-lg">Häufige Fragen</h2>
-            </div>
-
-            <Accordion type="single" collapsible className="w-full">
-              {faqItems.map((item, i) => (
-                <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-                  <AccordionTrigger className="text-sm text-left hover:no-underline">{item.q}</AccordionTrigger>
-                  <AccordionContent className="text-sm text-muted-foreground leading-relaxed">{item.a}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="faq-section" className="rounded-xl border border-border bg-card px-5">
+              <AccordionTrigger className="py-5 text-left hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-primary" />
+                  <div>
+                    <h2 className="font-heading font-semibold text-lg">Häufige Fragen</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">Antworten aufklappen</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-5">
+                <Accordion type="single" collapsible className="w-full space-y-2">
+                  {faqItems.map((item, i) => (
+                    <AccordionItem key={i} value={`faq-${i}`} className="rounded-xl border border-border/60 bg-secondary/30 px-4">
+                      <AccordionTrigger className="py-3 text-sm text-left hover:no-underline">{item.q}</AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed">{item.a}</AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </motion.section>
 
         {/* Datenschutz */}
