@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -176,6 +176,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [teamConnection, setTeamConnection] = useState<number | null>(null);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -183,6 +184,11 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const draftKey = user?.id ? `checkin:${user.id}:${dateKey}:${eventType}` : null;
   const getCompletedTaskTitles = (taskIds: string[] = completedTasks) =>
     taskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
+
+  useLayoutEffect(() => {
+    contentScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [step, selectedTask?.id]);
 
   const handleBack = () => {
     if (selectedTask) {
@@ -738,7 +744,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         </div>
       </div>
 
-      <div className="flex-1 flex items-start justify-center px-6 py-8 overflow-y-auto">
+      <div ref={contentScrollRef} className="flex-1 flex items-start justify-center px-6 py-8 overflow-y-auto">
         <div className="max-w-lg w-full">
           {saveError && (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
