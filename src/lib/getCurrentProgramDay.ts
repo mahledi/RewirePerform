@@ -61,17 +61,31 @@ export const getEffectiveProgramStart = async (
     .select("team_id")
     .eq("user_id", userId);
 
-  const teamIds = (memberships ?? []).map((m: any) => m.team_id);
+  const teamIds = (memberships ?? []).map((membership) => membership.team_id);
   let teamStart: string | null = null;
 
   if (teamIds.length > 0) {
+    const { data: activeRuns } = await supabase
+      .from("program_runs")
+      .select("started_at")
+      .in("team_id", teamIds)
+      .eq("status", "active")
+      .not("started_at", "is", null)
+      .order("started_at", { ascending: false })
+      .limit(1);
+
+    const activeRunStart = activeRuns?.[0]?.started_at ?? null;
+    if (activeRunStart) {
+      return { startDate: activeRunStart, source: "team", hasTeam: true };
+    }
+
     const { data: teams } = await supabase
       .from("teams")
       .select("program_start_date")
       .in("id", teamIds);
 
     const dates = (teams ?? [])
-      .map((t: any) => t.program_start_date as string | null)
+      .map((team) => team.program_start_date)
       .filter((d): d is string => !!d)
       .sort();
     teamStart = dates[0] ?? null;

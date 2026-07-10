@@ -14,6 +14,8 @@ import { format, differenceInCalendarDays, parseISO, startOfDay } from "date-fns
 import { supabase } from "@/integrations/supabase/client";
 import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import { calculateCompletionRate, calculateStreaks } from "@/lib/trackingMetrics";
+import { getEffectiveTodayDate } from "@/lib/qaTime";
 
 export interface ProgressSnapshot {
   user_id: string;
@@ -32,41 +34,12 @@ export interface ProgressSnapshot {
   journals_completed_count: number;
 }
 
-function computeStreaks(completedDates: string[]): { current: number; longest: number } {
-  if (completedDates.length === 0) return { current: 0, longest: 0 };
-  const sorted = [...new Set(completedDates)].sort();
-  let longest = 1;
-  let run = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    const diff = differenceInCalendarDays(parseISO(sorted[i]), parseISO(sorted[i - 1]));
-    if (diff === 1) {
-      run += 1;
-      longest = Math.max(longest, run);
-    } else {
-      run = 1;
-    }
-  }
-  // current streak: counted from latest backwards
-  const today = startOfDay(new Date());
-  const latest = parseISO(sorted[sorted.length - 1]);
-  let current = 0;
-  if (differenceInCalendarDays(today, latest) <= 1) {
-    current = 1;
-    for (let i = sorted.length - 1; i > 0; i--) {
-      const d = differenceInCalendarDays(parseISO(sorted[i]), parseISO(sorted[i - 1]));
-      if (d === 1) current += 1;
-      else break;
-    }
-  }
-  return { current, longest };
-}
-
 /**
  * Schreibt (oder aktualisiert) den heutigen Snapshot für den User.
  * Idempotent — kann mehrfach pro Tag aufgerufen werden.
  */
 export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnapshot | null> {
-  const today = new Date();
+  const today = await getEffectiveTodayDate(userId);
   const todayStr = format(today, "yyyy-MM-dd");
 
   // Resolve current cohort instance first
@@ -86,48 +59,65 @@ export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnaps
 
   const teamId = instance?.team_id ?? null;
 
-  // Cohort-scoped reads
-  const baseFilter = (q: any) =>
-    instanceId ? q.eq("program_instance_id", instanceId) : q.eq("user_id", userId);
+  let completionsQuery = supabase
+    .from("user_day_completion")
+    .select("day_number, completion_status, completed_at, task_completion, program_instance_id, user_day_assignments(date)")
+    .eq("user_id", userId);
+  let checkinsQuery = supabase
+    .from("daily_checkins")
+    .select("date, program_instance_id")
+    .eq("user_id", userId);
+  let journalsQuery = supabase
+    .from("daily_journals")
+    .select("date, program_instance_id")
+    .eq("user_id", userId);
+  let comprehensionQuery = supabase
+    .from("comprehension_check_instances")
+    .select("correct_count, total_count, status, program_instance_id")
+    .eq("user_id", userId)
+    .eq("status", "completed");
+
+  if (instanceId) {
+    completionsQuery = completionsQuery.eq("program_instance_id", instanceId);
+    checkinsQuery = checkinsQuery.eq("program_instance_id", instanceId);
+    journalsQuery = journalsQuery.eq("program_instance_id", instanceId);
+    comprehensionQuery = comprehensionQuery.eq("program_instance_id", instanceId);
+  } else {
+    completionsQuery = completionsQuery.is("program_instance_id", null);
+    checkinsQuery = checkinsQuery.is("program_instance_id", null);
+    journalsQuery = journalsQuery.is("program_instance_id", null);
+    comprehensionQuery = comprehensionQuery.is("program_instance_id", null);
+  }
 
   const [completionsRes, checkinsRes, journalsRes, comprehensionRes] = await Promise.all([
-    baseFilter(
-      supabase
-        .from("user_day_completion")
-        .select("day_number, completion_status, completed_at, task_completion, program_instance_id")
-        .eq("user_id", userId)
-    ),
-    baseFilter(
-      supabase.from("daily_checkins").select("date, program_instance_id").eq("user_id", userId)
-    ),
-    baseFilter(
-      supabase.from("daily_journals").select("date, program_instance_id").eq("user_id", userId)
-    ),
-    baseFilter(
-      supabase
-        .from("comprehension_check_instances")
-        .select("correct_count, total_count, status, program_instance_id")
-        .eq("user_id", userId)
-        .eq("status", "completed")
-    ),
+    completionsQuery,
+    checkinsQuery,
+    journalsQuery,
+    comprehensionQuery,
   ]);
 
+  const trackingError = completionsRes.error ?? checkinsRes.error ?? journalsRes.error ?? comprehensionRes.error;
+  if (trackingError) {
+    console.error("upsertTodaySnapshot tracking read error:", trackingError);
+    return null;
+  }
+
   const completionsAll = (completionsRes.data ?? []).filter(
-    (c: any) => c.completion_status === "completed"
+    (completion) => completion.completion_status === "completed"
   );
   // unique completed days
-  const uniqueDays = new Set(completionsAll.map((c: any) => c.day_number));
+  const uniqueDays = new Set(completionsAll.map((completion) => completion.day_number));
   const daysCompleted = uniqueDays.size;
 
   const tasksCompletedCount = completionsAll.reduce(
-    (sum: number, c: any) => sum + (Array.isArray(c.task_completion) ? c.task_completion.length : 0),
+    (sum, completion) => sum + (Array.isArray(completion.task_completion) ? completion.task_completion.length : 0),
     0
   );
   const completedDates = completionsAll
-    .map((c: any) => c.completed_at)
-    .filter(Boolean)
-    .map((d: string) => d.slice(0, 10));
-  const { current: currentStreak, longest: longestStreak } = computeStreaks(completedDates);
+    .map((completion) => completion.user_day_assignments?.date ?? completion.completed_at?.slice(0, 10) ?? null)
+    .filter((date): date is string => Boolean(date))
+    .map((date) => date.slice(0, 10));
+  const { current: currentStreak, longest: longestStreak } = calculateStreaks(completedDates, today);
 
   const checkinsCount = checkinsRes.data?.length ?? 0;
   const journalsCount = journalsRes.data?.length ?? 0;
@@ -135,13 +125,13 @@ export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnaps
   const comprehensions = comprehensionRes.data ?? [];
   let comprehensionAvg: number | null = null;
   const rates = comprehensions
-    .filter((c: any) => c.total_count > 0)
-    .map((c: any) => c.correct_count / c.total_count);
+    .filter((check) => typeof check.total_count === "number" && check.total_count > 0 && typeof check.correct_count === "number")
+    .map((check) => (check.correct_count as number) / (check.total_count as number));
   if (rates.length > 0) {
     comprehensionAvg = rates.reduce((a: number, b: number) => a + b, 0) / rates.length;
   }
 
-  const completionRate = daysAvailable > 0 ? Math.min(1, daysCompleted / daysAvailable) : 0;
+  const completionRate = calculateCompletionRate(daysCompleted, daysAvailable);
 
   const snapshot: ProgressSnapshot = {
     user_id: userId,
@@ -212,7 +202,8 @@ const REQUIRED_TYPES = ["csai2r", "smtq", "flow_short"];
 export async function getRetestStatus(userId: string): Promise<RetestStatus> {
   const instance = await getOrCreateActiveInstance(userId);
   const startDate = instance?.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
-  const info = getCurrentProgramDay(startDate, new Date());
+  const effectiveToday = await getEffectiveTodayDate(userId);
+  const info = getCurrentProgramDay(startDate, effectiveToday);
   const programDay = info?.dayNumber ?? null;
 
   // Cohort-scoped: only assessments from current instance count

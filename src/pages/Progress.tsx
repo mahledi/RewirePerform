@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, TrendingUp, Sparkles, BarChart3, FileText } from "lucide-react";
@@ -30,26 +30,30 @@ const Progress = () => {
     []
   );
 
-  useEffect(() => {
-    loadProfiles();
-  }, []);
-
-  const loadProfiles = async () => {
+  const loadProfiles = useCallback(async () => {
     if (!user?.id) return;
-    const { data } = await supabase
+    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+    const instance = await getOrCreateActiveInstance(user.id);
+    let query = supabase
       .from("deep_profile_assessments")
       .select("timing, answers, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
+    if (instance?.id) query = query.eq("program_instance_id", instance.id);
+    const { data } = await query;
 
     if (data) {
       const b = data.find((d) => d.timing === "pre" || d.timing === "baseline");
       const r = data.find((d) => d.timing === "post" || d.timing === "retest");
-      if (b) setBaseline({ ...b, answers: b.answers as any });
-      if (r) setRetest({ ...r, answers: r.answers as any });
+      if (b) setBaseline({ ...b, answers: b.answers as unknown as ProfileData["answers"] });
+      if (r) setRetest({ ...r, answers: r.answers as unknown as ProfileData["answers"] });
     }
     setLoading(false);
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    void loadProfiles();
+  }, [loadProfiles]);
 
   useEffect(() => {
     if (baseline && retest) {
@@ -69,7 +73,7 @@ const Progress = () => {
     return String(answer);
   };
 
-  const getScaleDiff = (baseVal: any, retestVal: any) => {
+  const getScaleDiff = (baseVal: unknown, retestVal: unknown) => {
     const b = typeof baseVal === "number" ? baseVal : 0;
     const r = typeof retestVal === "number" ? retestVal : 0;
     const diff = r - b;

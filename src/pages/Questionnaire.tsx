@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
 import { clearLocalDraft, readLocalDraft } from "@/lib/localDrafts";
 import { hasCompleteOnboardingAnswerSet, hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
+import { toast } from "sonner";
 
 type Phase = "loading" | "intro" | "resume" | "flow" | "results";
 
@@ -25,17 +26,23 @@ interface LocalQuestionnaireDraft {
   lastGlobalIndex?: number;
 }
 
+const LEGACY_DRAFT_STORAGE_KEY = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`;
+
 const Questionnaire = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("loading");
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>({});
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [exiting, setExiting] = useState(false);
+  const [programInstanceId, setProgramInstanceId] = useState<string | null>(null);
+  const draftStorageKey = programInstanceId
+    ? `questionnaire:${programInstanceId}:${ONBOARDING_V2_INSTRUMENT_ID}`
+    : LEGACY_DRAFT_STORAGE_KEY;
 
   // Load any in-progress draft on mount
   useEffect(() => {
     const loadDraft = async () => {
-      const localDraft = readLocalDraft<LocalQuestionnaireDraft>(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
+      let localDraft = readLocalDraft<LocalQuestionnaireDraft>(LEGACY_DRAFT_STORAGE_KEY);
       const applyLocalDraft = () => {
         if (localDraft?.answers && Object.keys(localDraft.answers).length > 0) {
           setDraft({
@@ -57,10 +64,23 @@ const Questionnaire = () => {
         return;
       }
 
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+      if (!instance?.id) {
+        toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
+        setPhase("intro");
+        return;
+      }
+      setProgramInstanceId(instance.id);
+      localDraft = readLocalDraft<LocalQuestionnaireDraft>(
+        `questionnaire:${instance.id}:${ONBOARDING_V2_INSTRUMENT_ID}`,
+      ) ?? localDraft;
+
       const { data: completedResponses, error: completedError } = await supabase
         .from("questionnaire_responses")
         .select("id, answers, analysis, is_complete, instrument_id")
         .eq("user_id", user.id)
+        .eq("program_instance_id", instance.id)
         .eq("is_complete", true)
         .order("created_at", { ascending: false })
         .limit(5);
@@ -70,7 +90,8 @@ const Questionnaire = () => {
       }
 
       if ((completedResponses ?? []).some(hasValidCompletedOnboarding)) {
-        clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
+        clearLocalDraft(`questionnaire:${instance.id}:${ONBOARDING_V2_INSTRUMENT_ID}`);
+        clearLocalDraft(LEGACY_DRAFT_STORAGE_KEY);
         navigate("/dashboard", { replace: true });
         return;
       }
@@ -90,6 +111,7 @@ const Questionnaire = () => {
         .from("questionnaire_responses")
         .select("id, answers, last_category_index, progress_updated_at")
         .eq("user_id", user.id)
+        .eq("program_instance_id", instance.id)
         .eq("is_complete", false)
         .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
         .order("progress_updated_at", { ascending: false });
@@ -139,7 +161,8 @@ const Questionnaire = () => {
       await supabase.from("questionnaire_responses").delete().eq("id", draft.id);
       setDraft(null);
     }
-    clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
+    clearLocalDraft(draftStorageKey);
+    clearLocalDraft(LEGACY_DRAFT_STORAGE_KEY);
     setPhase("flow");
   };
 
@@ -235,12 +258,13 @@ const Questionnaire = () => {
           initialCategoryIndex={draft?.lastCategoryIndex ?? 0}
           initialGlobalIndex={draft?.lastGlobalIndex}
           draftId={draft?.id ?? null}
+          draftStorageKey={draftStorageKey}
           onComplete={handleComplete}
           onBack={() => setPhase("intro")}
           onPauseExit={handleSignOutToStart}
         />
       )}
-      {phase === "results" && <QuestionnaireResults answers={answers} />}
+      {phase === "results" && <QuestionnaireResults answers={answers} draftStorageKey={draftStorageKey} />}
     </>
   );
 };

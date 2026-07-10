@@ -14,7 +14,7 @@ import { getProgramModeInfo, type ProgramMode } from "@/lib/programMode";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
-import { buildFlameStats, type FlameStats } from "@/lib/flameStats";
+import { buildFlameStats, type FlameCompletionRow, type FlameStats } from "@/lib/flameStats";
 import FlameCard from "@/components/dashboard/FlameCard";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
@@ -688,7 +688,7 @@ const Dashboard = () => {
       const dayInfo = getCurrentProgramDay(effectiveStart.startDate, referenceDate);
       const daysAvailable = dayInfo?.dayNumber ?? snapshot?.days_available ?? 0;
       const stats = buildFlameStats({
-        completions: (completions ?? []) as any,
+        completions: (completions ?? []) as FlameCompletionRow[],
         snapshot: snapshot
           ? {
               current_streak: snapshot.current_streak,
@@ -805,9 +805,13 @@ const Dashboard = () => {
   };
 
   const checkDeepProfile = async () => {
-    const q = supabase.from("deep_profile_assessments").select("timing").eq("user_id", user!.id);
+    if (!user?.id) return;
+    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+    const instance = await getOrCreateActiveInstance(user.id);
+    let q = supabase.from("deep_profile_assessments").select("timing").eq("user_id", user.id);
+    if (instance?.id) q = q.eq("program_instance_id", instance.id);
     const { data } = await q;
-    const timings = new Set((data || []).map((d: any) => d.timing));
+    const timings = new Set((data || []).map((assessment) => assessment.timing));
     setBaselineDone(timings.has("pre") || timings.has("baseline"));
     setRetestDone(timings.has("post") || timings.has("retest"));
   };
@@ -953,9 +957,9 @@ const Dashboard = () => {
         });
       }
       toast.success("Wettkampfziel gespeichert.");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Update error:", err);
-      toast.error(`Fehler: ${err?.message || "Unbekannter Fehler"}`);
+      toast.error(`Fehler: ${err instanceof Error ? err.message : "Unbekannter Fehler"}`);
     }
     setSyncing(false);
     setShowSettings(false);

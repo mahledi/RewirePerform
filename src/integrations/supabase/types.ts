@@ -10,7 +10,32 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -101,7 +126,15 @@ export type Database = {
           total_score?: number | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "assessments_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       calendar_events: {
         Row: {
@@ -229,6 +262,13 @@ export type Database = {
             referencedRelation: "user_day_assignments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "comprehension_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
         ]
       }
       daily_checkins: {
@@ -277,7 +317,15 @@ export type Database = {
           user_id?: string | null
           wellbeing_metrics?: Json
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "daily_checkins_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_journals: {
         Row: {
@@ -319,7 +367,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "daily_journals_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       deep_profile_assessments: {
         Row: {
@@ -327,6 +383,7 @@ export type Database = {
           created_at: string
           id: string
           instrument_id: string | null
+          program_instance_id: string | null
           questionnaire_version: string | null
           scores: Json
           session_id: string
@@ -338,6 +395,7 @@ export type Database = {
           created_at?: string
           id?: string
           instrument_id?: string | null
+          program_instance_id?: string | null
           questionnaire_version?: string | null
           scores?: Json
           session_id: string
@@ -349,13 +407,22 @@ export type Database = {
           created_at?: string
           id?: string
           instrument_id?: string | null
+          program_instance_id?: string | null
           questionnaire_version?: string | null
           scores?: Json
           session_id?: string
           timing?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "deep_profile_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feedback: {
         Row: {
@@ -520,6 +587,7 @@ export type Database = {
           ended_at: string | null
           id: string
           is_test_instance: boolean
+          program_run_id: string | null
           started_at: string
           status: string
           team_id: string | null
@@ -532,6 +600,7 @@ export type Database = {
           ended_at?: string | null
           id?: string
           is_test_instance?: boolean
+          program_run_id?: string | null
           started_at?: string
           status?: string
           team_id?: string | null
@@ -544,13 +613,22 @@ export type Database = {
           ended_at?: string | null
           id?: string
           is_test_instance?: boolean
+          program_run_id?: string | null
           started_at?: string
           status?: string
           team_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "program_instances_program_run_id_fkey"
+            columns: ["program_run_id"]
+            isOneToOne: false
+            referencedRelation: "program_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_progress_snapshots: {
         Row: {
@@ -610,7 +688,69 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "snapshots_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      program_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ended_at: string | null
+          id: string
+          metadata: Json
+          name: string
+          started_at: string | null
+          status: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          name: string
+          started_at?: string | null
+          status?: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          name?: string
+          started_at?: string | null
+          status?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_runs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_runs_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_settings: {
         Row: {
@@ -907,6 +1047,85 @@ export type Database = {
           },
         ]
       }
+      study_evidence_snapshots: {
+        Row: {
+          claim_boundary: string
+          cohort_id: string | null
+          data_quality: Json
+          generated_at: string
+          generated_by: string | null
+          id: string
+          include_test: boolean
+          metrics: Json
+          n_active: number
+          n_participants: number
+          outcome_summary: Json
+          privacy_level: string
+          program_run_id: string | null
+          readiness_stage: string
+          scope_id: string | null
+          scope_type: string
+        }
+        Insert: {
+          claim_boundary?: string
+          cohort_id?: string | null
+          data_quality?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          include_test?: boolean
+          metrics?: Json
+          n_active?: number
+          n_participants?: number
+          outcome_summary?: Json
+          privacy_level?: string
+          program_run_id?: string | null
+          readiness_stage: string
+          scope_id?: string | null
+          scope_type?: string
+        }
+        Update: {
+          claim_boundary?: string
+          cohort_id?: string | null
+          data_quality?: Json
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          include_test?: boolean
+          metrics?: Json
+          n_active?: number
+          n_participants?: number
+          outcome_summary?: Json
+          privacy_level?: string
+          program_run_id?: string | null
+          readiness_stage?: string
+          scope_id?: string | null
+          scope_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_evidence_snapshots_cohort_id_fkey"
+            columns: ["cohort_id"]
+            isOneToOne: false
+            referencedRelation: "study_cohorts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_evidence_snapshots_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "study_evidence_snapshots_program_run_id_fkey"
+            columns: ["program_run_id"]
+            isOneToOne: false
+            referencedRelation: "program_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_export_manifests: {
         Row: {
           claim_boundary: string
@@ -1017,6 +1236,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      study_outcome_definitions: {
+        Row: {
+          claim_boundary: string
+          created_at: string
+          direction: string
+          display_order: number
+          domain: string
+          id: string
+          label: string
+          min_aggregate_n: number
+          source_field: string | null
+          source_table: string
+          updated_at: string
+        }
+        Insert: {
+          claim_boundary?: string
+          created_at?: string
+          direction?: string
+          display_order?: number
+          domain: string
+          id: string
+          label: string
+          min_aggregate_n?: number
+          source_field?: string | null
+          source_table: string
+          updated_at?: string
+        }
+        Update: {
+          claim_boundary?: string
+          created_at?: string
+          direction?: string
+          display_order?: number
+          domain?: string
+          id?: string
+          label?: string
+          min_aggregate_n?: number
+          source_field?: string | null
+          source_table?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       study_participants: {
         Row: {
@@ -1203,6 +1464,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "team_training_schedule_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "team_training_schedule_team_id_fkey"
             columns: ["team_id"]
@@ -1397,6 +1665,13 @@ export type Database = {
             referencedRelation: "user_day_assignments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_day_completion_program_instance_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -1441,14 +1716,47 @@ export type Database = {
       }
     }
     Functions: {
+      activate_team_program_run: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       archive_qa_cohort: { Args: { _team_id: string }; Returns: Json }
+      assign_team_members_to_program_run: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       can_manage_team_calendar: { Args: { _team_id: string }; Returns: boolean }
+      can_manage_team_program_runs: {
+        Args: { _team_id: string }
+        Returns: boolean
+      }
       compute_team_outcomes: {
         Args: { min_n?: number; team_id_param: string }
         Returns: Json
       }
+      create_nlz_evidence_snapshot: {
+        Args: { cohort_id?: string; include_test?: boolean }
+        Returns: Json
+      }
+      create_nlz_program_run_snapshot: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       create_study_aggregate_snapshot: {
         Args: { _cohort_id?: string; include_test?: boolean }
+        Returns: Json
+      }
+      create_team_program_run: {
+        Args: { _name: string; _started_at?: string; _team_id: string }
+        Returns: Json
+      }
+      get_active_team_program_run: { Args: { _team_id: string }; Returns: Json }
+      get_admin_evidence_quality: {
+        Args: { include_test?: boolean }
+        Returns: Json
+      }
+      get_admin_nlz_evidence_dossier: {
+        Args: { cohort_id?: string; include_test?: boolean }
         Returns: Json
       }
       get_admin_ops_status: { Args: { include_test?: boolean }; Returns: Json }
@@ -1484,6 +1792,18 @@ export type Database = {
         }[]
       }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
+      get_nlz_evidence_dossier: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
+      get_nlz_pilot_readiness: {
+        Args: { _program_run_id?: string; _team_id?: string }
+        Returns: Json
+      }
+      get_team_program_run_status: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_team_questionnaire_status: {
         Args: { _team_id: string }
         Returns: {
@@ -1510,6 +1830,35 @@ export type Database = {
       is_creator_of_team: { Args: { _team_id: string }; Returns: boolean }
       is_member_of_team: { Args: { _team_id: string }; Returns: boolean }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
+      save_daily_tracking_v2: {
+        Args: {
+          _assignment_id: string
+          _comprehension_questions?: Json
+          _comprehension_results?: Json
+          _date: string
+          _day_number: number
+          _energy_level?: number
+          _event_type: string
+          _focus_rating?: number
+          _mood_before?: number
+          _motivation?: number
+          _physical_readiness?: number
+          _pressure?: number
+          _program_instance_id: string
+          _recovery?: number
+          _reflection?: string
+          _sleep_quality?: number
+          _stress?: number
+          _tasks_completed?: Json
+          _team_connection?: number
+          _variant_used: string
+        }
+        Returns: Json
+      }
+      set_team_program_run_status: {
+        Args: { _program_run_id: string; _status: string }
+        Returns: Json
+      }
       update_feedback_status: {
         Args: { feedback_id: string; new_note?: string; new_status: string }
         Returns: undefined
@@ -1642,6 +1991,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["athlete", "coach", "admin"],

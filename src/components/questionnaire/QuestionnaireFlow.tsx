@@ -12,7 +12,7 @@ import {
   ONBOARDING_V2_INSTRUMENT_ID,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
-import { clearLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
+import { writeLocalDraft } from "@/lib/localDrafts";
 import { isOptionalOnboardingQuestion, isRequiredOnboardingQuestion } from "@/lib/questionnaireCompletion";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -23,6 +23,7 @@ interface QuestionnaireFlowProps {
   initialCategoryIndex?: number;
   initialGlobalIndex?: number;
   draftId?: string | null;
+  draftStorageKey?: string;
   onPauseExit?: () => void | Promise<void>;
 }
 
@@ -31,7 +32,7 @@ type FlowState =
   | { type: "question"; globalIndex: number };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
-const QUESTIONNAIRE_DRAFT_KEY = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`;
+const LEGACY_QUESTIONNAIRE_DRAFT_KEY = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`;
 
 const QuestionnaireFlow = ({
   onComplete,
@@ -40,6 +41,7 @@ const QuestionnaireFlow = ({
   initialCategoryIndex = 0,
   initialGlobalIndex,
   draftId = null,
+  draftStorageKey = LEGACY_QUESTIONNAIRE_DRAFT_KEY,
   onPauseExit,
 }: QuestionnaireFlowProps) => {
   const navigate = useNavigate();
@@ -159,8 +161,9 @@ const QuestionnaireFlow = ({
           setSaveState("error");
           return;
         }
-        const { getActiveInstance } = await import("@/lib/programInstance");
-        const instance = await getActiveInstance(user.id);
+        const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+        const instance = await getOrCreateActiveInstance(user.id);
+        if (!instance?.id) throw new Error("active_program_instance_required");
 
         // Falls noch keine draftId bekannt: prüfen ob es schon einen offenen Draft gibt
         // (z.B. parallele Sessions / weiterer Tab) und den verwenden statt neuen einzufügen.
@@ -169,6 +172,7 @@ const QuestionnaireFlow = ({
             .from("questionnaire_responses")
             .select("id")
             .eq("user_id", user.id)
+            .eq("program_instance_id", instance.id)
             .eq("is_complete", false)
             .order("progress_updated_at", { ascending: false })
             .limit(1)
@@ -188,7 +192,7 @@ const QuestionnaireFlow = ({
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
-              program_instance_id: instance?.id ?? null,
+              program_instance_id: instance.id,
             })
             .eq("id", draftIdRef.current);
           if (error) throw error;
@@ -204,7 +208,7 @@ const QuestionnaireFlow = ({
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
-              program_instance_id: instance?.id ?? null,
+              program_instance_id: instance.id,
               scores: {},
             })
             .select("id")
@@ -216,6 +220,7 @@ const QuestionnaireFlow = ({
               .from("questionnaire_responses")
               .select("id")
               .eq("user_id", user.id)
+              .eq("program_instance_id", instance.id)
               .eq("is_complete", false)
               .order("progress_updated_at", { ascending: false })
               .limit(1)
@@ -231,7 +236,7 @@ const QuestionnaireFlow = ({
                   instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
                   questionnaire_version: ONBOARDING_V2_VERSION,
                   timing: "pre",
-                  program_instance_id: instance?.id ?? null,
+                  program_instance_id: instance.id,
                 })
                 .eq("id", rescued.id);
             } else {
@@ -294,7 +299,7 @@ const QuestionnaireFlow = ({
       setSubmitting(true);
       setSubmitError(null);
       setSaveState("saving");
-      writeLocalDraft(QUESTIONNAIRE_DRAFT_KEY, {
+      writeLocalDraft(draftStorageKey, {
         answers,
         lastCategoryIndex: categories.length,
         lastGlobalIndex: totalQuestions - 1,
@@ -374,7 +379,7 @@ const QuestionnaireFlow = ({
         : categories.findIndex(
             (c) => c.id === orderedQuestions[flowState.globalIndex].category
           );
-    writeLocalDraft(QUESTIONNAIRE_DRAFT_KEY, {
+    writeLocalDraft(draftStorageKey, {
       answers,
       lastCategoryIndex: currentCatIndex,
       lastGlobalIndex: flowState.type === "question" ? flowState.globalIndex : undefined,
