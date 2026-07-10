@@ -69,7 +69,7 @@ export async function ensureAssignment(
   const payload = {
     matrix: resolved.matrix,
     contentSummary: {
-      lens: resolved.matrix.lens,
+      lens: resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens,
       taskTitles: resolved.content.tasks.map((t) => t.title),
     },
   };

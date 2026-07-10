@@ -13,7 +13,7 @@ export const sportContextLine: Record<SportCategory, Record<PersonalizationConte
   },
   combat_sport: {
     training: "Für Kampfsport wird das heute praktisch in Distanz, Timing, Treffer nehmen, Runde und nächster Aktion.",
-    competition: "Im Kampf zählt die nächste klare Aktion: Distanz lesen, Spannung halten, nicht aus Engzug handeln.",
+    competition: "Im Kampf zählt die nächste klare Aktion: Distanz lesen, Spannung halten, nicht aus Enge handeln.",
     rest: "Am Ruhetag bleibt der Fokus mental: Spannung regulieren, ohne den Körper zusätzlich zu belasten.",
   },
   aesthetic_or_technical_sport: {
@@ -57,10 +57,10 @@ export function buildRelevanceLine(day: PersonalizationDay, contextType: Persona
   }
   if (day.phase === 3) {
     return contextType === "competition"
-      ? "Heute wird der Mechanismus unter echter Bedeutung getestet: Ergebnis sehen, aber bei der nächsten Handlung bleiben."
-      : "Heute wird der Mechanismus unter Druck getestet, ohne dass du mehr Drama daraus machen musst.";
+      ? "Heute wendest du die Tageslinie unter echter Bedeutung an: Ergebnis sehen, aber bei der nächsten Handlung bleiben."
+      : "Heute wendest du die Tageslinie unter Druck an, ohne mehr Drama daraus zu machen.";
   }
-  return "Heute geht es um Verkörperung: weniger Technik sammeln, mehr aus deinem stabileren Standard handeln.";
+  return "Heute sammelst du nicht noch mehr Techniken. Du handelst aus dem stabileren Standard, den du bereits aufgebaut hast.";
 }
 
 export function buildStateLine(checkin?: { mood?: number | null; energy?: number | null; focus?: number | null; stress?: number | null }): string | null {
@@ -83,7 +83,7 @@ export function buildProfileLine(signals?: { resultFocus?: number; selfCriticism
     { score: signals.egoVisibility ?? 0, text: "Wenn Wirkung und Sichtbarkeit Druck machen, hilft heute Beitrag statt Effekt." },
   ];
   if (typeof signals.confidence === "number" && signals.confidence <= 0.3) {
-    candidates.push({ score: 1 - signals.confidence, text: "Bei weniger Confidence zählen kleine Beweise im Verhalten, nicht ein perfektes Gefühl." });
+    candidates.push({ score: 1 - signals.confidence, text: "Bei wenig Selbstvertrauen zählen kleine Beweise im Verhalten, nicht ein perfektes Gefühl." });
   }
   const strongest = candidates.filter((item) => item.score >= 0.6).sort((a, b) => b.score - a.score)[0];
   return strongest?.text ?? null;

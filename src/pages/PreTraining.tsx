@@ -139,9 +139,14 @@ const PreTraining = () => {
                   <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                     Heutige Linse
                   </p>
-                  <h2 className="font-heading font-semibold mt-1">{resolved.matrix.lens}</h2>
+                  <h2 className="font-heading font-semibold mt-1">
+                    {resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens}
+                  </h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {resolved.matrix.practiceFocus}
+                    {resolved.content.lens ?? resolved.matrix.practiceFocus}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                    {resolved.context.focus}
                   </p>
                 </div>
               </div>

@@ -62,6 +62,8 @@ export const DAILY_CONTENT: Record<number, DailyContent> = Object.fromEntries(
     day.dayNumber,
     {
       dayNumber: day.dayNumber,
+      title: day.lens,
+      lens: day.lens,
       scienceBite: {
         fact: `[TODO Content – Tag ${day.dayNumber}] Wissenschaftlicher Kurz-Fakt zur Linse: "${day.lens}". Mechanismus: ${day.primaryMechanism}.`,
         source: "[TODO Quelle]",

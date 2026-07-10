@@ -169,10 +169,10 @@ const CoachToolkit = ({ teamId }: Props) => {
                 Tag {resolved.matrix.dayNumber}
               </div>
               <div className="font-heading text-lg font-semibold mt-1">
-                {resolved.content.coreShift || resolved.matrix.lens}
+                {resolved.content.coreShift || resolved.content.title || resolved.content.lens || resolved.matrix.lens}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                Linie: {resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
+                Linie: {resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
               </div>
             </div>
 

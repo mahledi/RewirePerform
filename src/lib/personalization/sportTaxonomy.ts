@@ -72,7 +72,7 @@ export function buildRoleContextLine(category: SportCategory, position?: string 
     return `Für ${role} heißt das heute: Ausführung, Körperspannung, Rhythmus und der nächste saubere Versuch stehen vor Wirkung oder Wertung.`;
   }
   if (category === "combat_sport") {
-    return `Für ${role} übersetzt du den Fokus heute in Distanz, Timing, Deckung und die nächste klare Aktion statt in Reaktion aus Engzug.`;
+    return `Für ${role} übersetzt du den Fokus heute in Distanz, Timing, Deckung und die nächste klare Aktion statt in eine Reaktion aus Enge.`;
   }
   if (category === "endurance_sport") {
     return `Für ${role} wird der Fokus heute konkret: Rhythmus finden, Pace lesen, Atmung stabilisieren und nur den nächsten Abschnitt laufen lassen.`;

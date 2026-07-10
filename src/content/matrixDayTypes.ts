@@ -155,6 +155,10 @@ export interface ComprehensionQuestion {
 
 export interface DailyContent {
   dayNumber: number;
+  /** Verständlicher Athleten-Titel; die feste Matrix bleibt davon unberührt. */
+  title?: string;
+  /** Athletennahe Formulierung der Tageslinse. */
+  lens?: string;
   scienceBite: {
     fact: string;
     source?: string;
@@ -179,6 +183,25 @@ export interface DailyContent {
   };
 }
 
+export interface ResolvedDayContext {
+  /** Sichtbarer Name der Kalenderart. */
+  label: string;
+  /** Tages- und mechanismusspezifische Anwendung im aktuellen Kalenderkontext. */
+  focus: string;
+  checkin: {
+    pulseTitle: string;
+    pulseDescription: string;
+    reflectionTitle: string;
+    reflectionDescription: string;
+    journalReminder: string;
+    taskIntro: string;
+    completionMessage: string;
+  };
+  journal: {
+    intro: string;
+  };
+}
+
 /**
  * Resolved Day = Skelett + Content + (optional) Micro-Adjustment
  * Wird zur Laufzeit vom Resolver gebaut.
@@ -187,6 +210,7 @@ export interface ResolvedDay {
   matrix: MatrixDay;
   content: DailyContent;
   calendarEventType: CalendarEventType;
+  context: ResolvedDayContext;
   /** Datum dieses Programmtags im realen Kalender */
   date: string; // yyyy-MM-dd
 }

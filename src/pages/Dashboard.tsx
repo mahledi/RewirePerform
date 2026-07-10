@@ -874,7 +874,7 @@ const Dashboard = () => {
           dayNumber,
           date: dateStr,
           eventType,
-          lens: resolved.matrix.lens,
+          lens: resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens,
           scienceFact: resolved.content.scienceBite.fact,
           coreShift: resolved.content.coreShift,
           tasks: resolved.content.tasks.map((task) => task.title),
@@ -1342,7 +1342,12 @@ const Dashboard = () => {
             {todayResolved && (
               <div className="mb-4 p-4 rounded-xl bg-secondary/35 border border-border/40">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Heutige Linse</p>
-                <p className="text-sm font-heading font-semibold leading-snug">{todayResolved.matrix.lens}</p>
+                <p className="text-sm font-heading font-semibold leading-snug">
+                  {todayResolved.content.title ?? todayResolved.content.lens ?? todayResolved.matrix.lens}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                  {todayResolved.context.focus}
+                </p>
               </div>
             )}
 

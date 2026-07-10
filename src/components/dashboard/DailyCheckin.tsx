@@ -31,6 +31,7 @@ import {
   buildMicroAdjustmentContext,
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
+import { pulseQuestionsByContext } from "@/lib/dayContext";
 import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
@@ -180,6 +181,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
+  const displayLens = resolved?.content.lens ?? resolved?.matrix.lens;
+  const displayTitle = resolved?.content.title ?? displayLens;
   const dateKey = format(date, "yyyy-MM-dd");
   const draftKey = user?.id ? `checkin:${user.id}:${dateKey}:${eventType}` : null;
   const getCompletedTaskTitles = (taskIds: string[] = completedTasks) =>
@@ -332,7 +335,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       const micro = buildMicroAdjustmentContext({
         day: {
           dayNumber: result.resolved.matrix.dayNumber,
-          lens: result.resolved.matrix.lens,
+          lens: result.resolved.content.title ?? result.resolved.content.lens ?? result.resolved.matrix.lens,
           primaryMechanism: result.resolved.matrix.primaryMechanism,
           recurrenceType: result.resolved.matrix.recurrenceType,
           phase: result.resolved.matrix.phase,
@@ -621,7 +624,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: -16 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="min-h-[calc(100vh-11rem)] flex flex-col justify-center"
+        className="min-h-[calc(100dvh-11rem)] flex flex-col justify-center"
       >
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
@@ -646,6 +649,22 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                 ))}
               </div>
             </div>
+
+            {resolved && (
+              <div className={`rounded-2xl border border-border/50 p-4 ${config.bg}`}>
+                <div className="flex items-start gap-3">
+                  <config.icon className={`w-5 h-5 mt-0.5 shrink-0 ${config.color}`} />
+                  <div>
+                    <p className={`text-xs uppercase tracking-[0.16em] font-semibold ${config.color}`}>
+                      Heute als {resolved.context.label}
+                    </p>
+                    <p className="text-sm text-foreground mt-1 leading-relaxed">
+                      {resolved.context.focus}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {microAdjustment && <TodayForYou data={microAdjustment} />}
 
@@ -673,13 +692,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         </div>
         {resolved && (
           <p className="text-muted-foreground mb-4 text-sm">
-            Tag {resolved.matrix.dayNumber} · {resolved.matrix.lens}
+            Tag {resolved.matrix.dayNumber} · {displayTitle}
           </p>
         )}
 
         <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-          Das sind deine Aufgaben für heute — meistens im Training oder über den Tag verteilt.
-          Nichts musst du jetzt abhaken. Heute Abend reflektierst du sie im Journal.
+          {resolved?.context.checkin.taskIntro}
         </p>
 
         {loadingTasks ? (
@@ -711,7 +729,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.whenToUse}</p>
                     </div>
                     {taskDone ? (
-                      <span className="text-xs font-semibold text-primary shrink-0">Erledigt</span>
+                      <span className="text-xs font-semibold text-primary shrink-0">Verstanden</span>
                     ) : (
                       <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
                     )}
@@ -726,8 +744,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+    <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={handleBack}
@@ -744,7 +762,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         </div>
       </div>
 
-      <div ref={contentScrollRef} className="flex-1 flex items-start justify-center px-6 py-8 overflow-y-auto">
+      <div ref={contentScrollRef} className="flex-1 flex items-start justify-center px-4 sm:px-6 py-8 overflow-y-auto">
         <div className="max-w-lg w-full">
           {saveError && (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
@@ -768,25 +786,27 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -50 }}
                   >
-                    <h2 className="font-heading text-2xl font-bold mb-1">Wohlbefinden & Bereitschaft</h2>
-                    <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Team Pulse</p>
+                    <h2 className="font-heading text-2xl font-bold mb-1">
+                      {resolved?.context.checkin.pulseTitle ?? "Wohlbefinden & Bereitschaft"}
+                    </h2>
+                    <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Dein Tages-Puls</p>
                     <p className="text-muted-foreground mb-6 text-sm">
-                      Wie fühlst du dich heute? Kurze Skala von 1 bis 10. Deine Antworten bleiben privat —
-                      Coaches sehen nur anonymisierte Team-Tendenzen (mind. 5 Athlet:innen).
+                      {resolved?.context.checkin.pulseDescription} Deine Antworten bleiben privat. Coaches sehen nur
+                      geschützte Team-Tendenzen ab mindestens 5 Teilnehmenden.
                     </p>
 
                     <div className="space-y-7">
                       {[
-                        { id: "mood", label: "Stimmung", question: "Wie ist deine allgemeine Stimmung gerade?", value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
-                        { id: "energy", label: "Energie", question: "Wie viel Energie hast du gerade?", value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
-                        { id: "focus", label: "Mentale Klarheit / Fokus", question: "Wie klar und fokussiert fühlst du dich gerade?", value: focusClarity, set: setFocusClarity, low: "sehr zerstreut", high: "sehr klar" },
-                        { id: "stress", label: "Stress / innere Spannung", question: "Wie viel innere Spannung oder Stress spürst du gerade?", value: stress, set: setStress, low: "sehr niedrig", high: "sehr hoch" },
-                        { id: "recovery", label: "Erholung", question: "Wie erholt fühlst du dich heute?", value: recovery, set: setRecovery, low: "gar nicht erholt", high: "sehr erholt" },
-                        { id: "sleep", label: "Schlafqualität", question: "Wie war deine Schlafqualität?", value: sleepQuality, set: setSleepQuality, low: "sehr schlecht", high: "sehr gut" },
-                        { id: "physical", label: "Körperliche Bereitschaft", question: "Wie bereit fühlt sich dein Körper für Belastung an?", value: physicalReadiness, set: setPhysicalReadiness, low: "gar nicht bereit", high: "sehr bereit" },
-                        { id: "motivation", label: "Motivation / Einsatzbereitschaft", question: "Wie bereit bist du, heute wirklich in die Arbeit zu gehen?", value: motivation, set: setMotivation, low: "kaum bereit", high: "sehr bereit" },
-                        { id: "pressure", label: "Druck / Bewertungsgefühl", question: "Wie stark fühlt sich heute Druck oder Bewertungsgefühl an?", value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
-                        { id: "team", label: "Teamverbundenheit", question: "Wie verbunden fühlst du dich gerade mit dem Team?", value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
+                        { id: "mood", label: "Stimmung", question: pulseQuestionsByContext[eventType].mood, value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
+                        { id: "energy", label: "Energie", question: pulseQuestionsByContext[eventType].energy, value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
+                        { id: "focus", label: "Mentale Klarheit / Fokus", question: pulseQuestionsByContext[eventType].focus, value: focusClarity, set: setFocusClarity, low: "sehr zerstreut", high: "sehr klar" },
+                        { id: "stress", label: "Stress / innere Spannung", question: pulseQuestionsByContext[eventType].stress, value: stress, set: setStress, low: "sehr niedrig", high: "sehr hoch" },
+                        { id: "recovery", label: "Erholung", question: pulseQuestionsByContext[eventType].recovery, value: recovery, set: setRecovery, low: "gar nicht erholt", high: "sehr erholt" },
+                        { id: "sleep", label: "Schlafqualität", question: pulseQuestionsByContext[eventType].sleep, value: sleepQuality, set: setSleepQuality, low: "sehr schlecht", high: "sehr gut" },
+                        { id: "physical", label: "Körperliche Bereitschaft", question: pulseQuestionsByContext[eventType].physical, value: physicalReadiness, set: setPhysicalReadiness, low: "gar nicht bereit", high: "sehr bereit" },
+                        { id: "motivation", label: "Bereitschaft", question: pulseQuestionsByContext[eventType].motivation, value: motivation, set: setMotivation, low: "kaum bereit", high: "sehr bereit" },
+                        { id: "pressure", label: "Leistungsdruck", question: pulseQuestionsByContext[eventType].pressure, value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
+                        { id: "team", label: "Verbindung zum sportlichen Umfeld", question: pulseQuestionsByContext[eventType].connection, value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
                       ].map((q) => (
                         <div key={q.label}>
                           <label className="text-sm font-semibold block mb-1">{q.label}</label>
@@ -818,16 +838,17 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                 )}
                 {step === 2 && (
                   <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                    <h2 className="font-heading text-2xl font-bold mb-2">Optional: Was beeinflusst deinen Zustand heute?</h2>
+                    <h2 className="font-heading text-2xl font-bold mb-2">
+                      Optional: {resolved?.context.checkin.reflectionTitle ?? "Was beeinflusst deinen Zustand heute?"}
+                    </h2>
                     <p className="text-muted-foreground mb-2 text-sm">
-                      Gibt es etwas, das deinen heutigen Zustand stark beeinflusst? Diese Antwort bleibt vollständig privat —
-                      sie verlässt nie deinen Account und wird Coaches niemals gezeigt.
+                      {resolved?.context.checkin.reflectionDescription}
                     </p>
                     <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
                       <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        <span className="text-foreground font-medium">Heute Abend</span> findest du auf dem Dashboard dein Tagesjournal,
-                        um Training und Aufgaben in Ruhe zu reflektieren.
+                        <span className="text-foreground font-medium">Heute Abend:</span>{" "}
+                        {resolved?.context.checkin.journalReminder}
                       </p>
                     </div>
                     <VoiceInput
@@ -880,11 +901,11 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
                     {resolved && (
                       <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
-                        Tag {resolved.matrix.dayNumber}/56 · {resolved.matrix.lens}
+                        Tag {resolved.matrix.dayNumber}/56 · {displayTitle}
                       </p>
                     )}
                     <p className="text-muted-foreground mb-3 text-sm">
-                      Deine heutige Wiederholung ist im System.
+                      {resolved?.context.checkin.completionMessage}
                     </p>
                     <div className="mb-8 max-w-sm mx-auto rounded-2xl bg-primary/5 border border-primary/15 p-4 text-left">
                       <div className="flex items-start gap-3">
@@ -911,7 +932,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       </div>
 
       {(step === 1 || step === 2 || step === 3) && !selectedTask && (
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
+        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={handleBack} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" />
@@ -925,6 +946,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
+              const remainingTasks = tasks.filter((task) => !completedTasks.includes(task.id)).length;
               const blocked = saving || (step === 1 && !pulseComplete) || (step === 3 && !tasksComplete);
               return (
                 <motion.button
@@ -938,13 +960,15 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     else if (step === 3 && tasksComplete) setStep(4);
                   }}
                   disabled={blocked}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
+                  className={`flex items-center gap-2 px-4 sm:px-6 py-3 rounded-xl font-heading font-semibold text-sm sm:text-base whitespace-nowrap transition-all ${
                     blocked
                       ? "bg-muted text-muted-foreground cursor-not-allowed"
                       : "bg-primary text-primary-foreground hover:shadow-glow"
                   }`}
                 >
-                  {step === 3 && !tasksComplete ? "Alle Aufgaben verstehen" : "Weiter"}
+                  {step === 3 && !tasksComplete
+                    ? `${remainingTasks} ${remainingTasks === 1 ? "Aufgabe" : "Aufgaben"} offen`
+                    : "Weiter"}
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               );

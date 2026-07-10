@@ -4,14 +4,16 @@
  * Baut den renderbaren Tag aus:
  *   1) Matrix-Skelett (matrixDays.ts)        — fix, niemals KI-veränderbar
  *   2) Daily Content (dailyContent.ts)        — strukturierter Content
- *   3) Optional: Micro-Adjustment Layer       — Sport-/Positionsbeispiele etc.
+ *   3) Optional: Micro-Adjustment Layer         — Sport-/Positionsbeispiele etc.
+ *   4) Deterministische Kalender-Kontextschicht — Training / Ruhetag / Wettkampf
  *
- * Kalendertyp (training/rest/competition) kommt zusätzlich aus calendar_events
- * und wird hier nur durchgereicht — nicht in die Tageslogik gemischt.
+ * Der Kalendertyp verändert weder Matrix noch Mechanismus. Er passt nur Bezug,
+ * Zeitform und Anwendung von Aufgaben, Check-in und Journal an den realen Tag an.
  */
 import { format } from "date-fns";
 import { getMatrixDay } from "@/content/matrixDays";
 import { getDailyContent } from "@/content/dailyContent";
+import { adaptDayToContext } from "@/lib/dayContext";
 import type {
   ResolvedDay,
   DailyContent,
@@ -54,11 +56,13 @@ export const resolveDay = (
   const matrix = getMatrixDay(dayNumber);
   const baseContent = getDailyContent(dayNumber);
   if (!matrix || !baseContent) return null;
-  const content = applyMicroAdjustments(baseContent, adjust);
+  const adjustedContent = applyMicroAdjustments(baseContent, adjust);
+  const { content, context } = adaptDayToContext(adjustedContent, matrix, calendarEventType);
   return {
     matrix,
     content,
     calendarEventType,
+    context,
     date: format(date, "yyyy-MM-dd"),
   };
 };

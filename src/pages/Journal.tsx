@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowLeft, BookOpen, Check, Heart, Loader2, Mic, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, Dumbbell, Heart, Loader2, Mic, Moon, Sparkles, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,12 @@ import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
 const GRATITUDE_COUNT = 5;
 const GRATITUDE_MIN_LETTERS = 6;
+
+const journalContextConfig: Record<CalendarEventType, { icon: typeof Dumbbell; color: string; bg: string }> = {
+  training: { icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
+  rest: { icon: Moon, color: "text-blue-400", bg: "bg-blue-400/10" },
+  competition: { icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10" },
+};
 
 const emptyGratitudeList = (): string[] => Array.from({ length: GRATITUDE_COUNT }, () => "");
 
@@ -281,31 +287,51 @@ const Journal = () => {
 
   const { content, matrix } = resolved;
   const j = content.journal;
+  const contextConfig = journalContextConfig[resolved.calendarEventType];
+  const ContextIcon = contextConfig.icon;
+  const displayTitle = content.title ?? matrix.lens;
+  const displayLens = content.lens ?? matrix.practiceFocus;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen min-h-[100dvh] bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate("/dashboard")} className="p-2 -ml-2 rounded-lg hover:bg-secondary">
+          <button
+            type="button"
+            aria-label="Zurück zum Dashboard"
+            onClick={() => navigate("/dashboard")}
+            className="w-10 h-10 -ml-2 rounded-lg hover:bg-secondary inline-flex items-center justify-center"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Tag {matrix.dayNumber} · {format(new Date(resolved.date), "d. MMM", { locale: de })}
+              Tag {matrix.dayNumber} · {resolved.context.label} · {format(new Date(resolved.date), "d. MMM", { locale: de })}
             </p>
             <h1 className="font-heading font-semibold text-sm truncate">{j.journalTitle}</h1>
+          </div>
+          <div className={`w-9 h-9 rounded-lg inline-flex items-center justify-center shrink-0 ${contextConfig.bg}`}>
+            <ContextIcon className={`w-4 h-4 ${contextConfig.color}`} />
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 pb-[calc(env(safe-area-inset-bottom)+2rem)] space-y-6">
         {/* Lens reminder */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-card border-glow">
-          <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Heutige Linse</p>
-          <p className="text-base font-heading font-semibold leading-snug">{matrix.lens}</p>
-          <p className="text-xs text-muted-foreground mt-2">{matrix.practiceFocus}</p>
+          <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Heute im Fokus</p>
+          <p className="text-base font-heading font-semibold leading-snug">{displayTitle}</p>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{displayLens}</p>
+          <div className="mt-4 pt-4 border-t border-border/50 flex items-start gap-3">
+            <ContextIcon className={`w-4 h-4 mt-0.5 shrink-0 ${contextConfig.color}`} />
+            <p className="text-xs text-muted-foreground leading-relaxed">{resolved.context.focus}</p>
+          </div>
         </motion.div>
+
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {resolved.context.journal.intro}
+        </p>
 
         <button
           type="button"
@@ -336,7 +362,7 @@ const Journal = () => {
             <p className="text-sm font-medium text-foreground leading-snug">
               Sprich deine Antworten ein.
             </p>
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               Beim lauten Verbalisieren feuern mehr neuronale Netzwerke gleichzeitig — dein Gehirn verknüpft neue Bahnen schneller als beim Tippen.
             </p>
           </div>
@@ -379,7 +405,7 @@ const Journal = () => {
             <label className="text-sm font-medium">Dankbarkeit</label>
           </div>
           <p className="text-xs text-muted-foreground">
-            Fünf konkrete Dinge. Jeweils mindestens ein paar Worte.
+            {j.gratitudeInstruction}
           </p>
           <div className="space-y-2">
             {gratitudeList.map((value, idx) => {

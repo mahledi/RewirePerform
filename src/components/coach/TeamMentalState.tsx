@@ -369,7 +369,9 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
             </div>
             <div className="flex min-w-0 items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-base font-semibold text-foreground">{resolvedToday.matrix.lens}</p>
+                <p className="text-base font-semibold text-foreground">
+                  {resolvedToday.content.title ?? resolvedToday.content.lens ?? resolvedToday.matrix.lens}
+                </p>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   {resolvedToday.matrix.practiceFocus}
                 </p>
