@@ -9,7 +9,10 @@
 export async function registerSW() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-  const isNativeShell = !!(window as any).Capacitor?.isNativePlatform?.();
+  const nativeWindow = window as Window & {
+    Capacitor?: { isNativePlatform?: () => boolean };
+  };
+  const isNativeShell = Boolean(nativeWindow.Capacitor?.isNativePlatform?.());
   if (isNativeShell) return;
 
   const isInIframe = (() => {

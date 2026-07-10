@@ -14,6 +14,8 @@ import {
 import type { Question } from "@/data/questionnaireData";
 import { scoreDevelopmentIndex } from "@/lib/developmentIndexScoring";
 import { captureAppError } from "@/lib/monitoring";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import type { Json } from "@/integrations/supabase/types";
 
 type Timing = "pre" | "mid" | "post";
 
@@ -70,15 +72,37 @@ const DeepProfile = () => {
     setSaving(true);
 
     const scores = scoreDevelopmentIndex(answers, timing);
-    const { error } = await supabase.from("deep_profile_assessments").insert({
+    const instance = await getOrCreateActiveInstance(user.id);
+    if (!instance?.id) {
+      toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
+      setSaving(false);
+      return;
+    }
+
+    const payload = {
       user_id: user.id,
       session_id: user.id,
       timing,
-      answers: answers as any,
-      scores: scores as any,
+      answers: answers as unknown as Json,
+      scores: scores as unknown as Json,
       instrument_id: DEVELOPMENT_INDEX_INSTRUMENT_ID,
       questionnaire_version: DEVELOPMENT_INDEX_VERSION,
-    });
+      program_instance_id: instance.id,
+    };
+
+    const { data: existing, error: lookupError } = await supabase
+      .from("deep_profile_assessments")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("program_instance_id", instance.id)
+      .eq("instrument_id", DEVELOPMENT_INDEX_INSTRUMENT_ID)
+      .eq("timing", timing)
+      .maybeSingle();
+    const { error } = lookupError
+      ? { error: lookupError }
+      : existing
+        ? await supabase.from("deep_profile_assessments").update(payload).eq("id", existing.id)
+        : await supabase.from("deep_profile_assessments").insert(payload);
 
     if (error) {
       console.error("Save error:", error);
@@ -91,6 +115,7 @@ const DeepProfile = () => {
         metadata: {
           timing,
           item_count: Object.keys(answers).length,
+          has_program_instance: true,
         },
       });
       toast.error("Speichern fehlgeschlagen. Bitte versuche es erneut.");

@@ -199,7 +199,7 @@ export const trackAppEvent = async ({
   metadata,
 }: TrackAppEventInput) => {
   try {
-    await (supabase as any).from("app_event_log").insert({
+    await supabase.from("app_event_log").insert({
       event_name: eventName,
       status,
       role: role ?? null,

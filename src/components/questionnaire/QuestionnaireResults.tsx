@@ -15,6 +15,7 @@ import type { Json } from "@/integrations/supabase/types";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
+  draftStorageKey?: string;
 }
 
 interface Analysis {
@@ -46,7 +47,10 @@ const LOADING_STEPS = [
   "Programmstatus wird aktualisiert...",
 ];
 
-const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
+const QuestionnaireResults = ({
+  answers,
+  draftStorageKey = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`,
+}: QuestionnaireResultsProps) => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,8 +75,9 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           return;
         }
 
-        const { getActiveInstance } = await import("@/lib/programInstance");
-        const instance = await getActiveInstance(userId);
+        const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+        const instance = await getOrCreateActiveInstance(userId);
+        if (!instance?.id) throw new Error("active_program_instance_required");
 
         const sportAnswer = getSportAnswerText(answers["sport-01"]);
         const positionAnswer = answers["sport-02"] as string || null;
@@ -97,6 +102,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           .from("questionnaire_responses")
           .select("id")
           .eq("user_id", user.id)
+          .eq("program_instance_id", instance.id)
           .eq("is_complete", true)
           .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
           .order("created_at", { ascending: false })
@@ -113,7 +119,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
-              program_instance_id: instance?.id ?? null,
+              program_instance_id: instance.id,
               is_complete: true,
             })
             .eq("id", existingComplete.id);
@@ -130,13 +136,14 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
-              program_instance_id: instance?.id ?? null,
+              program_instance_id: instance.id,
               is_complete: true,
               last_category_index: 9999,
             });
           if (insertError) throw insertError;
         }
 
+        clearLocalDraft(draftStorageKey);
         clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
         await new Promise((r) => setTimeout(r, 600));
         navigate("/dashboard", { replace: true });
@@ -165,7 +172,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
 
     saveQuestionnaire();
     return () => clearInterval(interval);
-  }, [answers, navigate, retryTick]);
+  }, [answers, draftStorageKey, navigate, retryTick]);
 
   const answeredCount = Object.keys(answers).length;
 

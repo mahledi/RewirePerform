@@ -11,7 +11,7 @@ import {
 
 export type { QuestionType, QuestionPrivacy, ScoringDirection, RewireQuestionOption };
 
-export interface QuestionCategory extends RewireQuestionCategory {}
+export type QuestionCategory = RewireQuestionCategory;
 
 export interface Question extends RewireQuestion {
   question: string;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, ArrowRight, ArrowLeft, Check, ClipboardCheck, BarChart3, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -9,6 +9,7 @@ import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { getRetestStatus } from "@/lib/programProgress";
 import { toast } from "sonner";
 import { captureAppError } from "@/lib/monitoring";
+import type { Json } from "@/integrations/supabase/types";
 
 type Phase = "select" | "instructions" | "items" | "results" | "sequence-done" | "comparison";
 
@@ -47,16 +48,15 @@ const Assessment = () => {
     t === "pre" ? "Startmessung" : t === "mid" ? "Zwischenmessung" : "Abschlussmessung";
 
   useEffect(() => {
-    if (mode === "post") {
-      loadPreResults();
-    }
-  }, [mode]);
-
-  useEffect(() => {
     if (!user?.id || !mode || mode === "pre") return;
 
     const guardRetestAccess = async () => {
       const instance = await getOrCreateActiveInstance(user.id);
+      if (!instance?.id) {
+        toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
+        navigate("/dashboard", { replace: true });
+        return;
+      }
       let preQ = supabase
         .from("assessments")
         .select("assessment_type")
@@ -82,9 +82,10 @@ const Assessment = () => {
     guardRetestAccess();
   }, [mode, navigate, user?.id]);
 
-  const loadPreResults = async () => {
+  const loadPreResults = useCallback(async () => {
     if (!user?.id) return;
     const instance = await getOrCreateActiveInstance(user.id);
+    if (!instance?.id) return;
     let q = supabase
       .from("assessments")
       .select("assessment_type, scores, total_score, timing")
@@ -93,7 +94,13 @@ const Assessment = () => {
     if (instance?.id) q = q.eq("program_instance_id", instance.id);
     const { data } = await q;
     if (data) setPreResults(data as SavedResult[]);
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (mode === "post") {
+      void loadPreResults();
+    }
+  }, [loadPreResults, mode]);
 
   const startTest = (test: AssessmentInstrument, t: "pre" | "mid" | "post") => {
     setSelectedTest(test);
@@ -123,21 +130,26 @@ const Assessment = () => {
     setSavedScores(scores);
 
     const instance = await getOrCreateActiveInstance(user.id);
+    if (!instance?.id) {
+      toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
+      setSaving(false);
+      return;
+    }
 
     const { error: insertError } = await supabase.from("assessments").insert({
       user_id: user.id,
       session_id: user.id,
       assessment_type: selectedTest.id,
       timing,
-      answers: answers as any,
-      scores: scores.subscaleScores as any,
+      answers: answers as unknown as Json,
+      scores: scores.subscaleScores as unknown as Json,
       total_score: scores.totalScore,
-      program_instance_id: instance?.id ?? null,
+      program_instance_id: instance.id,
     });
 
     if (insertError) {
       // Duplicate (unique on user_id+instance+type+timing) → bereits absolviert in dieser Cohorte
-      if ((insertError as any).code === "23505") {
+      if (insertError.code === "23505") {
         toast.info(`${selectedTest.titleShort} (${timingLabel(timing)}) wurde bereits in diesem Programm-Zyklus gespeichert.`);
       } else {
         void captureAppError({

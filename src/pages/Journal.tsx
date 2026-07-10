@@ -15,6 +15,7 @@ import { resolveDay } from "@/lib/getDayContent";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { getProgramModeInfo } from "@/lib/programMode";
 import { captureAppError } from "@/lib/monitoring";
+import { upsertTodaySnapshot } from "@/lib/programProgress";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
@@ -69,8 +70,12 @@ const Journal = () => {
   const [freeReflection, setFreeReflection] = useState("");
   const [done, setDone] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
 
-  const draftKey = user?.id && resolved?.date ? `journal:${user.id}:${resolved.date}` : null;
+  const legacyDraftKey = user?.id && resolved?.date ? `journal:${user.id}:${resolved.date}` : null;
+  const draftKey = user?.id && resolved?.date && activeInstanceId
+    ? `journal:${user.id}:${activeInstanceId}:${resolved.date}`
+    : legacyDraftKey;
 
   useEffect(() => {
     if (!user?.id) {
@@ -88,6 +93,7 @@ const Journal = () => {
 
     const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
     const instance = await getOrCreateActiveInstance(user.id);
+    setActiveInstanceId(instance?.id ?? null);
     let existingJournalQuery = supabase
       .from("daily_journals")
       .select("*")
@@ -133,7 +139,11 @@ const Journal = () => {
       setFreeReflection(existing.free_reflection ?? "");
       setDone(true);
     } else {
-      const local = readLocalDraft<JournalDraft>(`journal:${user.id}:${r.date}`);
+      const scopedDraftKey = instance?.id
+        ? `journal:${user.id}:${instance.id}:${r.date}`
+        : `journal:${user.id}:${r.date}`;
+      const local = readLocalDraft<JournalDraft>(scopedDraftKey)
+        ?? readLocalDraft<JournalDraft>(`journal:${user.id}:${r.date}`);
       if (local) {
         setAnswers(local.answers ?? {});
         setGratitudeList(parseGratitude(local.gratitude));
@@ -173,9 +183,14 @@ const Journal = () => {
     }
     setSaveError(null);
     setSaving(true);
+    let hasProgramInstance = false;
     try {
       const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
       const instance = await getOrCreateActiveInstance(user.id);
+      if (!instance?.id) {
+        throw new Error("active_program_instance_required");
+      }
+      hasProgramInstance = true;
       const serializedGratitude = serializeGratitude(gratitudeList);
       const payload = {
         user_id: user.id,
@@ -185,7 +200,7 @@ const Journal = () => {
         answers,
         gratitude: serializedGratitude || null,
         free_reflection: freeReflection || null,
-        program_instance_id: instance?.id ?? null,
+        program_instance_id: instance.id,
       };
       let existingQuery = supabase
         .from("daily_journals")
@@ -207,7 +222,9 @@ const Journal = () => {
       if (error) {
         throw error;
       }
+      await upsertTodaySnapshot(user.id);
       if (draftKey) clearLocalDraft(draftKey);
+      if (legacyDraftKey && legacyDraftKey !== draftKey) clearLocalDraft(legacyDraftKey);
       setDone(true);
     } catch (error) {
       setSaving(false);
@@ -220,7 +237,7 @@ const Journal = () => {
         isTest: isTestUser,
         metadata: {
           day_number: resolved.matrix.dayNumber,
-          has_program_instance: null,
+          has_program_instance: hasProgramInstance,
         },
       });
       setSaveError("Dein Journal ist lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
