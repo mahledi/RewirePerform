@@ -45,4 +45,3 @@
 ## Autonomiegrenze
 
 Ein Agent darf selbststaendig lesen, analysieren, lokale Tests ausfuehren und freigegebene R1/R2-Dokumentations- oder UI-Arbeit umsetzen. Er darf keine produktiven Daten, RLS, Auth, Migrationen, Domains, Secrets, Push-Cronjobs, App-Store-Angaben oder wissenschaftlichen Claims ohne Mahles vorherige Freigabe veraendern.
-

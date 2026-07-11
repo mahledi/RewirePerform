@@ -17,4 +17,3 @@
 - falsches Backend durch Env/Fallback: Projekt-ID und Env explizit validieren.
 - Agent behauptet Live-Zustand aus Git: externe Systeme read-only verifizieren oder Unsicherheit nennen.
 - Agent erweitert Scope: Diff begrenzen, fremde Aenderungen bewahren, Stop Conditions anwenden.
-

@@ -11,4 +11,3 @@ Status: `PROPOSED`. Herkunft ueberwiegend `CONFIRMED_FROM_CHAT`.
 - keine abstrakte Fachsprache, Kartenverschachtelung oder redundante Hilfecopy.
 - Coach sieht Zahlen und neutrale Beobachtungen, keine Handlungsanweisung.
 - Accessibility und Text-Fit gehoeren zur Definition of Done.
-

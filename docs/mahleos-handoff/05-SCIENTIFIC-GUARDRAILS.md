@@ -26,4 +26,3 @@
 - Entwuerfe fuer Vereinsberichte.
 
 Final bei Mahle beziehungsweise Fachpruefung bleiben: inhaltliche Programmaussage, psychometrische Interpretation, externe Wirksamkeitsclaims, Minderjaehrigen-/Mental-Health-Grenzen und juristische Kommunikation.
-

@@ -42,4 +42,3 @@
 ## Konflikt
 
 `CONFLICT`: Der Branch zeigt P1 als laufende technische Arbeit; der juengste alte Chat nennt P2 als naechsten grossen Qualitaetsblock. Mahle muss nur die unmittelbare Reihenfolge bestaetigen, nicht die Gueltigkeit beider Prioritaeten.
-

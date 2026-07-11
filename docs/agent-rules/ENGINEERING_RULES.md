@@ -17,4 +17,3 @@ Quelle: aktive `RP-EN-*` und aktueller Aktivierungsauftrag.
 - vor Abschluss mindestens Typecheck, Tests, Build und `git diff --check` soweit taskrelevant; UI mobil/desktop smoke-testen.
 - kein Push, Merge, Deploy, Domain-, Store-, Secret- oder Production-Schritt ohne Mahles Freigabe.
 - Ergebnisse auf Deutsch mit Tests, Risiken und offenen Punkten melden.
-

@@ -30,4 +30,3 @@
 - Ladezustand ohne Feedback.
 - wiederholte Hilfetexte, die das Interface lauter machen.
 - Formulierungen, die Spieler wie Fachpublikum behandeln.
-

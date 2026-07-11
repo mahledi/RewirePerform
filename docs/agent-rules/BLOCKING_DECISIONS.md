@@ -52,4 +52,3 @@ Diese Entscheidungen sind ungelöst. Agenten duerfen sie weder annehmen noch aut
 Nicht blockiert: Read-only-Analyse, Dokumentation, lokale nicht-sensitive UI-Arbeit, lokale Tests, R1/R2-Vorbereitung, Content-Audits, Architekturberichte.
 
 Blockiert: Production, Migrationen, Auth/RLS, Consent, Account-Loeschung, sensitive Coach-/Athletendaten, Deployments und App-Store-Einreichungen.
-

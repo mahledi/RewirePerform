@@ -9,4 +9,3 @@ Status: `PROPOSED`, Code/Docs bestaetigt.
 - atomare/idempotente Writes fuer kritische Tagesdaten.
 - Supabase-Typen nach Schemaaenderung aktualisieren.
 - Mahles Freigabe vor jeder produktiven Datenbankaktion.
-

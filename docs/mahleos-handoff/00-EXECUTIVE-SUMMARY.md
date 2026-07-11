@@ -56,4 +56,3 @@ Bereits sicher uebergebbar sind reine Repository-Analyse, Dokumentationspflege, 
 3. `13-CONFLICTS-AND-UNCERTAINTIES.md`
 4. `14-RISK-MATRIX.md`
 5. Die zum Task passende Fachdokumentation, insbesondere `docs/CONTENT_LANGUAGE_STANDARD.md`, `docs/NLZ_FINAL_READINESS_REPORT.md`, `docs/NLZ_PRIVACY_AUDIT.md`, `docs/DEPLOYMENT.md` und `docs/APP_STORE.md`
-

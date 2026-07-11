@@ -30,4 +30,3 @@ Nicht aktive Regeln bleiben im `ACTIVATION_MANIFEST.json` sichtbar.
 - Farins einmalige historische Fortschrittsrekonstruktion als allgemeine Produktregel.
 
 Deferred Regeln geben keine Handlungsfreigabe. Bei Relevanz stoppt der Agent und nennt Rule-ID und benoetigte Entscheidung.
-

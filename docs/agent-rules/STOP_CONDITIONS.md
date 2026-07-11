@@ -14,4 +14,3 @@ Ein Agent stoppt vor Mutation und fragt Mahle, wenn:
 - Scope oder Rollback bei R3+ unklar ist.
 
 Erlaubt bleibt eine read-only Diagnose oder ein Plan, sofern dabei keine sensitiven Daten gelesen oder Vorentscheidungen getroffen werden.
-

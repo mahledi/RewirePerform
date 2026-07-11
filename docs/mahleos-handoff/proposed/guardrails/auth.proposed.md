@@ -8,4 +8,3 @@ Status: `PROPOSED`, Code bestaetigt.
 - Auth Redirects pro Host explizit konfigurieren.
 - keine Auth- oder Rollenmutation ohne Mahles Freigabe und echte Rollen-Smokes.
 - keine Secrets oder Passwoerter in Logs, Chat oder Frontend.
-

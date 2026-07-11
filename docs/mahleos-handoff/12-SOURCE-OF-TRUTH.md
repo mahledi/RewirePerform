@@ -23,4 +23,3 @@
 | wissenschaftliche Endfreigabe | Mahle + qualifizierte Fachpruefung | ausserhalb Code |
 
 Regel: Repository belegt Implementierung, nicht automatisch Deployment. Dokumentation belegt Absicht oder Testbericht, nicht automatisch aktuellen externen Zustand.
-

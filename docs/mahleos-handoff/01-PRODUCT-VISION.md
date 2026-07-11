@@ -38,4 +38,3 @@
 Bevorzugt: `mentale Leistungsfaehigkeit`, `Selbstregulation`, `Fokus`, `Druckkompetenz`, `Fehlererholung`, `Recovery`, `beobachtete Entwicklung`, `Programmnutzung`, `Adhaerenz`, `Team Pulse`, `Datenlage`.
 
 Zu vermeiden oder nur vorsichtig zu verwenden: `bewiesen`, `garantiert`, `Gehirn umverdrahtet`, `Diagnose`, `Heilung`, `Ego eines Spielers`, `Persoenlichkeitsprofil`, `Mental Score`, `Test` als ehrlichkeitssenkende Bezeichnung fuer Spieler-Messungen.
-

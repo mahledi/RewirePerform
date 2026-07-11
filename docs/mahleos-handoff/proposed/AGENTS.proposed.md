@@ -12,4 +12,3 @@ Status: `PROPOSED`, nicht aktiv. Herkunft: Knowledge Pack vom 11. Juli 2026.
 8. Fuer Code mindestens Typecheck, Tests, Build und Diff-Check; UI mobil pruefen.
 9. Externen Live-Stand separat verifizieren.
 10. Deutsch, direkt, transparent ueber Risiken und nicht ausgefuehrte Tests kommunizieren.
-

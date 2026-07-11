@@ -44,4 +44,3 @@ Ergebnis: bestanden.
 ## Gesamturteil
 
 Alle drei Fixtures haben die erwartete Risikoklassifikation, Freigabegrenze und Stop-Bedingung angewendet. Normale R1-Analyse blieb arbeitsfaehig; Migration und Minderjaehrigen-Consent wurden wirksam blockiert.
-

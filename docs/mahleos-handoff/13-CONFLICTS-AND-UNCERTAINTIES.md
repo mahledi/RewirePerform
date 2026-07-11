@@ -80,4 +80,3 @@
 - reale Loesch- und Supportprozesse.
 - juristisch gepruefte Minderjaehrigen-/Vereins-Einwilligung.
 - ob alle 56 Tage denselben Content-Source-Pfad nutzen oder historische Backup-/Matrixdaten noch Teil einzelner Ansichten sind.
-

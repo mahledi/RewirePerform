@@ -26,4 +26,3 @@
 ## Stop-Bedingungen
 
 Agent soll stoppen und Mahle fragen bei unklarer produktiver Datenquelle, widerspruechlichen Projekt-IDs, moeglicher Privacy-Verletzung, destruktiver Migration, fehlendem Backup, veraenderter Claim-Bedeutung, unklarer Minderjaehrigen-Einwilligung oder wenn bestehende fremde Aenderungen nicht sicher integrierbar sind.
-

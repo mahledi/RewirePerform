@@ -10,4 +10,3 @@ Status: `PROPOSED`, aus Code bestaetigt.
 - Rollen- und Privacy-Grenzen werden serverseitig erzwungen.
 - GitHub ist Code-Source-of-Truth; Hosting und DB-Live-Stand werden separat verifiziert.
 - PWA und Capacitor teilen denselben Build, native Funktionen bleiben explizite Tracks.
-

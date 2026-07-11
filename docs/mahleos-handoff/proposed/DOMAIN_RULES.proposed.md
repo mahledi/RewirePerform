@@ -10,4 +10,3 @@ Status: `PROPOSED`. Herkunft: `04-DOMAIN-RULES.md`.
 - Sensible Aggregate erst ab n=5, niedrige Konfidenz bis n=10.
 - Consent ist freiwillig und beeinflusst Evidence, nicht Produktzugang.
 - Assessments und Development Index sind Messanker, keine Diagnose.
-

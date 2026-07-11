@@ -10,4 +10,3 @@ Status: `PROPOSED`, Code/Chat bestaetigt.
 - Sentry und Incident-Logs ohne PII/private Inhalte.
 - Export nur consentierte Aggregate und Datenqualitaet.
 - Minderjaehrigen-, Loesch- und Snapshot-Widerrufsfragen vor breitem Launch klaeren.
-

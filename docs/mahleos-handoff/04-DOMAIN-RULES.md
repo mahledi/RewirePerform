@@ -23,4 +23,3 @@ Format: Regel, Quelle/Status, betroffene Bereiche, Risiko.
 - `RP-DR-19 | CONFIRMED_FROM_CHAT` Verpasste Tage koennen als kompakter Rueckblick erscheinen, waehrend der aktuelle Tag Prioritaet behaelt. Risiko: mittel.
 - `RP-DR-20 | CONFIRMED_FROM_BOTH` Coach-Beobachtungen bleiben neutral; die App schreibt dem Coach nicht vor, was er sagen oder tun soll. Risiko: mittel.
 - `RP-DR-21 | INFERRED` Module sind fachliche Phasen innerhalb der 56 Tage, aber die kanonische Moduldefinition muss vor Umbauten direkt aus Content-Typen und UI geprueft werden. Risiko: mittel.
-

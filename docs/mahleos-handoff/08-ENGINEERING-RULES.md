@@ -33,4 +33,3 @@
 8. Kein Push/Merge/Deploy ohne ausdrueckliche Freigabe.
 9. Dokumentation und Supabase-Typen sind bei Vertragsaenderungen aktualisiert.
 10. Abschluss nennt Tests, Risiken und naechsten sicheren Schritt.
-

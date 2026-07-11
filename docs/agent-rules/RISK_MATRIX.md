@@ -11,4 +11,3 @@
 Eine Aufgabe wird automatisch auf R4/R5 hochgestuft, sobald sie sensible Daten, Rollen, Minderjaehrige, externe Systeme, Production oder wissenschaftliche Endbedeutung beruehrt.
 
 Die fuenf offenen Blocking Decisions sperren alle betroffenen R4/R5-Aktionen. R1/R2 bleiben erlaubt, solange sie keine sensitive Vorentscheidung treffen.
-

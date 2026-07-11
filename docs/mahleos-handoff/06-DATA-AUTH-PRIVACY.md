@@ -49,4 +49,3 @@
 - Minderjaehrigen- und Vereinsrollen juristisch pruefen.
 - App Store Privacy Labels mit realem Produktionsverhalten abgleichen.
 - `PrivacyInfo.xcprivacy` und Required-Reason APIs vor Submission pruefen.
-

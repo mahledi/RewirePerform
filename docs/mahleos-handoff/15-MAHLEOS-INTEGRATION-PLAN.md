@@ -65,4 +65,3 @@ Freigabepunkt fuer Commit/Push/Deploy
 ## Integrationsreife
 
 Read-only R1 ist nach Mahles Review dieses Packs realistisch. Schreibende oder autonome Integration bleibt blockiert, bis Projekt-ID/Production-Stand, aktuelle Prioritaet, Account-Loeschung, Minderjaehrigen-Consent und aktive Regeldateien geklaert sind.
-

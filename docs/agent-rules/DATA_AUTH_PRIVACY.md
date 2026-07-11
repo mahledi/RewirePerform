@@ -20,4 +20,3 @@ Quelle: aktive `RP-PR-*`, Privacy- und Tracking-Grenzen. `BD-01`, `BD-02`, `BD-0
 Bis Mahle die Blocking Decisions loest: keine Production-/Supabase-Aktion, Migration, Auth-/RLS-Aenderung, Consent-Logik, Account-Loeschung, Minderjaehrigen-Einwilligung oder Erweiterung sensibler Coach-/Athleten-Datenfluesse.
 
 Auch bei lokaler Planung niemals Secrets, Passwoerter oder reale private Daten ausgeben oder committen.
-

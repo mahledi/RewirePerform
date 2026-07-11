@@ -19,4 +19,3 @@ Quelle: aktive `RP-SG-*`, `DEC-07`, `CK-07`.
 - Verbergen von kleiner Stichprobe, Missingness, Drop-out oder unvollstaendigen Paaren.
 
 Sensible Aggregate brauchen mindestens fuenf unterschiedliche Athleten; fuenf bis neun sind niedrige Konfidenz. Neue Instrumente, Scores, Normen, Effektgroessen und externe Claims benoetigen fachliche Endpruefung. Agenten duerfen Entwuerfe und Tests vorbereiten, nicht die wissenschaftliche Endfreigabe ersetzen.
-

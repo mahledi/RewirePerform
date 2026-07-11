@@ -28,4 +28,3 @@
 ## Freigaberegel
 
 Eine niedrigere technische Aenderung wird automatisch hochgestuft, sobald sie sensible Daten, Minderjaehrige, Rollen, externe Systeme, produktive Nutzer oder wissenschaftliche Aussagen beruehrt.
-

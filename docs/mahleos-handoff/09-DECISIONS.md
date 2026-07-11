@@ -22,4 +22,3 @@
 | DEC-18 | Launch | Kontrollierter Pilot vor Massenrollout | Qualitaet und Datenintegritaet zuerst | `CONFIRMED_FROM_BOTH`, gueltig |
 
 Neubewertung ist noetig, wenn neue rechtliche Anforderungen, ein echtes Studiendesign, native App-Funktionen, andere Zielgruppen oder belastbare Pilotdaten die bisherigen Grenzen veraendern.
-

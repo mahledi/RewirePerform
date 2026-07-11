@@ -77,4 +77,3 @@ npm run app:build
 - R3: Daily Tracking, Program Runs, Assessments, Push, Service Worker, Capacitor.
 - R2: isolierte UI-/Copy-Aenderungen mit vorhandenem Testpfad.
 - R1: Dokumentation und read-only Analyse.
-

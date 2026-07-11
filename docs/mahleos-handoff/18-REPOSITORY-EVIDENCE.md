@@ -53,4 +53,3 @@ Vorhandene Tests decken unter anderem Fragebogen-Completion, Personalisierung, T
 - welche Migrationen Production wirklich enthaelt.
 - DNS-, App Store Connect-, Apple Signing- und TestFlight-Status.
 - reale Support-, Loesch- und Rechtsprozesse.
-

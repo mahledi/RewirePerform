@@ -20,4 +20,3 @@ Quelle: aktive `RP-DR-*`-Regeln im Manifest.
 - Coach-Beobachtungen bleiben neutral und nicht bevormundend.
 
 Stoppen, wenn eine Aenderung Programmlogik, Rollen, Trackingidentitaet, Consent oder sensitive Sichtbarkeit veraendert.
-

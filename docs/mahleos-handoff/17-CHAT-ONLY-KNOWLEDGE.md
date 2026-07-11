@@ -24,4 +24,3 @@ Diese Eintraege sind im Repository nicht vollstaendig als verbindliche Regel erk
 | CK-18 | Sprachumbau zuerst Tage 1-7 testen, dann schrittweise bis Tag 56 | hoch | ja | aktuelle Prioritaet |
 | CK-19 | Echter eigener Flow-Test ist fuer Mahle aussagekraeftiger als reine QA-Automation; beides wird kombiniert | hoch | ja | Release-Regeln |
 | CK-20 | Farins historischer Solo-Fortschritt war ein einmaliger Migrationsfall und keine allgemeine Produktregel | hoch | historisch | nicht als aktive Regel uebernehmen |
-

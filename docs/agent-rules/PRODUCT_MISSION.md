@@ -9,4 +9,3 @@ Es verbindet ein 56-Tage-Programm, Selbstregulation, Fokus, Druckkompetenz, Fehl
 RewirePerform ist keine Therapie, Diagnose, medizinische App oder Motivationsshow. Es soll ruhig, hochwertig, professionell, wissenschaftlich verantwortlich und alltagstauglich wirken. Tiefe bleibt im System; Klarheit erscheint im Spielerflow.
 
 Organisationen erhalten Daten zu Programmnutzung, Adhaerenz, Messqualitaet und beobachteter Entwicklung. Sie erhalten keinen scheinbaren Kausalbeweis und keine psychologischen Einzelurteile.
-

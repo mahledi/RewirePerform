@@ -18,4 +18,3 @@ Native APNs, Payments, lokale KI, Wearables, breiteres Studiendesign und skalier
 ## Nicht jetzt
 
 Massenrollout, grosse neue Frageboegen, Ego-/Diagnosescores, ungepruefte Brain-Claims, komplette Neuarchitektur oder AI als Ersatz fuer klare Produktgrundlagen.
-

@@ -20,4 +20,3 @@
 8. Soll die alte Lovable-/Migration-Dokumentation archiviert oder als historisch markiert werden? Vermutung markieren, nicht loeschen; hoch.
 9. Welche realen Demo-Accounts duerfen fuer App Review gepflegt werden? Vermutung getrennte Testaccounts im eigenen Backend; hoch.
 10. Wann darf MahleOS spaeter R2-Aenderungen selbststaendig als Draft vorbereiten? Vermutung nach Review dieses Packs, aber ohne Push/Merge; mittel.
-

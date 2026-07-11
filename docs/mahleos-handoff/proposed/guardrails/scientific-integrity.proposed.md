@@ -9,4 +9,3 @@ Status: `PROPOSED`, Code/Chat bestaetigt.
 - validierte Instrumente instrumentenspezifisch scoren; eigenen Index klar kennzeichnen.
 - n, Paare, Missingness, Drop-out und Low Confidence sichtbar halten.
 - externe Claims und neue Messinstrumente fachlich final pruefen lassen.
-

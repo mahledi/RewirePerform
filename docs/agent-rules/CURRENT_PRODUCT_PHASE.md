@@ -14,4 +14,3 @@ Zwei prioritaere Arbeitslinien sind bestaetigt:
 Ihre Reihenfolge ist nicht aktiviert und bleibt Mahles Entscheidung. Read-only-Analyse, lokale Tests, Content-Audits und klar abgegrenzte R1/R2-Arbeit sind trotzdem erlaubt.
 
 Nicht jetzt: Massenrollout, grosse neue Frageboegen, Ego-/Diagnosescores, ungepruefte Wearables, Payments, lokale KI als Ersatz fuer klare Grundsprache oder eine komplette Neuarchitektur.
-
