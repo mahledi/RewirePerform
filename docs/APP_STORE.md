@@ -20,19 +20,23 @@ Use performance-safe wording. Do not describe RewirePerform as a diagnosis, medi
 
 ```bash
 npm ci
-npm run typecheck
-npm run build
-npm test
-npx cap sync ios
+npm run app:build
 npx cap open ios
 ```
 
-Recommended repeatable shortcut:
+Safe repeatable shortcuts:
 
 ```bash
+# Build, validate and sync Production without opening Xcode.
 npm run app:build
+
+# Build, validate and sync Production, then open Xcode.
 npm run app:open:ios
 ```
+
+Do not sync a Staging web bundle into the current iOS project. The current Xcode
+target owns the Production bundle ID `com.rewireperform.app`; native Staging needs a
+separately approved bundle ID and scheme.
 
 In Xcode:
 
@@ -150,41 +154,9 @@ Sensitive handling:
 
 ## App Store Metadata Draft
 
-Subtitle:
-
-```text
-Mental Performance für Sportler
-```
-
-Short description:
-
-```text
-RewirePerform hilft Sportlern, mentale Routinen, Reflexion, Check-ins und Team-Aggregate strukturiert über ein 56-Tage-Programm zu nutzen.
-```
-
-Keywords:
-
-```text
-sport, athlete, mental performance, training, journal, focus, coach, team, routine, reflection
-```
-
-Review notes:
-
-```text
-RewirePerform is a mental performance and reflection app for athletes and coaches. It is not a medical or diagnostic app. Coaches see aggregate/status information only and do not see private journal text or raw individual mental-state answers.
-
-Demo accounts:
-Admin: [provide email/password]
-Coach: [provide email/password]
-Athlete: [provide email/password]
-
-Recommended review path:
-1. Log in as Athlete.
-2. Open Dashboard.
-3. Complete or inspect daily check-in/journal.
-4. Open Settings to inspect optional reminders.
-5. Log in as Coach to inspect privacy-safe team dashboard.
-```
+The current source of truth for localized copy, field limits, screenshots, review
+notes and unresolved owner/legal fields is
+`docs/APP_STORE_CONNECT_PACKAGE_2026-07-13.md`.
 
 ## TestFlight Gate
 

@@ -34,6 +34,14 @@ const optionalClient = [
   "VITE_RELEASE_SHA",
 ];
 
+const allowedAppEnvironments = new Set([
+  "development",
+  "staging",
+  "production",
+  "ci",
+  "test",
+]);
+
 function parseEnvFile(path) {
   if (!existsSync(path)) return {};
   const parsed = {};
@@ -90,6 +98,20 @@ if (!exampleOnly) {
 
   if (local.VITE_SUPABASE_PROJECT_ID && !/^[a-z0-9]{20}$/.test(local.VITE_SUPABASE_PROJECT_ID)) {
     fail("VITE_SUPABASE_PROJECT_ID should be the 20-character Supabase project ref");
+  }
+
+  if (local.VITE_SUPABASE_URL && local.VITE_SUPABASE_PROJECT_ID) {
+    const expectedUrl = `https://${local.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
+    if (local.VITE_SUPABASE_URL !== expectedUrl) {
+      fail("VITE_SUPABASE_URL must match VITE_SUPABASE_PROJECT_ID");
+    }
+  }
+
+  if (
+    local.VITE_APP_ENV &&
+    !allowedAppEnvironments.has(local.VITE_APP_ENV)
+  ) {
+    fail("VITE_APP_ENV must be development, staging, production, ci or test");
   }
 }
 

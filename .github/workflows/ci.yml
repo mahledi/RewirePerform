@@ -10,9 +10,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      VITE_SUPABASE_URL: https://twceqincrbrenyuqukpj.supabase.co
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'ci-placeholder-publishable-key' }}
-      VITE_SUPABASE_PROJECT_ID: twceqincrbrenyuqukpj
+      VITE_SUPABASE_URL: https://abcdefghijklmnopqrst.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-publishable-key
+      VITE_SUPABASE_PROJECT_ID: abcdefghijklmnopqrst
+      VITE_APP_ENV: ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,14 +27,5 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Verify environment template
-        run: npm run validate:env -- --example-only
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Build
-        run: npm run build
-
-      - name: Test
-        run: npm test
+      - name: Verify
+        run: npm run ci

@@ -1,13 +1,65 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 
+const STAGING_PROJECT_REF = "towgvykgezrmkbyudjen";
+const PRODUCTION_PROJECT_REF = "bqsbxesmybthwtxmowfz";
+const WRITE_APPROVAL = "STAGING_SYNTHETIC_WRITE_APPROVED";
+const args = new Set(process.argv.slice(2));
+const planOnly = args.has("--plan");
+const execute = args.has("--execute");
+
+if (planOnly === execute || args.size !== 1) {
+  throw new Error(
+    "Choose exactly one mode: --plan (no network access) or --execute (approved Staging write)",
+  );
+}
+
+if (planOnly) {
+  console.log(`TARGET: Supabase Staging ${STAGING_PROJECT_REF}`);
+  console.log("NETWORK: disabled; no Supabase client is initialized");
+  console.log("SCOPE: temporary synthetic coach, admin, outsider, five athletes, team and run");
+  console.log("DAY CONTEXTS: training, rest and competition");
+  console.log("CHECKS: auth, RLS, atomic saves, retries, privacy, consent, n>=5 and n<5");
+  console.log("CLEANUP: all synthetic users and related rows are removed in finally");
+  console.log(`EXECUTION GATE: --execute plus NLZ_QA_WRITE_APPROVAL=${WRITE_APPROVAL}`);
+  console.log("PRODUCTION: permanently blocked by project-ref guard");
+  process.exit(0);
+}
+
 const url = process.env.NLZ_QA_SUPABASE_URL;
 const anonKey = process.env.NLZ_QA_ANON_KEY;
 const serviceKey = process.env.NLZ_QA_SERVICE_ROLE_KEY;
+const writeApproval = process.env.NLZ_QA_WRITE_APPROVAL;
 
 if (!url || !anonKey || !serviceKey) {
   throw new Error(
     "NLZ_QA_SUPABASE_URL, NLZ_QA_ANON_KEY and NLZ_QA_SERVICE_ROLE_KEY are required",
+  );
+}
+
+let targetUrl;
+try {
+  targetUrl = new URL(url);
+} catch {
+  throw new Error("NLZ_QA_SUPABASE_URL must be a valid HTTPS URL");
+}
+
+if (
+  targetUrl.protocol !== "https:" ||
+  targetUrl.hostname !== `${STAGING_PROJECT_REF}.supabase.co`
+) {
+  const targetRef = targetUrl.hostname.split(".")[0];
+  if (targetRef === PRODUCTION_PROJECT_REF) {
+    throw new Error("Production is permanently blocked for synthetic staging E2E writes");
+  }
+  throw new Error(
+    `Synthetic E2E writes are restricted to Supabase Staging ${STAGING_PROJECT_REF}`,
+  );
+}
+
+if (writeApproval !== WRITE_APPROVAL) {
+  throw new Error(
+    `Remote writes require NLZ_QA_WRITE_APPROVAL=${WRITE_APPROVAL}`,
   );
 }
 
@@ -26,6 +78,12 @@ let runId = null;
 function assertCheck(name, condition) {
   if (!condition) throw new Error(`FAIL ${name}`);
   passed.push(`PASS ${name}`);
+}
+
+function addUtcDays(isoDate, offset) {
+  const date = new Date(`${isoDate}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + offset);
+  return date.toISOString().slice(0, 10);
 }
 
 async function requireData(label, request) {
@@ -83,11 +141,25 @@ async function createTestUser(label, role) {
 }
 
 async function cleanup() {
+  const failures = [];
+  const cleanupRequest = async (label, request) => {
+    try {
+      const { data, error } = await request;
+      if (error) failures.push(`${label}: ${error.message}`);
+      return data;
+    } catch (error) {
+      failures.push(
+        `${label}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  };
+
   if (runId) {
-    const { data: instances } = await service
-      .from("program_instances")
-      .select("id")
-      .eq("program_run_id", runId);
+    const instances = await cleanupRequest(
+      "load program instances",
+      service.from("program_instances").select("id").eq("program_run_id", runId),
+    );
     const instanceIds = (instances ?? []).map(({ id }) => id);
     if (instanceIds.length) {
       for (const table of [
@@ -100,23 +172,48 @@ async function cleanup() {
         "deep_profile_assessments",
         "questionnaire_responses",
       ]) {
-        await service.from(table).delete().in("program_instance_id", instanceIds);
+        await cleanupRequest(
+          `delete ${table}`,
+          service.from(table).delete().in("program_instance_id", instanceIds),
+        );
       }
-      await service.from("program_instances").delete().in("id", instanceIds);
+      await cleanupRequest(
+        "delete program instances",
+        service.from("program_instances").delete().in("id", instanceIds),
+      );
     }
-    await service.from("study_evidence_snapshots").delete().eq("program_run_id", runId);
-    await service.from("program_runs").delete().eq("id", runId);
+    await cleanupRequest(
+      "delete study evidence snapshots",
+      service.from("study_evidence_snapshots").delete().eq("program_run_id", runId),
+    );
+    await cleanupRequest(
+      "delete program run",
+      service.from("program_runs").delete().eq("id", runId),
+    );
   }
   if (createdUserIds.length) {
-    await service.from("user_day_assignments").delete().in("user_id", createdUserIds);
-    await service.from("team_members").delete().in("user_id", createdUserIds);
+    await cleanupRequest(
+      "delete day assignments",
+      service.from("user_day_assignments").delete().in("user_id", createdUserIds),
+    );
+    await cleanupRequest(
+      "delete team memberships",
+      service.from("team_members").delete().in("user_id", createdUserIds),
+    );
   }
-  if (teamId) await service.from("teams").delete().eq("id", teamId);
+  if (teamId) {
+    await cleanupRequest(
+      "delete team",
+      service.from("teams").delete().eq("id", teamId),
+    );
+  }
   for (const id of [...createdUserIds].reverse()) {
-    await service.auth.admin.deleteUser(id);
+    await cleanupRequest(`delete auth user ${id}`, service.auth.admin.deleteUser(id));
   }
+  return failures;
 }
 
+let testError = null;
 try {
   const coach = await createTestUser("coach", "coach");
   const systemAdmin = await createTestUser("admin", "admin");
@@ -359,7 +456,9 @@ try {
     "load evidence for n=5",
     coach.client.rpc("get_nlz_evidence_dossier", { _program_run_id: runId }),
   );
-  const dailyPulse = evidence?.team_pulse?.daily?.[0];
+  const dailyPulse = evidence?.team_pulse?.daily?.find(
+    ({ date }) => date === today,
+  );
   assertCheck(
     "n=5 sensitive aggregate visible",
     dailyPulse?.n === 5 && dailyPulse?.mood !== null,
@@ -371,6 +470,122 @@ try {
   assertCheck(
     "private reflection excluded",
     !JSON.stringify(evidence).includes(privateMarker),
+  );
+
+  const contextAssignments = await requireData(
+    "create rest and competition assignments",
+    service
+      .from("user_day_assignments")
+      .insert([
+        {
+          user_id: athletes[0].id,
+          date: addUtcDays(today, 1),
+          assigned_day_number: 2,
+          context_type: "rest",
+          assignment_reason: {},
+          generated_payload: {},
+          adaptation_summary: {},
+          status: "assigned",
+        },
+        {
+          user_id: athletes[0].id,
+          date: addUtcDays(today, 2),
+          assigned_day_number: 3,
+          context_type: "competition",
+          assignment_reason: {},
+          generated_payload: {},
+          adaptation_summary: {},
+          status: "assigned",
+        },
+      ])
+      .select("id,date,assigned_day_number,context_type"),
+  );
+  const contextByType = new Map(
+    contextAssignments.map((assignment) => [assignment.context_type, assignment]),
+  );
+  const saveContext = (eventType) => {
+    const assignment = contextByType.get(eventType);
+    return athletes[0].client.rpc("save_daily_tracking_v2", {
+      _assignment_id: assignment.id,
+      _date: assignment.date,
+      _event_type: eventType,
+      _day_number: assignment.assigned_day_number,
+      _variant_used: eventType,
+      _program_instance_id: instanceByUser.get(athletes[0].id),
+      _tasks_completed: [],
+      _reflection: `${privateMarker}_${eventType.toUpperCase()}`,
+      _mood_before: eventType === "rest" ? 6 : 8,
+      _energy_level: eventType === "rest" ? 7 : 9,
+      _focus_rating: eventType === "rest" ? 6 : 9,
+      _stress: eventType === "rest" ? 3 : 7,
+      _recovery: eventType === "rest" ? 9 : 7,
+      _sleep_quality: 8,
+      _physical_readiness: eventType === "rest" ? 7 : 9,
+      _motivation: 9,
+      _pressure: eventType === "rest" ? 2 : 8,
+      _team_connection: 8,
+      _comprehension_questions: null,
+      _comprehension_results: null,
+    });
+  };
+
+  await requireData("save rest-day tracking", saveContext("rest"));
+  await requireData("save competition tracking", saveContext("competition"));
+
+  const invalidEvent = await athletes[0].client.rpc("save_daily_tracking_v2", {
+    _assignment_id: contextByType.get("rest").id,
+    _date: contextByType.get("rest").date,
+    _event_type: "recovery",
+    _day_number: 2,
+    _variant_used: "rest",
+    _program_instance_id: instanceByUser.get(athletes[0].id),
+    _tasks_completed: [],
+  });
+  assertCheck("unsupported day context rejected", Boolean(invalidEvent.error));
+
+  const contextCheckins = await requireData(
+    "load rest and competition checkins",
+    service
+      .from("daily_checkins")
+      .select("date,event_type")
+      .eq("program_instance_id", instanceByUser.get(athletes[0].id))
+      .in(
+        "date",
+        contextAssignments.map(({ date }) => date),
+      ),
+  );
+  assertCheck(
+    "rest and competition contexts persist separately",
+    contextCheckins.length === 2 &&
+      contextCheckins.every(({ date, event_type }) => {
+        const assignment = contextByType.get(event_type);
+        return assignment?.date === date;
+      }),
+  );
+
+  const contextCompletions = await requireData(
+    "load rest and competition completions",
+    service
+      .from("user_day_completion")
+      .select("assignment_id,day_number,completion_status,variant_used")
+      .in(
+        "assignment_id",
+        contextAssignments.map(({ id }) => id),
+      ),
+  );
+  assertCheck(
+    "rest and competition complete their own assignments",
+    contextCompletions.length === 2 &&
+      contextCompletions.every((completion) => {
+        const assignment = contextAssignments.find(
+          ({ id }) => id === completion.assignment_id,
+        );
+        return (
+          completion.completion_status === "completed" &&
+          completion.day_number === assignment?.assigned_day_number &&
+          completion.variant_used === assignment?.context_type
+        );
+      }),
   );
 
   await requireData(
@@ -387,7 +602,9 @@ try {
     "load suppressed evidence",
     coach.client.rpc("get_nlz_evidence_dossier", { _program_run_id: runId }),
   );
-  const suppressedDaily = suppressed?.team_pulse?.daily?.[0];
+  const suppressedDaily = suppressed?.team_pulse?.daily?.find(
+    ({ date }) => date === today,
+  );
   assertCheck(
     "n<5 aggregate values suppressed",
     suppressedDaily?.n === 3 &&
@@ -415,7 +632,23 @@ try {
 
   console.log(passed.join("\n"));
   console.log(`SUMMARY ${passed.length}/${passed.length} staging checks passed`);
+} catch (error) {
+  testError = error;
 } finally {
-  await cleanup();
+  const cleanupFailures = await cleanup();
+  if (cleanupFailures.length) {
+    const cleanupError = new Error(
+      `Synthetic staging cleanup incomplete:\n${cleanupFailures.join("\n")}`,
+    );
+    if (testError) {
+      throw new AggregateError(
+        [testError, cleanupError],
+        "Staging E2E failed and cleanup was incomplete",
+      );
+    }
+    throw cleanupError;
+  }
   console.log("CLEANUP temporary staging cohort removed");
 }
+
+if (testError) throw testError;

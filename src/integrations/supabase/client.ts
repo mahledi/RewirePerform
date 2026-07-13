@@ -17,7 +17,11 @@ function requireClientEnv(key: RequiredClientEnv) {
 
 const SUPABASE_URL = requireClientEnv("VITE_SUPABASE_URL");
 const SUPABASE_PUBLISHABLE_KEY = requireClientEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
-requireClientEnv("VITE_SUPABASE_PROJECT_ID");
+const SUPABASE_PROJECT_ID = requireClientEnv("VITE_SUPABASE_PROJECT_ID");
+
+if (SUPABASE_URL !== `https://${SUPABASE_PROJECT_ID}.supabase.co`) {
+  throw new Error("Supabase URL and project ID do not describe the same runtime target.");
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
