@@ -13,6 +13,15 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          supabase: ["@supabase/supabase-js"],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -25,7 +34,7 @@ export default defineConfig(({ mode }) => ({
       devOptions: {
         enabled: false, // never in dev/preview
       },
-      includeAssets: ["app-icon.png", "robots.txt"],
+      includeAssets: ["app-icon-192.png", "app-icon-512.png", "robots.txt"],
       manifest: {
         name: "RewirePerform",
         short_name: "RewirePerform",
@@ -36,8 +45,8 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         scope: "/",
         icons: [
-          { src: "/app-icon.png", sizes: "192x192", type: "image/png", purpose: "any" },
-          { src: "/app-icon.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+          { src: "/app-icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "/app-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
         ],
       },
       injectManifest: {

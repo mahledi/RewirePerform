@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import QATestBanner from "./components/qa/QATestBanner";
 import { NotificationOpenTracker } from "./components/notifications/NotificationOpenTracker";
+import { NativeNotificationRouter } from "./components/notifications/NativeNotificationRouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import IosInputPolish from "./components/IosInputPolish";
 import AppLoadingShell from "./components/AppLoadingShell";
@@ -66,6 +67,7 @@ const AppRoutes = () => {
         <Sonner />
         <QATestBanner />
         <NotificationOpenTracker />
+        <NativeNotificationRouter />
         <IosInputPolish />
         <ConnectionStatus />
         <Suspense fallback={<PageFallback />}>

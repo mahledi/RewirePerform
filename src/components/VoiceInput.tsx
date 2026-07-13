@@ -22,6 +22,19 @@ interface SpeechRecognitionErrorEventLike {
   error: string;
 }
 
+const getSpeechErrorMessage = (error: string) => {
+  if (error === "not-allowed" || error === "service-not-allowed") {
+    return "Spracherkennung ist nicht erlaubt. Aktiviere Mikrofon und Spracherkennung in den iOS-Einstellungen oder tippe deine Antwort.";
+  }
+  if (error === "audio-capture") {
+    return "Kein Mikrofon verfügbar. Du kannst deine Antwort weiterhin tippen.";
+  }
+  if (error === "network") {
+    return "Spracherkennung ist gerade nicht erreichbar. Du kannst deine Antwort weiterhin tippen.";
+  }
+  return "Spracherkennung konnte nicht gestartet werden. Du kannst deine Antwort weiterhin tippen.";
+};
+
 interface SpeechRecognitionLike {
   lang: string;
   interimResults: boolean;
@@ -60,6 +73,7 @@ const VoiceInput = ({
   const [isSupported, setIsSupported] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [pulseLevel, setPulseLevel] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -133,6 +147,7 @@ const VoiceInput = ({
       startingRef.current = false;
       return;
     }
+    setErrorMessage(null);
 
     // Falls eine alte Instanz noch existiert: sauber entfernen.
     if (recognitionRef.current) {
@@ -181,12 +196,11 @@ const VoiceInput = ({
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
-      console.error("Speech recognition error:", event.error);
-      if (event.error !== "aborted" && event.error !== "no-speech") {
-        isListeningRef.current = false;
-        setIsListening(false);
-        setInterimText("");
-      }
+      if (event.error === "aborted" || event.error === "no-speech") return;
+      isListeningRef.current = false;
+      setIsListening(false);
+      setErrorMessage(getSpeechErrorMessage(event.error));
+      cleanupRecognition();
     };
 
     recognition.onend = () => {
@@ -225,6 +239,7 @@ const VoiceInput = ({
             cleanupRecognition();
             isListeningRef.current = false;
             setIsListening(false);
+            setErrorMessage(getSpeechErrorMessage("start-failed"));
           }
         }
       }, 250);
@@ -299,7 +314,7 @@ const VoiceInput = ({
           {isListening ? (
             <>
               <Square className="w-4 h-4 relative z-10" />
-              <span className="relative z-10">Aufnahme stoppen</span>
+              <span className="relative z-10">Einsprechen stoppen</span>
             </>
           ) : (
             <>
@@ -334,6 +349,20 @@ const VoiceInput = ({
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.p
+            role="alert"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="text-xs text-destructive"
+          >
+            {errorMessage}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       {/* Interim transcript preview */}
       <AnimatePresence>

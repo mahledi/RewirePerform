@@ -120,13 +120,17 @@ export const TrainingAndNotifications = () => {
 
   useEffect(() => {
     if (!push.loading && push.enabled) {
-      const m = utcToLocal(push.morningHour, push.morningMinute);
-      const e = utcToLocal(push.eveningHour, push.eveningMinute);
+      const m = push.mode === "native"
+        ? { h: push.morningHour, m: push.morningMinute }
+        : utcToLocal(push.morningHour, push.morningMinute);
+      const e = push.mode === "native"
+        ? { h: push.eveningHour, m: push.eveningMinute }
+        : utcToLocal(push.eveningHour, push.eveningMinute);
       setMorningLocal(m);
       setEveningLocal(e);
       setPreTrainingMinutes(push.preTrainingMinutes);
     }
-  }, [push.loading, push.enabled, push.morningHour, push.morningMinute, push.eveningHour, push.eveningMinute, push.preTrainingMinutes]);
+  }, [push.loading, push.enabled, push.mode, push.morningHour, push.morningMinute, push.eveningHour, push.eveningMinute, push.preTrainingMinutes]);
 
   const setDayTimeLocal = (dayIdx: number, localTime: LocalTime | null) => {
     const next = { ...schedule };
@@ -163,6 +167,12 @@ export const TrainingAndNotifications = () => {
         const { error: insErr } = await supabase.from("training_schedule").insert(rows);
         if (insErr) throw insErr;
       }
+      try {
+        await push.resync();
+      } catch (error) {
+        console.warn("[native] reminder resync after schedule save failed", error);
+        toast.warning("Trainingszeiten sind gespeichert. Die iOS-Erinnerungen werden beim nächsten App-Start aktualisiert.");
+      }
       setScheduleSaveState("saved");
       toast.success("Trainingszeiten gespeichert.");
     } catch (e: unknown) {
@@ -183,8 +193,12 @@ export const TrainingAndNotifications = () => {
 
   const handleEnablePush = async () => {
     try {
-      const m = localToUtc(morningLocal.h, morningLocal.m);
-      const e = localToUtc(eveningLocal.h, eveningLocal.m);
+      const m = push.mode === "native"
+        ? morningLocal
+        : localToUtc(morningLocal.h, morningLocal.m);
+      const e = push.mode === "native"
+        ? eveningLocal
+        : localToUtc(eveningLocal.h, eveningLocal.m);
       await push.subscribe({
         morningHour: m.h,
         morningMinute: m.m,
@@ -205,8 +219,12 @@ export const TrainingAndNotifications = () => {
   const saveTimes = async () => {
     setTimesSaveState("saving");
     try {
-      const m = localToUtc(morningLocal.h, morningLocal.m);
-      const e = localToUtc(eveningLocal.h, eveningLocal.m);
+      const m = push.mode === "native"
+        ? morningLocal
+        : localToUtc(morningLocal.h, morningLocal.m);
+      const e = push.mode === "native"
+        ? eveningLocal
+        : localToUtc(eveningLocal.h, eveningLocal.m);
       await push.saveTimes(m.h, m.m, e.h, e.m, preTrainingMinutes);
       setTimesSaveState("saved");
       toast.success("Zeiten gespeichert.");
@@ -318,15 +336,13 @@ export const TrainingAndNotifications = () => {
             <h2 className="font-heading font-semibold text-lg">Benachrichtigungen</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Drei tägliche Push-Reminder: morgens für deinen Check-in, vor dem Training, abends fürs Journal.
+            Erinnerungen für deinen Check-in, die mentale Vorbereitung und dein Journal.
           </p>
 
           {!push.supported ? (
             <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm text-muted-foreground space-y-3">
               <p>
-                {push.supportReason === "native_shell"
-                  ? "Push für die iOS-App wird für die native App-Store-Version vorbereitet. Web-Push läuft unabhängig davon in der Web-App/PWA."
-                  : push.supportReason === "preview_host"
+                {push.supportReason === "preview_host"
                     ? "Push ist in Lovable-Preview-Umgebungen deaktiviert. Teste Benachrichtigungen später auf rewireperform.com oder lokal."
                     : push.supportReason === "insecure"
                       ? "Push benötigt eine sichere HTTPS-Verbindung."
@@ -348,7 +364,7 @@ export const TrainingAndNotifications = () => {
           ) : !push.enabled ? (
             <Button onClick={handleEnablePush} className="w-full">
               <Bell className="w-4 h-4 mr-2" />
-              Push aktivieren
+              Benachrichtigungen aktivieren
             </Button>
           ) : (
             <div className="space-y-3">
@@ -427,7 +443,7 @@ export const TrainingAndNotifications = () => {
               </Button>
               <Button variant="outline" onClick={handleDisablePush} className="w-full">
                 <BellOff className="w-4 h-4 mr-2" />
-                Push deaktivieren
+                Benachrichtigungen deaktivieren
               </Button>
               <p className="text-xs text-muted-foreground">
                 Reminder werden zur vollen oder halben Stunde gesendet. Pre-Training öffnet direkt deine kurze Vorbereitung.

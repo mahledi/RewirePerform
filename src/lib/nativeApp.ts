@@ -6,7 +6,7 @@ export async function configureNativeShell() {
   if (!Capacitor.isNativePlatform()) return;
 
   try {
-    await StatusBar.setStyle({ style: Style.Dark });
+    await StatusBar.setStyle({ style: Style.Light });
     await StatusBar.setBackgroundColor({ color: "#0e1217" });
     await StatusBar.setOverlaysWebView({ overlay: false });
   } catch (err) {

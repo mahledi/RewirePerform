@@ -36,12 +36,13 @@ npm run app:open:ios
 
 In Xcode:
 
-1. Select the `App` target.
-2. Confirm bundle identifier `com.rewireperform.app`.
-3. Select the Apple Developer team.
-4. Set signing to automatic unless a manual profile is required.
-5. Archive with `Any iOS Device (arm64)`.
-6. Upload through Organizer to App Store Connect.
+1. Use Xcode 26 or newer. Since 28 April 2026, Apple requires iOS submissions to use the iOS 26 SDK or newer.
+2. Select the `App` target.
+3. Confirm bundle identifier `com.rewireperform.app`.
+4. Select the Apple Developer team.
+5. Set signing to automatic unless a manual profile is required.
+6. Archive with `Any iOS Device (arm64)`.
+7. Upload through Organizer to App Store Connect.
 
 If `xcodebuild` reports that only Command Line Tools are active, install/open the full Xcode app and run:
 
@@ -73,7 +74,7 @@ Additional Redirect URLs:
 
 Keep the Lovable preview URL only as a development/preview origin. Production App Store review should use `rewireperform.com`.
 
-## Push Status
+## Reminder Status
 
 Web push already exists:
 
@@ -82,15 +83,17 @@ Web push already exists:
 - Supabase tables: `push_subscriptions`, `notification_log`
 - Edge Functions: `get-vapid-public-key`, `send-daily-reminder`
 
-For App Store V1, push is optional and should not block launch. Native iOS WebView push support is not equivalent to browser Web Push: the native shell must not show a broken web-push activation path. Web/PWA push remains supported on production HTTPS hosts, while native APNs/Capacitor push is a follow-up track.
+The iOS shell uses `@capacitor/local-notifications` instead of browser Web Push. It plans local reminders for the next 56 days, refreshes the plan when the app becomes active, opens only allow-listed app routes, and removes the active account's pending reminders after sign-out/account switches. Web/PWA push remains unchanged on production HTTPS hosts.
 
 Reminder behavior:
 
 - Morning and evening reminders honor saved hour and minute.
 - Pre-training reminders honor the selected lead time, currently 30 or 60 minutes before the saved training time.
+- Native pre-training reminders use the weekly schedule plus dated calendar overrides. Known rest days suppress the reminder; dated training/competition times take precedence.
 - Training weekdays are interpreted in the user's local timezone so a local Monday training remains Monday even when UTC crosses midnight.
 - The Supabase schedule should invoke `send-daily-reminder` every 30 minutes for the half-hour slots to be reliable.
 - Notification logs store send/open/failure status only; no journal text, private reflections, or psychological raw values are included.
+- Native local reminders do not create server `notification_log` delivery/open records. Do not combine local scheduling with measured web-push delivery in evidence claims.
 
 Push QA:
 
@@ -104,6 +107,16 @@ Push QA:
 8. Click the notification and confirm the target route marks the log as `opened`.
 9. Confirm expired subscriptions are removed and logged as `expired_subscription` after send failures.
 
+Native reminder QA on a real iPhone:
+
+1. Grant and deny notification permission in separate clean-install runs.
+2. Verify morning and evening local-time delivery.
+3. Verify 30- and 60-minute pre-training delivery, including a reminder that falls on the previous day.
+4. Verify a rest-day override suppresses pre-training and a timed competition override replaces the weekly time.
+5. Tap each notification and confirm `/dashboard`, `/journal`, and `/pre-training` routing.
+6. Change the coach/team calendar, foreground the app, and confirm pending reminders are refreshed.
+7. Sign out and confirm pending reminders for that account are removed.
+
 ## App Privacy Labels Draft
 
 Declare data collection only for actual production behavior.
@@ -114,7 +127,9 @@ Likely linked to user identity:
 - User content: journal entries, questionnaire free text, feedback messages
 - Health/fitness-related app activity: check-ins, training schedule, program completion
 - Identifiers: Supabase user ID, push endpoint
-- Diagnostics: only if crash/error tooling is later added
+- Diagnostics: filtered Sentry crash/error metadata and incident-only system events
+- Health: user-provided mood, stress, recovery, sleep/readiness and assessment data
+- Fitness: training schedule and competition context
 
 Purposes:
 
@@ -183,10 +198,20 @@ Do not submit for external TestFlight until:
 - `/privacy` and `/support` are reachable.
 - App Privacy Labels match real behavior.
 - Review demo accounts are working.
-- Push is either verified or explicitly marked as post-launch/native-follow-up.
+- Web push and native local reminders are each verified in their real runtime.
+- Account deletion can be initiated in-app and its real retention process matches the privacy policy.
+- The minor/guardian and research-consent rule has been legally and operationally approved.
 
 ## Known V1 Limitations
 
-- Push is prepared and web-tested, but native iOS push may require a dedicated Capacitor push implementation.
+- iOS uses local notifications, not APNs remote push. Local delivery/open status is therefore not present in the server `notification_log`.
 - Store screenshots and final legal review remain owner tasks.
 - Any future brain-tracking/wearable integration must be introduced as a separate, explicit consent-based feature.
+
+## Current Apple Sources
+
+- Submission SDK requirements: https://developer.apple.com/app-store/submitting/
+- App Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
+- Account deletion: https://developer.apple.com/support/offering-account-deletion-in-your-app/
+- App privacy details: https://developer.apple.com/app-store/app-privacy-details/
+- Third-party SDK requirements: https://developer.apple.com/support/third-party-SDK-requirements/

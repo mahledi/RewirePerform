@@ -24,9 +24,12 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     StatusBar: {
-      style: "DARK",
+      style: "LIGHT",
       backgroundColor: "#0e1217",
       overlaysWebView: false,
+    },
+    LocalNotifications: {
+      presentationOptions: ["badge", "banner", "list"],
     },
   },
 };
