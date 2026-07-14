@@ -17,6 +17,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
 import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
+import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 
@@ -965,7 +966,10 @@ const Admin = () => {
 
           {/* PILOT READINESS */}
           <TabsContent value="pilot" className="mt-4">
-            <NlzPilotReadiness />
+            <div className="space-y-4">
+              <NlzPilotReadiness />
+              <EvidenceParticipationGate />
+            </div>
           </TabsContent>
 
           {/* NLZ EVIDENCE */}

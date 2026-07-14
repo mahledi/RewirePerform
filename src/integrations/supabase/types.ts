@@ -1748,6 +1748,10 @@ export type Database = {
         Args: { include_test?: boolean }
         Returns: Json
       }
+      get_admin_evidence_eligibility: {
+        Args: { _include_test?: boolean }
+        Returns: Json
+      }
       get_admin_nlz_evidence_dossier: {
         Args: { cohort_id?: string; include_test?: boolean }
         Returns: Json
@@ -1784,6 +1788,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_coach_evidence_review_context: {
+        Args: { _protocol_version?: string; _team_id: string }
+        Returns: Json
+      }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
       get_nlz_evidence_dossier: {
         Args: { _program_run_id: string }
@@ -1791,6 +1799,27 @@ export type Database = {
       }
       get_nlz_pilot_readiness: {
         Args: { _program_run_id?: string; _team_id?: string }
+        Returns: Json
+      }
+      get_my_evidence_status: {
+        Args: {
+          _day_number: number
+          _event_type: string
+          _program_instance_id: string
+          _protocol_version: string
+        }
+        Returns: Json
+      }
+      get_my_transfer_evidence_summary: {
+        Args: { _program_instance_id: string; _protocol_version?: string }
+        Returns: Json
+      }
+      get_performance_evidence_summary: {
+        Args: {
+          _include_test?: boolean
+          _program_run_id?: string | null
+          _protocol_version?: string
+        }
         Returns: Json
       }
       get_team_program_run_status: {
@@ -1846,6 +1875,52 @@ export type Database = {
           _team_connection?: number
           _variant_used: string
         }
+        Returns: Json
+      }
+      save_daily_tracking_v3: {
+        Args: {
+          _assignment_id: string
+          _comprehension_questions?: Json
+          _comprehension_results?: Json
+          _date: string
+          _day_number: number
+          _energy_level?: number
+          _event_type: string
+          _evidence_domain_id?: string | null
+          _evidence_protocol_version?: string | null
+          _evidence_response?: string | null
+          _evidence_response_duration_ms?: number | null
+          _focus_rating?: number
+          _mood_before?: number
+          _motivation?: number
+          _physical_readiness?: number
+          _pressure?: number
+          _program_instance_id: string
+          _recovery?: number
+          _reflection?: string
+          _sleep_quality?: number
+          _stress?: number
+          _tasks_completed?: Json
+          _team_connection?: number
+          _variant_used: string
+        }
+        Returns: Json
+      }
+      save_coach_evidence_review: {
+        Args: {
+          _completion_duration_ms?: number | null
+          _context: string
+          _observations: Json
+          _program_instance_id: string | null
+          _protocol_version: string
+          _scope: string
+          _team_id: string
+          _week_number: number
+        }
+        Returns: Json
+      }
+      set_evidence_adult_eligibility: {
+        Args: { _program_instance_id: string; _verified: boolean }
         Returns: Json
       }
       set_team_program_run_status: {

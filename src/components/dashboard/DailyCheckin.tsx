@@ -36,6 +36,15 @@ import { pulseQuestionsByContext } from "@/lib/dayContext";
 import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
+import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
+import { getMyEvidenceStatus, type MyEvidenceStatus } from "@/lib/evidenceTracking";
+import {
+  getTransferPulseForDay,
+  isTransferPulseResponse,
+  normalizeEvidenceDurationMs,
+  shouldPreserveReflectionDraft,
+  type TransferPulseResponse,
+} from "@/lib/performanceEvidence";
 
 type EventType = CalendarEventType;
 
@@ -63,6 +72,8 @@ interface CheckinDraft {
   motivation: number | null;
   pressure: number | null;
   teamConnection: number | null;
+  transferPulseResponse?: TransferPulseResponse | null;
+  transferPulseResponseDurationMs?: number | null;
   savedAt: string;
 }
 
@@ -176,10 +187,14 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [motivation, setMotivation] = useState<number | null>(null);
   const [pressure, setPressure] = useState<number | null>(null);
   const [teamConnection, setTeamConnection] = useState<number | null>(null);
+  const [transferPulseResponse, setTransferPulseResponse] = useState<TransferPulseResponse | null>(null);
+  const [transferPulseResponseDurationMs, setTransferPulseResponseDurationMs] = useState<number | null>(null);
+  const [evidenceStatus, setEvidenceStatus] = useState<MyEvidenceStatus | null>(null);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
   const contentScrollRef = useRef<HTMLDivElement>(null);
+  const transferPulseStartedAtRef = useRef<number | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -192,6 +207,35 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     : legacyDraftKey;
   const getCompletedTaskTitles = (taskIds: string[] = completedTasks) =>
     taskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
+  const scheduledTransferPulse = resolved
+    ? getTransferPulseForDay(resolved.matrix.dayNumber, eventType)
+    : null;
+  const activeTransferPulse = scheduledTransferPulse
+    && evidenceStatus?.eligible
+    && evidenceStatus.domainId === scheduledTransferPulse.domainId
+      ? scheduledTransferPulse
+      : null;
+
+  useEffect(() => {
+    if (
+      step === 2
+      && activeTransferPulse
+      && !evidenceStatus?.locked
+      && transferPulseResponse === null
+      && transferPulseStartedAtRef.current === null
+    ) {
+      transferPulseStartedAtRef.current = performance.now();
+    }
+  }, [activeTransferPulse, evidenceStatus?.locked, step, transferPulseResponse]);
+
+  const selectTransferPulseResponse = (response: TransferPulseResponse) => {
+    if (transferPulseResponseDurationMs === null && transferPulseStartedAtRef.current !== null) {
+      setTransferPulseResponseDurationMs(
+        normalizeEvidenceDurationMs(performance.now() - transferPulseStartedAtRef.current),
+      );
+    }
+    setTransferPulseResponse(response);
+  };
 
   useLayoutEffect(() => {
     contentScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -239,6 +283,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const loadDay = async () => {
     if (!user?.id) return;
     setLoadingTasks(true);
+    setEvidenceStatus(null);
+    setTransferPulseResponse(null);
+    setTransferPulseResponseDurationMs(null);
+    transferPulseStartedAtRef.current = null;
     const dateStr = format(date, "yyyy-MM-dd");
 
     const { data: profile } = await supabase
@@ -296,8 +344,55 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         setMotivation(local.motivation ?? null);
         setPressure(local.pressure ?? null);
         setTeamConnection(local.teamConnection ?? null);
+        setTransferPulseResponseDurationMs(
+          normalizeEvidenceDurationMs(local.transferPulseResponseDurationMs),
+        );
       } else if (persistedTaskIds.length > 0) {
         setCompletedTasks(persistedTaskIds);
+      }
+
+      const scheduledPulse = getTransferPulseForDay(result.resolved.matrix.dayNumber, eventType);
+      if (instance?.id && scheduledPulse) {
+        try {
+          const status = await getMyEvidenceStatus({
+            programInstanceId: instance.id,
+            dayNumber: result.resolved.matrix.dayNumber,
+            eventType,
+          });
+          const preserveExistingReflectionDraft = shouldPreserveReflectionDraft({
+            eligible: status.eligible,
+            existingResponse: status.existingResponse,
+            reflection: local?.reflection,
+          });
+          setEvidenceStatus(preserveExistingReflectionDraft
+            ? { ...status, eligible: false, reason: "reflection_draft_preserved" }
+            : status);
+          if (status.existingResponse !== null) {
+            setTransferPulseResponse(status.existingResponse);
+          } else if (!preserveExistingReflectionDraft && isTransferPulseResponse(local?.transferPulseResponse)) {
+            setTransferPulseResponse(local.transferPulseResponse);
+          }
+        } catch (error) {
+          setEvidenceStatus({
+            eligible: false,
+            reason: "unavailable",
+            protocolVersion: scheduledPulse.protocolVersion,
+            domainId: scheduledPulse.domainId,
+            existingResponse: null,
+            locked: false,
+          });
+          void captureAppError({
+            eventName: "evidence_status_load_failed",
+            error,
+            role,
+            route: "/dashboard",
+            isTest: isTestUser,
+            metadata: {
+              day_number: result.resolved.matrix.dayNumber,
+              event_type: eventType,
+            },
+          });
+        }
       }
 
       // ─── Micro-Adjustment Layer ─────────────────────────
@@ -375,6 +470,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     const hasDraft =
       completedTasks.length > 0 ||
       reflection.trim().length > 0 ||
+      transferPulseResponse !== null ||
       [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection]
         .some((value) => value !== null);
     if (!hasDraft) return;
@@ -392,6 +488,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       motivation,
       pressure,
       teamConnection,
+      transferPulseResponse,
+      transferPulseResponseDurationMs,
       savedAt: new Date().toISOString(),
     });
   }, [
@@ -410,6 +508,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     motivation,
     pressure,
     teamConnection,
+    transferPulseResponse,
+    transferPulseResponseDurationMs,
   ]);
 
   const persistTaskProgress = async (taskIds: string[]) => {
@@ -488,7 +588,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         variantUsed: eventType,
         programInstanceId: instance.id,
         completedTaskTitles: completedTitles,
-        reflection: reflection.trim() || null,
+        reflection: activeTransferPulse ? null : reflection.trim() || null,
         moodBefore,
         energyLevel,
         focusRating,
@@ -503,6 +603,14 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           ? comprehensionQuestions as unknown as import("@/integrations/supabase/types").Json
           : undefined,
         comprehensionResults,
+        evidence: activeTransferPulse && transferPulseResponse !== null
+          ? {
+              protocolVersion: activeTransferPulse.protocolVersion,
+              domainId: activeTransferPulse.domainId,
+              response: transferPulseResponse,
+              responseDurationMs: transferPulseResponseDurationMs,
+            }
+          : undefined,
       });
     } catch (error) {
       setSaving(false);
@@ -769,33 +877,53 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                   </motion.div>
                 )}
                 {step === 2 && (
-                  <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                    <h2 className="font-heading text-2xl font-bold mb-2">
-                      Optional: {resolved?.context.checkin.reflectionTitle ?? "Was beeinflusst deinen Zustand heute?"}
-                    </h2>
-                    <p className="text-muted-foreground mb-2 text-sm">
-                      {resolved?.context.checkin.reflectionDescription}
-                    </p>
-                    <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
-                      <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        <span className="text-foreground font-medium">Heute Abend:</span>{" "}
-                        {resolved?.context.checkin.journalReminder}
+                  activeTransferPulse ? (
+                    <motion.div
+                      key="transfer-pulse"
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -50 }}
+                    >
+                      <AthleteTransferPulse
+                        pulse={activeTransferPulse}
+                        value={transferPulseResponse}
+                        onValueChange={selectTransferPulseResponse}
+                        disabled={evidenceStatus?.locked}
+                      />
+                      <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+                        Deine Antwort bleibt für Coaches unsichtbar. Sie kann nur freiwillig und geschützt in
+                        zusammengefasste Auswertungen einfließen.
                       </p>
-                    </div>
-                    <VoiceInput
-                      currentValue={reflection}
-                      onTranscript={(val) => setReflection(val)}
-                      placeholder="Schreibe frei oder sprich ein..."
-                    />
-                    <textarea
-                      data-testid="daily-state-reflection"
-                      value={reflection}
-                      onChange={(e) => setReflection(e.target.value)}
-                      placeholder="Optional. Nur für dich sichtbar."
-                      className="w-full h-32 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </motion.div>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
+                      <h2 className="font-heading text-2xl font-bold mb-2">
+                        Optional: {resolved?.context.checkin.reflectionTitle ?? "Was beeinflusst deinen Zustand heute?"}
+                      </h2>
+                      <p className="text-muted-foreground mb-2 text-sm">
+                        {resolved?.context.checkin.reflectionDescription}
+                      </p>
+                      <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
+                        <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          <span className="text-foreground font-medium">Heute Abend:</span>{" "}
+                          {resolved?.context.checkin.journalReminder}
+                        </p>
+                      </div>
+                      <VoiceInput
+                        currentValue={reflection}
+                        onTranscript={(val) => setReflection(val)}
+                        placeholder="Schreibe frei oder sprich ein..."
+                      />
+                      <textarea
+                        data-testid="daily-state-reflection"
+                        value={reflection}
+                        onChange={(e) => setReflection(e.target.value)}
+                        placeholder="Optional. Nur für dich sichtbar."
+                        className="w-full h-32 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </motion.div>
+                  )
                 )}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
@@ -879,7 +1007,13 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
               const remainingTasks = tasks.filter((task) => !completedTasks.includes(task.id)).length;
-              const blocked = saving || (step === 1 && !pulseComplete) || (step === 3 && !tasksComplete);
+              const transferPulseIncomplete = step === 2
+                && Boolean(activeTransferPulse)
+                && transferPulseResponse === null;
+              const blocked = saving
+                || (step === 1 && !pulseComplete)
+                || transferPulseIncomplete
+                || (step === 3 && !tasksComplete);
               return (
                 <motion.button
                   data-testid={`daily-next-step-${step}`}

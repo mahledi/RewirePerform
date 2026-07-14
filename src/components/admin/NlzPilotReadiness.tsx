@@ -104,11 +104,28 @@ export interface EvidenceDossier {
   privacy_exclusions: string[];
 }
 
+interface PerformanceEvidenceSummary {
+  schema_version: string;
+  protocol_version: string;
+  scope: string;
+  sample: Record<string, Json | undefined>;
+  coverage: Record<string, Json | undefined>;
+  domain_aggregates: Record<string, Json>[];
+  weekly_aggregates: Record<string, Json>[];
+  coach_team_observations: Record<string, Json>[];
+  data_quality: Record<string, Json | undefined>;
+  claim_boundary: Record<string, Json | undefined>;
+  privacy: Record<string, Json | undefined>;
+}
+
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String((error as { message?: unknown } | null)?.message ?? error);
 
 const formatPercent = (value: number | null | undefined) =>
   typeof value === "number" ? `${Math.round(value * 100)} %` : "-";
+
+const jsonNumber = (value: Json | undefined): number | null =>
+  typeof value === "number" ? value : null;
 
 const jsonRecord = <T,>(value: Json | null): T => value as unknown as T;
 
@@ -170,6 +187,7 @@ const NlzPilotReadiness = () => {
   const [runId, setRunId] = useState("");
   const [readiness, setReadiness] = useState<PilotReadiness | null>(null);
   const [dossier, setDossier] = useState<EvidenceDossier | null>(null);
+  const [performanceEvidence, setPerformanceEvidence] = useState<PerformanceEvidenceSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [action, setAction] = useState<string | null>(null);
   const [newRunName, setNewRunName] = useState("");
@@ -210,12 +228,23 @@ const NlzPilotReadiness = () => {
     }
 
     if (chosenRun?.id) {
-      const { data: dossierData, error: dossierError } = await supabase.rpc("get_nlz_evidence_dossier", {
-        _program_run_id: chosenRun.id,
-      });
+      const [dossierResult, performanceResult] = await Promise.all([
+        supabase.rpc("get_nlz_evidence_dossier", { _program_run_id: chosenRun.id }),
+        supabase.rpc("get_performance_evidence_summary", {
+          _program_run_id: chosenRun.id,
+          _include_test: false,
+        }),
+      ]);
+      const { data: dossierData, error: dossierError } = dossierResult;
       setDossier(dossierError ? null : jsonRecord<EvidenceDossier>(dossierData));
+      setPerformanceEvidence(
+        performanceResult.error
+          ? null
+          : jsonRecord<PerformanceEvidenceSummary>(performanceResult.data),
+      );
     } else {
       setDossier(null);
+      setPerformanceEvidence(null);
     }
     setLoading(false);
   }, []);
@@ -351,6 +380,19 @@ const NlzPilotReadiness = () => {
       ...dossier.outcomes.validated_pre_post,
       ...dossier.outcomes.validated_pre_mid,
     ]);
+  };
+
+  const exportPerformanceEvidence = () => {
+    if (!performanceEvidence || !selectedRun) return;
+    const prefix = `nlz_${selectedRun.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}_56d_evidence`;
+    downloadBlob(`${prefix}.json`, JSON.stringify(performanceEvidence, null, 2), "application/json");
+    downloadCsv(`${prefix}_coverage.csv`, [{
+      ...performanceEvidence.sample,
+      ...performanceEvidence.coverage,
+    } as Record<string, unknown>]);
+    downloadCsv(`${prefix}_domains.csv`, performanceEvidence.domain_aggregates as Record<string, unknown>[]);
+    downloadCsv(`${prefix}_weekly.csv`, performanceEvidence.weekly_aggregates as Record<string, unknown>[]);
+    downloadCsv(`${prefix}_coach_team.csv`, performanceEvidence.coach_team_observations as Record<string, unknown>[]);
   };
 
   if (loading && teams.length === 0) {
@@ -494,6 +536,37 @@ const NlzPilotReadiness = () => {
             </Card>
           </div>
 
+          {performanceEvidence ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">56-Tage Transfer-Coverage</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+                <Metric
+                  label="Erwartet"
+                  value={jsonNumber(performanceEvidence.coverage.expected_transfer_observations) ?? "-"}
+                />
+                <Metric
+                  label="Erhoben"
+                  value={jsonNumber(performanceEvidence.coverage.collected_transfer_observations) ?? "-"}
+                />
+                <Metric
+                  label="Fehlend"
+                  value={jsonNumber(performanceEvidence.coverage.missing_transfer_observations) ?? "-"}
+                />
+                <Metric
+                  label="Coverage"
+                  value={formatPercent(jsonNumber(performanceEvidence.coverage.transfer_completion_rate))}
+                />
+                <Metric
+                  label="Ruhetag-Skips"
+                  value={jsonNumber(performanceEvidence.coverage.rest_day_pulses_skipped) ?? "-"}
+                  detail="bewusst nicht erhoben"
+                />
+              </CardContent>
+            </Card>
+          ) : null}
+
           <Card>
             <CardHeader><CardTitle className="text-base">Fehlende Zuordnungen und Messungen</CardTitle></CardHeader>
             <CardContent className="grid gap-5 md:grid-cols-3">
@@ -508,6 +581,9 @@ const NlzPilotReadiness = () => {
             <CardContent className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={exportDossier} disabled={!dossier}><Download className="mr-2 h-4 w-4" />JSON Dossier</Button>
               <Button variant="outline" onClick={exportCsvPackage} disabled={!dossier}><Download className="mr-2 h-4 w-4" />CSV Paket</Button>
+              <Button variant="outline" onClick={exportPerformanceEvidence} disabled={!performanceEvidence}>
+                <Download className="mr-2 h-4 w-4" />56d Evidence
+              </Button>
               <Button onClick={createSnapshot} disabled={!dossier || action !== null}>
                 {action === "snapshot" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Evidence Snapshot

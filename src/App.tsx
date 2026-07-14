@@ -15,6 +15,8 @@ import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
 
 const queryClient = new QueryClient();
+const evidencePreviewEnabled = import.meta.env.DEV
+  || import.meta.env.VITE_ENABLE_EVIDENCE_PREVIEW === "true";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const Demo = lazy(() => import("./demo/DemoPage.tsx"));
@@ -37,6 +39,9 @@ const AdminQA = lazy(() => import("./pages/AdminQA.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
+const EvidencePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/EvidencePreview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -45,7 +50,8 @@ const PageFallback = () => (
 
 const AppRoutes = () => {
   const location = useLocation();
-  const isDemoRoute = location.pathname === "/demo";
+  const isEvidencePreview = EvidencePreview !== null && location.pathname === "/internal/evidence-preview";
+  const isDemoRoute = location.pathname === "/demo" || isEvidencePreview;
 
   if (isDemoRoute) {
     return (
@@ -55,6 +61,7 @@ const AppRoutes = () => {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/demo" element={<Demo />} />
+            {EvidencePreview && <Route path="/internal/evidence-preview" element={<EvidencePreview />} />}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

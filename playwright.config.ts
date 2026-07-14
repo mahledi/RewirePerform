@@ -15,7 +15,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command: "npm run build && npm run preview -- --host 127.0.0.1 --port 4173",
+    command: "VITE_ENABLE_EVIDENCE_PREVIEW=true VITE_SUPABASE_URL=https://test.supabase.co VITE_SUPABASE_PROJECT_ID=test VITE_SUPABASE_PUBLISHABLE_KEY=test-key VITE_APP_ENV=test npm run build && npm run preview -- --host 127.0.0.1 --port 4173",
     url: "http://127.0.0.1:4173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

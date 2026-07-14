@@ -1,10 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const DATA_CONTRIBUTION_CONSENT_VERSION = "data_contribution_v1_2026_06";
+export const DATA_CONTRIBUTION_CONSENT_VERSION = "data_contribution_v2_2026_07";
 
 export type DataContributionConsentState = boolean | null;
 
-const pendingConsentKey = (userId: string) => `rewire:pending_data_contribution_consent:${userId}`;
+const pendingConsentKey = (userId: string) =>
+  `rewire:pending_data_contribution_consent:${DATA_CONTRIBUTION_CONSENT_VERSION}:${userId}`;
 
 export const isConsentSchemaMissingError = (error: unknown): boolean => {
   const maybeError = error as { code?: string; message?: string } | null;
@@ -44,8 +45,10 @@ export const getPendingDataContributionConsent = (userId: string): boolean | nul
   try {
     const raw = localStorage.getItem(pendingConsentKey(userId));
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { consent?: unknown };
-    return typeof parsed.consent === "boolean" ? parsed.consent : null;
+    const parsed = JSON.parse(raw) as { consent?: unknown; version?: unknown };
+    return parsed.version === DATA_CONTRIBUTION_CONSENT_VERSION && typeof parsed.consent === "boolean"
+      ? parsed.consent
+      : null;
   } catch {
     return null;
   }

@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  DATA_CONTRIBUTION_CONSENT_VERSION,
   getPendingDataContributionConsent,
   isConsentSchemaMissingError,
   rememberPendingDataContributionConsent,
@@ -39,6 +40,7 @@ const AccountSettings = () => {
   const [savingProfile, setSavingProfile] = useState(false);
   const [dataContributionConsent, setDataContributionConsent] = useState<DataContributionConsentState>(null);
   const [dataContributionPending, setDataContributionPending] = useState(false);
+  const [dataContributionNeedsRenewal, setDataContributionNeedsRenewal] = useState(false);
   const [savingDataContribution, setSavingDataContribution] = useState(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [deletionDialogOpen, setDeletionDialogOpen] = useState(false);
@@ -70,11 +72,13 @@ const AccountSettings = () => {
           if (active) {
             setDataContributionConsent(syncedConsent);
             setDataContributionPending(false);
+            setDataContributionNeedsRenewal(false);
           }
         } catch (error) {
           if (!active) return;
           setDataContributionConsent(pendingConsent);
           setDataContributionPending(true);
+          setDataContributionNeedsRenewal(false);
           if (!isConsentSchemaMissingError(error)) {
             toast.error("Der vorgemerkte Datenbeitrag konnte noch nicht synchronisiert werden.");
           }
@@ -82,18 +86,21 @@ const AccountSettings = () => {
       } else {
         const { data, error } = await supabase
           .from("profiles")
-          .select("data_contribution_consent")
+          .select("data_contribution_consent,data_contribution_consent_version")
           .eq("id", user.id)
           .maybeSingle();
         if (!active) return;
         if (error && !isConsentSchemaMissingError(error)) {
           toast.error("Die Tracking-Einstellung konnte nicht geladen werden.");
         } else if (!error) {
-          setDataContributionConsent(
-            typeof data?.data_contribution_consent === "boolean"
+          const needsRenewal = data?.data_contribution_consent === true
+            && data.data_contribution_consent_version !== DATA_CONTRIBUTION_CONSENT_VERSION;
+          setDataContributionNeedsRenewal(needsRenewal);
+          setDataContributionConsent(needsRenewal
+            ? null
+            : typeof data?.data_contribution_consent === "boolean"
               ? data.data_contribution_consent
-              : null,
-          );
+              : null);
           setDataContributionPending(false);
         }
       }
@@ -125,12 +132,14 @@ const AccountSettings = () => {
       await saveDataContributionConsent(user.id, consent);
       setDataContributionConsent(consent);
       setDataContributionPending(false);
+      setDataContributionNeedsRenewal(false);
       toast.success(consent ? "Datenbeitrag aktiviert." : "Datenbeitrag deaktiviert.");
     } catch (error) {
       if (isConsentSchemaMissingError(error)) {
         rememberPendingDataContributionConsent(user.id, consent);
         setDataContributionConsent(consent);
         setDataContributionPending(true);
+        setDataContributionNeedsRenewal(false);
         toast.info("Deine Entscheidung wird gespeichert, sobald das System-Update aktiv ist.");
       } else {
         toast.error("Die Entscheidung konnte gerade nicht gespeichert werden.");
@@ -289,6 +298,18 @@ const AccountSettings = () => {
               Gruppenstatistiken können nach einer Account-Löschung nur erhalten bleiben, wenn sie keinen Rückschluss auf dich
               zulassen. Gruppenwerte werden erst ab mindestens fünf Personen gebildet.
             </div>
+
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Für Teilnehmende unter 18 aktiviert diese Einstellung keine zusätzliche Evidence-Erhebung. Dafür ist ein
+              gesonderter, geprüfter Ablauf mit Zustimmung einer sorgeberechtigten Person und eigener Zustimmung des
+              Jugendlichen erforderlich.
+            </p>
+
+            {dataContributionNeedsRenewal && (
+              <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-foreground">
+                Der Datenumfang wurde präzisiert. Bitte entscheide auf Grundlage der aktuellen Erklärung erneut.
+              </p>
+            )}
 
             <p className="text-xs text-muted-foreground">
               {savingDataContribution

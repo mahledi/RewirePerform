@@ -15,13 +15,14 @@
     "app:verify:embedded": "node scripts/verify-embedded-ios-target.mjs",
     "release:verify:production": "node scripts/validate-release-target.mjs --expected production --mode production",
     "release:verify:staging": "node scripts/validate-release-target.mjs --expected staging --mode staging",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false && tsc -p tsconfig.node.json --noEmit --pretty false",
     "validate:env": "node scripts/validate-env.mjs",
-    "ci": "npm run validate:env -- --example-only && npm run typecheck && npm run build && npm test && npm run app:verify",
+    "ci": "npm run validate:env -- --example-only && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run app:verify",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:evidence:sql": "node scripts/verify-performance-evidence-sql.mjs",
     "test:e2e": "playwright test",
     "test:staging:plan": "node scripts/nlz-staging-e2e.mjs --plan",
     "test:staging:execute": "node scripts/nlz-staging-e2e.mjs --execute"
@@ -88,6 +89,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.16",

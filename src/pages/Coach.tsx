@@ -18,6 +18,7 @@ import TeamManagement from "@/components/coach/TeamManagement";
 import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
 import CoachToolkit from "@/components/coach/CoachToolkit";
+import CoachEvidenceReviewPanel from "@/components/coach/CoachEvidenceReviewPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 
@@ -103,6 +104,13 @@ const TabButton = ({
     <Icon className="w-3.5 h-3.5" />
     {label}
   </button>
+);
+
+const EvidenceSection = ({ teamId }: { teamId: string }) => (
+  <div className="min-w-0 space-y-6">
+    <CoachEvidenceReviewPanel teamId={teamId} />
+    <TeamEvidence teamId={teamId} />
+  </div>
 );
 
 
@@ -233,7 +241,7 @@ const Coach = () => {
       case "mental":
         return <TeamMentalState teamId={selectedTeam} />;
       case "evidence":
-        return <TeamEvidence teamId={selectedTeam} />;
+        return <EvidenceSection teamId={selectedTeam} />;
       case "toolkit":
         return <CoachToolkit teamId={selectedTeam} />;
       default:
@@ -258,7 +266,7 @@ const Coach = () => {
         )}
         {visitedTabs.has("evidence") && (
           <div className={tab === "evidence" ? "block" : "hidden"}>
-            <TeamEvidence key={`evidence-${selectedTeam}`} teamId={selectedTeam} />
+            <EvidenceSection key={`evidence-${selectedTeam}`} teamId={selectedTeam} />
           </div>
         )}
         {visitedTabs.has("toolkit") && (

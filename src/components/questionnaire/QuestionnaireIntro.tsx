@@ -15,6 +15,7 @@ import {
 } from "@/content/questionnaireV2";
 import type { Json } from "@/integrations/supabase/types";
 import {
+  DATA_CONTRIBUTION_CONSENT_VERSION,
   isConsentSchemaMissingError,
   rememberPendingDataContributionConsent,
   saveDataContributionConsent,
@@ -50,13 +51,17 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
         const syncedPending = await syncPendingDataContributionConsent(user.id).catch(() => null);
         const { data: consentData } = await supabase
           .from("profiles")
-          .select("data_contribution_consent")
+          .select("data_contribution_consent, data_contribution_consent_version")
           .eq("id", user.id)
           .maybeSingle();
+        const hasCurrentConsent = consentData?.data_contribution_consent_version
+          === DATA_CONTRIBUTION_CONSENT_VERSION;
         setConsent(
           typeof syncedPending === "boolean"
             ? syncedPending
-            : typeof consentData?.data_contribution_consent === "boolean"
+            : consentData?.data_contribution_consent === false
+              ? false
+              : hasCurrentConsent && consentData?.data_contribution_consent === true
               ? consentData.data_contribution_consent
               : null,
         );
@@ -209,11 +214,12 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                 {showDataDetails && (
                   <div className="mt-3 space-y-2 rounded-xl border border-border/50 bg-background/40 p-3 text-xs leading-relaxed text-muted-foreground">
                     <p>
-                      Relevant sind vor allem Fragebogenantworten, Check-ins, Journaleinträge, Trainingszeiten und Programmfortschritt.
+                      Relevant sind vor allem Fragebogenantworten, Check-ins, Trainingszeiten und Programmfortschritt.
                       Daraus entstehen Hinweise für Aufgaben, Rückblick, Erinnerungen und Fortschrittsauswertung.
                     </p>
                     <p>
-                      Sensible freie Texte werden mit besonderer Zurückhaltung behandelt: Sie sind für deine Reflexion gedacht und werden Coaches nicht als Rohinhalt angezeigt.
+                      Journale und freie Reflexionen werden nur für dich gespeichert. Sie werden nicht analysiert, nicht von
+                      einer KI verarbeitet und weder Coaches noch Evidence-Auswertungen als Inhalt zugänglich gemacht.
                     </p>
                     <p>
                       Es geht nicht darum, dich zu bewerten. Die Daten sollen nachvollziehbar machen, wo du startest, wie du arbeitest und welche nächsten Schritte sinnvoll sind.
@@ -272,17 +278,19 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                       Hilf mit, RewirePerform für zukünftige Athleten besser zu machen
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Deine Nutzung kann uns helfen zu verstehen, welche mentalen Trainingsbausteine wirklich tragen:
-                      welche Aufgaben abgeschlossen werden, wo Fortschritt sichtbar wird und welche Muster Teams unterstützen.
+                      Deine Nutzung kann uns helfen zu untersuchen, welche Aufgaben abgeschlossen werden, wo beobachtete
+                      Veränderungen sichtbar sind und wie vollständig die Daten über 56 Tage bleiben.
                     </p>
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    Wenn du zustimmst, dürfen wir anonymisierte oder aggregierte Daten nutzen, um RewirePerform zu verbessern
-                    und die Wirkung des Projekts in Präsentationen, Pilotberichten und Gesprächen mit Teams verständlich darzustellen.
+                    Wenn du zustimmst, dürfen strukturierte Nutzungs-, Fortschritts- und kurze Transferdaten erhoben und
+                    gruppiert ausgewertet werden. Solche Daten dokumentieren Beobachtungen; sie beweisen allein weder Ursache
+                    noch sportliche Leistungssteigerung.
                   </p>
                   <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
-                    Private Journaltexte, freie Antworten und persönliche Einzelprofile werden dafür nicht identifizierbar verwendet.
-                    Du kannst ablehnen und RewirePerform trotzdem nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
+                    Private Journaltexte und freie Antworten werden dafür nie verwendet. Bei Minderjährigen aktiviert diese
+                    Zustimmung allein keine zusätzliche Evidence-Erhebung. Du kannst ablehnen und RewirePerform trotzdem
+                    vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
                   </p>
                 </div>
               </div>
@@ -321,7 +329,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           )}
 
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Deine Antworten sind vertraulich. Optionale Wirkungsdaten werden nur nach deiner Zustimmung für Präsentationen und Pilotberichte genutzt.
+            Deine Antworten sind vertraulich. Optionale Evaluationsdaten werden nur mit aktueller Zustimmung gruppiert ausgewertet.
           </p>
 
           {isTestUser && (

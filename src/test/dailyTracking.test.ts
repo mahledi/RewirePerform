@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { createDailyTrackingSaver, type DailyTrackingInput } from "@/lib/dailyTracking";
+import {
+  buildDailyTrackingRpcArgs,
+  createDailyTrackingSaver,
+  type DailyTrackingInput,
+} from "@/lib/dailyTracking";
 
 const input: DailyTrackingInput = {
   assignmentId: "assignment-1",
@@ -53,5 +57,37 @@ describe("daily tracking orchestration", () => {
 
     expect(saveAtomic).toHaveBeenNthCalledWith(1, input);
     expect(saveAtomic).toHaveBeenNthCalledWith(2, input);
+  });
+
+  it("maps evidence into the atomic v3 RPC without leaking reflection text", () => {
+    const args = buildDailyTrackingRpcArgs({
+      ...input,
+      reflection: null,
+      evidence: {
+        protocolVersion: "56d-transfer-v1-2026-07",
+        domainId: "attention_return",
+        response: "not_observed",
+        responseDurationMs: 8123,
+      },
+    });
+
+    expect(args).toMatchObject({
+      _assignment_id: "assignment-1",
+      _program_instance_id: "instance-1",
+      _evidence_protocol_version: "56d-transfer-v1-2026-07",
+      _evidence_domain_id: "attention_return",
+      _evidence_response: "not_observed",
+      _evidence_response_duration_ms: 8123,
+      _reflection: null,
+    });
+  });
+
+  it("keeps ordinary and minor-safe daily saves free of evidence fields", () => {
+    expect(buildDailyTrackingRpcArgs(input)).toMatchObject({
+      _evidence_protocol_version: null,
+      _evidence_domain_id: null,
+      _evidence_response: null,
+      _evidence_response_duration_ms: null,
+    });
   });
 });

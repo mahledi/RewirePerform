@@ -1,6 +1,7 @@
 import type { Json } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { upsertTodaySnapshot } from "@/lib/programProgress";
+import type { EvidenceDomainId, TransferPulseResponse } from "@/lib/performanceEvidence";
 
 export interface DailyTrackingComprehensionResult {
   questionId: string;
@@ -30,6 +31,12 @@ export interface DailyTrackingInput {
   teamConnection: number | null;
   comprehensionQuestions?: Json;
   comprehensionResults?: DailyTrackingComprehensionResult[];
+  evidence?: {
+    protocolVersion: string;
+    domainId: EvidenceDomainId;
+    response: TransferPulseResponse;
+    responseDurationMs: number | null;
+  };
 }
 
 export interface DailyTrackingSaveResult {
@@ -51,8 +58,7 @@ export const createDailyTrackingSaver = (dependencies: DailyTrackingDependencies
     return { payload: data, snapshotUpdated: snapshot !== null };
   };
 
-const saveAtomic = async (input: DailyTrackingInput) => {
-  const { data, error } = await supabase.rpc("save_daily_tracking_v2", {
+export const buildDailyTrackingRpcArgs = (input: DailyTrackingInput) => ({
     _assignment_id: input.assignmentId,
     _date: input.date,
     _event_type: input.eventType,
@@ -75,7 +81,14 @@ const saveAtomic = async (input: DailyTrackingInput) => {
     _comprehension_results: input.comprehensionResults
       ? input.comprehensionResults as unknown as Json
       : null,
-  });
+    _evidence_protocol_version: input.evidence?.protocolVersion ?? null,
+    _evidence_domain_id: input.evidence?.domainId ?? null,
+    _evidence_response: input.evidence ? String(input.evidence.response) : null,
+    _evidence_response_duration_ms: input.evidence?.responseDurationMs ?? null,
+});
+
+const saveAtomic = async (input: DailyTrackingInput) => {
+  const { data, error } = await supabase.rpc("save_daily_tracking_v3", buildDailyTrackingRpcArgs(input));
   return { data, error };
 };
 
