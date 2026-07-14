@@ -21,14 +21,15 @@
 - Native lokale Erinnerungen sind fuer Check-in, Journal und Pre-Training implementiert. Die 56-Tage-Planung unterdrueckt bekannte Ruhetage und uebernimmt konkrete Wettkampf-/Trainingszeiten.
 - Der synthetische E2E-Testplan prueft Athlete-/Coach-/Admin-/Outsider-Grenzen sowie Training, Ruhetag und Wettkampf. Sein Plan-Modus bleibt netzwerkfrei; Remote-Ausfuehrung ist technisch gesperrt, bis ein neues Staging-Projekt explizit freigegeben und eingebunden ist.
 - Die Production-Migrationshistorie enthaelt jetzt exakt `20260710120000`, `20260710130000`, `20260713140500`, `20260714084351` und die Advisor-Haertung `20260714104145`. Schema-, Runtime- und Bestandspruefungen sind bestanden; die vorhandenen Account- und Tracking-Zeilenzahlen blieben unveraendert.
-- `delete-account` Version 1 ist auf Production `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`; der destruktive Wegwerfaccount-Test bleibt bewusst bei Mahle.
+- `delete-account` Version 1 ist auf Production `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`.
+- Der destruktive Athlet-in-Team-Test bestand am 14. Juli 2026: Function und Auth meldeten erfolgreiche Loeschung, der erneute Login scheiterte, der Bestand fiel kontrolliert von 8 auf 7 Accounts/Profile und die accountbezogene Auth-, Produkt- und Referenzpruefung ergab jeweils 0 Restzeilen. Evidenz: `docs/ACCOUNT_DELETION_PRODUCTION_VERIFICATION_2026-07-14.md`.
 - Vor dem Production-Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt. Der Schluessel liegt ausschliesslich im macOS-Schluesselbund.
 
 ## Rote Gates vor TestFlight
 
 1. **Xcode 26 fehlt auf dem Mac.** Nur Command Line Tools sind installiert. Simulator, Device-Build, Archive, Privacy Report und Upload konnten deshalb nicht ausgefuehrt werden.
 2. **Production-Zuordnung ist geklaert, Staging fehlt (`BD-01`).** Mahle hat am 14. Juli 2026 `bqsbxesmybthwtxmowfz` (`RewirePerform real`) als aktives Production-Projekt bestaetigt; die Supabase-Projektmetadaten bestaetigen Namen, Ref und gesunden Status. `towgvykgezrmkbyudjen` ist ausdruecklich stillgelegt, ein neues Staging existiert noch nicht. Site URL, iOS-Redirect-URLs und die Vercel-Env-Scope-Zuordnung muessen vor Release weiterhin im jeweiligen Dashboard geprueft werden.
-3. **Der destruktive Account-Loeschtest ist noch offen (`BD-04`).** Backend, Edge Function und UI-Code sind aktiviert beziehungsweise mergefertig, aber Mahle muss einen neuen Wegwerfaccount registrieren und in der Live-App loeschen. Danach sind Auth-, Domain-, Fremddaten-, Aggregate- und Log-Nachweise zu pruefen. Sentry-Aufbewahrung, Backup-Loeschfrist, Privacy-Text und rechtliche Endpruefung bleiben vor der Store-Aussage offen.
+3. **Account-Loeschung ist fuer den Athlet-in-Team-Pfad live bestaetigt; Restfaelle und Retention bleiben offen (`BD-04`).** Der verifizierte Test entfernte Auth-, Profil-, Teammitgliedschafts-, Programm-, Check-in- und Fragebogendaten ohne Restreferenz. Ein destruktiver Coach-Transferfall und ein Fall mit bereits erzeugtem anonymem Aggregat sind noch nicht live ausgefuehrt. Sentry-Aufbewahrung, Backup-Loeschfrist, Provider-Log-Retention, Privacy-Text und rechtliche Endpruefung bleiben vor der Store-Aussage offen.
 4. **Minderjaehrigen-/Research-Consent ist offen (`BD-05`).** Die Zielgruppe umfasst Minderjaehrige und das Produkt erhebt psychologisch sensible Verlaufsdaten. Altersgrenze, Erziehungsberechtigtenprozess, Forschungsabgrenzung und Rechtsgrundlage brauchen eine bestaetigte Regel.
 5. **Native Reminder sind noch nicht auf einem iPhone verifiziert.** Die lokale iOS-Implementierung und ihre Unit-Tests sind vorhanden. Berechtigungsdialog, Scheduling, Zustellung, Tap-Routing, Kalender-Resync und Abmelden muessen mit Xcode und einem echten Geraet bestaetigt werden.
 6. **Echter Geraetetest fehlt.** Login, E-Mail-Bestaetigung, Session-Restore, Voice, Offline/Retry, Check-in, Journal, Kalender, Coach-Rolle und App-Neustart muessen auf mindestens einem echten iPhone geprueft werden.
@@ -62,7 +63,7 @@ Nicht als Apple-`Tracking` deklarieren, solange keine Daten mit Drittanbieter-Da
 
 ## Verbindlicher Einreichungsweg
 
-1. Den manuellen BD-04-Loeschtest abschliessen und BD-05 mit passender rechtlicher/fachlicher Pruefung schliessen.
+1. Die offenen BD-04-Restfaelle und Retentionsthemen abschliessen und BD-05 mit passender rechtlicher/fachlicher Pruefung schliessen.
 2. Xcode 26 installieren, Developer Team setzen und `npm run app:build` ausfuehren.
 3. Xcode Privacy Report erzeugen und gegen Manifest sowie App Store Connect abgleichen.
 4. Debug-Build im Simulator und Release-Build auf echtem iPhone testen.
