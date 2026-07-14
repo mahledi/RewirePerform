@@ -33,7 +33,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: 8. Juni 2026. Diese Seite erklärt ehrlich, welche Daten RewirePerform erhebt, warum,
+          Stand: 14. Juli 2026. Diese Seite erklärt ehrlich, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert. Vor App-Store-Veröffentlichung wird der Text juristisch final geprüft.
         </p>
@@ -161,7 +161,7 @@ const Privacy = () => {
             <ul className="space-y-2">
               <li><span className="text-foreground">Auskunft (Art. 15):</span> Du kannst eine Kopie aller gespeicherten Daten anfordern.</li>
               <li><span className="text-foreground">Berichtigung (Art. 16):</span> Falsche Angaben korrigieren wir auf Wunsch.</li>
-              <li><span className="text-foreground">Löschung (Art. 17):</span> Du kannst dein Konto und alle zugehörigen Daten jederzeit löschen lassen.</li>
+              <li><span className="text-foreground">Löschung (Art. 17):</span> Unter „Einstellungen → Konto & Daten“ kannst du dein Konto und die zugehörigen personenbezogenen Daten direkt löschen.</li>
               <li><span className="text-foreground">Datenübertragbarkeit (Art. 20):</span> Export deiner Daten in einem maschinenlesbaren Format.</li>
               <li><span className="text-foreground">Widerruf (Art. 7 Abs. 3):</span> Einwilligungen kannst du jederzeit widerrufen, ohne Begründung, ohne Nachteil.</li>
               <li><span className="text-foreground">Beschwerde (Art. 77):</span> Bei der zuständigen Datenschutz-Aufsichtsbehörde.</li>
@@ -171,9 +171,11 @@ const Privacy = () => {
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Speicherdauer</h2>
             <p>
-              Programmdaten bleiben gespeichert, solange dein Account aktiv ist. Nach Account-Löschung werden
-              personenbezogene Daten innerhalb von 30 Tagen vollständig entfernt. Bereits zuvor gebildete,
-              anonymisierte Aggregate enthalten keinen Personenbezug mehr und bleiben bestehen.
+              Programmdaten bleiben gespeichert, solange dein Account aktiv ist. Bei der Account-Löschung werden dein
+              Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. Technisch getrennte
+              Sicherungskopien werden innerhalb ihrer Aufbewahrungsfrist von höchstens 30 Tagen automatisch überschrieben
+              und nicht weiter aktiv genutzt. Bereits zuvor mit Einwilligung gebildete Gruppenstatistiken können bestehen
+              bleiben, wenn sie vollständig aggregiert sind und keinen Rückschluss auf einzelne Personen zulassen.
             </p>
           </section>
 

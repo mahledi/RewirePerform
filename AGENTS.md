@@ -23,7 +23,7 @@ Eine niedrigere Ebene darf keine hoehere ueberschreiben. Auch ein neuer Auftrag 
 
 - Nicht direkt auf `main` arbeiten.
 - Kein Push, Merge, Deploy, Domain-/App-Store-Schritt oder produktiver Netzwerkzugriff ohne Mahles Freigabe.
-- Keine Migration anwenden und keine Auth-, RLS-, Consent-, Account-Loesch- oder sensiblen Datenfluesse aendern, solange `BLOCKING_DECISIONS.md` offen ist.
+- Keine Migration anwenden und keine Auth-, RLS-, Consent-, Account-Loesch- oder sensiblen Datenfluesse aendern, solange die jeweils einschlaegige Entscheidung in `BLOCKING_DECISIONS.md` dies blockiert.
 - Keine Secrets, Passwoerter, Service Keys oder privaten Athleteninhalte ausgeben, loggen oder committen.
 - Coaches erhalten keine Journaltexte, Freitexte, Rohantworten, Einzel-Check-ins oder individuellen psychologischen Scores.
 - Keine Diagnose, Heil-, Therapie-, medizinische oder kausale Wirksamkeitsbehauptung erfinden.

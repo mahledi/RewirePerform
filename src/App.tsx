@@ -26,6 +26,8 @@ const Coach = lazy(() => import("./pages/Coach.tsx"));
 const DeepProfile = lazy(() => import("./pages/DeepProfile.tsx"));
 const Progress = lazy(() => import("./pages/Progress.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings.tsx"));
+const AccountDeleted = lazy(() => import("./pages/AccountDeleted.tsx"));
 const Journal = lazy(() => import("./pages/Journal.tsx"));
 const JournalHistory = lazy(() => import("./pages/JournalHistory.tsx"));
 const PreTraining = lazy(() => import("./pages/PreTraining.tsx"));
@@ -77,6 +79,7 @@ const AppRoutes = () => {
             <Route path="/coach-pitch" element={<Presentation />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/account-deleted" element={<AccountDeleted />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/questionnaire" element={
               <ProtectedRoute><Questionnaire /></ProtectedRoute>
@@ -98,6 +101,9 @@ const AppRoutes = () => {
             } />
             <Route path="/settings" element={
               <ProtectedRoute><Settings /></ProtectedRoute>
+            } />
+            <Route path="/settings/account" element={
+              <ProtectedRoute><AccountSettings /></ProtectedRoute>
             } />
             <Route path="/journal" element={
               <ProtectedRoute><Journal /></ProtectedRoute>

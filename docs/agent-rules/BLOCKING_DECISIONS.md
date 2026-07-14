@@ -31,12 +31,12 @@ Diese Entscheidungen sind ungelöst. Agenten duerfen sie weder annehmen noch aut
 
 ## BD-04 - Account-Loeschung
 
-- Bekannt: Privacy/Settings versprechen vollstaendige Loeschung binnen 48 Stunden.
-- Unsicher: technisch-organisatorische Garantie und Snapshot-Behandlung.
-- Betroffen: Settings, Support, Auth-Daten, Domain-Tabellen, App Store.
-- Erlaubt: read-only Audit und Prozessentwurf.
-- Blockiert: Implementierung, echte Loeschung, finale Store-Aussage.
-- Mahle liefert: gewuenschter Self-Service-/Adminprozess und operative Verantwortung.
+- Status: am 14. Juli 2026 fuer die lokale Implementierung geklaert; Remote-Aktivierung bleibt blockiert.
+- Entschieden: Self-Service in der App, erneute Authentifizierung, direkte Loeschung personenbezogener Quelldaten, Teamtransfer vor Coach-Loeschung und Erhalt ausschliesslich nicht rueckbeziehbarer consent-basierter Aggregate.
+- Operative Verantwortung: automatisierter App-/Edge-Function-/Auth-Ablauf; kein Feedback- oder Supportformular als regulaerer Loeschweg.
+- Source of Truth: `docs/ACCOUNT_DELETION_CONTRACT_2026-07-14.md`.
+- Erlaubt: lokale UI-, Auth-, Function-, Migrations- und Testimplementierung gemaess dem Vertrag.
+- Blockiert: Migration-Apply, Function-Deploy, echte Loeschung, finale Store-Aussage und Production-Claim bis `BD-01`, Backup-Konfiguration und rechtliche Endpruefung bestaetigt sind.
 
 ## BD-05 - Minderjaehrigen-Consent
 

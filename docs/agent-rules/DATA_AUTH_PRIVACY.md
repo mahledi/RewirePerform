@@ -17,6 +17,6 @@ Quelle: aktive `RP-PR-*`, Privacy- und Tracking-Grenzen. `BD-01`, `BD-02`, `BD-0
 
 ## Vollstaendig blockiert
 
-Bis Mahle die Blocking Decisions loest: keine Production-/Supabase-Aktion, Migration, Auth-/RLS-Aenderung, Consent-Logik, Account-Loeschung, Minderjaehrigen-Einwilligung oder Erweiterung sensibler Coach-/Athleten-Datenfluesse.
+Solange die jeweils einschlaegige Blocking Decision ungeloest ist: keine Production-/Supabase-Aktion, Migration, Auth-/RLS-Aenderung, Consent-Logik, Account-Loeschung, Minderjaehrigen-Einwilligung oder Erweiterung sensibler Coach-/Athleten-Datenfluesse. Teilfreigaben und verbleibende Remote-Gates stehen verbindlich in `BLOCKING_DECISIONS.md`.
 
 Auch bei lokaler Planung niemals Secrets, Passwoerter oder reale private Daten ausgeben oder committen.
