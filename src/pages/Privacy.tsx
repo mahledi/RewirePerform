@@ -172,9 +172,10 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Speicherdauer</h2>
             <p>
               Programmdaten bleiben gespeichert, solange dein Account aktiv ist. Bei der Account-Löschung werden dein
-              Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. Technisch getrennte
-              Sicherungskopien werden innerhalb ihrer Aufbewahrungsfrist von höchstens 30 Tagen automatisch überschrieben
-              und nicht weiter aktiv genutzt. Bereits zuvor mit Einwilligung gebildete Gruppenstatistiken können bestehen
+              Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. Soweit Daten vorübergehend in
+              technisch notwendigen Sicherungskopien verbleiben, sind sie vom aktiven System getrennt und für Produkt- oder
+              Analysezwecke gesperrt. Sie werden gelöscht, sobald der Sicherungszweck und etwaige gesetzliche
+              Aufbewahrungspflichten entfallen. Bereits zuvor mit Einwilligung gebildete Gruppenstatistiken können bestehen
               bleiben, wenn sie vollständig aggregiert sind und keinen Rückschluss auf einzelne Personen zulassen.
             </p>
           </section>
