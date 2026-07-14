@@ -16,6 +16,13 @@ const sourceMigration = readFileSync(
   ),
   "utf8",
 );
+const triggerPrivilegeMigration = readFileSync(
+  resolve(
+    process.cwd(),
+    "supabase/migrations/20260714104145_harden_internal_trigger_function_privileges.sql",
+  ),
+  "utf8",
+);
 
 function extractFunction(sql: string, functionName: string) {
   const marker = `CREATE OR REPLACE FUNCTION public.${functionName}`;
@@ -61,5 +68,20 @@ describe("App Store backend function repairs", () => {
       .replaceAll("$2", "cohort_id");
 
     expect(repaired).toBe(original);
+  });
+
+  it("keeps internal trigger functions out of the RPC surface", () => {
+    for (const functionName of [
+      "touch_program_runs_updated_at",
+      "archive_program_runs_with_team",
+      "validate_program_instance_run",
+    ]) {
+      expect(triggerPrivilegeMigration).toContain(
+        `REVOKE ALL ON FUNCTION public.${functionName}()`,
+      );
+    }
+    expect(
+      triggerPrivilegeMigration.match(/FROM PUBLIC, anon, authenticated;/g),
+    ).toHaveLength(3);
   });
 });

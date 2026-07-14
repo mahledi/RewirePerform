@@ -14,7 +14,7 @@
 
 - Architektur/Routen: `package.json`, `src/App.tsx`, `src/`.
 - Auth/Rollen: `AuthContext.tsx`, `Auth.tsx`, neueste RLS-/Trigger-Migrationen.
-- Datenmodell: neueste Dateien in `supabase/migrations`; Live-Apply separat pruefen.
+- Datenmodell: neueste Dateien in `supabase/migrations`; Production ist am 14. Juli 2026 bis `20260714104145_harden_internal_trigger_function_privileges` live verifiziert.
 - Daily Tracking: `src/lib/dailyTracking.ts`, `DailyCheckin.tsx`, `save_daily_tracking_v2`.
 - Content: `src/content/playerDays.ts` plus tatsaechliche Aufloesung in `dailyContent.ts`/Domain Logic.
 - Sprache: `docs/CONTENT_LANGUAGE_STANDARD.md`.

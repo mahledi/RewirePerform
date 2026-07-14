@@ -12,33 +12,26 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          requested_at: string
+          transfer_plan: Json
+          user_id: string
+        }
+        Insert: {
+          requested_at?: string
+          transfer_plan?: Json
+          user_id: string
+        }
+        Update: {
+          requested_at?: string
+          transfer_plan?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_event_log: {
         Row: {
           created_at: string
@@ -1991,9 +1984,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["athlete", "coach", "admin"],

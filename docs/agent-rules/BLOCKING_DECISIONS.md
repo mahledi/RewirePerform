@@ -12,12 +12,10 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 ## BD-02 - Migrationen vom 10. Juli
 
-- Status: der Production-Stand wurde am 14. Juli 2026 read-only bis `20260627120000_nlz_evidence_tracking_v1` verifiziert.
-- Offen: die vier lokalen Migrationen `20260710120000`, `20260710130000`, `20260713140500` und `20260714084351` sind auf Production nicht angewendet.
-- Betroffen: Program Runs, atomarer Daily Save, NLZ Readiness/Evidence.
-- Erlaubt: lokale Analyse, Tests und nicht-produktive Pläne.
-- Blockiert: Production-Apply, darauf gestuetzte Live-Behauptung.
-- Naechstes Gate: eine neue isolierte Nicht-Production-Umgebung bereitstellen, dort die vollstaendige Migrationskette ausfuehren, danach Schema-/Security-Pruefung und separater Production-Apply-Entscheid.
+- Status: am 14. Juli 2026 durch Mahle nach informierter Production-Freigabe geschlossen.
+- Auf Production angewendet: `20260710120000`, `20260710130000`, `20260713140500`, `20260714084351` und die Advisor-Haertung `20260714104145`.
+- Verifiziert: exakte Remote-Migrationshistorie, Program-Run-/Evidence-Schema, erfolgreicher Team-Stats-Runtime-Smoke-Test, unveraenderte Bestandszahlen und gezielte Security-Advisors ohne neuen offenen Warnbefund aus diesem Block.
+- Die fehlende Nicht-Production-Umgebung bleibt ein Infrastrukturrest, blockiert diese bereits ausgefuehrte Migrationskette aber nicht mehr. Zukuenftige Production-Migrationen brauchen erneut eine konkrete Freigabe und einen eigenen Rueckweg.
 
 ## BD-03 - Prioritaetsreihenfolge
 
@@ -30,12 +28,14 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 ## BD-04 - Account-Loeschung
 
-- Status: am 14. Juli 2026 fuer die lokale Implementierung geklaert; Remote-Aktivierung bleibt blockiert.
+- Status: am 14. Juli 2026 fuer Production aktiviert; der destruktive End-to-End-Test bleibt bei Mahle.
 - Entschieden: Self-Service in der App, erneute Authentifizierung, direkte Loeschung personenbezogener Quelldaten, Teamtransfer vor Coach-Loeschung und Erhalt ausschliesslich nicht rueckbeziehbarer consent-basierter Aggregate.
 - Operative Verantwortung: automatisierter App-/Edge-Function-/Auth-Ablauf; kein Feedback- oder Supportformular als regulaerer Loeschweg.
 - Source of Truth: `docs/ACCOUNT_DELETION_CONTRACT_2026-07-14.md`.
-- Erlaubt: lokale UI-, Auth-, Function-, Migrations- und Testimplementierung gemaess dem Vertrag.
-- Blockiert: Migration-Apply, Function-Deploy, echte Loeschung, finale Store-Aussage und Production-Claim bis eine neue isolierte Nicht-Production-Umgebung, ein verifizierbarer Backup-/Restore-Pfad, die vollstaendige Nicht-Production-Ausfuehrung, Sentry-Aufbewahrung und die rechtliche Endpruefung bestaetigt sind. Das aktive Supabase-Projekt laeuft auf Free; am 14. Juli 2026 waren kein PITR und keine verfuegbaren Plattform-Backups gelistet.
+- Live-Evidenz: Migration `20260714084351` ist angewendet; `delete-account` Version 1 ist `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`.
+- Rueckweg: vor dem Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt; der Schluessel liegt im macOS-Schluesselbund. Das Free-Projekt besitzt weiterhin kein PITR oder Plattform-Backup, und fuer den Export ist noch eine verbindliche Aufbewahrungs-/Loeschfrist festzulegen.
+- Mahle hat klargestellt, dass sieben Accounts Testaccounts sind und ein Account real ist. Kein bestehender Account wurde waehrend des Deployments geloescht; Auth-, Profil- und Tracking-Bestandszahlen blieben unveraendert.
+- Weiterhin blockiert: agentenseitige Loeschung eines bestehenden Accounts sowie die finale App-Store-Aussage, bis Mahle den Wegwerfaccount-Test durchgefuehrt und Sentry-Aufbewahrung, Backup-Loeschfrist, Privacy-Text und rechtliche Endpruefung bestaetigt hat.
 
 ## BD-05 - Minderjaehrigen-Consent
 
@@ -48,6 +48,6 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 ## Gemeinsame Wirkung
 
-Nicht blockiert: Read-only-Analyse, Dokumentation, lokale nicht-sensitive UI-Arbeit, lokale Tests, R1/R2-Vorbereitung, Content-Audits, Architekturberichte.
+Nicht blockiert: Read-only-Analyse, Dokumentation, lokale nicht-sensitive UI-Arbeit, lokale Tests, R1/R2-Vorbereitung, Content-Audits, Architekturberichte sowie der jetzt freigegebene Account-Loeschungs-Codepfad.
 
-Blockiert: Production, Migrationen, Auth/RLS, Consent, Account-Loeschung, sensitive Coach-/Athletendaten, Deployments und App-Store-Einreichungen.
+Blockiert: nicht erneut freigegebene Production-/Auth-/RLS-Mutationen, agentenseitige Loeschung bestehender Accounts, offene Consent-/Minderjaehrigenentscheidungen, unfreigegebene sensitive Coach-/Athletendaten und die App-Store-Einreichung vor Abschluss der verbleibenden Gates.

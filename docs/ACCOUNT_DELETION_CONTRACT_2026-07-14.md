@@ -1,6 +1,6 @@
 # Account Deletion Contract
 
-Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben. Production ist verbindlich `bqsbxesmybthwtxmowfz` (`RewirePerform real`); die Remote-Aktivierung bleibt separat gegated.
+Status: von Mahle am 14. Juli 2026 fuer `bqsbxesmybthwtxmowfz` (`RewirePerform real`) freigegeben und remote aktiviert. Mahle uebernimmt den destruktiven Wegwerfaccount-Test manuell.
 
 ## Produktentscheidung
 
@@ -12,7 +12,7 @@ Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben. 
 - Bereits erzeugte, consent-basierte Aggregate duerfen nur bestehen bleiben, wenn sie keinen Nutzerbezug, keine Rohtexte und keine individuellen Verlaeufe enthalten und die aktive Mindestgruppengroesse von `n >= 5` eingehalten wurde.
 - Personenbezogene Quellzeilen werden nicht lediglich pseudonymisiert, um sie fuer spaetere Analysen zu behalten.
 - Personenbezogene technische Event- und Fehlerzeilen werden ebenfalls entfernt; sie sind keine Studien-Aggregate.
-- Etwaige technische Datenbank-Backups duerfen nicht fuer Nutzeranalyse oder Reidentifikation weiterverarbeitet werden und muessen einer verbindlichen Loeschfrist unterliegen. Das aktive Free-Projekt meldete am 14. Juli 2026 kein PITR und keine verfuegbaren Plattform-Backups; vor jedem Production-Apply ist deshalb ein verifizierbarer Backup-/Restore-Pfad mit dokumentierter Aufbewahrung erforderlich.
+- Etwaige technische Datenbank-Backups duerfen nicht fuer Nutzeranalyse oder Reidentifikation weiterverarbeitet werden und muessen einer verbindlichen Loeschfrist unterliegen. Vor dem Apply wurde ein verschluesselter, integritaetsgepruefter Export der Public-Daten und persistenten Auth-Daten erstellt; das aktive Free-Projekt besitzt weiterhin kein PITR oder Plattform-Backup.
 
 ## Technischer Ablauf
 
@@ -25,14 +25,14 @@ Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben. 
 7. Consent-basierte Aggregate bleiben unveraendert; direkte Erstellerreferenzen werden auf `NULL` gesetzt.
 8. Die App entfernt lokale Entwuerfe, Rollen-Caches, Reminder und die lokale Sitzung und zeigt eine dauerhafte Abschlussbestaetigung.
 
-## Nicht freigegeben
+## Weiterhin nicht freigegeben
 
-- Kein Supabase-Apply, Function-Deploy, Production-Test oder App-Store-Claim ohne separate Freigabe.
-- Die bestaetigte Production-Zuordnung aus `BD-01` muss vor jedem Remote-Schritt technisch erneut abgeglichen werden.
+- Kein Agent loescht einen bestehenden Account. Mahle erstellt und loescht den Wegwerfaccount fuer den destruktiven Endtest selbst.
+- Weitere Supabase-Applies, Function-Deploys oder Production-Mutationen brauchen eine neue konkrete Freigabe; die bestaetigte Production-Zuordnung aus `BD-01` muss dabei erneut technisch abgeglichen werden.
 - Vor der App-Store-Einreichung muessen Backup-Konfiguration, Privacy-Text und rechtliche Einordnung am realen Production-Projekt final verifiziert werden.
-- Die reale Sentry-Aufbewahrung und der Umgang mit bereits vorhandenen stabilen Nutzer-IDs muessen vor Live-Aktivierung verifiziert oder technisch bereinigt werden.
+- Die reale Sentry-Aufbewahrung, die Backup-Loeschfrist und der Umgang mit bereits vorhandenen stabilen Nutzer-IDs muessen vor der App-Store-Einreichung verifiziert oder technisch bereinigt werden.
 
-## Pflichtpruefungen vor Live-Aktivierung
+## Pflichtpruefungen vor App-Store-Freigabe
 
 - Athlet ohne Team und mit vollstaendigem Trackingverlauf
 - Athlet in einem Team

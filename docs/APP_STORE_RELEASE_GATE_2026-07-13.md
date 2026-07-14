@@ -8,7 +8,7 @@
 
 - Capacitor-iOS-Projekt mit Bundle-ID `com.rewireperform.app` vorhanden.
 - App-Icon ist 1024 x 1024 Pixel gross und hat keinen Alpha-Kanal.
-- Production-Build, Typecheck, 64 Tests und ESLint ohne Fehler bestanden.
+- Production-Build, Typecheck, vollstaendige Testsuite und ESLint ohne Fehler bestanden.
 - 16 von 16 oeffentlichen und synthetischen Browser-Flows bestanden: Chromium sowie WebKit auf iPhone hoch/quer und iPad, jeweils inklusive Overflow- und Page-Error-Pruefung.
 - Der Production-Dependency-Audit meldet 0 bekannte Schwachstellen.
 - Der Production-Release-Validator bindet den Store-Build an Supabase `bqsbxesmybthwtxmowfz`; der vollstaendige lokale Production-Build inklusive Capacitor-iOS-Sync ist bestanden.
@@ -20,18 +20,19 @@
 - Statisches Release-Gate `npm run app:verify` prueft App-ID, Bundle-ID, Berechtigungstexte, Privacy-Kategorien und Icon.
 - Native lokale Erinnerungen sind fuer Check-in, Journal und Pre-Training implementiert. Die 56-Tage-Planung unterdrueckt bekannte Ruhetage und uebernimmt konkrete Wettkampf-/Trainingszeiten.
 - Der synthetische E2E-Testplan prueft Athlete-/Coach-/Admin-/Outsider-Grenzen sowie Training, Ruhetag und Wettkampf. Sein Plan-Modus bleibt netzwerkfrei; Remote-Ausfuehrung ist technisch gesperrt, bis ein neues Staging-Projekt explizit freigegeben und eingebunden ist.
+- Die Production-Migrationshistorie enthaelt jetzt exakt `20260710120000`, `20260710130000`, `20260713140500`, `20260714084351` und die Advisor-Haertung `20260714104145`. Schema-, Runtime- und Bestandspruefungen sind bestanden; die vorhandenen Account- und Tracking-Zeilenzahlen blieben unveraendert.
+- `delete-account` Version 1 ist auf Production `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`; der destruktive Wegwerfaccount-Test bleibt bewusst bei Mahle.
+- Vor dem Production-Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt. Der Schluessel liegt ausschliesslich im macOS-Schluesselbund.
 
 ## Rote Gates vor TestFlight
 
 1. **Xcode 26 fehlt auf dem Mac.** Nur Command Line Tools sind installiert. Simulator, Device-Build, Archive, Privacy Report und Upload konnten deshalb nicht ausgefuehrt werden.
 2. **Production-Zuordnung ist geklaert, Staging fehlt (`BD-01`).** Mahle hat am 14. Juli 2026 `bqsbxesmybthwtxmowfz` (`RewirePerform real`) als aktives Production-Projekt bestaetigt; die Supabase-Projektmetadaten bestaetigen Namen, Ref und gesunden Status. `towgvykgezrmkbyudjen` ist ausdruecklich stillgelegt, ein neues Staging existiert noch nicht. Site URL, iOS-Redirect-URLs und die Vercel-Env-Scope-Zuordnung muessen vor Release weiterhin im jeweiligen Dashboard geprueft werden.
-3. **Production-Migrationen sind offen (`BD-02`).** Der rein lesende Supabase-Vergleich zeigt auf Production nur Migrationen bis `20260627120000_nlz_evidence_tracking_v1`. Die vier lokalen Migrationen `20260710120000`, `20260710130000`, `20260713140500` und `20260714084351` fehlen. Der aktuelle Code setzt Teile dieser Tracking-, Evidence- und Account-Loeschungsstruktur voraus. Es wurde bewusst keine Remote-Migration ausgefuehrt.
-4. **Zwei Remote-SQL-Functions brauchen die vorbereitete Reparatur.** Historische read-only Pruefungen bestaetigten Fehler in `get_team_stats` (`date >= text`) und `get_admin_nlz_evidence_dossier` (mehrdeutige `cohort_id`-Referenz). Eine additive Reparaturmigration liegt lokal vor, wurde aber nicht auf Production ausgefuehrt. Der fruehere Testtarget ist stillgelegt; echte PostgreSQL-Ausfuehrung in einer neuen Nicht-Production-Umgebung, Post-Checks und Typgenerierung bleiben Pflicht.
-5. **Account-Loeschung ist lokal gebaut, remote aber noch offen (`BD-04`).** Self-Service-UI, Reauthentifizierung, Teamtransfer, Edge Function, Loeschmigration und automatisierte Tests liegen im Draft-PR vor. Auf `RewirePerform real` sind weder `delete-account` noch die Migration aktiv. Die Organisation nutzt den Free-Plan; am 14. Juli 2026 meldete die CLI kein PITR und keine verfuegbaren Plattform-Backups. Vor Live-Aktivierung sind deshalb eine neue Nicht-Production-Umgebung, ein verifizierbarer Backup-/Restore-Pfad, ein vollstaendiger Loeschtest und die rechtliche Endpruefung Pflicht.
-6. **Minderjaehrigen-/Research-Consent ist offen (`BD-05`).** Die Zielgruppe umfasst Minderjaehrige und das Produkt erhebt psychologisch sensible Verlaufsdaten. Altersgrenze, Erziehungsberechtigtenprozess, Forschungsabgrenzung und Rechtsgrundlage brauchen eine bestaetigte Regel.
-7. **Native Reminder sind noch nicht auf einem iPhone verifiziert.** Die lokale iOS-Implementierung und ihre Unit-Tests sind vorhanden. Berechtigungsdialog, Scheduling, Zustellung, Tap-Routing, Kalender-Resync und Abmelden muessen mit Xcode und einem echten Geraet bestaetigt werden.
-8. **Echter Geraetetest fehlt.** Login, E-Mail-Bestaetigung, Session-Restore, Voice, Offline/Retry, Check-in, Journal, Kalender, Coach-Rolle und App-Neustart muessen auf mindestens einem echten iPhone geprueft werden.
-9. **Store-/Rechtsmaterial ist nur als Entwurf vorhanden.** Privacy Policy, Privacy Choices URL, Support URL, Altersfreigabe, Screenshots, Beschreibung, Keywords, Review Notes und drei funktionierende Review-Konten muessen final geprueft und in App Store Connect eingetragen werden.
+3. **Der destruktive Account-Loeschtest ist noch offen (`BD-04`).** Backend, Edge Function und UI-Code sind aktiviert beziehungsweise mergefertig, aber Mahle muss einen neuen Wegwerfaccount registrieren und in der Live-App loeschen. Danach sind Auth-, Domain-, Fremddaten-, Aggregate- und Log-Nachweise zu pruefen. Sentry-Aufbewahrung, Backup-Loeschfrist, Privacy-Text und rechtliche Endpruefung bleiben vor der Store-Aussage offen.
+4. **Minderjaehrigen-/Research-Consent ist offen (`BD-05`).** Die Zielgruppe umfasst Minderjaehrige und das Produkt erhebt psychologisch sensible Verlaufsdaten. Altersgrenze, Erziehungsberechtigtenprozess, Forschungsabgrenzung und Rechtsgrundlage brauchen eine bestaetigte Regel.
+5. **Native Reminder sind noch nicht auf einem iPhone verifiziert.** Die lokale iOS-Implementierung und ihre Unit-Tests sind vorhanden. Berechtigungsdialog, Scheduling, Zustellung, Tap-Routing, Kalender-Resync und Abmelden muessen mit Xcode und einem echten Geraet bestaetigt werden.
+6. **Echter Geraetetest fehlt.** Login, E-Mail-Bestaetigung, Session-Restore, Voice, Offline/Retry, Check-in, Journal, Kalender, Coach-Rolle und App-Neustart muessen auf mindestens einem echten iPhone geprueft werden.
+7. **Store-/Rechtsmaterial ist nur als Entwurf vorhanden.** Privacy Policy, Privacy Choices URL, Support URL, Altersfreigabe, Screenshots, Beschreibung, Keywords, Review Notes und drei funktionierende Review-Konten muessen final geprueft und in App Store Connect eingetragen werden.
 
 ## Gelbe Qualitaetsreste
 
@@ -61,7 +62,7 @@ Nicht als Apple-`Tracking` deklarieren, solange keine Daten mit Drittanbieter-Da
 
 ## Verbindlicher Einreichungsweg
 
-1. Blocking Decisions mit Mahle und bei BD-04/BD-05 mit passender rechtlicher/fachlicher Pruefung schliessen.
+1. Den manuellen BD-04-Loeschtest abschliessen und BD-05 mit passender rechtlicher/fachlicher Pruefung schliessen.
 2. Xcode 26 installieren, Developer Team setzen und `npm run app:build` ausfuehren.
 3. Xcode Privacy Report erzeugen und gegen Manifest sowie App Store Connect abgleichen.
 4. Debug-Build im Simulator und Release-Build auf echtem iPhone testen.
