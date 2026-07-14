@@ -1,6 +1,6 @@
 # Account Deletion Contract
 
-Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben.
+Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben. Production ist verbindlich `bqsbxesmybthwtxmowfz` (`RewirePerform real`); die Remote-Aktivierung bleibt separat gegated.
 
 ## Produktentscheidung
 
@@ -12,7 +12,7 @@ Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben.
 - Bereits erzeugte, consent-basierte Aggregate duerfen nur bestehen bleiben, wenn sie keinen Nutzerbezug, keine Rohtexte und keine individuellen Verlaeufe enthalten und die aktive Mindestgruppengroesse von `n >= 5` eingehalten wurde.
 - Personenbezogene Quellzeilen werden nicht lediglich pseudonymisiert, um sie fuer spaetere Analysen zu behalten.
 - Personenbezogene technische Event- und Fehlerzeilen werden ebenfalls entfernt; sie sind keine Studien-Aggregate.
-- Technische Datenbank-Backups werden nicht aktiv weiterverarbeitet und laufen innerhalb einer maximal kommunizierten Aufbewahrungsfrist von 30 Tagen aus.
+- Etwaige technische Datenbank-Backups duerfen nicht fuer Nutzeranalyse oder Reidentifikation weiterverarbeitet werden und muessen einer verbindlichen Loeschfrist unterliegen. Das aktive Free-Projekt meldete am 14. Juli 2026 kein PITR und keine verfuegbaren Plattform-Backups; vor jedem Production-Apply ist deshalb ein verifizierbarer Backup-/Restore-Pfad mit dokumentierter Aufbewahrung erforderlich.
 
 ## Technischer Ablauf
 
@@ -28,7 +28,7 @@ Status: von Mahle am 14. Juli 2026 fuer die lokale Implementierung freigegeben.
 ## Nicht freigegeben
 
 - Kein Supabase-Apply, Function-Deploy, Production-Test oder App-Store-Claim ohne separate Freigabe.
-- Die reale Projektzuordnung aus `BD-01` muss vor jedem Remote-Schritt bestaetigt werden.
+- Die bestaetigte Production-Zuordnung aus `BD-01` muss vor jedem Remote-Schritt technisch erneut abgeglichen werden.
 - Vor der App-Store-Einreichung muessen Backup-Konfiguration, Privacy-Text und rechtliche Einordnung am realen Production-Projekt final verifiziert werden.
 - Die reale Sentry-Aufbewahrung und der Umgang mit bereits vorhandenen stabilen Nutzer-IDs muessen vor Live-Aktivierung verifiziert oder technisch bereinigt werden.
 

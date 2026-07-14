@@ -1,24 +1,23 @@
 # Blocking Decisions
 
-Diese Entscheidungen sind ungelöst. Agenten duerfen sie weder annehmen noch automatisch loesen.
+Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Gates. Agenten duerfen offene Punkte weder annehmen noch automatisch loesen.
 
 ## BD-01 - Supabase-Zuordnung
 
-- Bekannt: `supabase/config.toml` nennt das eigene Projekt; CI und alte Doku nennen eine andere ID.
-- Unsicher: heutige Production-, Staging- und historische Zuordnung.
-- Betroffen: Build-Env, CLI-Link, Functions, Daten, Deploy.
-- Erlaubt: read-only Codeanalyse, lokale UI/Tests mit klar benannter Env.
-- Blockiert: jeder Production-/Supabase-Write, Env-Umstellung oder Deploy.
-- Mahle liefert: verbindliche Zuordnung der Projekt-IDs.
+- Status: am 14. Juli 2026 durch Mahle verbindlich bestaetigt und ueber die Supabase-Projektmetadaten read-only verifiziert.
+- Production: `bqsbxesmybthwtxmowfz` (`RewirePerform real`, `eu-central-1`).
+- Staging/Nicht-Production: `towgvykgezrmkbyudjen` (`RewirePerform`, `eu-west-1`) gemaess `docs/RELEASE_ENVIRONMENTS.md`.
+- CI: ausschliesslich synthetischer Ref `abcdefghijklmnopqrst`; der historische Lovable-Ref bleibt gesperrt.
+- Die Projektzuordnung ist nicht mehr blockiert. Production-Writes, Migrationen, Function-Deploys und Env-Aenderungen benoetigen weiterhin ihre eigene konkrete Freigabe und Verifikation.
 
 ## BD-02 - Migrationen vom 10. Juli
 
-- Bekannt: Code und dokumentierter Staging-Test existieren.
-- Unsicher: Production-Apply.
+- Status: der Production-Stand wurde am 14. Juli 2026 read-only bis `20260627120000_nlz_evidence_tracking_v1` verifiziert.
+- Offen: die vier lokalen Migrationen `20260710120000`, `20260710130000`, `20260713140500` und `20260714084351` sind auf Production nicht angewendet.
 - Betroffen: Program Runs, atomarer Daily Save, NLZ Readiness/Evidence.
 - Erlaubt: lokale Analyse, Tests und nicht-produktive Pläne.
 - Blockiert: Production-Apply, darauf gestuetzte Live-Behauptung.
-- Mahle liefert: verifizierter Production-Migrationsstand.
+- Naechstes Gate: vollstaendige Migrationskette zuerst gegen eine isolierte Nicht-Production-Datenbank ausfuehren, danach Schema-/Security-Pruefung und separater Production-Apply-Entscheid.
 
 ## BD-03 - Prioritaetsreihenfolge
 
@@ -36,7 +35,7 @@ Diese Entscheidungen sind ungelöst. Agenten duerfen sie weder annehmen noch aut
 - Operative Verantwortung: automatisierter App-/Edge-Function-/Auth-Ablauf; kein Feedback- oder Supportformular als regulaerer Loeschweg.
 - Source of Truth: `docs/ACCOUNT_DELETION_CONTRACT_2026-07-14.md`.
 - Erlaubt: lokale UI-, Auth-, Function-, Migrations- und Testimplementierung gemaess dem Vertrag.
-- Blockiert: Migration-Apply, Function-Deploy, echte Loeschung, finale Store-Aussage und Production-Claim bis `BD-01`, Backup-Konfiguration und rechtliche Endpruefung bestaetigt sind.
+- Blockiert: Migration-Apply, Function-Deploy, echte Loeschung, finale Store-Aussage und Production-Claim bis ein verifizierbarer Backup-/Restore-Pfad, die vollstaendige Nicht-Production-Ausfuehrung, Sentry-Aufbewahrung und die rechtliche Endpruefung bestaetigt sind. Das aktive Supabase-Projekt laeuft auf Free; am 14. Juli 2026 waren kein PITR und keine verfuegbaren Plattform-Backups gelistet.
 
 ## BD-05 - Minderjaehrigen-Consent
 
