@@ -2,9 +2,9 @@
 
 Stand: 14. Juli 2026
 
-Branch: `codex/performance-evidence-56d-20260714`
+Integrationsbranch: `codex/performance-evidence-integrated-20260714`
 
-Dieser Stand ist lokal implementiert und getestet. Die Migration wurde weder auf Staging noch auf Production angewendet. Es wurde nichts deployed oder gepusht.
+Dieser Stand ist auf dem aktuellen `origin/main` mit den App-Store- und Account-Loeschungsarbeiten integriert und lokal getestet. Die Evidence-Migration wurde weder auf Staging noch auf Production angewendet. Ein Datenbank- oder Web-Deployment ist nicht Teil dieses Commits.
 
 ## 1. Implementierter Umfang
 
@@ -17,6 +17,7 @@ Dieser Stand ist lokal implementiert und getestet. Die Migration wurde weder auf
 - Der Pulse ersetzt die optionale freie Reflexion. Die Schrittzahl des Daily Check-ins steigt nicht.
 - Die Bearbeitungsdauer des Pulse wird passiv und begrenzt erfasst. Es entsteht keine weitere Eingabe fuer den Athleten.
 - Tages-Check-in und Pulse werden in einer Datenbanktransaktion gespeichert.
+- Normale Check-ins fallen bei einem noch nicht migrierten Backend eng begrenzt auf `save_daily_tracking_v2` zurueck; Evidence-Antworten werden dabei niemals still verworfen.
 - Bereits gesperrte Antworten sind idempotent; eine spaetere abweichende Ueberschreibung wird abgelehnt.
 - Wenn der Evidence-Status nicht geladen werden kann oder nicht freigegeben ist, bleibt der bisherige Check-in-Flow nutzbar.
 
@@ -118,7 +119,7 @@ Folgende Punkte gehoeren nicht zu diesem R4-Block und duerfen nicht als fertig d
 
 - Echter TypeScript-Check fuer App- und Node-Konfiguration.
 - Produktionsbuild und App-Store-Static-Checks.
-- 20 Vitest-Dateien mit 85 erfolgreichen Tests.
+- 24 Vitest-Dateien mit 140 erfolgreichen Tests.
 - Migration und RPC-Verhalten in einer echten lokalen PostgreSQL-Laufzeit.
 - Atomarer Rollback eines bereits begonnenen Daily-Saves bei spaetem Evidence-Fehler.
 - Rollen-, RLS-, Consent-, Minderjaehrigen-, Mindest-n-, Missingness- und Export-Negativtests.
@@ -127,7 +128,7 @@ Folgende Punkte gehoeren nicht zu diesem R4-Block und duerfen nicht als fertig d
 - `npm audit --omit=dev`: 0 Findings.
 - `git diff --check`: ohne Fehler.
 - Interne Evidence-Vorschau ist im normalen Produktionsbuild nicht enthalten.
-- Der iOS-Embedded-Bundle-Check ist in diesem isolierten Worktree nicht ausfuehrbar, weil `ios/App/App/public` hier nicht vorhanden ist. Nach Integration muss der App-Store-Branch den aktuellen Web-Build per Capacitor einbetten und diesen Gate erneut ausfuehren.
+- Der vollstaendige Production-Build inklusive Capacitor-iOS-Sync und Kontrolle des eingebetteten Production-Supabase-Ziels ist nach der Integration erfolgreich durchgelaufen.
 
 ## 7. Kontrollierter Rollout
 

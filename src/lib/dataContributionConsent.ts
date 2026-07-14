@@ -4,6 +4,22 @@ export const DATA_CONTRIBUTION_CONSENT_VERSION = "data_contribution_v2_2026_07";
 
 export type DataContributionConsentState = boolean | null;
 
+export interface ResolvedDataContributionConsent {
+  consent: DataContributionConsentState;
+  needsRenewal: boolean;
+}
+
+export const resolveDataContributionConsent = (
+  consent: unknown,
+  version: unknown,
+): ResolvedDataContributionConsent => {
+  const needsRenewal = consent === true && version !== DATA_CONTRIBUTION_CONSENT_VERSION;
+  return {
+    consent: needsRenewal ? null : typeof consent === "boolean" ? consent : null,
+    needsRenewal,
+  };
+};
+
 const pendingConsentKey = (userId: string) =>
   `rewire:pending_data_contribution_consent:${DATA_CONTRIBUTION_CONSENT_VERSION}:${userId}`;
 

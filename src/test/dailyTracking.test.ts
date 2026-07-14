@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildDailyTrackingRpcArgs,
+  buildDailyTrackingV2RpcArgs,
+  createCompatibleDailyTrackingSave,
   createDailyTrackingSaver,
   type DailyTrackingInput,
 } from "@/lib/dailyTracking";
@@ -89,5 +91,57 @@ describe("daily tracking orchestration", () => {
       _evidence_response: null,
       _evidence_response_duration_ms: null,
     });
+  });
+
+  it("keeps ordinary check-ins working before the v3 migration reaches the backend", async () => {
+    const missingV3 = {
+      code: "PGRST202",
+      message: "Could not find the function public.save_daily_tracking_v3 in the schema cache",
+    };
+    const saveV3 = vi.fn().mockResolvedValue({ data: null, error: missingV3 });
+    const saveV2 = vi.fn().mockResolvedValue({ data: { checkin_id: "checkin-1" }, error: null });
+    const saveCompatible = createCompatibleDailyTrackingSave({ saveV3, saveV2 });
+
+    await expect(saveCompatible(input)).resolves.toEqual({
+      data: { checkin_id: "checkin-1" },
+      error: null,
+    });
+    expect(saveV3).toHaveBeenCalledWith(buildDailyTrackingRpcArgs(input));
+    expect(saveV2).toHaveBeenCalledWith(buildDailyTrackingV2RpcArgs(input));
+  });
+
+  it("never drops an evidence answer into the legacy fallback", async () => {
+    const missingV3 = {
+      code: "PGRST202",
+      message: "Could not find the function public.save_daily_tracking_v3 in the schema cache",
+    };
+    const saveV3 = vi.fn().mockResolvedValue({ data: null, error: missingV3 });
+    const saveV2 = vi.fn();
+    const saveCompatible = createCompatibleDailyTrackingSave({ saveV3, saveV2 });
+
+    const result = await saveCompatible({
+      ...input,
+      evidence: {
+        protocolVersion: "56d-transfer-v1-2026-07",
+        domainId: "attention_return",
+        response: 3,
+        responseDurationMs: 5000,
+      },
+    });
+
+    expect(result.error).toBe(missingV3);
+    expect(saveV2).not.toHaveBeenCalled();
+  });
+
+  it("does not hide network or authorization failures behind a legacy retry", async () => {
+    const networkError = { message: "network unavailable" };
+    const saveV3 = vi.fn().mockResolvedValue({ data: null, error: networkError });
+    const saveV2 = vi.fn();
+    const saveCompatible = createCompatibleDailyTrackingSave({ saveV3, saveV2 });
+
+    const result = await saveCompatible(input);
+
+    expect(result.error).toBe(networkError);
+    expect(saveV2).not.toHaveBeenCalled();
   });
 });

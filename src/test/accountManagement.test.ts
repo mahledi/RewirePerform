@@ -78,9 +78,9 @@ describe("account management client", () => {
 
     await expect(
       deleteCurrentAccount("athlete@example.com", "wrong", {}),
-    ).rejects.toMatchObject<AccountManagementError>({
+    ).rejects.toMatchObject({
       code: "invalid_password",
-    });
+    } satisfies Partial<AccountManagementError>);
     expect(mocks.invoke).not.toHaveBeenCalled();
   });
 
@@ -92,9 +92,9 @@ describe("account management client", () => {
 
     await expect(
       deleteCurrentAccount("athlete@example.com", "secret", {}),
-    ).rejects.toMatchObject<AccountManagementError>({
+    ).rejects.toMatchObject({
       code: "password_confirmation_failed",
-    });
+    } satisfies Partial<AccountManagementError>);
     expect(mocks.invoke).not.toHaveBeenCalled();
   });
 

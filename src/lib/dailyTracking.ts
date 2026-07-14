@@ -58,7 +58,7 @@ export const createDailyTrackingSaver = (dependencies: DailyTrackingDependencies
     return { payload: data, snapshotUpdated: snapshot !== null };
   };
 
-export const buildDailyTrackingRpcArgs = (input: DailyTrackingInput) => ({
+export const buildDailyTrackingV2RpcArgs = (input: DailyTrackingInput) => ({
     _assignment_id: input.assignmentId,
     _date: input.date,
     _event_type: input.eventType,
@@ -81,16 +81,52 @@ export const buildDailyTrackingRpcArgs = (input: DailyTrackingInput) => ({
     _comprehension_results: input.comprehensionResults
       ? input.comprehensionResults as unknown as Json
       : null,
+});
+
+export const buildDailyTrackingRpcArgs = (input: DailyTrackingInput) => ({
+    ...buildDailyTrackingV2RpcArgs(input),
     _evidence_protocol_version: input.evidence?.protocolVersion ?? null,
     _evidence_domain_id: input.evidence?.domainId ?? null,
     _evidence_response: input.evidence ? String(input.evidence.response) : null,
     _evidence_response_duration_ms: input.evidence?.responseDurationMs ?? null,
 });
 
-const saveAtomic = async (input: DailyTrackingInput) => {
-  const { data, error } = await supabase.rpc("save_daily_tracking_v3", buildDailyTrackingRpcArgs(input));
-  return { data, error };
+interface CompatibleDailyTrackingDependencies {
+  saveV3: (args: ReturnType<typeof buildDailyTrackingRpcArgs>) => Promise<{ data: Json; error: unknown }>;
+  saveV2: (args: ReturnType<typeof buildDailyTrackingV2RpcArgs>) => Promise<{ data: Json; error: unknown }>;
+}
+
+export const isMissingDailyTrackingV3Error = (error: unknown): boolean => {
+  const candidate = error as { code?: string; message?: string; details?: string; hint?: string } | null;
+  const description = [candidate?.message, candidate?.details, candidate?.hint]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return (candidate?.code === "PGRST202" || candidate?.code === "42883")
+    && description.includes("save_daily_tracking_v3");
 };
+
+export const createCompatibleDailyTrackingSave = (dependencies: CompatibleDailyTrackingDependencies) =>
+  async (input: DailyTrackingInput): Promise<{ data: Json; error: unknown }> => {
+    const v3Result = await dependencies.saveV3(buildDailyTrackingRpcArgs(input));
+    if (!v3Result.error) return v3Result;
+
+    // Evidence must never be silently discarded. The fallback exists only for
+    // ordinary check-ins during the short frontend-before-migration window.
+    if (input.evidence || !isMissingDailyTrackingV3Error(v3Result.error)) return v3Result;
+    return dependencies.saveV2(buildDailyTrackingV2RpcArgs(input));
+  };
+
+const saveAtomic = createCompatibleDailyTrackingSave({
+  saveV3: async (args) => {
+    const { data, error } = await supabase.rpc("save_daily_tracking_v3", args);
+    return { data, error };
+  },
+  saveV2: async (args) => {
+    const { data, error } = await supabase.rpc("save_daily_tracking_v2", args);
+    return { data, error };
+  },
+});
 
 export const saveDailyTracking = createDailyTrackingSaver({
   saveAtomic,

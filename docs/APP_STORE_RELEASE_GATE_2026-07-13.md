@@ -24,6 +24,7 @@
 - `delete-account` Version 1 ist auf Production `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`.
 - Der destruktive Athlet-in-Team-Test bestand am 14. Juli 2026: Function und Auth meldeten erfolgreiche Loeschung, der erneute Login scheiterte, der Bestand fiel kontrolliert von 8 auf 7 Accounts/Profile und die accountbezogene Auth-, Produkt- und Referenzpruefung ergab jeweils 0 Restzeilen. Evidenz: `docs/ACCOUNT_DELETION_PRODUCTION_VERIFICATION_2026-07-14.md`.
 - Vor dem Production-Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt. Der Schluessel liegt ausschliesslich im macOS-Schluesselbund.
+- Der integrierte 56-Tage-Evidence-Stand besteht Production-Build, 140 Unit-/Vertragstests, lokale PostgreSQL-Verhaltenspruefung, 20 Browserfluesse und den Capacitor-iOS-Sync mit eingebettetem Production-Ziel.
 
 ## Rote Gates vor TestFlight
 
@@ -40,6 +41,12 @@
 - ESLint endet mit 0 Fehlern und 16 bereits vorhandenen Warnungen. Darunter sind Hook-Dependency-Warnungen in Auth-, Dashboard-, Coach- und Admin-Pfaden; sie brauchen vor der finalen Submission eine eigene Laufzeit-Triage, weil die authentifizierten Rollenfluesse lokal noch nicht vollstaendig getestet werden konnten.
 - `npm audit --omit=dev` meldet 0 Schwachstellen. Der vollstaendige Audit meldet weiterhin zwei Dev-Tooling-Befunde ueber das alte Vite/esbuild-Setup. Der angebotene Fix erzwingt ein Major-Upgrade auf Vite 8 und sollte separat mit vollstaendiger Build-/PWA-Kompatibilitaetspruefung erfolgen; die betroffenen Pakete werden nicht in das App-Bundle ausgeliefert.
 - Check-in und Journal sichern Entwuerfe lokal und behalten sie bei fehlgeschlagenem Server-Speichern. Eine automatische Offline-Synchronisation mit Supabase existiert nicht; der Nutzer muss nach stabiler Verbindung erneut speichern.
+
+## Separates Gate vor einem Evidence-Pilot
+
+- Die neue Migration `20260714224000_performance_evidence_56d_v1.sql` liegt im Repository, ist aber noch nicht auf Staging oder Production angewendet.
+- Bis zur Migration bleiben die neuen Evidence-Elemente serverseitig deaktiviert. Normale Check-ins fallen bei einer fehlenden V3-Funktion sicher auf die bestehende V2-Speicherung zurueck; eine Evidence-Antwort wird niemals still verworfen.
+- Vor der Aktivierung folgen Datenbank-Apply, generierte Production-Typen, Rollen-/Consent-Negativtests gegen das echte Ziel und ein kontrollierter Testlauf. Fuer Minderjaehrige bleibt Evidence unabhaengig davon deaktiviert, bis das eigene Guardian-/Assent-Gate freigegeben ist.
 
 ## Privacy-Label-Basis
 

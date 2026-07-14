@@ -176,7 +176,7 @@ try {
   `);
 
   const migration = readFileSync(
-    resolve(process.cwd(), "supabase/migrations/20260714093810_performance_evidence_56d_v1.sql"),
+    resolve(process.cwd(), "supabase/migrations/20260714224000_performance_evidence_56d_v1.sql"),
     "utf8",
   );
   await db.exec(migration);

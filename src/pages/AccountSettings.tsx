@@ -21,10 +21,10 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  DATA_CONTRIBUTION_CONSENT_VERSION,
   getPendingDataContributionConsent,
   isConsentSchemaMissingError,
   rememberPendingDataContributionConsent,
+  resolveDataContributionConsent,
   saveDataContributionConsent,
   syncPendingDataContributionConsent,
   type DataContributionConsentState,
@@ -93,14 +93,12 @@ const AccountSettings = () => {
         if (error && !isConsentSchemaMissingError(error)) {
           toast.error("Die Tracking-Einstellung konnte nicht geladen werden.");
         } else if (!error) {
-          const needsRenewal = data?.data_contribution_consent === true
-            && data.data_contribution_consent_version !== DATA_CONTRIBUTION_CONSENT_VERSION;
-          setDataContributionNeedsRenewal(needsRenewal);
-          setDataContributionConsent(needsRenewal
-            ? null
-            : typeof data?.data_contribution_consent === "boolean"
-              ? data.data_contribution_consent
-              : null);
+          const resolvedConsent = resolveDataContributionConsent(
+            data?.data_contribution_consent,
+            data?.data_contribution_consent_version,
+          );
+          setDataContributionNeedsRenewal(resolvedConsent.needsRenewal);
+          setDataContributionConsent(resolvedConsent.consent);
           setDataContributionPending(false);
         }
       }
