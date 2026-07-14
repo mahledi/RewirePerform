@@ -16,7 +16,8 @@ Last verified: 14 July 2026.
 
 - Production contains the repository migrations through `20260714104145_harden_internal_trigger_function_privileges`.
 - `delete-account` Version 1 is active with JWT verification enabled and source parity against the repository.
-- Mahle performs the remaining destructive end-to-end deletion test manually with a newly created disposable account. Existing accounts must not be used for this test.
+- Mahle completed the destructive athlete-in-team deletion test on 14 July 2026. Auth deletion, failed re-login, zero pending requests and zero account-specific Auth/product residue were verified read-only; see `docs/ACCOUNT_DELETION_PRODUCTION_VERIFICATION_2026-07-14.md`.
+- Destructive coach-transfer coverage, aggregate-preservation evidence and final provider-log/backup retention decisions remain open.
 
 ## Build rules
 

@@ -28,14 +28,16 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 ## BD-04 - Account-Loeschung
 
-- Status: am 14. Juli 2026 fuer Production aktiviert; der destruktive End-to-End-Test bleibt bei Mahle.
+- Status: am 14. Juli 2026 fuer Production aktiviert und fuer den Athlet-in-Team-Pfad destruktiv live bestaetigt. Coach-Transfer, Aggregat-Erhalt und Retention bleiben Restgates.
 - Entschieden: Self-Service in der App, erneute Authentifizierung, direkte Loeschung personenbezogener Quelldaten, Teamtransfer vor Coach-Loeschung und Erhalt ausschliesslich nicht rueckbeziehbarer consent-basierter Aggregate.
 - Operative Verantwortung: automatisierter App-/Edge-Function-/Auth-Ablauf; kein Feedback- oder Supportformular als regulaerer Loeschweg.
 - Source of Truth: `docs/ACCOUNT_DELETION_CONTRACT_2026-07-14.md`.
+- Production-Evidenz: `docs/ACCOUNT_DELETION_PRODUCTION_VERIFICATION_2026-07-14.md`.
 - Live-Evidenz: Migration `20260714084351` ist angewendet; `delete-account` Version 1 ist `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`.
 - Rueckweg: vor dem Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt; der Schluessel liegt im macOS-Schluesselbund. Das Free-Projekt besitzt weiterhin kein PITR oder Plattform-Backup, und fuer den Export ist noch eine verbindliche Aufbewahrungs-/Loeschfrist festzulegen.
-- Mahle hat klargestellt, dass sieben Accounts Testaccounts sind und ein Account real ist. Kein bestehender Account wurde waehrend des Deployments geloescht; Auth-, Profil- und Tracking-Bestandszahlen blieben unveraendert.
-- Weiterhin blockiert: agentenseitige Loeschung eines bestehenden Accounts sowie die finale App-Store-Aussage, bis Mahle den Wegwerfaccount-Test durchgefuehrt und Sentry-Aufbewahrung, Backup-Loeschfrist, Privacy-Text und rechtliche Endpruefung bestaetigt hat.
+- Mahle hat klargestellt, dass vor dem Test sieben Accounts Testaccounts waren und ein Account real war. Mahle loeschte einen bezeichneten Testaccount; danach blieben sechs Testaccounts und der reale Account bestehen. Der Agent fuehrte ausschliesslich read-only Nachpruefungen aus.
+- Live verifiziert: `user_deleted` HTTP `200`, globales Logout HTTP `204`, erneuter Login `400 invalid_credentials`, 0 offene Loeschanfragen, 0 Auth-Restzeilen, 0 personenbezogene Produkt-Restzeilen und 0 verbleibende Erstellerreferenzen fuer den geloeschten Account.
+- Weiterhin blockiert: agentenseitige Loeschung eines weiteren bestehenden Accounts sowie die finale App-Store-Aussage, bis Coach-Transfer/Integritaetsrestfaelle, Sentry-Aufbewahrung, Backup-Loeschfrist, Provider-Log-Retention, Privacy-Text und rechtliche Endpruefung bestaetigt sind.
 
 ## BD-05 - Minderjaehrigen-Consent
 

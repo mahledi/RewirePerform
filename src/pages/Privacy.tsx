@@ -173,10 +173,11 @@ const Privacy = () => {
             <p>
               Programmdaten bleiben gespeichert, solange dein Account aktiv ist. Bei der Account-Löschung werden dein
               Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. Soweit Daten vorübergehend in
-              technisch notwendigen Sicherungskopien verbleiben, sind sie vom aktiven System getrennt und für Produkt- oder
-              Analysezwecke gesperrt. Sie werden gelöscht, sobald der Sicherungszweck und etwaige gesetzliche
-              Aufbewahrungspflichten entfallen. Bereits zuvor mit Einwilligung gebildete Gruppenstatistiken können bestehen
-              bleiben, wenn sie vollständig aggregiert sind und keinen Rückschluss auf einzelne Personen zulassen.
+              technisch notwendigen Sicherungskopien oder Sicherheitsprotokollen verbleiben, sind sie vom aktiven
+              Produktdatenbestand getrennt und für Produkt- oder Analysezwecke gesperrt. Sie werden gelöscht, sobald der
+              Sicherungs- oder Sicherheitszweck und etwaige gesetzliche Aufbewahrungspflichten entfallen. Bereits zuvor mit
+              Einwilligung gebildete Gruppenstatistiken können bestehen bleiben, wenn sie vollständig aggregiert sind und
+              keinen Rückschluss auf einzelne Personen zulassen.
             </p>
           </section>
 
