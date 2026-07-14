@@ -8,6 +8,8 @@ const migration = readRepoFile(
   "supabase/migrations/20260714084351_account_deletion_self_service.sql",
 );
 const edgeFunction = readRepoFile("supabase/functions/delete-account/index.ts");
+const accountDeletedPage = readRepoFile("src/pages/AccountDeleted.tsx");
+const privacyPage = readRepoFile("src/pages/Privacy.tsx");
 const profileSchema = readRepoFile(
   "supabase/migrations/20260323043306_a44936e8-0534-4bce-ba41-6d9879daaa4b.sql",
 );
@@ -112,5 +114,10 @@ describe("account deletion contract", () => {
 
   it("does not accept or forward a password", () => {
     expect(edgeFunction).not.toMatch(/password/i);
+  });
+
+  it("does not promise unconfigured automatic backup deletion", () => {
+    expect(accountDeletedPage).not.toMatch(/höchstens 30 Tagen automatisch/);
+    expect(privacyPage).not.toMatch(/höchstens 30 Tagen automatisch/);
   });
 });

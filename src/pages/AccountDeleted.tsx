@@ -17,8 +17,8 @@ const AccountDeleted = () => {
         </div>
         <h1 className="font-heading text-2xl font-bold">Dein Account wurde gelöscht.</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Dein Zugang und deine personenbezogenen Daten wurden aus dem aktiven System entfernt. Technische Sicherungskopien
-          werden innerhalb ihrer Aufbewahrungsfrist von höchstens 30 Tagen automatisch überschrieben.
+          Dein Zugang und deine personenbezogenen Daten wurden aus dem aktiven System entfernt. Du kannst dich mit diesem
+          Konto nicht mehr anmelden.
         </p>
         <Button className="mt-7 w-full" onClick={() => navigate("/", { replace: true })}>
           Zur Startseite
