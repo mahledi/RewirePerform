@@ -1,10 +1,11 @@
 # Staging Synthetic E2E Change Plan - 2026-07-13
 
-Status: Prepared locally. Not approved. Not executed.
+Status: Retired on 14 July 2026. Not approved and no longer executable because the former target was declared obsolete.
 
 ## Target
 
-- Supabase Staging only: `towgvykgezrmkbyudjen`
+- Former target `towgvykgezrmkbyudjen` is retired and permanently blocked by the script.
+- No approved Supabase Staging project currently exists.
 - Supabase Production `bqsbxesmybthwtxmowfz` is hard-blocked in the script.
 - Vercel, the live app, App Store Connect and Production are outside this plan.
 
@@ -64,4 +65,4 @@ Execution requires all of the following at the same time:
 4. Exact environment token:
    `NLZ_QA_WRITE_APPROVAL=STAGING_SYNTHETIC_WRITE_APPROVED`.
 
-No execution is allowed before the explicit approval in item 1.
+No execution is allowed under this retired plan. A new target and a new explicit plan are required first.

@@ -6,7 +6,7 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 - Status: am 14. Juli 2026 durch Mahle verbindlich bestaetigt und ueber die Supabase-Projektmetadaten read-only verifiziert.
 - Production: `bqsbxesmybthwtxmowfz` (`RewirePerform real`, `eu-central-1`).
-- Staging/Nicht-Production: `towgvykgezrmkbyudjen` (`RewirePerform`, `eu-west-1`) gemaess `docs/RELEASE_ENVIRONMENTS.md`.
+- Staging/Nicht-Production: derzeit kein Projekt freigegeben. `towgvykgezrmkbyudjen` ist laut Mahle ein altes, stillgelegtes Projekt und darf nicht mehr verwendet werden.
 - CI: ausschliesslich synthetischer Ref `abcdefghijklmnopqrst`; der historische Lovable-Ref bleibt gesperrt.
 - Die Projektzuordnung ist nicht mehr blockiert. Production-Writes, Migrationen, Function-Deploys und Env-Aenderungen benoetigen weiterhin ihre eigene konkrete Freigabe und Verifikation.
 
@@ -17,7 +17,7 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 - Betroffen: Program Runs, atomarer Daily Save, NLZ Readiness/Evidence.
 - Erlaubt: lokale Analyse, Tests und nicht-produktive Pläne.
 - Blockiert: Production-Apply, darauf gestuetzte Live-Behauptung.
-- Naechstes Gate: vollstaendige Migrationskette zuerst gegen eine isolierte Nicht-Production-Datenbank ausfuehren, danach Schema-/Security-Pruefung und separater Production-Apply-Entscheid.
+- Naechstes Gate: eine neue isolierte Nicht-Production-Umgebung bereitstellen, dort die vollstaendige Migrationskette ausfuehren, danach Schema-/Security-Pruefung und separater Production-Apply-Entscheid.
 
 ## BD-03 - Prioritaetsreihenfolge
 
@@ -35,7 +35,7 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 - Operative Verantwortung: automatisierter App-/Edge-Function-/Auth-Ablauf; kein Feedback- oder Supportformular als regulaerer Loeschweg.
 - Source of Truth: `docs/ACCOUNT_DELETION_CONTRACT_2026-07-14.md`.
 - Erlaubt: lokale UI-, Auth-, Function-, Migrations- und Testimplementierung gemaess dem Vertrag.
-- Blockiert: Migration-Apply, Function-Deploy, echte Loeschung, finale Store-Aussage und Production-Claim bis ein verifizierbarer Backup-/Restore-Pfad, die vollstaendige Nicht-Production-Ausfuehrung, Sentry-Aufbewahrung und die rechtliche Endpruefung bestaetigt sind. Das aktive Supabase-Projekt laeuft auf Free; am 14. Juli 2026 waren kein PITR und keine verfuegbaren Plattform-Backups gelistet.
+- Blockiert: Migration-Apply, Function-Deploy, echte Loeschung, finale Store-Aussage und Production-Claim bis eine neue isolierte Nicht-Production-Umgebung, ein verifizierbarer Backup-/Restore-Pfad, die vollstaendige Nicht-Production-Ausfuehrung, Sentry-Aufbewahrung und die rechtliche Endpruefung bestaetigt sind. Das aktive Supabase-Projekt laeuft auf Free; am 14. Juli 2026 waren kein PITR und keine verfuegbaren Plattform-Backups gelistet.
 
 ## BD-05 - Minderjaehrigen-Consent
 

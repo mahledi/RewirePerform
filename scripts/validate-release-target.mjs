@@ -11,11 +11,18 @@ const expected = readArg("--expected");
 const mode = readArg("--mode", expected);
 const targets = {
   production: "bqsbxesmybthwtxmowfz",
-  staging: "towgvykgezrmkbyudjen",
 };
+const retiredStagingRef = "towgvykgezrmkbyudjen";
+
+if (expected === "staging") {
+  console.error(
+    `release target validation failed: no approved Staging project exists; ${retiredStagingRef} is retired`,
+  );
+  process.exit(1);
+}
 
 if (!expected || !(expected in targets)) {
-  console.error("release target validation failed: use --expected production or staging");
+  console.error("release target validation failed: use --expected production");
   process.exit(1);
 }
 

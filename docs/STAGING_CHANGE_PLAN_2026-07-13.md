@@ -1,13 +1,12 @@
 # Staging change plan - backend function repairs
 
-Status: prepared locally, dry-run verified, not applied.
+Status: **retired on 14 July 2026; never execute this plan.** Mahle confirmed that its target is an old project. The original repair was not applied.
 
 ## Target and boundary
 
-- Target after explicit approval: Supabase Staging `towgvykgezrmkbyudjen` (`RewirePerform`).
+- Former target: `towgvykgezrmkbyudjen` (`RewirePerform`). It is retired and must not receive migrations, Functions, tests or new data.
 - Production `bqsbxesmybthwtxmowfz`, Vercel, the live website and real user data are out of scope.
-- Only migration `20260713140500_app_store_backend_function_repairs.sql` is pending on Staging.
-- The Supabase dry-run confirms that no other migration would be applied.
+- A final read-only dry-run before retirement listed two pending migrations: `20260713140500_app_store_backend_function_repairs.sql` and `20260714084351_account_deletion_self_service.sql`. This is historical evidence only.
 
 ## Exact changes
 
@@ -39,19 +38,19 @@ No tables, columns, rows, RLS policies, consent values, accounts, journal entrie
 
 - Both Production and Staging `plpgsql_check` report the same two errors.
 - Staging migration history matches local history through `20260710130000`.
-- `supabase db push --linked --dry-run` lists only the repair migration.
+- The original dry-run listed only the repair migration. That evidence is stale; the 14 July dry-run lists the repair and account-deletion migrations.
 - Static regression tests assert both corrections and explicit function privileges.
 - A source-fidelity test proves that the 499-line evidence dossier body is unchanged
   after positional parameters are normalized back to the original names.
 
 ## Apply gate
 
-The migration may be applied only after Mahle explicitly approves this exact Staging change plan. The apply command must target the already verified Staging link and must not use `--include-all`.
+No migration may be applied under this retired plan. A new plan requires a newly approved non-Production target, the coordinated migration and Function scope, destructive synthetic-account tests, and Mahle's separate approval.
 
 ## Verification after approval
 
-1. Run `supabase migration list --linked` and confirm only the repair is pending.
-2. Apply the single migration to Staging.
+1. Replace this superseded plan and rerun `supabase migration list --linked` plus `supabase db push --linked --dry-run`.
+2. Apply only the migration set named in the newly approved plan.
 3. Run `supabase db lint --linked --schema public --level warning --fail-on error` and require zero errors.
 4. Execute authenticated coach/admin permission checks with synthetic accounts.
 5. Execute the NLZ staging E2E suite and require complete cleanup.

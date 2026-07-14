@@ -47,6 +47,18 @@ describe("release target validation", () => {
     expect(result.stderr).toContain("VITE_SUPABASE_URL must select");
   });
 
+  it("rejects the retired project as a Staging target", () => {
+    const result = spawnSync(
+      process.execPath,
+      [script, "--expected", "staging", "--mode", "staging"],
+      { encoding: "utf8", env: process.env },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("no approved Staging project exists");
+    expect(result.stderr).toContain("towgvykgezrmkbyudjen is retired");
+  });
+
   it("rejects an invalid publishable key shape", () => {
     const result = runValidation({
       VITE_SUPABASE_PUBLISHABLE_KEY: "not-a-real-key",

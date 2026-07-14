@@ -28,7 +28,8 @@ describe("staging E2E write safety", () => {
     const result = run(["--plan"]);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain(`TARGET: Supabase Staging ${stagingRef}`);
+    expect(result.stdout).toContain("TARGET: no approved Supabase Staging project");
+    expect(result.stdout).toContain(`RETIRED PROJECT: ${stagingRef} (execution blocked)`);
     expect(result.stdout).toContain("NETWORK: disabled");
     expect(result.stdout).toContain("DAY CONTEXTS: training, rest and competition");
   });
@@ -40,7 +41,7 @@ describe("staging E2E write safety", () => {
     expect(result.stderr).toContain("Choose exactly one mode");
   });
 
-  it("requires the exact write approval before creating a client", () => {
+  it("permanently rejects the retired project", () => {
     const result = run(["--execute"], {
       NLZ_QA_SUPABASE_URL: `https://${stagingRef}.supabase.co`,
       NLZ_QA_ANON_KEY: "not-a-real-anon-key",
@@ -48,9 +49,7 @@ describe("staging E2E write safety", () => {
     });
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain(
-      `NLZ_QA_WRITE_APPROVAL=${approval}`,
-    );
+    expect(result.stderr).toContain(`Retired Supabase project ${stagingRef} is permanently blocked`);
   });
 
   it("permanently rejects the Production project", () => {

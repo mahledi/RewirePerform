@@ -25,4 +25,4 @@
 
 ## Bekannte Quellenkonflikte
 
-Supabase-Projekt-IDs, alte Lovable-Migrationsdoku, historische Pre-Program-Run-Limits, Staging-vs-Production und unmittelbare Prioritaet sind nicht still aufloesbar. Sie stehen in `BLOCKING_DECISIONS.md` und `DEFERRED_RULES.md`.
+Production ist `bqsbxesmybthwtxmowfz`; derzeit existiert kein freigegebenes Staging-Projekt. Alte Lovable-/Staging-Migrationsdoku, historische Pre-Program-Run-Limits und unmittelbare Prioritaet sind nicht still aufloesbar. Sie stehen in `BLOCKING_DECISIONS.md` und `DEFERRED_RULES.md`.
