@@ -11,6 +11,7 @@
  */
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { drawComprehensionQuestions } from "@/content/dailyContent";
@@ -22,7 +23,7 @@ export interface AssignmentRecord {
   date: string;
   assigned_day_number: number;
   context_type: string;
-  generated_payload: any;
+  generated_payload: Json;
 }
 
 export interface EnsureAssignmentInput {
@@ -80,10 +81,10 @@ export async function ensureAssignment(
       date: dateStr,
       assigned_day_number: info.dayNumber,
       context_type: input.contextType,
-      assignment_reason: { source: "deterministic", program_day: info.dayNumber } as any,
-      adaptation_summary: { sport: input.sport ?? null, position: input.position ?? null } as any,
-      generated_payload: payload as any,
-    } as any)
+      assignment_reason: { source: "deterministic", program_day: info.dayNumber },
+      adaptation_summary: { sport: input.sport ?? null, position: input.position ?? null },
+      generated_payload: payload as unknown as Json,
+    })
     .select()
     .single();
 
@@ -105,31 +106,41 @@ export async function upsertCompletion(args: {
 }) {
   const { data: existing } = await supabase
     .from("user_day_completion")
-    .select("id, completion_status, completed_at")
+    .select("id, user_id, completion_status, completed_at, program_instance_id")
     .eq("assignment_id", args.assignmentId)
+    .eq("user_id", args.userId)
     .maybeSingle();
 
-  const keepCompleted = existing?.completion_status === "completed" && args.status === "in_progress";
-  const base: any = {
+  const alreadyCompleted = existing?.completion_status === "completed";
+  const completionStatus = alreadyCompleted ? "completed" : args.status;
+  const completedAt = alreadyCompleted
+    ? existing.completed_at
+    : args.status === "completed"
+      ? new Date().toISOString()
+      : null;
+
+  const base: TablesUpdate<"user_day_completion"> = {
     assignment_id: args.assignmentId,
     user_id: args.userId,
     day_number: args.dayNumber,
-    task_completion: args.completedTaskTitles,
-    completion_status: keepCompleted ? "completed" : args.status,
+    task_completion: args.completedTaskTitles as unknown as Json,
+    completion_status: completionStatus,
     variant_used: args.variantUsed ?? null,
-    opened_at: existing ? undefined : new Date().toISOString(),
-    completed_at: keepCompleted
-      ? existing.completed_at
-      : args.status === "completed"
-        ? new Date().toISOString()
-        : null,
-    program_instance_id: args.programInstanceId ?? null,
+    completed_at: completedAt,
+    program_instance_id: args.programInstanceId ?? existing?.program_instance_id ?? null,
   };
 
   if (existing) {
     return supabase.from("user_day_completion").update(base).eq("id", existing.id);
   }
-  return supabase.from("user_day_completion").insert(base);
+  const insert: TablesInsert<"user_day_completion"> = {
+    ...base,
+    assignment_id: args.assignmentId,
+    user_id: args.userId,
+    day_number: args.dayNumber,
+    opened_at: new Date().toISOString(),
+  };
+  return supabase.from("user_day_completion").insert(insert);
 }
 
 export interface ComprehensionResult {
@@ -150,27 +161,36 @@ export async function upsertComprehension(args: {
   const correctCount = args.results.filter((r) => r.isCorrect).length;
   const { data: existing } = await supabase
     .from("comprehension_check_instances")
-    .select("id")
+    .select("id, completed_at, program_instance_id")
     .eq("assignment_id", args.assignmentId)
+    .eq("user_id", args.userId)
     .maybeSingle();
 
-  const base: any = {
+  const base: TablesUpdate<"comprehension_check_instances"> = {
     assignment_id: args.assignmentId,
     user_id: args.userId,
     day_number: args.dayNumber,
-    generated_questions: args.questions,
-    results: args.results,
+    generated_questions: args.questions as unknown as Json,
+    results: args.results as unknown as Json,
     correct_count: correctCount,
     total_count: args.questions.length,
     status: args.status,
-    completed_at: args.status === "completed" ? new Date().toISOString() : null,
-    program_instance_id: args.programInstanceId ?? null,
+    completed_at: args.status === "completed"
+      ? existing?.completed_at ?? new Date().toISOString()
+      : null,
+    program_instance_id: args.programInstanceId ?? existing?.program_instance_id ?? null,
   };
 
   if (existing) {
     return supabase.from("comprehension_check_instances").update(base).eq("id", existing.id);
   }
-  return supabase.from("comprehension_check_instances").insert(base);
+  const insert: TablesInsert<"comprehension_check_instances"> = {
+    ...base,
+    assignment_id: args.assignmentId,
+    user_id: args.userId,
+    day_number: args.dayNumber,
+  };
+  return supabase.from("comprehension_check_instances").insert(insert);
 }
 
 export { drawComprehensionQuestions };

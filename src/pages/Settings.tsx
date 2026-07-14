@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Brain, MessageSquare, Shield, HelpCircle, Smartphone, Send, Loader2, Bug, Lightbulb, MessageCircle, User, HeartHandshake, ChevronDown } from "lucide-react";
+import { ArrowLeft, Bug, ChevronRight, CircleUserRound, HelpCircle, Lightbulb, Loader2, MessageCircle, MessageSquare, Send, Settings2, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { TrainingAndNotifications } from "@/components/settings/TrainingAndNotifications";
 import { toast } from "sonner";
-import {
-  isConsentSchemaMissingError,
-  rememberPendingDataContributionConsent,
-  saveDataContributionConsent,
-  syncPendingDataContributionConsent,
-  type DataContributionConsentState,
-} from "@/lib/dataContributionConsent";
 
 const feedbackTypes = [
   { value: "bug", label: "Bug melden", icon: Bug },
@@ -67,7 +59,7 @@ const faqItems = [
   },
   {
     q: "Kann ich meine Daten löschen?",
-    a: "Ja. Du kannst jederzeit die vollständige Löschung deines Accounts und aller Daten anfragen — über das Feedback-Formular auf dieser Seite. Wir löschen alles innerhalb von 48 Stunden.",
+    a: "Ja. Öffne in den Einstellungen den Bereich „Konto & Daten“ und wähle dort „Account löschen“. Die Löschung wird direkt in der App bestätigt.",
   },
 ];
 
@@ -78,67 +70,6 @@ const Settings = () => {
   const [feedbackType, setFeedbackType] = useState<string>("general");
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [sending, setSending] = useState(false);
-
-  // Profil: Sport + Position (Position ersetzt das alte Misuse von "team")
-  const [sport, setSport] = useState("");
-  const [position, setPosition] = useState("");
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [dataContributionConsent, setDataContributionConsent] = useState<DataContributionConsentState>(null);
-  const [savingDataContribution, setSavingDataContribution] = useState(false);
-  const [showDataContribution, setShowDataContribution] = useState(false);
-
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("sport, position, team")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (data) {
-        setSport(data.sport ?? "");
-        // Fallback auf Legacy-"team"-Feld, falls position noch leer ist
-        setPosition(data.position ?? data.team ?? "");
-      }
-
-      const syncedPending = await syncPendingDataContributionConsent(user.id).catch(() => null);
-      if (typeof syncedPending === "boolean") {
-        setDataContributionConsent(syncedPending);
-      } else {
-        const { data: consentData } = await supabase
-          .from("profiles")
-          .select("data_contribution_consent")
-          .eq("id", user.id)
-          .maybeSingle();
-        setDataContributionConsent(
-          typeof consentData?.data_contribution_consent === "boolean"
-            ? consentData.data_contribution_consent
-            : null,
-        );
-      }
-      setProfileLoading(false);
-    };
-    loadProfile();
-  }, [user]);
-
-  const saveProfile = async () => {
-    if (!user) return;
-    setSavingProfile(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        sport: sport.trim() || null,
-        position: position.trim() || null,
-      })
-      .eq("id", user.id);
-    setSavingProfile(false);
-    if (error) {
-      toast.error("Profil konnte nicht gespeichert werden.");
-    } else {
-      toast.success("Profil gespeichert.");
-    }
-  };
 
   const handleFeedback = async () => {
     if (!feedbackMessage.trim() || !user) return;
@@ -164,152 +95,45 @@ const Settings = () => {
     }
   };
 
-  const updateDataContributionConsent = async (consent: boolean) => {
-    if (!user) return;
-    setSavingDataContribution(true);
-    try {
-      await saveDataContributionConsent(user.id, consent);
-      setDataContributionConsent(consent);
-      toast.success(consent ? "Danke. Dein Datenbeitrag ist aktiviert." : "Datenbeitrag deaktiviert.");
-    } catch (error) {
-      console.error("Data contribution consent update failed:", error);
-      if (isConsentSchemaMissingError(error)) {
-        rememberPendingDataContributionConsent(user.id, consent);
-        setDataContributionConsent(consent);
-        toast.info("Deine Entscheidung wird gespeichert, sobald das System-Update vollständig aktiv ist.");
-      } else {
-        toast.error("Die Entscheidung konnte gerade nicht gespeichert werden.");
-      }
-    } finally {
-      setSavingDataContribution(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate("/dashboard")} className="p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors">
-            <ArrowLeft className="w-5 h-5" />
+      <header className="sticky top-0 z-30 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-lg">
+        <div className="mx-auto flex max-w-2xl items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard")}
+            aria-label="Zurück zum Dashboard"
+            className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-secondary"
+          >
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold text-lg">Info & Hilfe</span>
+            <Settings2 className="h-5 w-5 text-primary" />
+            <h1 className="font-heading text-lg font-bold">Einstellungen</h1>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Profil: Sport & Position */}
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-6">
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-primary" />
-              <h2 className="font-heading font-semibold text-lg">Dein Profil</h2>
+          <button
+            type="button"
+            onClick={() => navigate("/settings/account")}
+            className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-5 text-left transition-colors hover:bg-secondary/30"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <CircleUserRound className="h-5 w-5" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              Sport und Position helfen uns, dein Mentaltraining auf deine Rolle zuzuschneiden.
-            </p>
-            {profileLoading ? (
-              <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Sportart</label>
-                  <Input
-                    value={sport}
-                    onChange={(e) => setSport(e.target.value)}
-                    placeholder="z.B. Fußball, Basketball, Leichtathletik"
-                    className="bg-secondary/50 border-border"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Position / Rolle</label>
-                  <Input
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
-                    placeholder="z.B. Stürmer, Point Guard, Sprinter"
-                    className="bg-secondary/50 border-border"
-                  />
-                </div>
-                <Button onClick={saveProfile} disabled={savingProfile} className="w-full">
-                  {savingProfile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  Profil speichern
-                </Button>
-              </div>
-            )}
-          </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-heading text-base font-semibold">Konto & Daten</h2>
+              <p className="mt-1 truncate text-sm text-muted-foreground">{user?.email ?? "Account verwalten"}</p>
+            </div>
+            <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+          </button>
         </motion.section>
 
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <TrainingAndNotifications />
-        </motion.section>
-
-        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-          <div className="rounded-xl border border-primary/20 bg-card">
-            <button
-              type="button"
-              onClick={() => setShowDataContribution((open) => !open)}
-              className="flex w-full items-center gap-3 p-5 text-left"
-              aria-expanded={showDataContribution}
-            >
-              <div className="rounded-xl bg-primary/10 p-2">
-                <HeartHandshake className="w-5 h-5 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="font-heading font-semibold text-lg">Datenbeitrag für zukünftige Teams</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {dataContributionConsent === true
-                    ? "Aktiviert. Du kannst die Entscheidung jederzeit ändern."
-                    : dataContributionConsent === false
-                      ? "Nicht aktiviert. Du kannst später freiwillig beitragen."
-                      : "Noch keine Entscheidung gespeichert."}
-                </p>
-              </div>
-              <ChevronDown className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform ${showDataContribution ? "rotate-180" : ""}`} />
-            </button>
-
-            {showDataContribution && (
-              <div className="space-y-4 border-t border-border/60 px-5 pb-5 pt-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Wenn du zustimmst, dürfen anonymisierte oder aggregierte Nutzungs- und Fortschrittsdaten helfen,
-                  RewirePerform zu verbessern und die Wirkung des Projekts in Präsentationen, Pilotberichten und Gesprächen
-                  mit Teams verständlich darzustellen.
-                </p>
-
-                <div className="rounded-xl border border-border/60 bg-secondary/30 p-4 text-sm text-muted-foreground leading-relaxed">
-                  Private Journaltexte, freie Antworten und persönliche Einzelprofile werden dafür nicht identifizierbar verwendet.
-                  Deine Entscheidung ist freiwillig und hat keinen Einfluss darauf, ob du RewirePerform nutzen kannst.
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    onClick={() => updateDataContributionConsent(true)}
-                    disabled={savingDataContribution || dataContributionConsent === true}
-                    className="flex-1"
-                  >
-                    {savingDataContribution ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    {dataContributionConsent === true ? "Datenbeitrag aktiviert" : "Ja, ich möchte beitragen"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => updateDataContributionConsent(false)}
-                    disabled={savingDataContribution || dataContributionConsent === false}
-                    className="flex-1"
-                  >
-                    {dataContributionConsent === false ? "Nicht aktiviert" : "Deaktivieren"}
-                  </Button>
-                </div>
-
-                {dataContributionConsent === null && (
-                  <p className="text-xs text-muted-foreground">
-                    Ohne Zustimmung werden deine Daten nicht für Präsentations- oder Pilotwirkungsberichte gezählt.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
         </motion.section>
 
         {/* Feedback */}
@@ -383,56 +207,6 @@ const Settings = () => {
           </Accordion>
         </motion.section>
 
-        {/* Datenschutz */}
-        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              <h2 className="font-heading font-semibold text-lg">Datenschutz</h2>
-            </div>
-
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <div>
-                <h3 className="font-medium text-foreground mb-1">Was wird gespeichert?</h3>
-                <p>Deine Fragebogen-Antworten, täglichen Check-ins, Journaleinträge, Trainingszeiten, Programmfortschritte und daraus berechnete Auswertungen. Diese Daten helfen dem System, deinen Startpunkt, deine Aufgabenlogik, Erinnerungen und Fortschritte sinnvoll abzubilden.</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-foreground mb-1">Warum wird das abgefragt?</h3>
-                <p>RewirePerform nutzt Angaben nicht als Selbstzweck. Sie machen sichtbar, wo du startest, welche Schritte abgeschlossen sind, wie dein Tagesrhythmus funktioniert und welche Rückmeldungen für deinen weiteren Verlauf relevant sind.</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-foreground mb-1">Wer hat Zugriff?</h3>
-                <p>Persönliche Inhalte sind auf private Nutzung ausgelegt und werden nicht als Rohdaten in Coach-Ansichten angezeigt. Technische Schutzmechanismen begrenzen Zugriffe im Produkt; Admin-Bereiche sind auf Betrieb, Datenqualität und aggregierte Übersichten ausgerichtet.</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-foreground mb-1">Was sieht mein Coach?</h3>
-                <p>Dein Coach sieht operative Aktivität wie Teilnahme, erledigte Tage und Programmstatus. Sensible Antworten, private Reflexionen, Journaltexte und individuelle mentale Rohwerte werden Coaches nicht angezeigt; Teamwerte erscheinen nur geschützt und aggregiert.</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-foreground mb-1">Daten löschen</h3>
-                <p>Du kannst jederzeit die vollständige Löschung deines Accounts und aller Daten anfragen. Nutze dafür das Feedback-Formular oben auf dieser Seite. Wir löschen alles innerhalb von 48 Stunden.</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-foreground mb-1">Mehr Details</h3>
-                <p>
-                  Die{" "}
-                  <a href="/privacy" className="text-primary hover:underline">
-                    ausführlichere Datenschutzseite
-                  </a>{" "}
-                  erklärt genauer, welche Datenarten relevant sind und wie sie für Aufgaben, Erinnerungen, Fortschritt
-                  und geschützte Teamübersichten genutzt werden. Vor einer App-Store-Veröffentlichung wird diese
-                  Kommunikation final geprüft.
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
         {/* App Installation */}
         <motion.section id="app-install-guide" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -485,7 +259,7 @@ const Settings = () => {
         </motion.section>
 
         <div className="pb-8" />
-      </div>
+      </main>
     </div>
   );
 };

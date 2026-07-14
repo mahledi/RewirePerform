@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
+import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 
@@ -374,6 +375,7 @@ const Admin = () => {
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
     { id: "evidence", title: "Coach-Wirkung", description: "Teamweite Pre/Mid/Post-Readiness und beobachtete Veränderung.", icon: BarChart3 },
+    { id: "pilot", title: "Pilot Readiness", description: "Program Runs, Startfreigabe und operative Datenintegrität.", icon: ShieldCheck },
     { id: "nlz", title: "NLZ Evidence", description: "Studienorientiertes Dossier, Outcome-Matrix und Exportpaket.", icon: ShieldCheck },
     { id: "presentation", title: "Pilot-Reporting", description: "Consent-aware Kennzahlen für Präsentationen.", icon: Presentation },
     { id: "study", title: "Wirkungsdaten", description: "Study-Übersicht, Missingness und Snapshots.", icon: FlaskConical },
@@ -639,11 +641,12 @@ const Admin = () => {
           </div>
         ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10 w-full gap-1`}>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-11 w-full gap-1`}>
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="evidence">Coach-Wirkung</TabsTrigger>
+            <TabsTrigger value="pilot">Pilot Readiness</TabsTrigger>
             <TabsTrigger value="nlz">NLZ Evidence</TabsTrigger>
             <TabsTrigger value="presentation">Pilot-Reporting</TabsTrigger>
             <TabsTrigger value="study">Wirkungsdaten</TabsTrigger>
@@ -958,6 +961,11 @@ const Admin = () => {
                 </p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* PILOT READINESS */}
+          <TabsContent value="pilot" className="mt-4">
+            <NlzPilotReadiness />
           </TabsContent>
 
           {/* NLZ EVIDENCE */}

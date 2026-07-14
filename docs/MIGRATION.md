@@ -1,6 +1,6 @@
 # RewirePerform — Migration Lovable Cloud → eigenes Supabase-Projekt
 
-> **Status:** Phase A vorbereitet. Live-App auf `rewireperform.com` zeigt weiterhin auf `twceqincrbrenyuqukpj` (Lovable Cloud). Nichts an der laufenden App ändern, bis Cutover (Phase D).
+> **Status:** Historischer, supersedierter Migrationsplan. Nicht ausfuehren. Production ist heute `bqsbxesmybthwtxmowfz`; `towgvykgezrmkbyudjen` und `twceqincrbrenyuqukpj` sind stillgelegte Ziele.
 
 ## Projekte
 

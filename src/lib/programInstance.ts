@@ -19,6 +19,7 @@ export interface ProgramInstance {
   id: string;
   user_id: string;
   team_id: string | null;
+  program_run_id: string | null;
   cycle_number: number;
   status: "active" | "completed" | "abandoned";
   started_at: string;
@@ -58,12 +59,41 @@ export async function getOrCreateActiveInstance(
   // Create one. Derive team_id + start date.
   const effective = await getEffectiveProgramStart(userId);
 
-  const { data: tm } = await supabase
+  const { data: memberships, error: membershipError } = await supabase
     .from("team_members")
-    .select("team_id")
+    .select("team_id, joined_at")
     .eq("user_id", userId)
-    .limit(1);
-  const teamId = tm?.[0]?.team_id ?? null;
+    .order("joined_at", { ascending: false })
+    .limit(10);
+
+  if (membershipError) {
+    console.error("getOrCreateActiveInstance membership error:", membershipError);
+    return null;
+  }
+
+  const teamIds = (memberships ?? []).map((membership) => membership.team_id);
+  const { data: activeRuns, error: activeRunError } = teamIds.length
+    ? await supabase
+        .from("program_runs")
+        .select("id, team_id")
+        .in("team_id", teamIds)
+        .eq("status", "active")
+        .limit(2)
+    : { data: [], error: null };
+
+  if (activeRunError) {
+    console.error("getOrCreateActiveInstance active run error:", activeRunError);
+    return null;
+  }
+
+  // A managed run must be assigned by Coach/Admin. Creating an unscoped
+  // instance here would silently pollute the pilot's data boundary.
+  if (activeRuns && activeRuns.length > 0) {
+    console.error("getOrCreateActiveInstance: active team run requires manager assignment");
+    return null;
+  }
+
+  const teamId = memberships?.[0]?.team_id ?? null;
 
   // Find next cycle number
   const { data: prior } = await supabase
@@ -79,6 +109,7 @@ export async function getOrCreateActiveInstance(
     .insert({
       user_id: userId,
       team_id: teamId,
+      program_run_id: null,
       cycle_number: nextCycle,
       status: "active",
       started_at: effective.startDate ?? new Date().toISOString().slice(0, 10),
@@ -87,6 +118,13 @@ export async function getOrCreateActiveInstance(
     .single();
 
   if (error || !created) {
+    if (error?.code === "23505") {
+      const concurrent = await getActiveInstance(userId);
+      if (concurrent) {
+        memo[userId] = concurrent;
+        return concurrent;
+      }
+    }
     console.error("getOrCreateActiveInstance error:", error);
     return null;
   }

@@ -10,12 +10,55 @@ interface VoiceInputProps {
   showHint?: boolean;
 }
 
+interface SpeechRecognitionResultEventLike {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: { isFinal: boolean; 0: { transcript: string } };
+  };
+}
+
+interface SpeechRecognitionErrorEventLike {
+  error: string;
+}
+
+const getSpeechErrorMessage = (error: string) => {
+  if (error === "not-allowed" || error === "service-not-allowed") {
+    return "Spracherkennung ist nicht erlaubt. Aktiviere Mikrofon und Spracherkennung in den iOS-Einstellungen oder tippe deine Antwort.";
+  }
+  if (error === "audio-capture") {
+    return "Kein Mikrofon verfügbar. Du kannst deine Antwort weiterhin tippen.";
+  }
+  if (error === "network") {
+    return "Spracherkennung ist gerade nicht erreichbar. Du kannst deine Antwort weiterhin tippen.";
+  }
+  return "Spracherkennung konnte nicht gestartet werden. Du kannst deine Antwort weiterhin tippen.";
+};
+
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionResultEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  abort: () => void;
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
 // Check for browser support
 const getSpeechRecognition = () => {
   if (typeof window === "undefined") return null;
+  const speechWindow = window as Window & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  };
   return (
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition ||
+    speechWindow.SpeechRecognition ||
+    speechWindow.webkitSpeechRecognition ||
     null
   );
 };
@@ -30,8 +73,9 @@ const VoiceInput = ({
   const [isSupported, setIsSupported] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [pulseLevel, setPulseLevel] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentValueRef = useRef(currentValue);
   const interimTextRef = useRef("");
@@ -103,6 +147,7 @@ const VoiceInput = ({
       startingRef.current = false;
       return;
     }
+    setErrorMessage(null);
 
     // Falls eine alte Instanz noch existiert: sauber entfernen.
     if (recognitionRef.current) {
@@ -123,7 +168,7 @@ const VoiceInput = ({
     recognition.continuous = true;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionResultEventLike) => {
       let interim = "";
       let final = "";
 
@@ -150,13 +195,12 @@ const VoiceInput = ({
       }
     };
 
-    recognition.onerror = (event: any) => {
-      console.error("Speech recognition error:", event.error);
-      if (event.error !== "aborted" && event.error !== "no-speech") {
-        isListeningRef.current = false;
-        setIsListening(false);
-        setInterimText("");
-      }
+    recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
+      if (event.error === "aborted" || event.error === "no-speech") return;
+      isListeningRef.current = false;
+      setIsListening(false);
+      setErrorMessage(getSpeechErrorMessage(event.error));
+      cleanupRecognition();
     };
 
     recognition.onend = () => {
@@ -195,6 +239,7 @@ const VoiceInput = ({
             cleanupRecognition();
             isListeningRef.current = false;
             setIsListening(false);
+            setErrorMessage(getSpeechErrorMessage("start-failed"));
           }
         }
       }, 250);
@@ -269,7 +314,7 @@ const VoiceInput = ({
           {isListening ? (
             <>
               <Square className="w-4 h-4 relative z-10" />
-              <span className="relative z-10">Aufnahme stoppen</span>
+              <span className="relative z-10">Einsprechen stoppen</span>
             </>
           ) : (
             <>
@@ -304,6 +349,20 @@ const VoiceInput = ({
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.p
+            role="alert"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="text-xs text-destructive"
+          >
+            {errorMessage}
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       {/* Interim transcript preview */}
       <AnimatePresence>

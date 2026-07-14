@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, FlaskConical, Copy, Plus, Calendar, Archive, ArrowLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface QATeam {
   id: string;
@@ -43,7 +44,7 @@ const AdminQA = () => {
       return;
     }
     loadTeams();
-  }, [authLoading, role, user]);
+  }, [authLoading, navigate, role, user]);
 
   const loadTeams = async () => {
     setLoading(true);
@@ -53,27 +54,29 @@ const AdminQA = () => {
       .eq("is_test_team", true)
       .order("name");
     const teamRows = rows ?? [];
-    const ids = teamRows.map((t: any) => t.id);
-    const [{ data: overrides }, { data: members }] = await Promise.all([
-      ids.length
-        ? supabase.from("qa_time_overrides").select("team_id, simulated_date, simulated_day_number").in("team_id", ids)
-        : Promise.resolve({ data: [] as any[] }),
-      ids.length
-        ? supabase.from("team_members").select("team_id").in("team_id", ids)
-        : Promise.resolve({ data: [] as any[] }),
-    ]);
-    const ovByTeam = new Map<string, any>((overrides ?? []).map((o: any) => [o.team_id, o]));
+    const ids = teamRows.map((team) => team.id);
+    let overrides: Pick<Tables<"qa_time_overrides">, "team_id" | "simulated_date" | "simulated_day_number">[] = [];
+    let members: Pick<Tables<"team_members">, "team_id">[] = [];
+    if (ids.length > 0) {
+      const [overrideResult, memberResult] = await Promise.all([
+        supabase.from("qa_time_overrides").select("team_id, simulated_date, simulated_day_number").in("team_id", ids),
+        supabase.from("team_members").select("team_id").in("team_id", ids),
+      ]);
+      overrides = overrideResult.data ?? [];
+      members = memberResult.data ?? [];
+    }
+    const ovByTeam = new Map(overrides.map((override) => [override.team_id, override]));
     const countByTeam = new Map<string, number>();
-    (members ?? []).forEach((m: any) => countByTeam.set(m.team_id, (countByTeam.get(m.team_id) ?? 0) + 1));
+    members.forEach((member) => countByTeam.set(member.team_id, (countByTeam.get(member.team_id) ?? 0) + 1));
     setTeams(
-      teamRows.map((t: any) => ({
-        id: t.id,
-        name: t.name,
-        program_start_date: t.program_start_date,
-        is_archived: t.is_archived,
-        simulated_date: ovByTeam.get(t.id)?.simulated_date ?? null,
-        simulated_day_number: ovByTeam.get(t.id)?.simulated_day_number ?? null,
-        member_count: countByTeam.get(t.id) ?? 0,
+      teamRows.map((team) => ({
+        id: team.id,
+        name: team.name,
+        program_start_date: team.program_start_date,
+        is_archived: team.is_archived,
+        simulated_date: ovByTeam.get(team.id)?.simulated_date ?? null,
+        simulated_day_number: ovByTeam.get(team.id)?.simulated_day_number ?? null,
+        member_count: countByTeam.get(team.id) ?? 0,
       })),
     );
     setLoading(false);
@@ -87,15 +90,15 @@ const AdminQA = () => {
       setLastCohort(data as CreatedCohort);
       toast.success("QA cohort created");
       await loadTeams();
-    } catch (e: any) {
-      toast.error(`Create failed: ${e?.message ?? e}`);
+    } catch (error: unknown) {
+      toast.error(`Create failed: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setCreating(false);
     }
   };
 
   const jump = async (teamId: string, day?: number, date?: string) => {
-    const body: any = { team_id: teamId };
+    const body: Record<string, string | number> = { team_id: teamId };
     if (day) body.simulated_day_number = day;
     if (date) body.simulated_date = date;
     const { error } = await supabase.functions.invoke("qa-set-time", { body });

@@ -32,13 +32,16 @@ const ConnectionStatus = () => {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-[90] flex justify-center px-4 pt-[max(env(safe-area-inset-top),0.75rem)]">
       <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         className={`flex max-w-md items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-card backdrop-blur-xl ${
           online
             ? "border-primary/30 bg-primary/15 text-foreground"
             : "border-amber-500/30 bg-amber-500/15 text-foreground"
         }`}
       >
-        <WifiOff className="h-3.5 w-3.5" />
+        <WifiOff aria-hidden="true" className="h-3.5 w-3.5" />
         <span>
           {online
             ? "Verbindung wiederhergestellt."

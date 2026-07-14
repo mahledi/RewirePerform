@@ -21,6 +21,18 @@ const corsHeaders = {
 };
 
 const MIN_N = 5;
+type WBKey = "mood" | "energy" | "focus" | "stress" | "recovery" | "sleep_quality" | "physical_readiness" | "motivation" | "pressure" | "team_connection";
+type WellbeingAggregate = Record<WBKey, number | null> & {
+  n_users: number;
+  sufficient_data: boolean;
+};
+
+const WB_KEYS: WBKey[] = ["mood", "energy", "focus", "stress", "recovery", "sleep_quality", "physical_readiness", "motivation", "pressure", "team_connection"];
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
 
 function emptyPayload(teamSize: number, reason: string) {
   return {
@@ -120,6 +132,21 @@ serve(async (req) => {
       }
     }
 
+    const { data: activeRun, error: runError } = await supabase
+      .from("program_runs")
+      .select("id")
+      .eq("team_id", team_id)
+      .eq("status", "active")
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (runError) throw runError;
+    if (!activeRun) {
+      return new Response(JSON.stringify(emptyPayload(0, "no_active_program_run")), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Athletes in this team
     const { data: members } = await supabase
       .from("team_members")
@@ -149,6 +176,21 @@ serve(async (req) => {
       );
     }
 
+    const { data: runInstances, error: instanceError } = await supabase
+      .from("program_instances")
+      .select("id, user_id")
+      .eq("program_run_id", activeRun.id)
+      .eq("status", "active")
+      .in("user_id", athleteIds);
+    if (instanceError) throw instanceError;
+    const assignedAthleteIds = Array.from(new Set((runInstances ?? []).map((instance) => instance.user_id)));
+    const instanceIds = (runInstances ?? []).map((instance) => instance.id);
+    if (assignedAthleteIds.length < MIN_N || instanceIds.length < MIN_N) {
+      return new Response(JSON.stringify(emptyPayload(assignedAthleteIds.length, "run_below_min_n")), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Last 28 days of check-ins — numeric fields ONLY. Raw `reflection` is
     // intentionally NOT selected. It must never leave the DB via this function.
     const fourWeeksAgo = new Date();
@@ -158,7 +200,8 @@ serve(async (req) => {
     const { data: checkins, error: checkinsError } = await supabase
       .from("daily_checkins")
       .select("user_id, date, energy_level, mood_before, focus_rating, tasks_completed, wellbeing_metrics")
-      .in("user_id", athleteIds)
+      .in("program_instance_id", instanceIds)
+      .in("user_id", assignedAthleteIds)
       .order("date", { ascending: true })
       .limit(5000);
 
@@ -234,7 +277,8 @@ serve(async (req) => {
     const { data: questionnaireData } = await supabase
       .from("questionnaire_responses")
       .select("user_id, analysis")
-      .in("user_id", athleteIds)
+      .in("program_instance_id", instanceIds)
+      .in("user_id", assignedAthleteIds)
       .not("analysis", "is", null);
 
     let teamChemistry: {
@@ -251,7 +295,7 @@ serve(async (req) => {
         niedrig: 25, mittel: 50, hoch: 75, "sehr hoch": 100,
       };
       for (const q of questionnaireData ?? []) {
-        const ie = (q.analysis as any)?.inner_excellence_profile;
+        const ie = asRecord(asRecord(q.analysis)?.inner_excellence_profile);
         if (!ie) continue;
         if (typeof ie.growth_mindset_score === "number") { gm += ie.growth_mindset_score; c++; }
         if (typeof ie.ego_freedom_score === "number") ego += ie.ego_freedom_score;
@@ -304,10 +348,7 @@ serve(async (req) => {
 
     // ─── Wellbeing / Team Pulse aggregates ───────────────────
     // Pull the wellbeing_metrics jsonb (numeric only). Never fetch reflection.
-    type WBKey = "mood" | "energy" | "focus" | "stress" | "recovery" | "sleep_quality" | "physical_readiness" | "motivation" | "pressure" | "team_connection";
-    const WB_KEYS: WBKey[] = ["mood", "energy", "focus", "stress", "recovery", "sleep_quality", "physical_readiness", "motivation", "pressure", "team_connection"];
-
-    const aggregateWB = (rows: typeof allCheckins) => {
+    const aggregateWB = (rows: typeof allCheckins): WellbeingAggregate => {
       const distinctUsers = new Set(rows.map((r) => r.user_id)).size;
       const sufficient = distinctUsers >= MIN_N;
       const out: Record<string, number | null> = {};
@@ -315,7 +356,7 @@ serve(async (req) => {
         if (!sufficient) { out[k] = null; continue; }
         const vals: number[] = [];
         for (const r of rows) {
-          const wm = (r as any).wellbeing_metrics as Record<string, unknown> | null;
+          const wm = asRecord(r.wellbeing_metrics);
           const v = wm && typeof wm[k] === "number" ? (wm[k] as number) : null;
           // Fallbacks for backward compatibility
           const fallback =
@@ -328,10 +369,10 @@ serve(async (req) => {
         }
         out[k] = vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : null;
       }
-      return { n_users: distinctUsers, sufficient_data: sufficient, ...out };
+      return { n_users: distinctUsers, sufficient_data: sufficient, ...out } as WellbeingAggregate;
     };
 
-    const computeReadiness = (agg: Record<string, number | null>): number | null => {
+    const computeReadiness = (agg: WellbeingAggregate): number | null => {
       const positives: number[] = [];
       for (const k of ["energy", "focus", "recovery", "sleep_quality", "physical_readiness", "motivation", "team_connection"]) {
         const v = agg[k]; if (typeof v === "number") positives.push(v);
@@ -345,7 +386,7 @@ serve(async (req) => {
       return Math.max(0, Math.min(100, Math.round(((raw - 1) / 9) * 100)));
     };
 
-    const buildHints = (agg: any): string[] => {
+    const buildHints = (agg: WellbeingAggregate): string[] => {
       if (!agg.sufficient_data) return ["Noch nicht genug anonymisierte Daten für Team-Tendenzen."];
       const hints: string[] = [];
       if (typeof agg.stress === "number" && typeof agg.recovery === "number" && agg.stress >= 7 && agg.recovery <= 4) {
@@ -370,29 +411,30 @@ serve(async (req) => {
     const todayStr = new Date().toISOString().split("T")[0];
     const todayRows = allCheckins.filter((c) => c.date === todayStr);
     const todayAgg = aggregateWB(todayRows);
-    const todayReadiness = computeReadiness(todayAgg as any);
+    const todayReadiness = computeReadiness(todayAgg);
     const coachHints = buildHints(todayAgg);
 
     // Daily trend (last 14 days)
-    const dailyTrend: any[] = [];
+    const dailyTrend: Array<WellbeingAggregate & { date: string; readiness_index: number | null }> = [];
     for (let i = 13; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
       const ds = d.toISOString().split("T")[0];
       const rows = allCheckins.filter((c) => c.date === ds);
       const agg = aggregateWB(rows);
-      dailyTrend.push({ date: ds, ...agg, readiness_index: computeReadiness(agg as any) });
+      dailyTrend.push({ date: ds, ...agg, readiness_index: computeReadiness(agg) });
     }
     // Weekly trend (4 weeks)
     const weeklyWB = weeks.map((wb) => {
       const rows = allCheckins.filter((c) => c.date >= wb.start && c.date < wb.end);
       const agg = aggregateWB(rows);
-      return { week: wb.label, start: wb.start, ...agg, readiness_index: computeReadiness(agg as any) };
+      return { week: wb.label, start: wb.start, ...agg, readiness_index: computeReadiness(agg) };
     });
 
     const result = {
       insufficient_data: false,
       min_n: MIN_N,
-      teamSize,
+      teamSize: assignedAthleteIds.length,
+      program_run_id: activeRun.id,
       energy: {
         current: currentWeek.sufficient_data ? currentWeek.energy : null,
         trend: trendData.map((t) => ({
@@ -430,7 +472,7 @@ serve(async (req) => {
         })),
       },
       participation: {
-        rate: teamSize > 0 ? Math.round((activeThisWeek / teamSize) * 100) : 0,
+        rate: assignedAthleteIds.length > 0 ? Math.round((activeThisWeek / assignedAthleteIds.length) * 100) : 0,
         total: activeThisWeek,
       },
       stressWarning,

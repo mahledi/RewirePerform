@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Users, Shield, UserPlus, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -265,10 +265,10 @@ const Auth = () => {
           className="w-full max-w-md min-w-0"
         >
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-6 cursor-pointer" onClick={() => navigate("/")}>
+            <button type="button" aria-label="Zur Startseite" className="mx-auto mb-6 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
               <Brain className="w-7 h-7 text-primary" />
               <span className="font-heading text-xl font-bold">RewirePerform</span>
-            </div>
+            </button>
             <h1 className="font-heading text-3xl font-bold mb-2">Wie startest du?</h1>
             <p className="text-muted-foreground text-sm">
               Wähle, wie du RewirePerform nutzen möchtest.
@@ -305,6 +305,7 @@ const Auth = () => {
               Anmelden
             </button>
           </p>
+          <LegalLinks />
         </motion.div>
       </div>
     );
@@ -320,10 +321,10 @@ const Auth = () => {
           className="w-full max-w-md min-w-0"
         >
           <div className="text-center mb-10">
-            <div className="flex items-center justify-center gap-2 mb-6 cursor-pointer" onClick={() => navigate("/")}>
+            <button type="button" aria-label="Zur Startseite" className="mx-auto mb-6 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
               <Brain className="w-7 h-7 text-primary" />
               <span className="font-heading text-xl font-bold">RewirePerform</span>
-            </div>
+            </button>
             <h1 className="font-heading text-3xl font-bold mb-2">Willkommen zurück.</h1>
             <p className="text-muted-foreground text-sm">
               {intent === "join"
@@ -339,6 +340,9 @@ const Auth = () => {
                   <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="text"
+                    name="team-code"
+                    autoComplete="one-time-code"
+                    aria-label="Teamcode"
                     placeholder="Teamcode (6 Zeichen)"
                     value={teamCode}
                     onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
@@ -352,7 +356,7 @@ const Auth = () => {
               </div>
             )}
             <FieldEmail value={email} onChange={setEmail} />
-            <FieldPassword value={password} onChange={setPassword} />
+            <FieldPassword value={password} onChange={setPassword} autoComplete="current-password" />
             <SubmitButton loading={loading} label="Anmelden" />
           </form>
 
@@ -365,6 +369,7 @@ const Auth = () => {
               Registrieren
             </button>
           </p>
+          <LegalLinks />
         </motion.div>
       </div>
     );
@@ -395,10 +400,10 @@ const Auth = () => {
         </button>
 
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-6 cursor-pointer" onClick={() => navigate("/")}>
+          <button type="button" aria-label="Zur Startseite" className="mx-auto mb-6 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
             <Brain className="w-7 h-7 text-primary" />
             <span className="font-heading text-xl font-bold">RewirePerform</span>
-          </div>
+          </button>
           <h1 className="font-heading text-3xl font-bold mb-2">{intentTitle}</h1>
           <p className="text-muted-foreground text-sm">{intentSub}</p>
         </div>
@@ -408,6 +413,10 @@ const Auth = () => {
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
+              name="name"
+              autoComplete="name"
+              aria-label="Vollständiger Name"
+              required
               placeholder="Vollständiger Name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -421,6 +430,9 @@ const Auth = () => {
                 <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
+                  name="team-code"
+                  autoComplete="one-time-code"
+                  aria-label="Teamcode"
                   placeholder="Teamcode (6 Zeichen)"
                   value={teamCode}
                   onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
@@ -441,7 +453,7 @@ const Auth = () => {
           )}
 
           <FieldEmail value={email} onChange={setEmail} />
-          <FieldPassword value={password} onChange={setPassword} />
+          <FieldPassword value={password} onChange={setPassword} autoComplete="new-password" />
           <SubmitButton loading={loading} label="Konto erstellen" />
         </form>
 
@@ -454,6 +466,7 @@ const Auth = () => {
             {intent === "join" ? "Anmelden und Teambeitritt abschließen" : "Anmelden"}
           </button>
         </p>
+        <LegalLinks />
       </motion.div>
     </div>
   );
@@ -484,6 +497,10 @@ const FieldEmail = ({ value, onChange }: { value: string; onChange: (v: string) 
     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
     <input
       type="email"
+      name="email"
+      autoComplete="email"
+      aria-label="E-Mail"
+      required
       placeholder="E-Mail"
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -492,17 +509,40 @@ const FieldEmail = ({ value, onChange }: { value: string; onChange: (v: string) 
   </div>
 );
 
-const FieldPassword = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+const FieldPassword = ({
+  value,
+  onChange,
+  autoComplete,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: "current-password" | "new-password";
+}) => (
   <div className="relative">
     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
     <input
       type="password"
+      name="password"
+      autoComplete={autoComplete}
+      aria-label="Passwort"
+      required
       placeholder="Passwort"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
     />
   </div>
+);
+
+const LegalLinks = () => (
+  <nav aria-label="Rechtliches und Hilfe" className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+    <Link to="/privacy" className="transition-colors hover:text-foreground">
+      Datenschutz
+    </Link>
+    <Link to="/support" className="transition-colors hover:text-foreground">
+      Support
+    </Link>
+  </nav>
 );
 
 const SubmitButton = ({ loading, label }: { loading: boolean; label: string }) => (

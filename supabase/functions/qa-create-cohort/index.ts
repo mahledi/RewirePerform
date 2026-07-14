@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
       const uid = u.user.id;
       // profiles + role may be set by triggers; upsert to ensure
       await admin.from("profiles").upsert({ id: uid, full_name: a.full_name, sport: "Football", is_test_user: true }, { onConflict: "id" });
-      await admin.from("user_roles").upsert({ user_id: uid, role: a.role as any }, { onConflict: "user_id,role" });
+      await admin.from("user_roles").upsert({ user_id: uid, role: a.role }, { onConflict: "user_id,role" });
       created.push({ role: a.role, email: a.email, user_id: uid });
     }
 
@@ -83,10 +83,25 @@ Deno.serve(async (req) => {
     const memberRows = [coach, ...athletes].map((c) => ({ team_id: team.id, user_id: c.user_id }));
     await admin.from("team_members").insert(memberRows);
 
+    const { data: programRun, error: runError } = await admin
+      .from("program_runs")
+      .insert({
+        team_id: team.id,
+        name: `${team.name} · Run 1`,
+        status: "active",
+        started_at: today,
+        created_by: adminId,
+        metadata: { source: "qa-create-cohort" },
+      })
+      .select("id")
+      .single();
+    if (runError || !programRun) throw new Error(`program run: ${runError?.message}`);
+
     // Program instances for athletes
     const instanceRows = athletes.map((a) => ({
       user_id: a.user_id,
       team_id: team.id,
+      program_run_id: programRun.id,
       cycle_number: 1,
       status: "active",
       started_at: today,
@@ -112,8 +127,9 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("qa-create-cohort error", e);
-    return new Response(JSON.stringify({ error: e?.message ?? "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const message = e instanceof Error ? e.message : "Internal error";
+    return new Response(JSON.stringify({ error: message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

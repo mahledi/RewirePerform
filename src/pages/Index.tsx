@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -18,13 +19,18 @@ const Index = () => {
   const { user, role, loading } = useAuth();
 
   useEffect(() => {
-    if (loading || !user || !role) return;
+    if (loading) return;
+    if (!user && Capacitor.isNativePlatform()) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    if (!user || !role) return;
     if (role === "admin") navigate("/admin", { replace: true });
     else if (role === "coach") navigate("/coach", { replace: true });
     else navigate("/dashboard", { replace: true });
   }, [loading, navigate, role, user]);
 
-  if (loading || (user && role)) {
+  if (loading || (user && role) || (!user && Capacitor.isNativePlatform())) {
     return <AppLoadingShell subtitle="Öffne deinen Bereich..." />;
   }
 

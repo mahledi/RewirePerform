@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
-import { ensureAssignment, upsertCompletion, upsertComprehension, drawComprehensionQuestions } from "@/lib/dayAssignment";
+import { ensureAssignment, upsertCompletion, drawComprehensionQuestions } from "@/lib/dayAssignment";
+import { saveDailyTracking, type DailyTrackingComprehensionResult } from "@/lib/dailyTracking";
 import {
   buildMicroAdjustmentContext,
   type MicroAdjustmentOutput,
@@ -177,6 +178,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [teamConnection, setTeamConnection] = useState<number | null>(null);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const config = typeConfig[eventType];
@@ -184,7 +186,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const displayLens = resolved?.content.lens ?? resolved?.matrix.lens;
   const displayTitle = resolved?.content.title ?? displayLens;
   const dateKey = format(date, "yyyy-MM-dd");
-  const draftKey = user?.id ? `checkin:${user.id}:${dateKey}:${eventType}` : null;
+  const legacyDraftKey = user?.id ? `checkin:${user.id}:${dateKey}:${eventType}` : null;
+  const draftKey = user?.id && activeInstanceId
+    ? `checkin:${user.id}:${activeInstanceId}:${dateKey}:${eventType}`
+    : legacyDraftKey;
   const getCompletedTaskTitles = (taskIds: string[] = completedTasks) =>
     taskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
@@ -268,7 +273,15 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         .filter((task) => persistedTaskTitles.includes(task.title) || persistedTaskTitles.includes(task.id))
         .map((task) => task.id);
 
-      const local = readLocalDraft<CheckinDraft>(`checkin:${user.id}:${dateStr}:${eventType}`);
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+      setActiveInstanceId(instance?.id ?? null);
+
+      const scopedDraftKey = instance?.id
+        ? `checkin:${user.id}:${instance.id}:${dateStr}:${eventType}`
+        : `checkin:${user.id}:${dateStr}:${eventType}`;
+      const local = readLocalDraft<CheckinDraft>(scopedDraftKey)
+        ?? readLocalDraft<CheckinDraft>(`checkin:${user.id}:${dateStr}:${eventType}`);
       if (local) {
         setStep(normalizeDraftStep(local.step));
         setCompletedTasks(Array.from(new Set([...persistedTaskIds, ...(local.completedTasks ?? [])])));
@@ -289,9 +302,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
       // ─── Micro-Adjustment Layer ─────────────────────────
       // Lädt nur bestehende Daten, kein KI-Call, undefined-safe.
-      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
-      const instance = await getOrCreateActiveInstance(user.id);
-
       let todayCheckinQuery = supabase
         .from("daily_checkins")
         .select("mood_before, energy_level, focus_rating, wellbeing_metrics")
@@ -443,77 +453,60 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     void persistTaskProgress(next);
   };
 
-  const saveCheckin = async (): Promise<boolean> => {
+  const saveCheckin = async (
+    comprehensionResults?: DailyTrackingComprehensionResult[],
+  ): Promise<boolean> => {
     if (previewMode) {
       setStep(5);
       return true;
     }
-    if (!user?.id) return false;
+    if (!user?.id || !assignmentId || !resolved) return false;
     if (saving) return false; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
     setSaveError(null);
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
-    const focusRating = focusClarity ?? (tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 10) : 0);
+    const focusRating = focusClarity
+      ?? (tasks.length > 0 ? Math.max(1, Math.round((completedTasks.length / tasks.length) * 10)) : null);
     const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
     const instance = await getOrCreateActiveInstance(user.id);
 
-    const wellbeing_metrics = {
-      mood: moodBefore,
-      energy: energyLevel,
-      focus: focusClarity,
-      stress,
-      recovery,
-      sleep_quality: sleepQuality,
-      physical_readiness: physicalReadiness,
-      motivation,
-      pressure,
-      team_connection: teamConnection,
-    };
-
-    const payload: any = {
-      session_id: user.id,
-      user_id: user.id,
-      date: dateStr,
-      event_type: eventType,
-      mood_before: moodBefore,
-      energy_level: energyLevel,
-      focus_rating: focusRating,
-      tasks_completed: completedTitles,
-      reflection: reflection || null,
-      wellbeing_metrics,
-      program_instance_id: instance?.id ?? null,
-    };
-
-    let error: any = null;
-    let existingQuery = supabase
-      .from("daily_checkins")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("date", dateStr)
-      .limit(1);
-    existingQuery = instance?.id
-      ? existingQuery.eq("program_instance_id", instance.id)
-      : existingQuery.is("program_instance_id", null);
-    const { data: existingRows, error: lookupError } = await existingQuery;
-    if (lookupError) error = lookupError;
-
-    const existing = existingRows?.[0];
-    if (!error && existing) {
-      const { error: updateError } = await supabase
-        .from("daily_checkins")
-        .update(payload)
-        .eq("id", existing.id);
-      error = updateError;
-    } else if (!error) {
-      const { error: insertError } = await supabase.from("daily_checkins").insert(payload);
-      error = insertError;
+    if (!instance?.id) {
+      setSaving(false);
+      setSaveError("Dein Programmlauf ist noch nicht vollständig eingerichtet. Bitte wende dich an den Coach oder Support.");
+      return false;
     }
 
-    if (error) {
+    try {
+      await saveDailyTracking({
+        assignmentId,
+        userId: user.id,
+        date: dateStr,
+        eventType,
+        dayNumber: resolved.matrix.dayNumber,
+        variantUsed: eventType,
+        programInstanceId: instance.id,
+        completedTaskTitles: completedTitles,
+        reflection: reflection.trim() || null,
+        moodBefore,
+        energyLevel,
+        focusRating,
+        stress,
+        recovery,
+        sleepQuality,
+        physicalReadiness,
+        motivation,
+        pressure,
+        teamConnection,
+        comprehensionQuestions: comprehensionResults
+          ? comprehensionQuestions as unknown as import("@/integrations/supabase/types").Json
+          : undefined,
+        comprehensionResults,
+      });
+    } catch (error) {
       setSaving(false);
-      console.error("Checkin save error:", error);
+      console.error("Atomic daily tracking save error:", error);
       void captureAppError({
         eventName: "daily_checkin_saved",
         error,
@@ -523,7 +516,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         metadata: {
           day_number: resolved?.matrix.dayNumber ?? null,
           event_type: eventType,
-          stage: "checkin",
+          stage: "atomic_tracking",
         },
       });
       const { toast } = await import("sonner");
@@ -532,42 +525,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       return false;
     }
 
-    // Persist day completion (orchestration layer)
-    if (assignmentId && resolved) {
-      const { error: completionError } = await upsertCompletion({
-        assignmentId,
-        userId: user.id,
-        dayNumber: resolved.matrix.dayNumber,
-        completedTaskTitles: completedTitles,
-        status: "completed",
-        variantUsed: eventType,
-        programInstanceId: instance?.id ?? null,
-      });
-      if (completionError) {
-        setSaving(false);
-        console.error("Completion save error:", completionError);
-        void captureAppError({
-          eventName: "daily_checkin_saved",
-          error: completionError,
-          role,
-          route: "/dashboard",
-          isTest: isTestUser,
-          metadata: {
-            day_number: resolved.matrix.dayNumber,
-            event_type: eventType,
-            stage: "completion",
-          },
-        });
-        const { toast } = await import("sonner");
-        setSaveError("Dein Check-in ist lokal gesichert. Der Fortschritt konnte noch nicht bestätigt werden.");
-        toast.error("Fortschritt lokal gesichert. Bitte erneut versuchen.");
-        return false;
-      }
-    }
-
     setSaving(false);
 
     if (draftKey) clearLocalDraft(draftKey);
+    if (legacyDraftKey && legacyDraftKey !== draftKey) clearLocalDraft(legacyDraftKey);
     setStep(5);
     return true;
   };
@@ -575,42 +536,13 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const handleComprehensionComplete = async (
     results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
   ) => {
-    setComprehensionDone(true);
     if (previewMode) {
-      await saveCheckin();
+      setComprehensionDone(true);
+      await saveCheckin(results);
       return;
     }
-    if (assignmentId && resolved && user?.id) {
-      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
-      const instance = await getOrCreateActiveInstance(user.id);
-      const { error } = await upsertComprehension({
-        assignmentId,
-        userId: user.id,
-        dayNumber: resolved.matrix.dayNumber,
-        questions: comprehensionQuestions,
-        results,
-        status: "completed",
-        programInstanceId: instance?.id ?? null,
-      });
-      if (error) {
-        console.error("Comprehension save error:", error);
-        void captureAppError({
-          eventName: "daily_checkin_saved",
-          error,
-          role,
-          route: "/dashboard",
-          isTest: isTestUser,
-          metadata: {
-            day_number: resolved.matrix.dayNumber,
-            event_type: eventType,
-            stage: "comprehension",
-          },
-        });
-        setSaveError("Deine Antworten sind lokal gesichert. Der Verständnis-Check konnte noch nicht bestätigt werden.");
-        return;
-      }
-    }
-    await saveCheckin();
+    const saved = await saveCheckin(results);
+    if (saved) setComprehensionDone(true);
   };
 
   const ScienceBiteIntro = () => {

@@ -30,8 +30,11 @@ const QATestBanner = () => {
         .from("team_members")
         .select("team_id, teams!inner(name, is_test_team)")
         .eq("user_id", user.id);
-      const testTeam = (memberships ?? []).find((m: any) => m.teams?.is_test_team);
-      if (testTeam) setLabel(`QA TEST TEAM · ${(testTeam as any).teams.name}`);
+      const testTeam = (memberships ?? []).map((membership) => {
+        const joinedTeam = Array.isArray(membership.teams) ? membership.teams[0] : membership.teams;
+        return joinedTeam?.is_test_team ? joinedTeam : null;
+      }).find((joinedTeam) => joinedTeam !== null);
+      if (testTeam) setLabel(`QA TEST TEAM · ${testTeam.name}`);
       setShow(true);
     })();
   }, [user?.id, location.pathname]);

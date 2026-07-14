@@ -41,8 +41,8 @@ class ErrorBoundary extends Component<Props, State> {
         <div className="max-w-md text-center space-y-4">
           <h1 className="font-heading text-2xl font-bold">Etwas ist schiefgelaufen</h1>
           <p className="text-muted-foreground text-sm">
-            Die App konnte nicht geladen werden. Versuch es bitte mit einem Neu-Laden.
-            Bleibt das Problem, hilft oft ein Hard-Reload (Cmd/Strg + Shift + R).
+            Die App konnte nicht vollständig geladen werden. Lade sie bitte erneut.
+            Bleibt das Problem bestehen, schließe RewirePerform vollständig und öffne die App noch einmal.
           </p>
           <button
             onClick={this.handleReload}
@@ -50,7 +50,7 @@ class ErrorBoundary extends Component<Props, State> {
           >
             App neu laden
           </button>
-          {this.state.error?.message && (
+          {import.meta.env.DEV && this.state.error?.message && (
             <pre className="text-xs text-muted-foreground/70 mt-4 whitespace-pre-wrap break-words">
               {this.state.error.message}
             </pre>
