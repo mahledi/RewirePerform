@@ -70,10 +70,29 @@ describe("performance evidence UI", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Spieler A · Beobachtung" })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "Wettkampf" })).toHaveAttribute("data-state", "on");
+    expect(screen.getByRole("radio", { name: "Wettkampf" })).toBeChecked();
     expect(screen.getByRole("combobox", { name: "Aufmerksamkeit zurückholen bewerten" }))
       .toHaveTextContent("Meistens sichtbar");
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+  });
+
+  it("switches the coach observation context through the full visible option", async () => {
+    const onSubmit = vi.fn();
+    render(<CoachWeeklyReview weekNumber={3} onSubmit={onSubmit} />);
+
+    fireEvent.click(screen.getByText("Wettkampf"));
+    expect(screen.getByRole("radio", { name: "Wettkampf" })).toBeChecked();
+
+    fireEvent.click(screen.getByText("Beides"));
+    expect(screen.getByRole("radio", { name: "Beides" })).toBeChecked();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Beobachtung speichern" }));
+    });
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ context: "mixed" }));
+    });
   });
 
   it("keeps a failed coach save retryable and visible", async () => {

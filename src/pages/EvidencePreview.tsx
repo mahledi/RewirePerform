@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Activity, Dumbbell, ShieldCheck, Users } from "lucide-react";
+import { Activity, Check, Dumbbell, ShieldCheck, Users } from "lucide-react";
 import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
 import CoachWeeklyReview from "@/components/evidence/CoachWeeklyReview";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTransferPulseForDay, type TransferPulseResponse } from "@/lib/performanceEvidence";
 
@@ -9,6 +10,7 @@ const previewPulse = getTransferPulseForDay(18, "training");
 
 const EvidencePreview = () => {
   const [athleteValue, setAthleteValue] = useState<TransferPulseResponse | null>(null);
+  const [athleteSaved, setAthleteSaved] = useState(false);
   const [coachSaved, setCoachSaved] = useState(false);
 
   if (!previewPulse) return null;
@@ -43,8 +45,28 @@ const EvidencePreview = () => {
               <AthleteTransferPulse
                 pulse={previewPulse}
                 value={athleteValue}
-                onValueChange={setAthleteValue}
+                onValueChange={(next) => {
+                  setAthleteValue(next);
+                  setAthleteSaved(false);
+                }}
               />
+              <div className="mx-auto mt-6 max-w-xl border-t border-border/55 pt-5">
+                <Button
+                  type="button"
+                  onClick={() => setAthleteSaved(true)}
+                  disabled={athleteValue === null}
+                  className="h-11 w-full"
+                >
+                  <Check className="h-4 w-4" aria-hidden="true" />
+                  Antwort bestätigen
+                </Button>
+                {athleteSaved && (
+                  <div role="status" className="mt-4 flex items-center gap-2 text-sm text-primary">
+                    <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    Auswahl geprüft. Es wurden keine Daten gespeichert.
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 

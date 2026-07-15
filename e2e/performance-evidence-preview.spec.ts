@@ -40,6 +40,8 @@ test("athlete and coach evidence previews stay concise and operable", async ({ p
   await page.goto("/internal/evidence-preview");
   await expect(page.getByRole("heading", { name: "Trotz Unsicherheit handeln" })).toBeVisible();
   await expect(page.getByRole("radio")).toHaveCount(5);
+  const athleteSubmit = page.getByRole("button", { name: "Antwort bestätigen" });
+  await expect(athleteSubmit).toBeDisabled();
   await expectNoHorizontalOverflow(page);
   await expectTouchTargets(page);
 
@@ -50,17 +52,27 @@ test("athlete and coach evidence previews stay concise and operable", async ({ p
   await expect(page.getByRole("radio", { name: "Teilweise" })).toBeChecked();
   await page.getByText("Meistens", { exact: true }).click();
   await expect(page.getByRole("radio", { name: "Meistens" })).toBeChecked();
+  await expect(athleteSubmit).toBeEnabled();
+  await athleteSubmit.click();
+  await expect(page.getByRole("status")).toHaveText("Auswahl geprüft. Es wurden keine Daten gespeichert.");
   await capture(page, testInfo, "athlete-transfer-pulse");
 
   await page.getByRole("tab", { name: "Coach" }).click();
   await expect(page.getByRole("heading", { name: "Teambeobachtung" })).toBeVisible();
   await expect(page.getByRole("combobox")).toHaveCount(5);
 
+  await page.getByText("Wettkampf", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Wettkampf" })).toBeChecked();
+  await page.getByText("Beides", { exact: true }).click();
+  await expect(page.getByRole("radio", { name: "Beides" })).toBeChecked();
+
   const attentionSelect = page.getByRole("combobox", { name: "Aufmerksamkeit zurückholen bewerten" });
   await attentionSelect.click();
   await page.getByRole("option", { name: "Meistens sichtbar" }).click();
   await expect(attentionSelect).toHaveText("Meistens sichtbar");
   await expect(page.getByText("1 von 5 Bereichen beobachtet")).toBeVisible();
+  await page.getByRole("button", { name: "Beobachtung speichern" }).click();
+  await expect(page.getByRole("status")).toHaveText("Lokal geprüft. Es wurden keine Daten gespeichert.");
 
   await expectNoHorizontalOverflow(page);
   await expectTouchTargets(page);

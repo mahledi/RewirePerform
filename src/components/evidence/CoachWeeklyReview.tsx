@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 import {
   COACH_OBSERVATION_LABELS,
   EVIDENCE_DOMAINS,
@@ -38,6 +38,11 @@ interface CoachWeeklyReviewProps {
 }
 
 const domainIds = Object.keys(EVIDENCE_DOMAINS) as EvidenceDomainId[];
+const observationContexts: { value: CoachObservationContext; label: string }[] = [
+  { value: "training", label: "Training" },
+  { value: "competition", label: "Wettkampf" },
+  { value: "mixed", label: "Beides" },
+];
 
 const createInitialValues = (
   initialValues?: Partial<CoachWeeklyReviewValues>,
@@ -104,23 +109,43 @@ const CoachWeeklyReview = ({
 
       <div className="mt-6">
         <p className="mb-2 text-xs font-medium text-muted-foreground">Beobachtet bei</p>
-        <ToggleGroup
-          type="single"
-          value={context}
-          onValueChange={(next) => next && setContext(next as CoachObservationContext)}
-          className="grid w-full grid-cols-3 gap-1 rounded-md border border-border/60 bg-muted/45 p-1"
+        <div
+          role="radiogroup"
           aria-label="Beobachtungskontext"
+          className="grid w-full grid-cols-3 gap-1 rounded-md border border-border/60 bg-muted/45 p-1"
         >
-          <ToggleGroupItem value="training" className="h-11 min-w-0 px-2 text-xs data-[state=on]:bg-card sm:text-sm">
-            Training
-          </ToggleGroupItem>
-          <ToggleGroupItem value="competition" className="h-11 min-w-0 px-2 text-xs data-[state=on]:bg-card sm:text-sm">
-            Wettkampf
-          </ToggleGroupItem>
-          <ToggleGroupItem value="mixed" className="h-11 min-w-0 px-2 text-xs data-[state=on]:bg-card sm:text-sm">
-            Beides
-          </ToggleGroupItem>
-        </ToggleGroup>
+          {observationContexts.map((option) => {
+            const selected = context === option.value;
+            return (
+              <label
+                key={option.value}
+                className={cn(
+                  "relative flex min-h-11 min-w-0 cursor-pointer items-center justify-center rounded px-2 text-xs font-semibold transition-colors sm:text-sm",
+                  "focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1 focus-within:ring-offset-background",
+                  selected
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/70"
+                    : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
+                  (disabled || submitting) && "cursor-not-allowed opacity-50",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="coach-observation-context"
+                  value={option.value}
+                  checked={selected}
+                  onChange={() => setContext(option.value)}
+                  disabled={disabled || submitting}
+                  aria-label={option.label}
+                  className="sr-only"
+                />
+                <span className="truncate">{option.label}</span>
+                {selected && (
+                  <Check className="absolute right-1.5 h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                )}
+              </label>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-7 divide-y divide-border/55 border-y border-border/55">
