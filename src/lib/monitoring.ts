@@ -25,6 +25,30 @@ export type AppRole = "athlete" | "coach" | "admin" | null;
 type SafeMetadataValue = string | number | boolean | null;
 type SafeMetadata = Record<string, SafeMetadataValue | SafeMetadataValue[]>;
 
+const SAFE_METADATA_KEYS = new Set([
+  "action",
+  "answer_count",
+  "assessment_type",
+  "day_number",
+  "event_type",
+  "has_notification_id",
+  "has_program_instance",
+  "instrument_id",
+  "item_count",
+  "questionnaire_version",
+  "scope",
+  "source",
+  "stage",
+  "timing",
+]);
+const SAFE_DIAGNOSTIC_TOKEN = /^[A-Za-z0-9_.:/-]{1,96}$/;
+const DISABLED_SENTRY_INTEGRATIONS = new Set([
+  "Breadcrumbs",
+  "BrowserApiErrors",
+  "GlobalHandlers",
+  "TryCatch",
+]);
+
 type TrackAppEventInput = {
   eventName: AppEventName;
   status?: AppEventStatus;
@@ -58,17 +82,49 @@ const getSentryClient = () => {
   return sentryClientPromise;
 };
 
-const sanitizeMetadata = (metadata?: SafeMetadata) => {
+const sanitizeMetadataValue = (value: SafeMetadataValue): SafeMetadataValue | undefined => {
+  if (typeof value === "string") {
+    return SAFE_DIAGNOSTIC_TOKEN.test(value) ? value : undefined;
+  }
+  return ["number", "boolean"].includes(typeof value) || value === null ? value : undefined;
+};
+
+export const sanitizeMonitoringMetadata = (metadata?: SafeMetadata) => {
   if (!metadata) return {};
 
-  return Object.fromEntries(
-    Object.entries(metadata).filter(([, value]) => {
-      if (Array.isArray(value)) {
-        return value.every((item) => ["string", "number", "boolean"].includes(typeof item) || item === null);
-      }
-      return ["string", "number", "boolean"].includes(typeof value) || value === null;
-    })
-  );
+  const result: SafeMetadata = {};
+  for (const [key, value] of Object.entries(metadata)) {
+    if (!SAFE_METADATA_KEYS.has(key)) continue;
+    if (Array.isArray(value)) {
+      const sanitized = value
+        .map((item) => sanitizeMetadataValue(item))
+        .filter((item): item is SafeMetadataValue => item !== undefined);
+      if (sanitized.length === value.length) result[key] = sanitized;
+      continue;
+    }
+    const sanitized = sanitizeMetadataValue(value);
+    if (sanitized !== undefined) result[key] = sanitized;
+  }
+  return result;
+};
+
+const sanitizeDiagnosticToken = (value: unknown, fallback: string) =>
+  typeof value === "string" && SAFE_DIAGNOSTIC_TOKEN.test(value) ? value : fallback;
+
+const sanitizeRoute = (route: string | null | undefined) => {
+  if (!route) return null;
+  const pathname = route.split(/[?#]/, 1)[0];
+  return pathname.startsWith("/") ? pathname.slice(0, 160) : null;
+};
+
+const sanitizeRequestUrl = (value: string | undefined) => {
+  if (!value) return undefined;
+  try {
+    const parsed = new URL(value, window.location.origin);
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return undefined;
+  }
 };
 
 const getRoute = () => {
@@ -79,45 +135,37 @@ const getRoute = () => {
 const getErrorCode = (error: unknown) => {
   if (error && typeof error === "object" && "code" in error) {
     const code = (error as { code?: unknown }).code;
-    if (typeof code === "string") return code;
+    if (typeof code === "string") return sanitizeDiagnosticToken(code, "unknown_error");
   }
-  if (error instanceof Error) return error.name;
+  if (error instanceof Error) return sanitizeDiagnosticToken(error.name, "application_error");
   return "unknown_error";
 };
 
 const getErrorName = (error: unknown) => {
-  if (error instanceof Error) return error.name;
+  if (error instanceof Error) return sanitizeDiagnosticToken(error.name, "ApplicationError");
   if (error && typeof error === "object" && "name" in error) {
     const name = (error as { name?: unknown }).name;
-    if (typeof name === "string" && name.trim()) return name;
+    if (typeof name === "string" && name.trim()) {
+      return sanitizeDiagnosticToken(name, "ApplicationError");
+    }
   }
   return null;
 };
 
-const getErrorMessage = (error: unknown) => {
-  if (error instanceof Error) return error.message;
-  if (error && typeof error === "object" && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-    if (typeof message === "string" && message.trim()) return message;
-  }
-  if (typeof error === "string" && error.trim()) return error;
-  return "Unknown application error";
-};
+export const toMonitoringError = (error: unknown) => {
+  const code = getErrorCode(error);
+  const normalized = new Error(`Application operation failed (${code})`);
+  normalized.name = getErrorName(error) ?? "ApplicationError";
 
-const toError = (error: unknown) => {
-  if (error instanceof Error) return error;
-
-  const normalized = new Error(getErrorMessage(error));
-  normalized.name = getErrorName(error) ?? getErrorCode(error);
-
-  if (error && typeof error === "object") {
-    const source = error as Record<string, unknown>;
-    const cause = Object.fromEntries(
-      Object.entries(source).filter(([, value]) =>
-        ["string", "number", "boolean"].includes(typeof value) || value === null
-      )
-    );
-    (normalized as Error & { cause?: unknown }).cause = cause;
+  if (error instanceof Error && error.stack) {
+    const stackFrames = error.stack
+      .split("\n")
+      .slice(1)
+      .filter((line) => line.trimStart().startsWith("at "))
+      .slice(0, 20);
+    if (stackFrames.length > 0) {
+      normalized.stack = `${normalized.name}: ${normalized.message}\n${stackFrames.join("\n")}`;
+    }
   }
 
   return normalized;
@@ -148,12 +196,40 @@ export const initMonitoring = () => {
         release: RELEASE_SHA || undefined,
         sendDefaultPii: false,
         tracesSampleRate: 0,
+        maxBreadcrumbs: 0,
+        integrations(defaultIntegrations) {
+          return defaultIntegrations.filter(
+            (integration) => !DISABLED_SENTRY_INTEGRATIONS.has(integration.name),
+          );
+        },
         beforeSend(event) {
           if (event.user) {
             event.user = { id: event.user.id };
           }
+          event.breadcrumbs = [];
+          event.extra = sanitizeMonitoringMetadata(event.extra as SafeMetadata | undefined);
+          if (event.message) event.message = "Application diagnostic event";
+          if (event.logentry) {
+            event.logentry.message = "Application diagnostic event";
+            event.logentry.params = [];
+          }
+          for (const exception of event.exception?.values ?? []) {
+            exception.type = sanitizeDiagnosticToken(exception.type, "ApplicationError");
+            if (!exception.value?.startsWith("Application operation failed (")) {
+              exception.value = "Application operation failed (unknown_error)";
+            }
+            for (const frame of exception.stacktrace?.frames ?? []) {
+              delete frame.vars;
+            }
+          }
           delete event.request?.cookies;
           delete event.request?.headers;
+          delete event.request?.data;
+          delete event.request?.env;
+          delete event.request?.query_string;
+          if (event.request) {
+            event.request.url = sanitizeRequestUrl(event.request.url);
+          }
           return event;
         },
       });
@@ -206,10 +282,10 @@ export const trackAppEvent = async ({
       status,
       role: role ?? null,
       team_id: teamId ?? null,
-      route: route ?? getRoute(),
-      error_code: errorCode ?? null,
+      route: sanitizeRoute(route ?? getRoute()),
+      error_code: errorCode ? sanitizeDiagnosticToken(errorCode, "unknown_error") : null,
       is_test: Boolean(isTest),
-      metadata: sanitizeMetadata(metadata),
+      metadata: sanitizeMonitoringMetadata(metadata),
     });
   } catch (error) {
     // Event logging must never break a user flow.
@@ -232,13 +308,13 @@ export const captureAppError = async ({
   if (sentryClient && shouldSendToSentry({ error, eventName, role, teamId, route, errorCode, isTest, metadata, sentry })) {
     try {
       const Sentry = await sentryClient;
-      Sentry.captureException(toError(error), {
+      Sentry.captureException(toMonitoringError(error), {
         tags: {
           app_event: eventName,
           role: role ?? "unknown",
           is_test: String(Boolean(isTest)),
         },
-        extra: sanitizeMetadata(metadata),
+        extra: sanitizeMonitoringMetadata(metadata),
       });
     } catch (sentryError) {
       console.warn("[ops] sentry capture failed", sentryError);

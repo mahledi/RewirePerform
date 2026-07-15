@@ -23,6 +23,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:evidence:sql": "node scripts/verify-performance-evidence-sql.mjs",
+    "privacy:verify": "node scripts/verify-pilot-privacy-safety.mjs",
     "test:e2e": "playwright test",
     "test:staging:plan": "node scripts/nlz-staging-e2e.mjs --plan",
     "test:staging:execute": "node scripts/nlz-staging-e2e.mjs --execute",
