@@ -129,6 +129,105 @@ export type Database = {
           },
         ]
       }
+      athlete_transfer_observations: {
+        Row: {
+          assignment_id: string
+          collected_at: string
+          consent_version: string
+          consented_at: string
+          created_at: string
+          day_number: number
+          domain_id: string
+          event_type: string
+          id: string
+          is_test: boolean
+          not_observed: boolean
+          program_instance_id: string
+          program_run_id: string | null
+          protocol_version: string
+          response_duration_ms: number | null
+          score: number | null
+          team_id: string | null
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          collected_at?: string
+          consent_version: string
+          consented_at: string
+          created_at?: string
+          day_number: number
+          domain_id: string
+          event_type: string
+          id?: string
+          is_test?: boolean
+          not_observed?: boolean
+          program_instance_id: string
+          program_run_id?: string | null
+          protocol_version: string
+          response_duration_ms?: number | null
+          score?: number | null
+          team_id?: string | null
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          collected_at?: string
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          day_number?: number
+          domain_id?: string
+          event_type?: string
+          id?: string
+          is_test?: boolean
+          not_observed?: boolean
+          program_instance_id?: string
+          program_run_id?: string | null
+          protocol_version?: string
+          response_duration_ms?: number | null
+          score?: number | null
+          team_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_transfer_observations_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "user_day_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_transfer_observations_program_instance_id_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_transfer_observations_program_run_id_fkey"
+            columns: ["program_run_id"]
+            isOneToOne: false
+            referencedRelation: "program_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_transfer_observations_protocol_version_fkey"
+            columns: ["protocol_version"]
+            isOneToOne: false
+            referencedRelation: "evidence_protocols"
+            referencedColumns: ["version"]
+          },
+          {
+            foreignKeyName: "athlete_transfer_observations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calendar_events: {
         Row: {
           created_at: string
@@ -161,6 +260,118 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      coach_evidence_observations: {
+        Row: {
+          created_at: string
+          domain_id: string
+          not_observed: boolean
+          review_id: string
+          score: number | null
+        }
+        Insert: {
+          created_at?: string
+          domain_id: string
+          not_observed?: boolean
+          review_id: string
+          score?: number | null
+        }
+        Update: {
+          created_at?: string
+          domain_id?: string
+          not_observed?: boolean
+          review_id?: string
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_evidence_observations_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "coach_evidence_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_evidence_reviews: {
+        Row: {
+          coach_id: string
+          completion_duration_ms: number | null
+          created_at: string
+          id: string
+          is_test: boolean
+          observation_context: string
+          observed_athlete_count: number
+          program_run_id: string
+          protocol_version: string
+          scope_type: string
+          target_program_instance_id: string | null
+          team_id: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          coach_id: string
+          completion_duration_ms?: number | null
+          created_at?: string
+          id?: string
+          is_test?: boolean
+          observation_context: string
+          observed_athlete_count: number
+          program_run_id: string
+          protocol_version: string
+          scope_type: string
+          target_program_instance_id?: string | null
+          team_id: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          coach_id?: string
+          completion_duration_ms?: number | null
+          created_at?: string
+          id?: string
+          is_test?: boolean
+          observation_context?: string
+          observed_athlete_count?: number
+          program_run_id?: string
+          protocol_version?: string
+          scope_type?: string
+          target_program_instance_id?: string | null
+          team_id?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_evidence_reviews_program_run_id_fkey"
+            columns: ["program_run_id"]
+            isOneToOne: false
+            referencedRelation: "program_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_evidence_reviews_protocol_version_fkey"
+            columns: ["protocol_version"]
+            isOneToOne: false
+            referencedRelation: "evidence_protocols"
+            referencedColumns: ["version"]
+          },
+          {
+            foreignKeyName: "coach_evidence_reviews_target_program_instance_id_fkey"
+            columns: ["target_program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_evidence_reviews_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coach_journals: {
         Row: {
@@ -414,6 +625,168 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "program_instances"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_eligibility_audit: {
+        Row: {
+          actor_id: string | null
+          athlete_assent_version: string | null
+          created_at: string
+          guardian_consent_version: string | null
+          id: string
+          program_instance_id: string
+          status: string
+          verification_basis: string
+        }
+        Insert: {
+          actor_id?: string | null
+          athlete_assent_version?: string | null
+          created_at?: string
+          guardian_consent_version?: string | null
+          id?: string
+          program_instance_id: string
+          status: string
+          verification_basis?: string
+        }
+        Update: {
+          actor_id?: string | null
+          athlete_assent_version?: string | null
+          created_at?: string
+          guardian_consent_version?: string | null
+          id?: string
+          program_instance_id?: string
+          status?: string
+          verification_basis?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_eligibility_audit_program_instance_id_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: false
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_participation_eligibility: {
+        Row: {
+          athlete_assent_version: string | null
+          created_at: string
+          guardian_consent_version: string | null
+          program_instance_id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+          verification_basis: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          athlete_assent_version?: string | null
+          created_at?: string
+          guardian_consent_version?: string | null
+          program_instance_id: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status: string
+          updated_at?: string
+          verification_basis?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          athlete_assent_version?: string | null
+          created_at?: string
+          guardian_consent_version?: string | null
+          program_instance_id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          verification_basis?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_participation_eligibility_program_instance_id_fkey"
+            columns: ["program_instance_id"]
+            isOneToOne: true
+            referencedRelation: "program_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_protocols: {
+        Row: {
+          athlete_collection_enabled: boolean
+          coach_collection_enabled: boolean
+          created_at: string
+          minor_collection_enabled: boolean
+          program_days: number
+          required_athlete_assent_version: string | null
+          required_consent_version: string
+          required_guardian_consent_version: string | null
+          status: string
+          version: string
+        }
+        Insert: {
+          athlete_collection_enabled?: boolean
+          coach_collection_enabled?: boolean
+          created_at?: string
+          minor_collection_enabled?: boolean
+          program_days: number
+          required_athlete_assent_version?: string | null
+          required_consent_version: string
+          required_guardian_consent_version?: string | null
+          status: string
+          version: string
+        }
+        Update: {
+          athlete_collection_enabled?: boolean
+          coach_collection_enabled?: boolean
+          created_at?: string
+          minor_collection_enabled?: boolean
+          program_days?: number
+          required_athlete_assent_version?: string | null
+          required_consent_version?: string
+          required_guardian_consent_version?: string | null
+          status?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      evidence_transfer_schedule: {
+        Row: {
+          day_number: number
+          domain_id: string
+          protocol_version: string
+          replaces_optional_reflection: boolean
+          target_seconds: number
+        }
+        Insert: {
+          day_number: number
+          domain_id: string
+          protocol_version: string
+          replaces_optional_reflection?: boolean
+          target_seconds: number
+        }
+        Update: {
+          day_number?: number
+          domain_id?: string
+          protocol_version?: string
+          replaces_optional_reflection?: boolean
+          target_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_transfer_schedule_protocol_version_fkey"
+            columns: ["protocol_version"]
+            isOneToOne: false
+            referencedRelation: "evidence_protocols"
+            referencedColumns: ["version"]
           },
         ]
       }
@@ -1743,13 +2116,17 @@ export type Database = {
         Args: { _name: string; _started_at?: string; _team_id: string }
         Returns: Json
       }
-      get_active_team_program_run: { Args: { _team_id: string }; Returns: Json }
-      get_admin_evidence_quality: {
-        Args: { include_test?: boolean }
-        Returns: Json
+      evidence_eligibility_reason: {
+        Args: { _program_instance_id: string; _protocol_version: string }
+        Returns: string
       }
+      get_active_team_program_run: { Args: { _team_id: string }; Returns: Json }
       get_admin_evidence_eligibility: {
         Args: { _include_test?: boolean }
+        Returns: Json
+      }
+      get_admin_evidence_quality: {
+        Args: { include_test?: boolean }
         Returns: Json
       }
       get_admin_nlz_evidence_dossier: {
@@ -1772,6 +2149,10 @@ export type Database = {
       get_admin_teams_summary:
         | { Args: never; Returns: Json }
         | { Args: { include_test?: boolean }; Returns: Json }
+      get_coach_evidence_review_context: {
+        Args: { _protocol_version?: string; _team_id: string }
+        Returns: Json
+      }
       get_coach_team_activity_status: {
         Args: { _team_id: string }
         Returns: {
@@ -1788,19 +2169,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_coach_evidence_review_context: {
-        Args: { _protocol_version?: string; _team_id: string }
-        Returns: Json
-      }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
-      get_nlz_evidence_dossier: {
-        Args: { _program_run_id: string }
-        Returns: Json
-      }
-      get_nlz_pilot_readiness: {
-        Args: { _program_run_id?: string; _team_id?: string }
-        Returns: Json
-      }
       get_my_evidence_status: {
         Args: {
           _day_number: number
@@ -1814,10 +2183,18 @@ export type Database = {
         Args: { _program_instance_id: string; _protocol_version?: string }
         Returns: Json
       }
+      get_nlz_evidence_dossier: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
+      get_nlz_pilot_readiness: {
+        Args: { _program_run_id?: string; _team_id?: string }
+        Returns: Json
+      }
       get_performance_evidence_summary: {
         Args: {
           _include_test?: boolean
-          _program_run_id?: string | null
+          _program_run_id?: string
           _protocol_version?: string
         }
         Returns: Json
@@ -1852,6 +2229,19 @@ export type Database = {
       is_creator_of_team: { Args: { _team_id: string }; Returns: boolean }
       is_member_of_team: { Args: { _team_id: string }; Returns: boolean }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
+      save_coach_evidence_review: {
+        Args: {
+          _completion_duration_ms?: number
+          _context: string
+          _observations: Json
+          _program_instance_id: string
+          _protocol_version: string
+          _scope: string
+          _team_id: string
+          _week_number: number
+        }
+        Returns: Json
+      }
       save_daily_tracking_v2: {
         Args: {
           _assignment_id: string
@@ -1886,10 +2276,10 @@ export type Database = {
           _day_number: number
           _energy_level?: number
           _event_type: string
-          _evidence_domain_id?: string | null
-          _evidence_protocol_version?: string | null
-          _evidence_response?: string | null
-          _evidence_response_duration_ms?: number | null
+          _evidence_domain_id?: string
+          _evidence_protocol_version?: string
+          _evidence_response?: string
+          _evidence_response_duration_ms?: number
           _focus_rating?: number
           _mood_before?: number
           _motivation?: number
@@ -1903,19 +2293,6 @@ export type Database = {
           _tasks_completed?: Json
           _team_connection?: number
           _variant_used: string
-        }
-        Returns: Json
-      }
-      save_coach_evidence_review: {
-        Args: {
-          _completion_duration_ms?: number | null
-          _context: string
-          _observations: Json
-          _program_instance_id: string | null
-          _protocol_version: string
-          _scope: string
-          _team_id: string
-          _week_number: number
         }
         Returns: Json
       }

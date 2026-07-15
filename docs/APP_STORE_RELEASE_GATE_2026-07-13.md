@@ -20,7 +20,7 @@
 - Statisches Release-Gate `npm run app:verify` prueft App-ID, Bundle-ID, Berechtigungstexte, Privacy-Kategorien und Icon.
 - Native lokale Erinnerungen sind fuer Check-in, Journal und Pre-Training implementiert. Die 56-Tage-Planung unterdrueckt bekannte Ruhetage und uebernimmt konkrete Wettkampf-/Trainingszeiten.
 - Der synthetische E2E-Testplan prueft Athlete-/Coach-/Admin-/Outsider-Grenzen sowie Training, Ruhetag und Wettkampf. Sein Plan-Modus bleibt netzwerkfrei; Remote-Ausfuehrung ist technisch gesperrt, bis ein neues Staging-Projekt explizit freigegeben und eingebunden ist.
-- Die Production-Migrationshistorie enthaelt jetzt exakt `20260710120000`, `20260710130000`, `20260713140500`, `20260714084351` und die Advisor-Haertung `20260714104145`. Schema-, Runtime- und Bestandspruefungen sind bestanden; die vorhandenen Account- und Tracking-Zeilenzahlen blieben unveraendert.
+- Die Production-Migrationshistorie enthaelt jetzt exakt `20260710120000`, `20260710130000`, `20260713140500`, `20260714084351`, die Advisor-Haertung `20260714104145`, Performance Evidence `20260714224000` und die Evidence-FK-Indizes `20260715085749`. Schema-, Runtime- und Bestandspruefungen sind bestanden; bestehende Account- und Trackingdaten wurden durch den Evidence-Apply nicht veraendert.
 - `delete-account` Version 1 ist auf Production `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`.
 - Der destruktive Athlet-in-Team-Test bestand am 14. Juli 2026: Function und Auth meldeten erfolgreiche Loeschung, der erneute Login scheiterte, der Bestand fiel kontrolliert von 8 auf 7 Accounts/Profile und die accountbezogene Auth-, Produkt- und Referenzpruefung ergab jeweils 0 Restzeilen. Evidenz: `docs/ACCOUNT_DELETION_PRODUCTION_VERIFICATION_2026-07-14.md`.
 - Vor dem Production-Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt. Der Schluessel liegt ausschliesslich im macOS-Schluesselbund.
@@ -44,9 +44,9 @@
 
 ## Separates Gate vor einem Evidence-Pilot
 
-- Die neue Migration `20260714224000_performance_evidence_56d_v1.sql` liegt im Repository, ist aber noch nicht auf Staging oder Production angewendet.
-- Bis zur Migration bleiben die neuen Evidence-Elemente serverseitig deaktiviert. Normale Check-ins fallen bei einer fehlenden V3-Funktion sicher auf die bestehende V2-Speicherung zurueck; eine Evidence-Antwort wird niemals still verworfen.
-- Vor der Aktivierung folgen Datenbank-Apply, generierte Production-Typen, Rollen-/Consent-Negativtests gegen das echte Ziel und ein kontrollierter Testlauf. Fuer Minderjaehrige bleibt Evidence unabhaengig davon deaktiviert, bis das eigene Guardian-/Assent-Gate freigegeben ist.
+- Die Migration `20260714224000_performance_evidence_56d_v1.sql` und die Index-Haertung `20260715085749_performance_evidence_fk_indexes.sql` sind auf Production angewendet; lokale und entfernte Migrationshistorie stimmen ueberein.
+- Tabellenzugriff, RPC-Rechte, fester `search_path`, Protokoll, Mindestgruppengroesse und die deaktivierte Minderjaehrigen-Erhebung wurden gegen Production geprueft. Production-Typen wurden danach neu generiert.
+- Vor einem realen Pilot bleiben ein kontrollierter End-to-End-Test mit eindeutigem Erwachsenen-Testaccount, ein Coach-Testlauf und die reale iPhone-Pruefung Pflicht. Fuer Minderjaehrige bleibt Evidence deaktiviert, bis das eigene Guardian-/Assent-Gate fachlich und rechtlich freigegeben ist.
 
 ## Privacy-Label-Basis
 

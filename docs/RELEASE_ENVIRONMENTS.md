@@ -1,12 +1,12 @@
 # Release environments
 
-Last verified: 14 July 2026.
+Last verified: 15 July 2026.
 
 ## Confirmed targets
 
 | Purpose | Supabase project | Project ref | Evidence |
 | --- | --- | --- | --- |
-| Production | RewirePerform real | `bqsbxesmybthwtxmowfz` | The live Vercel asset served by `rewireperform.com` contains this URL; the Supabase CLI lists the project as healthy. |
+| Production | RewirePerform real | `bqsbxesmybthwtxmowfz` | The live Vercel asset served by `rewireperform.com` contains this URL; the Supabase CLI lists the project as healthy and migrations `20260714224000` and `20260715085749` are applied. |
 | Staging | None approved | - | Mahle confirmed that the former target `towgvykgezrmkbyudjen` is an old project and must no longer be used. |
 | CI | Synthetic only | `abcdefghijklmnopqrst` | GitHub Actions uses a non-live placeholder target and must never be treated as a deploy artifact. |
 

@@ -1,10 +1,10 @@
 # Performance Evidence 56D: Implementierungsstand
 
-Stand: 14. Juli 2026
+Stand: 15. Juli 2026
 
 Integrationsbranch: `codex/performance-evidence-integrated-20260714`
 
-Dieser Stand ist auf dem aktuellen `origin/main` mit den App-Store- und Account-Loeschungsarbeiten integriert und lokal getestet. Die Evidence-Migration wurde weder auf Staging noch auf Production angewendet. Ein Datenbank- oder Web-Deployment ist nicht Teil dieses Commits.
+Dieser Stand ist auf dem aktuellen `origin/main` mit den App-Store- und Account-Loeschungsarbeiten integriert. Die Evidence-Migration `20260714224000` und die FK-Index-Haertung `20260715085749` wurden am 15. Juli 2026 kontrolliert auf Production `bqsbxesmybthwtxmowfz` angewendet. Die Migrationshistorie, Tabellen, RPC-Rechte, RLS, Protokollkonfiguration, Indizes und Minderjaehrigen-Sperre wurden danach gegen das echte Ziel geprueft. Es wurden dabei keine bestehenden Spieler- oder Trackingzeilen veraendert und keine Evidence-Teilnahme automatisch freigegeben.
 
 ## 1. Implementierter Umfang
 
@@ -115,7 +115,7 @@ Folgende Punkte gehoeren nicht zu diesem R4-Block und duerfen nicht als fertig d
 - Sportartspezifische Solo-Exporte. Das bestehende Profilfeld `sport` ist Freitext und wird deshalb nicht ungeprueft als externe Evidence-Dimension ausgegeben; dafuer braucht es zuerst eine versionierte Taxonomie und eine bestaetigte Zuordnung.
 - Der vollstaendige Dependency-Audit meldet zwei bereits bestehende entwicklungsseitige Vite/esbuild-Advisories. Produktionsabhaengigkeiten sind ohne Finding; die verifizierte Behebung erfordert einen getrennten Vite-8-Major-Upgrade und ist nicht Teil dieses Evidence-Branches.
 
-## 6. Lokale Verifikation
+## 6. Verifikation
 
 - Echter TypeScript-Check fuer App- und Node-Konfiguration.
 - Produktionsbuild und App-Store-Static-Checks.
@@ -129,17 +129,23 @@ Folgende Punkte gehoeren nicht zu diesem R4-Block und duerfen nicht als fertig d
 - `git diff --check`: ohne Fehler.
 - Interne Evidence-Vorschau ist im normalen Produktionsbuild nicht enthalten.
 - Der vollstaendige Production-Build inklusive Capacitor-iOS-Sync und Kontrolle des eingebetteten Production-Supabase-Ziels ist nach der Integration erfolgreich durchgelaufen.
+- Production enthaelt exakt `20260714224000_performance_evidence_56d_v1.sql` und `20260715085749_performance_evidence_fk_indexes.sql`; lokale und entfernte Migrationshistorie stimmen ueberein.
+- Alle sieben Evidence-Tabellen haben RLS und entziehen `PUBLIC`, `anon` und `authenticated` direkten Tabellenzugriff.
+- Alle zehn neuen Funktionen besitzen einen festen `search_path`; `anon` kann keine davon ausfuehren.
+- Das aktive Protokoll enthaelt 16 Messpunkte, `minor_collection_enabled = false` und unmittelbar nach Aktivierung 0 produktive Evidence-Zeilen.
+- Production-Typen wurden nach dem Apply neu aus dem echten Projekt generiert.
+- Alle neun vom Datenbankberater gemeldeten fehlenden Evidence-FK-Indizes sind vorhanden; danach bleiben fuer die neuen Tabellen keine entsprechenden Hinweise offen.
 
-## 7. Kontrollierter Rollout
+## 7. Kontrollierter Production-Test
 
-1. Branch reviewen und alle lokalen Gates erneut ausfuehren.
-2. Migration zuerst auf ein eindeutig verifiziertes Staging-Supabase-Projekt anwenden.
-3. Supabase-Typen aus Staging neu generieren und den manuellen RPC-Zwischenstand ersetzen.
-4. RLS-, Rollen-, Consent-, Widerruf- und Export-Negativtests gegen Staging ausfuehren.
-5. Intern nur mit verifizierten Erwachsenen testen.
-6. Daily Flow und Coach Review auf realen iPhones pruefen.
-7. Erst nach juristischer und fachlicher Freigabe einen getrennten Minderjaehrigen-Consent implementieren und testen.
-8. Production-Migration, Deployment und Aktivierung jeweils separat freigeben.
+1. Fuer einen unmittelbaren visuellen Test die lokale Route `/internal/evidence-preview` verwenden; sie schreibt keine Daten.
+2. Fuer einen echten Production-Test nur einen eindeutig als Testaccount markierten Erwachsenen verwenden.
+3. Im Account die aktuelle freiwillige Datenfreigabe bestaetigen. Bei einem realen Erwachsenen muss ein Admin danach unter `Admin -> NLZ Evidence -> Evidence-Teilnahmefreigaben` die Volljaehrigkeit ausdruecklich bestaetigen.
+4. Der Athlete Transfer Pulse erscheint nur an den geplanten Tagen 4, 7, 11, 14, 18, 21, 25, 28, 32, 35, 39, 42, 46, 49, 53 und 56 und nicht an Ruhetagen.
+5. Coach Weekly Review nur mit einem Test-Team und einem aktiven Program Run pruefen. Individuelle Coach-Werte duerfen nicht im externen Evidence-Export erscheinen.
+6. Nach dem Test in Admin die Coverage und den Export pruefen; Testdaten bleiben durch `is_test` von normalen Production-Auswertungen getrennt.
+7. Minderjaehrige nicht fuer Evidence freigeben. Das normale Programm bleibt fuer sie nutzbar.
+8. Daily Flow und Coach Review zusaetzlich auf einem realen iPhone pruefen, sobald Xcode/TestFlight bereit sind.
 
 ## 8. Aussagegrenze
 

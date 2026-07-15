@@ -175,11 +175,17 @@ try {
     $$;
   `);
 
-  const migration = readFileSync(
-    resolve(process.cwd(), "supabase/migrations/20260714224000_performance_evidence_56d_v1.sql"),
-    "utf8",
-  );
-  await db.exec(migration);
+  const migrationFiles = [
+    "20260714224000_performance_evidence_56d_v1.sql",
+    "20260715085749_performance_evidence_fk_indexes.sql",
+  ];
+  for (const migrationFile of migrationFiles) {
+    const migration = readFileSync(
+      resolve(process.cwd(), "supabase/migrations", migrationFile),
+      "utf8",
+    );
+    await db.exec(migration);
+  }
 
   await db.exec(`
     INSERT INTO auth.users(id) VALUES
@@ -505,6 +511,24 @@ try {
   `);
   assert(ageColumns.rows[0].n === 0, "evidence schema must not store age or birthdate");
 
+  const evidenceFkIndexes = await db.query(`
+    SELECT count(*)::int AS n
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname IN (
+        'idx_athlete_transfer_observations_assignment',
+        'idx_athlete_transfer_observations_protocol',
+        'idx_athlete_transfer_observations_team',
+        'idx_coach_evidence_reviews_protocol',
+        'idx_coach_evidence_reviews_target_instance',
+        'idx_coach_evidence_reviews_team',
+        'idx_evidence_eligibility_audit_actor',
+        'idx_evidence_participation_verified_by',
+        'idx_evidence_participation_revoked_by'
+      )
+  `);
+  assert(evidenceFkIndexes.rows[0].n === 9, "all evidence foreign-key indexes must exist");
+
   console.log(JSON.stringify({
     migrationApplied: true,
     adultStatusEligible: true,
@@ -525,6 +549,7 @@ try {
     unauthorizedCoachDenied,
     minorPathDisabled: true,
     ageColumns: ageColumns.rows[0].n,
+    evidenceForeignKeyIndexes: evidenceFkIndexes.rows[0].n,
   }, null, 2));
 } finally {
   await db.close();
