@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Brain, Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles } from "lucide-react";
+import { Brain, Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  authErrorMessage,
+  isEmailNotConfirmedError,
+  MIN_ACCOUNT_PASSWORD_LENGTH,
+  parseAuthLinkError,
+  passwordResetRedirectUrl,
+  publicAuthOrigin,
+} from "@/lib/authEmailFlow";
 
-type Mode = "intent" | "signup" | "login" | "verify";
+type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join" | "create";
 type TeamJoinStatus = "idle" | "joining" | "error";
 
@@ -49,6 +58,8 @@ const Auth = () => {
   const safeRedirect = redirectTo && /^\/(?!\/)/.test(redirectTo) ? redirectTo : null;
   const urlIntent = searchParams.get("intent");
   const urlCode = searchParams.get("code");
+  const requestedMode = searchParams.get("mode");
+  const authLinkError = parseAuthLinkError(window.location.search, window.location.hash);
   const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
   const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
   const { user, role, loading: authLoading } = useAuth();
@@ -70,15 +81,23 @@ const Auth = () => {
     });
   }, [forceSwitch]);
 
-  const initialMode: Mode = urlIntent === "join" || urlCode ? "signup" : "intent";
+  const initialMode: Mode = authLinkError
+    ? "link-error"
+    : requestedMode === "forgot"
+      ? "forgot"
+      : urlIntent === "join" || urlCode
+        ? "signup"
+        : "intent";
   const initialIntent: Intent = urlIntent === "join" || urlCode ? "join" : "solo";
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [intent, setIntent] = useState<Intent>(initialIntent);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
   const [email, setEmail] = useState("");
   const [pendingEmail, setPendingEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
@@ -86,7 +105,7 @@ const Auth = () => {
   const normalizedTeamCode = () => teamCode.trim().toUpperCase();
 
   const emailRedirectTo = () => {
-    const redirectUrl = new URL("/auth", window.location.origin);
+    const redirectUrl = new URL("/auth", publicAuthOrigin(window.location));
     if (safeRedirect) redirectUrl.searchParams.set("redirect", safeRedirect);
     if (intent === "join") {
       redirectUrl.searchParams.set("intent", "join");
@@ -154,13 +173,13 @@ const Auth = () => {
   }, [authLoading, completeConfirmedTeamJoin, confirmedTeamJoinCode, isConfirmedTeamJoinReturn, switching, user]);
 
   useEffect(() => {
-    if (authLoading || switching || !user || isConfirmedTeamJoinReturn) return;
+    if (authLoading || switching || verifyingCode || !user || isConfirmedTeamJoinReturn) return;
     if (safeRedirect) navigate(safeRedirect, { replace: true });
     else if (role === "admin") navigate("/admin", { replace: true });
     else if (role === "coach") navigate("/coach", { replace: true });
     else if (role === "athlete") navigate("/dashboard", { replace: true });
     // if role still null but user exists, wait for role to load
-  }, [user, role, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn]);
+  }, [user, role, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, verifyingCode]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +192,12 @@ const Auth = () => {
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
-      toast.error(error.message === "Invalid login credentials" ? "Ungültige Anmeldedaten." : error.message);
+      if (isEmailNotConfirmedError(error)) {
+        setPendingEmail(email.trim());
+        setPassword("");
+        setMode("verify");
+      }
+      toast.error(authErrorMessage(error, "Die Anmeldung konnte gerade nicht abgeschlossen werden."));
     } else {
       await backfillProfileSport(data.user.id);
       if (intent === "join") {
@@ -208,8 +232,8 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
-    if (password.length < 6) {
-      toast.error("Passwort muss mindestens 6 Zeichen haben.");
+    if (password.length < MIN_ACCOUNT_PASSWORD_LENGTH) {
+      toast.error(`Passwort muss mindestens ${MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen haben.`);
       return;
     }
     if (!fullName.trim()) {
@@ -248,7 +272,7 @@ const Auth = () => {
         setLoading(false);
         return;
       }
-      toast.error(error.message);
+      toast.error(authErrorMessage(error, "Das Konto konnte gerade nicht erstellt werden."));
       setLoading(false);
       return;
     }
@@ -299,11 +323,87 @@ const Auth = () => {
       options: { emailRedirectTo: emailRedirectTo() },
     });
     if (error) {
-      toast.error("Die Bestätigungs-E-Mail konnte gerade nicht erneut gesendet werden.");
+      toast.error(authErrorMessage(error, "Die Bestätigungs-E-Mail konnte gerade nicht erneut gesendet werden."));
     } else {
       toast.success("Bestätigungs-E-Mail erneut gesendet.");
     }
     setResending(false);
+  };
+
+  const requestPasswordReset = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || loading || resending) return;
+
+    const isRepeat = mode === "recovery-sent";
+    if (isRepeat) setResending(true);
+    else setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: passwordResetRedirectUrl(publicAuthOrigin(window.location)),
+    });
+
+    if (error) {
+      toast.error(authErrorMessage(error, "Die Reset-E-Mail konnte gerade nicht gesendet werden."));
+    } else {
+      setPendingEmail(normalizedEmail);
+      setVerificationCode("");
+      setMode("recovery-sent");
+      if (isRepeat) toast.success("Reset-E-Mail erneut gesendet.");
+    }
+
+    setLoading(false);
+    setResending(false);
+  };
+
+  const completeEmailVerification = async () => {
+    if (!pendingEmail || verificationCode.length !== 6 || verifyingCode) return;
+    setVerifyingCode(true);
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: pendingEmail,
+      token: verificationCode,
+      type: "email",
+    });
+
+    if (error || !data.user) {
+      toast.error(authErrorMessage(error ?? {}, "Der Bestätigungscode konnte nicht geprüft werden."));
+      setVerifyingCode(false);
+      return;
+    }
+
+    await backfillProfileSport(data.user.id);
+    if (intent === "join") {
+      const join = await joinTeamByCode(teamCode);
+      if (!join.success) {
+        toast.error(join.message);
+        setVerifyingCode(false);
+        return;
+      }
+      toast.success("E-Mail bestätigt und Teambeitritt abgeschlossen.");
+      navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
+      return;
+    }
+
+    toast.success("E-Mail bestätigt.");
+    navigate(intent === "create" ? "/coach" : "/questionnaire", { replace: true });
+  };
+
+  const verifyRecoveryCode = async () => {
+    if (!pendingEmail || verificationCode.length !== 6 || verifyingCode) return;
+    setVerifyingCode(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: pendingEmail,
+      token: verificationCode,
+      type: "recovery",
+    });
+
+    if (error) {
+      toast.error(authErrorMessage(error, "Der Sicherheitscode konnte nicht geprüft werden."));
+      setVerifyingCode(false);
+      return;
+    }
+
+    navigate("/auth/reset-password?verified=1", { replace: true });
   };
 
   if (user && isConfirmedTeamJoinReturn && teamJoinStatus === "error") {
@@ -350,6 +450,110 @@ const Auth = () => {
     );
   }
 
+  if (mode === "link-error") {
+    return (
+      <AuthStatusLayout
+        icon={<CircleAlert className="h-7 w-7" aria-hidden="true" />}
+        title="Der Link ist nicht mehr gültig."
+        description={authLinkError?.message ?? "Dieser Sicherheitslink konnte nicht bestätigt werden."}
+        tone="error"
+      >
+        <button
+          type="button"
+          onClick={() => setMode("login")}
+          className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground hover:shadow-glow"
+        >
+          Zur Anmeldung
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("forgot")}
+          className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
+        >
+          Neuen Passwort-Link anfordern
+        </button>
+      </AuthStatusLayout>
+    );
+  }
+
+  if (mode === "forgot") {
+    return (
+      <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md min-w-0"
+        >
+          <button
+            type="button"
+            onClick={() => setMode("login")}
+            className="mb-8 flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Zur Anmeldung
+          </button>
+          <BrandMark />
+          <div className="mb-8 mt-8 text-center">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <KeyRound className="h-7 w-7" aria-hidden="true" />
+            </div>
+            <h1 className="mb-3 font-heading text-3xl font-bold">Passwort zurücksetzen.</h1>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Gib deine E-Mail-Adresse ein. Du erhältst einen sicheren Link und einen sechsstelligen Code.
+            </p>
+          </div>
+          <form onSubmit={requestPasswordReset} className="space-y-4">
+            <FieldEmail value={email} onChange={setEmail} />
+            <SubmitButton loading={loading} label="Reset-E-Mail senden" />
+          </form>
+          <LegalLinks />
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (mode === "recovery-sent") {
+    return (
+      <AuthStatusLayout
+        icon={<MailCheck className="h-7 w-7" aria-hidden="true" />}
+        title="Prüfe deine E-Mails."
+        description={
+          <>
+            Falls ein Konto für <strong className="break-all text-foreground">{pendingEmail}</strong> besteht, ist die Reset-E-Mail unterwegs.
+          </>
+        }
+      >
+        <AuthCodeEntry
+          value={verificationCode}
+          onChange={setVerificationCode}
+          onSubmit={() => void verifyRecoveryCode()}
+          loading={verifyingCode}
+          label="Code prüfen"
+        />
+        <button
+          type="button"
+          onClick={() => void requestPasswordReset()}
+          disabled={resending}
+          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/50 px-4 py-3 font-heading text-sm font-semibold hover:bg-secondary disabled:opacity-50"
+        >
+          {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
+          E-Mail erneut senden
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setEmail(pendingEmail);
+            setMode("forgot");
+          }}
+          className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
+        >
+          E-Mail-Adresse ändern
+        </button>
+      </AuthStatusLayout>
+    );
+  }
+
   if (mode === "verify") {
     return (
       <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
@@ -371,8 +575,15 @@ const Auth = () => {
             <strong className="break-all text-foreground">{pendingEmail}</strong> gesendet.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Öffne die E-Mail und bestätige deine Adresse. Danach kannst du RewirePerform sicher verwenden.
+            Öffne den Link in der E-Mail oder gib den sechsstelligen Code ein.
           </p>
+          <AuthCodeEntry
+            value={verificationCode}
+            onChange={setVerificationCode}
+            onSubmit={() => void completeEmailVerification()}
+            loading={verifyingCode}
+            label="E-Mail bestätigen"
+          />
           <button
             type="button"
             onClick={() => void resendConfirmation()}
@@ -497,6 +708,15 @@ const Auth = () => {
             )}
             <FieldEmail value={email} onChange={setEmail} />
             <FieldPassword value={password} onChange={setPassword} autoComplete="current-password" />
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setMode("forgot")}
+                className="min-h-11 px-1 text-sm font-medium text-primary hover:underline"
+              >
+                Passwort vergessen?
+              </button>
+            </div>
             <SubmitButton loading={loading} label="Anmelden" />
           </form>
 
@@ -630,6 +850,91 @@ const IntentCard = ({
     </div>
     <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
   </button>
+);
+
+const BrandMark = () => (
+  <Link
+    to="/"
+    aria-label="Zur Startseite"
+    className="mx-auto flex items-center justify-center gap-2"
+  >
+    <Brain className="h-7 w-7 text-primary" aria-hidden="true" />
+    <span className="font-heading text-xl font-bold">RewirePerform</span>
+  </Link>
+);
+
+const AuthStatusLayout = ({
+  icon,
+  title,
+  description,
+  tone = "default",
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: React.ReactNode;
+  tone?: "default" | "error";
+  children: React.ReactNode;
+}) => (
+  <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-md min-w-0 text-center"
+    >
+      <BrandMark />
+      <div className={`mx-auto mb-5 mt-8 flex h-14 w-14 items-center justify-center rounded-full ${tone === "error" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+        {icon}
+      </div>
+      <h1 className="mb-3 font-heading text-3xl font-bold">{title}</h1>
+      <div className="text-sm leading-relaxed text-muted-foreground">{description}</div>
+      {children}
+      <LegalLinks />
+    </motion.div>
+  </div>
+);
+
+const AuthCodeEntry = ({
+  value,
+  onChange,
+  onSubmit,
+  loading,
+  label,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  loading: boolean;
+  label: string;
+}) => (
+  <div className="mt-7 border-t border-border/60 pt-6">
+    <label className="mb-3 block text-sm font-medium text-foreground">Sicherheitscode</label>
+    <InputOTP
+      maxLength={6}
+      value={value}
+      onChange={onChange}
+      inputMode="numeric"
+      pattern="[0-9]*"
+      aria-label="Sechsstelliger Sicherheitscode"
+      containerClassName="justify-center"
+      disabled={loading}
+    >
+      <InputOTPGroup>
+        {[0, 1, 2, 3, 4, 5].map((index) => (
+          <InputOTPSlot key={index} index={index} className="h-12 w-11 border-border/70 bg-secondary/50 text-base sm:w-12" />
+        ))}
+      </InputOTPGroup>
+    </InputOTP>
+    <button
+      type="button"
+      onClick={onSubmit}
+      disabled={loading || value.length !== 6}
+      className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground hover:shadow-glow disabled:opacity-50"
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <KeyRound className="h-4 w-4" aria-hidden="true" />}
+      {label}
+    </button>
+  </div>
 );
 
 const FieldEmail = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (

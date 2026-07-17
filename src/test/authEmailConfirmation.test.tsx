@@ -9,11 +9,14 @@ const mocks = vi.hoisted(() => ({
     role: null as "admin" | "coach" | "athlete" | null,
     loading: false,
   },
+  from: vi.fn(),
   resend: vi.fn(),
+  resetPasswordForEmail: vi.fn(),
   rpc: vi.fn(),
   signInWithPassword: vi.fn(),
   signOut: vi.fn(),
   signUp: vi.fn(),
+  verifyOtp: vi.fn(),
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
 }));
@@ -26,11 +29,13 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       resend: mocks.resend,
+      resetPasswordForEmail: mocks.resetPasswordForEmail,
       signInWithPassword: mocks.signInWithPassword,
       signOut: mocks.signOut,
       signUp: mocks.signUp,
+      verifyOtp: mocks.verifyOtp,
     },
-    from: vi.fn(),
+    from: mocks.from,
     rpc: mocks.rpc,
   },
 }));
@@ -52,6 +57,7 @@ const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
       <Route path="/questionnaire" element={<div>Fragebogen geöffnet</div>} />
       <Route path="/dashboard" element={<div>Dashboard geöffnet</div>} />
       <Route path="/coach" element={<div>Coach-Bereich geöffnet</div>} />
+      <Route path="/auth/reset-password" element={<div>Passwortseite geöffnet</div>} />
     </Routes>
   </MemoryRouter>,
 );
@@ -71,7 +77,14 @@ describe("auth email confirmation", () => {
     mocks.authState.role = null;
     mocks.authState.loading = false;
     mocks.resend.mockResolvedValue({ error: null });
+    mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
     mocks.signOut.mockResolvedValue({ error: null });
+    mocks.verifyOtp.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mocks.from.mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: { sport: "Fußball" }, error: null }),
+    });
   });
 
   it("shows a confirmation state instead of opening the questionnaire without a session", async () => {
@@ -111,6 +124,59 @@ describe("auth email confirmation", () => {
         },
       });
     });
+  });
+
+  it("can confirm the signup with the six-digit fallback code", async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { user: { id: "user-1" }, session: null },
+      error: null,
+    });
+
+    renderAuth();
+    submitSoloSignup();
+    fireEvent.change(await screen.findByLabelText("Sechsstelliger Sicherheitscode"), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail bestätigen" }));
+
+    expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
+    expect(mocks.verifyOtp).toHaveBeenCalledWith({
+      email: "test@example.com",
+      token: "123456",
+      type: "email",
+    });
+  });
+
+  it("requests a password reset without revealing whether an account exists", async () => {
+    renderAuth("/auth?mode=forgot");
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Reset-E-Mail senden" }));
+
+    expect(await screen.findByRole("heading", { name: "Prüfe deine E-Mails." })).toBeInTheDocument();
+    expect(screen.getByText(/Falls ein Konto/)).toBeInTheDocument();
+    expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(
+      "test@example.com",
+      { redirectTo: "http://localhost:3000/auth/reset-password" },
+    );
+  });
+
+  it("accepts the recovery code and opens the new-password route", async () => {
+    renderAuth("/auth?mode=forgot");
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Reset-E-Mail senden" }));
+    fireEvent.change(await screen.findByLabelText("Sechsstelliger Sicherheitscode"), {
+      target: { value: "654321" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Code prüfen" }));
+
+    await waitFor(() => {
+      expect(mocks.verifyOtp).toHaveBeenCalledWith({
+        email: "test@example.com",
+        token: "654321",
+        type: "recovery",
+      });
+    });
+    expect(screen.getByText("Passwortseite geöffnet")).toBeInTheDocument();
   });
 
   it("continues normally when Supabase returns an active session", async () => {

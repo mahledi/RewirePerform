@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Deine E-Mail-Adresse wurde geändert.</title>
+    <style>
+      @media only screen and (max-width: 620px) {
+        .email-wrap { padding: 16px 10px !important; }
+        .email-card { border-radius: 8px !important; }
+        .email-body { padding: 30px 22px 28px !important; }
+        .email-title { font-size: 25px !important; line-height: 32px !important; }
+        .email-button { display: block !important; width: auto !important; }
+      }
+      @media (prefers-color-scheme: dark) {
+        .email-bg { background: #0d1014 !important; }
+        .email-card { background: #161a1f !important; border-color: #2a3037 !important; }
+        .email-title, .email-copy, .email-brand, .email-code { color: #f3f5f4 !important; }
+        .email-muted, .email-footer { color: #a8b0ad !important; }
+        .email-note, .email-code-box { background: #1d2328 !important; border-color: #30383e !important; }
+        .email-link { color: #5bd1aa !important; }
+      }
+      [data-ogsc] .email-bg { background: #0d1014 !important; }
+      [data-ogsc] .email-card { background: #161a1f !important; border-color: #2a3037 !important; }
+      [data-ogsc] .email-title, [data-ogsc] .email-copy, [data-ogsc] .email-brand, [data-ogsc] .email-code { color: #f3f5f4 !important; }
+      [data-ogsc] .email-muted, [data-ogsc] .email-footer { color: #a8b0ad !important; }
+    </style>
+  </head>
+  <body class="email-bg" style="margin:0;padding:0;background:#f3f6f5;-webkit-text-size-adjust:100%;word-spacing:normal;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;line-height:1px;font-size:1px;">Die E-Mail-Adresse deines RewirePerform-Kontos wurde geändert.&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-bg" style="width:100%;background:#f3f6f5;border-collapse:collapse;">
+      <tr>
+        <td align="center" class="email-wrap" style="padding:34px 18px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-card" style="width:100%;max-width:560px;background:#ffffff;border:1px solid #dfe6e3;border-top:4px solid #2eaa85;border-radius:8px;border-collapse:separate;overflow:hidden;">
+            <tr>
+              <td class="email-body" style="padding:38px 42px 36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+                <a href="{{ .SiteURL }}" class="email-brand" style="display:inline-block;color:#111816;text-decoration:none;font-size:18px;line-height:24px;font-weight:750;letter-spacing:0;">Rewire<span style="color:#2eaa85;">Perform</span></a>
+                <p style="margin:38px 0 10px;color:#218a6a;font-size:12px;line-height:18px;font-weight:700;letter-spacing:0;text-transform:uppercase;">Sicherheitsinformation</p>
+                <h1 class="email-title" style="margin:0;color:#111816;font-size:29px;line-height:36px;font-weight:750;letter-spacing:0;">Deine E-Mail-Adresse wurde geändert.</h1>
+                <div class="email-copy" style="margin-top:18px;color:#3d4945;font-size:16px;line-height:25px;letter-spacing:0;"><p style="margin:0;">Die hinterlegte E-Mail-Adresse deines RewirePerform-Kontos wurde erfolgreich aktualisiert.</p></div>
+                <div class="email-note" style="margin-top:28px;padding:16px 18px;background:#f4f7f6;border:1px solid #dfe6e3;border-radius:8px;">
+                  <p class="email-muted" style="margin:0;color:#68736f;font-size:13px;line-height:20px;">Du warst das nicht? Setze dein Passwort zurück und kontaktiere sofort den Support.</p>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;border-collapse:collapse;">
+            <tr>
+              <td align="center" class="email-footer" style="padding:20px 18px 0;color:#68736f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:12px;line-height:19px;letter-spacing:0;">
+                Diese automatische Sicherheitsmail wurde von RewirePerform gesendet.<br>
+                Hilfe erhältst du im <a href="{{ .SiteURL }}/support" class="email-link" style="color:#218a6a;text-decoration:underline;">Support-Bereich</a>.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
