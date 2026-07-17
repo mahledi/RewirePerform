@@ -56,6 +56,56 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await capture(page, testInfo, "auth-signup");
 });
 
+test.describe("email confirmation", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("signup awaiting email confirmation stops on a clear verification screen", async ({ page }, testInfo) => {
+    let interceptedSignups = 0;
+    await page.context().route(/^https:\/\/test\.supabase\.co\/auth\/v1\/signup(?:\?.*)?$/, async (route) => {
+      interceptedSignups += 1;
+      const now = new Date().toISOString();
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          user: {
+            id: "00000000-0000-4000-8000-000000000001",
+            aud: "authenticated",
+            role: "authenticated",
+            email: "qa-confirmation@example.com",
+            phone: "",
+            confirmation_sent_at: now,
+            app_metadata: { provider: "email", providers: ["email"] },
+            user_metadata: { full_name: "QA Confirmation", role: "athlete" },
+            identities: [],
+            created_at: now,
+            updated_at: now,
+          },
+        }),
+      });
+    });
+
+    await page.goto("/auth?redirect=%2Fadmin%2Fqa");
+    await page.getByRole("button", { name: /Allein starten/ }).click();
+    await page.getByLabel("Vollständiger Name").fill("QA Confirmation");
+    await page.getByLabel("E-Mail").fill("qa-confirmation@example.com");
+    await page.getByLabel("Passwort").fill("secure-test-password");
+    expect(await page.getByLabel("Vollständiger Name").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    expect(await page.getByLabel("E-Mail").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    expect(await page.getByLabel("Passwort").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    await page.getByRole("button", { name: "Konto erstellen" }).click();
+
+    await expect.poll(() => interceptedSignups).toBe(1);
+    await expect(page.getByRole("heading", { level: 1, name: "Bestätige deine E-Mail." })).toBeVisible();
+    await expect(page.getByText("qa-confirmation@example.com")).toBeVisible();
+    await expect(page.getByRole("button", { name: "E-Mail erneut senden" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "E-Mail-Adresse ändern" })).toBeVisible();
+    await expect(page).toHaveURL(/\/auth\?redirect=%2Fadmin%2Fqa$/);
+    await expectNoHorizontalOverflow(page);
+    await capture(page, testInfo, "auth-email-confirmation");
+  });
+});
+
 test("synthetic demo remains interactive without real user data", async ({ page }, testInfo) => {
   await page.goto("/demo");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("RewirePerform im Alltag");

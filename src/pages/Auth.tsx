@@ -1,15 +1,45 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Brain, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Users, Shield, UserPlus, Sparkles } from "lucide-react";
+import { Brain, Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
 
-type Mode = "intent" | "signup" | "login";
+type Mode = "intent" | "signup" | "login" | "verify";
 type Intent = "solo" | "join" | "create";
+type TeamJoinStatus = "idle" | "joining" | "error";
+
+const joinTeamByCode = async (rawCode: string) => {
+  const code = rawCode.trim().toUpperCase();
+  if (code.length !== 6) {
+    return { success: false as const, message: "Bitte gib einen gültigen 6-stelligen Teamcode ein." };
+  }
+
+  const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
+    _code: code,
+  });
+  const result = joinResult as { success?: boolean; role?: "athlete" | "coach"; error?: string } | null;
+
+  if (joinError) {
+    console.error("Team join error:", joinError);
+    return {
+      success: false as const,
+      message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",
+    };
+  }
+
+  if (!result || result.success !== true) {
+    return {
+      success: false as const,
+      message: "Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.",
+    };
+  }
+
+  return { success: true as const, role: result.role ?? "athlete" };
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,8 +47,14 @@ const Auth = () => {
   const forceSwitch = searchParams.get("switch") === "1";
   const redirectTo = searchParams.get("redirect");
   const safeRedirect = redirectTo && /^\/(?!\/)/.test(redirectTo) ? redirectTo : null;
+  const urlIntent = searchParams.get("intent");
+  const urlCode = searchParams.get("code");
+  const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
+  const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
   const { user, role, loading: authLoading } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
+  const [teamJoinStatus, setTeamJoinStatus] = useState<TeamJoinStatus>("idle");
+  const attemptedTeamJoinCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!forceSwitch) return;
@@ -34,29 +70,31 @@ const Auth = () => {
     });
   }, [forceSwitch]);
 
-  useEffect(() => {
-    if (authLoading || switching || !user) return;
-    if (safeRedirect) navigate(safeRedirect, { replace: true });
-    else if (role === "admin") navigate("/admin", { replace: true });
-    else if (role === "coach") navigate("/coach", { replace: true });
-    else if (role === "athlete") navigate("/dashboard", { replace: true });
-    // if role still null but user exists, wait for role to load
-  }, [user, role, authLoading, switching, navigate, safeRedirect]);
-
-  const urlIntent = searchParams.get("intent");
-  const urlCode = searchParams.get("code");
   const initialMode: Mode = urlIntent === "join" || urlCode ? "signup" : "intent";
   const initialIntent: Intent = urlIntent === "join" || urlCode ? "join" : "solo";
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [intent, setIntent] = useState<Intent>(initialIntent);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [email, setEmail] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
 
   const normalizedTeamCode = () => teamCode.trim().toUpperCase();
+
+  const emailRedirectTo = () => {
+    const redirectUrl = new URL("/auth", window.location.origin);
+    if (safeRedirect) redirectUrl.searchParams.set("redirect", safeRedirect);
+    if (intent === "join") {
+      redirectUrl.searchParams.set("intent", "join");
+      const code = normalizedTeamCode();
+      if (code) redirectUrl.searchParams.set("code", code);
+    }
+    return redirectUrl.toString();
+  };
 
   const pickIntent = (i: Intent) => {
     setIntent(i);
@@ -94,34 +132,35 @@ const Auth = () => {
     }
   };
 
-  const joinTeamWithCode = async () => {
-    const code = normalizedTeamCode();
-    if (code.length !== 6) {
-      return { success: false as const, message: "Bitte gib einen gültigen 6-stelligen Teamcode ein." };
+  const completeConfirmedTeamJoin = useCallback(async () => {
+    if (!confirmedTeamJoinCode) return;
+    setTeamJoinStatus("joining");
+    const join = await joinTeamByCode(confirmedTeamJoinCode);
+    if (!join.success) {
+      setTeamJoinStatus("error");
+      toast.error(join.message);
+      return;
     }
 
-    const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
-      _code: code,
-    });
-    const result = joinResult as { success?: boolean; role?: "athlete" | "coach"; error?: string } | null;
+    toast.success("E-Mail bestätigt und Teambeitritt abgeschlossen.");
+    navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
+  }, [confirmedTeamJoinCode, navigate]);
 
-    if (joinError) {
-      console.error("Team join error:", joinError);
-      return {
-        success: false as const,
-        message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",
-      };
-    }
+  useEffect(() => {
+    if (authLoading || switching || !user || !isConfirmedTeamJoinReturn || !confirmedTeamJoinCode) return;
+    if (attemptedTeamJoinCodeRef.current === confirmedTeamJoinCode) return;
+    attemptedTeamJoinCodeRef.current = confirmedTeamJoinCode;
+    void completeConfirmedTeamJoin();
+  }, [authLoading, completeConfirmedTeamJoin, confirmedTeamJoinCode, isConfirmedTeamJoinReturn, switching, user]);
 
-    if (!result || result.success !== true) {
-      return {
-        success: false as const,
-        message: "Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.",
-      };
-    }
-
-    return { success: true as const, role: result.role ?? "athlete" };
-  };
+  useEffect(() => {
+    if (authLoading || switching || !user || isConfirmedTeamJoinReturn) return;
+    if (safeRedirect) navigate(safeRedirect, { replace: true });
+    else if (role === "admin") navigate("/admin", { replace: true });
+    else if (role === "coach") navigate("/coach", { replace: true });
+    else if (role === "athlete") navigate("/dashboard", { replace: true });
+    // if role still null but user exists, wait for role to load
+  }, [user, role, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +169,7 @@ const Auth = () => {
       toast.error("Bitte gib den 6-stelligen Teamcode ein, um den Teambeitritt abzuschließen.");
       return;
     }
+    if (intent === "join") attemptedTeamJoinCodeRef.current = normalizedTeamCode();
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
@@ -137,7 +177,7 @@ const Auth = () => {
     } else {
       await backfillProfileSport(data.user.id);
       if (intent === "join") {
-        const join = await joinTeamWithCode();
+        const join = await joinTeamByCode(teamCode);
         if (!join.success) {
           toast.error(join.message);
           setLoading(false);
@@ -180,6 +220,7 @@ const Auth = () => {
       toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
       return;
     }
+    if (intent === "join") attemptedTeamJoinCodeRef.current = normalizedTeamCode();
 
     setLoading(true);
 
@@ -190,7 +231,7 @@ const Auth = () => {
       password,
       options: {
         data: { full_name: fullName.trim(), role: initialRole },
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: emailRedirectTo(),
       },
     });
 
@@ -217,9 +258,10 @@ const Auth = () => {
       return;
     }
 
-    if (intent === "join" && !data.session) {
-      toast.error("Konto existiert wahrscheinlich schon. Bitte anmelden.", { duration: 2200 });
-      setMode("login");
+    if (!data.session) {
+      setPendingEmail(email.trim());
+      setPassword("");
+      setMode("verify");
       setLoading(false);
       return;
     }
@@ -227,7 +269,7 @@ const Auth = () => {
     let effectiveRole: "athlete" | "coach" = initialRole;
 
     if (intent === "join") {
-      const join = await joinTeamWithCode();
+      const join = await joinTeamByCode(teamCode);
       if (!join.success) {
         toast.error(`Konto erstellt, aber Teambeitritt offen: ${join.message}`);
         setLoading(false);
@@ -248,10 +290,108 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const resendConfirmation = async () => {
+    if (!pendingEmail || resending) return;
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: pendingEmail,
+      options: { emailRedirectTo: emailRedirectTo() },
+    });
+    if (error) {
+      toast.error("Die Bestätigungs-E-Mail konnte gerade nicht erneut gesendet werden.");
+    } else {
+      toast.success("Bestätigungs-E-Mail erneut gesendet.");
+    }
+    setResending(false);
+  };
+
+  if (user && isConfirmedTeamJoinReturn && teamJoinStatus === "error") {
+    const accountRoute = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/dashboard";
+    return (
+      <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md min-w-0 text-center"
+        >
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Users className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <h1 className="mb-3 font-heading text-3xl font-bold">Teambeitritt noch offen.</h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Deine E-Mail ist bestätigt. Der Teamcode konnte gerade nicht abgeschlossen werden. Du kannst es direkt erneut versuchen.
+          </p>
+          <button
+            type="button"
+            onClick={() => void completeConfirmedTeamJoin()}
+            className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground transition-shadow hover:shadow-glow"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Erneut versuchen
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(accountRoute, { replace: true })}
+            className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
+          >
+            Ohne Team fortfahren
+          </button>
+          <LegalLinks />
+        </motion.div>
+      </div>
+    );
+  }
+
   // Don't flash login UI while restoring session or while a logged-in user is being redirected
   if (authLoading || switching || (user && !forceSwitch)) {
     return (
-      <AppLoadingShell subtitle="Stelle deine Sitzung wieder her..." />
+      <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
+    );
+  }
+
+  if (mode === "verify") {
+    return (
+      <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md min-w-0 text-center"
+        >
+          <button type="button" aria-label="Zur Startseite" className="mx-auto mb-8 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
+            <Brain className="h-7 w-7 text-primary" />
+            <span className="font-heading text-xl font-bold">RewirePerform</span>
+          </button>
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <MailCheck className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <h1 className="mb-3 font-heading text-3xl font-bold">Bestätige deine E-Mail.</h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Wir haben einen Bestätigungslink an<br />
+            <strong className="break-all text-foreground">{pendingEmail}</strong> gesendet.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Öffne die E-Mail und bestätige deine Adresse. Danach kannst du RewirePerform sicher verwenden.
+          </p>
+          <button
+            type="button"
+            onClick={() => void resendConfirmation()}
+            disabled={resending}
+            className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/50 px-4 py-3 font-heading text-sm font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
+          >
+            {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
+            E-Mail erneut senden
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("signup")}
+            className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
+          >
+            E-Mail-Adresse ändern
+          </button>
+          <LegalLinks />
+        </motion.div>
+      </div>
     );
   }
 
