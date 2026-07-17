@@ -2199,6 +2199,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_qa_evidence_parity: {
+        Args: { _program_run_id: string; _protocol_version?: string }
+        Returns: Json
+      }
       get_team_program_run_status: {
         Args: { _program_run_id: string }
         Returns: Json

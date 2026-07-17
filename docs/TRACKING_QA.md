@@ -53,9 +53,22 @@ Allowed outputs:
    - role becomes `coach`
    - user becomes a `team_members` row
    - user lands in coach flow
-6. Use the five QA athletes to complete enough days for aggregate visibility.
-7. Simulate days 1, 2, 7, 14, 28, 42, and 56 through QA time.
-8. After each critical day, reload the athlete dashboard to force a progress snapshot.
+6. Start with day 1 and complete the normal dashboard flow with at least one QA athlete.
+7. Use the Evidence Parity Gate to jump directly to each scheduled transfer day:
+   `4, 7, 11, 14, 18, 21, 25, 28, 32, 35, 39, 42, 46, 49, 53, 56`.
+8. Complete each reached transfer day with all five QA athletes. The gate marks a
+   day as passed only when assignments, completions, and expected evidence rows
+   agree for the full synthetic cohort. A rest day is counted as an intentional
+   skip, not as a missing answer.
+9. At the end of every simulated week, login as the QA coach and save the
+   structured team review. The coach week must follow the simulated QA date.
+10. Return to `/admin/qa` and refresh the gate. `PASS` means every reached
+    transfer day and every reached coach week is complete; `IN_PROGRESS` means
+    the pipeline is intact but work is still missing; `FAIL` means an integrity
+    or isolation invariant was violated.
+11. Open Admin > NLZ Pilot Center > QA to inspect the same count-only report.
+    Production remains the default mode. Production snapshots and standard
+    exports are disabled in QA mode.
 
 ## Data Checks
 
@@ -79,7 +92,28 @@ For the team, confirm:
 - Coach cannot access journal text or raw private answers
 - Admin overview excludes QA data when `include_test = false`
 - Admin QA/test data remains visible only in QA tooling or explicit include-test calls
+- The QA parity report exposes counts and statuses only; it contains no athlete
+  names, emails, response values, journals, or reflections
+- QA participants and QA observations are both zero in the production-only
+  evidence summary
+- A completed non-rest evidence day never exists without its atomically linked
+  evidence row, and an evidence row never exists without completion
+- All 16 transfer days use the canonical protocol schedule
+- The QA coach week follows the simulated date rather than the real calendar
 - Presentation activity metrics count athlete activity only; admin/coach test clicks must not inflate adherence or program usage.
+
+## What QA Proves
+
+The QA parity gate is strong evidence that the covered technical path behaves as
+designed: the real dashboard creates assignments, `save_daily_tracking_v3`
+stores completion and transfer evidence atomically, coach reviews use the same
+backend, privacy boundaries hold, and test data remains separated from
+production exports.
+
+It is not a substitute for a real-calendar smoke test, a physical iPhone test,
+push-notification testing, or a live athlete pilot. It also does not prove that
+athletes understand the questions, use the app consistently, or improve in
+sport. Those claims require real users and the defined evidence design.
 
 ## Supabase Precheck SQL
 

@@ -40,6 +40,17 @@ const lateAthletes = [
   },
 ];
 
+const qa = {
+  coach: "00000000-0000-4000-8000-000000000020",
+  team: "10000000-0000-4000-8000-000000000020",
+  run: "20000000-0000-4000-8000-000000000020",
+  athletes: Array.from({ length: 5 }, (_, index) => ({
+    user: `00000000-0000-4000-8000-00000000002${index + 1}`,
+    instance: `30000000-0000-4000-8000-00000000002${index + 1}`,
+    assignment: `40000000-0000-4000-8000-00000000002${index + 1}`,
+  })),
+};
+
 try {
   await db.exec(`
     CREATE ROLE anon;
@@ -71,7 +82,10 @@ try {
     CREATE TABLE public.teams(
       id uuid PRIMARY KEY,
       name text NOT NULL,
-      created_by uuid REFERENCES auth.users(id)
+      created_by uuid REFERENCES auth.users(id),
+      is_test_team boolean NOT NULL DEFAULT false,
+      is_archived boolean NOT NULL DEFAULT false,
+      program_start_date date
     );
     CREATE TABLE public.team_members(
       team_id uuid NOT NULL REFERENCES public.teams(id),
@@ -84,7 +98,10 @@ try {
       name text NOT NULL,
       status text NOT NULL,
       started_at date,
-      created_at timestamptz NOT NULL DEFAULT now()
+      ended_at date,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE TABLE public.program_instances(
       id uuid PRIMARY KEY,
@@ -105,6 +122,40 @@ try {
       context_type text NOT NULL DEFAULT 'training',
       status text NOT NULL DEFAULT 'active'
     );
+    CREATE TABLE public.user_day_completion(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      assignment_id uuid NOT NULL UNIQUE REFERENCES public.user_day_assignments(id) ON DELETE CASCADE,
+      program_instance_id uuid REFERENCES public.program_instances(id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+      completion_status text NOT NULL,
+      day_number integer NOT NULL
+    );
+    CREATE TABLE public.qa_time_overrides(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      scope text NOT NULL,
+      team_id uuid REFERENCES public.teams(id) ON DELETE CASCADE,
+      user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+      simulated_date date NOT NULL,
+      simulated_day_number integer,
+      created_by uuid NOT NULL REFERENCES auth.users(id),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.study_evidence_snapshots(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      program_run_id uuid REFERENCES public.program_runs(id),
+      include_test boolean NOT NULL DEFAULT false
+    );
+    CREATE TABLE public.daily_checkins(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.daily_journals(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.comprehension_check_instances(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.program_progress_snapshots(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.assessments(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.deep_profile_assessments(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.questionnaire_responses(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.personalized_tasks(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.program_settings(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.calendar_events(user_id uuid REFERENCES auth.users(id));
+    CREATE TABLE public.training_schedule(user_id uuid REFERENCES auth.users(id));
     CREATE TABLE public.synthetic_daily_tracking_writes(
       assignment_id uuid PRIMARY KEY,
       save_count integer NOT NULL DEFAULT 1
@@ -136,6 +187,32 @@ try {
       )
     $$;
 
+    CREATE FUNCTION public.get_effective_today(_user_id uuid)
+    RETURNS date LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+    DECLARE
+      v_is_test boolean;
+      v_sim date;
+    BEGIN
+      SELECT COALESCE(is_test_user, false) INTO v_is_test
+      FROM public.profiles WHERE id = _user_id;
+      IF NOT COALESCE(v_is_test, false) THEN RETURN CURRENT_DATE; END IF;
+
+      SELECT qto.simulated_date INTO v_sim
+      FROM public.qa_time_overrides qto
+      WHERE qto.scope = 'user' AND qto.user_id = _user_id
+      LIMIT 1;
+      IF v_sim IS NOT NULL THEN RETURN v_sim; END IF;
+
+      SELECT qto.simulated_date INTO v_sim
+      FROM public.qa_time_overrides qto
+      JOIN public.team_members tm ON tm.team_id = qto.team_id
+      WHERE qto.scope = 'team' AND tm.user_id = _user_id
+      ORDER BY qto.updated_at DESC
+      LIMIT 1;
+      RETURN COALESCE(v_sim, CURRENT_DATE);
+    END;
+    $$;
+
     CREATE FUNCTION public.save_daily_tracking_v2(
       _assignment_id uuid,
       _date date,
@@ -164,6 +241,14 @@ try {
       ON CONFLICT (assignment_id) DO UPDATE
       SET save_count = public.synthetic_daily_tracking_writes.save_count + 1;
 
+      INSERT INTO public.user_day_completion(
+        assignment_id, program_instance_id, user_id, completion_status, day_number
+      ) VALUES (
+        _assignment_id, _program_instance_id, auth.uid(), 'completed', _day_number
+      )
+      ON CONFLICT (assignment_id) DO UPDATE
+      SET completion_status = 'completed', day_number = EXCLUDED.day_number;
+
       RETURN json_build_object(
         'checkin_id', gen_random_uuid(),
         'completion_id', gen_random_uuid(),
@@ -178,6 +263,7 @@ try {
   const migrationFiles = [
     "20260714224000_performance_evidence_56d_v1.sql",
     "20260715085749_performance_evidence_fk_indexes.sql",
+    "20260717091518_qa_evidence_parity_gate.sql",
   ];
   for (const migrationFile of migrationFiles) {
     const migration = readFileSync(
@@ -502,6 +588,144 @@ try {
   );
   assert(minorReason.rows[0].reason === "minor_participation_not_enabled", "minor path must remain disabled");
 
+  await db.query("INSERT INTO auth.users(id) VALUES ($1)", [qa.coach]);
+  await db.query(`
+    INSERT INTO public.profiles(id, full_name, sport, is_test_user)
+    VALUES ($1, 'QA Coach', 'Fussball', true)
+  `, [qa.coach]);
+  await db.query("INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'coach')", [qa.coach]);
+  await db.query(`
+    INSERT INTO public.teams(id, name, created_by, is_test_team, program_start_date)
+    VALUES ($1, 'QA Team', $2, true, CURRENT_DATE)
+  `, [qa.team, qa.coach]);
+  await db.query(`
+    INSERT INTO public.program_runs(id, team_id, name, status, started_at)
+    VALUES ($1, $2, 'QA Run', 'active', CURRENT_DATE)
+  `, [qa.run, qa.team]);
+  await db.query("INSERT INTO public.team_members(team_id, user_id) VALUES ($1, $2)", [qa.team, qa.coach]);
+  await db.query(`
+    INSERT INTO public.qa_time_overrides(
+      scope, team_id, simulated_date, simulated_day_number, created_by
+    ) VALUES ('team', $1, CURRENT_DATE + 55, 56, $2)
+  `, [qa.team, ids.admin]);
+
+  for (const [index, athlete] of qa.athletes.entries()) {
+    await db.query("INSERT INTO auth.users(id) VALUES ($1)", [athlete.user]);
+    await db.query(`
+      INSERT INTO public.profiles(id, full_name, sport, is_test_user)
+      VALUES ($1, $2, 'Fussball', true)
+    `, [athlete.user, `QA Athlet ${index + 1}`]);
+    await db.query("INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'athlete')", [athlete.user]);
+    await db.query("INSERT INTO public.team_members(team_id, user_id) VALUES ($1, $2)", [qa.team, athlete.user]);
+    await db.query(`
+      INSERT INTO public.program_instances(
+        id, user_id, team_id, program_run_id, status, started_at, is_test_instance
+      ) VALUES ($1, $2, $3, $4, 'active', CURRENT_DATE, true)
+    `, [athlete.instance, athlete.user, qa.team, qa.run]);
+    await db.query(`
+      INSERT INTO public.user_day_assignments(
+        id, user_id, date, assigned_day_number, context_type
+      ) VALUES ($1, $2, CURRENT_DATE + 55, 56, 'training')
+    `, [athlete.assignment, athlete.user]);
+
+    await asUser(athlete.user);
+    await db.query(`
+      SELECT public.save_daily_tracking_v3(
+        _assignment_id => $1,
+        _date => CURRENT_DATE + 55,
+        _event_type => 'training',
+        _day_number => 56,
+        _variant_used => 'training',
+        _program_instance_id => $2,
+        _tasks_completed => '[]'::jsonb,
+        _reflection => NULL,
+        _evidence_protocol_version => '56d-transfer-v1-2026-07',
+        _evidence_domain_id => 'attention_return',
+        _evidence_response => $3,
+        _evidence_response_duration_ms => 7000
+      )
+    `, [athlete.assignment, athlete.instance, index === 4 ? "not_observed" : "3"]);
+  }
+
+  await asUser(qa.coach);
+  const qaCoachContext = await db.query(
+    "SELECT public.get_coach_evidence_review_context($1) AS value",
+    [qa.team],
+  );
+  assert(
+    qaCoachContext.rows[0].value.week_number === 8,
+    "QA coach context must use the simulated day instead of the real calendar",
+  );
+  await db.query(`
+    SELECT public.save_coach_evidence_review(
+      'team', $1, NULL, '56d-transfer-v1-2026-07', 8, 'mixed', $2::jsonb, 40000
+    )
+  `, [qa.team, observations]);
+
+  await asUser(ids.admin);
+  const qaParity = await db.query(
+    "SELECT public.get_qa_evidence_parity($1) AS value",
+    [qa.run],
+  );
+  const qaParityValue = qaParity.rows[0].value;
+  const qaDay56 = qaParityValue.days.find((day) => day.day_number === 56);
+  assert(qaParityValue.setup.athletes === 5, "QA parity must require the full five-athlete cohort");
+  assert(qaParityValue.days.length === 16, "QA parity must report all 16 evidence days");
+  assert(
+    qaDay56.status === "passed"
+      && qaDay56.expected_observations === 5
+      && qaDay56.collected_observations === 5
+      && qaDay56.not_observed === 1,
+    "simulated future evidence day must be fully inspectable without treating not-observed as missing",
+  );
+  assert(
+    qaParityValue.checks.observations_visible_in_production === 0
+      && qaParityValue.checks.participants_visible_in_production === 0,
+    "QA participants and observations must remain absent from the production-only summary",
+  );
+  assert(
+    qaParityValue.checks.completion_without_evidence === 0
+      && qaParityValue.checks.evidence_without_completion === 0,
+    "QA parity must verify atomic completion/evidence linkage",
+  );
+  assert(
+    qaParityValue.privacy.response_values_exposed === false
+      && qaParityValue.privacy.athlete_identifiers_exposed === false
+      && qaParityValue.privacy.private_text_exposed === false,
+    "QA parity output must expose no raw values, athlete identifiers, or private text",
+  );
+
+  await db.query(`
+    INSERT INTO public.study_evidence_snapshots(program_run_id, include_test)
+    VALUES ($1, true), ($1, false)
+  `, [qa.run]);
+  const archivedQa = await db.query(
+    "SELECT public.archive_qa_cohort($1) AS value",
+    [qa.team],
+  );
+  const archivedQaRows = await db.query(`
+    SELECT
+      (SELECT COUNT(*)::integer FROM public.athlete_transfer_observations WHERE program_run_id = $1) AS evidence,
+      (SELECT COUNT(*)::integer FROM public.coach_evidence_reviews WHERE program_run_id = $1) AS coach_reviews,
+      (SELECT COUNT(*)::integer FROM public.study_evidence_snapshots WHERE program_run_id = $1) AS snapshots,
+      (SELECT status FROM public.program_runs WHERE id = $1) AS run_status,
+      (SELECT is_archived FROM public.teams WHERE id = $2) AS team_archived
+  `, [qa.run, qa.team]);
+  assert(
+    archivedQa.rows[0].value.wiped_evidence_observations === 5
+      && archivedQa.rows[0].value.wiped_coach_reviews === 1
+      && archivedQa.rows[0].value.wiped_evidence_snapshots === 2,
+    "QA archive must report every removed evidence category",
+  );
+  assert(
+    archivedQaRows.rows[0].evidence === 0
+      && archivedQaRows.rows[0].coach_reviews === 0
+      && archivedQaRows.rows[0].snapshots === 0
+      && archivedQaRows.rows[0].run_status === "archived"
+      && archivedQaRows.rows[0].team_archived === true,
+    "QA archive must leave no run-scoped evidence behind",
+  );
+
   const ageColumns = await db.query(`
     SELECT count(*)::int AS n
     FROM information_schema.columns
@@ -548,6 +772,10 @@ try {
     anonRpcDenied,
     unauthorizedCoachDenied,
     minorPathDisabled: true,
+    qaSimulatedCoachWeek: qaCoachContext.rows[0].value.week_number,
+    qaFutureDayPassed: qaDay56.status === "passed",
+    qaProductionIsolationPassed: true,
+    qaArchiveWipedEvidence: true,
     ageColumns: ageColumns.rows[0].n,
     evidenceForeignKeyIndexes: evidenceFkIndexes.rows[0].n,
   }, null, 2));

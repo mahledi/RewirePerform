@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Database,
   Download,
+  FlaskConical,
   Loader2,
   Play,
   Plus,
@@ -22,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import QaEvidenceParityPanel from "@/components/admin/QaEvidenceParityPanel";
 import {
   Select,
   SelectContent,
@@ -31,6 +33,7 @@ import {
 } from "@/components/ui/select";
 
 type ProgramRun = Tables<"program_runs">;
+type DataMode = "production" | "qa";
 
 interface TeamOption {
   id: string;
@@ -183,6 +186,7 @@ const MissingList = ({ title, players }: { title: string; players: MissingPlayer
 const NlzPilotReadiness = () => {
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [runs, setRuns] = useState<ProgramRun[]>([]);
+  const [dataMode, setDataMode] = useState<DataMode>("production");
   const [teamId, setTeamId] = useState("");
   const [runId, setRunId] = useState("");
   const [readiness, setReadiness] = useState<PilotReadiness | null>(null);
@@ -194,8 +198,16 @@ const NlzPilotReadiness = () => {
   const [newRunStart, setNewRunStart] = useState(new Date().toISOString().slice(0, 10));
 
   const selectedRun = useMemo(() => runs.find((run) => run.id === runId) ?? null, [runId, runs]);
+  const visibleTeams = useMemo(
+    () => teams.filter((team) => team.is_test_team === (dataMode === "qa")),
+    [dataMode, teams],
+  );
 
-  const loadRunData = useCallback(async (selectedTeamId: string, preferredRunId?: string) => {
+  const loadRunData = useCallback(async (
+    selectedTeamId: string,
+    preferredRunId?: string,
+    mode: DataMode = "production",
+  ) => {
     setLoading(true);
     const { data: runRows, error: runsError } = await supabase
       .from("program_runs")
@@ -215,6 +227,14 @@ const NlzPilotReadiness = () => {
       ?? nextRuns[0]
       ?? null;
     setRunId(chosenRun?.id ?? "");
+
+    if (mode === "qa") {
+      setReadiness(null);
+      setDossier(null);
+      setPerformanceEvidence(null);
+      setLoading(false);
+      return;
+    }
 
     const { data: readinessData, error: readinessError } = await supabase.rpc("get_nlz_pilot_readiness", {
       _team_id: selectedTeamId,
@@ -263,9 +283,10 @@ const NlzPilotReadiness = () => {
       }
       const options = data ?? [];
       setTeams(options);
-      if (options[0]) {
-        setTeamId(options[0].id);
-        await loadRunData(options[0].id);
+      const initialTeam = options.find((team) => !team.is_test_team);
+      if (initialTeam) {
+        setTeamId(initialTeam.id);
+        await loadRunData(initialTeam.id, undefined, "production");
       } else {
         setLoading(false);
       }
@@ -275,12 +296,30 @@ const NlzPilotReadiness = () => {
 
   const changeTeam = async (nextTeamId: string) => {
     setTeamId(nextTeamId);
-    await loadRunData(nextTeamId);
+    await loadRunData(nextTeamId, undefined, dataMode);
   };
 
   const changeRun = async (nextRunId: string) => {
     setRunId(nextRunId);
-    await loadRunData(teamId, nextRunId);
+    await loadRunData(teamId, nextRunId, dataMode);
+  };
+
+  const changeDataMode = async (nextMode: DataMode) => {
+    if (nextMode === dataMode) return;
+    setDataMode(nextMode);
+    const nextTeam = teams.find((team) => team.is_test_team === (nextMode === "qa"));
+    if (!nextTeam) {
+      setTeamId("");
+      setRunId("");
+      setRuns([]);
+      setReadiness(null);
+      setDossier(null);
+      setPerformanceEvidence(null);
+      setLoading(false);
+      return;
+    }
+    setTeamId(nextTeam.id);
+    await loadRunData(nextTeam.id, undefined, nextMode);
   };
 
   const createRun = async () => {
@@ -302,7 +341,7 @@ const NlzPilotReadiness = () => {
     const created = jsonRecord<ProgramRun>(data);
     setNewRunName("");
     toast.success("Program Run geplant.");
-    await loadRunData(teamId, created.id);
+    await loadRunData(teamId, created.id, dataMode);
   };
 
   const activateAndAssign = async () => {
@@ -314,7 +353,7 @@ const NlzPilotReadiness = () => {
       const assignment = await supabase.rpc("assign_team_members_to_program_run", { _program_run_id: runId });
       if (assignment.error) throw assignment.error;
       toast.success("Program Run aktiv. Athleten wurden eindeutig zugeordnet.");
-      await loadRunData(teamId, runId);
+      await loadRunData(teamId, runId, dataMode);
     } catch (error) {
       toast.error(`Aktivierung nicht vollständig: ${errorMessage(error)}`);
     } finally {
@@ -332,7 +371,7 @@ const NlzPilotReadiness = () => {
       return;
     }
     toast.success("Athleten-Zuordnung aktualisiert.");
-    await loadRunData(teamId, runId);
+    await loadRunData(teamId, runId, dataMode);
   };
 
   const createSnapshot = async () => {
@@ -361,7 +400,7 @@ const NlzPilotReadiness = () => {
       return;
     }
     toast.success(status === "completed" ? "Program Run abgeschlossen." : "Program Run archiviert.");
-    await loadRunData(teamId, runId);
+    await loadRunData(teamId, runId, dataMode);
   };
 
   const exportDossier = () => {
@@ -410,17 +449,37 @@ const NlzPilotReadiness = () => {
                 Operativer Startstatus pro Mannschaftslauf. Keine privaten Texte oder psychologischen Einzelwerte.
               </p>
             </div>
-            <Button variant="outline" size="icon" onClick={() => teamId && loadRunData(teamId, runId)} disabled={loading} title="Neu laden">
-              <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex border border-border p-1" role="group" aria-label="Datenmodus">
+                <Button
+                  variant={dataMode === "production" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => void changeDataMode("production")}
+                  aria-pressed={dataMode === "production"}
+                >
+                  <Database className="mr-2 h-4 w-4" />Production
+                </Button>
+                <Button
+                  variant={dataMode === "qa" ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => void changeDataMode("qa")}
+                  aria-pressed={dataMode === "qa"}
+                >
+                  <FlaskConical className="mr-2 h-4 w-4" />QA
+                </Button>
+              </div>
+              <Button variant="outline" size="icon" onClick={() => teamId && loadRunData(teamId, runId, dataMode)} disabled={loading || !teamId} title="Neu laden">
+                <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid gap-3 md:grid-cols-2">
-            <Select value={teamId} onValueChange={changeTeam}>
+            <Select value={teamId} onValueChange={changeTeam} disabled={visibleTeams.length === 0}>
               <SelectTrigger><SelectValue placeholder="Team wählen" /></SelectTrigger>
               <SelectContent>
-                {teams.map((team) => <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>)}
+                {visibleTeams.map((team) => <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={runId} onValueChange={changeRun} disabled={runs.length === 0}>
@@ -431,16 +490,28 @@ const NlzPilotReadiness = () => {
             </Select>
           </div>
 
-          <div className="grid gap-3 border-t border-border pt-5 md:grid-cols-[1fr_170px_auto]">
-            <Input value={newRunName} onChange={(event) => setNewRunName(event.target.value)} placeholder="z. B. U17 Pilot Herbst 2026" />
-            <Input type="date" value={newRunStart} onChange={(event) => setNewRunStart(event.target.value)} />
-            <Button onClick={createRun} disabled={action !== null || !teamId}>
-              {action === "create" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-              Run planen
-            </Button>
-          </div>
+          {dataMode === "production" ? (
+            <div className="grid gap-3 border-t border-border pt-5 md:grid-cols-[1fr_170px_auto]">
+              <Input value={newRunName} onChange={(event) => setNewRunName(event.target.value)} placeholder="z. B. U17 Pilot Herbst 2026" />
+              <Input type="date" value={newRunStart} onChange={(event) => setNewRunStart(event.target.value)} />
+              <Button onClick={createRun} disabled={action !== null || !teamId}>
+                {action === "create" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                Run planen
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">QA-Modus ist schreibgeschützt</p>
+                <p className="mt-1 text-xs text-muted-foreground">Keine Production-Snapshots oder Standardexporte. Zeitsteuerung erfolgt im QA Test Lab.</p>
+              </div>
+              <Button variant="outline" asChild>
+                <a href="/admin/qa"><FlaskConical className="mr-2 h-4 w-4" />QA Test Lab</a>
+              </Button>
+            </div>
+          )}
 
-          {selectedRun ? (
+          {selectedRun && dataMode === "production" ? (
             <div className="flex flex-wrap gap-2 border-t border-border pt-5">
               <Badge variant="outline">{selectedRun.status}</Badge>
               <Badge variant="outline">Start {selectedRun.started_at ?? "offen"}</Badge>
@@ -470,7 +541,19 @@ const NlzPilotReadiness = () => {
         </CardContent>
       </Card>
 
-      {readiness ? (
+      {dataMode === "qa" ? (
+        selectedRun ? (
+          <Card>
+            <CardContent className="p-5 md:p-6">
+              <QaEvidenceParityPanel programRunId={selectedRun.id} refreshToken={selectedRun.updated_at} />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="rounded-lg border border-border p-6 text-sm text-muted-foreground">
+            Noch keine aktive QA-Kohorte vorhanden. Erstelle sie im QA Test Lab.
+          </div>
+        )
+      ) : readiness ? (
         <>
           <div className={`rounded-lg border p-5 ${statusStyle[readiness.status]}`}>
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

@@ -77,5 +77,15 @@ test("athlete and coach evidence previews stay concise and operable", async ({ p
   await expectNoHorizontalOverflow(page);
   await expectTouchTargets(page);
   await capture(page, testInfo, "coach-weekly-review");
+
+  await page.getByRole("tab", { name: "QA Gate" }).click();
+  await expect(page.getByRole("heading", { name: "Evidence-Paritätsgate" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Zu Tag \d+ springen/ })).toHaveCount(16);
+  await expect(page.getByText("QA aus Production ausgeschlossen")).toBeVisible();
+  await page.getByRole("button", { name: "Zu Tag 56 springen: Noch nicht erreicht" }).click();
+  await expect(page.getByText("Aktuell Tag 56")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await expectTouchTargets(page);
+  await capture(page, testInfo, "qa-evidence-parity");
   expect(browserErrors).toEqual([]);
 });
