@@ -21,6 +21,7 @@ const evidencePreviewEnabled = import.meta.env.DEV
 const Index = lazy(() => import("./pages/Index.tsx"));
 const Demo = lazy(() => import("./demo/DemoPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const Questionnaire = lazy(() => import("./pages/Questionnaire.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const Assessment = lazy(() => import("./pages/Assessment.tsx"));
@@ -42,6 +43,9 @@ const Support = lazy(() => import("./pages/Support.tsx"));
 const EvidencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/EvidencePreview.tsx"))
   : null;
+const EmailPreview = import.meta.env.DEV
+  ? lazy(() => import("./pages/EmailPreview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -51,7 +55,8 @@ const PageFallback = () => (
 const AppRoutes = () => {
   const location = useLocation();
   const isEvidencePreview = EvidencePreview !== null && location.pathname === "/internal/evidence-preview";
-  const isDemoRoute = location.pathname === "/demo" || isEvidencePreview;
+  const isEmailPreview = EmailPreview !== null && location.pathname === "/internal/email-preview";
+  const isDemoRoute = location.pathname === "/demo" || isEvidencePreview || isEmailPreview;
 
   if (isDemoRoute) {
     return (
@@ -62,6 +67,7 @@ const AppRoutes = () => {
           <Routes>
             <Route path="/demo" element={<Demo />} />
             {EvidencePreview && <Route path="/internal/evidence-preview" element={<EvidencePreview />} />}
+            {EmailPreview && <Route path="/internal/email-preview" element={<EmailPreview />} />}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -88,6 +94,7 @@ const AppRoutes = () => {
             <Route path="/support" element={<Support />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/questionnaire" element={
               <ProtectedRoute><Questionnaire /></ProtectedRoute>
             } />

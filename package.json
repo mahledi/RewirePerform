@@ -17,7 +17,7 @@
     "release:verify:staging": "node scripts/validate-release-target.mjs --expected staging --mode staging",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false && tsc -p tsconfig.node.json --noEmit --pretty false",
     "validate:env": "node scripts/validate-env.mjs",
-    "ci": "npm run validate:env -- --example-only && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run app:verify",
+    "ci": "npm run validate:env -- --example-only && npm run email:templates:check && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run app:verify",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
@@ -25,7 +25,9 @@
     "test:evidence:sql": "node scripts/verify-performance-evidence-sql.mjs",
     "test:e2e": "playwright test",
     "test:staging:plan": "node scripts/nlz-staging-e2e.mjs --plan",
-    "test:staging:execute": "node scripts/nlz-staging-e2e.mjs --execute"
+    "test:staging:execute": "node scripts/nlz-staging-e2e.mjs --execute",
+    "email:templates:build": "node scripts/generate-auth-email-templates.mjs",
+    "email:templates:check": "node scripts/generate-auth-email-templates.mjs --check"
   },
   "dependencies": {
     "@capacitor/cli": "^8.4.1",

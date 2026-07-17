@@ -56,6 +56,94 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await capture(page, testInfo, "auth-signup");
 });
 
+test.describe("email confirmation", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("signup awaiting email confirmation stops on a clear verification screen", async ({ page }, testInfo) => {
+    let interceptedSignups = 0;
+    await page.context().route(/^https:\/\/test\.supabase\.co\/auth\/v1\/signup(?:\?.*)?$/, async (route) => {
+      interceptedSignups += 1;
+      const now = new Date().toISOString();
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          user: {
+            id: "00000000-0000-4000-8000-000000000001",
+            aud: "authenticated",
+            role: "authenticated",
+            email: "qa-confirmation@example.com",
+            phone: "",
+            confirmation_sent_at: now,
+            app_metadata: { provider: "email", providers: ["email"] },
+            user_metadata: { full_name: "QA Confirmation", role: "athlete" },
+            identities: [],
+            created_at: now,
+            updated_at: now,
+          },
+        }),
+      });
+    });
+
+    await page.goto("/auth?redirect=%2Fadmin%2Fqa");
+    await page.getByRole("button", { name: /Allein starten/ }).click();
+    await page.getByLabel("Vollständiger Name").fill("QA Confirmation");
+    await page.getByLabel("E-Mail").fill("qa-confirmation@example.com");
+    await page.getByLabel("Passwort").fill("secure-test-password");
+    expect(await page.getByLabel("Vollständiger Name").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    expect(await page.getByLabel("E-Mail").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    expect(await page.getByLabel("Passwort").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    await page.getByRole("button", { name: "Konto erstellen" }).click();
+
+    await expect.poll(() => interceptedSignups).toBe(1);
+    await expect(page.getByRole("heading", { level: 1, name: "Bestätige deine E-Mail." })).toBeVisible();
+    await expect(page.getByText("qa-confirmation@example.com")).toBeVisible();
+    await expect(page.getByRole("button", { name: "E-Mail erneut senden" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "E-Mail-Adresse ändern" })).toBeVisible();
+    await expect(page).toHaveURL(/\/auth\?redirect=%2Fadmin%2Fqa$/);
+    await expectNoHorizontalOverflow(page);
+    await capture(page, testInfo, "auth-email-confirmation");
+  });
+});
+
+test.describe("password recovery", () => {
+  test.use({ serviceWorkers: "block" });
+
+  test("reset request uses a neutral, accessible recovery state", async ({ page }, testInfo) => {
+    let interceptedRecoveries = 0;
+    await page.context().route(/^https:\/\/test\.supabase\.co\/auth\/v1\/recover(?:\?.*)?$/, async (route) => {
+      interceptedRecoveries += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({}),
+      });
+    });
+
+    await page.goto("/auth?mode=forgot");
+    await expect(page.getByRole("heading", { level: 1, name: "Passwort zurücksetzen." })).toBeVisible();
+    await page.getByLabel("E-Mail").fill("qa-recovery@example.com");
+    await page.getByRole("button", { name: "Reset-E-Mail senden" }).click();
+
+    await expect.poll(() => interceptedRecoveries).toBe(1);
+    await expect(page.getByRole("heading", { level: 1, name: "Prüfe deine E-Mails." })).toBeVisible();
+    await expect(page.getByText(/Falls ein Konto für/)).toBeVisible();
+    await expect(page.getByLabel("Sechsstelliger Sicherheitscode")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await capture(page, testInfo, "auth-password-recovery");
+  });
+
+  test("expired recovery links expose a safe retry path", async ({ page }, testInfo) => {
+    await page.goto("/auth/reset-password#error=access_denied&error_code=otp_expired");
+
+    await expect(page.getByRole("heading", { level: 1, name: "Der Link ist nicht mehr gültig." })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Neuen Link anfordern" })).toHaveAttribute("href", "/auth?mode=forgot");
+    await expect(page.getByRole("link", { name: "Zur Anmeldung" })).toHaveAttribute("href", "/auth");
+    await expectNoHorizontalOverflow(page);
+    await capture(page, testInfo, "auth-expired-recovery-link");
+  });
+});
+
 test("synthetic demo remains interactive without real user data", async ({ page }, testInfo) => {
   await page.goto("/demo");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("RewirePerform im Alltag");
