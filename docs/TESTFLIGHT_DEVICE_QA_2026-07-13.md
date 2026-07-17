@@ -24,7 +24,9 @@ restore and verify Production before syncing or opening the iOS project.
 - Xcode 26.6 (`17F113`), iOS SDK 26.5 and iOS 26.5 Simulator are installed.
 - `npm run app:verify:xcode` passed 8/8 setup checks.
 - `npm run app:verify:xcode:build` passed 9/9 checks including an unsigned native build.
-- `npm run app:verify:simulator` built, installed and launched the app on an ephemeral iPhone 17 Pro Max and captured a visibly nonblank native screen. Repeat runs became visibly nonblank after about 4.7 to 7.1 seconds; this is not a physical-device launch-performance result.
+- `npm run app:verify:simulator` built one unsigned universal simulator app, then installed and launched it on an ephemeral iPhone 17 Pro Max and iPad Pro 13-inch (M5). Both remained alive and produced stabilized, visually inspected screenshots without the simulator's transient system banner. On the final fresh-simulator run, app surfaces became nonblank after about 10.4 and 13.2 seconds; these include ephemeral simulator boot conditions and are not physical-device launch-performance results.
+- Browser UI checks pass on iPhone and iPad in portrait and landscape. The deterministic service-worker offline navigation passes in Chromium; WebKit offline behavior remains part of physical-device QA.
+- Session-isolation tests cover delayed previous-account context after both account switch and sign-out. Notification and speech permission-denial tests verify recoverable behavior without native scheduling or a stuck listening state.
 - `npm run app:verify:xcode:signing` intentionally remains red: 0 valid signing identities and no configured Developer Team.
 - Signed Archive, Privacy Report, TestFlight upload and physical-iPhone behavior remain unverified.
 

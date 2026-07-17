@@ -3,20 +3,23 @@
 Stand: 17. Juli 2026
 
 Scope: lokaler, nicht signierter Release- und Safety-Block auf Basis von
-`origin/main` `f1903c1` plus Privacy-Haertung `d962701`. Kein Push, Merge, Deploy,
-Production-Write, Archive oder Upload.
+`origin/main` `f1903c1`, Privacy-/App-Store-Haertung und E-Mail-Bestaetigungsflow.
+Kein Push, Merge nach `main`, Deploy, Production-Write, Archive oder Upload.
 
 ## Gruene Nachweise
 
 | Gate | Ergebnis |
 | --- | --- |
-| `npm run app:build` | Production-Ziel validiert, Typecheck, Vite-Build, 161 Unit-/Vertragstests, Evidence-SQL, statisches App-Store-Gate, Capacitor-Sync und eingebettetes Production-Ziel bestanden |
-| `npm run test:e2e` | 20/20 auf Desktop-Chromium, iPhone-WebKit hoch/quer und iPad-WebKit |
+| `npm run app:build` | Production-Ziel validiert, Typecheck, Vite-Build, 172 Unit-/Vertragstests in 34 Dateien, Evidence-SQL, statisches App-Store-Gate, Capacitor-Sync und eingebettetes Production-Ziel bestanden |
+| `npm run test:e2e` | 31 bestanden, 4 bewusst uebersprungen: Desktop-Chromium sowie WebKit auf iPhone hoch/quer und iPad hoch/quer; der echte Service-Worker-Offline-Test laeuft deterministisch nur in Chromium |
 | `npm run app:verify:public` | Startseite, Privacy und Support auf Desktop/Mobile per HTTPS gerendert; keine Page Errors oder horizontaler Overflow |
 | `npm run app:verify:xcode` | 8/8 mit Xcode 26.6, iOS SDK 26.5 und iOS-26.5-Runtime |
 | `npm run app:verify:xcode:build` | 9/9 inklusive unsigniertem nativen Simulator-Build |
-| `npm run app:verify:simulator` | Build, Installation und Launch auf temporaerem iPhone 17 Pro Max; sichtbare nichtleere App-Oberflaeche in Wiederholungslaeufen nach rund 4.7 bis 7.1 Sekunden |
-| `npm run lint` | 0 Fehler; 16 bereits bekannte Warnungen |
+| `npm run app:verify:simulator` | Ein universeller unsignierter Build wurde auf temporaerem iPhone 17 Pro Max und iPad Pro 13-inch installiert und gestartet; stabilisierte Screenshots zeigen auf beiden Geraeten eine sichtbare, nicht ueberlagerte App-Oberflaeche |
+| Session-Isolation | langsamer Rollenabruf eines vorherigen Accounts kann nach Wechsel oder Abmeldung keinen User-, Rollen-, Test- oder Monitoringzustand mehr ueberschreiben; zwei Race-Tests bestanden |
+| Offline-Fallback | statische datenfreie Offline-Seite wird separat gespeichert und durch eine echte Offline-Navigation bestaetigt; App-Chunks bleiben zum Schutz vor gemischten Deploy-Versionen ungecached |
+| Berechtigungsablehnung | Voice- und native Notification-Tests bestaetigen einen recoverbaren Abbruch; bei verweigerten Mitteilungen erfolgt weder Scheduling noch lokale Aktivierung |
+| `npm run lint` | 0 Fehler; 15 verbleibende Warnungen nach Laufzeit-Triage |
 | `npm audit --omit=dev` | 0 bekannte Production-Schwachstellen |
 | Plist-Validierung | `Info.plist` und `PrivacyInfo.xcprivacy` syntaktisch gueltig |
 | Content-Release-Test | alle 56 aufgeloesten Programmtage frei von TODO-/Platzhaltertext |
@@ -42,5 +45,6 @@ Production-Write, Archive oder Upload.
 ## Koordination
 
 Der integrierte Tracking-/QA-Paritaetsstand von `origin/main` wurde getestet. Dieser
-Block hat keine Tracking-Migration, Tracking-UI, Auth-/RLS-/Consent-Logik,
-Account-Loeschlogik oder sichtbare Produkt-Copy veraendert.
+Block hat keine Tracking-Migration, Tracking-UI, RLS-/Consent-Logik,
+Account-Loeschlogik oder Programmtag-Copy veraendert. Integriert wurden der bereits
+separat gebaute E-Mail-Bestaetigungsflow sowie eine technische Auth-Session-Isolation.

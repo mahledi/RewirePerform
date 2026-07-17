@@ -9,7 +9,7 @@
 - Capacitor-iOS-Projekt mit Bundle-ID `com.rewireperform.app` vorhanden.
 - App-Icon ist 1024 x 1024 Pixel gross und hat keinen Alpha-Kanal.
 - Production-Build, Typecheck, vollstaendige Testsuite und ESLint ohne Fehler bestanden.
-- 20 von 20 oeffentlichen, synthetischen und Evidence-Browser-Flows bestanden: Chromium sowie WebKit auf iPhone hoch/quer und iPad, jeweils inklusive Overflow- und Page-Error-Pruefung.
+- 31 oeffentliche, synthetische, Auth-, Offline- und Evidence-Browser-Flows bestanden: Chromium sowie WebKit auf iPhone hoch/quer und iPad hoch/quer, jeweils inklusive Overflow- und Page-Error-Pruefung. Vier Service-Worker-Varianten werden auf WebKit bewusst uebersprungen; der echte Offlinefall wird in Chromium geprueft.
 - Der Production-Dependency-Audit meldet 0 bekannte Schwachstellen.
 - Der Production-Release-Validator bindet den Store-Build an Supabase `bqsbxesmybthwtxmowfz`; der vollstaendige lokale Production-Build inklusive Capacitor-iOS-Sync ist bestanden.
 - Es existiert derzeit kein freigegebenes Staging-Projekt. Die beiden stillgelegten Refs `towgvykgezrmkbyudjen` und `twceqincrbrenyuqukpj` werden fuer neue Builds nicht akzeptiert.
@@ -24,9 +24,11 @@
 - `delete-account` Version 1 ist auf Production `ACTIVE`, verlangt ein JWT und entspricht dem Repository-Quelltext. CORS antwortet mit `200`, fehlende oder ungueltige Authentifizierung mit `401`.
 - Der destruktive Athlet-in-Team-Test bestand am 14. Juli 2026: Function und Auth meldeten erfolgreiche Loeschung, der erneute Login scheiterte, der Bestand fiel kontrolliert von 8 auf 7 Accounts/Profile und die accountbezogene Auth-, Produkt- und Referenzpruefung ergab jeweils 0 Restzeilen. Evidenz: `docs/ACCOUNT_DELETION_PRODUCTION_VERIFICATION_2026-07-14.md`.
 - Vor dem Production-Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt. Der Schluessel liegt ausschliesslich im macOS-Schluesselbund.
-- Der integrierte 56-Tage-Evidence-Stand besteht Production-Build, 161 Unit-/Vertragstests, lokale PostgreSQL-Verhaltenspruefung inklusive QA-Paritaetsgate, 20 Browserfluesse und den Capacitor-iOS-Sync mit eingebettetem Production-Ziel.
+- Der integrierte 56-Tage-Evidence-Stand besteht Production-Build, 172 Unit-/Vertragstests, lokale PostgreSQL-Verhaltenspruefung inklusive QA-Paritaetsgate, 31 bestandene Browserfluesse und den Capacitor-iOS-Sync mit eingebettetem Production-Ziel.
 - Die Live-Routen `https://rewireperform.com`, `/privacy` und `/support` rendern auf Desktop und Mobile per HTTPS ohne Page Error oder horizontalen Overflow; die Support-Mailadresse ist verlinkt.
-- Xcode 26.6, iOS SDK 26.5 und die iOS-26.5-Simulator-Runtime sind installiert. Maschinen-Preflight, unsignierter Simulator-Build sowie Installation und sichtbarer Start auf einem temporaeren iPhone-17-Pro-Max-Simulator sind bestanden.
+- Xcode 26.6, iOS SDK 26.5 und die iOS-26.5-Simulator-Runtime sind installiert. Maschinen-Preflight, universeller unsignierter Simulator-Build sowie Installation, stabilisierte Screenshots und sichtbarer Start auf temporaerem iPhone 17 Pro Max und iPad Pro 13-inch sind bestanden.
+- Auth-Sessions sind gegen verspätete Rollen-/Teststatusantworten eines vorherigen Accounts gehaertet; Wechsel- und Abmelde-Races sind automatisiert getestet.
+- Der Web-Service-Worker speichert nur die statische datenfreie Offline-Fallback-Seite. Ein echter Offline-Navigationstest besteht, waehrend App-Chunks weiterhin bewusst nicht vorab gecacht werden.
 
 ## Rote Gates vor TestFlight
 
@@ -40,9 +42,9 @@
 
 ## Gelbe Qualitaetsreste
 
-- ESLint endet mit 0 Fehlern und 16 bereits vorhandenen Warnungen. Darunter sind Hook-Dependency-Warnungen in Auth-, Dashboard-, Coach- und Admin-Pfaden; sie brauchen vor der finalen Submission eine eigene Laufzeit-Triage, weil die authentifizierten Rollenfluesse lokal noch nicht vollstaendig getestet werden konnten.
+- ESLint endet mit 0 Fehlern und 15 Warnungen. Die Auth-Session-Warnung wurde durch stabile Callbacks und Race-Tests geschlossen. Verbleibende Hook-Warnungen in Dashboard-, Coach-, Team- und Admin-Ladeeffekten wurden geprueft; blindes Hinzufuegen der Funktionsreferenzen wuerde erneute Abfragen oder Schleifen erzeugen. Fast-Refresh-Warnungen betreffen lokale Entwicklungsstruktur, nicht das Release-Bundle.
 - `npm audit --omit=dev` meldet 0 Schwachstellen. Der vollstaendige Audit meldet weiterhin zwei Dev-Tooling-Befunde ueber das alte Vite/esbuild-Setup. Der angebotene Fix erzwingt ein Major-Upgrade auf Vite 8 und sollte separat mit vollstaendiger Build-/PWA-Kompatibilitaetspruefung erfolgen; die betroffenen Pakete werden nicht in das App-Bundle ausgeliefert.
-- Check-in und Journal sichern Entwuerfe lokal und behalten sie bei fehlgeschlagenem Server-Speichern. Eine automatische Offline-Synchronisation mit Supabase existiert nicht; der Nutzer muss nach stabiler Verbindung erneut speichern.
+- Check-in und Journal sichern Entwuerfe lokal und behalten sie bei fehlgeschlagenem Server-Speichern. Die statische Web-Offline-Seite ist jetzt reproduzierbar verfuegbar. Eine automatische Offline-Synchronisation mit Supabase existiert weiterhin nicht; der Nutzer muss nach stabiler Verbindung erneut speichern.
 
 ## Separates Gate vor einem Evidence-Pilot
 
