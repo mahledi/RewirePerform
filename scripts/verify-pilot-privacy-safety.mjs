@@ -131,6 +131,18 @@ verify(
   "Privacy text discloses notification delivery, open and failure logging",
   /notification_log|Versandstatus/i.test(files.privacy) && /Oeffnung|Öffnung/i.test(files.privacy),
 );
+verify(
+  "release_gate",
+  "G-05D",
+  "Privacy text identifies the controller and a physical contact address",
+  /Verantwortliche[rn]?/i.test(files.privacy) && /Postanschrift|Anschrift/i.test(files.privacy),
+);
+verify(
+  "release_gate",
+  "G-05E",
+  "Published privacy text is not marked as awaiting final legal review",
+  !/vor App-Store-Veröffentlichung[^.]*juristisch final geprüft/i.test(files.privacy),
+);
 
 for (const result of results) {
   const marker = result.passed ? "PASS" : result.kind === "invariant" ? "FAIL" : "BLOCKED";

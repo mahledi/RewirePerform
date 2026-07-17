@@ -2,6 +2,8 @@
 
 Stand: 15. Juli 2026
 
+Technischer Nachtrag: 17. Juli 2026 - Xcode-/Simulatorpfad lokal verifiziert; Rechts- und Minderjaehrigenstatus unveraendert
+
 Status: Repo und Production read-only geprueft; keine Rechtsfreigabe und keine Aktivierung des Minderjaehrigenpfads
 
 Dieses Dokument ist die technische Ist-Aufnahme fuer den geplanten Mannschaftspilot. Es ist kein Rechtsgutachten. Aussagen zu Rechtsgrundlagen, Einwilligung, Forschung, Aufbewahrung und Verantwortlichkeiten muessen vor dem Pilot durch eine fuer Deutschland und den konkreten Vereinskontext qualifizierte Stelle bestaetigt werden.
@@ -79,6 +81,8 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Personalisierte Inhalte koennen AI-generierte Aufgaben sein | aktive Produktanalyse ist deterministisch; zwei ehemalige AI-Functions sind deaktiviert | veraltete/falsche Aussage |
 | Push speichert nur Subscription und Reminder-Zeiten | `notification_log` speichert auch Versand, Oeffnung, Fehlerstatus, Ziel und Metadaten | unvollstaendige Aussage |
 | Cloud-Anbieter werden allgemein beschrieben | Supabase, Sentry und Vercel sowie Rollen, Regionen und Drittlandtransfer werden nicht konkret genannt | unvollstaendig |
+| Die veroeffentlichte Seite nennt den Verantwortlichen und eine Anschrift | Verantwortlicher und physische Kontaktanschrift fehlen | Pflichtangabe offen, Pilot-Blocker |
+| Der Text ist die finale veroeffentlichte Fassung | Die Seite sagt selbst, dass sie vor App-Store-Veroeffentlichung noch juristisch final geprueft wird | sichtbar als Entwurf markiert, Release-Blocker |
 | Datenuebertragbarkeit ist verfuegbar | kein direkter In-App-Exportpfad gefunden; vermutlich manueller Request | Prozess und SLA fehlen |
 | Loeschung entfernt aktive personenbezogene Daten | serverseitiger Vertrag und Realtest stuetzen die Aussage | bestaetigt, Backupfrist offen |
 | Speicherdauer endet nach Zweckfortfall | keine verbindlichen Tabellen-, Log-, Snapshot- oder Backupperioden | nicht operationalisiert |
@@ -130,7 +134,7 @@ Die App nennt bereits konkrete DSGVO-Artikel, obwohl Verantwortlichkeit, Vereins
 | G-02 | P0 | Altersgruppe, Guardian-Autorisierung und Jugend-Assent implementieren | App, Backend, Legal | End-to-End- und Replay-/Widerrufstests |
 | G-03 | P0 | `team-mental-state` auf wirklich freigegebene Population begrenzen | Backend | SQL/Edge-Negativtests mit gemischter Gruppe |
 | G-04 | P0 | alle Study-/Presentation-/Exportpfade auf ein Eligibility-Gate ziehen | Database | pgTAP/SQL-Harness fuer jede RPC |
-| G-05 | P0 | Datenschutzerklaerung auf echten Code, Provider und Pilotrollen abstimmen | Legal plus Product | final freigegebene Version und Code-Matrix ohne Widerspruch |
+| G-05 | P0 | Datenschutzerklaerung auf echten Code, Provider, Verantwortlichen, Anschrift und Pilotrollen abstimmen | Legal plus Product | final freigegebene Version und Code-Matrix ohne Widerspruch |
 | G-06 | P0 | Aufbewahrungs- und Loeschplan fuer Tabellen, Snapshots, Logs und Backups festlegen | Privacy plus Operations | verbindliche Fristen und automatisierte Jobs |
 | G-07 | P0 | Sentry-Projekt: Region, Plan, Event-Retention und Loeschprozess bestaetigen | Operations | Dashboard-Screenshot/Export und DPA-Ablage |
 | G-08 | P0 | Forschung/Evidence gegen Produktverbesserung trennen; Ethikbedarf klaeren | Study Lead plus Legal | dokumentierter Scope und gegebenenfalls Ethikvotum |
@@ -139,7 +143,7 @@ Die App nennt bereits konkrete DSGVO-Artikel, obwohl Verantwortlichkeit, Vereins
 | G-11 | P1 | Provider-Verzeichnis, DPA, Region und Transfermechanismus dokumentieren | Privacy | vollstaendiges Verzeichnis |
 | G-12 | P1 | `app_event_log`, `notification_log`, Feedback und Loeschnachweis automatisch bereinigen | Database/Operations | Zeitlauf-Test und dokumentierte Ausnahmen |
 | G-13 | P1 | Vite-/esbuild-Dev-Server-Advisories durch kontrolliertes Toolchain-Upgrade schliessen | Engineering | `npm audit` ohne Dev-Advisories plus kompletter CI-/iOS-Rebuild |
-| G-14 | P0 | Full Xcode, Signing, Simulator, Archive und echter iPhone-Test | Apple/Engineering | signierter Build und ausgefuellte `docs/TESTFLIGHT_DEVICE_QA_2026-07-13.md` |
+| G-14 | P0 | Signing, Archive, Privacy Report und echter iPhone-Test; Xcode/Simulator sind lokal gruen | Apple/Engineering | signierter Build und ausgefuellte `docs/TESTFLIGHT_DEVICE_QA_2026-07-13.md` |
 
 ## 8. Datensparsamster Pilotweg
 
@@ -162,7 +166,7 @@ Ob `16 und aelter` fuer jeden vorgesehenen Zweck ohne Guardian ausreicht, ist ke
 - Sentrys veroeffentlichtes Transfermaterial weist darauf hin, dass besondere Datenkategorien nicht an den Dienst uebermittelt werden duerfen. Der Diagnosepfad muss deshalb technisch fail-closed bleiben; ein Datenschutzhinweis allein reicht nicht.
 - Vercel-Plan, Log-Retention, Analytics-Konfiguration und DPA muessen im echten Projekt verifiziert werden.
 - `npm audit --omit=dev` meldet keine Production-Dependency-Schwachstelle. Der volle Audit meldet eine moderate und eine hohe Advisory im lokalen Vite-/esbuild-Dev-Server; der von npm angebotene Fix ist ein Major-Upgrade und wird separat mit Build- und iOS-Regressionspruefung behandelt.
-- `xcodebuild -version` wurde am 15. Juli 2026 erneut geprueft und scheitert, weil nur `/Library/Developer/CommandLineTools` aktiv ist und keine `/Applications/Xcode.app` existiert. Simulator, Signing, Archive, Privacy Report und echter iPhone-Test bleiben dadurch objektiv offen.
+- Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build sowie Installation und sichtbarer Start auf einem temporaeren iPhone-17-Pro-Max-Simulator wurden am 17. Juli 2026 lokal verifiziert. Wegen des offenen Apple-Account-Supportfalls fehlen weiterhin Signing-Identitaet und Developer Team; Archive, Privacy Report, Upload und echter iPhone-Test bleiben objektiv offen.
 
 ## 10. Offizielle Ausgangsquellen
 

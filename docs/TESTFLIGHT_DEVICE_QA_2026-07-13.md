@@ -1,22 +1,32 @@
 # TestFlight and Device QA - 2026-07-13
 
-Status: Prepared locally. Xcode is missing. No build was signed or uploaded.
+Status: Local simulator path verified with Xcode 26.6 and iOS 26.5. Apple signing is not configured. No build was signed or uploaded.
 
 ## Release order
 
-1. Install and initialize full Xcode 26 or newer.
-2. Close the blocking product/legal decisions and approved backend gates.
-3. Run local simulator/device QA from a Production-validated native bundle.
-4. Archive version 1.0 with a new build number.
-5. Upload to App Store Connect only after explicit approval.
-6. Start with internal TestFlight testers.
-7. Invite external pilot testers only after the internal matrix is green. The first
+1. Keep the Xcode preflight, unsigned build and simulator smoke gate green.
+2. Resolve Apple account access, select the paid Developer Team and install a valid signing identity.
+3. Close the blocking product/legal decisions and approved backend gates.
+4. Run physical-device QA from a Production-validated native bundle.
+5. Archive version 1.0 with a new build number and generate the Privacy Report.
+6. Upload to App Store Connect only after explicit approval.
+7. Start with internal TestFlight testers.
+8. Invite external pilot testers only after the internal matrix is green. The first
    external build requires TestFlight App Review.
-8. Submit the App Store version separately and use manual release.
+9. Submit the App Store version separately and use manual release.
 
 Do not upload a Staging-target bundle under `com.rewireperform.app`. Native Staging
 requires a separate bundle ID and Xcode scheme. The current repository helpers always
 restore and verify Production before syncing or opening the iOS project.
+
+## Local machine evidence - 2026-07-17
+
+- Xcode 26.6 (`17F113`), iOS SDK 26.5 and iOS 26.5 Simulator are installed.
+- `npm run app:verify:xcode` passed 8/8 setup checks.
+- `npm run app:verify:xcode:build` passed 9/9 checks including an unsigned native build.
+- `npm run app:verify:simulator` built, installed and launched the app on an ephemeral iPhone 17 Pro Max and captured a visibly nonblank native screen. Repeat runs became visibly nonblank after about 4.7 to 7.1 seconds; this is not a physical-device launch-performance result.
+- `npm run app:verify:xcode:signing` intentionally remains red: 0 valid signing identities and no configured Developer Team.
+- Signed Archive, Privacy Report, TestFlight upload and physical-iPhone behavior remain unverified.
 
 ## Build evidence
 
