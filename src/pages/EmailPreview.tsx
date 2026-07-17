@@ -2,22 +2,12 @@ import { useMemo, useState } from "react";
 import { Mail, Monitor, Smartphone } from "lucide-react";
 import confirmationTemplate from "../../supabase/templates/auth/confirmation.html?raw";
 import recoveryTemplate from "../../supabase/templates/auth/recovery.html?raw";
-import inviteTemplate from "../../supabase/templates/auth/invite.html?raw";
-import magicLinkTemplate from "../../supabase/templates/auth/magic_link.html?raw";
-import emailChangeTemplate from "../../supabase/templates/auth/email_change.html?raw";
-import reauthenticationTemplate from "../../supabase/templates/auth/reauthentication.html?raw";
 import passwordChangedTemplate from "../../supabase/templates/auth/password_changed_notification.html?raw";
-import emailChangedTemplate from "../../supabase/templates/auth/email_changed_notification.html?raw";
 
 const templates = {
   confirmation: { label: "E-Mail bestätigen", html: confirmationTemplate },
   recovery: { label: "Passwort zurücksetzen", html: recoveryTemplate },
-  invite: { label: "Einladung", html: inviteTemplate },
-  magicLink: { label: "Sicherer Anmeldelink", html: magicLinkTemplate },
-  emailChange: { label: "E-Mail-Adresse ändern", html: emailChangeTemplate },
-  reauthentication: { label: "Identität bestätigen", html: reauthenticationTemplate },
   passwordChanged: { label: "Passwort geändert", html: passwordChangedTemplate },
-  emailChanged: { label: "E-Mail-Adresse geändert", html: emailChangedTemplate },
 } as const;
 
 type TemplateId = keyof typeof templates;
@@ -26,8 +16,7 @@ type PreviewWidth = "mobile" | "desktop";
 const hydratePreview = (html: string) => html
   .replaceAll("{{ .SiteURL }}", "https://rewireperform.com")
   .replaceAll("{{ .ConfirmationURL }}", "https://rewireperform.com/auth?preview=1")
-  .replaceAll("{{ .Token }}", "482917")
-  .replaceAll("{{ .NewEmail }}", "neue-adresse@beispiel.de");
+  .replaceAll("{{ .Token }}", "482917");
 
 const EmailPreview = () => {
   const [templateId, setTemplateId] = useState<TemplateId>("confirmation");

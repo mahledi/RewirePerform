@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -109,38 +109,6 @@ const actionTemplates = {
     action: button("Neues Passwort festlegen") + code(),
     note: securityNote("Du hast das nicht angefordert? Ignoriere diese E-Mail. Dein bisheriges Passwort bleibt unverändert."),
   },
-  "invite.html": {
-    preheader: "Deine Einladung zu RewirePerform ist bereit.",
-    eyebrow: "Einladung",
-    title: "Du wurdest zu RewirePerform eingeladen.",
-    body: "<p style=\"margin:0;\">Nimm die Einladung an, richte deinen Zugang ein und starte anschließend in deinem vorgesehenen Bereich.</p>",
-    action: button("Einladung annehmen") + code("Falls der Link nicht funktioniert, verwende diesen Code:"),
-    note: securityNote("Du hast keine Einladung erwartet? Dann kannst du diese E-Mail ignorieren."),
-  },
-  "magic_link.html": {
-    preheader: "Dein sicherer Anmeldelink für RewirePerform.",
-    eyebrow: "Sichere Anmeldung",
-    title: "Öffne deinen Anmeldelink.",
-    body: "<p style=\"margin:0;\">Dieser Link meldet dich sicher bei RewirePerform an. Verwende ihn nur auf einem Gerät, dem du vertraust.</p>",
-    action: button("Sicher anmelden") + code("Alternativ kannst du diesen einmaligen Code verwenden:"),
-    note: securityNote("Du hast keine Anmeldung angefordert? Ignoriere diese E-Mail und teile den Link oder Code mit niemandem."),
-  },
-  "email_change.html": {
-    preheader: "Bestätige deine neue E-Mail-Adresse für RewirePerform.",
-    eyebrow: "E-Mail-Adresse ändern",
-    title: "Bestätige deine neue Adresse.",
-    body: "<p style=\"margin:0;\">Bestätige <strong>{{ .NewEmail }}</strong> als neue E-Mail-Adresse für dein RewirePerform-Konto.</p>",
-    action: button("Neue E-Mail-Adresse bestätigen") + code(),
-    note: securityNote("Du hast diese Änderung nicht angefordert? Bestätige sie nicht und wende dich über den Support-Bereich an uns."),
-  },
-  "reauthentication.html": {
-    preheader: "Dein RewirePerform-Sicherheitscode.",
-    eyebrow: "Identität bestätigen",
-    title: "Bestätige, dass du es bist.",
-    body: "<p style=\"margin:0;\">Für eine sensible Kontoaktion wird eine erneute Bestätigung benötigt.</p>",
-    action: code("Gib diesen einmaligen Code in RewirePerform ein:"),
-    note: securityNote("Teile diesen Code mit niemandem. RewirePerform wird dich niemals per Nachricht danach fragen."),
-  },
 };
 
 const notificationTemplates = {
@@ -150,13 +118,6 @@ const notificationTemplates = {
     title: "Dein Passwort wurde geändert.",
     body: "<p style=\"margin:0;\">Das Passwort deines RewirePerform-Kontos wurde erfolgreich aktualisiert.</p>",
     note: securityNote("Du warst das nicht? Fordere sofort einen neuen Passwort-Link an und kontaktiere anschließend den Support."),
-  },
-  "email_changed_notification.html": {
-    preheader: "Die E-Mail-Adresse deines RewirePerform-Kontos wurde geändert.",
-    eyebrow: "Sicherheitsinformation",
-    title: "Deine E-Mail-Adresse wurde geändert.",
-    body: "<p style=\"margin:0;\">Die hinterlegte E-Mail-Adresse deines RewirePerform-Kontos wurde erfolgreich aktualisiert.</p>",
-    note: securityNote("Du warst das nicht? Setze dein Passwort zurück und kontaktiere sofort den Support."),
   },
 };
 
@@ -176,34 +137,9 @@ const manifest = {
       subject: "Setze dein RewirePerform-Passwort zurück",
       enabled: true,
     },
-    "invite.html": {
-      dashboard_template: "Invite user",
-      subject: "Du wurdest zu RewirePerform eingeladen",
-      enabled: false,
-    },
-    "magic_link.html": {
-      dashboard_template: "Magic link",
-      subject: "Dein sicherer RewirePerform-Anmeldelink",
-      enabled: false,
-    },
-    "email_change.html": {
-      dashboard_template: "Change email address",
-      subject: "Bestätige deine neue E-Mail-Adresse",
-      enabled: true,
-    },
-    "reauthentication.html": {
-      dashboard_template: "Reauthentication",
-      subject: "Bestätige deine Identität bei RewirePerform",
-      enabled: true,
-    },
     "password_changed_notification.html": {
       dashboard_template: "Password changed",
       subject: "Dein RewirePerform-Passwort wurde geändert",
-      enabled: true,
-    },
-    "email_changed_notification.html": {
-      dashboard_template: "Email address changed",
-      subject: "Deine RewirePerform-E-Mail-Adresse wurde geändert",
       enabled: true,
     },
   },
@@ -219,6 +155,17 @@ const files = new Map(
 
 await mkdir(outputDir, { recursive: true });
 let drift = false;
+
+for (const name of await readdir(outputDir)) {
+  if (files.has(name)) continue;
+  if (checkOnly) {
+    console.error(`Unexpected auth email template: ${name}`);
+    drift = true;
+  } else {
+    await unlink(resolve(outputDir, name));
+    console.log(`Removed ${name}`);
+  }
+}
 
 for (const [name, content] of files) {
   const target = resolve(outputDir, name);

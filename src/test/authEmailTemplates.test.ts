@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -30,19 +30,31 @@ describe("Supabase auth email templates", () => {
     });
   }
 
-  it("keeps action links and fallback codes in every interactive template", () => {
-    for (const filename of ["confirmation.html", "recovery.html", "invite.html", "magic_link.html", "email_change.html"]) {
+  it("keeps action links and fallback codes in the two interactive templates", () => {
+    for (const filename of ["confirmation.html", "recovery.html"]) {
       const html = readFileSync(resolve(templateRoot, filename), "utf8");
       expect(html).toContain("{{ .ConfirmationURL }}");
       expect(html).toContain("{{ .Token }}");
     }
   });
 
-  it("keeps security notifications free of reusable action tokens", () => {
-    for (const filename of ["password_changed_notification.html", "email_changed_notification.html"]) {
-      const html = readFileSync(resolve(templateRoot, filename), "utf8");
-      expect(html).not.toContain("{{ .ConfirmationURL }}");
-      expect(html).not.toContain("{{ .Token }}");
-    }
+  it("keeps the password-change notification free of reusable action tokens", () => {
+    const html = readFileSync(resolve(templateRoot, "password_changed_notification.html"), "utf8");
+    expect(html).not.toContain("{{ .ConfirmationURL }}");
+    expect(html).not.toContain("{{ .Token }}");
+  });
+
+  it("contains exactly the three approved launch templates", () => {
+    expect(Object.keys(manifest.templates).sort()).toEqual([
+      "confirmation.html",
+      "password_changed_notification.html",
+      "recovery.html",
+    ]);
+    expect(readdirSync(templateRoot).sort()).toEqual([
+      "confirmation.html",
+      "manifest.json",
+      "password_changed_notification.html",
+      "recovery.html",
+    ]);
   });
 });

@@ -14,34 +14,9 @@
       "subject": "Setze dein RewirePerform-Passwort zurück",
       "enabled": true
     },
-    "invite.html": {
-      "dashboard_template": "Invite user",
-      "subject": "Du wurdest zu RewirePerform eingeladen",
-      "enabled": false
-    },
-    "magic_link.html": {
-      "dashboard_template": "Magic link",
-      "subject": "Dein sicherer RewirePerform-Anmeldelink",
-      "enabled": false
-    },
-    "email_change.html": {
-      "dashboard_template": "Change email address",
-      "subject": "Bestätige deine neue E-Mail-Adresse",
-      "enabled": true
-    },
-    "reauthentication.html": {
-      "dashboard_template": "Reauthentication",
-      "subject": "Bestätige deine Identität bei RewirePerform",
-      "enabled": true
-    },
     "password_changed_notification.html": {
       "dashboard_template": "Password changed",
       "subject": "Dein RewirePerform-Passwort wurde geändert",
-      "enabled": true
-    },
-    "email_changed_notification.html": {
-      "dashboard_template": "Email address changed",
-      "subject": "Deine RewirePerform-E-Mail-Adresse wurde geändert",
       "enabled": true
     }
   }

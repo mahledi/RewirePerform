@@ -4,7 +4,7 @@ Stand: 17. Juli 2026
 
 ## Ziel
 
-Dieses Paket bildet den transaktionalen E-Mail-Fluss fuer RewirePerform ab. Es umfasst Registrierung, E-Mail-Bestaetigung, Passwort-Reset, Einladungen, E-Mail-Aenderung, erneute Identitaetsbestaetigung und relevante Sicherheitsmeldungen.
+Dieses Paket bildet den bewusst kleinen transaktionalen E-Mail-Fluss fuer den ersten RewirePerform App-Store-Release ab. Es umfasst ausschliesslich Registrierung, Passwort-Reset und die Sicherheitsmeldung nach einer Passwortaenderung.
 
 Die Vorlagen sind bewusst frei von Marketing, Tracking-Pixeln, externen Bildern und privaten Produktdaten. Sie verwenden bis zur finalen Logoentscheidung eine robuste Textmarke.
 
@@ -43,12 +43,9 @@ npm run email:templates:check
 | --- | --- | --- |
 | `confirmation.html` | Confirm signup | erforderlich |
 | `recovery.html` | Reset password | erforderlich |
-| `invite.html` | Invite user | erst aktivieren, wenn Admin-Einladungen genutzt werden |
-| `magic_link.html` | Magic link | derzeit nicht benoetigt |
-| `email_change.html` | Change email address | erforderlich, sobald Adressaenderung angeboten wird |
-| `reauthentication.html` | Reauthentication | fuer sensible Kontoaktionen vorgesehen |
 | `password_changed_notification.html` | Password changed | aktivieren |
-| `email_changed_notification.html` | Email address changed | aktivieren |
+
+Nicht Teil des Launch-Scopes sind Supabase-Einladungen, Magic Links, E-Mail-Aenderungen und E-Mail-Reauthentication. RewirePerform nutzt dafuer keine aktiven Produktflows. Coach-Einladungen laufen weiterhin ueber Team- beziehungsweise Coach-Code und die vorhandenen Teilen- und WhatsApp-Funktionen.
 
 Betreffzeilen und Sender stehen in `manifest.json`. HTML wird nicht direkt editiert; Aenderungen erfolgen im Generator und werden neu erzeugt.
 
@@ -63,7 +60,7 @@ Diese Schritte sind Dashboard-Aenderungen und werden nicht durch einen Git-Merge
    - `https://rewireperform.com/auth/reset-password`
 4. E-Mail-Bestaetigung aktiviert lassen.
 5. Unter Authentication > Email Templates Betreff und HTML anhand des Manifests eintragen.
-6. Sicherheitsmeldungen fuer Passwort- und E-Mail-Aenderung aktivieren.
+6. Die Sicherheitsmeldung fuer Passwortaenderungen aktivieren.
 7. In Resend Link-/Open-Tracking fuer Auth-Mails deaktiviert lassen, damit Sicherheitslinks nicht umgeschrieben werden.
 8. Sicherstellen, dass `hello@rewireperform.com` aus dem Support-Bereich tatsaechlich empfangen wird.
 
