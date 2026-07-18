@@ -18,9 +18,9 @@
 - `RP-PR-03 | CONFIRMED_FROM_BOTH` Coach-Zugriff muss RLS-/RPC-seitig begrenzt sein, nicht nur durch ausgeblendete UI.
 - `RP-PR-04 | CONFIRMED_FROM_BOTH` Coaches sehen keine Journaltexte, Freitexte, Einzel-Check-ins, Rohantworten oder individuellen psychologischen Scores.
 - `RP-PR-05 | CONFIRMED_FROM_BOTH` Admin-Evidence-Exporte enthalten keine Namen, E-Mails, privaten Texte, Rohantworten oder Einzelverlaeufe.
-- `RP-PR-06 | CONFIRMED_FROM_CODE` Sentry sendet keine Default-PII; technische Nutzerkontexte beschraenken sich auf ID, Rolle, Testflag und technische Metadaten.
+- `RP-PR-06 | CONFIRMED_FROM_CODE` Sentry ist aus der App entfernt; das behaltene externe Projekt darf ohne neue Privacy- und Produktfreigabe nicht verbunden werden.
 - `RP-PR-07 | CONFIRMED_FROM_CODE` `app_event_log` ist Incident-Log, kein allgemeines Klicktracking.
-- `RP-PR-08 | CONFIRMED_FROM_CODE` Teamcodes duerfen nicht in Sentry oder Incident-Metadaten gelangen.
+- `RP-PR-08 | CONFIRMED_FROM_CODE` Teamcodes duerfen nicht in Incident-Metadaten oder einen spaeter erneut freigegebenen Diagnosedienst gelangen.
 - `RP-PR-09 | CONFIRMED_FROM_CODE` Freiwilliger Datenbeitrag ist versioniert, widerrufbar und erst nach Serverspeicherung Evidence-wirksam.
 - `RP-PR-10 | CONFIRMED_FROM_CODE` QA/Test und Production muessen durch Flags und getrennte Auswertung unterscheidbar bleiben.
 - `RP-PR-11 | CONFIRMED_FROM_BOTH` Psychologische Aggregate unter fuenf Personen muessen serverseitig auf `null` gesetzt beziehungsweise unterdrueckt werden.

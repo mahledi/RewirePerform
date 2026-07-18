@@ -11,13 +11,21 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 const files = {
   accountDeletion: read("supabase/migrations/20260714084351_account_deletion_self_service.sql"),
   auth: read("src/pages/Auth.tsx"),
+  bunLock: read("bun.lock"),
   consent: read("src/lib/dataContributionConsent.ts"),
+  envExample: read(".env.example"),
+  envValidation: read("scripts/validate-env.mjs"),
+  errorBoundary: read("src/components/ErrorBoundary.tsx"),
   evidence: read("supabase/migrations/20260714224000_performance_evidence_56d_v1.sql"),
+  main: read("src/main.tsx"),
   monitoring: read("src/lib/monitoring.ts"),
+  packageJson: read("package.json"),
+  packageLock: read("package-lock.json"),
   privacy: read("src/pages/Privacy.tsx"),
   questionnaireAi: read("supabase/functions/analyze-questionnaire/index.ts"),
   summaryAi: read("supabase/functions/generate-transformation-summary/index.ts"),
   teamMentalState: read("supabase/functions/team-mental-state/index.ts"),
+  viteEnv: read("src/vite-env.d.ts"),
 };
 
 const results = [];
@@ -63,16 +71,21 @@ verify(
 verify(
   "invariant",
   "I-05",
-  "Sentry disables default PII, tracing and breadcrumbs and strips request details",
-  files.monitoring.includes("sendDefaultPii: false") &&
-    files.monitoring.includes("tracesSampleRate: 0") &&
-    files.monitoring.includes("maxBreadcrumbs: 0") &&
-    files.monitoring.includes('"GlobalHandlers"') &&
-    files.monitoring.includes("DISABLED_SENTRY_INTEGRATIONS.has(integration.name)") &&
-    files.monitoring.includes("delete event.request?.cookies") &&
-    files.monitoring.includes("delete event.request?.headers") &&
-    files.monitoring.includes("delete event.request?.data") &&
-    files.monitoring.includes("sanitizeRequestUrl(event.request.url)"),
+  "The shipped app has no Sentry SDK, DSN or runtime capture path",
+  ![
+    files.bunLock,
+    files.envExample,
+    files.envValidation,
+    files.errorBoundary,
+    files.main,
+    files.monitoring,
+    files.packageJson,
+    files.packageLock,
+    files.viteEnv,
+  ].some((source) => /@sentry\/|VITE_SENTRY|ingest\.de\.sentry\.io|initMonitoring|setMonitoringUser/.test(source)) &&
+    files.monitoring.includes('supabase.from("app_event_log").insert') &&
+    files.monitoring.includes("sanitizeMonitoringMetadata(metadata)") &&
+    !files.errorBoundary.includes("componentStack"),
 );
 verify(
   "invariant",
@@ -123,7 +136,7 @@ verify(
   "release_gate",
   "G-05B",
   "Privacy text names the active infrastructure processors",
-  ["Supabase", "Sentry", "Vercel"].every((provider) => files.privacy.includes(provider)),
+  ["Supabase", "Vercel"].every((provider) => files.privacy.includes(provider)),
 );
 verify(
   "release_gate",

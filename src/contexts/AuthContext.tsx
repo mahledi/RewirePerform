@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { setMonitoringUser } from "@/lib/monitoring";
 
 type AppRole = "athlete" | "coach" | "admin" | null;
 
@@ -73,7 +72,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const testFlag = Boolean(profileData?.is_test_user);
       setRole(r);
       setIsTestUser(testFlag);
-      setMonitoringUser({ userId, role: r, isTest: testFlag });
       writeCachedRole(userId, r);
       return r;
     } catch (err) {
@@ -103,7 +101,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (!sameUser) {
             setRole(cachedRole);
             setIsTestUser(false);
-            setMonitoringUser({ userId, role: cachedRole, isTest: false });
             setLoading(!cachedRole);
           }
           setTimeout(async () => {
@@ -117,7 +114,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           activeUserIdRef.current = null;
           setRole(null);
           setIsTestUser(false);
-          setMonitoringUser({ userId: null });
           setLoading(false);
         }
       }
@@ -135,7 +131,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     activeUserIdRef.current = null;
     setRole(null);
     setIsTestUser(false);
-    setMonitoringUser({ userId: null });
     try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
     try { window.localStorage.removeItem("cached_user_id"); } catch { /* noop */ }
     if (previousUserId) {

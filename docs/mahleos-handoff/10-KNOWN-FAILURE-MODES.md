@@ -7,7 +7,7 @@
 | FM-03 | Assessment crasht bei `items[u].text` | Index/Antwortzustand ausserhalb Array | aktuellen Itemzugriff guarden, Navigation blockieren | unvollstaendige Antworten/Resume |
 | FM-04 | Nutzer erreicht Ende mit fehlenden Pflichtantworten | Validierung nur am Abschluss | pro Schritt blockieren und sichtbar erklaeren | alle Pflichtpfade |
 | FM-05 | Richtige Antwort immer oben | deterministische Reihenfolge | Optionen pro Frage stabil zufaellig mischen | Positionsverteilung |
-| FM-06 | Coach-Edge-Function erzeugt Sentry-Rauschen | Transportfehler als Produktfehler behandelt | technische Transportfehler differenziert behandeln | Function offline/HTTP error |
+| FM-06 | Coach-Edge-Function erzeugt unbrauchbare Incident-Events | Transportfehler als Produktfehler behandelt | technische Transportfehler differenziert behandeln | Function offline/HTTP error |
 | FM-07 | Daily Completion ohne Check-in | getrennte nicht-atomare Saves | `save_daily_tracking_v2`, Snapshot erst danach | RPC-Fehler/Retries |
 | FM-08 | Doppelte Tagesdaten | Retry ohne eindeutige Identitaet | DB-Constraints, Lock, idempotentes Upsert | doppelter Submit |
 | FM-09 | Coach sieht zu sensible Daten | UI-only Schutz oder breite Selects | serverseitige RLS/RPC-Aggregation, Privacy-Tests | Athlete/Coach/Admin JWT |

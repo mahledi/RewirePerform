@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({
   authCallback: null as ((event: string, session: Session | null) => void) | null,
   contextQueries: new Map<string, Promise<QueryResult>>(),
   from: vi.fn(),
-  monitoring: vi.fn(),
   signOut: vi.fn(),
   unsubscribe: vi.fn(),
 }));
@@ -25,10 +24,6 @@ vi.mock("@/integrations/supabase/client", () => ({
     },
     from: mocks.from,
   },
-}));
-
-vi.mock("@/lib/monitoring", () => ({
-  setMonitoringUser: mocks.monitoring,
 }));
 
 const deferred = <T,>() => {
@@ -106,11 +101,6 @@ describe("AuthProvider session isolation", () => {
     });
 
     expect(screen.getByTestId("auth-state")).toHaveTextContent("user-b|coach|real|ready");
-    expect(mocks.monitoring).toHaveBeenLastCalledWith({
-      userId: "user-b",
-      role: "coach",
-      isTest: false,
-    });
   });
 
   it("does not restore role or test status after sign-out", async () => {
@@ -131,6 +121,5 @@ describe("AuthProvider session isolation", () => {
     });
 
     await waitFor(() => expect(screen.getByTestId("auth-state")).toHaveTextContent("none|none|real|ready"));
-    expect(mocks.monitoring).toHaveBeenLastCalledWith({ userId: null });
   });
 });

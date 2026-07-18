@@ -131,7 +131,7 @@ Likely linked to user identity:
 - User content: journal entries, questionnaire free text, feedback messages
 - Health/fitness-related app activity: check-ins, training schedule, program completion
 - Identifiers: Supabase user ID, push endpoint
-- Diagnostics: filtered Sentry crash/error metadata and incident-only system events
+- Diagnostics: incident-only system events with normalized error codes and restricted technical metadata
 - Health: user-provided mood, stress, recovery, sleep/readiness and assessment data
 - Fitness: training schedule and competition context
 

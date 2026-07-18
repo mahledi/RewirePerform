@@ -31,10 +31,7 @@ Environment variables:
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_SUPABASE_PROJECT_ID
-VITE_SENTRY_DSN optional, enables frontend error monitoring
-VITE_SENTRY_ALLOW_LOCAL false by default; local integration tests only
 VITE_APP_ENV production | staging | development
-VITE_RELEASE_SHA optional, current Git commit SHA
 ```
 
 The Supabase client intentionally has no production fallback. Every host
@@ -42,19 +39,10 @@ must set `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and
 `VITE_SUPABASE_PROJECT_ID` explicitly. This prevents a new host from silently
 talking to the wrong Supabase project.
 
-If `VITE_SENTRY_DSN` is empty, the app uses the public RewirePerform Sentry DSN fallback defined in `src/lib/monitoring.ts`.
-This is intentional for Lovable builds where `VITE_` environment variables are not exposed in the UI. The DSN is a public browser
-endpoint, not a private secret. For owned hosts, prefer setting `VITE_SENTRY_DSN` explicitly so the fallback can be removed later.
-When Sentry is enabled, only technical context is sent. Do not add e-mail,
-journal text, free answers, private reflections, or individual psychological
-scores to Sentry tags, contexts, breadcrumbs, or extras.
-
-Browser builds served from `localhost`, `*.localhost`, `127.0.0.0/8`, `0.0.0.0`
-or `::1` do not send to Sentry by default, even when the build uses
-`VITE_APP_ENV=production`. A deliberate local integration test can set
-`VITE_SENTRY_ALLOW_LOCAL=true`; those events are always labelled
-`local-preview`, never `production`. Native Capacitor builds remain enabled on
-their `capacitor://localhost` origin.
+Sentry is intentionally absent from the shipped app. Do not configure a Sentry
+DSN or re-add an SDK without a new product, privacy, retention and App Store
+review. Runtime incidents use the restricted `app_event_log` path documented in
+`docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md`.
 
 After the first deploy, add the hosted URL in Supabase:
 

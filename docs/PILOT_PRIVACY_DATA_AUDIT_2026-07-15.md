@@ -7,7 +7,9 @@ Technische Nachtraege:
 - 17. Juli 2026: Xcode-/Simulatorpfad lokal verifiziert; Rechts- und Minderjaehrigenstatus unveraendert.
 - 18. Juli 2026: aktuelles `origin/main` mit Tracking/Evidence und E-Mail-Flows integriert getestet; Production-Function-Grants und Security Advisor read-only geprueft. Keine Rechts-, Minderjaehrigen- oder Production-Freigabe erteilt.
 
-Status: Repo, Production und Sentry-Dashboard read-only geprueft; keine Rechtsfreigabe und keine Aktivierung des Minderjaehrigenpfads
+Status: Repo, Production und historisches Sentry-Dashboard geprueft; Sentry im
+Release-Kandidaten aus der App entfernt; keine Rechtsfreigabe und keine
+Aktivierung des Minderjaehrigenpfads
 
 Dieses Dokument ist die technische Ist-Aufnahme fuer den geplanten Mannschaftspilot. Es ist kein Rechtsgutachten. Aussagen zu Rechtsgrundlagen, Einwilligung, Forschung, Aufbewahrung und Verantwortlichkeiten muessen vor dem Pilot durch eine fuer Deutschland und den konkreten Vereinskontext qualifizierte Stelle bestaetigt werden.
 
@@ -21,7 +23,10 @@ Der aktuelle Stand ist trotzdem noch nicht fuer einen Pilot mit 15-jaehrigen Ath
 2. Die Edge Function `team-mental-state` aggregiert sensible Check-in- und Fragebogenwerte aller zugeordneten Athleten ab fuenf Personen. Sie filtert weder auf die versprochene Datenbeitrags-Einwilligung noch auf eine altersgerechte Freigabe.
 3. Aeltere Study-/Presentation-RPCs pruefen die allgemeine Datenbeitrags-Einwilligung, aber nicht durchgehend `evidence_participation_eligibility`.
 4. Die sichtbare Datenschutzerklaerung enthaelt mehrere Aussagen, die der aktuelle Code nicht exakt erfuellt oder nicht vollstaendig beschreibt.
-5. Verbindliche Fristen fuer Backups, Diagnose- und Provider-Logs sind noch nicht festgelegt. Sentry ist mit EU-Region und 30 Tagen bestaetigt und sicherheitsseitig gehaertet; die 30-Tage-Entscheidung, DPA und der nutzerbezogene Loeschprozess bleiben offen.
+5. Verbindliche Fristen fuer Backups, interne Diagnose- und Provider-Logs sind
+   noch nicht festgelegt. Der aktive Sentry-Datenstrom ist durch Entfernung von
+   SDK, DSN und Capture-Pfad geschlossen; historische Events laufen innerhalb
+   der verifizierten 30 Tage aus.
 6. Zwolf `SECURITY DEFINER`-Funktionen sind in Production fuer `anon` ausfuehrbar. Bei drei Helpern fehlt eine ausreichende Aufruferbindung fuer Rollen- oder QA-Metadatenabfragen.
 
 Bis diese Punkte geschlossen sind, duerfen 15-Jaehrige nicht allein durch ein eigenes Ja in sensible Teamaggregate, Evaluationen, Evidence-Berichte oder Forschungsnutzung gelangen.
@@ -35,7 +40,7 @@ Bis diese Punkte geschlossen sind, duerfen 15-Jaehrige nicht allein durch ein ei
 - 56-Tage-Evidence-Migration, Eligibility-Gate, Transfer-Pulse und Coach-Evidence
 - Study-, Presentation- und Evidence-RPCs
 - Push-Subscriptions und `notification_log`
-- Sentry und `app_event_log`
+- ehemalige Sentry-Integration und aktives `app_event_log`
 - Account-Loeschung und vorhandene Loeschvertraege
 - Production-Function-Definitionen, Grants und Supabase Security Advisor
 - Supabase Production `bqsbxesmybthwtxmowfz` ausschliesslich read-only
@@ -51,7 +56,7 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Evidence-Schreibpfad | `save_daily_tracking_v3` und Coach-Evidence pruefen serverseitig die Eligibility | belastbar fuer den neuen Evidence-Pfad |
 | Journale/Freitexte | keine AI-Analyse; `team-mental-state` selektiert keine Reflection; alte AI-Edge-Functions antworten mit HTTP 410 | Code stuetzt die zentrale Journal-Zusage |
 | Team-Kleingruppen | psychologische Teamwerte werden erst ab mindestens fuenf verschiedenen Athleten ausgegeben | Schwelle vorhanden, Teilnehmerfilter unvollstaendig |
-| Sentry-Basisschutz | `sendDefaultPii: false`, kein Tracing/Breadcrumbs, keine Original-Fehlermeldungen, freie Metadaten oder URL-Parameter; User-Kontext auf stabile ID reduziert | lokal und organisationsseitig gehaertet; EU-Region und 30 Tage bestaetigt |
+| Externe Crash-Diagnose | Sentry-SDK, DSN, Initialisierung, Nutzerkontext und Runtime-Capture aus der App entfernt | technisch dekommissioniert; externes Projekt bleibt erhalten |
 | Diagnose-Metadaten | Aufrufer uebergeben derzeit strukturierte technische Werte, keine Journal- oder Antworttexte | lokal geprueft |
 | Evidence-Protokoll | versionierte Consent-Anforderung und eigenes Eligibility-Audit | gute Grundlage fuer kontrollierten Rollout |
 
@@ -71,7 +76,7 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Push | Subscription, Reminder-Zeit, Versand-/Oeffnungs-/Fehlerstatus, Ziel und Metadaten | `push_subscriptions`, `notification_log` | optionale Erinnerung und technische Zustellpruefung | Opt-in fuer Push; kein Altersgate | keine feste Log-Frist |
 | Feedback/Support | Kategorie, Nachricht, Status, technische Metadaten | `feedback` | Support und Produktverbesserung | aktive Eingabe | keine feste Frist |
 | App-Diagnose | Event, Status, Rolle, Team-ID, Route, Fehlercode, Teststatus, technische Metadaten | `app_event_log` | Incident- und Release-Diagnose | berechtigtes Interesse/Consent-Frage rechtlich zu bestaetigen | keine automatische Bereinigung |
-| Sentry | generischer Fehlercode/Stack, stabile User-ID, App-Rolle/Teststatus, erlaubte technische Context-Werte | Sentry | Crash- und Fehlerdiagnose | im lokalen Integrationskandidaten technisch minimiert; Rechtsgrundlage und Disclosure offen | Developer-Plan: 30 Tage; fachliche Freigabe und vorzeitige Loeschung offen |
+| Historische Sentry-Daten | fruehere minimierte Diagnoseevents | behaltenes Sentry-Projekt | keine neue App-Erfassung nach Deployment | historische Verarbeitung dokumentiert | automatische Provider-Aufbewahrung maximal 30 Tage |
 | Provider-Logs/Backups | IP-/Request-/Auth-/Function-Logs, DB-Backups | Supabase, Vercel und weitere Provider | Sicherheit, Betrieb, Wiederherstellung | Providerbetrieb | Supabase Free: kurze Logfenster, keine verwalteten Daily Backups; genaue Gesamtregel offen |
 | Loeschnachweis | Request-ID, Status, Zeitpunkt, minimierter Fehlercode | `account_deletion_requests` | Support und Nachweis der Loeschung | serverseitig | verbindliche Frist noch festzulegen |
 
@@ -85,7 +90,7 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Minderjaehrige koennen das normale Programm nutzen; nur Evidence bleibt gesperrt | Evidence ist gesperrt; fuer den normalen sensitiven Produktpfad fehlt jedoch Alters-/Guardian-Entscheidung | rechtlich und technisch unvollstaendig |
 | Personalisierte Inhalte koennen AI-generierte Aufgaben sein | aktive Produktanalyse ist deterministisch; zwei ehemalige AI-Functions sind deaktiviert | veraltete/falsche Aussage |
 | Push speichert nur Subscription und Reminder-Zeiten | `notification_log` speichert auch Versand, Oeffnung, Fehlerstatus, Ziel und Metadaten | unvollstaendige Aussage |
-| Cloud-Anbieter werden allgemein beschrieben | Supabase, Sentry und Vercel sowie Rollen, Regionen und Drittlandtransfer werden nicht konkret genannt | unvollstaendig |
+| Cloud-Anbieter werden allgemein beschrieben | Supabase und Vercel sowie Rollen, Regionen und Drittlandtransfer werden nicht konkret genannt | unvollstaendig |
 | Die veroeffentlichte Seite nennt den Verantwortlichen und eine Anschrift | Verantwortlicher und physische Kontaktanschrift fehlen | Pflichtangabe offen, Pilot-Blocker |
 | Der Text ist die finale veroeffentlichte Fassung | Die Seite sagt selbst, dass sie vor App-Store-Veroeffentlichung noch juristisch final geprueft wird | sichtbar als Entwurf markiert, Release-Blocker |
 | Datenuebertragbarkeit ist verfuegbar | kein direkter In-App-Exportpfad gefunden; vermutlich manueller Request | Prozess und SLA fehlen |
@@ -154,9 +159,9 @@ Erforderlich:
 | G-04 | P0 | alle Study-/Presentation-/Exportpfade auf ein Eligibility-Gate ziehen | Database | pgTAP/SQL-Harness fuer jede RPC |
 | G-05 | P0 | Datenschutzerklaerung auf echten Code, Provider, Verantwortlichen, Anschrift und Pilotrollen abstimmen | Legal plus Product | final freigegebene Version und Code-Matrix ohne Widerspruch |
 | G-06 | P0 | Aufbewahrungs- und Loeschplan fuer Tabellen, Snapshots, Logs und Backups festlegen | Privacy plus Operations | verbindliche Fristen und automatisierte Jobs |
-| G-07 | P0 | Sentry: 30 Tage freigeben, DPA und Loeschprozess abschliessen | Operations | 2FA/Privacy nachgewiesen; DPA-Ablage und getestetes Loesch-Runbook fehlen |
+| G-07 | technisch geschlossen | Sentry aus der App entfernen und Projekt behalten | Engineering/Product | SDK, DSN, Initialisierung und Capture-Pfad entfernt; rechtliche Altdatenpruefung bleibt separat |
 | G-08 | P0 | Forschung/Evidence gegen Produktverbesserung trennen; Ethikbedarf klaeren | Study Lead plus Legal | dokumentierter Scope und gegebenenfalls Ethikvotum |
-| G-09 | P0 | Sentry strikt frei von besonderen Datenkategorien halten | App | im Audit-Branch mit allow-listed Metadaten und absichtlich sensiblen Fehlermeldungen getestet; Merge/Deploy noch offen |
+| G-09 | geschlossen | keine neuen besonderen Datenkategorien an Sentry uebermitteln | App | externer Runtime-Datenstrom technisch entfernt; statische Privacy-Invariante aktiv |
 | G-10 | P1 | Datenexport-Prozess, Identitaetspruefung und SLA definieren | Operations | getesteter Betroffenen-Request |
 | G-11 | P1 | Provider-Verzeichnis, DPA, Region und Transfermechanismus dokumentieren | Privacy | vollstaendiges Verzeichnis |
 | G-12 | P1 | `app_event_log`, `notification_log`, Feedback und Loeschnachweis automatisch bereinigen | Database/Operations | Zeitlauf-Test und dokumentierte Ausnahmen |
@@ -181,8 +186,10 @@ Ob `16 und aelter` fuer jeden vorgesehenen Zweck ohne Guardian ausreicht, ist ke
 
 - Supabase Production liegt nach Dashboard-/API-Pruefung in `eu-central-1`.
 - Der aktuelle Free-Plan besitzt laut Supabase nur kurze Log-Aufbewahrung und keine verwalteten taeglichen Backups. Ein eigener verschluesselter Export-/Restore-Prozess braucht deshalb eine festgelegte Loeschfrist und einen dokumentierten Test.
-- Sentry wurde am 18. Juli im echten Dashboard geprueft und gehaertet: EU-Datenregion, kostenloser Developer-Plan und 30 Tage Lookback/Aufbewahrung sind bestaetigt. Marketing, aggregierte identifizierende Datennutzung, Shared Issues, Join Requests und generative Funktionen sind aus; Passkey, organisationsweite 2FA, Enhanced Privacy, Scrubber und IP-Speicherschutz sind aktiv. DPA, 30-Tage-Freigabe und Loesch-Runbook bleiben offen. Details: `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
-- Sentrys veroeffentlichtes Transfermaterial weist darauf hin, dass besondere Datenkategorien nicht an den Dienst uebermittelt werden duerfen. Der Diagnosepfad muss deshalb technisch fail-closed bleiben; ein Datenschutzhinweis allein reicht nicht.
+- Sentry wurde am 18. Juli im echten Dashboard geprueft und gehaertet. Danach
+  wurde der Dienst aus der App entfernt; das Projekt bleibt erhalten und
+  historische Events laufen innerhalb von 30 Tagen aus. Details:
+  `docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md`.
 - Vercel-Plan, Log-Retention, Analytics-Konfiguration und DPA muessen im echten Projekt verifiziert werden.
 - `npm audit --omit=dev` meldet keine Production-Dependency-Schwachstelle. Der volle Audit meldet eine moderate und eine hohe Advisory im lokalen Vite-/esbuild-Dev-Server; der von npm angebotene Fix ist ein Major-Upgrade und wird separat mit Build- und iOS-Regressionspruefung behandelt.
 - Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build sowie Installation und sichtbarer Start auf temporaerem iPhone 17 Pro Max und iPad Pro 13-inch M5 wurden lokal verifiziert. Wegen des offenen Apple-Account-Supportfalls fehlen weiterhin Signing-Identitaet und Developer Team; Archive, Privacy Report, Upload und echter iPhone-Test bleiben objektiv offen.

@@ -61,9 +61,9 @@ Sprachumbau: zuerst Content-Datenfluss pruefen, dann Tage 1-7 konsistent ueber S
 
 ## Privacy und Sicherheit
 
-Nie in Coach, Export, Sentry oder Incident-Log: Journaltext, Dankbarkeit, freie Reflexion, freie Fragebogenantwort, Rohantwort, einzelner Check-in-Verlauf, individueller psychologischer Score oder Spielerlabel.
+Nie in Coach, Export oder Incident-Log: Journaltext, Dankbarkeit, freie Reflexion, freie Fragebogenantwort, Rohantwort, einzelner Check-in-Verlauf, individueller psychologischer Score oder Spielerlabel.
 
-RLS/RPC erzwingt Grenzen serverseitig. Sentry ist technische Diagnose ohne Default-PII. `app_event_log` ist Incident-Log, kein Klickstream. Secrets nie in Frontend, Chat, Commit oder Doku. QA/Test und Production muessen getrennt bleiben.
+RLS/RPC erzwingt Grenzen serverseitig. Sentry ist aus der App entfernt; `app_event_log` ist Incident-Log, kein Klickstream. Secrets nie in Frontend, Chat, Commit oder Doku. QA/Test und Production muessen getrennt bleiben.
 
 ## Engineering-Regeln
 

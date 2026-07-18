@@ -25,7 +25,7 @@ Kein Push, Merge nach `main`, Deploy, Production-Write, Archive oder Upload.
 | Gate | Ergebnis am 18. Juli 2026 |
 |---|---|
 | `npm ci` | reproduzierbare Installation mit Lockfile bestanden |
-| `npm run app:build` | Env- und E-Mail-Template-Validierung, Typecheck, Vite-Production-Build, 191/191 Tests in 37 Dateien, Evidence-SQL-Harness, statisches App-Store-Gate, Capacitor-Sync und eingebettetes Production-Ziel bestanden |
+| `npm run app:build` | Env- und E-Mail-Template-Validierung, Typecheck, Vite-Production-Build, 192/192 Tests in 38 Dateien, Evidence-SQL-Harness, statisches App-Store-Gate, Capacitor-Sync und eingebettetes Production-Ziel bestanden |
 | Evidence-SQL-Harness | Migration, atomarer Rollback, `n >= 5`, RLS, deaktivierter Minderjaehrigenpfad und QA-Paritaet bestanden |
 | `npm run test:e2e` | 41 bestanden, 4 bewusst uebersprungen; Desktop-Chromium sowie WebKit auf iPhone und iPad jeweils hoch/quer, inklusive E-Mail-Bestaetigung und Passwort-Recovery |
 | WebKit-Skips | nur der echte Service-Worker-Offline-Test; er wird deterministisch in Chromium ausgefuehrt |

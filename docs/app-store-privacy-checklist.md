@@ -68,16 +68,12 @@ Coach-Sicht nicht erlaubt:
 - Rohscores
 - individuelle psychologische Labels
 
-## Sentry / Diagnostik
+## Diagnostik
 
-Sentry bleibt diagnostic/error-only:
-
-- `tracesSampleRate: 0`
-- `sendDefaultPii: false`
-- `beforeSend` entfernt Cookies/Headers und reduziert User auf `{ id }`
-- keine Journaltexte, freien Antworten, E-Mails oder privaten psychologischen Inhalte
-
-`app_event_log` bleibt error-only / incident-only. Normale Aktivität gehört nicht in das Incident-System.
+Sentry ist aus dem ausgelieferten App-Code entfernt; das externe Projekt bleibt
+erhalten. `app_event_log` bleibt error-only / incident-only. Es speichert nur
+normalisierte Fehlercodes, bereinigte Routen und allow-listete technische
+Metadaten. Normale Aktivität gehört nicht in das Incident-System.
 
 ## App Store Connect Vorbereitung
 
@@ -86,7 +82,7 @@ Vor finalem Submit erneut prüfen:
 - App Privacy Details: Datenkategorien und "linked to user" korrekt beantworten.
 - Keine Antwort als "tracking" markieren, solange keine Werbe-/Cross-App-/Datenbroker-Nutzung existiert.
 - Vorhandene und im iOS-Target eingebundene `PrivacyInfo.xcprivacy` gegen die reale Runtime-Datenkarte und die App-Store-Connect-Antworten abgleichen.
-- Third-Party-SDK-Manifeste und Required-Reason-APIs im finalen Xcode Privacy Report prüfen, insbesondere Supabase, Sentry und Web-Push/PWA-Kontext.
+- Third-Party-SDK-Manifeste und Required-Reason-APIs im finalen Xcode Privacy Report prüfen, insbesondere Supabase und Web-Push/PWA-Kontext; Sentry darf dort nicht mehr als eingebundenes SDK erscheinen.
 - Datenschutz-URL und User-Privacy-Choices-URL final bereitstellen.
 - Consent-Screen und Settings-Schalter auf iPhone testen.
 
@@ -95,7 +91,7 @@ Aktuelle Release-Blocker:
 - altersgerechte Autorisierung vor sensitiven Produktdaten;
 - Consent- und Altersfilter in `team-mental-state` vor Berechnung von `n >= 5`;
 - finaler Privacy-Text mit Verantwortlichem, Anschrift, Providern, Notification-Logs und realen Aufbewahrungsfristen;
-- nachgewiesene Sentry-Region, Retention, DPA und nutzerbezogene Löschstrecke;
+- verifizierter finaler Build ohne Sentry-SDK, DSN oder Runtime-Capture;
 - Abgleich von Manifest, Xcode Privacy Report und App Store Connect auf dem final signierten Build.
 
 ## QA vor Pilot

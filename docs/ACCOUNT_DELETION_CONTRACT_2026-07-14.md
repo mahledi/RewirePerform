@@ -31,7 +31,11 @@ Status: von Mahle am 14. Juli 2026 fuer `bqsbxesmybthwtxmowfz` (`RewirePerform r
 - Kein Agent loescht einen weiteren bestehenden Account ohne eine neue konkrete Freigabe. Der verifizierte Production-Test wurde von Mahle selbst ausgeloest.
 - Weitere Supabase-Applies, Function-Deploys oder Production-Mutationen brauchen eine neue konkrete Freigabe; die bestaetigte Production-Zuordnung aus `BD-01` muss dabei erneut technisch abgeglichen werden.
 - Vor der App-Store-Einreichung muessen Backup-Konfiguration, Privacy-Text und rechtliche Einordnung am realen Production-Projekt final verifiziert werden.
-- Die reale Sentry-Aufbewahrung, die Backup-Loeschfrist, Provider-Log-Retention und der Umgang mit bereits vorhandenen stabilen Nutzer-IDs muessen vor der App-Store-Einreichung verifiziert oder rechtlich/technisch sauber abgebildet werden.
+- Sentry ist aus dem App-Release-Kandidaten entfernt; historische Events laufen
+  innerhalb der verifizierten 30 Tage aus. Backup-Loeschfrist,
+  Provider-Log-Retention und der Umgang mit anderen bereits vorhandenen stabilen
+  Nutzer-IDs muessen vor der App-Store-Einreichung verifiziert oder
+  rechtlich/technisch sauber abgebildet werden.
 
 ## Pflichtpruefungen vor App-Store-Freigabe
 

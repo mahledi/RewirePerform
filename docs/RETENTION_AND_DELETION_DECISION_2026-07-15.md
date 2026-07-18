@@ -2,7 +2,7 @@
 
 Stand: 15. Juli 2026
 
-Sentry-Dashboard-Nachtrag: 18. Juli 2026
+Sentry-Dashboard- und Dekommissionierungsnachtrag: 18. Juli 2026
 
 Status: konkret vorgeschlagen, noch nicht rechtlich/operativ freigegeben
 
@@ -15,7 +15,7 @@ Ziel ist eine Regel, die den 56-Tage-Pilot und serioese spaetere Auswertungen er
 | aktiver Account und Programmdaten | Account-Loeschung | sofort im aktiven System | transaktionale Loeschung; kein weiterer Produkt-/Analysezugriff | Betroffenenrecht und Account-Ende |
 | Supabase-managed Backups | Erstellung des Backups | 7 Tage | automatische Rotation; geloeschte Konten duerfen bei Restore nicht wieder aktiv werden | Disaster Recovery |
 | eigene verschluesselte DB-Exports | Erstellung des Exports | 7 Tage | rolling deletion; getrennte Schluessel; Restore nur durch freigegebenen Runbook-Prozess | Free-Plan-Uebergang/Notfall |
-| Sentry-Events | Eventzeitpunkt | Ziel 14 Tage, harte Obergrenze 30 Tage | Dashboard-Retention; vorzeitige nutzerbezogene Loeschung per Such-/API-Prozess | Fehlerdiagnose |
+| historische Sentry-Events vor Dekommissionierung | Eventzeitpunkt | providerseitig maximal 30 Tage | keine neuen App-Events nach Deployment; bestehende Events laufen automatisch aus | historische Fehlerdiagnose |
 | `app_event_log` | Eventzeitpunkt | 30 Tage | taeglicher serverseitiger Cleanup | Incident-Diagnose |
 | `notification_log` | Ende des zugehoerigen Programmlaufs | 90 Tage | danach loeschen oder fuer einen genehmigten Evidence-Zweck irreversibel aggregieren | Reminder-/Pilotqualitaet |
 | Push-Subscription | Opt-out oder Account-Loeschung | sofort | Subscription und Endpoint entfernen | Benachrichtigung |
@@ -57,7 +57,10 @@ Ein Free-Pilot waere nur vertretbar, wenn vorher ein automatisierter, verschlues
 
 ## 4. Sentry-Aufbewahrung
 
-Der Code sendet im Audit-Branch nur bewusst erfasste, minimierte Diagnoseevents. Trotzdem bleiben stabile User-ID und technische Stack-Frames personenbezogen oder personenbeziehbar.
+Der Product Owner hat nach dem Dashboard-Audit entschieden, Sentry aus der App
+zu entfernen und das Projekt zu behalten. Der Release-Kandidat enthaelt kein SDK,
+keine DSN, keine Initialisierung und keinen Capture-Pfad mehr. Verbindlicher
+technischer Vertrag: `docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md`.
 
 Am 18. Juli wurden Organisation und Projekt read-only im echten Dashboard geprueft:
 
@@ -69,24 +72,13 @@ Am 18. Juli wurden Organisation und Projekt read-only im echten Dashboard geprue
 - Session Replay, Logs, Tracing, Profiling und Metrics aktuell ohne Nutzung;
 - aggregierte identifizierende Datennutzung deaktiviert.
 
-Die 30 Tage erfuellen die vorgeschlagene harte Obergrenze, nicht aber den
-14-Tage-Zielwert. Vor dem Minderjaehrigenpilot ist deshalb verbindlich zu
-entscheiden: 30 Tage akzeptieren oder Sentry deaktivieren.
-
-Weiterhin vor Merge/Release zu bestaetigen beziehungsweise abzuschliessen:
-
-1. DPA und aktuelle Subprocessor-Liste;
-2. nutzerbezogene Suche und vorzeitiger Loeschprozess;
-3. keine Session Replay-, Profiling-, Tracing-, Logs-, Feedback- oder
-   Seer-Aktivierung;
-4. keine besonderen Datenkategorien in Event, Message, Breadcrumb, URL, Request
-   oder Context.
-
-Persoenlicher Passkey, organisationsweite Zwei-Faktor-Authentifizierung,
-Enhanced Privacy, verpflichtende Scrubber, IP-Speicherschutz und geschlossene
-Sharing-/Join-Pfade wurden am 18. Juli umgesetzt und erneut verifiziert.
-
-Wenn der aktuelle Plan keine Aufbewahrung von hoechstens 30 Tagen erlaubt, wird Sentry fuer den Minderjaehrigenpilot deaktiviert oder auf eine geeignete Konfiguration umgestellt.
+Bereits eingegangene Events laufen innerhalb dieser 30 Tage providerseitig aus.
+Weil nach Deployment keine neuen App-Events mehr an Sentry gehen, sind die
+30-Tage-Freigabe, DPA-Ablage und nutzerspezifische Sentry-Loeschstrecke kein
+technisches Gate fuer den neuen Pilot-Datenstrom. Ob fuer die historische
+Verarbeitung bis zu ihrem Ablauf noch DPA-, Verzeichnis- oder Loeschmassnahmen
+erforderlich sind, bleibt rechtlich zu pruefen. Eine erneute Verbindung wuerde
+alle Provider- und Privacy-Gates wieder oeffnen.
 
 ## 5. Evidence und langfristiger Erkenntnisgewinn
 
@@ -120,7 +112,7 @@ Vor Implementation auszufuellen:
 - Datenschutz-Freigabe durch:
 - Freigabedatum:
 - Backupfrist bestaetigt:
-- Sentry-Frist bestaetigt:
+- Sentry-Dekommissionierung bestaetigt: ja; historische Events maximal 30 Tage; rechtliche Altdatenpruefung offen
 - Consent-Receipt-Frist bestaetigt:
 - Evidence-Enddatum und Widerrufsregel:
 - Restore-Verantwortlicher:

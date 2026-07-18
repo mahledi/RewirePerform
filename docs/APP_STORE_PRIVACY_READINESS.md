@@ -8,9 +8,10 @@ cross-app or third-party marketing tracking.
 
 - No IDFA, no advertising SDKs, no data brokers, no marketing pixels.
 - No journal text, free reflections, raw questionnaire answers, individual mood
-  history, or individual psychological scores in coach views, exports, Sentry,
-  or incident logs.
-- Sentry stays diagnostic/error-only with PII filtering.
+  history, or individual psychological scores in coach views, exports, or
+  incident logs.
+- Sentry is not part of the shipped app. The retained external project is
+  disconnected unless a new privacy and product review explicitly approves it.
 - `app_event_log` stays incident-only. Normal product activity belongs in domain
   tables such as check-ins, journals, completions, assessments, questionnaire
   responses, snapshots, and notification logs.
@@ -25,7 +26,8 @@ they are tied to the account:
   comprehension completion, notification delivery/open/failure status.
 - User content: journal/reflection/questionnaire answers exist in the product,
   but must remain private to the athlete and excluded from coach/admin exports.
-- Diagnostics: filtered Sentry error metadata and incident-only system events.
+- Diagnostics: incident-only system events with normalized error codes and
+  allow-listed technical metadata.
 
 ## Coach Visibility
 

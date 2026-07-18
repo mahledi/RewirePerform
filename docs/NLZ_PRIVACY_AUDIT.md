@@ -33,7 +33,7 @@ Folgende Inhalte bleiben im Spieleraccount und werden nicht an Coaches oder in E
 - Rohantworten aus Assessments und Fragebögen
 - individuelle psychologische Scores und Labels
 
-Sentry wird ohne Default-PII betrieben. Tracking-Metadaten dürfen nur primitive technische Werte enthalten. Private Texte sind in `app_event_log`, Sentry-Metadaten und Edge-Function-Prompts unzulässig.
+Sentry ist aus der App entfernt. Tracking-Metadaten dürfen nur primitive technische Werte enthalten. Private Texte sind in `app_event_log` und Edge-Function-Prompts unzulässig.
 
 ## Rollen und Sichtbarkeit
 

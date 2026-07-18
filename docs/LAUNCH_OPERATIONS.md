@@ -11,28 +11,10 @@ RewirePerform startet als kontrollierter Pilot mit 1-3 Teams. Ziel ist nicht, je
 
 ## Monitoring
 
-Frontend-Fehler laufen über Sentry. Die App bevorzugt `VITE_SENTRY_DSN` und nutzt
-für Lovable-Builds einen kontrollierten Public-DSN-Fallback in `src/lib/monitoring.ts`.
-Der DSN ist kein Private Key; die Privacy-Sicherheit entsteht dadurch, dass keine
-privaten Inhalte an Sentry übergeben werden.
-
-Sentry darf enthalten:
-
-- Route
-- technische Rolle
-- QA/Test-Flag
-- App-Environment
-- Release-SHA
-- Stack Trace
-
-Sentry darf nicht enthalten:
-
-- E-Mail-Adressen
-- Journaltexte
-- freie Reflexionen
-- Fragebogen-Rohantworten
-- individuelle psychologische Scores
-- Teamcodes
+Sentry ist aus dem ausgelieferten App-Code entfernt. Das externe Projekt bleibt
+erhalten, empfaengt aber nach Deployment dieses Release-Kandidaten keine neuen
+App-Events. Die Pilotdiagnose basiert auf `app_event_log`, Admin-Systemstatus,
+direktem Feedback und reproduzierbarer QA.
 
 ## App Event Log
 
@@ -102,7 +84,7 @@ P2: bündeln und geplant fixen
 
 1. Fehler klassifizieren: P0/P1/P2.
 2. Betroffene Fläche bestimmen: Rolle, Route, Team, Browser, Zeitpunkt.
-3. Sentry/App-Event/Admin-Systemstatus prüfen.
+3. App-Event/Admin-Systemstatus und direktes Nutzerfeedback prüfen.
 4. Bei P0: Feature deaktivieren, vorherigen Commit redeployen oder Hotfix-Branch erstellen.
 5. Minimalen Fix bauen, lokal testen, PR mit CI.
 6. Nach Deployment denselben Flow erneut aus Nutzerperspektive testen.
@@ -136,7 +118,7 @@ Rollback ist nicht nötig bei:
 ## Pilot Launch Checklist
 
 - `npm run ci` ist grün.
-- Sentry-DSN ist in Production gesetzt oder bewusst noch leer.
+- finaler Build enthaelt kein Sentry-SDK, keine DSN und keinen Runtime-Capture.
 - `app_event_log` Migration ist im echten Backend.
 - Admin Systemstatus lädt.
 - Login, Teamcode, Check-in, Journal, Assessment, Push und Pre-Training erzeugen technische Events.

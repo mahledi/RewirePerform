@@ -1,18 +1,25 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  from: vi.fn(),
+  insert: vi.fn(),
+}));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: vi.fn(),
+    from: mocks.from,
   },
 }));
 
-import {
-  resolveSentryRuntimePolicy,
-  sanitizeMonitoringMetadata,
-  toMonitoringError,
-} from "@/lib/monitoring";
+import { captureAppError, sanitizeMonitoringMetadata } from "@/lib/monitoring";
 
 describe("monitoring privacy boundary", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.from.mockReturnValue({ insert: mocks.insert });
+    mocks.insert.mockResolvedValue({ data: null, error: null });
+  });
+
   it("keeps only allow-listed technical metadata", () => {
     const sanitized = sanitizeMonitoringMetadata({
       stage: "atomic_tracking",
@@ -29,33 +36,61 @@ describe("monitoring privacy boundary", () => {
     });
   });
 
-  it("never forwards an original exception message or primitive properties", () => {
+  it("stores only a normalized error code and allow-listed context", async () => {
     const original = Object.assign(new Error("private athlete answer"), {
       code: "PGRST116",
       details: "sensitive detail",
     });
 
-    const sanitized = toMonitoringError(original);
+    await captureAppError({
+      eventName: "app_runtime_error",
+      error: original,
+      route: "/journal?draft=private",
+      metadata: {
+        source: "error_boundary",
+        stage: "runtime",
+        unsafe_source: "private athlete answer",
+      } as never,
+    });
 
-    expect(sanitized).not.toBe(original);
-    expect(sanitized.name).toBe("Error");
-    expect(sanitized.message).toBe("Application operation failed (PGRST116)");
-    expect(sanitized.message).not.toContain("private athlete answer");
-    expect(sanitized).not.toHaveProperty("cause");
-    expect(sanitized.stack).not.toContain("private athlete answer");
-    expect(sanitized.stack).not.toContain("sensitive detail");
+    expect(mocks.from).toHaveBeenCalledWith("app_event_log");
+    expect(mocks.insert).toHaveBeenCalledWith({
+      event_name: "app_runtime_error",
+      status: "failed",
+      role: null,
+      team_id: null,
+      route: "/journal",
+      error_code: "PGRST116",
+      is_test: false,
+      metadata: {
+        source: "error_boundary",
+        stage: "runtime",
+      },
+    });
+
+    const serializedPayload = JSON.stringify(mocks.insert.mock.calls[0][0]);
+    expect(serializedPayload).not.toContain("private athlete answer");
+    expect(serializedPayload).not.toContain("sensitive detail");
+    expect(serializedPayload).not.toContain("draft=private");
   });
 
-  it("neutralizes a custom Error name as well as its message", () => {
-    const original = new Error("private mood value");
-    original.name = "private name with spaces";
+  it("does not break the user flow or expose provider error details", async () => {
+    mocks.insert.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "private database detail" },
+    });
+    const consoleWarning = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const sanitized = toMonitoringError(original);
+    await expect(
+      captureAppError({
+        eventName: "app_runtime_error",
+        error: new Error("private runtime detail"),
+      }),
+    ).resolves.toBeUndefined();
 
-    expect(sanitized.name).toBe("ApplicationError");
-    expect(sanitized.message).toBe("Application operation failed (application_error)");
-    expect(sanitized.stack).not.toContain("private mood value");
-    expect(sanitized.stack).not.toContain("private name with spaces");
+    expect(consoleWarning).toHaveBeenCalledWith("[ops] app_event_log insert failed (42501)");
+    expect(JSON.stringify(consoleWarning.mock.calls)).not.toContain("private database detail");
+    consoleWarning.mockRestore();
   });
 
   it("drops non-token strings even for an allow-listed key", () => {
@@ -65,41 +100,5 @@ describe("monitoring privacy boundary", () => {
         event_type: "training",
       }),
     ).toEqual({ event_type: "training" });
-  });
-
-  it.each(["localhost", "dev.localhost", "127.0.0.1", "127.0.0.42", "[::1]", "0.0.0.0"])(
-    "blocks Sentry on the local browser host %s by default",
-    (hostname) => {
-      expect(
-        resolveSentryRuntimePolicy({
-          dsn: "https://public@example.invalid/1",
-          appEnvironment: "production",
-          allowLocal: false,
-          location: { protocol: "http:", hostname },
-        }),
-      ).toEqual({ enabled: false, environment: "local-preview" });
-    },
-  );
-
-  it("keeps an explicitly enabled local Sentry test out of production", () => {
-    expect(
-      resolveSentryRuntimePolicy({
-        dsn: "https://public@example.invalid/1",
-        appEnvironment: "production",
-        allowLocal: true,
-        location: { protocol: "https:", hostname: "localhost" },
-      }),
-    ).toEqual({ enabled: true, environment: "local-preview" });
-  });
-
-  it("does not mistake the native Capacitor origin for a browser preview", () => {
-    expect(
-      resolveSentryRuntimePolicy({
-        dsn: "https://public@example.invalid/1",
-        appEnvironment: "production",
-        allowLocal: false,
-        location: { protocol: "capacitor:", hostname: "localhost" },
-      }),
-    ).toEqual({ enabled: true, environment: "production" });
   });
 });

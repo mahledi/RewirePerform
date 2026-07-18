@@ -13,7 +13,7 @@
 - `RP-EN-11 | CONFIRMED_FROM_CODE` Daily Final Save ist atomar und idempotent; Snapshot folgt erst nach erfolgreichem Save.
 - `RP-EN-12 | CONFIRMED_FROM_CHAT` Keine unnötigen Refactorings oder neue Abstraktionen ausserhalb des angeforderten Scopes.
 - `RP-EN-13 | CONFIRMED_FROM_BOTH` Loading-, Error-, Offline- und Retry-Zustaende sind Teil der Funktion, nicht optionaler Polish.
-- `RP-EN-14 | CONFIRMED_FROM_CODE` Sentry-/Event-Logging darf den Nutzerflow niemals brechen und keine privaten Inhalte aufnehmen.
+- `RP-EN-14 | CONFIRMED_FROM_CODE` Incident-Logging darf den Nutzerflow niemals brechen und keine privaten Inhalte aufnehmen; ein externer Diagnosedienst braucht eine neue ausdrueckliche Freigabe.
 - `RP-EN-15 | CONFIRMED_FROM_CODE` PWA darf kein altes `index.html` oder Chunk-Mix precachen; Hosting-Header halten HTML/SW revalidierbar und Assets immutable.
 - `RP-EN-16 | CONFIRMED_FROM_CHAT` Vor Abschluss mindestens Typecheck, Tests, Build und `git diff --check`; UI zusaetzlich mobil/desktop smoke-testen.
 - `RP-EN-17 | CONFIRMED_FROM_CODE` `npm run ci` ist primaeres Gate; Lint-Altlasten bleiben sichtbar und werden nicht still ignoriert.

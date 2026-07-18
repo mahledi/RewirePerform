@@ -17,19 +17,19 @@ sind wenige, aber verbindliche Gates:
 1. Produkt- und Rechtsregel fuer Minderjaehrige und sensible Verlaufsdaten;
 2. einheitliches serverseitiges Eligibility-Gate vor Teamaggregaten und Evidence;
 3. finale Privacy-Fassung und App-Store-Privacy-Antworten;
-4. verbindliche Aufbewahrung, Backups, Sentry und Provider-Dokumentation;
+4. verbindliche Aufbewahrung, Backups und aktive Provider-Dokumentation;
 5. Haertung aktueller Supabase-Function-Grants;
 6. Apple Signing, echte iPhones und TestFlight.
 
 ## 2. Verifizierte Basis
 
 - `origin/main` `72fde61` enthaelt Tracking/Evidence, QA-Paritaet und den aktuellen E-Mail-Flow.
-- Der lokale Integrationskandidat besteht 191/191 Unit-/Vertragstests und 41 Browser-Flows.
+- Der lokale Integrationskandidat besteht 192/192 Unit-/Vertragstests und 41 Browser-Flows.
 - Unsigned Build und Start sind auf iPhone- und iPad-Simulator bestanden.
-- Account-Loeschung, Evidence-Fail-Closed fuer Minderjaehrige, `n >= 5`, deaktivierte ehemalige AI-Funktionen und Sentry-Datenminimierung besitzen technische Nachweise.
-- Das echte Sentry-Dashboard wurde am 18. Juli read-only geprueft: EU-Region,
-  Developer-Plan mit 30 Tagen, abgelaufener Testzeitraum, keine Zahlungsdaten und
-  keine Marketing-Abos sind bestaetigt.
+- Account-Loeschung, Evidence-Fail-Closed fuer Minderjaehrige, `n >= 5` und deaktivierte ehemalige AI-Funktionen besitzen technische Nachweise.
+- Sentry ist im Release-Kandidaten vollstaendig aus dem ausgelieferten App-Code
+  entfernt. Das gehaertete externe Projekt bleibt als historische Evidenz
+  bestehen; Details stehen in `docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md`.
 - `npm run privacy:verify` weist 7 Schutzinvarianten als gruen und 7 Release-Blocker als offen aus.
 - Production wurde am 18. Juli ausschliesslich read-only auf Schema-, Function-, Grant- und Advisor-Ebene geprueft.
 
@@ -124,7 +124,7 @@ freigegeben sind:
 | Datenklasse | Empfohlene Obergrenze |
 |---|---:|
 | Supabase-Backups oder eigene verschluesselte Dumps | 7 Tage |
-| Sentry-Events | Ziel 14 Tage, maximal 30 Tage |
+| historische Sentry-Events vor Dekommissionierung | providerseitig maximal 30 Tage; keine neuen App-Events nach Deployment |
 | `app_event_log` | 30 Tage |
 | `notification_log` | 90 Tage nach Ende des Programmlaufs |
 | geschlossenes Feedback | 180 Tage |
@@ -146,19 +146,15 @@ Export reicht nicht.
 
 ### Sentry
 
-Der Dashboard-Audit vom 18. Juli bestaetigt die bestehende Organisation, EU-Region,
-den kostenlosen Developer-Plan und 30 Tage Lookback/Aufbewahrung. Damit wird die
-harte Obergrenze von 30 Tagen eingehalten, der bevorzugte 14-Tage-Zielwert aber
-nicht. Die 30 Tage muessen fachlich akzeptiert werden; andernfalls bleibt Sentry
-fuer den Minderjaehrigenpilot deaktiviert.
-
-Passkey, Wiederherstellungscodes, organisationsweite Zwei-Faktor-Authentifizierung,
-Enhanced Privacy, Scrubber, IP-Speicherschutz sowie geschlossene Sharing- und
-Join-Pfade sind umgesetzt und nach erneutem Laden verifiziert. Noch offen sind die
-30-Tage-Entscheidung, Annahme und Ablage des Data Processing Amendment,
-Subprozessoren sowie ein getesteter nutzerbezogener Loeschprozess. Session Replay,
-Tracing, Profiling, Logs und freie Nutzerinhalte bleiben aus. Der vollstaendige
-Ist-Stand steht in `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
+Der Product Owner hat Sentry fuer den Pilot aus der App entfernt. SDK, DSN,
+Fallback, App-Initialisierung, Nutzerkontext und direkter Error-Boundary-Capture
+sind im Release-Kandidaten nicht mehr vorhanden. Das gehaertete Sentry-Projekt
+bleibt bestehen; historische Events laufen innerhalb der verifizierten 30 Tage
+aus. DPA, Disclosure und nutzerbezogener Loeschprozess sind deshalb kein
+technisches Gate fuer den neuen App-Datenstrom, solange Sentry getrennt bleibt.
+Die rechtliche Dokumentation der historischen Verarbeitung bleibt separat zu
+pruefen. Eine Wiederaktivierung braucht eine neue ausdrueckliche Freigabe und den
+vollstaendigen Providervertrag.
 
 ## 7. Sichtbare Privacy-Fassung nach Freigabe
 
@@ -166,7 +162,7 @@ Erst nach den Produkt- und Rechtsentscheidungen wird `src/pages/Privacy.tsx`
 angepasst. Die finale Fassung muss mindestens:
 
 - Verantwortlichen und physische Kontaktanschrift nennen;
-- Supabase, Sentry und Vercel mit Zweck, Rolle, Region und Transfermechanismus
+- Supabase und Vercel mit Zweck, Rolle, Region und Transfermechanismus
   korrekt beschreiben;
 - die veraltete Aussage zu AI-generierten Aufgaben entfernen;
 - Versand-, Oeffnungs- und Fehlerprotokollierung bei Notifications nennen;
@@ -190,7 +186,7 @@ danach als eine gemeinsame Datenkarte abgeglichen werden.
 | D-05 | Produktverbesserung, Evaluation und Forschung | drei getrennte Zwecke; Forschung nicht stillschweigend aktivieren |
 | D-06 | vorgeschlagene Aufbewahrungsfristen | bestaetigen oder pro Datenklasse aendern |
 | D-07 | Supabase vor Minderjaehrigenpilot | Pro; Free nur mit vollstaendig getesteter Backup-Ersatzstrecke |
-| D-08 | Sentry im Pilot | 2FA/Privacy erledigt; 30 Tage, DPA und Loeschprozess noch freigeben, sonst deaktivieren |
+| D-08 | Sentry im Pilot | entschieden: aus der App entfernt; Projekt bleibt erhalten |
 | D-09 | Supabase-Grant-Haertung | lokale Migration und Tests freigeben; Production-Apply separat |
 
 ## 9. Technische Reihenfolge nach Entscheidungen
@@ -202,8 +198,8 @@ danach als eine gemeinsame Datenkarte abgeglichen werden.
    versionierten Vertrag implementieren.
 4. `team-mental-state`, Study-, Presentation- und Exportpfade auf diesen Vertrag
    umstellen; `n >= 5` erst nach allen Ausschluessen berechnen.
-5. Retention-Jobs, Backup-Runbook, Restore-/Deletion-Replay und Sentry-Prozess
-   implementieren beziehungsweise verifizieren.
+5. Retention-Jobs, Backup-Runbook und Restore-/Deletion-Replay implementieren
+   beziehungsweise verifizieren.
 6. finale Privacy-Seite, App Store Privacy Details und Review Notes angleichen.
 7. vollstaendigen Build, Privacy-Gate, SQL-Harness, Browsermatrix, signierten
    iPhone-Build und TestFlight-Test wiederholen.

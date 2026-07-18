@@ -29,9 +29,7 @@ const optionalEdge = [
 ];
 
 const optionalClient = [
-  "VITE_SENTRY_DSN",
   "VITE_APP_ENV",
-  "VITE_RELEASE_SHA",
 ];
 
 const allowedAppEnvironments = new Set([

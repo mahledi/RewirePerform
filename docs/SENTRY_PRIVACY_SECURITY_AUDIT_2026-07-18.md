@@ -2,13 +2,25 @@
 
 Stand: 18. Juli 2026
 
-Status: echtes Dashboard und lokaler Code geprueft; Account und Organisation
-sicherheitsseitig gehaertet und nach erneutem Laden verifiziert. Es wurden keine
-Vertraege, Abos, Zahlungsdaten, Events oder Production-App-Systeme geaendert.
+Status: historischer Dashboard- und Code-Audit. Account und Organisation wurden
+sicherheitsseitig gehaertet und nach erneutem Laden verifiziert. Anschliessend
+hat der Product Owner entschieden, Sentry aus der App zu entfernen und das
+Sentry-Projekt zu behalten.
+
+## Entscheidungsnachtrag
+
+Der aktive Release-Kandidat enthaelt kein Sentry-SDK, keine DSN, keine
+Initialisierung und keinen Capture-Pfad mehr. Das bestehende Konto, die
+Organisation und das Projekt bleiben unveraendert erhalten; vorhandene Events
+laufen nach der verifizierten 30-Tage-Aufbewahrung aus. Damit ist die unten
+beschriebene Konfiguration historische Sicherheits- und Verarbeitungsevidenz,
+nicht mehr der geplante App-Betrieb. Verbindlicher aktueller Stand:
+`docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md`.
 
 ## 1. Kurzurteil
 
-Sentry kann als minimierter Fehlerdiagnose-Dienst im Pilotkonzept verbleiben. Die
+Vor der spaeteren Dekommissionierungsentscheidung konnte Sentry als minimierter
+Fehlerdiagnose-Dienst im Pilotkonzept verbleiben. Die
 EU-Datenregion und die 30-Tage-Aufbewahrung des kostenlosen Developer-Plans
 erfuellen die vorgeschlagene harte Obergrenze von 30 Tagen. Der bevorzugte
 14-Tage-Zielwert wird damit jedoch nicht erreicht.
@@ -88,7 +100,11 @@ Grenzen einschliesslich mehrerer Loopback-Adressen und des Capacitor-Origins. Di
 Dashboard-Schalter bleiben trotzdem erforderlich, weil sie eine zweite
 Schutzschicht und den dokumentierten Organisationsvertrag bilden.
 
-## 5. Erforderliche Reihenfolge
+## 5. Historische Aktivierungsanforderungen
+
+Die folgende Reihenfolge ist durch die Dekommissionierungsentscheidung fuer den
+aktuellen Release-Kandidaten ausgesetzt. Sie gilt wieder, falls Sentry erneut
+verbunden werden soll.
 
 1. Erledigt: Der Account-Inhaber hat einen Passkey eingerichtet und die
    Wiederherstellungscodes sicher gespeichert.
@@ -103,7 +119,7 @@ Schutzschicht und den dokumentierten Organisationsvertrag bilden.
 6. Die 30-Tage-Aufbewahrung wird fachlich akzeptiert oder Sentry bleibt fuer den
    Minderjaehrigenpilot deaktiviert.
 
-## 6. Offene Entscheidungen
+## 6. Durch Dekommissionierung ausgesetzte Entscheidungen
 
 - Sentry-Events fuer maximal 30 Tage im Developer-Plan akzeptieren oder Sentry
   fuer den Minderjaehrigenpilot deaktivieren;

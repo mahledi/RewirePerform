@@ -64,4 +64,7 @@ Supabase documents that log retention depends on the pricing plan. The current F
 - A destructive live coach test with ownership transfer to an eligible co-coach was not performed.
 - Athlete-without-team, multiple-team coach, no-successor, network interruption and repeated-submit paths remain automated-test evidence rather than destructive Production evidence.
 - Production currently has no aggregate or evidence snapshot rows, so preservation of already de-identified aggregate snapshots was not exercised by this test.
-- Backup deletion deadline, Sentry retention, provider-log disclosure, final Privacy/legal review and minors consent remain separate release gates.
+- Backup deletion deadline, provider-log disclosure, final Privacy/legal review
+  and minors consent remain separate release gates. Sentry was subsequently
+  removed from the shipped-app candidate; historical events expire within the
+  verified 30-day provider window.
