@@ -10,7 +10,7 @@ This is the metadata source of truth for the first iOS version. Text marked
 | Field | Draft value | Status |
 | --- | --- | --- |
 | Name | RewirePerform | Ready, 13/30 characters |
-| Bundle ID | `com.rewireperform.app` | Ready in Xcode; Apple record not verified |
+| Bundle ID | `com.rewireperform.app` | Ready in Xcode; Apple record blocked by current account-login issue |
 | SKU | `rewireperform-ios-001` | OWNER INPUT before app record creation |
 | Primary language | German | Recommendation |
 | Primary category | Sports | Recommendation |
@@ -25,6 +25,7 @@ This is the metadata source of truth for the first iOS version. Text marked
 | Content rights | `[confirm ownership/licences]` | OWNER INPUT |
 | Age rating questionnaire | `[complete after BD-05]` | BLOCKED |
 | Regulated medical device | No, if final product/claims remain non-medical | OWNER/LEGAL CONFIRMATION |
+| Scientific/performance claims | Use only substantiated, approved wording | OWNER/SCIENTIFIC/LEGAL INPUT |
 
 ## German localization
 
@@ -74,6 +75,9 @@ URLs:
 - Marketing: `https://rewireperform.com`
 - Privacy Choices: `[final route required]` - BLOCKED until consent/deletion wording is final
 
+The three public URLs returned HTTPS 200 and rendered correctly on desktop and mobile
+on 2026-07-17. This proves technical availability, not legal completeness.
+
 The Support URL must be rechecked for all legally required contact information before
 submission. A working email alone may not satisfy every market's legal requirements.
 
@@ -106,13 +110,15 @@ Suggested review path:
 3. Open Daily Check-in and Journal. The questions adapt to training, competition, or rest-day context.
 4. Open Settings. Local notifications and speech input are optional. Typing remains available if microphone or speech permission is denied.
 5. Sign out and use the Coach account to inspect the team status and aggregate-only views.
-6. Open Settings > [FINAL ACCOUNT DELETION PATH].
+6. Open Settings > Konto & Daten > Account löschen.
 
 No purchase is required. The app uses standard HTTPS/TLS only and declares no non-exempt encryption in Info.plist.
 ```
 
-The deletion path in step 6 is deliberately unresolved. Do not submit with that
-placeholder or with the current request-only deletion flow.
+The in-app deletion path is implemented, and the athlete-in-team Production case is
+verified. Coach transfer/integrity edge cases, retention and final legal wording remain
+open under `BD-04`. Do not submit with that remaining gate unresolved or describe those
+residual cases as fully verified.
 
 Review contact requires a real name, monitored email and reachable phone number.
 
@@ -152,11 +158,11 @@ Capture rules:
   IDFA, data broker or ad measurement exists.
 - Privacy labels: use the categories documented in `APP_STORE_PRIVACY_READINESS.md` and
   reconcile them against Xcode's Privacy Report before submission.
-- Account deletion: BLOCKED by `BD-04`.
+- Account deletion: BLOCKED by `BD-04` for final App Store readiness; self-service path and athlete-in-team Production case are verified, while coach-transfer, aggregate and retention gates remain open.
 - Minor/guardian and research consent: BLOCKED by `BD-05`.
 - Health/mental-performance claims: final owner/legal review required.
 
-## Official references verified 2026-07-13
+## Official references verified 2026-07-17
 
 - https://developer.apple.com/help/app-store-connect/reference/app-information/app-information
 - https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information/

@@ -179,7 +179,6 @@ VITE_SUPABASE_URL=https://towgvykgezrmkbyudjen.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=<STAGING_ANON_KEY>
 VITE_SUPABASE_PROJECT_ID=towgvykgezrmkbyudjen
 VITE_APP_ENV=staging
-VITE_SENTRY_DSN=(optional)
 ```
 
 ### C3. Staging-Subdomain

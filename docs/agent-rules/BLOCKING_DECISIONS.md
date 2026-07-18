@@ -37,7 +37,7 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 - Rueckweg: vor dem Apply wurde ein verschluesselter, integritaetsgepruefter Export von 33 Public-Tabellen und 11 persistenten Auth-Tabellen erstellt; der Schluessel liegt im macOS-Schluesselbund. Das Free-Projekt besitzt weiterhin kein PITR oder Plattform-Backup, und fuer den Export ist noch eine verbindliche Aufbewahrungs-/Loeschfrist festzulegen.
 - Mahle hat klargestellt, dass vor dem Test sieben Accounts Testaccounts waren und ein Account real war. Mahle loeschte einen bezeichneten Testaccount; danach blieben sechs Testaccounts und der reale Account bestehen. Der Agent fuehrte ausschliesslich read-only Nachpruefungen aus.
 - Live verifiziert: `user_deleted` HTTP `200`, globales Logout HTTP `204`, erneuter Login `400 invalid_credentials`, 0 offene Loeschanfragen, 0 Auth-Restzeilen, 0 personenbezogene Produkt-Restzeilen und 0 verbleibende Erstellerreferenzen fuer den geloeschten Account.
-- Weiterhin blockiert: agentenseitige Loeschung eines weiteren bestehenden Accounts sowie die finale App-Store-Aussage, bis Coach-Transfer/Integritaetsrestfaelle, Sentry-Aufbewahrung, Backup-Loeschfrist, Provider-Log-Retention, Privacy-Text und rechtliche Endpruefung bestaetigt sind.
+- Weiterhin blockiert: agentenseitige Loeschung eines weiteren bestehenden Accounts sowie die finale App-Store-Aussage, bis Coach-Transfer/Integritaetsrestfaelle, Backup-Loeschfrist, Provider-Log-Retention, Privacy-Text und rechtliche Endpruefung bestaetigt sind. Sentry ist aus der App entfernt; das behaltene Projekt und historische Events sind in `docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md` dokumentiert.
 
 ## BD-05 - Minderjaehrigen-Consent
 

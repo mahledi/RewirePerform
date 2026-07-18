@@ -30,7 +30,7 @@
 - Validierte Instrumente CSAI-2R, SMTQ und Flow-Kurzskala sowie eigener Development Index.
 - Consent-aware Study-/Evidence-Snapshots und NLZ-Dossier.
 - Web-Push fuer Morgen, Abend, Vortraining und Programmstart.
-- Sentry und privacy-safe `app_event_log` fuer technische Fehler.
+- Privacy-safe `app_event_log` fuer technische Fehler; Sentry ist aus der App entfernt, das externe Projekt bleibt erhalten.
 
 ## Bekannte Unfertigkeiten
 

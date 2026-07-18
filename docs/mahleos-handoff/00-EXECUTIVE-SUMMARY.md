@@ -30,7 +30,7 @@ Der aktuelle Git-Stand ist nicht `main`, sondern `agent/nlz-pilot-readiness`, lo
 - Keine Diagnose, Therapie-, Heil- oder medizinischen Wirkversprechen.
 - Keine Kausalbehauptung ohne geeignetes Studiendesign und Vergleichsbedingung.
 - Keine Ego-, Persoenlichkeits- oder Mentalstatus-Aussage ueber Einzelspieler aus indirekten Daten.
-- Keine Journaltexte, Freitexte, Rohantworten oder individuellen psychologischen Scores fuer Coaches, Exporte, Sentry oder Incident-Logs.
+- Keine Journaltexte, Freitexte, Rohantworten oder individuellen psychologischen Scores fuer Coaches, Exporte oder Incident-Logs; Sentry ist aus der App entfernt.
 - Sensible Teamaggregate erst ab mindestens fuenf unterschiedlichen Athleten; bei fuenf bis neun als niedrige Konfidenz behandeln.
 - Produktnutzung bleibt auch bei abgelehntem freiwilligem Datenbeitrag moeglich.
 - GitHub und versionierte Migrationen sind technische Source of Truth; externe Deployments und produktive Daten bleiben separat zu verifizieren.

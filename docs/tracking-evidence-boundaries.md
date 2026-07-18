@@ -6,7 +6,7 @@ Diese Regeln halten die Datenebene pilotfähig, präsentationsfähig und App-Sto
 
 - Spieler sehen keinen Mental Score, keine Diagnose und kein psychologisches Ranking.
 - Der Fragebogen erzeugt intern eine Startprofil- und Fortschrittsbaseline für Aufgabenlogik, Messfenster und spätere aggregierte Auswertung.
-- Private Inhalte bleiben privat: Journaltexte, freie Antworten und Reflexionen gehören nicht in Coach-Ansichten, Exporte, Sentry oder Incident-Logs.
+- Private Inhalte bleiben privat: Journaltexte, freie Antworten und Reflexionen gehören nicht in Coach-Ansichten, Exporte oder Incident-Logs. Sentry ist aus der App entfernt.
 
 ## Coach
 

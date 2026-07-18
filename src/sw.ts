@@ -4,6 +4,7 @@
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
 const OFFLINE_URL = "/offline.html";
+const OFFLINE_CACHE = "rewireperform-offline-v1";
 
 // Vite injects this at build time. We intentionally do not precache app assets:
 // Safari/iOS can otherwise serve stale index/chunk combinations after deploys.
@@ -15,12 +16,26 @@ if (!Array.isArray(ignoredPrecacheManifest)) {
 
 self.skipWaiting();
 
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    fetch(OFFLINE_URL, { cache: "no-store" }).then(async (response) => {
+      if (!response.ok) throw new Error(`Offline fallback returned HTTP ${response.status}`);
+      const cache = await caches.open(OFFLINE_CACHE);
+      await cache.put(OFFLINE_URL, response);
+    })
+  );
+});
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     Promise.all([
       self.clients.claim(),
       caches.keys().then((cacheNames) =>
-        Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
+        Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== OFFLINE_CACHE)
+            .map((cacheName) => caches.delete(cacheName))
+        )
       ),
     ])
   );
@@ -31,7 +46,8 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     fetch(event.request).catch(async () => {
-      const offline = await fetch(OFFLINE_URL, { cache: "no-store" }).catch(() => null);
+      const offlineCache = await caches.open(OFFLINE_CACHE);
+      const offline = await offlineCache.match(OFFLINE_URL);
       return offline ?? new Response("RewirePerform ist gerade offline.", {
         headers: { "Content-Type": "text/plain; charset=utf-8" },
         status: 503,
@@ -44,7 +60,11 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "CLEAR_APP_CACHE") {
     event.waitUntil(
       caches.keys().then((cacheNames) =>
-        Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
+        Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== OFFLINE_CACHE)
+            .map((cacheName) => caches.delete(cacheName))
+        )
       )
     );
   }
