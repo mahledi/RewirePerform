@@ -2,9 +2,9 @@
 
 Stand: 18. Juli 2026
 
-Status: echtes Dashboard und lokaler Code read-only geprueft. Es wurden keine
-Sentry-Einstellungen, Vertraege, Abos, Zahlungsdaten oder Production-Systeme
-geaendert.
+Status: echtes Dashboard und lokaler Code geprueft; Account und Organisation
+sicherheitsseitig gehaertet und nach erneutem Laden verifiziert. Es wurden keine
+Vertraege, Abos, Zahlungsdaten, Events oder Production-App-Systeme geaendert.
 
 ## 1. Kurzurteil
 
@@ -13,10 +13,10 @@ EU-Datenregion und die 30-Tage-Aufbewahrung des kostenlosen Developer-Plans
 erfuellen die vorgeschlagene harte Obergrenze von 30 Tagen. Der bevorzugte
 14-Tage-Zielwert wird damit jedoch nicht erreicht.
 
-Fuer einen Minderjaehrigenpilot ist die aktuelle Organisation noch nicht
-freigegeben. Vorher muessen insbesondere persoenliche Zwei-Faktor-Authentifizierung,
-die organisationsweiten Privacy-Schalter, das Data Processing Amendment und ein
-getesteter nutzerbezogener Loeschprozess abgeschlossen werden.
+Account- und Organisationsschutz sind fuer den vorgesehenen Ein-Personen-Betrieb
+gehaertet. Fuer einen Minderjaehrigenpilot fehlen weiterhin die fachliche
+30-Tage-Entscheidung, das Data Processing Amendment, die Provider-Ablage und ein
+getesteter nutzerbezogener Loeschprozess.
 
 ## 2. Im Dashboard verifiziert
 
@@ -34,8 +34,9 @@ getesteter nutzerbezogener Loeschprozess abgeschlossen werden.
   deaktiviert;
 - keine aktuelle Nutzung von Session Replay, Logs, Tracing, Profiling oder
   Metrics im Usage-Dashboard;
-- persoenliche Zwei-Faktor-Authentifizierung fuer den einzigen Account ist
-  vollstaendig inaktiv;
+- persoenlicher Passkey ist aktiv, Wiederherstellungscodes wurden durch den
+  Account-Inhaber gesichert und organisationsweite Zwei-Faktor-Authentifizierung
+  ist erzwungen;
 - das Data Processing Amendment wird als `Review and Accept` angezeigt und ist
   damit noch nicht als abgeschlossen nachgewiesen;
 - EU-Representative- und DPO-Felder sind leer; ob diese Rollen fuer den konkreten
@@ -45,19 +46,22 @@ getesteter nutzerbezogener Loeschprozess abgeschlossen werden.
 
 | Einstellung | Ist-Stand | Empfohlener Pilotstand |
 |---|---|---|
-| Require Two-Factor Authentication | aus | nach persoenlichem 2FA-Setup einschalten |
-| Allow Shared Issues | an | ausschalten |
-| Enhanced Privacy | aus | einschalten |
-| Allow JavaScript Source Fetching | an | ausschalten, sofern kein dokumentierter Bedarf besteht |
-| Allow Join Requests | an | fuer den kontrollierten Pilot ausschalten |
-| Require Data Scrubber | aus | einschalten |
-| Require Default Scrubbers | aus | einschalten |
-| Prevent Storing IP Addresses | aus | einschalten |
-| Show Generative AI Features | an | fuer den Pilot ausschalten |
-| Use of aggregated identifying data | aus | ausgeschaltet lassen |
+| Require Two-Factor Authentication | an | erfuellt |
+| Allow Shared Issues | aus | erfuellt |
+| Enhanced Privacy | an | erfuellt |
+| Allow JavaScript Source Fetching | an | bewusst aktiv fuer Fehlergruppierung ohne hochgeladene Source Maps |
+| Allow Join Requests | aus | erfuellt |
+| Require Data Scrubber | an | erfuellt |
+| Require Default Scrubbers | an | erfuellt |
+| Prevent Storing IP Addresses | an | erfuellt; gilt fuer neue Events |
+| Show Generative AI Features | aus | erfuellt |
+| Use of aggregated identifying data | aus | erfuellt |
 
-Diese Schalter wurden nur gelesen. Keine Empfehlung in dieser Tabelle ist bereits
-umgesetzt.
+Die gespeicherte Konfiguration wurde nach Navigation auf eine andere Seite erneut
+geladen und in diesem Zustand bestaetigt. JavaScript Source Fetching bleibt bewusst
+aktiv: Sentry hat beim Abschalten vor schlechterer Fehlergruppierung ohne
+hochgeladene Source Maps gewarnt. Die Funktion liest den oeffentlich ausgelieferten
+App-Bundle-Code und erweitert nicht den erlaubten Nutzer-Datenvertrag.
 
 ## 4. Code-seitige Datenminimierung
 
@@ -86,11 +90,10 @@ Schutzschicht und den dokumentierten Organisationsvertrag bilden.
 
 ## 5. Erforderliche Reihenfolge
 
-1. Der Account-Inhaber richtet selbst Passkey oder Authenticator-App ein und
-   speichert die Wiederherstellungscodes sicher. Dieser Schritt verarbeitet ein
-   persoenliches Geheimnis und wird nicht automatisiert.
-2. Nach gesonderter Freigabe werden die empfohlenen Organisationsschalter gesetzt
-   und anschliessend erneut read-only verifiziert.
+1. Erledigt: Der Account-Inhaber hat einen Passkey eingerichtet und die
+   Wiederherstellungscodes sicher gespeichert.
+2. Erledigt: Die Organisationsschalter wurden gehaertet, gespeichert und nach
+   erneutem Laden verifiziert.
 3. Eine vertretungsberechtigte Person prueft und akzeptiert das Data Processing
    Amendment; aktuelle Subprozessoren und Transfermechanismen werden abgelegt.
 4. Die Sentry-Offenlegung in Datenschutzerklaerung und App Store Privacy Details
@@ -109,17 +112,27 @@ Schutzschicht und den dokumentierten Organisationsvertrag bilden.
 - klaeren, ob und welche GDPR-Kontaktrollen einzutragen sind;
 - festlegen, wer nutzerbezogene Sentry-Loeschungen ausfuehrt und dokumentiert.
 
-## 7. Nicht ausgefuehrt
+## 7. Ausgefuehrt
 
-- keine Zwei-Faktor-Authentifizierung eingerichtet oder erzwungen;
-- kein Privacy- oder Security-Schalter geaendert;
+- Passkey und Wiederherstellungscodes durch den Account-Inhaber eingerichtet;
+- organisationsweite Zwei-Faktor-Authentifizierung erzwungen;
+- Shared Issues und Join Requests deaktiviert;
+- Enhanced Privacy, Data Scrubber, Default Scrubbers und IP-Speicherschutz
+  aktiviert;
+- generative Sentry-Funktionen deaktiviert;
+- JavaScript Source Fetching nach sichtbarer Sentry-Warnung bewusst aktiv
+  gelassen;
+- alle Werte nach erneuter Seitennavigation verifiziert.
+
+## 8. Nicht ausgefuehrt
+
 - kein Data Processing Amendment akzeptiert;
 - kein kostenloser Test gestartet;
 - keine Marketing-E-Mail aktiviert;
 - kein Sentry-Event geloescht, aufgeloest oder archiviert;
 - kein Push, Merge, Deploy oder Production-Apply ausgefuehrt.
 
-## 8. Offizielle Quellen
+## 9. Offizielle Quellen
 
 - Sentry Data Storage Location: https://docs.sentry.io/organization/data-storage-location/
 - Sentry Pricing: https://sentry.io/pricing/

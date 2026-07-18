@@ -152,12 +152,13 @@ harte Obergrenze von 30 Tagen eingehalten, der bevorzugte 14-Tage-Zielwert aber
 nicht. Die 30 Tage muessen fachlich akzeptiert werden; andernfalls bleibt Sentry
 fuer den Minderjaehrigenpilot deaktiviert.
 
-Noch offen sind persoenliche und danach organisationsweite Zwei-Faktor-
-Authentifizierung, die Privacy-Haertung der Organisation, Annahme und Ablage des
-Data Processing Amendment, Subprozessoren sowie ein getesteter nutzerbezogener
-Loeschprozess. Session Replay, Tracing, Profiling, Logs und freie Nutzerinhalte
-bleiben aus. Der vollstaendige Ist-Stand und die genaue Aenderungsreihenfolge stehen
-in `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
+Passkey, Wiederherstellungscodes, organisationsweite Zwei-Faktor-Authentifizierung,
+Enhanced Privacy, Scrubber, IP-Speicherschutz sowie geschlossene Sharing- und
+Join-Pfade sind umgesetzt und nach erneutem Laden verifiziert. Noch offen sind die
+30-Tage-Entscheidung, Annahme und Ablage des Data Processing Amendment,
+Subprozessoren sowie ein getesteter nutzerbezogener Loeschprozess. Session Replay,
+Tracing, Profiling, Logs und freie Nutzerinhalte bleiben aus. Der vollstaendige
+Ist-Stand steht in `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
 
 ## 7. Sichtbare Privacy-Fassung nach Freigabe
 
@@ -189,7 +190,7 @@ danach als eine gemeinsame Datenkarte abgeglichen werden.
 | D-05 | Produktverbesserung, Evaluation und Forschung | drei getrennte Zwecke; Forschung nicht stillschweigend aktivieren |
 | D-06 | vorgeschlagene Aufbewahrungsfristen | bestaetigen oder pro Datenklasse aendern |
 | D-07 | Supabase vor Minderjaehrigenpilot | Pro; Free nur mit vollstaendig getesteter Backup-Ersatzstrecke |
-| D-08 | Sentry im Pilot | 30 Tage akzeptieren und 2FA/Privacy/DPA/Loeschprozess abschliessen; sonst deaktivieren |
+| D-08 | Sentry im Pilot | 2FA/Privacy erledigt; 30 Tage, DPA und Loeschprozess noch freigeben, sonst deaktivieren |
 | D-09 | Supabase-Grant-Haertung | lokale Migration und Tests freigeben; Production-Apply separat |
 
 ## 9. Technische Reihenfolge nach Entscheidungen

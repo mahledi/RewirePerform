@@ -75,16 +75,16 @@ entscheiden: 30 Tage akzeptieren oder Sentry deaktivieren.
 
 Weiterhin vor Merge/Release zu bestaetigen beziehungsweise abzuschliessen:
 
-1. persoenliche Zwei-Faktor-Authentifizierung und danach organisationsweite
-   Durchsetzung;
-2. organisationsweite Privacy-Schalter gemaess
-   `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`;
-3. DPA und aktuelle Subprocessor-Liste;
-4. nutzerbezogene Suche und vorzeitiger Loeschprozess;
-5. keine Session Replay-, Profiling-, Tracing-, Logs-, Feedback- oder
+1. DPA und aktuelle Subprocessor-Liste;
+2. nutzerbezogene Suche und vorzeitiger Loeschprozess;
+3. keine Session Replay-, Profiling-, Tracing-, Logs-, Feedback- oder
    Seer-Aktivierung;
-6. keine besonderen Datenkategorien in Event, Message, Breadcrumb, URL, Request
+4. keine besonderen Datenkategorien in Event, Message, Breadcrumb, URL, Request
    oder Context.
+
+Persoenlicher Passkey, organisationsweite Zwei-Faktor-Authentifizierung,
+Enhanced Privacy, verpflichtende Scrubber, IP-Speicherschutz und geschlossene
+Sharing-/Join-Pfade wurden am 18. Juli umgesetzt und erneut verifiziert.
 
 Wenn der aktuelle Plan keine Aufbewahrung von hoechstens 30 Tagen erlaubt, wird Sentry fuer den Minderjaehrigenpilot deaktiviert oder auf eine geeignete Konfiguration umgestellt.
 

@@ -21,7 +21,7 @@ Der aktuelle Stand ist trotzdem noch nicht fuer einen Pilot mit 15-jaehrigen Ath
 2. Die Edge Function `team-mental-state` aggregiert sensible Check-in- und Fragebogenwerte aller zugeordneten Athleten ab fuenf Personen. Sie filtert weder auf die versprochene Datenbeitrags-Einwilligung noch auf eine altersgerechte Freigabe.
 3. Aeltere Study-/Presentation-RPCs pruefen die allgemeine Datenbeitrags-Einwilligung, aber nicht durchgehend `evidence_participation_eligibility`.
 4. Die sichtbare Datenschutzerklaerung enthaelt mehrere Aussagen, die der aktuelle Code nicht exakt erfuellt oder nicht vollstaendig beschreibt.
-5. Verbindliche Fristen fuer Backups, Diagnose- und Provider-Logs sind noch nicht festgelegt. Sentry ist mit EU-Region und 30 Tagen bestaetigt; die 30-Tage-Entscheidung, DPA, Privacy-Haertung und der nutzerbezogene Loeschprozess bleiben offen.
+5. Verbindliche Fristen fuer Backups, Diagnose- und Provider-Logs sind noch nicht festgelegt. Sentry ist mit EU-Region und 30 Tagen bestaetigt und sicherheitsseitig gehaertet; die 30-Tage-Entscheidung, DPA und der nutzerbezogene Loeschprozess bleiben offen.
 6. Zwolf `SECURITY DEFINER`-Funktionen sind in Production fuer `anon` ausfuehrbar. Bei drei Helpern fehlt eine ausreichende Aufruferbindung fuer Rollen- oder QA-Metadatenabfragen.
 
 Bis diese Punkte geschlossen sind, duerfen 15-Jaehrige nicht allein durch ein eigenes Ja in sensible Teamaggregate, Evaluationen, Evidence-Berichte oder Forschungsnutzung gelangen.
@@ -51,7 +51,7 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Evidence-Schreibpfad | `save_daily_tracking_v3` und Coach-Evidence pruefen serverseitig die Eligibility | belastbar fuer den neuen Evidence-Pfad |
 | Journale/Freitexte | keine AI-Analyse; `team-mental-state` selektiert keine Reflection; alte AI-Edge-Functions antworten mit HTTP 410 | Code stuetzt die zentrale Journal-Zusage |
 | Team-Kleingruppen | psychologische Teamwerte werden erst ab mindestens fuenf verschiedenen Athleten ausgegeben | Schwelle vorhanden, Teilnehmerfilter unvollstaendig |
-| Sentry-Basisschutz | `sendDefaultPii: false`, kein Tracing/Breadcrumbs, keine Original-Fehlermeldungen, freie Metadaten oder URL-Parameter; User-Kontext auf stabile ID reduziert | lokal gehaertet; EU-Region und 30 Tage bestaetigt; Organisationshaertung offen |
+| Sentry-Basisschutz | `sendDefaultPii: false`, kein Tracing/Breadcrumbs, keine Original-Fehlermeldungen, freie Metadaten oder URL-Parameter; User-Kontext auf stabile ID reduziert | lokal und organisationsseitig gehaertet; EU-Region und 30 Tage bestaetigt |
 | Diagnose-Metadaten | Aufrufer uebergeben derzeit strukturierte technische Werte, keine Journal- oder Antworttexte | lokal geprueft |
 | Evidence-Protokoll | versionierte Consent-Anforderung und eigenes Eligibility-Audit | gute Grundlage fuer kontrollierten Rollout |
 
@@ -154,7 +154,7 @@ Erforderlich:
 | G-04 | P0 | alle Study-/Presentation-/Exportpfade auf ein Eligibility-Gate ziehen | Database | pgTAP/SQL-Harness fuer jede RPC |
 | G-05 | P0 | Datenschutzerklaerung auf echten Code, Provider, Verantwortlichen, Anschrift und Pilotrollen abstimmen | Legal plus Product | final freigegebene Version und Code-Matrix ohne Widerspruch |
 | G-06 | P0 | Aufbewahrungs- und Loeschplan fuer Tabellen, Snapshots, Logs und Backups festlegen | Privacy plus Operations | verbindliche Fristen und automatisierte Jobs |
-| G-07 | P0 | Sentry: 30 Tage freigeben, 2FA/Privacy-Schalter haerten, DPA und Loeschprozess abschliessen | Operations | erneuter Dashboard-Nachweis, DPA-Ablage und getestetes Loesch-Runbook |
+| G-07 | P0 | Sentry: 30 Tage freigeben, DPA und Loeschprozess abschliessen | Operations | 2FA/Privacy nachgewiesen; DPA-Ablage und getestetes Loesch-Runbook fehlen |
 | G-08 | P0 | Forschung/Evidence gegen Produktverbesserung trennen; Ethikbedarf klaeren | Study Lead plus Legal | dokumentierter Scope und gegebenenfalls Ethikvotum |
 | G-09 | P0 | Sentry strikt frei von besonderen Datenkategorien halten | App | im Audit-Branch mit allow-listed Metadaten und absichtlich sensiblen Fehlermeldungen getestet; Merge/Deploy noch offen |
 | G-10 | P1 | Datenexport-Prozess, Identitaetspruefung und SLA definieren | Operations | getesteter Betroffenen-Request |
@@ -181,7 +181,7 @@ Ob `16 und aelter` fuer jeden vorgesehenen Zweck ohne Guardian ausreicht, ist ke
 
 - Supabase Production liegt nach Dashboard-/API-Pruefung in `eu-central-1`.
 - Der aktuelle Free-Plan besitzt laut Supabase nur kurze Log-Aufbewahrung und keine verwalteten taeglichen Backups. Ein eigener verschluesselter Export-/Restore-Prozess braucht deshalb eine festgelegte Loeschfrist und einen dokumentierten Test.
-- Sentry wurde am 18. Juli im echten Dashboard read-only geprueft: EU-Datenregion, kostenloser Developer-Plan und 30 Tage Lookback/Aufbewahrung sind bestaetigt. Marketing-Abos und aggregierte identifizierende Datennutzung sind aus; persoenliche 2FA, mehrere Organisations-Privacy-Schalter, DPA und Loesch-Runbook sind noch offen. Details: `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
+- Sentry wurde am 18. Juli im echten Dashboard geprueft und gehaertet: EU-Datenregion, kostenloser Developer-Plan und 30 Tage Lookback/Aufbewahrung sind bestaetigt. Marketing, aggregierte identifizierende Datennutzung, Shared Issues, Join Requests und generative Funktionen sind aus; Passkey, organisationsweite 2FA, Enhanced Privacy, Scrubber und IP-Speicherschutz sind aktiv. DPA, 30-Tage-Freigabe und Loesch-Runbook bleiben offen. Details: `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
 - Sentrys veroeffentlichtes Transfermaterial weist darauf hin, dass besondere Datenkategorien nicht an den Dienst uebermittelt werden duerfen. Der Diagnosepfad muss deshalb technisch fail-closed bleiben; ein Datenschutzhinweis allein reicht nicht.
 - Vercel-Plan, Log-Retention, Analytics-Konfiguration und DPA muessen im echten Projekt verifiziert werden.
 - `npm audit --omit=dev` meldet keine Production-Dependency-Schwachstelle. Der volle Audit meldet eine moderate und eine hohe Advisory im lokalen Vite-/esbuild-Dev-Server; der von npm angebotene Fix ist ein Major-Upgrade und wird separat mit Build- und iOS-Regressionspruefung behandelt.
