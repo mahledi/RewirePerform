@@ -26,7 +26,10 @@ test("installed web app serves its static fallback while offline", async ({ brow
     const response = await page.goto(`/privacy?offline-smoke=${Date.now()}`);
     expect(response?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1, name: "Gerade offline" })).toBeVisible();
-    await expect(page.getByText("RewirePerform konnte die aktuelle Version nicht laden.")).toBeVisible();
+    await expect(page.getByText("Die aktuelle Version konnte nicht geladen werden. Bitte prüfe deine Verbindung und öffne die App erneut.")).toBeVisible();
+    const brandImage = page.locator(".brand img");
+    await expect(brandImage).toBeVisible();
+    expect(await brandImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
   } finally {
     await context.setOffline(false);
   }

@@ -4,7 +4,8 @@
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
 const OFFLINE_URL = "/offline.html";
-const OFFLINE_CACHE = "rewireperform-offline-v1";
+const OFFLINE_BRAND_URL = "/brand/rewireperform-symbol-dark.svg";
+const OFFLINE_CACHE = "rewireperform-offline-v2";
 
 // Vite injects this at build time. We intentionally do not precache app assets:
 // Safari/iOS can otherwise serve stale index/chunk combinations after deploys.
@@ -18,10 +19,13 @@ self.skipWaiting();
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    fetch(OFFLINE_URL, { cache: "no-store" }).then(async (response) => {
-      if (!response.ok) throw new Error(`Offline fallback returned HTTP ${response.status}`);
+    Promise.all([OFFLINE_URL, OFFLINE_BRAND_URL].map(async (url) => {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Offline asset ${url} returned HTTP ${response.status}`);
+      return [url, response] as const;
+    })).then(async (assets) => {
       const cache = await caches.open(OFFLINE_CACHE);
-      await cache.put(OFFLINE_URL, response);
+      await Promise.all(assets.map(([url, response]) => cache.put(url, response)));
     })
   );
 });
@@ -42,6 +46,17 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin === self.location.origin && requestUrl.pathname === OFFLINE_BRAND_URL) {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const offlineCache = await caches.open(OFFLINE_CACHE);
+        return offlineCache.match(OFFLINE_BRAND_URL) ?? Response.error();
+      })
+    );
+    return;
+  }
+
   if (event.request.mode !== "navigate") return;
 
   event.respondWith(
