@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { Brain, ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen, Hourglass } from "lucide-react";
+import { ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen, Hourglass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
@@ -16,6 +16,7 @@ import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { buildFlameStats, type FlameCompletionRow, type FlameStats } from "@/lib/flameStats";
 import FlameCard from "@/components/dashboard/FlameCard";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
 import AppLoadingShell from "@/components/AppLoadingShell";
@@ -229,10 +230,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold">RewirePerform</span>
-          </div>
+          <BrandLockup symbolSize={26} textClassName="text-base" />
           <span className="text-xs text-muted-foreground font-heading">Kalender-Setup</span>
         </div>
       </div>
@@ -1089,10 +1087,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background">
         <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-primary" />
-              <span className="font-heading font-bold">RewirePerform</span>
-            </div>
+            <BrandLockup symbolSize={26} textClassName="text-base" />
             <div className="flex items-center gap-2">
               <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Einstellungen">
                 <Settings className="w-4 h-4 text-muted-foreground" />
@@ -1189,10 +1184,14 @@ const Dashboard = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold text-base">RewirePerform</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            aria-label="RewirePerform Startseite"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <BrandLockup symbolSize={26} textClassName="text-base" />
+          </button>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Messungen">
               <ClipboardCheck className="w-4 h-4 text-muted-foreground" />

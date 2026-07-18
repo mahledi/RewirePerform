@@ -1,14 +1,18 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 
 const Support = () => {
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="max-w-3xl mx-auto">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-10">
-          <ArrowLeft className="w-4 h-4" />
-          Zurück
-        </Link>
+        <div className="mb-10 flex items-center justify-between gap-4">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="w-4 h-4" />
+            Zurück
+          </Link>
+          <BrandLockup symbolSize={24} textClassName="hidden text-sm sm:inline" />
+        </div>
 
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, NotebookPen, ScrollText, X } from "lucide-react";
 import { SLIDES } from "@/presentation/slides";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 
 const Presentation = () => {
   const [index, setIndex] = useState(0);
@@ -58,7 +59,7 @@ const Presentation = () => {
       {/* Top bar */}
       <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-4 text-xs">
         <div className="flex items-center gap-3">
-          <span className="font-semibold tracking-tight">RewirePerform</span>
+          <BrandLockup symbolSize={22} textClassName="text-xs font-semibold" />
           <span className="text-muted-foreground">· Coach Pitch</span>
         </div>
         <div className="flex items-center gap-2">

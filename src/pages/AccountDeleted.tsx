@@ -1,6 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 
 const AccountDeleted = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const AccountDeleted = () => {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
       <div className="w-full max-w-md text-center">
+        <BrandLockup className="mb-8" symbolSize={32} textClassName="text-lg" />
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
           <CheckCircle2 className="h-7 w-7" />
         </div>

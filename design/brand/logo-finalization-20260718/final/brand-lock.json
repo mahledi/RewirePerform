@@ -1,0 +1,28 @@
+{
+  "brand": "RewirePerform",
+  "status": "LOCKED",
+  "version": "1.0.0",
+  "locked_at": "2026-07-18",
+  "selected_mark": "B2 Normal R",
+  "description": "Integrated RP monogram and split brain with a conventional level R bowl.",
+  "master_asset": "master/rewireperform-symbol-v1.svg",
+  "palette": {
+    "rewire_green": "#2EAD89",
+    "off_white": "#EEF0F2",
+    "midnight": "#0D0E12"
+  },
+  "geometry": {
+    "canvas": "1024x1024",
+    "app_icon_background": "#0D0E12",
+    "app_icon_alpha": false,
+    "corner_rounding": "none_in_source"
+  },
+  "prohibited": [
+    "redraw_or_regenerate",
+    "change_geometry",
+    "change_locked_colors",
+    "stretch_or_rotate",
+    "add_gradient_glow_shadow_or_3d",
+    "separate_brain_from_rp"
+  ]
+}

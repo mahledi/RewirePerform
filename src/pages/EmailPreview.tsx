@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Mail, Monitor, Smartphone } from "lucide-react";
+import { Monitor, Smartphone } from "lucide-react";
+import { BrandSymbol } from "@/components/brand/BrandLogo";
 import confirmationTemplate from "../../supabase/templates/auth/confirmation.html?raw";
 import recoveryTemplate from "../../supabase/templates/auth/recovery.html?raw";
 import passwordChangedTemplate from "../../supabase/templates/auth/password_changed_notification.html?raw";
@@ -14,8 +15,8 @@ type TemplateId = keyof typeof templates;
 type PreviewWidth = "mobile" | "desktop";
 
 const hydratePreview = (html: string) => html
-  .replaceAll("{{ .SiteURL }}", "https://rewireperform.com")
-  .replaceAll("{{ .ConfirmationURL }}", "https://rewireperform.com/auth?preview=1")
+  .replaceAll("{{ .SiteURL }}", window.location.origin)
+  .replaceAll("{{ .ConfirmationURL }}", `${window.location.origin}/auth?preview=1`)
   .replaceAll("{{ .Token }}", "482917");
 
 const EmailPreview = () => {
@@ -29,10 +30,10 @@ const EmailPreview = () => {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/25 bg-primary/10 text-primary">
-              <Mail className="h-4 w-4" aria-hidden="true" />
+              <BrandSymbol size={28} />
             </span>
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Interne Vorschau</p>
+              <p className="text-xs font-medium text-muted-foreground">RewirePerform · Interne Vorschau</p>
               <h1 className="text-base font-semibold">Auth-E-Mails</h1>
             </div>
           </div>

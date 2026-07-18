@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Brain, Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
+import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   authErrorMessage,
@@ -562,10 +563,7 @@ const Auth = () => {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md min-w-0 text-center"
         >
-          <button type="button" aria-label="Zur Startseite" className="mx-auto mb-8 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
-            <Brain className="h-7 w-7 text-primary" />
-            <span className="font-heading text-xl font-bold">RewirePerform</span>
-          </button>
+          <BrandMark className="mb-8" />
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <MailCheck className="h-7 w-7" aria-hidden="true" />
           </div>
@@ -616,10 +614,7 @@ const Auth = () => {
           className="w-full max-w-md min-w-0"
         >
           <div className="text-center mb-8">
-            <button type="button" aria-label="Zur Startseite" className="mx-auto mb-6 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
-              <Brain className="w-7 h-7 text-primary" />
-              <span className="font-heading text-xl font-bold">RewirePerform</span>
-            </button>
+            <BrandMark className="mb-6" />
             <h1 className="font-heading text-3xl font-bold mb-2">Wie startest du?</h1>
             <p className="text-muted-foreground text-sm">
               Wähle, wie du RewirePerform nutzen möchtest.
@@ -672,10 +667,7 @@ const Auth = () => {
           className="w-full max-w-md min-w-0"
         >
           <div className="text-center mb-10">
-            <button type="button" aria-label="Zur Startseite" className="mx-auto mb-6 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
-              <Brain className="w-7 h-7 text-primary" />
-              <span className="font-heading text-xl font-bold">RewirePerform</span>
-            </button>
+            <BrandMark className="mb-6" />
             <h1 className="font-heading text-3xl font-bold mb-2">Willkommen zurück.</h1>
             <p className="text-muted-foreground text-sm">
               {intent === "join"
@@ -760,10 +752,7 @@ const Auth = () => {
         </button>
 
         <div className="text-center mb-8">
-          <button type="button" aria-label="Zur Startseite" className="mx-auto mb-6 flex items-center justify-center gap-2" onClick={() => navigate("/")}>
-            <Brain className="w-7 h-7 text-primary" />
-            <span className="font-heading text-xl font-bold">RewirePerform</span>
-          </button>
+          <BrandMark className="mb-6" />
           <h1 className="font-heading text-3xl font-bold mb-2">{intentTitle}</h1>
           <p className="text-muted-foreground text-sm">{intentSub}</p>
         </div>
@@ -852,14 +841,13 @@ const IntentCard = ({
   </button>
 );
 
-const BrandMark = () => (
+const BrandMark = ({ className = "" }: { className?: string }) => (
   <Link
     to="/"
     aria-label="Zur Startseite"
-    className="mx-auto flex items-center justify-center gap-2"
+    className={`mx-auto flex w-fit items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
   >
-    <Brain className="h-7 w-7 text-primary" aria-hidden="true" />
-    <span className="font-heading text-xl font-bold">RewirePerform</span>
+    <BrandLockup symbolSize={34} textClassName="text-xl" />
   </Link>
 );
 

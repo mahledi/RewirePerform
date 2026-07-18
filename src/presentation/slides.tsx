@@ -4,6 +4,7 @@ import {
   ShieldCheck, Lock, Compass, Zap, RefreshCcw, Trophy,
 } from "lucide-react";
 import { ReactNode } from "react";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 
 /* ------------------------------------------------------------------ */
 /* Shared primitives                                                   */
@@ -161,9 +162,9 @@ const Slide01 = () => (
     <GlowOrb className="-right-40 bottom-0 h-[28rem] w-[28rem] bg-primary/10" />
     <div className="grid items-center gap-12 md:grid-cols-[1.05fr_0.95fr]">
       <div>
-        <motion.p {...fadeUp} transition={{ duration: 0.5 }} className="mb-6 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary/80">
-          RewirePerform
-        </motion.p>
+        <motion.div {...fadeUp} transition={{ duration: 0.5 }} className="mb-6">
+          <BrandLockup symbolSize={28} textClassName="text-sm font-semibold" />
+        </motion.div>
         <motion.h1 {...fadeUp} transition={{ delay: 0.1, duration: 0.6 }} className="text-5xl font-semibold leading-[1.05] tracking-tight md:text-7xl">
           Train the system <br />
           <span className="text-primary">behind performance.</span>
@@ -252,7 +253,7 @@ const Slide04 = () => (
         </ul>
       </HairCard>
       <HairCard className="border-primary/40 bg-primary/5 p-8">
-        <p className="text-xs uppercase tracking-[0.25em] text-primary">RewirePerform</p>
+        <BrandLockup symbolSize={24} textClassName="text-xs font-semibold" />
         <div className="mt-6 flex h-40 items-center justify-center">
           <svg viewBox="0 0 240 80" className="w-full">
             {Array.from({ length: 14 }).map((_, i) => (

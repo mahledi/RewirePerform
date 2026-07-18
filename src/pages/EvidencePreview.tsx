@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, Check, Dumbbell, FlaskConical, ShieldCheck, Users } from "lucide-react";
+import { Check, Dumbbell, FlaskConical, ShieldCheck, Users } from "lucide-react";
 import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
 import CoachWeeklyReview from "@/components/evidence/CoachWeeklyReview";
 import QaEvidenceParityPanel from "@/components/admin/QaEvidenceParityPanel";
@@ -12,6 +12,7 @@ import {
   type TransferPulseResponse,
 } from "@/lib/performanceEvidence";
 import type { QaEvidenceParityReport } from "@/lib/qaEvidenceParity";
+import { BrandSymbol } from "@/components/brand/BrandLogo";
 
 const previewPulse = getTransferPulseForDay(18, "training");
 
@@ -108,10 +109,10 @@ const EvidencePreview = () => {
       <header className="border-b border-border/60 bg-background/88 px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-5xl items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/25 bg-primary/10 text-primary">
-            <Activity className="h-4 w-4" aria-hidden="true" />
+            <BrandSymbol size={28} />
           </span>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Interne Vorschau</p>
+            <p className="text-xs font-medium text-muted-foreground">RewirePerform · Interne Vorschau</p>
             <h1 className="text-base font-semibold text-foreground">Performance Evidence</h1>
           </div>
         </div>

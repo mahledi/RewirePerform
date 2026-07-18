@@ -13,6 +13,7 @@ import EvidenceSection from "@/components/EvidenceSection";
 import CTASection from "@/components/CTASection";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLoadingShell from "@/components/AppLoadingShell";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -61,8 +62,9 @@ const Index = () => {
       </div>
       <CTASection />
       <footer className="py-8 border-t border-border">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2026 RewirePerform. Alle Rechte vorbehalten.
+        <div className="container mx-auto flex flex-col items-center gap-4 px-6 text-center text-sm text-muted-foreground">
+          <BrandLockup symbolSize={28} textClassName="text-base text-foreground" />
+          <span>© 2026 RewirePerform. Alle Rechte vorbehalten.</span>
         </div>
       </footer>
     </div>

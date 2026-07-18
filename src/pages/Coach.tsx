@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Brain,
   LogOut,
   Users,
   Settings,
@@ -13,6 +12,7 @@ import {
   ChevronRight,
   ArrowLeft,
 } from "lucide-react";
+import { BrandSymbol } from "@/components/brand/BrandLogo";
 import TeamOverview from "@/components/coach/TeamOverview";
 import TeamManagement from "@/components/coach/TeamManagement";
 import TeamMentalState from "@/components/coach/TeamMentalState";
@@ -285,12 +285,12 @@ const Coach = () => {
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-5 md:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card premium-hairline">
-              <Brain className="w-5 h-5 text-primary" />
+              <BrandSymbol size={28} />
             </div>
             <div className="min-w-0">
-              <span className="font-heading text-base font-semibold leading-none">Coach</span>
+              <span className="font-heading text-base font-semibold leading-none">RewirePerform</span>
               <p className="mt-1 truncate text-[10px] uppercase tracking-wider text-muted-foreground">
-                Team Performance Console
+                Coach Console
               </p>
             </div>
           </div>

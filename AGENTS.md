@@ -29,6 +29,14 @@ Eine niedrigere Ebene darf keine hoehere ueberschreiben. Auch ein neuer Auftrag 
 - Keine Diagnose, Heil-, Therapie-, medizinische oder kausale Wirksamkeitsbehauptung erfinden.
 - Bestehende fremde Aenderungen nie ungefragt zuruecksetzen; keine destruktiven Git-Befehle.
 
+## Verbindliche Markenidentitaet
+
+- Das offizielle RewirePerform-Logo ist **B2 Normal R**, von Mahle am 18. Juli 2026 gesperrt und freigegeben.
+- Source of Truth: `docs/BRAND_IDENTITY.md` und `design/brand/logo-finalization-20260718/final/`.
+- Logo-Geometrie und die Farben `#2EAD89`, `#EEF0F2`, `#0D0E12` duerfen nicht neu generiert, umgezeichnet, umgefaerbt, verzerrt oder mit Effekten versehen werden.
+- Fuer Website, PWA, iOS/App Store, E-Mail, Social, Praesentation und Print ist jeweils der im Logo-Kit ausgewiesene Export zu verwenden.
+- Begleitender Markenname ist immer `RewirePerform`, nie nur `Rewire`.
+
 ## Risiko
 
 - R1: Analyse und Dokumentation.
