@@ -1,6 +1,6 @@
 # App Store Privacy Checklist
 
-Stand: 2026-06-08
+Stand: 2026-07-18
 
 Diese Checkliste hält fest, wie RewirePerform die App-Store-Privacy-Themen für Pilotbetrieb und spätere iOS/WebView-Veröffentlichung behandelt. Sie ersetzt keine finale Rechtsprüfung, ist aber die technische Produktlinie für Entwicklung, QA und App-Store-Antworten.
 
@@ -85,10 +85,18 @@ Vor finalem Submit erneut prüfen:
 
 - App Privacy Details: Datenkategorien und "linked to user" korrekt beantworten.
 - Keine Antwort als "tracking" markieren, solange keine Werbe-/Cross-App-/Datenbroker-Nutzung existiert.
-- `PrivacyInfo.xcprivacy` für native iOS/WebView-App erstellen.
-- Third-Party-SDK-Manifests prüfen, insbesondere Supabase, Sentry und Web-Push/PWA-Kontext.
+- Vorhandene und im iOS-Target eingebundene `PrivacyInfo.xcprivacy` gegen die reale Runtime-Datenkarte und die App-Store-Connect-Antworten abgleichen.
+- Third-Party-SDK-Manifeste und Required-Reason-APIs im finalen Xcode Privacy Report prüfen, insbesondere Supabase, Sentry und Web-Push/PWA-Kontext.
 - Datenschutz-URL und User-Privacy-Choices-URL final bereitstellen.
 - Consent-Screen und Settings-Schalter auf iPhone testen.
+
+Aktuelle Release-Blocker:
+
+- altersgerechte Autorisierung vor sensitiven Produktdaten;
+- Consent- und Altersfilter in `team-mental-state` vor Berechnung von `n >= 5`;
+- finaler Privacy-Text mit Verantwortlichem, Anschrift, Providern, Notification-Logs und realen Aufbewahrungsfristen;
+- nachgewiesene Sentry-Region, Retention, DPA und nutzerbezogene Löschstrecke;
+- Abgleich von Manifest, Xcode Privacy Report und App Store Connect auf dem final signierten Build.
 
 ## QA vor Pilot
 

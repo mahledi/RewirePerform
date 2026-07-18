@@ -2,7 +2,10 @@
 
 Stand: 15. Juli 2026
 
-Technischer Nachtrag: 17. Juli 2026 - Xcode-/Simulatorpfad lokal verifiziert; Rechts- und Minderjaehrigenstatus unveraendert
+Technische Nachtraege:
+
+- 17. Juli 2026: Xcode-/Simulatorpfad lokal verifiziert; Rechts- und Minderjaehrigenstatus unveraendert.
+- 18. Juli 2026: aktuelles `origin/main` mit Tracking/Evidence und E-Mail-Flows integriert getestet; Production-Function-Grants und Security Advisor read-only geprueft. Keine Rechts-, Minderjaehrigen- oder Production-Freigabe erteilt.
 
 Status: Repo und Production read-only geprueft; keine Rechtsfreigabe und keine Aktivierung des Minderjaehrigenpfads
 
@@ -19,6 +22,7 @@ Der aktuelle Stand ist trotzdem noch nicht fuer einen Pilot mit 15-jaehrigen Ath
 3. Aeltere Study-/Presentation-RPCs pruefen die allgemeine Datenbeitrags-Einwilligung, aber nicht durchgehend `evidence_participation_eligibility`.
 4. Die sichtbare Datenschutzerklaerung enthaelt mehrere Aussagen, die der aktuelle Code nicht exakt erfuellt oder nicht vollstaendig beschreibt.
 5. Verbindliche Fristen fuer Backups, Diagnose- und Provider-Logs sowie die konkrete Sentry-Aufbewahrung sind noch nicht festgelegt beziehungsweise im echten Sentry-Projekt nicht bestaetigt.
+6. Zwolf `SECURITY DEFINER`-Funktionen sind in Production fuer `anon` ausfuehrbar. Bei drei Helpern fehlt eine ausreichende Aufruferbindung fuer Rollen- oder QA-Metadatenabfragen.
 
 Bis diese Punkte geschlossen sind, duerfen 15-Jaehrige nicht allein durch ein eigenes Ja in sensible Teamaggregate, Evaluationen, Evidence-Berichte oder Forschungsnutzung gelangen.
 
@@ -33,6 +37,7 @@ Bis diese Punkte geschlossen sind, duerfen 15-Jaehrige nicht allein durch ein ei
 - Push-Subscriptions und `notification_log`
 - Sentry und `app_event_log`
 - Account-Loeschung und vorhandene Loeschvertraege
+- Production-Function-Definitionen, Grants und Supabase Security Advisor
 - Supabase Production `bqsbxesmybthwtxmowfz` ausschliesslich read-only
 
 Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zaehler betrachtet. Es wurden keine Antworten, Journale, Check-in-Werte oder sonstigen privaten Inhalte gelesen und keine Daten veraendert.
@@ -46,7 +51,7 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Evidence-Schreibpfad | `save_daily_tracking_v3` und Coach-Evidence pruefen serverseitig die Eligibility | belastbar fuer den neuen Evidence-Pfad |
 | Journale/Freitexte | keine AI-Analyse; `team-mental-state` selektiert keine Reflection; alte AI-Edge-Functions antworten mit HTTP 410 | Code stuetzt die zentrale Journal-Zusage |
 | Team-Kleingruppen | psychologische Teamwerte werden erst ab mindestens fuenf verschiedenen Athleten ausgegeben | Schwelle vorhanden, Teilnehmerfilter unvollstaendig |
-| Sentry-Basisschutz | `sendDefaultPii: false`, kein Tracing/Breadcrumbs, keine Original-Fehlermeldungen, freie Metadaten oder URL-Parameter; User-Kontext auf stabile ID reduziert | im Audit-Branch gehaertet, Aufbewahrung offen |
+| Sentry-Basisschutz | `sendDefaultPii: false`, kein Tracing/Breadcrumbs, keine Original-Fehlermeldungen, freie Metadaten oder URL-Parameter; User-Kontext auf stabile ID reduziert | im lokalen Integrationskandidaten gehaertet, Aufbewahrung offen |
 | Diagnose-Metadaten | Aufrufer uebergeben derzeit strukturierte technische Werte, keine Journal- oder Antworttexte | lokal geprueft |
 | Evidence-Protokoll | versionierte Consent-Anforderung und eigenes Eligibility-Audit | gute Grundlage fuer kontrollierten Rollout |
 
@@ -66,7 +71,7 @@ Bei der Production-Pruefung wurden nur Schema, Funktionen, Konfiguration und Zae
 | Push | Subscription, Reminder-Zeit, Versand-/Oeffnungs-/Fehlerstatus, Ziel und Metadaten | `push_subscriptions`, `notification_log` | optionale Erinnerung und technische Zustellpruefung | Opt-in fuer Push; kein Altersgate | keine feste Log-Frist |
 | Feedback/Support | Kategorie, Nachricht, Status, technische Metadaten | `feedback` | Support und Produktverbesserung | aktive Eingabe | keine feste Frist |
 | App-Diagnose | Event, Status, Rolle, Team-ID, Route, Fehlercode, Teststatus, technische Metadaten | `app_event_log` | Incident- und Release-Diagnose | berechtigtes Interesse/Consent-Frage rechtlich zu bestaetigen | keine automatische Bereinigung |
-| Sentry | generischer Fehlercode/Stack, stabile User-ID, App-Rolle/Teststatus, erlaubte technische Context-Werte | Sentry | Crash- und Fehlerdiagnose | im Audit-Branch technisch minimiert; Rechtsgrundlage und Disclosure offen | Projektwert und Region noch nicht im Dashboard bestaetigt |
+| Sentry | generischer Fehlercode/Stack, stabile User-ID, App-Rolle/Teststatus, erlaubte technische Context-Werte | Sentry | Crash- und Fehlerdiagnose | im lokalen Integrationskandidaten technisch minimiert; Rechtsgrundlage und Disclosure offen | Projektwert und Region noch nicht im Dashboard bestaetigt |
 | Provider-Logs/Backups | IP-/Request-/Auth-/Function-Logs, DB-Backups | Supabase, Vercel und weitere Provider | Sicherheit, Betrieb, Wiederherstellung | Providerbetrieb | Supabase Free: kurze Logfenster, keine verwalteten Daily Backups; genaue Gesamtregel offen |
 | Loeschnachweis | Request-ID, Status, Zeitpunkt, minimierter Fehlercode | `account_deletion_requests` | Support und Nachweis der Loeschung | serverseitig | verbindliche Frist noch festzulegen |
 
@@ -126,6 +131,19 @@ Erforderlich:
 
 Die App nennt bereits konkrete DSGVO-Artikel, obwohl Verantwortlichkeit, Vereinsrolle, besondere Datenkategorie und Minderjaehrigenregel noch nicht final geprueft sind. Diese Texte duerfen erst nach Fachpruefung als finale Rechtsgrundlage veroeffentlicht werden.
 
+### P0-05: Production-Function-Grants
+
+Die read-only Production-Pruefung vom 18. Juli zeigt zwoelf fuer `anon` ausfuehrbare `SECURITY DEFINER`-Funktionen. Interne Checks schuetzen mehrere Admin- und Team-Helper. `get_user_role(uuid)`, `has_role(uuid, app_role)` und `get_effective_today(uuid)` binden den abgefragten User im aktuellen Quelltext jedoch nicht ausreichend an den Aufrufer. Die beiden `handle_new_user*`-Funktionen sind Triggerpfade und brauchen keine direkte Client-Ausfuehrung.
+
+Erforderlich:
+
+- alle Function-Signaturen, Grants und RLS-Policy-Aufrufer inventarisieren;
+- `anon` fuer alle nicht oeffentlich benoetigten Funktionen entziehen;
+- direkte Trigger-Function-Ausfuehrung auch fuer `authenticated` entziehen;
+- Self-/Admin-/Coach-Vertraege fuer ID-basierte Helper explizit machen;
+- bestehende RLS-Policies vor und nach der Migration mit Positiv- und Negativtests pruefen;
+- Production-Apply erst nach Review und separater Freigabe.
+
 ## 7. Priorisiertes Gap-Register
 
 | ID | Prioritaet | Gate | Technischer Owner | Abschlussbeweis |
@@ -144,6 +162,7 @@ Die App nennt bereits konkrete DSGVO-Artikel, obwohl Verantwortlichkeit, Vereins
 | G-12 | P1 | `app_event_log`, `notification_log`, Feedback und Loeschnachweis automatisch bereinigen | Database/Operations | Zeitlauf-Test und dokumentierte Ausnahmen |
 | G-13 | P1 | Vite-/esbuild-Dev-Server-Advisories durch kontrolliertes Toolchain-Upgrade schliessen | Engineering | `npm audit` ohne Dev-Advisories plus kompletter CI-/iOS-Rebuild |
 | G-14 | P0 | Signing, Archive, Privacy Report und echter iPhone-Test; Xcode/Simulator sind lokal gruen | Apple/Engineering | signierter Build und ausgefuellte `docs/TESTFLIGHT_DEVICE_QA_2026-07-13.md` |
+| G-15 | P0 | anonyme `SECURITY DEFINER`-Grants und ID-basierte Helper haerten | Database/Security | vollstaendige Signaturmatrix, SQL-Negativtests und gepruefter Production-Advisor |
 
 ## 8. Datensparsamster Pilotweg
 
@@ -166,7 +185,7 @@ Ob `16 und aelter` fuer jeden vorgesehenen Zweck ohne Guardian ausreicht, ist ke
 - Sentrys veroeffentlichtes Transfermaterial weist darauf hin, dass besondere Datenkategorien nicht an den Dienst uebermittelt werden duerfen. Der Diagnosepfad muss deshalb technisch fail-closed bleiben; ein Datenschutzhinweis allein reicht nicht.
 - Vercel-Plan, Log-Retention, Analytics-Konfiguration und DPA muessen im echten Projekt verifiziert werden.
 - `npm audit --omit=dev` meldet keine Production-Dependency-Schwachstelle. Der volle Audit meldet eine moderate und eine hohe Advisory im lokalen Vite-/esbuild-Dev-Server; der von npm angebotene Fix ist ein Major-Upgrade und wird separat mit Build- und iOS-Regressionspruefung behandelt.
-- Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build sowie Installation und sichtbarer Start auf einem temporaeren iPhone-17-Pro-Max-Simulator wurden am 17. Juli 2026 lokal verifiziert. Wegen des offenen Apple-Account-Supportfalls fehlen weiterhin Signing-Identitaet und Developer Team; Archive, Privacy Report, Upload und echter iPhone-Test bleiben objektiv offen.
+- Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build sowie Installation und sichtbarer Start auf temporaerem iPhone 17 Pro Max und iPad Pro 13-inch M5 wurden lokal verifiziert. Wegen des offenen Apple-Account-Supportfalls fehlen weiterhin Signing-Identitaet und Developer Team; Archive, Privacy Report, Upload und echter iPhone-Test bleiben objektiv offen.
 
 ## 10. Offizielle Ausgangsquellen
 
@@ -176,6 +195,7 @@ Ob `16 und aelter` fuer jeden vorgesehenen Zweck ohne Guardian ausreicht, ist ke
 - EDPB Statement 1/2025 on Age Assurance: https://www.edpb.europa.eu/our-work-tools/our-documents/statements/statement-12025-age-assurance_en
 - Supabase Backups: https://supabase.com/docs/guides/platform/backups
 - Supabase Pricing/Log Retention: https://supabase.com/pricing
+- Supabase Password Security: https://supabase.com/docs/guides/auth/password-security
 - Sentry GDPR Guidance: https://sentry.io/resources/gdpr/
 - Sentry International Data Transfers: https://sentry.io/astro-assets/resources/legal/International-Data-Transfers-With-Sentry-2024-01-19.pdf
 
