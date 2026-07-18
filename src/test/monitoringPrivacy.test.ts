@@ -6,7 +6,11 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { sanitizeMonitoringMetadata, toMonitoringError } from "@/lib/monitoring";
+import {
+  resolveSentryRuntimePolicy,
+  sanitizeMonitoringMetadata,
+  toMonitoringError,
+} from "@/lib/monitoring";
 
 describe("monitoring privacy boundary", () => {
   it("keeps only allow-listed technical metadata", () => {
@@ -61,5 +65,41 @@ describe("monitoring privacy boundary", () => {
         event_type: "training",
       }),
     ).toEqual({ event_type: "training" });
+  });
+
+  it.each(["localhost", "dev.localhost", "127.0.0.1", "127.0.0.42", "[::1]", "0.0.0.0"])(
+    "blocks Sentry on the local browser host %s by default",
+    (hostname) => {
+      expect(
+        resolveSentryRuntimePolicy({
+          dsn: "https://public@example.invalid/1",
+          appEnvironment: "production",
+          allowLocal: false,
+          location: { protocol: "http:", hostname },
+        }),
+      ).toEqual({ enabled: false, environment: "local-preview" });
+    },
+  );
+
+  it("keeps an explicitly enabled local Sentry test out of production", () => {
+    expect(
+      resolveSentryRuntimePolicy({
+        dsn: "https://public@example.invalid/1",
+        appEnvironment: "production",
+        allowLocal: true,
+        location: { protocol: "https:", hostname: "localhost" },
+      }),
+    ).toEqual({ enabled: true, environment: "local-preview" });
+  });
+
+  it("does not mistake the native Capacitor origin for a browser preview", () => {
+    expect(
+      resolveSentryRuntimePolicy({
+        dsn: "https://public@example.invalid/1",
+        appEnvironment: "production",
+        allowLocal: false,
+        location: { protocol: "capacitor:", hostname: "localhost" },
+      }),
+    ).toEqual({ enabled: true, environment: "production" });
   });
 });

@@ -72,11 +72,17 @@ umgesetzt.
 - URLs werden auf Origin und Pfad reduziert;
 - der User-Kontext wird auf eine stabile technische ID begrenzt;
 - Fehlermeldungen werden normalisiert;
-- Session Replay und Profiling werden nicht konfiguriert.
+- Session Replay und Profiling werden nicht konfiguriert;
+- lokale HTTP-Preview-Builds senden standardmaessig nicht an Sentry; ein bewusst
+  aktivierter lokaler Integrationstest wird als `local-preview` statt
+  `production` getrennt;
+- der native `capacitor://localhost`-Origin bleibt fuer echte App-Builds
+  funktionsfaehig.
 
-Der fokussierte Privacy-Test `src/test/monitoringPrivacy.test.ts` besteht mit vier
-von vier Tests. Die Dashboard-Schalter bleiben trotzdem erforderlich, weil sie
-eine zweite Schutzschicht und den dokumentierten Organisationsvertrag bilden.
+Der fokussierte Privacy-Test `src/test/monitoringPrivacy.test.ts` prueft diese
+Grenzen einschliesslich mehrerer Loopback-Adressen und des Capacitor-Origins. Die
+Dashboard-Schalter bleiben trotzdem erforderlich, weil sie eine zweite
+Schutzschicht und den dokumentierten Organisationsvertrag bilden.
 
 ## 5. Erforderliche Reihenfolge
 

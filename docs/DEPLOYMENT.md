@@ -32,6 +32,7 @@ VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
 VITE_SUPABASE_PROJECT_ID
 VITE_SENTRY_DSN optional, enables frontend error monitoring
+VITE_SENTRY_ALLOW_LOCAL false by default; local integration tests only
 VITE_APP_ENV production | staging | development
 VITE_RELEASE_SHA optional, current Git commit SHA
 ```
@@ -47,6 +48,13 @@ endpoint, not a private secret. For owned hosts, prefer setting `VITE_SENTRY_DSN
 When Sentry is enabled, only technical context is sent. Do not add e-mail,
 journal text, free answers, private reflections, or individual psychological
 scores to Sentry tags, contexts, breadcrumbs, or extras.
+
+Browser builds served from `localhost`, `*.localhost`, `127.0.0.0/8`, `0.0.0.0`
+or `::1` do not send to Sentry by default, even when the build uses
+`VITE_APP_ENV=production`. A deliberate local integration test can set
+`VITE_SENTRY_ALLOW_LOCAL=true`; those events are always labelled
+`local-preview`, never `production`. Native Capacitor builds remain enabled on
+their `capacitor://localhost` origin.
 
 After the first deploy, add the hosted URL in Supabase:
 

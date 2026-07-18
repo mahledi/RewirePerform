@@ -71,13 +71,57 @@ const PUBLIC_SENTRY_DSN_FALLBACK =
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || PUBLIC_SENTRY_DSN_FALLBACK;
 const APP_ENV = import.meta.env.VITE_APP_ENV || import.meta.env.MODE || "development";
 const RELEASE_SHA = import.meta.env.VITE_RELEASE_SHA;
+const ALLOW_LOCAL_SENTRY = import.meta.env.VITE_SENTRY_ALLOW_LOCAL === "true";
+
+type MonitoringLocation = Pick<Location, "hostname" | "protocol">;
+
+const normalizeHostname = (hostname: string) =>
+  hostname.toLowerCase().replace(/\.$/, "").replace(/^\[(.*)\]$/, "$1");
+
+export const isLocalBrowserMonitoringOrigin = (location?: MonitoringLocation | null) => {
+  if (!location || !["http:", "https:"].includes(location.protocol.toLowerCase())) return false;
+
+  const hostname = normalizeHostname(location.hostname);
+  return (
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname === "0.0.0.0" ||
+    hostname === "::1" ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname)
+  );
+};
+
+export const resolveSentryRuntimePolicy = ({
+  dsn,
+  appEnvironment,
+  allowLocal,
+  location,
+}: {
+  dsn: string;
+  appEnvironment: string;
+  allowLocal: boolean;
+  location?: MonitoringLocation | null;
+}) => {
+  const isLocalBrowser = isLocalBrowserMonitoringOrigin(location);
+  return {
+    enabled: Boolean(dsn) && (!isLocalBrowser || allowLocal),
+    environment: isLocalBrowser ? "local-preview" : appEnvironment,
+  };
+};
+
+const sentryRuntimePolicy = resolveSentryRuntimePolicy({
+  dsn: SENTRY_DSN,
+  appEnvironment: APP_ENV,
+  allowLocal: ALLOW_LOCAL_SENTRY,
+  location: typeof window === "undefined" ? null : window.location,
+});
 
 type SentryClient = typeof import("@sentry/browser");
 
 let sentryClientPromise: Promise<SentryClient> | null = null;
 
 const getSentryClient = () => {
-  if (!SENTRY_DSN) return null;
+  if (!sentryRuntimePolicy.enabled) return null;
   sentryClientPromise ??= import("@sentry/browser");
   return sentryClientPromise;
 };
@@ -192,7 +236,7 @@ export const initMonitoring = () => {
     ?.then((Sentry) => {
       Sentry.init({
         dsn: SENTRY_DSN,
-        environment: APP_ENV,
+        environment: sentryRuntimePolicy.environment,
         release: RELEASE_SHA || undefined,
         sendDefaultPii: false,
         tracesSampleRate: 0,
