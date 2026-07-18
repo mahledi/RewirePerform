@@ -27,6 +27,9 @@ sind wenige, aber verbindliche Gates:
 - Der lokale Integrationskandidat besteht 191/191 Unit-/Vertragstests und 41 Browser-Flows.
 - Unsigned Build und Start sind auf iPhone- und iPad-Simulator bestanden.
 - Account-Loeschung, Evidence-Fail-Closed fuer Minderjaehrige, `n >= 5`, deaktivierte ehemalige AI-Funktionen und Sentry-Datenminimierung besitzen technische Nachweise.
+- Das echte Sentry-Dashboard wurde am 18. Juli read-only geprueft: EU-Region,
+  Developer-Plan mit 30 Tagen, abgelaufener Testzeitraum, keine Zahlungsdaten und
+  keine Marketing-Abos sind bestaetigt.
 - `npm run privacy:verify` weist 7 Schutzinvarianten als gruen und 7 Release-Blocker als offen aus.
 - Production wurde am 18. Juli ausschliesslich read-only auf Schema-, Function-, Grant- und Advisor-Ebene geprueft.
 
@@ -143,11 +146,18 @@ Export reicht nicht.
 
 ### Sentry
 
-Vor dem Minderjaehrigenpilot muessen im echten Sentry-Projekt Region, DPA,
-Subprozessoren, Plan, Retention und nutzerbezogene Loeschung verifiziert werden.
-Session Replay, Tracing, Profiling, Logs und freie Nutzerinhalte bleiben aus. Wenn
-hoechstens 30 Tage Aufbewahrung oder der Ausschluss besonderer Datenkategorien nicht
-belastbar sichergestellt werden kann, wird Sentry fuer diesen Pilot deaktiviert.
+Der Dashboard-Audit vom 18. Juli bestaetigt die bestehende Organisation, EU-Region,
+den kostenlosen Developer-Plan und 30 Tage Lookback/Aufbewahrung. Damit wird die
+harte Obergrenze von 30 Tagen eingehalten, der bevorzugte 14-Tage-Zielwert aber
+nicht. Die 30 Tage muessen fachlich akzeptiert werden; andernfalls bleibt Sentry
+fuer den Minderjaehrigenpilot deaktiviert.
+
+Noch offen sind persoenliche und danach organisationsweite Zwei-Faktor-
+Authentifizierung, die Privacy-Haertung der Organisation, Annahme und Ablage des
+Data Processing Amendment, Subprozessoren sowie ein getesteter nutzerbezogener
+Loeschprozess. Session Replay, Tracing, Profiling, Logs und freie Nutzerinhalte
+bleiben aus. Der vollstaendige Ist-Stand und die genaue Aenderungsreihenfolge stehen
+in `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`.
 
 ## 7. Sichtbare Privacy-Fassung nach Freigabe
 
@@ -179,7 +189,7 @@ danach als eine gemeinsame Datenkarte abgeglichen werden.
 | D-05 | Produktverbesserung, Evaluation und Forschung | drei getrennte Zwecke; Forschung nicht stillschweigend aktivieren |
 | D-06 | vorgeschlagene Aufbewahrungsfristen | bestaetigen oder pro Datenklasse aendern |
 | D-07 | Supabase vor Minderjaehrigenpilot | Pro; Free nur mit vollstaendig getesteter Backup-Ersatzstrecke |
-| D-08 | Sentry im Pilot | nur nach Dashboard-Nachweis, sonst deaktivieren |
+| D-08 | Sentry im Pilot | 30 Tage akzeptieren und 2FA/Privacy/DPA/Loeschprozess abschliessen; sonst deaktivieren |
 | D-09 | Supabase-Grant-Haertung | lokale Migration und Tests freigeben; Production-Apply separat |
 
 ## 9. Technische Reihenfolge nach Entscheidungen
@@ -216,4 +226,6 @@ danach als eine gemeinsame Datenkarte abgeglichen werden.
 - Supabase Backups: https://supabase.com/docs/guides/platform/backups
 - Supabase Password Security: https://supabase.com/docs/guides/auth/password-security
 - Sentry GDPR Guidance: https://sentry.io/resources/gdpr/
+- Sentry Data Storage Location: https://docs.sentry.io/organization/data-storage-location/
+- Sentry Pricing: https://sentry.io/pricing/
 - Sentry International Data Transfers: https://sentry.io/astro-assets/resources/legal/International-Data-Transfers-With-Sentry-2024-01-19.pdf

@@ -2,6 +2,8 @@
 
 Stand: 15. Juli 2026
 
+Sentry-Dashboard-Nachtrag: 18. Juli 2026
+
 Status: konkret vorgeschlagen, noch nicht rechtlich/operativ freigegeben
 
 Ziel ist eine Regel, die den 56-Tage-Pilot und serioese spaetere Auswertungen ermoeglicht, aber keine personenbezogenen Daten „auf Vorrat“ behaelt. Vollstaendig anonymisierte Aggregate sind von pseudonymisierten oder nur direkt identifierfreien Datensaetzen zu unterscheiden: Pseudonymisierte Daten bleiben personenbezogen.
@@ -57,16 +59,32 @@ Ein Free-Pilot waere nur vertretbar, wenn vorher ein automatisierter, verschlues
 
 Der Code sendet im Audit-Branch nur bewusst erfasste, minimierte Diagnoseevents. Trotzdem bleiben stabile User-ID und technische Stack-Frames personenbezogen oder personenbeziehbar.
 
-Vor Merge/Release zu bestaetigen:
+Am 18. Juli wurden Organisation und Projekt read-only im echten Dashboard geprueft:
 
-1. echte Sentry-Organisation und Projekt;
-2. Datenregion EU/Deutschland im Dashboard;
-3. Plan und einstellbare Event-Retention;
-4. Ziel 14 Tage, maximal 30 Tage;
-5. DPA und Subprocessor-Liste;
-6. nutzerbezogene Suche und vorzeitiger Loeschprozess;
-7. keine Session Replay-, Profiling-, Tracing-, Logs-, Feedback- oder Seer-Aktivierung;
-8. keine besonderen Datenkategorien in Event, Message, Breadcrumb, URL, Request oder Context.
+- Datenregion `European Union (EU)`; Sentry ordnet diese Region Frankfurt,
+  Deutschland, zu;
+- kostenloser Developer-Plan mit 30 Tagen Lookback/Aufbewahrung;
+- Testzeitraum beendet, keine Abrechnungsdaten und keine Zahlungsmethode;
+- alle Marketingkategorien abbestellt;
+- Session Replay, Logs, Tracing, Profiling und Metrics aktuell ohne Nutzung;
+- aggregierte identifizierende Datennutzung deaktiviert.
+
+Die 30 Tage erfuellen die vorgeschlagene harte Obergrenze, nicht aber den
+14-Tage-Zielwert. Vor dem Minderjaehrigenpilot ist deshalb verbindlich zu
+entscheiden: 30 Tage akzeptieren oder Sentry deaktivieren.
+
+Weiterhin vor Merge/Release zu bestaetigen beziehungsweise abzuschliessen:
+
+1. persoenliche Zwei-Faktor-Authentifizierung und danach organisationsweite
+   Durchsetzung;
+2. organisationsweite Privacy-Schalter gemaess
+   `docs/SENTRY_PRIVACY_SECURITY_AUDIT_2026-07-18.md`;
+3. DPA und aktuelle Subprocessor-Liste;
+4. nutzerbezogene Suche und vorzeitiger Loeschprozess;
+5. keine Session Replay-, Profiling-, Tracing-, Logs-, Feedback- oder
+   Seer-Aktivierung;
+6. keine besonderen Datenkategorien in Event, Message, Breadcrumb, URL, Request
+   oder Context.
 
 Wenn der aktuelle Plan keine Aufbewahrung von hoechstens 30 Tagen erlaubt, wird Sentry fuer den Minderjaehrigenpilot deaktiviert oder auf eine geeignete Konfiguration umgestellt.
 
@@ -115,3 +133,5 @@ Vor Implementation auszufuellen:
 - Apple App Review Guidelines 5.1.1: https://developer.apple.com/app-store/review/guidelines/
 - DSGVO Art. 5, 17 und 25: https://eur-lex.europa.eu/eli/reg/2016/679/oj
 - Sentry GDPR Guidance: https://sentry.io/resources/gdpr/
+- Sentry Data Storage Location: https://docs.sentry.io/organization/data-storage-location/
+- Sentry Pricing: https://sentry.io/pricing/
