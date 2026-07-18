@@ -69,14 +69,14 @@
     },
     {
       "rule_id": "BD-05",
-      "rule_text": "Welche Einwilligungsregel gilt fuer minderjaehrige Athleten im Vereins-/NLZ-Pilot?",
-      "source_file": "docs/mahleos-handoff/16-OPEN-QUESTIONS-FOR-MAHLE.md",
-      "origin_type": "CONFLICT",
+      "rule_text": "Unter 16 gilt Guardian-Autorisierung plus eigene Zustimmung; 16 bis 17 entscheiden selbst; der Verein ist kein Actor oder Empfaenger des Guardian-Flows.",
+      "source_file": "docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md",
+      "origin_type": "CONFIRMED_FROM_BOTH",
       "risk_level": "R5",
       "area": "sensitive_blocker",
-      "activation_status": "BLOCKED_SENSITIVE",
-      "rationale": "Not safe to activate until the documented conflict or human decision is resolved.",
-      "stop_condition": "Stop if current code conflicts with this rule or the task expands beyond local R1/R2 work.",
+      "activation_status": "ACTIVE_HARD_RULE",
+      "rationale": "The product rule is decided and locally implemented; legal review, staging and production activation remain separate gates.",
+      "stop_condition": "Stop before migration, deploy, enforcement activation or real-minor processing without explicit approval and the documented external gates.",
       "human_approval_required": true
     },
     {
@@ -1329,14 +1329,14 @@
     },
     {
       "rule_id": "RP-PR-16",
-      "rule_text": "Minderjaehrige sind Teil der Zielgruppe; spezifische Einwilligungs-/Erziehungsberechtigtenlogik ist nicht eindeutig als implementiert belegt.",
-      "source_file": "docs/mahleos-handoff/06-DATA-AUTH-PRIVACY.md",
-      "origin_type": "CONFIRMED_FROM_CODE",
+      "rule_text": "Minderjaehrige sind Teil der Zielgruppe; die lokale Produktlogik verlangt unter 16 Guardian-Autorisierung plus eigene Zustimmung und laesst 16- bis 17-Jaehrige selbst entscheiden.",
+      "source_file": "docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md",
+      "origin_type": "CONFIRMED_FROM_BOTH",
       "risk_level": "R5",
       "area": "privacy",
-      "activation_status": "BLOCKED_SENSITIVE",
-      "rationale": "Not safe to activate until the documented conflict or human decision is resolved.",
-      "stop_condition": "Stop if the task changes access, consent, deletion, minors data, exports, or production data.",
+      "activation_status": "ACTIVE_HARD_RULE",
+      "rationale": "The product decision and local implementation are documented; production processing remains gated by legal review and staging evidence.",
+      "stop_condition": "Stop if code weakens the age, Guardian, assent, purpose-separation or no-club rules, or attempts production activation without approval.",
       "human_approval_required": true
     },
     {

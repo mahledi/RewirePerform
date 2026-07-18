@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import WhySection from "@/components/WhySection";
@@ -65,6 +65,11 @@ const Index = () => {
         <div className="container mx-auto flex flex-col items-center gap-4 px-6 text-center text-sm text-muted-foreground">
           <BrandLockup symbolSize={28} textClassName="text-base text-foreground" />
           <span>© 2026 RewirePerform. Alle Rechte vorbehalten.</span>
+          <nav aria-label="Rechtliches" className="flex flex-wrap justify-center gap-4 text-xs">
+            <Link to="/privacy" className="hover:text-foreground">Datenschutz</Link>
+            <Link to="/imprint" className="hover:text-foreground">Impressum</Link>
+            <Link to="/support" className="hover:text-foreground">Support</Link>
+          </nav>
         </div>
       </footer>
     </div>

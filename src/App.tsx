@@ -5,7 +5,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { MinorAuthorizationProvider } from "@/contexts/MinorAuthorizationContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import MinorAuthorizationGate from "@/components/minor-consent/MinorAuthorizationGate";
 import QATestBanner from "./components/qa/QATestBanner";
 import { NotificationOpenTracker } from "./components/notifications/NotificationOpenTracker";
 import { NativeNotificationRouter } from "./components/notifications/NativeNotificationRouter";
@@ -38,13 +40,19 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 const AdminContent = lazy(() => import("./pages/AdminContent.tsx"));
 const AdminQA = lazy(() => import("./pages/AdminQA.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Imprint = lazy(() => import("./pages/Imprint.tsx"));
 const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
+const MinorConsent = lazy(() => import("./pages/MinorConsent.tsx"));
+const GuardianDecision = lazy(() => import("./pages/GuardianDecision.tsx"));
 const EvidencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/EvidencePreview.tsx"))
   : null;
 const EmailPreview = import.meta.env.DEV
   ? lazy(() => import("./pages/EmailPreview.tsx"))
+  : null;
+const MinorConsentPreview = import.meta.env.DEV
+  ? lazy(() => import("./pages/MinorConsentPreview.tsx"))
   : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
@@ -56,7 +64,8 @@ const AppRoutes = () => {
   const location = useLocation();
   const isEvidencePreview = EvidencePreview !== null && location.pathname === "/internal/evidence-preview";
   const isEmailPreview = EmailPreview !== null && location.pathname === "/internal/email-preview";
-  const isDemoRoute = location.pathname === "/demo" || isEvidencePreview || isEmailPreview;
+  const isMinorConsentPreview = MinorConsentPreview !== null && location.pathname === "/internal/minor-consent-preview";
+  const isDemoRoute = location.pathname === "/demo" || isEvidencePreview || isEmailPreview || isMinorConsentPreview;
 
   if (isDemoRoute) {
     return (
@@ -68,6 +77,7 @@ const AppRoutes = () => {
             <Route path="/demo" element={<Demo />} />
             {EvidencePreview && <Route path="/internal/evidence-preview" element={<EvidencePreview />} />}
             {EmailPreview && <Route path="/internal/email-preview" element={<EmailPreview />} />}
+            {MinorConsentPreview && <Route path="/internal/minor-consent-preview" element={<MinorConsentPreview />} />}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -77,41 +87,47 @@ const AppRoutes = () => {
 
   return (
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <QATestBanner />
-        <NotificationOpenTracker />
-        <NativeNotificationRouter />
-        <IosInputPolish />
-        <ConnectionStatus />
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
+      <MinorAuthorizationProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <QATestBanner />
+          <NotificationOpenTracker />
+          <NativeNotificationRouter />
+          <IosInputPolish />
+          <ConnectionStatus />
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/presentation" element={<Presentation />} />
             <Route path="/coach-pitch" element={<Presentation />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/imprint" element={<Imprint />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/guardian/decision" element={<GuardianDecision />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
+            <Route path="/minor-consent" element={
+              <ProtectedRoute><MinorConsent /></ProtectedRoute>
+            } />
             <Route path="/questionnaire" element={
-              <ProtectedRoute><Questionnaire /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><Questionnaire /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/dashboard" element={
-              <ProtectedRoute><Dashboard /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><Dashboard /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/assessment" element={
-              <ProtectedRoute><Assessment /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><Assessment /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/coach" element={
               <ProtectedRoute><Coach /></ProtectedRoute>
             } />
             <Route path="/deep-profile" element={
-              <ProtectedRoute><DeepProfile /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><DeepProfile /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/progress" element={
-              <ProtectedRoute><Progress /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><Progress /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/settings" element={
               <ProtectedRoute><Settings /></ProtectedRoute>
@@ -120,13 +136,13 @@ const AppRoutes = () => {
               <ProtectedRoute><AccountSettings /></ProtectedRoute>
             } />
             <Route path="/journal" element={
-              <ProtectedRoute><Journal /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><Journal /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/journal/history" element={
-              <ProtectedRoute><JournalHistory /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><JournalHistory /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/pre-training" element={
-              <ProtectedRoute><PreTraining /></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PreTraining /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/admin" element={
               <ProtectedRoute><Admin /></ProtectedRoute>
@@ -138,9 +154,10 @@ const AppRoutes = () => {
               <ProtectedRoute><AdminQA /></ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </TooltipProvider>
+            </Routes>
+          </Suspense>
+        </TooltipProvider>
+      </MinorAuthorizationProvider>
     </AuthProvider>
   );
 };

@@ -28,7 +28,7 @@
 - `RP-PR-13 | CONFIRMED_FROM_CODE` Frontend nutzt nur Publishable Key; Service Role ist ausschliesslich Backend/Function-Kontext.
 - `RP-PR-14 | CONFIRMED_FROM_CODE` Account-Loeschung wird aktuell ueber Anfrage mit versprochener Bearbeitung innerhalb 48 Stunden beschrieben.
 - `RP-PR-15 | OUTDATED_OR_UNCERTAIN` Ob der organisatorische 48-Stunden-Loeschprozess operational und vollstaendig getestet ist, ist im Repo nicht belegt.
-- `RP-PR-16 | CONFIRMED_FROM_CODE` Minderjaehrige sind Teil der Zielgruppe; spezifische Einwilligungs-/Erziehungsberechtigtenlogik ist nicht eindeutig als implementiert belegt.
+- `RP-PR-16 | CONFIRMED_FROM_BOTH` Die Produktregel fuer Minderjaehrige ist lokal implementiert: unter 16 Guardian-Autorisierung plus eigene Zustimmung, 16 bis 17 eigene altersgerechte Entscheidung, kein Verein im Guardian-Flow. Production-Aktivierung bleibt bis Fachpruefung und Staging gesperrt.
 
 ## Niemals ohne Mahles vorherige Freigabe
 
@@ -46,6 +46,6 @@
 
 - Self-Service-Loeschung beziehungsweise belastbarer operativer Loeschprozess.
 - Consent-Widerruf gegen gespeicherte Snapshots organisatorisch/rechtlich klaeren.
-- Minderjaehrigen- und Vereinsrollen juristisch pruefen.
+- Die implementierte Minderjaehrigenregel, Rechtsgrundlagen und Texte qualifiziert juristisch pruefen; der Verein ist nach Produktentscheidung nicht Teil des Guardian-Flows.
 - App Store Privacy Labels mit realem Produktionsverhalten abgleichen.
 - `PrivacyInfo.xcprivacy` und Required-Reason APIs vor Submission pruefen.

@@ -972,6 +972,9 @@ const LegalLinks = () => (
     <Link to="/privacy" className="transition-colors hover:text-foreground">
       Datenschutz
     </Link>
+    <Link to="/imprint" className="transition-colors hover:text-foreground">
+      Impressum
+    </Link>
     <Link to="/support" className="transition-colors hover:text-foreground">
       Support
     </Link>

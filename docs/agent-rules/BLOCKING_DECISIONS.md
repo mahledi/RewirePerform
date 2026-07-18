@@ -41,15 +41,14 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 ## BD-05 - Minderjaehrigen-Consent
 
-- Bekannt: Zielgruppe umfasst minderjaehrige Vereinsathleten; freiwilliger Datenbeitrag existiert.
-- Unsicher: Erziehungsberechtigten-, Vereins- und Rechtsgrundlage.
-- Betroffen: Onboarding, Consent, Evidence, Pilot, Privacy-Texte.
-- Erlaubt: read-only Analyse und Variantenentwurf ohne Rechtsbehauptung.
-- Blockiert: automatische Einwilligungslogik, neue Minderjaehrigendaten, breiter Rollout.
-- Mahle liefert: fachlich/rechtlich bestaetigte Einwilligungsregel.
+- Status: Produktregel am 18. Juli 2026 durch Mahle entschieden und im isolierten Branch `codex/minor-guardian-flow-20260718` lokal implementiert; noch nicht migriert, deployed oder fuer reale Minderjaehrige aktiviert.
+- Entschieden: unter 16 direkte Guardian-E-Mail, Guardian-Autorisierung plus eigene Zustimmung; 16 bis 17 eigene altersgerechte Entscheidung; Verein und Trainer sind keine Actors oder Empfaenger des Guardian-Flows.
+- Entschieden: normales Produkttracking wird erst nach aktueller Produktfreigabe aktiv; freiwilliger Datenbeitrag bleibt getrennt; das bestehende Transfer-Evidence-Protokoll bleibt fuer alle Minderjaehrigen deaktiviert.
+- Source of Truth: `docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md`, `docs/MINOR_GUARDIAN_LEGAL_REVIEW_PACKET_2026-07-18.md` und `docs/MINOR_GUARDIAN_REVIEW_HANDOFF_2026-07-18.md`.
+- Weiterhin blockiert: Production-Migration, Function-Deploy, Enforcement-Aktivierung und reale Nutzung mit Minderjaehrigen bis qualifizierte Rechts-/Privacy-Pruefung, Staging-Negativtests, echte E-Mail-Zustellung und operative Freigabe abgeschlossen sind.
 
 ## Gemeinsame Wirkung
 
 Nicht blockiert: Read-only-Analyse, Dokumentation, lokale nicht-sensitive UI-Arbeit, lokale Tests, R1/R2-Vorbereitung, Content-Audits, Architekturberichte sowie der jetzt freigegebene Account-Loeschungs-Codepfad.
 
-Blockiert: nicht erneut freigegebene Production-/Auth-/RLS-Mutationen, agentenseitige Loeschung bestehender Accounts, offene Consent-/Minderjaehrigenentscheidungen, unfreigegebene sensitive Coach-/Athletendaten und die App-Store-Einreichung vor Abschluss der verbleibenden Gates.
+Blockiert: nicht erneut freigegebene Production-/Auth-/RLS-Mutationen, agentenseitige Loeschung bestehender Accounts, produktive Aktivierung des noch fachlich ungeprueften Minderjaehrigen-Flows, unfreigegebene sensitive Coach-/Athletendaten und die App-Store-Einreichung vor Abschluss der verbleibenden Gates.

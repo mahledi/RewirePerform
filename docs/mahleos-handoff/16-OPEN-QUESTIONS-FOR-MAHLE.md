@@ -1,12 +1,14 @@
 # Offene Fragen fuer Mahle
 
+Update 18. Juli 2026: Frage 5 ist als Produktentscheidung geschlossen. Die technische Umsetzung liegt lokal im Branch `codex/minor-guardian-flow-20260718`; Rechts-/Privacy-Pruefung, Staging und Production-Aktivierung bleiben externe Gates. Fuer den aktuellen Vertrag gilt `docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md`.
+
 ## Fuenf blockierende Entscheidungen
 
 1. **Welches Supabase-Projekt ist heute Production, welches Staging und welches nur historisch?** Relevant fuer jeden Build/Deploy. Vermutung: `bqsbxesmybthwtxmowfz` ist das eigene aktuelle Ziel; `twce...` ist historisch. Sicherheit: mittel, da CI widerspricht.
 2. **Sind die Migrationen vom 10. Juli bereits produktiv angewendet oder nur im Staging?** Relevant fuer Pilot und UI-Vertraege. Vermutung: nur Staging. Sicherheit: hoch aus Readiness-Bericht.
 3. **Was hat unmittelbar Vorrang: letzte NLZ-Pilotgates oder Sprachumbau Tage 1-7?** Beide sind wichtig, aber der aktive Branch und der letzte Chat zeigen unterschiedliche Reihenfolge. Vermutung: Pilot sicher abschliessen, dann Sprache. Sicherheit: niedrig bis mittel.
 4. **Wie wird Account-Loeschung operativ garantiert?** Optionen: manueller dokumentierter Adminprozess oder Self-Service-Flow. Vermutung: fuer App Store soll Self-Service beziehungsweise ein wasserdichter Prozess entstehen. Sicherheit: mittel.
-5. **Welche Einwilligungsregel gilt fuer minderjaehrige Athleten im Vereins-/NLZ-Pilot?** Optionen haengen von Alter, Vertrag, Verein und Rechtspruefung ab. Vermutung: explizite organisatorische Eltern-/Vereinsklaerung wird benoetigt. Sicherheit: mittel.
+5. **GESCHLOSSEN ALS PRODUKTENTSCHEIDUNG:** Unter 16 Guardian-Autorisierung per direkter E-Mail plus eigene Zustimmung; 16 bis 17 eigene altersgerechte Entscheidung; Verein und Trainer haben im Guardian-Flow keine Rolle. Reale Aktivierung wartet weiterhin auf qualifizierte Rechts-/Privacy-Pruefung und technische Staging-Abnahme.
 
 ## Zehn wichtige, nicht blockierende Fragen
 

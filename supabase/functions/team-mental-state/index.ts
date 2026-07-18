@@ -11,21 +11,24 @@
  *  - When n < 5, return empty psychological signals + insufficient_data flag.
  *    The UI shows "Zu wenig Daten für anonymisierte Auswertung."
  */
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import {
+  adminClient,
+  assertAllowedOrigin,
+  authenticatedUser,
+  corsHeaders,
+  MinorFlowError,
+  parseJson,
+  publicError,
+} from "../_shared/minorGuardian.ts";
 
 const MIN_N = 5;
+const DATA_CONTRIBUTION_VERSION = "data_contribution_v2_2026_07";
 type WBKey = "mood" | "energy" | "focus" | "stress" | "recovery" | "sleep_quality" | "physical_readiness" | "motivation" | "pressure" | "team_connection";
 type WellbeingAggregate = Record<WBKey, number | null> & {
   n_users: number;
   sufficient_data: boolean;
 };
+type Participation = { rate: number; total: number };
 
 const WB_KEYS: WBKey[] = ["mood", "energy", "focus", "stress", "recovery", "sleep_quality", "physical_readiness", "motivation", "pressure", "team_connection"];
 
@@ -34,7 +37,11 @@ const asRecord = (value: unknown): Record<string, unknown> | null =>
     ? value as Record<string, unknown>
     : null;
 
-function emptyPayload(teamSize: number, reason: string) {
+function emptyPayload(
+  teamSize: number,
+  reason: string,
+  participation: Participation = { rate: 0, total: 0 },
+) {
   return {
     insufficient_data: true,
     insufficient_reason: reason,
@@ -44,62 +51,40 @@ function emptyPayload(teamSize: number, reason: string) {
     mood: { current: null, trend: [] },
     focus: { current: null, trend: [] },
     resilience: { current: null, trend: [] },
-    participation: { rate: 0, total: 0 },
+    participation,
     stressWarning: false,
     teamChemistry: null,
     vibe: null,
   };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders(req) });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceKey);
-
-    // Verify caller
-    const anonClient = createClient(supabaseUrl, anonKey);
-    const { data: { user }, error: authError } = await anonClient.auth.getUser(
-      authHeader.replace("Bearer ", "")
-    );
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    assertAllowedOrigin(req);
+    const user = await authenticatedUser(req);
+    const supabase = adminClient();
 
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
+      .eq("role", "coach")
       .maybeSingle();
     if (roleData?.role !== "coach") {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
-    const { team_id } = await req.json();
-    if (!team_id) {
-      return new Response(JSON.stringify({ error: "team_id required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const body = await parseJson(req);
+    const team_id = body.team_id;
+    if (typeof team_id !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(team_id)) {
+      throw new MinorFlowError("invalid_team_id", 400);
     }
 
     // Verify team access. Primary coaches own the team; co-coaches are members
@@ -112,7 +97,7 @@ serve(async (req) => {
     if (!team) {
       return new Response(JSON.stringify({ error: "Team not found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -127,7 +112,7 @@ serve(async (req) => {
       if (!membership) {
         return new Response(JSON.stringify({ error: "Team not found" }), {
           status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -143,7 +128,7 @@ serve(async (req) => {
     if (runError) throw runError;
     if (!activeRun) {
       return new Response(JSON.stringify(emptyPayload(0, "no_active_program_run")), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -156,7 +141,7 @@ serve(async (req) => {
 
     if (memberIds.length === 0) {
       return new Response(JSON.stringify(emptyPayload(0, "no_members")), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -167,12 +152,12 @@ serve(async (req) => {
     const athleteIds = (roles ?? [])
       .filter((r) => r.role === "athlete")
       .map((r) => r.user_id);
-    const teamSize = athleteIds.length;
+    const rosterSize = athleteIds.length;
 
-    if (teamSize < MIN_N) {
+    if (rosterSize < MIN_N) {
       return new Response(
-        JSON.stringify(emptyPayload(teamSize, "below_min_n")),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify(emptyPayload(rosterSize, "below_min_n")),
+        { headers: { ...corsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -183,11 +168,74 @@ serve(async (req) => {
       .eq("status", "active")
       .in("user_id", athleteIds);
     if (instanceError) throw instanceError;
-    const assignedAthleteIds = Array.from(new Set((runInstances ?? []).map((instance) => instance.user_id)));
-    const instanceIds = (runInstances ?? []).map((instance) => instance.id);
+    const initiallyAssignedIds = Array.from(new Set((runInstances ?? []).map((instance) => instance.user_id)));
+    const allRunInstanceIds = (runInstances ?? []).map((instance) => instance.id);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const operationalCutoff = sevenDaysAgo.toISOString().split("T")[0];
+    let operationalParticipation: Participation = { rate: 0, total: 0 };
+
+    if (initiallyAssignedIds.length > 0 && allRunInstanceIds.length > 0) {
+      const { data: operationalCheckins, error: operationalError } = await supabase
+        .from("daily_checkins")
+        .select("user_id, date")
+        .in("program_instance_id", allRunInstanceIds)
+        .in("user_id", initiallyAssignedIds)
+        .gte("date", operationalCutoff)
+        .limit(5000);
+      if (operationalError) throw operationalError;
+
+      const activeAthletes = new Set((operationalCheckins ?? []).map((checkin) => checkin.user_id)).size;
+      operationalParticipation = {
+        rate: Math.round((activeAthletes / initiallyAssignedIds.length) * 100),
+        total: activeAthletes,
+      };
+    }
+
+    if (initiallyAssignedIds.length < MIN_N) {
+      return new Response(JSON.stringify(emptyPayload(initiallyAssignedIds.length, "run_below_min_n", operationalParticipation)), {
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
+      });
+    }
+
+    // Optional aggregate signals are limited to athletes with the current,
+    // explicit data-contribution choice and a current age-appropriate approval.
+    const { data: consentProfiles, error: consentError } = await supabase
+      .from("profiles")
+      .select("id")
+      .in("id", initiallyAssignedIds)
+      .eq("data_contribution_consent", true)
+      .eq("data_contribution_consent_version", DATA_CONTRIBUTION_VERSION);
+    if (consentError) throw consentError;
+
+    const consentCandidateIds = (consentProfiles ?? []).map((profile) => profile.id);
+    if (consentCandidateIds.length < MIN_N) {
+      return new Response(JSON.stringify(emptyPayload(initiallyAssignedIds.length, "insufficient_authorized_data", operationalParticipation)), {
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: authorizationFilter, error: authorizationError } = await supabase.rpc(
+      "minor_service_action",
+      {
+        _action: "filter_data_contribution",
+        _user_id: null,
+        _payload: { user_ids: consentCandidateIds },
+      },
+    );
+    if (authorizationError) throw authorizationError;
+    const authorizedIds = new Set(
+      Array.isArray((authorizationFilter as { user_ids?: unknown } | null)?.user_ids)
+        ? ((authorizationFilter as { user_ids: unknown[] }).user_ids.filter((value): value is string => typeof value === "string"))
+        : [],
+    );
+    const eligibleInstances = (runInstances ?? []).filter((instance) => authorizedIds.has(instance.user_id));
+    const assignedAthleteIds = Array.from(new Set(eligibleInstances.map((instance) => instance.user_id)));
+    const instanceIds = eligibleInstances.map((instance) => instance.id);
+
     if (assignedAthleteIds.length < MIN_N || instanceIds.length < MIN_N) {
-      return new Response(JSON.stringify(emptyPayload(assignedAthleteIds.length, "run_below_min_n")), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify(emptyPayload(initiallyAssignedIds.length, "insufficient_authorized_data", operationalParticipation)), {
+        headers: { ...corsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -257,14 +305,6 @@ serve(async (req) => {
     });
 
     const currentWeek = trendData[trendData.length - 1];
-
-    // Participation (last 7 days) — operational, not psychological. Safe.
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const weekCutoff = sevenDaysAgo.toISOString().split("T")[0];
-    const activeThisWeek = new Set(
-      allCheckins.filter((c) => c.date >= weekCutoff).map((c) => c.user_id)
-    ).size;
 
     // Stress warning — only if current week has sufficient data.
     const stressWarning =
@@ -374,7 +414,7 @@ serve(async (req) => {
 
     const computeReadiness = (agg: WellbeingAggregate): number | null => {
       const positives: number[] = [];
-      for (const k of ["energy", "focus", "recovery", "sleep_quality", "physical_readiness", "motivation", "team_connection"]) {
+      for (const k of ["energy", "focus", "recovery", "sleep_quality", "physical_readiness", "motivation", "team_connection"] as const) {
         const v = agg[k]; if (typeof v === "number") positives.push(v);
       }
       if (positives.length < 3) return null;
@@ -433,7 +473,7 @@ serve(async (req) => {
     const result = {
       insufficient_data: false,
       min_n: MIN_N,
-      teamSize: assignedAthleteIds.length,
+      teamSize: initiallyAssignedIds.length,
       program_run_id: activeRun.id,
       energy: {
         current: currentWeek.sufficient_data ? currentWeek.energy : null,
@@ -471,10 +511,7 @@ serve(async (req) => {
           sufficient_data: t.sufficient_data,
         })),
       },
-      participation: {
-        rate: assignedAthleteIds.length > 0 ? Math.round((activeThisWeek / assignedAthleteIds.length) * 100) : 0,
-        total: activeThisWeek,
-      },
+      participation: operationalParticipation,
       stressWarning,
       teamChemistry,
       vibe,
@@ -489,13 +526,10 @@ serve(async (req) => {
     };
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders(req), "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
   } catch (e) {
-    console.error("team-mental-state error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("team-mental-state failed");
+    return publicError(req, e);
   }
 });

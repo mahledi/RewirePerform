@@ -4,6 +4,8 @@ Stand: 15. Juli 2026
 
 Status: entscheidungsreif vorbereitet, nicht aktiviert
 
+Update 18. Juli 2026: Dieses Vorbereitungspaket ist fuer den normalen Produktpfad durch `docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md` abgeloest. Insbesondere gibt es keine Vereinsoption im Guardian-Flow. Die Evidence-Aktivierung fuer Minderjaehrige bleibt dagegen weiterhin gesperrt und folgt `docs/MINOR_EVIDENCE_ACTIVATION_SPEC.md`. Die folgenden Abschnitte bleiben als historische Entscheidungsgrundlage erhalten.
+
 Dieses Paket ergaenzt `docs/MINOR_EVIDENCE_ACTIVATION_SPEC.md`. Die bestehende Spezifikation behandelt den zusaetzlichen Evidence-Pfad. Fuer einen echten Pilot mit 15-Jaehrigen muss vorher auch der normale Produktpfad rechtlich und technisch geklaert sein.
 
 ## 1. Zwei getrennte Entscheidungen
@@ -42,7 +44,7 @@ Die Zwecke duerfen nicht als ein einziges pauschales Ja versteckt werden, wenn s
 
 ### Fuer Nutzer unter 16
 
-1. Athlet gibt eine Guardian-E-Mail ein oder der Verein sendet einen Einladungslink ausserhalb der Athleten-App.
+1. Athlet gibt die Guardian-E-Mail selbst ein; der Verein ist kein Actor, Empfaenger oder Freigabeschritt dieses Flows.
 2. System versendet einen einmaligen, kurzlebigen Link. Gespeichert wird nur ein gehashter Token.
 3. Guardian liest Kurzfassung und vollstaendigen Text, bestaetigt Sorgeberechtigung sowie die konkrete Version.
 4. Athlet liest danach einen eigenen kurzen Text und stimmt selbst zu oder lehnt ab.

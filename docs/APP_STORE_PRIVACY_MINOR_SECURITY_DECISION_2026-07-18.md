@@ -5,6 +5,8 @@ Stand: 18. Juli 2026
 Status: technische Ist-Aufnahme und Empfehlung; noch keine Produkt-, Rechts- oder
 Production-Freigabe. Dieses Dokument ist kein Rechtsgutachten.
 
+Update spaeter am 18. Juli 2026: Der Minderjaehrigen-Produktflow ist inzwischen im isolierten Branch `codex/minor-guardian-flow-20260718` lokal implementiert und technisch geprueft. Fuer den aktuellen Stand gelten `docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md` und `docs/MINOR_GUARDIAN_REVIEW_HANDOFF_2026-07-18.md`; Rechtspruefung, Staging, Production und App-Store-Freigabe bleiben offen.
+
 ## 1. Kurzurteil
 
 Der aktuelle Kandidat ist fuer weitere interne Entwicklung und synthetische Tests

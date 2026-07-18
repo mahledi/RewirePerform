@@ -37,18 +37,32 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: 14. Juli 2026. Diese Seite erklärt ehrlich, welche Daten RewirePerform erhebt, warum,
+          Stand: 18. Juli 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
-          passiert. Vor App-Store-Veröffentlichung wird der Text juristisch final geprüft.
+          passiert.
         </p>
 
         <div className="space-y-8 text-sm leading-relaxed text-muted-foreground">
 
+          <section>
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Verantwortlicher</h2>
+            <p className="text-foreground">Mahle Herzog, handelnd unter RewirePerform</p>
+            <p className="mt-2">Postanschrift:</p>
+            <address className="not-italic">
+              Wiefeldick 16<br />
+              42699 Solingen<br />
+              Deutschland
+            </address>
+            <p className="mt-2">
+              Datenschutzkontakt: <a href="mailto:hello@rewireperform.com" className="text-primary hover:underline">hello@rewireperform.com</a>
+            </p>
+          </section>
+
           <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Die kurze Wahrheit zuerst</h2>
             <ul className="space-y-2">
-              <li><span className="text-foreground">Deine Journale und Freitexte werden nicht gelesen, nicht analysiert, nicht von einer AI verarbeitet und nicht in Statistiken einbezogen.</span> Sie liegen zugriffsgeschützt in deinem Account, damit <em>du</em> sie später wieder sehen kannst. Mehr nicht.</li>
-              <li><span className="text-foreground">Coaches sehen keine privaten Athleteninhalte.</span> Keine Stimmungswerte, keine Journale, keine Einzelantworten und keine psychologischen Labels. Coaches können nur eigene, strukturierte Beobachtungen zu sichtbarem Sportverhalten erfassen.</li>
+              <li><span className="text-foreground">Deine Journale und Freitexte werden nicht gelesen, nicht analysiert, nicht von einer KI verarbeitet und nicht in Statistiken einbezogen.</span> Sie liegen zugriffsgeschützt in deinem Konto, damit <em>du</em> sie später wieder sehen kannst. Mehr nicht.</li>
+              <li><span className="text-foreground">Trainer sehen keine privaten Athleteninhalte.</span> Keine Stimmungswerte, keine Journale, keine Einzelantworten und keine psychologischen Bezeichnungen. Trainer können nur eigene, strukturierte Beobachtungen zu sichtbarem Sportverhalten erfassen.</li>
               <li><span className="text-foreground">Gruppierte Fortschrittsdaten ohne direkte Identifikatoren</span> können beobachtete Veränderungen und Datenqualität dokumentieren - <em>aber nur, wenn du aktiv zustimmst</em>. Du entscheidest. Du kannst jederzeit widerrufen.</li>
             </ul>
           </section>
@@ -58,7 +72,7 @@ const Privacy = () => {
             <p>
               RewirePerform ist kein Inhaltsarchiv, sondern ein 56-Tage-Prozess. Ohne minimale Daten
               kann das System nicht erkennen, an welchem Tag du stehst, welche Aufgabe heute zu dir passt,
-              ob deine Pre/Post-Veränderung sichtbar wird oder ob ein Reminder gesendet werden soll.
+              ob deine Veränderung zwischen Anfang und Ende sichtbar wird oder ob eine Erinnerung gesendet werden soll.
             </p>
             <p className="mt-3">
               Erhoben wird ausschließlich, was für drei Zwecke nötig ist:
@@ -71,24 +85,36 @@ const Privacy = () => {
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Rechtsgrundlage (DSGVO)</h2>
             <ul className="space-y-2">
-              <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Vertragserfüllung:</span> Account, Programmfortschritt, Tageslogik, Check-ins, Assessments, Erinnerungen. Ohne diese Daten gibt es schlicht keine App.</li>
-              <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung consentierter, gruppierter Evaluationsdaten für interne Auswertung und freigegebene Evidence-Berichte. <span className="text-foreground">Ohne dein aktives Ja passiert hier nichts.</span></li>
+              <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
+              <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener, gruppierter Evaluationsdaten für interne Auswertungen und freigegebene Auswertungsberichte. <span className="text-foreground">Ohne dein aktives Ja passiert hier nichts.</span></li>
               <li><span className="text-foreground">Art. 9 Abs. 2 lit. a DSGVO - ausdrückliche Einwilligung:</span> Soweit psychologisch sensible Angaben verarbeitet werden, ist dafür eine gesonderte, ausdrückliche Einwilligung erforderlich.</li>
-              <li><span className="text-foreground">Minderjährige:</span> Das normale Programm bleibt nutzbar. Zusätzliche Evidence-Erhebung bleibt gesperrt, bis die erforderliche Einwilligung eines Sorgeberechtigten und die verständliche Zustimmung des Jugendlichen vollständig und geprüft vorliegen.</li>
+              <li><span className="text-foreground">Minderjährige:</span> Unter 16 werden datenabhängige Programmfunktionen erst freigeschaltet, wenn eine sorgeberechtigte Person und der Jugendliche selbst der aktuellen Version zugestimmt haben. Mit 16 oder 17 entscheidet der Jugendliche im vorgesehenen Deutschland-Flow selbst. Der Verein ist an diesem Freigabeprozess nicht beteiligt.</li>
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Freigabe für Minderjährige</h2>
+            <ul className="space-y-2">
+              <li>Wir speichern nur die Altersgruppe, kein Geburtsdatum und keine Ausweiskopie.</li>
+              <li>Die E-Mail-Adresse der sorgeberechtigten Person wird vom Jugendlichen selbst eingegeben, im Autorisierungssystem verschlüsselt gespeichert und nur für Einladung, Nachweis, Support und Widerruf verwendet.</li>
+              <li>Der Einmallink ist 48 Stunden gültig. Einladungs- und Widerrufstoken werden nur als Hash gespeichert und nach den unten genannten Fristen automatisiert entfernt.</li>
+              <li>Trainer und Verein sehen weder die E-Mail-Adresse der sorgeberechtigten Person noch ihre Entscheidung oder einen Ablehnungsgrund.</li>
+              <li>Eine Freigabe kann über den persönlichen Widerrufslink, in der App oder über den Datenschutzkontakt widerrufen werden.</li>
+              <li>Die derzeitige zusätzliche Transfer-Auswertung für Nachweiszwecke ist für Minderjährige deaktiviert. Eine spätere Studie oder weitergehende Forschungsnutzung würde eine neue, getrennte Information und Entscheidung erfordern.</li>
             </ul>
           </section>
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Welche Daten konkret verarbeitet werden</h2>
             <ul className="space-y-2">
-              <li><span className="text-foreground">Account:</span> E-Mail, Passwort-Hash, Rolle (Athlet/Coach/Admin), Sportprofil-Angaben.</li>
-              <li><span className="text-foreground">Programmfortschritt:</span> aktueller Tag, erledigte Aufgaben, Streaks, Phase.</li>
-              <li><span className="text-foreground">Check-ins:</span> Mood, Energy, Focus als Zahlenwerte pro Tag.</li>
-              <li><span className="text-foreground">Strukturierte Assessments und Fragebögen:</span> Pre-, Mid- und Post-Werte, um beobachtete Veränderungen über die 56 Tage zu dokumentieren. Aussagekraft, Version und Nutzungsrechte jedes Instruments werden getrennt bewertet.</li>
+              <li><span className="text-foreground">Konto:</span> E-Mail, Passwort-Hash, Rolle (Athlet, Trainer oder Administrator) und Sportprofil-Angaben.</li>
+              <li><span className="text-foreground">Programmfortschritt:</span> aktueller Tag, erledigte Aufgaben, Serien und Phase.</li>
+              <li><span className="text-foreground">Check-ins:</span> Stimmung, Energie und Fokus als Zahlenwerte pro Tag.</li>
+              <li><span className="text-foreground">Strukturierte Assessments und Fragebögen:</span> Werte zu Beginn, in der Mitte und am Ende, um beobachtete Veränderungen über die 56 Tage zu dokumentieren. Aussagekraft, Version und Nutzungsrechte jedes Instruments werden getrennt bewertet.</li>
               <li><span className="text-foreground">Strukturierte Transfer-Beobachtungen:</span> An ausgewählten Tagen eine kurze Antwort zu einem konkreten Verhalten in Training oder Wettkampf. Sie ersetzt die optionale freie Reflexion und enthält keinen Freitext.</li>
-              <li><span className="text-foreground">Coach-Beobachtungen:</span> Strukturierte Bewertungen direkt beobachtbaren Sportverhaltens. Sie enthalten keine Diagnose und keinen Pflicht-Freitext.</li>
-              <li><span className="text-foreground">Journal- und Freitexte:</span> werden ausschließlich gespeichert, damit du sie wieder findest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer AI gelesen, nicht in Aggregate einbezogen, nicht für Personalisierung verwendet.</span></li>
-              <li><span className="text-foreground">Trainingszeiten & Push-Settings:</span> nur, wenn du Erinnerungen aktivierst.</li>
+              <li><span className="text-foreground">Trainer-Beobachtungen:</span> Strukturierte Bewertungen direkt beobachtbaren Sportverhaltens. Sie enthalten keine Diagnose und keinen Pflicht-Freitext.</li>
+              <li><span className="text-foreground">Journal- und Freitexte:</span> werden ausschließlich gespeichert, damit du sie wiederfindest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer KI gelesen, nicht in Gruppenwerte einbezogen und nicht für Personalisierung verwendet.</span></li>
+              <li><span className="text-foreground">Trainingszeiten und Benachrichtigungseinstellungen:</span> nur, wenn du Erinnerungen aktivierst.</li>
             </ul>
           </section>
 
@@ -103,10 +129,10 @@ const Privacy = () => {
               Sonst nichts.
             </p>
             <p className="mt-3">
-              Konkret bedeutet das: Keine AI verarbeitet sie. Keine Mustererkennung läuft darüber.
+              Konkret bedeutet das: Keine KI verarbeitet sie. Keine Mustererkennung läuft darüber.
               Keine Personalisierung greift auf sie zu. Keine Mitarbeiter lesen sie zur Verbesserung des Produkts.
               Sie fließen nicht in die anonymen Aggregat-Statistiken ein, selbst wenn du deren Nutzung erlaubst.
-              Coaches sehen sie nie — auch nicht in Ausschnitten, auch nicht in Stichwörtern, auch nicht aggregiert.
+              Trainer sehen sie nie — auch nicht in Ausschnitten, auch nicht in Stichwörtern, auch nicht gruppiert.
             </p>
             <p className="mt-3">
               Reflexion funktioniert nur, wenn sie ehrlich ist. Ehrlich wird sie nur, wenn sie sicher ist.
@@ -121,17 +147,17 @@ const Privacy = () => {
             </p>
             <p className="mt-3 text-foreground">Was konkret in solche Aggregate einfließen darf:</p>
             <ul className="mt-2 space-y-1">
-              <li>– Programmfortschritt (Tage, Streaks, Completion-Raten)</li>
-              <li>– Pre-/Post-Veränderungen aus freigegebenen, versionierten Assessments und Fragebögen</li>
-              <li>– Check-in-Trends (Mood, Energy, Focus) im Zeitverlauf</li>
-              <li>– Strukturierte Transfer-Pulse und Teambeobachtungen von Coaches</li>
+              <li>– Programmfortschritt (Tage, Serien und Abschlussquoten)</li>
+              <li>– Veränderungen zwischen Anfang und Ende aus freigegebenen, versionierten Assessments und Fragebögen</li>
+              <li>– zeitliche Entwicklungen bei Stimmung, Energie und Fokus</li>
+              <li>– strukturierte Transfer-Antworten und Teambeobachtungen von Trainern</li>
             </ul>
             <p className="mt-3 text-foreground">Was niemals einfließt — auch nicht mit deiner Zustimmung:</p>
             <ul className="mt-2 space-y-1">
               <li>– Journaltexte, Freitexte, persönliche Reflexionen</li>
               <li>– Individuelle Antworten auf einzelne Fragen</li>
               <li>– Identifizierende Merkmale (Name, E-Mail, Geburtsdatum, Position, Verein)</li>
-              <li>– Werte aus Gruppen kleiner als fünf Personen (n≥5-Schwelle)</li>
+              <li>– Werte aus Gruppen mit weniger als fünf freigegebenen Personen</li>
             </ul>
             <p className="mt-3">
               Gruppenaggregate werden erst ab mindestens fünf freigegebenen Personen ausgegeben und enthalten keine Namen oder E-Mail-Adressen. Die Einwilligung
@@ -144,27 +170,27 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Wie das Hintergrundsystem deine Angaben nutzt</h2>
             <p>
               Das System ordnet Check-ins, Aufgaben und Assessments dem richtigen Programmtag zu, berechnet
-              Streaks und Completion, entscheidet, welcher Tagesinhalt heute angezeigt wird, und bereitet
-              deinen Pre/Post-Vergleich auf. Personalisierte Inhalte (z.B. AI-generierte Aufgaben) basieren
+              Serien und Abschlüsse, entscheidet, welcher Tagesinhalt heute angezeigt wird, und bereitet
+              deinen Vergleich zwischen Anfang und Ende auf. Personalisierte Inhalte (zum Beispiel KI-generierte Aufgaben) basieren
               auf strukturierten Profildaten und Assessment-Werten — <span className="text-foreground">nie auf Journal- oder Freitexten</span>.
             </p>
           </section>
 
           <section>
-            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Coach- und Team-Sicht</h2>
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Trainer- und Team-Sicht</h2>
             <p>
-              Coaches sehen für ihr zugeordnetes Team operative Programmdaten wie letzte Aktivität, erledigte Tage,
-              Completion-Rate, aktuelle Streak, Check-ins der letzten 7 Tage, Journal-<em>Anzahl</em> (nie Inhalt) und
+              Trainer sehen für ihr zugeordnetes Team operative Programmdaten wie letzte Aktivität, erledigte Tage,
+              Abschlussquote, aktuelle Serie, Check-ins der letzten sieben Tage, Journal-<em>Anzahl</em> (nie Inhalt) und
               Inaktivitäts-Hinweis. Sensible Team-Zustandswerte erscheinen erst ab fünf freigegebenen Athleten.
             </p>
             <p className="mt-3">
-              Ausdrücklich nicht sichtbar für Coaches: einzelne Mood-/Energy-/Focus-Werte, Journaltexte,
-              Freitextantworten, individuelle Assessment-Scores, persönliche Entwicklungs-Labels.
+              Ausdrücklich nicht sichtbar für Trainer: einzelne Werte zu Stimmung, Energie oder Fokus, Journaltexte,
+              Freitextantworten, individuelle Assessment-Ergebnisse oder persönliche Entwicklungsbezeichnungen.
             </p>
             <p className="mt-3">
-              Ein Coach kann zusätzlich eigene strukturierte Team- oder Einzelbeobachtungen zu fünf direkt sichtbaren
-              Verhaltensbereichen speichern. Eine Einzelbeobachtung kann nur der eingebende Coach erneut öffnen. Sie wird
-              weder dem Athleten angezeigt noch in Website-, KI- oder externe Evidence-Exporte aufgenommen.
+              Ein Trainer kann zusätzlich eigene strukturierte Team- oder Einzelbeobachtungen zu fünf direkt sichtbaren
+              Verhaltensbereichen speichern. Eine Einzelbeobachtung kann nur der eingebende Trainer erneut öffnen. Sie wird
+              weder dem Athleten angezeigt noch in Website-, KI- oder externe Auswertungs-Exporte aufgenommen.
             </p>
           </section>
 
@@ -183,7 +209,7 @@ const Privacy = () => {
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Speicherdauer</h2>
             <p>
-              Programmdaten bleiben gespeichert, solange dein Account aktiv ist. Bei der Account-Löschung werden dein
+              Programmdaten bleiben gespeichert, solange dein Konto aktiv ist. Bei der Kontolöschung werden dein
               Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. Soweit Daten vorübergehend in
               technisch notwendigen Sicherungskopien oder Sicherheitsprotokollen verbleiben, sind sie vom aktiven
               Produktdatenbestand getrennt und für Produkt- oder Analysezwecke gesperrt. Sie werden gelöscht, sobald der
@@ -191,22 +217,39 @@ const Privacy = () => {
               Einwilligung gebildete Gruppenstatistiken können bestehen bleiben, wenn sie vollständig aggregiert sind und
               keinen Rückschluss auf einzelne Personen zulassen.
             </p>
+            <ul className="mt-3 space-y-1">
+              <li>– Einladungsdaten für die Entscheidung der sorgeberechtigten Person: spätestens sieben Tage nach Erstellung, Nutzung oder Ablauf</li>
+              <li>– gehashter Widerrufslink der sorgeberechtigten Person: bis zu 370 Tage aktiv; nach Nutzung, Widerruf oder Ablauf Löschung innerhalb von sieben Tagen</li>
+              <li>– minimierte Einwilligungsnachweise ohne E-Mail-Adresse der sorgeberechtigten Person: bis zu drei Jahre ab der jeweiligen Entscheidung</li>
+              <li>– interne technische Fehlerereignisse: höchstens 30 Tage</li>
+              <li>– Push-Zustellprotokolle: höchstens 90 Tage nach Ende des zugehörigen Programmlaufs</li>
+              <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls, sofern kein früherer Widerruf oder Löschanspruch greift</li>
+              <li>– vollständig anonyme Aggregate: solange sie keinen Personenbezug mehr besitzen</li>
+            </ul>
           </section>
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Auftragsverarbeiter</h2>
-            <p>
-              Hosting, Datenbank, Authentifizierung und Push-Infrastruktur laufen über professionelle
-              Cloud-Anbieter mit DSGVO-konformen Auftragsverarbeitungsverträgen, bevorzugt in EU-Rechenzentren.
-              Es findet keine Weitergabe an Werbenetzwerke, Datenhändler oder Tracking-Dienste statt.
-            </p>
+            <ul className="space-y-2">
+              <li><span className="text-foreground">Supabase:</span> Authentifizierung, Datenbank und Edge Functions. Das bestätigte Hauptprojekt liegt in Frankfurt (eu-central-1). Technische Betriebs- und Sicherheitsdaten können nach Anbieterbedingungen und Auftragsverarbeitungsvertrag verarbeitet werden.</li>
+              <li><span className="text-foreground">Vercel:</span> Auslieferung der Website und Web-App. Dabei fallen technisch notwendige Anfrage- und Sicherheitsmetadaten an. Soweit Daten außerhalb des EWR verarbeitet werden, stützt sich der Anbieter unter anderem auf die vereinbarten Standardvertragsklauseln.</li>
+              <li><span className="text-foreground">Resend:</span> ausschließlich für transaktionale E-Mails an sorgeberechtigte Personen. Verarbeitet werden Empfängeradresse, Nachrichteninhalt und Zustellmetadaten. Öffnungs- und Link-Tracking werden für diesen Versand nicht genutzt.</li>
+              <li><span className="text-foreground">Push-Infrastruktur:</span> Browser- beziehungsweise Betriebssystemanbieter transportieren optionale Benachrichtigungen. Private Journal- oder Antwortinhalte werden nicht in Push-Nachrichten aufgenommen.</li>
+            </ul>
+            <p className="mt-3">Es findet keine Weitergabe an Werbenetzwerke oder Datenhändler statt. Sentry ist nicht mehr mit der App verbunden und erhält keine neuen App-Ereignisse.</p>
           </section>
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Benachrichtigungen</h2>
             <p>
               Push-Benachrichtigungen sind optional. Wenn du sie aktivierst, speichern wir nur eine
-              technische Push-Subscription und deine gewählten Reminder-Zeiten.
+              technische Push-Berechtigung und deine gewählten Erinnerungszeiten.
+            </p>
+            <p className="mt-3">
+              Für den zuverlässigen Versand speichern wir außerdem Benachrichtigungstyp, Versanddatum,
+              Versandstatus sowie gegebenenfalls Öffnungszeitpunkt und Fehlerzeitpunkt. Diese Angaben dienen
+              ausschließlich Zustellung, Fehlerbehebung und der von dir geöffneten Zielseite. Private Journal-
+              oder Antwortinhalte werden weder protokolliert noch in Benachrichtigungen aufgenommen.
             </p>
           </section>
 

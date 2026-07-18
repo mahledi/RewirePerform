@@ -22,6 +22,15 @@ const requiredEdge = [
   "SUPABASE_SERVICE_ROLE_KEY",
 ];
 
+const requiredGuardianEdge = [
+  "APP_PUBLIC_URL",
+  "GUARDIAN_ALLOWED_ORIGINS",
+  "GUARDIAN_EMAIL_ENCRYPTION_KEY_B64",
+  "GUARDIAN_EMAIL_HASH_KEY",
+  "GUARDIAN_EMAIL_FROM",
+  "RESEND_API_KEY",
+];
+
 const optionalEdge = [
   "VAPID_PUBLIC_KEY",
   "VAPID_PRIVATE_KEY",
@@ -114,13 +123,70 @@ if (!exampleOnly) {
 }
 
 if (strictEdge) {
-  for (const key of requiredEdge) {
+  for (const key of [...requiredEdge, ...requiredGuardianEdge]) {
     if (!local[key]) fail(`missing edge secret ${key}`);
+  }
+
+  if (local.SUPABASE_URL && !/^https:\/\/.+\.supabase\.co$/.test(local.SUPABASE_URL)) {
+    fail("SUPABASE_URL should look like https://<project-ref>.supabase.co");
+  }
+
+  let publicOrigin = null;
+  if (local.APP_PUBLIC_URL) {
+    try {
+      const url = new URL(local.APP_PUBLIC_URL);
+      if (
+        url.protocol !== "https:"
+        || url.username
+        || url.password
+        || url.search
+        || url.hash
+        || (url.pathname !== "/" && url.pathname !== "")
+      ) {
+        throw new Error("invalid");
+      }
+      publicOrigin = url.origin;
+    } catch {
+      fail("APP_PUBLIC_URL must be a clean HTTPS origin without path, query or fragment");
+    }
+  }
+
+  if (local.GUARDIAN_ALLOWED_ORIGINS) {
+    const origins = local.GUARDIAN_ALLOWED_ORIGINS.split(",").map((value) => value.trim()).filter(Boolean);
+    if (!origins.length || origins.some((value) => value.includes("*"))) {
+      fail("GUARDIAN_ALLOWED_ORIGINS must contain explicit origins and no wildcard");
+    }
+    for (const value of origins) {
+      try {
+        const parsed = new URL(value);
+        if (parsed.origin !== value || parsed.protocol !== "https:") throw new Error("invalid");
+      } catch {
+        fail(`invalid GUARDIAN_ALLOWED_ORIGINS entry ${value}`);
+      }
+    }
+    if (publicOrigin && !origins.includes(publicOrigin)) {
+      fail("GUARDIAN_ALLOWED_ORIGINS must include APP_PUBLIC_URL");
+    }
+  }
+
+  if (local.GUARDIAN_EMAIL_ENCRYPTION_KEY_B64) {
+    const rawKey = Buffer.from(local.GUARDIAN_EMAIL_ENCRYPTION_KEY_B64, "base64");
+    if (rawKey.byteLength !== 32 || rawKey.toString("base64").replace(/=+$/u, "") !== local.GUARDIAN_EMAIL_ENCRYPTION_KEY_B64.replace(/=+$/u, "")) {
+      fail("GUARDIAN_EMAIL_ENCRYPTION_KEY_B64 must be valid base64 containing exactly 32 bytes");
+    }
+  }
+
+  if (local.GUARDIAN_EMAIL_HASH_KEY && local.GUARDIAN_EMAIL_HASH_KEY.length < 32) {
+    fail("GUARDIAN_EMAIL_HASH_KEY must contain at least 32 characters");
+  }
+
+  if (local.GUARDIAN_EMAIL_FROM && !/^.+<[^\s@]+@[^\s@]+\.[^\s@]+>$/.test(local.GUARDIAN_EMAIL_FROM)) {
+    fail("GUARDIAN_EMAIL_FROM must look like RewirePerform <name@example.com>");
   }
 }
 
 const documented = new Set(Object.keys(example));
-for (const key of [...requiredEdge, ...optionalEdge]) {
+for (const key of [...requiredEdge, ...requiredGuardianEdge, ...optionalEdge]) {
   if (!documented.has(key)) fail(`.env.example should document ${key}`);
 }
 

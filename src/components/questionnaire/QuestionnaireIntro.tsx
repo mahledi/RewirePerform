@@ -14,14 +14,9 @@ import {
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
 import type { Json } from "@/integrations/supabase/types";
-import {
-  DATA_CONTRIBUTION_CONSENT_VERSION,
-  isConsentSchemaMissingError,
-  rememberPendingDataContributionConsent,
-  saveDataContributionConsent,
-  syncPendingDataContributionConsent,
-  type DataContributionConsentState,
-} from "@/lib/dataContributionConsent";
+import type { DataContributionConsentState } from "@/lib/dataContributionConsent";
+import { useMinorAuthorization } from "@/hooks/useMinorAuthorization";
+import { saveAuthorizedDataContribution } from "@/lib/minorAuthorization";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -29,6 +24,7 @@ interface QuestionnaireIntroProps {
 
 const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
   const navigate = useNavigate();
+  const { status: authorizationStatus, setStatus: setAuthorizationStatus } = useMinorAuthorization();
   const [isTestUser, setIsTestUser] = useState(false);
   const [skipping, setSkipping] = useState(false);
   const [showDataDetails, setShowDataDetails] = useState(false);
@@ -37,6 +33,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
   const [savingConsent, setSavingConsent] = useState<"yes" | "no" | null>(null);
 
   useEffect(() => {
+    if (!authorizationStatus) return;
     (async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -47,29 +44,18 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           .eq("id", user.id)
           .maybeSingle();
         setIsTestUser(!!profileData?.is_test_user);
-
-        const syncedPending = await syncPendingDataContributionConsent(user.id).catch(() => null);
-        const { data: consentData } = await supabase
-          .from("profiles")
-          .select("data_contribution_consent, data_contribution_consent_version")
-          .eq("id", user.id)
-          .maybeSingle();
-        const hasCurrentConsent = consentData?.data_contribution_consent_version
-          === DATA_CONTRIBUTION_CONSENT_VERSION;
         setConsent(
-          typeof syncedPending === "boolean"
-            ? syncedPending
-            : consentData?.data_contribution_consent === false
-              ? false
-              : hasCurrentConsent && consentData?.data_contribution_consent === true
-              ? consentData.data_contribution_consent
-              : null,
+          authorizationStatus.data_contribution_status === "authorized"
+            ? true
+            : authorizationStatus.data_contribution_status === "not_asked"
+              ? null
+              : false,
         );
       } finally {
         setProfileReady(true);
       }
     })();
-  }, []);
+  }, [authorizationStatus]);
 
   const handleStart = async (choice?: boolean) => {
     if (choice === undefined || consent !== null) {
@@ -79,21 +65,12 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
 
     setSavingConsent(choice ? "yes" : "no");
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-      await saveDataContributionConsent(user.id, choice);
+      const next = await saveAuthorizedDataContribution(choice);
+      setAuthorizationStatus(next);
       setConsent(choice);
       onStart();
-    } catch (err) {
-      console.error("Data contribution consent error:", err);
-      if (isConsentSchemaMissingError(err)) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) rememberPendingDataContributionConsent(user.id, choice);
-        toast.info("Du kannst weitermachen. Deine Entscheidung wird gespeichert, sobald das System-Update vollständig aktiv ist.");
-        onStart();
-      } else {
-        toast.error("Deine Entscheidung konnte gerade nicht gespeichert werden. Bitte versuche es noch einmal.");
-      }
+    } catch {
+      toast.error("Deine Entscheidung konnte gerade nicht sicher gespeichert werden. Bitte versuche es noch einmal.");
     } finally {
       setSavingConsent(null);
     }
@@ -278,8 +255,8 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                       Hilf mit, RewirePerform für zukünftige Athleten besser zu machen
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Deine Nutzung kann uns helfen zu untersuchen, welche Aufgaben abgeschlossen werden, wo beobachtete
-                      Veränderungen sichtbar sind und wie vollständig die Daten über 56 Tage bleiben.
+                      Deine Nutzung kann uns helfen zu verstehen, welche Aufgaben abgeschlossen werden, wo beobachtete
+                      Veränderungen sichtbar sind und wie wir das 56-Tage-System verbessern können.
                     </p>
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">
@@ -288,8 +265,8 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                     noch sportliche Leistungssteigerung.
                   </p>
                   <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
-                    Private Journaltexte und freie Antworten werden dafür nie verwendet. Bei Minderjährigen aktiviert diese
-                    Zustimmung allein keine zusätzliche Evidence-Erhebung. Du kannst ablehnen und RewirePerform trotzdem
+                    Private Journaltexte und freie Antworten werden dafür nie verwendet. Für Minderjährige bleibt die
+                    gesonderte Transfer-Evidence-Erhebung technisch deaktiviert. Du kannst ablehnen und RewirePerform trotzdem
                     vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
                   </p>
                 </div>

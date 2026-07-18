@@ -23,6 +23,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   role: AppRole;
+  roleVerified: boolean;
   isTestUser: boolean;
   signOut: () => Promise<void>;
 }
@@ -32,6 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   role: null,
+  roleVerified: false,
   isTestUser: false,
   signOut: async () => {},
 });
@@ -43,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole>(null);
+  const [roleVerified, setRoleVerified] = useState(false);
   const [isTestUser, setIsTestUser] = useState(false);
   const activeUserIdRef = useRef<string | null>(null);
   const authGenerationRef = useRef(0);
@@ -71,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const r = (roleData?.role as AppRole) ?? null;
       const testFlag = Boolean(profileData?.is_test_user);
       setRole(r);
+      setRoleVerified(true);
       setIsTestUser(testFlag);
       writeCachedRole(userId, r);
       return r;
@@ -99,6 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           activeUserIdRef.current = userId;
           const cachedRole = readCachedRole(userId);
           if (!sameUser) {
+            setRoleVerified(false);
             setRole(cachedRole);
             setIsTestUser(false);
             setLoading(!cachedRole);
@@ -113,6 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           activeUserIdRef.current = null;
           setRole(null);
+          setRoleVerified(false);
           setIsTestUser(false);
           setLoading(false);
         }
@@ -130,6 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     activeUserIdRef.current = null;
     setRole(null);
+    setRoleVerified(false);
     setIsTestUser(false);
     try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
     try { window.localStorage.removeItem("cached_user_id"); } catch { /* noop */ }
@@ -139,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, role, isTestUser, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, role, roleVerified, isTestUser, signOut }}>
       {children}
     </AuthContext.Provider>
   );
