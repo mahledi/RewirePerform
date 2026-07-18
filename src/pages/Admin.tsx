@@ -20,6 +20,7 @@ import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
+import { BrandSymbol } from "@/components/brand/BrandLogo";
 
 type Overview = {
   total_users: number; total_athletes: number; total_coaches: number; total_admins: number;
@@ -537,15 +538,19 @@ const Admin = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold leading-tight">
-              {isMobile ? "Admin" : "Admin Control Center"}
-            </h1>
-            <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-              {isMobile
-                ? "Control Center · aggregierte Daten."
-                : "Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe."}
-            </p>
+          <div className="flex min-w-0 items-start gap-3">
+            <BrandSymbol size={40} className="mt-0.5" />
+            <div className="min-w-0">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-primary">RewirePerform</p>
+              <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+                {isMobile ? "Admin" : "Admin Control Center"}
+              </h1>
+              <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+                {isMobile
+                  ? "Control Center · aggregierte Daten."
+                  : "Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe."}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {!isMobile && (

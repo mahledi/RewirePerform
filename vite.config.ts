@@ -48,13 +48,22 @@ export default defineConfig(({ mode }) => {
         devOptions: {
           enabled: false, // never in dev/preview
         },
-        includeAssets: ["app-icon-192.png", "app-icon-512.png", "robots.txt"],
+        includeAssets: [
+          "app-icon-192.png",
+          "app-icon-512.png",
+          "apple-touch-icon-180.png",
+          "favicon-32.png",
+          "favicon-64.png",
+          "brand/rewireperform-symbol-dark.svg",
+          "brand/rewireperform-symbol-light.svg",
+          "robots.txt",
+        ],
         manifest: {
           name: "RewirePerform",
           short_name: "RewirePerform",
           description: "Mentale Performance für Sportler – 56-Tage-Programm",
-          theme_color: "#0e1217",
-          background_color: "#0e1217",
+          theme_color: "#0D0E12",
+          background_color: "#0D0E12",
           display: "standalone",
           start_url: "/",
           scope: "/",

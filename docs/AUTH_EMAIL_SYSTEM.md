@@ -1,12 +1,12 @@
 # RewirePerform Auth Email System
 
-Stand: 17. Juli 2026
+Stand: 18. Juli 2026
 
 ## Ziel
 
 Dieses Paket bildet den bewusst kleinen transaktionalen E-Mail-Fluss fuer den ersten RewirePerform App-Store-Release ab. Es umfasst ausschliesslich Registrierung, Passwort-Reset und die Sicherheitsmeldung nach einer Passwortaenderung.
 
-Die Vorlagen sind bewusst frei von Marketing, Tracking-Pixeln, externen Bildern und privaten Produktdaten. Sie verwenden bis zur finalen Logoentscheidung eine robuste Textmarke.
+Die Vorlagen sind bewusst frei von Marketing, Tracking-Pixeln, fremden Bildquellen und privaten Produktdaten. Sie verwenden das gesperrte RewirePerform-Symbol von der eigenen Domain und behalten daneben eine robuste Textmarke, falls ein Mail-Client Bilder blockiert.
 
 ## Implementierter Produktfluss
 
@@ -59,10 +59,11 @@ Diese Schritte sind Dashboard-Aenderungen und werden nicht durch einen Git-Merge
    - `https://rewireperform.com/auth`
    - `https://rewireperform.com/auth/reset-password`
 4. E-Mail-Bestaetigung aktiviert lassen.
-5. Unter Authentication > Email Templates Betreff und HTML anhand des Manifests eintragen.
-6. Die Sicherheitsmeldung fuer Passwortaenderungen aktivieren.
-7. In Resend Link-/Open-Tracking fuer Auth-Mails deaktiviert lassen, damit Sicherheitslinks nicht umgeschrieben werden.
-8. Sicherstellen, dass `hello@rewireperform.com` aus dem Support-Bereich tatsaechlich empfangen wird.
+5. Zuerst pruefen, dass `https://rewireperform.com/brand/rewireperform-email-dark-256.png` aus dem produktiven Deployment erreichbar ist.
+6. Unter Authentication > Email Templates Betreff und HTML anhand des Manifests eintragen.
+7. Die Sicherheitsmeldung fuer Passwortaenderungen aktivieren.
+8. In Resend Link-/Open-Tracking fuer Auth-Mails deaktiviert lassen, damit Sicherheitslinks nicht umgeschrieben werden.
+9. Sicherstellen, dass `hello@rewireperform.com` aus dem Support-Bereich tatsaechlich empfangen wird.
 
 Keine API-Keys in Dashboard-Screenshots, Chat, Dokumentation oder Git uebernehmen.
 

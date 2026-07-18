@@ -1,4 +1,4 @@
-import { Brain } from "lucide-react";
+import { BrandSymbol } from "@/components/brand/BrandLogo";
 
 type AppLoadingShellProps = {
   title?: string;
@@ -18,7 +18,7 @@ const AppLoadingShell = ({
       <div className="sticky top-0 z-40 border-b border-border/50 bg-background/86 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-5 py-4">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card">
-            <Brain className="h-5 w-5 text-primary" />
+            <BrandSymbol size={28} />
           </div>
           <div className="min-w-0">
             <p className="font-heading text-sm font-semibold leading-none">{title}</p>

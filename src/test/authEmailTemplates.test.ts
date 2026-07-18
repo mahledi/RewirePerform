@@ -23,7 +23,9 @@ describe("Supabase auth email templates", () => {
       expect(html).toContain('<html lang="de">');
       expect(html).toContain("RewirePerform");
       expect(html).toContain("{{ .SiteURL }}/support");
-      expect(html).not.toMatch(/<img\b/i);
+      expect(html.match(/<img\b/gi)).toHaveLength(1);
+      expect(html).toContain('src="{{ .SiteURL }}/brand/rewireperform-email-dark-256.png"');
+      expect(html).toContain('alt="" width="44" height="44"');
       expect(html).not.toMatch(/https?:\/\/(?!\{\{ \.SiteURL \}\})/i);
       expect(html).not.toMatch(/tracking|pixel|utm_/i);
       expect(html.length).toBeLessThan(20_000);

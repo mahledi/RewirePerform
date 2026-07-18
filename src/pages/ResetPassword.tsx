@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Brain, CheckCircle2, CircleAlert, KeyRound, Loader2, Lock } from "lucide-react";
+import { CheckCircle2, CircleAlert, KeyRound, Loader2, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 import {
   authErrorMessage,
   MIN_ACCOUNT_PASSWORD_LENGTH,
@@ -220,8 +221,7 @@ const RecoveryLayout = ({
   <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground sm:px-6">
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md text-center">
       <Link to="/" aria-label="Zur Startseite" className="mx-auto flex items-center justify-center gap-2">
-        <Brain className="h-7 w-7 text-primary" aria-hidden="true" />
-        <span className="font-heading text-xl font-bold">RewirePerform</span>
+        <BrandLockup symbolSize={34} textClassName="text-xl" />
       </Link>
       <div className={`mx-auto mb-5 mt-8 flex h-14 w-14 items-center justify-center rounded-full ${tone === "error" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
         {icon}

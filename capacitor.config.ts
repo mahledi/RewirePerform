@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 900,
       launchAutoHide: true,
-      backgroundColor: "#0e1217",
+      backgroundColor: "#0D0E12",
       showSpinner: false,
       iosSpinnerStyle: "small",
       splashFullScreen: true,
@@ -25,7 +25,7 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: "LIGHT",
-      backgroundColor: "#0e1217",
+      backgroundColor: "#0D0E12",
       overlaysWebView: false,
     },
     LocalNotifications: {

@@ -6,6 +6,7 @@ import { MockDesktopFrame, MockPhoneFrame } from "./components/DemoFrames";
 import { PlayerFlowDemo } from "./components/PlayerFlowDemo";
 import { PrivacyTrustSection } from "./components/PrivacyTrustSection";
 import { demoHighlights } from "./data/demoData";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 
 const navItems = [
   { label: "Überblick", target: "overview" },
@@ -42,6 +43,7 @@ const DemoPage = () => {
 
           <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
+              <BrandLockup className="mb-7" symbolSize={34} textClassName="text-lg" />
               <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
                 <PlayCircle className="h-4 w-4" />
                 Interaktive Produktdemo

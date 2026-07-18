@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, ArrowRight, ArrowLeft, Check, ClipboardCheck, BarChart3, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, ClipboardCheck, BarChart3, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/validatedAssessments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,7 @@ import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import { getRetestStatus } from "@/lib/programProgress";
 import { toast } from "sonner";
 import { captureAppError } from "@/lib/monitoring";
+import { BrandLockup } from "@/components/brand/BrandLogo";
 import type { Json } from "@/integrations/supabase/types";
 
 type Phase = "select" | "instructions" | "items" | "results" | "sequence-done" | "comparison";
@@ -250,10 +251,14 @@ const Assessment = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/dashboard")}>
-            <Brain className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold">RewirePerform</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard")}
+            aria-label="Zurück zum Dashboard"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <BrandLockup symbolSize={26} textClassName="text-base" />
+          </button>
           <div className="flex items-center gap-2">
             {isSequentialMode && (
               <span className="text-xs text-primary font-heading font-medium px-2 py-1 rounded-md bg-primary/10">
