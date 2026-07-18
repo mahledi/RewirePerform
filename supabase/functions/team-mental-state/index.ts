@@ -215,20 +215,38 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: authorizationFilter, error: authorizationError } = await supabase.rpc(
+    const { data: rolloutStatus, error: rolloutError } = await supabase.rpc(
       "minor_service_action",
       {
-        _action: "filter_data_contribution",
+        _action: "enforcement_preflight",
         _user_id: null,
-        _payload: { user_ids: consentCandidateIds },
+        _payload: {},
       },
     );
-    if (authorizationError) throw authorizationError;
-    const authorizedIds = new Set(
-      Array.isArray((authorizationFilter as { user_ids?: unknown } | null)?.user_ids)
-        ? ((authorizationFilter as { user_ids: unknown[] }).user_ids.filter((value): value is string => typeof value === "string"))
-        : [],
-    );
+    if (rolloutError) throw rolloutError;
+
+    // Existing current-version consent remains valid during migration. Once
+    // enforcement is enabled, every contributor also needs the new receipt.
+    const enforcementEnabled =
+      (rolloutStatus as { enforcement_enabled?: unknown } | null)?.enforcement_enabled === true;
+    let authorizedIds = new Set(consentCandidateIds);
+
+    if (enforcementEnabled) {
+      const { data: authorizationFilter, error: authorizationError } = await supabase.rpc(
+        "minor_service_action",
+        {
+          _action: "filter_data_contribution",
+          _user_id: null,
+          _payload: { user_ids: consentCandidateIds },
+        },
+      );
+      if (authorizationError) throw authorizationError;
+      authorizedIds = new Set(
+        Array.isArray((authorizationFilter as { user_ids?: unknown } | null)?.user_ids)
+          ? ((authorizationFilter as { user_ids: unknown[] }).user_ids.filter((value): value is string => typeof value === "string"))
+          : [],
+      );
+    }
     const eligibleInstances = (runInstances ?? []).filter((instance) => authorizedIds.has(instance.user_id));
     const assignedAthleteIds = Array.from(new Set(eligibleInstances.map((instance) => instance.user_id)));
     const instanceIds = eligibleInstances.map((instance) => instance.id);

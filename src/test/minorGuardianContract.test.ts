@@ -88,12 +88,15 @@ describe("minor guardian production contract", () => {
   it("filters team aggregates by current consent and authorization before n is evaluated", () => {
     const teamFunction = read("supabase/functions/team-mental-state/index.ts");
     const consentQuery = teamFunction.indexOf('.eq("data_contribution_consent", true)');
+    const rolloutCheck = teamFunction.indexOf('"enforcement_preflight"');
     const authorizationFilter = teamFunction.indexOf('"filter_data_contribution"');
     const sensitiveQuery = teamFunction.indexOf('.select("user_id, date, energy_level');
 
     expect(consentQuery).toBeGreaterThan(0);
-    expect(authorizationFilter).toBeGreaterThan(consentQuery);
+    expect(rolloutCheck).toBeGreaterThan(consentQuery);
+    expect(authorizationFilter).toBeGreaterThan(rolloutCheck);
     expect(sensitiveQuery).toBeGreaterThan(authorizationFilter);
+    expect(teamFunction).toContain("if (enforcementEnabled)");
     expect(teamFunction).toContain("insufficient_authorized_data");
     expect(teamFunction).not.toContain("consent_below_min_n");
     expect(teamFunction).not.toContain("authorization_below_min_n");

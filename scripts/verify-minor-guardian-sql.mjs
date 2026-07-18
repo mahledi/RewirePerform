@@ -5,6 +5,8 @@ import { PGlite } from "@electric-sql/pglite";
 const db = new PGlite();
 const migrationPath = resolve("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
 const migration = readFileSync(migrationPath, "utf8");
+const indexMigrationPath = resolve("supabase/migrations/20260718160000_minor_guardian_fk_indexes.sql");
+const indexMigration = readFileSync(indexMigrationPath, "utf8");
 
 const ids = {
   adult: "00000000-0000-4000-8000-000000000101",
@@ -117,6 +119,7 @@ try {
   `);
 
   await db.exec(migration);
+  await db.exec(indexMigration);
 
   await db.query("INSERT INTO auth.users(id) VALUES ($1), ($2), ($3)", [ids.adult, ids.teen, ids.child]);
   await db.query(
