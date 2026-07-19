@@ -252,22 +252,22 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                 <div className="space-y-3">
                   <div>
                     <h3 className="font-heading text-xl font-semibold">
-                      Hilf mit, RewirePerform für zukünftige Athleten besser zu machen
+                      Nimm an der RewirePerform-Pilot-Auswertung teil
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                       Deine Nutzung kann uns helfen zu verstehen, welche Aufgaben abgeschlossen werden, wo beobachtete
-                      Veränderungen sichtbar sind und wie wir das 56-Tage-System verbessern können.
+                      Veränderungen sichtbar sind und wie wir das 56-Tage-System für Athletinnen und Athleten verbessern können.
                     </p>
                   </div>
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    Wenn du zustimmst, dürfen strukturierte Nutzungs-, Fortschritts- und kurze Transferdaten erhoben und
-                    gruppiert ausgewertet werden. Solche Daten dokumentieren Beobachtungen; sie beweisen allein weder Ursache
-                    noch sportliche Leistungssteigerung.
+                    Wenn du zustimmst, dürfen strukturierte Nutzungs-, Fortschritts-, Check-in-, Assessment- und kurze
+                    Transferdaten für interne Pilot-Analysen sowie nicht identifizierende Pilotberichte und Präsentationen
+                    ausgewertet werden. Solche Daten dokumentieren Beobachtungen; sie beweisen allein weder Ursache noch sportliche Leistungssteigerung.
                   </p>
                   <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
-                    Private Journaltexte und freie Antworten werden dafür nie verwendet. Für Minderjährige bleibt die
-                    gesonderte Transfer-Evidence-Erhebung technisch deaktiviert. Du kannst ablehnen und RewirePerform trotzdem
-                    vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
+                    Private Journaltexte und freie Antworten werden dafür nie verwendet. Bei Minderjährigen wird die
+                    Pilot-Auswertung nur nach der aktuellen altersgerechten Freigabe aktiviert. Du kannst ablehnen und
+                    RewirePerform trotzdem vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
                   </p>
                 </div>
               </div>
@@ -280,7 +280,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                   className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-heading font-semibold text-primary-foreground transition-all hover:shadow-glow disabled:opacity-60"
                 >
                   {savingConsent === "yes" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                  Ja, ich möchte beitragen
+                  Ja, am Pilot teilnehmen
                 </button>
                 <button
                   type="button"
@@ -306,7 +306,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           )}
 
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Deine Antworten sind vertraulich. Optionale Evaluationsdaten werden nur mit aktueller Zustimmung gruppiert ausgewertet.
+            Deine Antworten sind vertraulich. Pilotdaten werden nur mit aktueller Zustimmung und ohne identifizierende Einzelprofile berichtet.
           </p>
 
           {isTestUser && (

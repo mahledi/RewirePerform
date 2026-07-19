@@ -66,7 +66,7 @@ describe("daily tracking orchestration", () => {
       ...input,
       reflection: null,
       evidence: {
-        protocolVersion: "56d-transfer-v1-2026-07",
+        protocolVersion: "56d-transfer-v2-2026-07",
         domainId: "attention_return",
         response: "not_observed",
         responseDurationMs: 8123,
@@ -76,7 +76,7 @@ describe("daily tracking orchestration", () => {
     expect(args).toMatchObject({
       _assignment_id: "assignment-1",
       _program_instance_id: "instance-1",
-      _evidence_protocol_version: "56d-transfer-v1-2026-07",
+      _evidence_protocol_version: "56d-transfer-v2-2026-07",
       _evidence_domain_id: "attention_return",
       _evidence_response: "not_observed",
       _evidence_response_duration_ms: 8123,
@@ -122,7 +122,7 @@ describe("daily tracking orchestration", () => {
     const result = await saveCompatible({
       ...input,
       evidence: {
-        protocolVersion: "56d-transfer-v1-2026-07",
+        protocolVersion: "56d-transfer-v2-2026-07",
         domainId: "attention_return",
         response: 3,
         responseDurationMs: 5000,

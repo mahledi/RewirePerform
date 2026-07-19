@@ -14,10 +14,12 @@ const files = {
   auth: read("src/pages/Auth.tsx"),
   bunLock: read("bun.lock"),
   consent: read("src/lib/dataContributionConsent.ts"),
+  contact: read("src/config/contact.ts"),
   envExample: read(".env.example"),
   envValidation: read("scripts/validate-env.mjs"),
   errorBoundary: read("src/components/ErrorBoundary.tsx"),
   evidence: read("supabase/migrations/20260714224000_performance_evidence_56d_v1.sql"),
+  evidenceMinorUpgrade: read("supabase/migrations/20260719085701_guardian_personalization_v2.sql"),
   main: read("src/main.tsx"),
   monitoring: read("src/lib/monitoring.ts"),
   minorGate: read("src/components/minor-consent/MinorAuthorizationGate.tsx"),
@@ -39,8 +41,8 @@ const verify = (kind, id, description, condition) => {
 const consentVersion = files.consent.match(
   /DATA_CONTRIBUTION_CONSENT_VERSION\s*=\s*["']([^"']+)["']/,
 )?.[1];
-const protocolConsentVersion = files.evidence.match(
-  /VALUES\s*\(\s*'56d-transfer-v1-2026-07'\s*,\s*'pilot'\s*,\s*56\s*,\s*'([^']+)'/,
+const protocolConsentVersion = files.evidenceMinorUpgrade.match(
+  /VALUES\s*\(\s*'56d-transfer-v2-2026-07'\s*,\s*'pilot'\s*,\s*56\s*,\s*'([^']+)'/,
 )?.[1];
 
 verify(
@@ -52,17 +54,20 @@ verify(
 verify(
   "invariant",
   "I-02",
-  "The active evidence protocol keeps minor collection disabled with no approved receipt versions",
-  /'56d-transfer-v1-2026-07'[\s\S]{0,300}true,\s*true,\s*false,\s*NULL,\s*NULL/.test(
-    files.evidence,
+  "The active evidence protocol enables minors only with exact guardian and athlete receipt versions",
+  /'56d-transfer-v2-2026-07'[\s\S]{0,300}true,\s*true,\s*true,\s*'guardian_decision_v2_2026_07',\s*'athlete_assent_v2_2026_07'/.test(
+    files.evidenceMinorUpgrade,
   ),
 );
 verify(
   "invariant",
   "I-03",
-  "Evidence eligibility fails closed while minor collection is disabled",
-  files.evidence.includes("IF NOT target_protocol.minor_collection_enabled") &&
-    files.evidence.includes("RETURN 'minor_participation_not_enabled'"),
+  "Minor evidence eligibility fails closed without current dual authorization",
+  files.evidenceMinorUpgrade.includes("IF NOT target_protocol.minor_collection_enabled") &&
+    files.evidenceMinorUpgrade.includes("participant.data_contribution_athlete IS DISTINCT FROM true") &&
+    files.evidenceMinorUpgrade.includes("participant.data_contribution_guardian IS DISTINCT FROM true") &&
+    files.evidenceMinorUpgrade.includes("participant_policy.guardian_decision_version IS DISTINCT FROM target_protocol.required_guardian_consent_version") &&
+    files.evidenceMinorUpgrade.includes("participant_policy.athlete_assent_version IS DISTINCT FROM target_protocol.required_athlete_assent_version"),
 );
 verify(
   "invariant",
@@ -185,7 +190,8 @@ verify(
     /Mahle Herzog/i.test(files.privacy) &&
     /Wiefeldick 16/i.test(files.privacy) &&
     /42699 Solingen/i.test(files.privacy) &&
-    /hello@rewireperform\.com/i.test(files.privacy),
+    files.privacy.includes("SUPPORT_EMAIL") &&
+    /SUPPORT_EMAIL\s*=\s*["']support@rewireperform\.com["']/i.test(files.contact),
 );
 verify(
   "release_gate",

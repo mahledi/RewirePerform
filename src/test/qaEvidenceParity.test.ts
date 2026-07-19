@@ -5,7 +5,7 @@ import { parseQaEvidenceParity } from "@/lib/qaEvidenceParity";
 const rawReport = () => ({
   schema_version: "qa_evidence_parity_v1",
   generated_at: "2026-07-17T09:00:00.000Z",
-  protocol_version: "56d-transfer-v1-2026-07",
+  protocol_version: "56d-transfer-v2-2026-07",
   state: "READY",
   state_label: "Bereit für den ersten QA-Messpunkt",
   scope: {

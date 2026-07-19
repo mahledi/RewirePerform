@@ -22,7 +22,7 @@ import {
 } from "../_shared/minorGuardian.ts";
 
 const MIN_N = 5;
-const DATA_CONTRIBUTION_VERSION = "data_contribution_v2_2026_07";
+const DATA_CONTRIBUTION_VERSION = "data_contribution_v3_2026_07";
 type WBKey = "mood" | "energy" | "focus" | "stress" | "recovery" | "sleep_quality" | "physical_readiness" | "motivation" | "pressure" | "team_connection";
 type WellbeingAggregate = Record<WBKey, number | null> & {
   n_users: number;

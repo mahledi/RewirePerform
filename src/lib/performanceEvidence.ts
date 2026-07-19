@@ -1,4 +1,4 @@
-export const EVIDENCE_PROTOCOL_VERSION = "56d-transfer-v1-2026-07" as const;
+export const EVIDENCE_PROTOCOL_VERSION = "56d-transfer-v2-2026-07" as const;
 
 export type EvidenceDomainId =
   | "attention_return"

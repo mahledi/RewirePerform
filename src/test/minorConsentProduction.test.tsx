@@ -37,12 +37,12 @@ const baseStatus = (overrides: Partial<MinorAuthorizationStatus> = {}): MinorAut
   athlete_status: "required",
   data_contribution_status: "not_asked",
   guardian_email_mask: null,
-  policy_key: "de_minor_product_v1_2026_07",
+  policy_key: "de_minor_product_v2_2026_07",
   product_version: "minor_product_v1_2026_07",
-  guardian_notice_version: "guardian_notice_v1_2026_07",
-  guardian_decision_version: "guardian_decision_v1_2026_07",
-  athlete_assent_version: "athlete_assent_v1_2026_07",
-  data_contribution_version: "data_contribution_v2_2026_07",
+  guardian_notice_version: "guardian_notice_v2_2026_07",
+  guardian_decision_version: "guardian_decision_v2_2026_07",
+  athlete_assent_version: "athlete_assent_v2_2026_07",
+  data_contribution_version: "data_contribution_v3_2026_07",
   enforcement_enabled: true,
   ...overrides,
 });
@@ -137,7 +137,7 @@ describe("minor consent production flow", () => {
     api.saveAthleteAssent.mockResolvedValue(authorized);
     renderFlow();
 
-    const contribution = screen.getByRole("checkbox", { name: /Meine Daten dürfen gruppiert/ });
+    const contribution = screen.getByRole("checkbox", { name: /Ich möchte an der Pilot-Auswertung teilnehmen/ });
     expect(contribution).toBeDisabled();
     fireEvent.click(screen.getByRole("checkbox", { name: /Ich möchte RewirePerform nutzen/ }));
     fireEvent.click(screen.getByRole("button", { name: "Zustimmen und starten" }));

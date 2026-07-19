@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const DATA_CONTRIBUTION_CONSENT_VERSION = "data_contribution_v2_2026_07";
+export const DATA_CONTRIBUTION_CONSENT_VERSION = "data_contribution_v3_2026_07";
 
 export type DataContributionConsentState = boolean | null;
 

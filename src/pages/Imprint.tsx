@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, AtSign, MapPin, Scale } from "lucide-react";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/config/contact";
 
 const Imprint = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const Imprint = () => {
             </div>
             <div className="flex gap-3">
               <AtSign className="mt-1 h-4 w-4 shrink-0 text-primary" />
-              <div><p>E-Mail</p><a className="text-primary hover:underline" href="mailto:hello@rewireperform.com">hello@rewireperform.com</a></div>
+              <div><p>E-Mail</p><a className="text-primary hover:underline" href={SUPPORT_MAILTO}>{SUPPORT_EMAIL}</a></div>
             </div>
           </section>
 

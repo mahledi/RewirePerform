@@ -6,6 +6,10 @@ const migration = readFileSync(
   resolve(process.cwd(), "supabase/migrations/20260714224000_performance_evidence_56d_v1.sql"),
   "utf8",
 );
+const minorUpgradeMigration = readFileSync(
+  resolve(process.cwd(), "supabase/migrations/20260719085701_guardian_personalization_v2.sql"),
+  "utf8",
+);
 
 const functionBody = (name: string, nextName?: string) => {
   const start = migration.indexOf(`CREATE OR REPLACE FUNCTION public.${name}`);
@@ -109,5 +113,32 @@ describe("performance evidence migration boundaries", () => {
     ]) {
       expect(migration).toContain(`GRANT EXECUTE ON FUNCTION public.${signature}`);
     }
+  });
+});
+
+describe("performance evidence minor activation upgrade", () => {
+  it("retires V1 and pins the active V2 protocol to current consent receipts", () => {
+    expect(minorUpgradeMigration).toContain("SET status = 'retired'");
+    expect(minorUpgradeMigration).toContain("'56d-transfer-v2-2026-07'");
+    expect(minorUpgradeMigration).toContain("'data_contribution_v3_2026_07'");
+    expect(minorUpgradeMigration).toContain("'guardian_decision_v2_2026_07'");
+    expect(minorUpgradeMigration).toContain("'athlete_assent_v2_2026_07'");
+    expect(minorUpgradeMigration).toMatch(/true,\s*true,\s*true,\s*'guardian_decision_v2_2026_07'/u);
+  });
+
+  it("copies the locked schedule and synchronizes only active, fully authorized minors", () => {
+    expect(minorUpgradeMigration).toContain("WHERE source.protocol_version = '56d-transfer-v1-2026-07'");
+    expect(minorUpgradeMigration).toContain("participant.data_contribution_athlete = true");
+    expect(minorUpgradeMigration).toContain("participant.data_contribution_guardian = true");
+    expect(minorUpgradeMigration).toContain("pi.status = 'active'");
+    expect(minorUpgradeMigration).toContain("CREATE TRIGGER minor_auth_sync_evidence");
+    expect(minorUpgradeMigration).toContain("CREATE TRIGGER minor_auth_sync_new_program_instance");
+  });
+
+  it("removes personal transfer records after an explicit pilot withdrawal", () => {
+    expect(minorUpgradeMigration).toContain("DELETE FROM public.athlete_transfer_observations");
+    expect(minorUpgradeMigration).toContain("DELETE FROM public.coach_evidence_reviews");
+    expect(minorUpgradeMigration).toContain("cer.scope_type = 'athlete'");
+    expect(minorUpgradeMigration).not.toContain("DELETE FROM public.coach_evidence_observations");
   });
 });

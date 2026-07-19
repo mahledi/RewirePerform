@@ -246,7 +246,7 @@ const MinorConsent = () => {
             onCheckedChange={(value) => setContributionAccepted(value === true)}
             className="mt-0.5"
           />
-          <span><span className="block text-sm font-semibold">{athletePolicyCopy.contributionLabel}</span><span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{contributionAvailable ? athletePolicyCopy.contributionDetail : "Die sorgeberechtigte Person hat diese zusätzliche Auswertung nicht erlaubt. Dein normales Programm bleibt davon unberührt."}</span></span>
+          <span><span className="block text-sm font-semibold">{athletePolicyCopy.contributionLabel}</span><span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{contributionAvailable ? athletePolicyCopy.contributionDetail : "Die sorgeberechtigte Person hat die Pilot-Auswertung nicht erlaubt. Dein normales Programm bleibt davon unberührt."}</span></span>
         </Label>
         <Button
           className="mt-7 w-full"

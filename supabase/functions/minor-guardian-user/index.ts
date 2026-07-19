@@ -1,6 +1,7 @@
 import {
   adminClient,
   assertAllowedOrigin,
+  athleteFirstName,
   authenticatedUser,
   corsHeaders,
   decryptEmail,
@@ -76,7 +77,12 @@ Deno.serve(async (req) => {
       const challengeId = String(challenge.challenge_id ?? "");
 
       try {
-        const providerMessageId = await sendTransactionalEmail(email, guardianInvitationEmail(token));
+        const firstName = await athleteFirstName(admin, user.id);
+        const providerMessageId = await sendTransactionalEmail(
+          email,
+          guardianInvitationEmail(token, firstName),
+          `guardian-invitation-${challengeId}`,
+        );
         await invokeMinorService(admin, "delivery_sent", user.id, {
           challenge_id: challengeId,
           provider_message_id: providerMessageId ?? "",

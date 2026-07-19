@@ -32,9 +32,9 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
 
   await page.goto("/support");
   await expect(page.getByRole("heading", { level: 1, name: "RewirePerform Support" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "hello@rewireperform.com" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "support@rewireperform.com" })).toHaveAttribute(
     "href",
-    "mailto:hello@rewireperform.com",
+    "mailto:support@rewireperform.com",
   );
   await expectNoHorizontalOverflow(page);
 

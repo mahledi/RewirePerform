@@ -536,7 +536,7 @@ const ExpiredScreen = ({ onNavigate }: { onNavigate: Navigate }) => (
       </p>
       <div className="mt-6">
         <Notice>
-          Dein Kind kann in der App einen neuen Link anfordern. Bei Fragen hilft hello@rewireperform.com.
+          Dein Kind kann in der App einen neuen Link anfordern. Bei Fragen hilft support@rewireperform.com.
         </Notice>
       </div>
       <Button type="button" variant="outline" className="mt-7" onClick={() => onNavigate("guardian-email")}>

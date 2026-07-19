@@ -30,7 +30,7 @@ interface EligibilityParticipant {
   program_run_id: string | null;
   program_run_name: string | null;
   is_test: boolean;
-  verification_status: "adult_verified" | "minor_guardian_assent_verified" | "revoked" | null;
+  verification_status: "adult_verified" | "minor_guardian_assent_verified" | "minor_self_assent_verified" | "revoked" | null;
   consent: boolean | null;
   consent_version: string | null;
   eligibility_reason: string;
@@ -45,6 +45,7 @@ interface EligibilityPayload {
 
 const reasonLabel: Record<string, string> = {
   eligible: "Freigegeben",
+  eligible_minor: "Altersgerecht freigegeben",
   eligible_test: "Synthetischer Test",
   consent_required: "Zustimmung fehlt",
   consent_version_outdated: "Neue Zustimmung nötig",
@@ -158,9 +159,9 @@ const EvidenceParticipationGate = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-5 rounded-md border border-amber-400/25 bg-amber-400/5 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
-          Minderjährige werden nicht ausgeschlossen: Sie nutzen RewirePerform normal. Der zusätzliche Evidence-Pfad bleibt
-          bis zu rechtlich geprüfter Sorgeberechtigten-Zustimmung und verständlicher Jugend-Zustimmung technisch gesperrt.
+        <div className="mb-5 rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+          Minderjährige werden nach der aktuellen altersgerechten Pilot-Freigabe automatisch geprüft. Unter 16 sind
+          Sorgeberechtigten- und Athletenentscheidung erforderlich; mit 16 oder 17 entscheidet der Athlet selbst.
         </div>
 
         {loading ? (
@@ -196,7 +197,7 @@ const EvidenceParticipationGate = () => {
                       setAdultVerificationConfirmed(false);
                       setPendingChange({ participant, verified: !adultVerified });
                     }}
-                    disabled={isUpdating || participant.verification_status === "minor_guardian_assent_verified"}
+                    disabled={isUpdating || participant.verification_status === "minor_guardian_assent_verified" || participant.verification_status === "minor_self_assent_verified"}
                     className="h-11 w-full lg:w-auto"
                   >
                     {isUpdating

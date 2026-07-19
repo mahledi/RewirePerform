@@ -48,10 +48,10 @@ const GuardianDecision = lazy(() => import("./pages/GuardianDecision.tsx"));
 const EvidencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/EvidencePreview.tsx"))
   : null;
-const EmailPreview = import.meta.env.DEV
+const EmailPreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/EmailPreview.tsx"))
   : null;
-const MinorConsentPreview = import.meta.env.DEV
+const MinorConsentPreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/MinorConsentPreview.tsx"))
   : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));

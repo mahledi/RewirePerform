@@ -1,6 +1,7 @@
 import {
   adminClient,
   assertAllowedOrigin,
+  athleteFirstName,
   corsHeaders,
   decryptEmail,
   guardianReceiptEmail,
@@ -10,6 +11,7 @@ import {
   parseJson,
   publicError,
   randomToken,
+  safeAthleteFirstName,
   sendTransactionalEmail,
   sha256,
 } from "../_shared/minorGuardian.ts";
@@ -28,7 +30,15 @@ Deno.serve(async (req) => {
 
     if (action === "inspect") {
       const result = await invokeMinorService(admin, "challenge_lookup", null, { token_hash: tokenHash });
-      return jsonResponse(req, result);
+      if (result.state !== "pending") return jsonResponse(req, result);
+      const { data: rawFirstName, error: displayNameError } = await admin.rpc(
+        "minor_guardian_challenge_display_name",
+        { _token_hash: tokenHash },
+      );
+      return jsonResponse(req, {
+        ...result,
+        athlete_first_name: displayNameError ? null : safeAthleteFirstName(rawFirstName),
+      });
     }
 
     if (action === "decide") {
@@ -52,14 +62,16 @@ Deno.serve(async (req) => {
       let receiptDelivery: "not_required" | "sent" | "failed" = "not_required";
       let manageUrl: string | null = null;
       if (body.productAuthorized) {
-        const receipt = guardianReceiptEmail(managementToken);
+        const userId = typeof result.user_id === "string" ? result.user_id : "";
+        const firstName = userId ? await athleteFirstName(admin, userId) : null;
+        const receipt = guardianReceiptEmail(managementToken, firstName);
         manageUrl = receipt.manageUrl;
         try {
           const email = await decryptEmail(
             String(result.guardian_email_ciphertext ?? ""),
             String(result.guardian_email_iv ?? ""),
           );
-          await sendTransactionalEmail(email, receipt);
+          await sendTransactionalEmail(email, receipt, `guardian-receipt-${tokenHash}`);
           receiptDelivery = "sent";
         } catch {
           receiptDelivery = "failed";
@@ -75,7 +87,15 @@ Deno.serve(async (req) => {
 
     if (action === "inspect-management") {
       const result = await invokeMinorService(admin, "management_lookup", null, { token_hash: tokenHash });
-      return jsonResponse(req, result);
+      if (result.state !== "active") return jsonResponse(req, result);
+      const { data: rawFirstName, error: displayNameError } = await admin.rpc(
+        "minor_guardian_management_display_name",
+        { _token_hash: tokenHash },
+      );
+      return jsonResponse(req, {
+        ...result,
+        athlete_first_name: displayNameError ? null : safeAthleteFirstName(rawFirstName),
+      });
     }
 
     if (action === "withdraw-data-contribution") {

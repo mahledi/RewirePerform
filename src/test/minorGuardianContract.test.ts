@@ -14,13 +14,15 @@ import {
 } from "@/content/minorPolicy";
 
 const read = (path: string) => readFileSync(resolve(path), "utf8");
+const baseMigration = () => read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+const currentMigration = () => read("supabase/migrations/20260719085701_guardian_personalization_v2.sql");
 
 describe("minor guardian production contract", () => {
   it("pins the exact visible policy content to the database receipt hash", () => {
     const calculated = createHash("sha256")
       .update(JSON.stringify(minorPolicyCanonicalDocument))
       .digest("hex");
-    const migration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+    const migration = currentMigration();
 
     expect(calculated).toBe(MINOR_POLICY_CONTENT_HASH);
     expect(migration).toContain(`'${MINOR_POLICY_KEY}'`);
@@ -29,7 +31,7 @@ describe("minor guardian production contract", () => {
 
   it("keeps frontend, Edge Function and database policy versions aligned", () => {
     const edgeShared = read("supabase/functions/_shared/minorGuardian.ts");
-    const migration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+    const migration = currentMigration();
     const versions = [
       MINOR_PRODUCT_POLICY_VERSION,
       GUARDIAN_NOTICE_VERSION,
@@ -45,7 +47,7 @@ describe("minor guardian production contract", () => {
   });
 
   it("keeps private authorization tables inaccessible to app roles", () => {
-    const migration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+    const migration = baseMigration();
 
     expect(migration).toContain("REVOKE ALL ON SCHEMA minor_auth FROM PUBLIC, anon, authenticated");
     expect(migration).toContain("REVOKE ALL ON ALL TABLES IN SCHEMA minor_auth FROM PUBLIC, anon, authenticated");
@@ -54,14 +56,14 @@ describe("minor guardian production contract", () => {
   });
 
   it("serializes protected writes with a concurrent authorization withdrawal", () => {
-    const migration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+    const migration = baseMigration();
 
     expect(migration.match(/FOR SHARE OF pa;/gu)).toHaveLength(2);
     expect(migration).toContain("BEFORE INSERT OR UPDATE");
   });
 
   it("covers every current athlete program write surface", () => {
-    const migration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+    const migration = baseMigration();
     const guardedTables = [
       "questionnaire_responses",
       "daily_checkins",
@@ -115,16 +117,24 @@ describe("minor guardian production contract", () => {
     expect(teamFunction).toContain("participation: operationalParticipation");
   });
 
-  it("never turns an in-app age declaration into transfer-evidence eligibility", () => {
-    const migration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
+  it("requires exact age-appropriate receipts for minor evidence eligibility", () => {
+    const base = baseMigration();
+    const current = currentMigration();
 
-    expect(migration).not.toContain("adult_status_confirmed_outside_app");
-    expect(migration).toContain("Product contribution never grants transfer-evidence eligibility");
+    expect(base).toContain("Product contribution never grants transfer-evidence eligibility");
+    expect(current).toContain("minor_guardian_assent_verified");
+    expect(current).toContain("minor_self_assent_verified");
+    expect(current).toContain("participant.data_contribution_guardian = true");
+    expect(current).toContain("participant.data_contribution_athlete = true");
+    expect(current).toContain("OR pi.status <> 'active'");
+    expect(current).toContain("RETURN 'program_inactive'");
+    expect(current).toContain("participant_policy.guardian_decision_version IS DISTINCT FROM target_protocol.required_guardian_consent_version");
+    expect(current).toContain("participant_policy.athlete_assent_version IS DISTINCT FROM target_protocol.required_athlete_assent_version");
   });
 
   it("keeps a stored guardian decision successful when the receipt email fails", () => {
     const publicEdge = read("supabase/functions/minor-guardian-public/index.ts");
-    const receiptCreated = publicEdge.indexOf("const receipt = guardianReceiptEmail(managementToken)");
+    const receiptCreated = publicEdge.indexOf("const receipt = guardianReceiptEmail(managementToken, firstName)");
     const emailDecrypted = publicEdge.indexOf("const email = await decryptEmail(");
 
     expect(receiptCreated).toBeGreaterThan(0);
@@ -133,13 +143,28 @@ describe("minor guardian production contract", () => {
     expect(publicEdge).toContain("manageUrl = receipt.manageUrl");
   });
 
-  it("keeps guardian secrets out of hosting query logs", () => {
+  it("personalizes guardian contact without exposing an unsafe display name", () => {
     const edgeShared = read("supabase/functions/_shared/minorGuardian.ts");
+    const guardianEmails = read("supabase/functions/_shared/guardianEmails.ts");
+    const userEdge = read("supabase/functions/minor-guardian-user/index.ts");
+    const publicEdge = read("supabase/functions/minor-guardian-public/index.ts");
 
-    expect(edgeShared).toContain("/guardian/decision#token=");
-    expect(edgeShared).toContain("/guardian/decision#manage=");
-    expect(edgeShared).not.toContain("/guardian/decision?token=");
-    expect(edgeShared).not.toContain("/guardian/decision?manage=");
+    expect(edgeShared).toContain("safeAthleteFirstName");
+    expect(guardianEmails).toContain("safeEmailHtml(athlete)");
+    expect(guardianEmails).toContain("hat deine E-Mail-Adresse als Kontakt einer sorgeberechtigten Person angegeben");
+    expect(userEdge).toContain("guardian-invitation-${challengeId}");
+    expect(publicEdge).toContain("guardian-receipt-${tokenHash}");
+    expect(edgeShared).toContain('"Idempotency-Key": idempotencyKey');
+    expect(edgeShared).toContain("reply_to: SUPPORT_EMAIL");
+  });
+
+  it("keeps guardian secrets out of hosting query logs", () => {
+    const guardianEmails = read("supabase/functions/_shared/guardianEmails.ts");
+
+    expect(guardianEmails).toContain("/guardian/decision#token=");
+    expect(guardianEmails).toContain("/guardian/decision#manage=");
+    expect(guardianEmails).not.toContain("/guardian/decision?token=");
+    expect(guardianEmails).not.toContain("/guardian/decision?manage=");
   });
 
   it("gates every athlete route that stores or reveals personal program data", () => {
@@ -167,18 +192,20 @@ describe("minor guardian production contract", () => {
     const edgeShared = read("supabase/functions/_shared/minorGuardian.ts");
 
     expect(policy).toContain("Der Verein ist an diesem Ablauf nicht beteiligt");
-    expect(edgeShared).toContain("nicht für Marketing verwendet");
+    expect(policy).toContain("nicht für Marketing verwendet");
     expect(edgeShared).not.toContain("newsletter");
   });
 
   it("includes the first guardian contact in the versioned policy receipt", () => {
     const policy = JSON.stringify(minorPolicyCanonicalDocument);
-    const edgeShared = read("supabase/functions/_shared/minorGuardian.ts");
+    const guardianEmails = read("supabase/functions/_shared/guardianEmails.ts");
+    const emailShared = read("supabase/functions/_shared/rewireEmail.ts");
 
     expect(policy).toContain("guardianNotice");
     expect(policy).toContain("48 Stunden gültig");
     expect(policy).toContain("spätestens sieben Tage");
-    expect(edgeShared).toContain("48 Stunden gültig und nur einmal nutzbar");
-    expect(edgeShared).toContain("Die verschlüsselte Kopie der Adresse wird im RewirePerform-Autorisierungssystem spätestens sieben Tage");
+    expect(guardianEmails).toContain("48 Stunden gültig und nur einmal nutzbar");
+    expect(guardianEmails).toContain("Wir fragen weder nach einem Passwort noch nach Zahlungsdaten");
+    expect(emailShared).toContain('SUPPORT_EMAIL = "support@rewireperform.com"');
   });
 });

@@ -20,12 +20,13 @@ export type MinorGuardianPreviewState =
 export const MINOR_GUARDIAN_DRAFT = {
   status: "implementation_complete_legal_review_required",
   jurisdiction: "DE",
-  createdAt: "2026-07-18",
+  createdAt: "2026-07-19",
   policyVersion: "minor_product_v1_2026_07",
-  guardianNoticeVersion: "guardian_notice_v1_2026_07",
-  guardianAuthorizationVersion: "guardian_decision_v1_2026_07",
-  athleteAssentVersion: "athlete_assent_v1_2026_07",
-  evaluationConsentVersion: "data_contribution_v2_2026_07",
+  guardianNoticeVersion: "guardian_notice_v2_2026_07",
+  guardianAuthorizationVersion: "guardian_decision_v2_2026_07",
+  athleteAssentVersion: "athlete_assent_v2_2026_07",
+  evaluationConsentVersion: "data_contribution_v3_2026_07",
+  pilotEvidenceEnabled: true,
   researchEnabled: false,
   marketingEmailEnabled: false,
   productTrackingEnabledAfterAuthorization: true,
@@ -89,7 +90,7 @@ export const guardianNoticeDraft = {
     "Du brauchst kein Elternkonto. Der persönliche Link ist einmal nutzbar und läuft nach der angegebenen Frist ab.",
   emailPurpose:
     "Wir verwenden deine E-Mail-Adresse nur für diese Entscheidung, notwendige Sicherheitsnachrichten und einen möglichen Widerruf. Keine Werbung, kein Newsletter.",
-  contact: "Fragen oder Widerruf: hello@rewireperform.com",
+  contact: "Fragen oder Widerruf: support@rewireperform.com",
 } as const;
 
 export const guardianProductPurposeDraft = {
@@ -126,7 +127,7 @@ export const guardianDecisionDraft = {
   productAuthorization:
     "Ich habe die Informationen gelesen und erlaube die beschriebene Nutzung für das normale RewirePerform-Programm.",
   internalEvaluation:
-    "Optional: RewirePerform darf ausgewählte Verlaufsdaten unter einer technischen Kennung statt mit Name oder E-Mail intern auswerten, um Datenqualität und Programmablauf zu prüfen.",
+    "Optional: RewirePerform darf ausgewählte strukturierte Verlaufs-, Check-in-, Assessment-, Transfer- und Coach-Beobachtungsdaten für interne Pilot-Analysen sowie nicht identifizierende Berichte und Präsentationen auswerten.",
   evaluationNoDisadvantage:
     "Ein Nein hierzu ändert nichts am Programmzugang und hat keinen Nachteil im Team.",
   researchUnavailable:

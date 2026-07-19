@@ -72,6 +72,7 @@ export interface GuardianLinkStatus {
   product_status?: string;
   data_contribution_status?: string;
   data_contribution_guardian?: boolean | null;
+  athlete_first_name?: string | null;
   policy_key?: string;
 }
 

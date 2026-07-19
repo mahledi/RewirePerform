@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/config/contact";
 
 const Privacy = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: 18. Juli 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
+          Stand: 19. Juli 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert.
         </p>
@@ -54,7 +55,7 @@ const Privacy = () => {
               Deutschland
             </address>
             <p className="mt-2">
-              Datenschutzkontakt: <a href="mailto:hello@rewireperform.com" className="text-primary hover:underline">hello@rewireperform.com</a>
+              Datenschutzkontakt: <a href={SUPPORT_MAILTO} className="text-primary hover:underline">{SUPPORT_EMAIL}</a>
             </p>
           </section>
 
@@ -86,7 +87,7 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Rechtsgrundlage (DSGVO)</h2>
             <ul className="space-y-2">
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
-              <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener, gruppierter Evaluationsdaten für interne Auswertungen und freigegebene Auswertungsberichte. <span className="text-foreground">Ohne dein aktives Ja passiert hier nichts.</span></li>
+              <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. <span className="text-foreground">Ohne dein aktives Ja passiert hier nichts.</span></li>
               <li><span className="text-foreground">Art. 9 Abs. 2 lit. a DSGVO - ausdrückliche Einwilligung:</span> Soweit psychologisch sensible Angaben verarbeitet werden, ist dafür eine gesonderte, ausdrückliche Einwilligung erforderlich.</li>
               <li><span className="text-foreground">Minderjährige:</span> Unter 16 werden datenabhängige Programmfunktionen erst freigeschaltet, wenn eine sorgeberechtigte Person und der Jugendliche selbst der aktuellen Version zugestimmt haben. Mit 16 oder 17 entscheidet der Jugendliche im vorgesehenen Deutschland-Flow selbst. Der Verein ist an diesem Freigabeprozess nicht beteiligt.</li>
             </ul>
@@ -99,8 +100,9 @@ const Privacy = () => {
               <li>Die E-Mail-Adresse der sorgeberechtigten Person wird vom Jugendlichen selbst eingegeben, im Autorisierungssystem verschlüsselt gespeichert und nur für Einladung, Nachweis, Support und Widerruf verwendet.</li>
               <li>Der Einmallink ist 48 Stunden gültig. Einladungs- und Widerrufstoken werden nur als Hash gespeichert und nach den unten genannten Fristen automatisiert entfernt.</li>
               <li>Trainer und Verein sehen weder die E-Mail-Adresse der sorgeberechtigten Person noch ihre Entscheidung oder einen Ablehnungsgrund.</li>
-              <li>Eine Freigabe kann über den persönlichen Widerrufslink, in der App oder über den Datenschutzkontakt widerrufen werden.</li>
-              <li>Die derzeitige zusätzliche Transfer-Auswertung für Nachweiszwecke ist für Minderjährige deaktiviert. Eine spätere Studie oder weitergehende Forschungsnutzung würde eine neue, getrennte Information und Entscheidung erfordern.</li>
+              <li>Die Programmfreigabe und die getrennte Pilot-Auswertung können über den persönlichen Widerrufslink, in der App oder über den Datenschutzkontakt widerrufen werden.</li>
+              <li>Die Pilot-Auswertung wird nur aktiviert, wenn die altersgerechten Entscheidungen in der aktuellen Textversion vorliegen: unter 16 durch die sorgeberechtigte Person und den Jugendlichen, mit 16 oder 17 durch den Jugendlichen selbst.</li>
+              <li>Eine externe wissenschaftliche Studie oder weitergehende Forschungsnutzung würde eine neue, getrennte Information und Entscheidung erfordern.</li>
             </ul>
           </section>
 
@@ -141,9 +143,9 @@ const Privacy = () => {
           </section>
 
           <section className="rounded-2xl border border-primary/30 bg-primary/10 p-5">
-            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Gruppierte Evaluationsdaten - hilf anderen Athleten</h2>
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Pilot-Auswertung - hilf anderen Athleten</h2>
             <p>
-              Wenn du zustimmst, dürfen ausgewählte Fortschrittsdaten <span className="text-foreground">gruppiert und ohne direkte Identifikatoren</span> ausgewertet werden. Sie dokumentieren Nutzung, Datenqualität und beobachtete Veränderungen. Sie beweisen für sich allein weder Ursache noch sportliche Leistungssteigerung.
+              Wenn du zustimmst, dürfen ausgewählte strukturierte Fortschritts- und Performancedaten für interne Pilot-Analysen sowie <span className="text-foreground">gruppierte Berichte und Präsentationen ohne direkte Identifikatoren</span> ausgewertet werden. Sie dokumentieren Nutzung, Datenqualität und beobachtete Veränderungen. Sie beweisen für sich allein weder Ursache noch sportliche Leistungssteigerung.
             </p>
             <p className="mt-3 text-foreground">Was konkret in solche Aggregate einfließen darf:</p>
             <ul className="mt-2 space-y-1">
@@ -155,14 +157,15 @@ const Privacy = () => {
             <p className="mt-3 text-foreground">Was niemals einfließt — auch nicht mit deiner Zustimmung:</p>
             <ul className="mt-2 space-y-1">
               <li>– Journaltexte, Freitexte, persönliche Reflexionen</li>
-              <li>– Individuelle Antworten auf einzelne Fragen</li>
+              <li>– identifizierbare Einzelantworten oder individuelle Athletenprofile in Berichten und Präsentationen</li>
               <li>– Identifizierende Merkmale (Name, E-Mail, Geburtsdatum, Position, Verein)</li>
               <li>– Werte aus Gruppen mit weniger als fünf freigegebenen Personen</li>
             </ul>
             <p className="mt-3">
               Gruppenaggregate werden erst ab mindestens fünf freigegebenen Personen ausgegeben und enthalten keine Namen oder E-Mail-Adressen. Die Einwilligung
               ist freiwillig, jederzeit in den Einstellungen widerrufbar und beeinflusst <span className="text-foreground">in keiner Weise</span>,
-              wie die App für dich funktioniert.
+              wie die App für dich funktioniert. Nach einem Widerruf werden keine neuen Pilotdaten erhoben, vorhandene personenbezogene
+              Transferdaten aus der Pilot-Auswertung entfernt und nicht mehr in neue Auswertungen einbezogen. Bereits gebildete, wirklich anonyme Gruppenaggregate können bestehen bleiben.
             </p>
           </section>
 
@@ -223,7 +226,7 @@ const Privacy = () => {
               <li>– minimierte Einwilligungsnachweise ohne E-Mail-Adresse der sorgeberechtigten Person: bis zu drei Jahre ab der jeweiligen Entscheidung</li>
               <li>– interne technische Fehlerereignisse: höchstens 30 Tage</li>
               <li>– Push-Zustellprotokolle: höchstens 90 Tage nach Ende des zugehörigen Programmlaufs</li>
-              <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls, sofern kein früherer Widerruf oder Löschanspruch greift</li>
+              <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls; bei Widerruf werden personenbezogene Transferdaten unmittelbar aus der Pilot-Auswertung entfernt</li>
               <li>– vollständig anonyme Aggregate: solange sie keinen Personenbezug mehr besitzen</li>
             </ul>
           </section>
@@ -265,8 +268,8 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Kontakt</h2>
             <p>
               Für Datenschutz-, Widerrufs- oder Auskunftsanfragen:{" "}
-              <a href="mailto:hello@rewireperform.com" className="text-primary hover:underline">
-                hello@rewireperform.com
+              <a href={SUPPORT_MAILTO} className="text-primary hover:underline">
+                {SUPPORT_EMAIL}
               </a>
             </p>
           </section>

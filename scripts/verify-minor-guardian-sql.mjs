@@ -7,6 +7,8 @@ const migrationPath = resolve("supabase/migrations/20260718122735_minor_guardian
 const migration = readFileSync(migrationPath, "utf8");
 const indexMigrationPath = resolve("supabase/migrations/20260718160000_minor_guardian_fk_indexes.sql");
 const indexMigration = readFileSync(indexMigrationPath, "utf8");
+const upgradeMigrationPath = resolve("supabase/migrations/20260719085701_guardian_personalization_v2.sql");
+const upgradeMigration = readFileSync(upgradeMigrationPath, "utf8");
 
 const ids = {
   adult: "00000000-0000-4000-8000-000000000101",
@@ -54,6 +56,10 @@ try {
     CREATE SCHEMA cron;
 
     CREATE TABLE auth.users(id uuid PRIMARY KEY);
+    CREATE FUNCTION auth.uid() RETURNS uuid
+    LANGUAGE sql STABLE AS $$
+      SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid
+    $$;
     CREATE TYPE public.app_role AS ENUM ('athlete', 'coach', 'admin');
     CREATE TABLE public.user_roles(
       user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -66,6 +72,7 @@ try {
       sport text,
       team text,
       position text,
+      is_test_user boolean NOT NULL DEFAULT false,
       data_contribution_consent boolean,
       data_contribution_consent_version text,
       data_contribution_consented_at timestamptz,
@@ -74,7 +81,39 @@ try {
     CREATE TABLE public.program_instances(
       id uuid PRIMARY KEY,
       user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-      status text NOT NULL
+      team_id uuid,
+      program_run_id uuid,
+      status text NOT NULL,
+      started_at date NOT NULL DEFAULT CURRENT_DATE,
+      is_test_instance boolean NOT NULL DEFAULT false
+    );
+    CREATE TABLE public.teams(
+      id uuid PRIMARY KEY,
+      name text NOT NULL
+    );
+    CREATE TABLE public.program_runs(
+      id uuid PRIMARY KEY,
+      name text NOT NULL
+    );
+    CREATE TABLE public.evidence_protocols(
+      version text PRIMARY KEY,
+      status text NOT NULL CHECK (status IN ('draft', 'pilot', 'retired')),
+      program_days smallint NOT NULL CHECK (program_days = 56),
+      required_consent_version text NOT NULL,
+      athlete_collection_enabled boolean NOT NULL DEFAULT false,
+      coach_collection_enabled boolean NOT NULL DEFAULT false,
+      minor_collection_enabled boolean NOT NULL DEFAULT false,
+      required_guardian_consent_version text,
+      required_athlete_assent_version text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.evidence_transfer_schedule(
+      protocol_version text NOT NULL REFERENCES public.evidence_protocols(version),
+      day_number smallint NOT NULL,
+      domain_id text NOT NULL,
+      replaces_optional_reflection boolean NOT NULL DEFAULT true,
+      target_seconds smallint NOT NULL,
+      PRIMARY KEY(protocol_version, day_number)
     );
     CREATE TABLE public.evidence_participation_eligibility(
       program_instance_id uuid PRIMARY KEY REFERENCES public.program_instances(id) ON DELETE CASCADE,
@@ -92,6 +131,16 @@ try {
         OR (status = 'revoked' AND revoked_at IS NOT NULL)
       )
     );
+    CREATE TABLE public.evidence_eligibility_audit(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      program_instance_id uuid NOT NULL REFERENCES public.program_instances(id) ON DELETE CASCADE,
+      status text NOT NULL CHECK (status IN ('adult_verified', 'minor_guardian_assent_verified', 'revoked')),
+      verification_basis text NOT NULL CHECK (verification_basis IN ('adult_status_confirmed_outside_app', 'guardian_consent_and_athlete_assent_confirmed')),
+      guardian_consent_version text,
+      athlete_assent_version text,
+      actor_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
 
     CREATE TABLE public.questionnaire_responses(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id));
     CREATE TABLE public.daily_checkins(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id));
@@ -102,7 +151,20 @@ try {
     CREATE TABLE public.user_day_completion(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id));
     CREATE TABLE public.comprehension_check_instances(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id));
     CREATE TABLE public.program_progress_snapshots(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id));
-    CREATE TABLE public.athlete_transfer_observations(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id));
+    CREATE TABLE public.athlete_transfer_observations(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES auth.users(id),
+      program_instance_id uuid REFERENCES public.program_instances(id),
+      protocol_version text
+    );
+    CREATE TABLE public.coach_evidence_reviews(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      scope_type text NOT NULL,
+      target_program_instance_id uuid REFERENCES public.program_instances(id) ON DELETE CASCADE
+    );
+    CREATE TABLE public.coach_evidence_observations(
+      review_id uuid REFERENCES public.coach_evidence_reviews(id) ON DELETE CASCADE
+    );
     CREATE TABLE public.app_event_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), created_at timestamptz NOT NULL DEFAULT now());
     CREATE TABLE public.notification_log(id uuid PRIMARY KEY DEFAULT gen_random_uuid(), created_at timestamptz NOT NULL DEFAULT now());
 
@@ -116,10 +178,50 @@ try {
 
     CREATE FUNCTION cron.schedule(_name text, _schedule text, _command text)
     RETURNS bigint LANGUAGE sql AS $$ SELECT 1::bigint $$;
+
+    CREATE FUNCTION public.get_performance_evidence_summary(
+      _program_run_id uuid DEFAULT NULL,
+      _include_test boolean DEFAULT false,
+      _protocol_version text DEFAULT '56d-transfer-v1-2026-07'
+    ) RETURNS json
+    LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
+      SELECT json_build_object(
+        'protocol_version', _protocol_version,
+        'privacy', json_build_object('minor_collection_enabled', false)
+      )
+    $$;
+
+    INSERT INTO public.evidence_protocols(
+      version, status, program_days, required_consent_version,
+      athlete_collection_enabled, coach_collection_enabled,
+      minor_collection_enabled, required_guardian_consent_version,
+      required_athlete_assent_version
+    ) VALUES (
+      '56d-transfer-v1-2026-07', 'pilot', 56, 'data_contribution_v2_2026_07',
+      true, true, false, NULL, NULL
+    );
+
+    INSERT INTO public.evidence_transfer_schedule(
+      protocol_version, day_number, domain_id, replaces_optional_reflection, target_seconds
+    )
+    SELECT
+      '56d-transfer-v1-2026-07',
+      day_number,
+      CASE (day_number - 1) % 5
+        WHEN 0 THEN 'attention_return'
+        WHEN 1 THEN 'error_recovery'
+        WHEN 2 THEN 'pressure_regulation'
+        WHEN 3 THEN 'process_execution'
+        ELSE 'action_under_uncertainty'
+      END,
+      true,
+      20
+    FROM unnest(ARRAY[4,7,11,14,18,21,25,28,32,35,39,42,46,49,53,56]) AS schedule(day_number);
   `);
 
   await db.exec(migration);
   await db.exec(indexMigration);
+  await db.exec(upgradeMigration);
 
   await db.query("INSERT INTO auth.users(id) VALUES ($1), ($2), ($3)", [ids.adult, ids.teen, ids.child]);
   await db.query(
@@ -150,7 +252,35 @@ try {
     data_contribution_authorized: true,
   });
   assert(teenAssent.state === "product_authorized", "Teen assent must unlock the product");
-  assert(await count("public.evidence_participation_eligibility", `program_instance_id = '${ids.teenInstance}'`) === 0, "Minor transfer evidence must stay disabled");
+  const teenEligibility = await db.query(
+    "SELECT status FROM public.evidence_participation_eligibility WHERE program_instance_id = $1",
+    [ids.teenInstance],
+  );
+  assert(teenEligibility.rows[0].status === "minor_self_assent_verified", "16/17-year-old pilot assent must create the self-assent evidence gate");
+  const teenReason = await db.query(
+    "SELECT public.evidence_eligibility_reason($1, '56d-transfer-v2-2026-07') AS reason",
+    [ids.teenInstance],
+  );
+  assert(teenReason.rows[0].reason === "eligible_minor", "16/17-year-old pilot consent must be evidence eligible");
+
+  await db.query("UPDATE public.program_instances SET status = 'completed' WHERE id = $1", [ids.teenInstance]);
+  const teenInactiveEligibility = await db.query(
+    "SELECT status FROM public.evidence_participation_eligibility WHERE program_instance_id = $1",
+    [ids.teenInstance],
+  );
+  assert(teenInactiveEligibility.rows[0].status === "revoked", "Completing a program must revoke stale minor evidence eligibility");
+  const teenInactiveReason = await db.query(
+    "SELECT public.evidence_eligibility_reason($1, '56d-transfer-v2-2026-07') AS reason",
+    [ids.teenInstance],
+  );
+  assert(teenInactiveReason.rows[0].reason === "program_inactive", "Inactive programs must fail the evidence gate before any consent state is evaluated");
+
+  await db.query("UPDATE public.program_instances SET status = 'active' WHERE id = $1", [ids.teenInstance]);
+  const teenReactivatedEligibility = await db.query(
+    "SELECT status FROM public.evidence_participation_eligibility WHERE program_instance_id = $1",
+    [ids.teenInstance],
+  );
+  assert(teenReactivatedEligibility.rows[0].status === "minor_self_assent_verified", "Reactivating an authorized minor program must restore current eligibility");
 
   const childAge = await action("set_age", ids.child, { age_band: "under_16" });
   assert(childAge.state === "guardian_contact_required", "Under-16 users must require a guardian contact");
@@ -198,7 +328,23 @@ try {
     data_contribution_authorized: true,
   });
   assert(childAssent.state === "product_authorized", "Guardian approval plus athlete assent must unlock the product");
-  assert(await count("public.evidence_participation_eligibility", `program_instance_id = '${ids.childInstance}'`) === 0, "Under-16 transfer evidence must stay disabled");
+  const childEligibility = await db.query(
+    "SELECT status, guardian_consent_version, athlete_assent_version FROM public.evidence_participation_eligibility WHERE program_instance_id = $1",
+    [ids.childInstance],
+  );
+  assert(childEligibility.rows[0].status === "minor_guardian_assent_verified", "Under-16 dual consent must create the guardian-and-assent evidence gate");
+  assert(childEligibility.rows[0].guardian_consent_version === "guardian_decision_v2_2026_07", "Guardian receipt version was not bound to evidence eligibility");
+  assert(childEligibility.rows[0].athlete_assent_version === "athlete_assent_v2_2026_07", "Athlete assent version was not bound to evidence eligibility");
+  const childReason = await db.query(
+    "SELECT public.evidence_eligibility_reason($1, '56d-transfer-v2-2026-07') AS reason",
+    [ids.childInstance],
+  );
+  assert(childReason.rows[0].reason === "eligible_minor", "Under-16 dual consent must be evidence eligible");
+
+  await db.query(
+    "INSERT INTO public.athlete_transfer_observations(user_id, program_instance_id, protocol_version) VALUES ($1, $2, '56d-transfer-v2-2026-07')",
+    [ids.child, ids.childInstance],
+  );
 
   const filtered = await action("filter_data_contribution", null, { user_ids: [ids.adult, ids.teen, ids.child] });
   assert(filtered.user_ids.length === 3, "Authorized contributors were not returned by the aggregate filter");
@@ -207,6 +353,12 @@ try {
   const childAfterContributionWithdrawal = await action("status", ids.child);
   assert(childAfterContributionWithdrawal.product_status === "authorized", "Optional guardian withdrawal must preserve product access");
   assert(childAfterContributionWithdrawal.data_contribution_status === "declined", "Optional guardian withdrawal must disable contribution");
+  assert(await count("public.athlete_transfer_observations", `user_id = '${ids.child}'`) === 0, "Guardian pilot withdrawal must remove personal transfer observations");
+  const childRevokedEligibility = await db.query(
+    "SELECT status FROM public.evidence_participation_eligibility WHERE program_instance_id = $1",
+    [ids.childInstance],
+  );
+  assert(childRevokedEligibility.rows[0].status === "revoked", "Guardian pilot withdrawal must revoke evidence eligibility");
   await action("set_data_contribution", ids.teen, { data_contribution_authorized: false });
   const filteredAfterWithdrawal = await action("filter_data_contribution", null, { user_ids: [ids.adult, ids.teen, ids.child] });
   assert(!filteredAfterWithdrawal.user_ids.includes(ids.teen), "Withdrawn data contribution must be excluded immediately");

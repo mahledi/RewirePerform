@@ -14,7 +14,7 @@ vi.mock("@/lib/qaEvidenceParity", async (importOriginal) => {
 const report = (): QaEvidenceParityReport => ({
   schemaVersion: "qa_evidence_parity_v1",
   generatedAt: "2026-07-17T09:00:00.000Z",
-  protocolVersion: "56d-transfer-v1-2026-07",
+  protocolVersion: "56d-transfer-v2-2026-07",
   state: "IN_PROGRESS",
   stateLabel: "QA-Durchlauf noch nicht vollständig",
   scope: {

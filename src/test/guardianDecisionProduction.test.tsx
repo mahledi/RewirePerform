@@ -27,7 +27,8 @@ describe("guardian decision production flow", () => {
     for (const mock of Object.values(api)) mock.mockReset();
     api.inspectGuardianDecision.mockResolvedValue({
       state: "pending",
-      policy_key: "de_minor_product_v1_2026_07",
+      policy_key: "de_minor_product_v2_2026_07",
+      athlete_first_name: "Luka",
     });
   });
 
@@ -102,11 +103,11 @@ describe("guardian decision production flow", () => {
     });
     renderDecision("/guardian/decision#manage=secure-management-token");
 
-    fireEvent.click(await screen.findByRole("button", { name: "Nur optionale Auswertung beenden" }));
-    fireEvent.click(screen.getByRole("button", { name: "Optionale Auswertung beenden" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Pilot-Auswertung beenden" }));
+    fireEvent.click(screen.getByRole("button", { name: "Pilot-Auswertung beenden" }));
 
     await waitFor(() => expect(api.withdrawGuardianDataContribution).toHaveBeenCalledWith("secure-management-token"));
     expect(await screen.findByRole("status")).toHaveTextContent("Der normale Programmzugang bleibt aktiv");
-    expect(screen.getByText("Die optionale gruppierte Auswertung ist nicht freigegeben.")).toBeInTheDocument();
+    expect(screen.getByText("Nicht aktiv")).toBeInTheDocument();
   });
 });

@@ -1,13 +1,18 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.99.3";
+import { SUPPORT_EMAIL } from "./rewireEmail.ts";
+import {
+  buildGuardianInvitationEmail,
+  buildGuardianReceiptEmail,
+} from "./guardianEmails.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 export const PRODUCT_POLICY_VERSION = "minor_product_v1_2026_07";
-export const GUARDIAN_NOTICE_VERSION = "guardian_notice_v1_2026_07";
-export const GUARDIAN_DECISION_VERSION = "guardian_decision_v1_2026_07";
-export const ATHLETE_ASSENT_VERSION = "athlete_assent_v1_2026_07";
-export const DATA_CONTRIBUTION_VERSION = "data_contribution_v2_2026_07";
+export const GUARDIAN_NOTICE_VERSION = "guardian_notice_v2_2026_07";
+export const GUARDIAN_DECISION_VERSION = "guardian_decision_v2_2026_07";
+export const ATHLETE_ASSENT_VERSION = "athlete_assent_v2_2026_07";
+export const DATA_CONTRIBUTION_VERSION = "data_contribution_v3_2026_07";
 
 export type JsonRecord = Record<string, unknown>;
 
@@ -190,84 +195,33 @@ export const guardianEmailHash = async (email: string) => {
   return bytesToHex(new Uint8Array(signature));
 };
 
-const escaped = (value: string) => value
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("'", "&#039;");
-
-const emailFrame = (title: string, content: string) => `<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="margin:0;background:#f4f6f8;color:#18212f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-<div style="padding:32px 16px"><div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #dfe4ea;border-radius:8px;overflow:hidden">
-<div style="padding:20px 28px;border-bottom:1px solid #e6e9ee;font-weight:700">RewirePerform</div>
-<div style="padding:30px 28px"><h1 style="font-size:24px;line-height:1.3;margin:0 0 18px">${escaped(title)}</h1>${content}</div>
-<div style="padding:18px 28px;background:#f8fafb;border-top:1px solid #e6e9ee;font-size:12px;line-height:1.6;color:#667085">
-Mahle Herzog, Wiefeldick 16, 42699 Solingen, Deutschland<br>
-Datenschutz und Support: <a href="mailto:hello@rewireperform.com">hello@rewireperform.com</a>
-</div></div></div></body></html>`;
-
-const actionButton = (label: string, href: string) =>
-  `<p style="margin:24px 0"><a href="${escaped(href)}" style="display:inline-block;background:#177a5f;color:#fff;text-decoration:none;font-weight:700;padding:13px 18px;border-radius:6px">${escaped(label)}</a></p>`;
-
-export const guardianInvitationEmail = (token: string) => {
-  const appUrl = publicAppUrl();
-  const decisionUrl = `${appUrl}/guardian/decision#token=${encodeURIComponent(token)}`;
-  const privacyUrl = `${appUrl}/privacy`;
-  const title = "Bitte entscheide über den RewirePerform-Zugang";
-  return {
-    subject: title,
-    text: [
-      "Hallo,",
-      "eine minderjährige Person hat deine E-Mail-Adresse selbst in RewirePerform angegeben.",
-      "Über den persönlichen Link erfährst du, welche Daten das Performance-Programm verarbeitet, was ein Trainer sieht und was privat bleibt.",
-      "Der Link ist 48 Stunden gültig und nur einmal nutzbar. Es wird kein Elternkonto erstellt. Trainer und Verein erhalten weder die Adresse noch deine Entscheidung.",
-      "Die verschlüsselte Kopie der Adresse wird im RewirePerform-Autorisierungssystem spätestens sieben Tage nach Erstellung gelöscht und nicht für Marketing verwendet.",
-      decisionUrl,
-      `Datenschutz: ${privacyUrl}`,
-      "Fragen oder Widerruf: hello@rewireperform.com",
-      "Verantwortlich: Mahle Herzog, Wiefeldick 16, 42699 Solingen, Deutschland",
-    ].join("\n\n"),
-    html: emailFrame(title, [
-      "<p style=\"line-height:1.65;color:#475467\">Hallo,</p>",
-      "<p style=\"line-height:1.65;color:#475467\">Eine minderjährige Person hat deine E-Mail-Adresse selbst in RewirePerform angegeben. Über den persönlichen Link erfährst du, welche Daten das Performance-Programm verarbeitet, was ein Trainer sieht und was privat bleibt.</p>",
-      actionButton("Information ansehen und entscheiden", decisionUrl),
-      "<p style=\"line-height:1.65;color:#475467\">Der Link ist 48 Stunden gültig und nur einmal nutzbar. Es wird kein Elternkonto erstellt. Trainer und Verein erhalten weder die Adresse noch deine Entscheidung.</p>",
-      "<p style=\"line-height:1.65;color:#475467\">Die verschlüsselte Kopie der Adresse wird im RewirePerform-Autorisierungssystem spätestens sieben Tage nach Erstellung gelöscht und nicht für Marketing verwendet. <a href=\"" + escaped(privacyUrl) + "\">Datenschutzerklärung öffnen</a>.</p>",
-    ].join("")),
-  };
+export const safeAthleteFirstName = (value: unknown) => {
+  if (typeof value !== "string") return null;
+  const firstName = value.normalize("NFC").trim().split(/\s+/u)[0] ?? "";
+  if (!/^[\p{L}\p{M}][\p{L}\p{M}'’-]{0,39}$/u.test(firstName)) return null;
+  return firstName;
 };
 
-export const guardianReceiptEmail = (managementToken: string) => {
-  const appUrl = publicAppUrl();
-  const manageUrl = `${appUrl}/guardian/decision#manage=${encodeURIComponent(managementToken)}`;
-  const privacyUrl = `${appUrl}/privacy`;
-  const title = "Deine RewirePerform-Entscheidung wurde gespeichert";
-  return {
-    subject: title,
-    manageUrl,
-    text: [
-      "Deine Entscheidung wurde gespeichert.",
-      "Die minderjährige Person muss nun zusätzlich selbst zustimmen, bevor datenabhängige Programmfunktionen freigeschaltet werden.",
-      "Über diesen persönlichen Link kannst du die Freigabe widerrufen:",
-      manageUrl,
-      "Der Link bleibt bis zu 370 Tage aktiv. Du kannst dich unabhängig davon jederzeit direkt an uns wenden.",
-      `Datenschutz: ${privacyUrl}`,
-      "Alternativ erreichst du uns unter hello@rewireperform.com.",
-      "Verantwortlich: Mahle Herzog, Wiefeldick 16, 42699 Solingen, Deutschland",
-    ].join("\n\n"),
-    html: emailFrame(title, [
-      "<p style=\"line-height:1.65;color:#475467\">Deine Entscheidung wurde gespeichert. Die minderjährige Person muss nun zusätzlich selbst zustimmen, bevor datenabhängige Programmfunktionen freigeschaltet werden.</p>",
-      actionButton("Freigabe verwalten oder widerrufen", manageUrl),
-      "<p style=\"line-height:1.65;color:#475467\">Bewahre diesen bis zu 370 Tage aktiven Link sicher auf. Alternativ kannst du dich jederzeit an hello@rewireperform.com wenden. <a href=\"" + escaped(privacyUrl) + "\">Datenschutzerklärung öffnen</a>.</p>",
-    ].join("")),
-  };
+export const athleteFirstName = async (admin: SupabaseClient, userId: string) => {
+  const { data, error } = await admin
+    .from("profiles")
+    .select("full_name")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) return null;
+  return safeAthleteFirstName(data?.full_name);
 };
+
+export const guardianInvitationEmail = (token: string, firstName?: string | null) =>
+  buildGuardianInvitationEmail(publicAppUrl(), token, firstName);
+
+export const guardianReceiptEmail = (managementToken: string, firstName?: string | null) =>
+  buildGuardianReceiptEmail(publicAppUrl(), managementToken, firstName);
 
 export const sendTransactionalEmail = async (
   to: string,
   message: { subject: string; text: string; html: string },
+  idempotencyKey: string,
 ) => {
   const apiKey = requiredEnv("RESEND_API_KEY");
   const from = requiredEnv("GUARDIAN_EMAIL_FROM");
@@ -276,9 +230,16 @@ export const sendTransactionalEmail = async (
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "Idempotency-Key": crypto.randomUUID(),
+      "Idempotency-Key": idempotencyKey,
     },
-    body: JSON.stringify({ from, to: [to], subject: message.subject, text: message.text, html: message.html }),
+    body: JSON.stringify({
+      from,
+      to: [to],
+      reply_to: SUPPORT_EMAIL,
+      subject: message.subject,
+      text: message.text,
+      html: message.html,
+    }),
   });
   if (!response.ok) throw new MinorFlowError("email_delivery_failed", 503);
   const result = await response.json().catch(() => ({})) as { id?: unknown };

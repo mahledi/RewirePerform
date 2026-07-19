@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/config/contact";
 
 const Support = () => {
   return (
@@ -36,10 +37,10 @@ const Support = () => {
               Bei Login-Problemen, Teamzugang, Datenschutzfragen oder technischem Feedback.
             </p>
             <a
-              href="mailto:hello@rewireperform.com"
+              href={SUPPORT_MAILTO}
               className="inline-flex px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
             >
-              hello@rewireperform.com
+              {SUPPORT_EMAIL}
             </a>
           </section>
 

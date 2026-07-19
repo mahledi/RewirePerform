@@ -170,7 +170,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
           <p className="text-xs leading-relaxed text-muted-foreground">
             Eine Teambeobachtung ist erst möglich, wenn alle Athletinnen und Athleten dieses Laufs freigegeben sind.
-            Für Minderjährige bleibt die Evidence-Erhebung bis zum geprüften Sorgeberechtigten- und Jugend-Consent gesperrt.
+            Minderjährige werden dabei ausschließlich über die aktuelle altersgerechte Pilot-Freigabe zugelassen.
           </p>
         </div>
       )}

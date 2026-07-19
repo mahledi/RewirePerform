@@ -4,14 +4,20 @@ import { BrandSymbol } from "@/components/brand/BrandLogo";
 import confirmationTemplate from "../../supabase/templates/auth/confirmation.html?raw";
 import recoveryTemplate from "../../supabase/templates/auth/recovery.html?raw";
 import passwordChangedTemplate from "../../supabase/templates/auth/password_changed_notification.html?raw";
+import {
+  buildGuardianInvitationEmail,
+  buildGuardianReceiptEmail,
+} from "../../supabase/functions/_shared/guardianEmails";
 
-const templates = {
-  confirmation: { label: "E-Mail bestätigen", html: confirmationTemplate },
-  recovery: { label: "Passwort zurücksetzen", html: recoveryTemplate },
-  passwordChanged: { label: "Passwort geändert", html: passwordChangedTemplate },
+const templateLabels = {
+  guardianInvitation: "Elternfreigabe anfragen",
+  guardianReceipt: "Elternfreigabe bestätigen",
+  confirmation: "E-Mail bestätigen",
+  recovery: "Passwort zurücksetzen",
+  passwordChanged: "Passwort geändert",
 } as const;
 
-type TemplateId = keyof typeof templates;
+type TemplateId = keyof typeof templateLabels;
 type PreviewWidth = "mobile" | "desktop";
 
 const hydratePreview = (html: string) => html
@@ -20,9 +26,22 @@ const hydratePreview = (html: string) => html
   .replaceAll("{{ .Token }}", "482917");
 
 const EmailPreview = () => {
-  const [templateId, setTemplateId] = useState<TemplateId>("confirmation");
+  const [templateId, setTemplateId] = useState<TemplateId>("guardianInvitation");
   const [previewWidth, setPreviewWidth] = useState<PreviewWidth>("desktop");
-  const previewHtml = useMemo(() => hydratePreview(templates[templateId].html), [templateId]);
+  const previewHtml = useMemo(() => {
+    if (templateId === "guardianInvitation") {
+      return buildGuardianInvitationEmail(window.location.origin, "synthetic-guardian-token", "Luka").html;
+    }
+    if (templateId === "guardianReceipt") {
+      return buildGuardianReceiptEmail(window.location.origin, "synthetic-management-token", "Luka").html;
+    }
+    const authTemplates = {
+      confirmation: confirmationTemplate,
+      recovery: recoveryTemplate,
+      passwordChanged: passwordChangedTemplate,
+    } as const;
+    return hydratePreview(authTemplates[templateId]);
+  }, [templateId]);
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
@@ -34,7 +53,7 @@ const EmailPreview = () => {
             </span>
             <div>
               <p className="text-xs font-medium text-muted-foreground">RewirePerform · Interne Vorschau</p>
-              <h1 className="text-base font-semibold">Auth-E-Mails</h1>
+              <h1 className="text-base font-semibold">Transaktions-E-Mails</h1>
             </div>
           </div>
 
@@ -46,8 +65,8 @@ const EmailPreview = () => {
               onChange={(event) => setTemplateId(event.target.value as TemplateId)}
               className="h-10 min-w-0 rounded-md border border-border bg-secondary px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary sm:min-w-56"
             >
-              {Object.entries(templates).map(([id, template]) => (
-                <option key={id} value={id}>{template.label}</option>
+              {Object.entries(templateLabels).map(([id, label]) => (
+                <option key={id} value={id}>{label}</option>
               ))}
             </select>
             <div className="flex h-10 items-center rounded-md border border-border bg-secondary p-1" aria-label="Vorschaugröße">
@@ -78,10 +97,10 @@ const EmailPreview = () => {
         <div className={`w-full overflow-hidden rounded-md border border-border bg-white shadow-card transition-[max-width] ${previewWidth === "mobile" ? "max-w-[390px]" : "max-w-[720px]"}`}>
           <iframe
             key={`${templateId}-${previewWidth}`}
-            title={`${templates[templateId].label} Vorschau`}
+            title={`${templateLabels[templateId]} Vorschau`}
             srcDoc={previewHtml}
             sandbox=""
-            className="h-[780px] w-full border-0 bg-white"
+            className="h-[900px] w-full border-0 bg-white"
           />
         </div>
       </section>

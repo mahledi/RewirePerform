@@ -64,8 +64,8 @@ try {
 
     const supportUrl = new URL("/support", baseUrl);
     await page.goto(supportUrl.toString(), { waitUntil: "domcontentloaded", timeout: 30_000 });
-    const supportHref = await page.locator('a[href="mailto:hello@rewireperform.com"]').first().getAttribute("href");
-    if (supportHref !== "mailto:hello@rewireperform.com") {
+    const supportHref = await page.locator('a[href="mailto:support@rewireperform.com"]').first().getAttribute("href");
+    if (supportHref !== "mailto:support@rewireperform.com") {
       failures.push(`${viewport.name} /support: monitored support email link is missing`);
     }
 
