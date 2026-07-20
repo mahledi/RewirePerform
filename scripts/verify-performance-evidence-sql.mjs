@@ -586,7 +586,10 @@ try {
     "SELECT public.evidence_eligibility_reason($1, '56d-transfer-v1-2026-07') AS reason",
     [ids.minorInstance],
   );
-  assert(minorReason.rows[0].reason === "minor_participation_not_enabled", "minor path must remain disabled");
+  assert(
+    minorReason.rows[0].reason === "minor_participation_not_enabled",
+    "historical V1 minor path must remain disabled before the V2 authorization upgrade",
+  );
 
   await db.query("INSERT INTO auth.users(id) VALUES ($1)", [qa.coach]);
   await db.query(`
@@ -771,7 +774,7 @@ try {
     authenticatedRpcAllowed,
     anonRpcDenied,
     unauthorizedCoachDenied,
-    minorPathDisabled: true,
+    legacyV1MinorPathDisabled: true,
     qaSimulatedCoachWeek: qaCoachContext.rows[0].value.week_number,
     qaFutureDayPassed: qaDay56.status === "passed",
     qaProductionIsolationPassed: true,

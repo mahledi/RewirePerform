@@ -369,7 +369,18 @@ BEGIN
     WHERE pi.team_id IS NULL
       AND pi.program_run_id IS NULL
       AND pi.status IN ('active', 'completed')
-      AND (_include_test OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false)))
+      AND (
+        (
+          _include_test
+          AND COALESCE(p.is_test_user, false)
+          AND COALESCE(pi.is_test_instance, false)
+        )
+        OR (
+          NOT _include_test
+          AND NOT COALESCE(p.is_test_user, false)
+          AND NOT COALESCE(pi.is_test_instance, false)
+        )
+      )
       AND (_sport_category IS NULL OR COALESCE(p.sport_category, public.classify_sport_category(p.sport)) = _sport_category)
       AND (_sport_level IS NULL OR p.sport_level = _sport_level)
   ), eligible AS (
@@ -391,7 +402,7 @@ BEGIN
     FROM public.athlete_transfer_observations ato
     JOIN eligible e ON e.program_instance_id = ato.program_instance_id
     WHERE ato.protocol_version = _protocol_version
-      AND (_include_test OR NOT ato.is_test)
+      AND COALESCE(ato.is_test, false) = _include_test
       AND ato.collected_at::date BETWEEN e.eligible_from AND e.eligible_until
   ), domain_rows AS (
     SELECT
@@ -431,8 +442,15 @@ BEGIN
       pps.checkins_completed_count,
       pps.date
     FROM public.program_progress_snapshots pps
-    JOIN eligible e ON e.program_instance_id = pps.program_instance_id
+    JOIN eligible e
+      ON e.program_instance_id = pps.program_instance_id
+     AND e.user_id = pps.user_id
     WHERE pps.date BETWEEN e.eligible_from AND e.eligible_until
+      AND pps.days_available BETWEEN 0 AND 56
+      AND pps.days_completed BETWEEN 0 AND pps.days_available
+      AND pps.completion_rate BETWEEN 0 AND 1
+      AND pps.current_streak BETWEEN 0 AND 56
+      AND (pps.comprehension_average IS NULL OR pps.comprehension_average BETWEEN 0 AND 1)
     ORDER BY pps.program_instance_id, pps.date DESC
   ), usage AS (
     SELECT
@@ -462,6 +480,7 @@ BEGIN
       'type', 'solo_aggregate',
       'sport_category', _sport_category,
       'sport_level', _sport_level,
+      'data_mode', CASE WHEN _include_test THEN 'qa_only' ELSE 'production_only' END,
       'taxonomy_version', 'sport-taxonomy-v1-2026-07'
     ),
     'sample', json_build_object(
@@ -472,6 +491,7 @@ BEGIN
       'minimum_aggregate_n', 5,
       'low_confidence_below_n', 10,
       'test_data_included', _include_test,
+      'data_mode', CASE WHEN _include_test THEN 'qa_only' ELSE 'production_only' END,
       'exclusion_reasons', CASE
         WHEN (SELECT COUNT(*) FROM scoped_participants) > (SELECT COUNT(*) FROM eligible)
           THEN json_build_object(

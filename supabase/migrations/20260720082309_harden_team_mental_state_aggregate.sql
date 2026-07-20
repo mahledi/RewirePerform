@@ -104,8 +104,16 @@ BEGIN
   WHERE pi.program_run_id = active_run_id
     AND pi.status = 'active'
     AND (
-      team_is_test
-      OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false))
+      (
+        team_is_test
+        AND COALESCE(p.is_test_user, false)
+        AND COALESCE(pi.is_test_instance, false)
+      )
+      OR (
+        NOT team_is_test
+        AND NOT COALESCE(p.is_test_user, false)
+        AND NOT COALESCE(pi.is_test_instance, false)
+      )
     );
 
   IF assigned_count < 5 THEN
@@ -133,8 +141,16 @@ BEGIN
   WHERE dc.date >= effective_today - 6
     AND dc.date <= effective_today
     AND (
-      team_is_test
-      OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false))
+      (
+        team_is_test
+        AND COALESCE(p.is_test_user, false)
+        AND COALESCE(pi.is_test_instance, false)
+      )
+      OR (
+        NOT team_is_test
+        AND NOT COALESCE(p.is_test_user, false)
+        AND NOT COALESCE(pi.is_test_instance, false)
+      )
     );
 
   participation_rate := ROUND((active_last_7d::numeric / assigned_count::numeric) * 100)::integer;
@@ -150,8 +166,16 @@ BEGIN
   WHERE pi.program_run_id = active_run_id
     AND pi.status = 'active'
     AND (
-      team_is_test
-      OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false))
+      (
+        team_is_test
+        AND COALESCE(p.is_test_user, false)
+        AND COALESCE(pi.is_test_instance, false)
+      )
+      OR (
+        NOT team_is_test
+        AND NOT COALESCE(p.is_test_user, false)
+        AND NOT COALESCE(pi.is_test_instance, false)
+      )
     )
     AND public.evidence_eligibility_reason(pi.id, _protocol_version)
       IN ('eligible', 'eligible_minor', 'eligible_test');
@@ -182,8 +206,16 @@ BEGIN
     WHERE pi.program_run_id = active_run_id
       AND pi.status = 'active'
       AND (
-        team_is_test
-        OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false))
+        (
+          team_is_test
+          AND COALESCE(p.is_test_user, false)
+          AND COALESCE(pi.is_test_instance, false)
+        )
+        OR (
+          NOT team_is_test
+          AND NOT COALESCE(p.is_test_user, false)
+          AND NOT COALESCE(pi.is_test_instance, false)
+        )
       )
       AND public.evidence_eligibility_reason(pi.id, _protocol_version)
         IN ('eligible', 'eligible_minor', 'eligible_test')
@@ -193,32 +225,42 @@ BEGIN
       dc.date,
       COALESCE(
         CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'mood') = 'number'
+          AND (dc.wellbeing_metrics ->> 'mood')::numeric BETWEEN 1 AND 10
           THEN (dc.wellbeing_metrics ->> 'mood')::numeric END,
-        dc.mood_before::numeric
+        CASE WHEN dc.mood_before BETWEEN 1 AND 10 THEN dc.mood_before::numeric END
       ) AS mood,
       COALESCE(
         CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'energy') = 'number'
+          AND (dc.wellbeing_metrics ->> 'energy')::numeric BETWEEN 1 AND 10
           THEN (dc.wellbeing_metrics ->> 'energy')::numeric END,
-        dc.energy_level::numeric
+        CASE WHEN dc.energy_level BETWEEN 1 AND 10 THEN dc.energy_level::numeric END
       ) AS energy,
       COALESCE(
         CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'focus') = 'number'
+          AND (dc.wellbeing_metrics ->> 'focus')::numeric BETWEEN 1 AND 10
           THEN (dc.wellbeing_metrics ->> 'focus')::numeric END,
-        dc.focus_rating::numeric
+        CASE WHEN dc.focus_rating BETWEEN 1 AND 10 THEN dc.focus_rating::numeric END
       ) AS focus,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'stress') = 'number'
+        AND (dc.wellbeing_metrics ->> 'stress')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'stress')::numeric END AS stress,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'recovery') = 'number'
+        AND (dc.wellbeing_metrics ->> 'recovery')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'recovery')::numeric END AS recovery,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'sleep_quality') = 'number'
+        AND (dc.wellbeing_metrics ->> 'sleep_quality')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'sleep_quality')::numeric END AS sleep_quality,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'physical_readiness') = 'number'
+        AND (dc.wellbeing_metrics ->> 'physical_readiness')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'physical_readiness')::numeric END AS physical_readiness,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'motivation') = 'number'
+        AND (dc.wellbeing_metrics ->> 'motivation')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'motivation')::numeric END AS motivation,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'pressure') = 'number'
+        AND (dc.wellbeing_metrics ->> 'pressure')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'pressure')::numeric END AS pressure,
       CASE WHEN jsonb_typeof(dc.wellbeing_metrics -> 'team_connection') = 'number'
+        AND (dc.wellbeing_metrics ->> 'team_connection')::numeric BETWEEN 1 AND 10
         THEN (dc.wellbeing_metrics ->> 'team_connection')::numeric END AS team_connection
     FROM public.daily_checkins dc
     JOIN eligible_instances ei

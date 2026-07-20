@@ -18,7 +18,11 @@ Unabhaengig pruefen, ob der Branch einen technisch vollstaendigen, fail-closed M
 - Unter 16 braucht positive Guardian-Entscheidung und eigene Athletenzustimmung fuer dieselbe Policy-Version.
 - Mit 16 oder 17 entscheidet der Athlet im Deutschland-Flow selbst; kein Guardian-Kontakt.
 - Produkttracking beginnt erst nach Produktfreigabe und bleibt vom freiwilligen Datenbeitrag getrennt.
-- Das aktuelle Transfer-Evidence-Protokoll sammelt keine Minderjaehrigendaten.
+- Entscheidungsupdate 20. Juli 2026: Minderjaehrigen-Evidence ist bei aktivem
+  Protokoll, aktuellem freiwilligem Datenbeitrag und vollstaendiger
+  altersgerechter Autorisierung produktseitig freigegeben; unter 16 sind
+  Guardian- und Athletenfreigabe erforderlich, bei 16 bis 17 die aktuelle
+  eigene Freigabe. Production und reale Pilotnutzung bleiben separat blockiert.
 - Auch bei Erwachsenen erzeugt die neue Alters-Selbstauskunft keine Transfer-Evidence-Freigabe; die bestehende separate Admin-Verifikation bleibt unveraendert erforderlich.
 - Coach-Einzelansicht bleibt auf operative Aktivitaet beschraenkt; private Antworten und Einzelwerte bleiben ausgeschlossen.
 - Teamaggregate filtern Consent und aktuelle Autorisierung vor der n>=5-Schwelle.
@@ -97,7 +101,7 @@ Bei einem kuenstlich parallelen Lastlauf blieb einmalig ein bestehender Recovery
 
 1. Decken die Datenbank-Trigger alle personenbezogenen Produkt-Write-Pfade ab, auch kuenftige RPCs?
 2. Bleibt der Rollout bei bestehenden Athleten sicher, bis Enforcement nach dem Preflight explizit aktiviert wird?
-3. Ist die Trennung zwischen Produkttracking, freiwilligem Datenbeitrag und deaktivierter Minderjaehrigen-Evidence ueberall konsistent?
+3. Ist die Trennung zwischen Produkttracking, freiwilligem Datenbeitrag und nur bei aktuellen Receipts aktivierter Minderjaehrigen-Evidence ueberall konsistent?
 4. Kann eine Race Condition zwischen Save und Widerruf noch einen nachlaufenden Write erlauben?
 5. Sind Token-, Rate-Limit-, Origin-, Verschluesselungs- und Retention-Regeln ausreichend und korrekt operationalisiert?
 6. Entspricht die Trainer-Sicht exakt dem dokumentierten Feldvertrag?

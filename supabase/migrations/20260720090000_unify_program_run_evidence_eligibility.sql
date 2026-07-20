@@ -17,6 +17,7 @@ DECLARE
   actor_id uuid := auth.uid();
   target_run public.program_runs;
   target_team public.teams;
+  effective_today date := CURRENT_DATE;
   result jsonb;
 BEGIN
   IF actor_id IS NULL THEN
@@ -38,6 +39,17 @@ BEGIN
   SELECT * INTO target_team
   FROM public.teams t
   WHERE t.id = target_run.team_id;
+
+  IF COALESCE(target_team.is_test_team, false) THEN
+    SELECT qto.simulated_date
+    INTO effective_today
+    FROM public.qa_time_overrides qto
+    WHERE qto.scope = 'team'
+      AND qto.team_id = target_team.id
+    ORDER BY qto.updated_at DESC, qto.id DESC
+    LIMIT 1;
+    effective_today := COALESCE(effective_today, CURRENT_DATE);
+  END IF;
 
   WITH run_participants AS (
     SELECT
@@ -61,8 +73,16 @@ BEGIN
     WHERE pi.program_run_id = target_run.id
       AND pi.status IN ('active', 'completed')
       AND (
-        COALESCE(target_team.is_test_team, false)
-        OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false))
+        (
+          COALESCE(target_team.is_test_team, false)
+          AND COALESCE(p.is_test_user, false)
+          AND COALESCE(pi.is_test_instance, false)
+        )
+        OR (
+          NOT COALESCE(target_team.is_test_team, false)
+          AND NOT COALESCE(p.is_test_user, false)
+          AND NOT COALESCE(pi.is_test_instance, false)
+        )
       )
   ), eligible AS (
     SELECT
@@ -75,24 +95,71 @@ BEGIN
           rp.verified_at::date
         )
       END AS eligible_from,
-      LEAST(CURRENT_DATE, COALESCE(rp.ended_at, CURRENT_DATE)) AS eligible_until
+      LEAST(effective_today, COALESCE(rp.ended_at, effective_today)) AS eligible_until
     FROM run_participants rp
     WHERE rp.eligibility_reason IN ('eligible', 'eligible_minor', 'eligible_test')
   ), completions AS (
-    SELECT udc.*
+    SELECT DISTINCT ON (udc.program_instance_id, udc.user_id, udc.day_number)
+      udc.*
     FROM public.user_day_completion udc
     JOIN eligible e
       ON e.program_instance_id = udc.program_instance_id
      AND e.user_id = udc.user_id
     WHERE udc.completion_status = 'completed'
       AND udc.completed_at::date BETWEEN e.eligible_from AND e.eligible_until
-  ), checkins AS (
-    SELECT dc.*
+      AND udc.day_number BETWEEN 1 AND LEAST(
+        56,
+        GREATEST(0, (e.eligible_until - e.started_at) + 1)
+      )
+    ORDER BY
+      udc.program_instance_id,
+      udc.user_id,
+      udc.day_number,
+      udc.completed_at DESC NULLS LAST,
+      udc.id DESC
+  ), checkin_rows AS (
+    SELECT
+      dc.user_id,
+      dc.program_instance_id,
+      dc.date,
+      CASE WHEN dc.mood_before BETWEEN 1 AND 10 THEN dc.mood_before::numeric END AS mood,
+      CASE WHEN dc.energy_level BETWEEN 1 AND 10 THEN dc.energy_level::numeric END AS energy,
+      CASE WHEN dc.focus_rating BETWEEN 1 AND 10 THEN dc.focus_rating::numeric END AS focus,
+      CASE WHEN dc.wellbeing_metrics ->> 'stress' ~ '^-?[0-9]+(\.[0-9]+)?$'
+        AND (dc.wellbeing_metrics ->> 'stress')::numeric BETWEEN 1 AND 10
+        THEN (dc.wellbeing_metrics ->> 'stress')::numeric END AS stress,
+      CASE WHEN dc.wellbeing_metrics ->> 'recovery' ~ '^-?[0-9]+(\.[0-9]+)?$'
+        AND (dc.wellbeing_metrics ->> 'recovery')::numeric BETWEEN 1 AND 10
+        THEN (dc.wellbeing_metrics ->> 'recovery')::numeric END AS recovery,
+      CASE WHEN dc.wellbeing_metrics ->> 'sleep_quality' ~ '^-?[0-9]+(\.[0-9]+)?$'
+        AND (dc.wellbeing_metrics ->> 'sleep_quality')::numeric BETWEEN 1 AND 10
+        THEN (dc.wellbeing_metrics ->> 'sleep_quality')::numeric END AS sleep,
+      CASE WHEN dc.wellbeing_metrics ->> 'pressure' ~ '^-?[0-9]+(\.[0-9]+)?$'
+        AND (dc.wellbeing_metrics ->> 'pressure')::numeric BETWEEN 1 AND 10
+        THEN (dc.wellbeing_metrics ->> 'pressure')::numeric END AS pressure,
+      CASE WHEN dc.wellbeing_metrics ->> 'team_connection' ~ '^-?[0-9]+(\.[0-9]+)?$'
+        AND (dc.wellbeing_metrics ->> 'team_connection')::numeric BETWEEN 1 AND 10
+        THEN (dc.wellbeing_metrics ->> 'team_connection')::numeric END AS team_connection
     FROM public.daily_checkins dc
     JOIN eligible e
       ON e.program_instance_id = dc.program_instance_id
      AND e.user_id = dc.user_id
     WHERE dc.date BETWEEN e.eligible_from AND e.eligible_until
+  ), checkins AS (
+    SELECT
+      cr.user_id,
+      cr.program_instance_id,
+      cr.date,
+      AVG(cr.mood) AS mood,
+      AVG(cr.energy) AS energy,
+      AVG(cr.focus) AS focus,
+      AVG(cr.stress) AS stress,
+      AVG(cr.recovery) AS recovery,
+      AVG(cr.sleep) AS sleep,
+      AVG(cr.pressure) AS pressure,
+      AVG(cr.team_connection) AS team_connection
+    FROM checkin_rows cr
+    GROUP BY cr.user_id, cr.program_instance_id, cr.date
   ), latest_snapshots AS (
     SELECT DISTINCT ON (pps.program_instance_id)
       pps.*
@@ -101,6 +168,11 @@ BEGIN
       ON e.program_instance_id = pps.program_instance_id
      AND e.user_id = pps.user_id
     WHERE pps.date BETWEEN e.eligible_from AND e.eligible_until
+      AND pps.days_available BETWEEN 0 AND 56
+      AND pps.days_completed BETWEEN 0 AND pps.days_available
+      AND pps.completion_rate BETWEEN 0 AND 1
+      AND pps.current_streak BETWEEN 0 AND 56
+      AND (pps.comprehension_average IS NULL OR pps.comprehension_average BETWEEN 0 AND 1)
     ORDER BY pps.program_instance_id, pps.date DESC, pps.updated_at DESC
   ), assessment_rows AS (
     SELECT DISTINCT ON (a.program_instance_id, a.assessment_type, a.timing)
@@ -111,6 +183,34 @@ BEGIN
      AND e.user_id = a.user_id
     WHERE a.created_at::date BETWEEN e.eligible_from AND e.eligible_until
       AND a.timing IN ('pre', 'mid', 'post')
+      AND jsonb_typeof(COALESCE(a.scores::jsonb, '{}'::jsonb)) = 'object'
+      AND CASE a.assessment_type
+        WHEN 'csai2r' THEN
+          (SELECT COUNT(*) FROM jsonb_each(a.scores::jsonb)) = 3
+          AND NOT EXISTS (
+            SELECT 1 FROM jsonb_each_text(a.scores::jsonb) kv
+            WHERE kv.key NOT IN ('cognitive_anxiety', 'somatic_anxiety', 'self_confidence')
+              OR kv.value !~ '^-?[0-9]+(\.[0-9]+)?$'
+              OR kv.value::numeric NOT BETWEEN 1 AND 4
+          )
+        WHEN 'smtq' THEN
+          (SELECT COUNT(*) FROM jsonb_each(a.scores::jsonb)) = 3
+          AND NOT EXISTS (
+            SELECT 1 FROM jsonb_each_text(a.scores::jsonb) kv
+            WHERE kv.key NOT IN ('confidence', 'constancy', 'control')
+              OR kv.value !~ '^-?[0-9]+(\.[0-9]+)?$'
+              OR kv.value::numeric NOT BETWEEN 1 AND 4
+          )
+        WHEN 'flow_short' THEN
+          (SELECT COUNT(*) FROM jsonb_each(a.scores::jsonb)) = 3
+          AND NOT EXISTS (
+            SELECT 1 FROM jsonb_each_text(a.scores::jsonb) kv
+            WHERE kv.key NOT IN ('absorption', 'fluency', 'anxiety')
+              OR kv.value !~ '^-?[0-9]+(\.[0-9]+)?$'
+              OR kv.value::numeric NOT BETWEEN 1 AND 5
+          )
+        ELSE false
+      END
     ORDER BY
       a.program_instance_id,
       a.assessment_type,
@@ -203,6 +303,7 @@ BEGIN
       dpa.created_at,
       CASE
         WHEN dpa.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+          AND (dpa.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
           THEN (dpa.scores::jsonb ->> 'overall0to100')::numeric
       END AS overall
     FROM public.deep_profile_assessments dpa
@@ -212,6 +313,8 @@ BEGIN
     WHERE dpa.instrument_id = 'rewire_development_index'
       AND dpa.timing IN ('pre', 'mid', 'post')
       AND dpa.created_at::date BETWEEN e.eligible_from AND e.eligible_until
+      AND dpa.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+      AND (dpa.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
     UNION ALL
     SELECT
       qr.program_instance_id,
@@ -220,6 +323,7 @@ BEGIN
       qr.created_at,
       CASE
         WHEN qr.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+          AND (qr.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
           THEN (qr.scores::jsonb ->> 'overall0to100')::numeric
       END AS overall
     FROM public.questionnaire_responses qr
@@ -230,6 +334,8 @@ BEGIN
       AND qr.is_complete = true
       AND qr.timing IN ('pre', 'mid', 'post')
       AND qr.created_at::date BETWEEN e.eligible_from AND e.eligible_until
+      AND qr.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+      AND (qr.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
   ), development_rows AS (
     SELECT DISTINCT ON (ds.program_instance_id, ds.timing)
       ds.program_instance_id,
@@ -284,6 +390,7 @@ BEGIN
      AND e.user_id = cci.user_id
     WHERE cci.status = 'completed'
       AND cci.total_count > 0
+      AND cci.correct_count BETWEEN 0 AND cci.total_count
       AND COALESCE(cci.completed_at, cci.created_at)::date
           BETWEEN e.eligible_from AND e.eligible_until
     GROUP BY cci.user_id
@@ -299,36 +406,36 @@ BEGIN
     SELECT
       c.date,
       COUNT(DISTINCT c.user_id)::integer AS n,
-      COUNT(c.mood_before)::integer AS mood_n,
-      COUNT(c.energy_level)::integer AS energy_n,
-      COUNT(c.focus_rating)::integer AS focus_n,
-      COUNT(CASE WHEN c.wellbeing_metrics ->> 'stress' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN 1 END)::integer AS stress_n,
-      COUNT(CASE WHEN c.wellbeing_metrics ->> 'recovery' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN 1 END)::integer AS recovery_n,
-      COUNT(CASE WHEN c.wellbeing_metrics ->> 'sleep_quality' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN 1 END)::integer AS sleep_n,
-      COUNT(CASE WHEN c.wellbeing_metrics ->> 'pressure' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN 1 END)::integer AS pressure_n,
-      COUNT(CASE WHEN c.wellbeing_metrics ->> 'team_connection' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN 1 END)::integer AS team_connection_n,
-      ROUND(AVG(c.mood_before)::numeric, 2) AS mood,
-      ROUND(AVG(c.energy_level)::numeric, 2) AS energy,
-      ROUND(AVG(c.focus_rating)::numeric, 2) AS focus,
-      ROUND(AVG(CASE WHEN c.wellbeing_metrics ->> 'stress' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'stress')::numeric END), 2) AS stress,
-      ROUND(AVG(CASE WHEN c.wellbeing_metrics ->> 'recovery' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'recovery')::numeric END), 2) AS recovery,
-      ROUND(AVG(CASE WHEN c.wellbeing_metrics ->> 'sleep_quality' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'sleep_quality')::numeric END), 2) AS sleep,
-      ROUND(AVG(CASE WHEN c.wellbeing_metrics ->> 'pressure' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'pressure')::numeric END), 2) AS pressure,
-      ROUND(AVG(CASE WHEN c.wellbeing_metrics ->> 'team_connection' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'team_connection')::numeric END), 2) AS team_connection
+      COUNT(c.mood)::integer AS mood_n,
+      COUNT(c.energy)::integer AS energy_n,
+      COUNT(c.focus)::integer AS focus_n,
+      COUNT(c.stress)::integer AS stress_n,
+      COUNT(c.recovery)::integer AS recovery_n,
+      COUNT(c.sleep)::integer AS sleep_n,
+      COUNT(c.pressure)::integer AS pressure_n,
+      COUNT(c.team_connection)::integer AS team_connection_n,
+      ROUND(AVG(c.mood), 2) AS mood,
+      ROUND(AVG(c.energy), 2) AS energy,
+      ROUND(AVG(c.focus), 2) AS focus,
+      ROUND(AVG(c.stress), 2) AS stress,
+      ROUND(AVG(c.recovery), 2) AS recovery,
+      ROUND(AVG(c.sleep), 2) AS sleep,
+      ROUND(AVG(c.pressure), 2) AS pressure,
+      ROUND(AVG(c.team_connection), 2) AS team_connection
     FROM checkins c
     GROUP BY c.date
   ), weekly_user_stats AS (
     SELECT
       date_trunc('week', c.date::timestamp)::date AS week_start,
       c.user_id,
-      AVG(c.mood_before)::numeric AS mood,
-      AVG(c.energy_level)::numeric AS energy,
-      AVG(c.focus_rating)::numeric AS focus,
-      AVG(CASE WHEN c.wellbeing_metrics ->> 'stress' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'stress')::numeric END) AS stress,
-      AVG(CASE WHEN c.wellbeing_metrics ->> 'recovery' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'recovery')::numeric END) AS recovery,
-      AVG(CASE WHEN c.wellbeing_metrics ->> 'sleep_quality' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'sleep_quality')::numeric END) AS sleep,
-      AVG(CASE WHEN c.wellbeing_metrics ->> 'pressure' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'pressure')::numeric END) AS pressure,
-      AVG(CASE WHEN c.wellbeing_metrics ->> 'team_connection' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'team_connection')::numeric END) AS team_connection
+      AVG(c.mood)::numeric AS mood,
+      AVG(c.energy)::numeric AS energy,
+      AVG(c.focus)::numeric AS focus,
+      AVG(c.stress)::numeric AS stress,
+      AVG(c.recovery)::numeric AS recovery,
+      AVG(c.sleep)::numeric AS sleep,
+      AVG(c.pressure)::numeric AS pressure,
+      AVG(c.team_connection)::numeric AS team_connection
     FROM checkins c
     GROUP BY date_trunc('week', c.date::timestamp), c.user_id
   ), weekly_stats AS (
@@ -384,7 +491,7 @@ BEGIN
         ))::integer AS day_56_completed,
       (SELECT COUNT(*) FROM checkins)::integer AS total_checkins,
       (SELECT COUNT(*) FROM completions)::integer AS total_completed_days,
-      (SELECT COUNT(*) FROM public.daily_journals dj
+      (SELECT COUNT(DISTINCT (dj.user_id, dj.created_at::date)) FROM public.daily_journals dj
         JOIN eligible e
           ON e.program_instance_id = dj.program_instance_id
          AND e.user_id = dj.user_id
@@ -469,6 +576,7 @@ BEGIN
       'start_date', target_run.started_at,
       'end_date', target_run.ended_at,
       'generated_at', now(),
+      'effective_date', effective_today,
       'protocol_version', _protocol_version,
       'privacy_level', 'currently_authorized_run_scoped_aggregate_only',
       'consent_scope', 'Current protocol consent and age-appropriate authorization are evaluated before aggregation.',
@@ -564,7 +672,9 @@ BEGIN
       'individual_values_present', false,
       'private_text_fields_present', false,
       'minimum_aggregate_n', 5,
-      'authorization_gate', 'evidence_eligibility_reason'
+      'authorization_gate', 'evidence_eligibility_reason',
+      'duplicate_tracking_rows_collapsed', true,
+      'source_value_ranges_validated', true
     ),
     'privacy_exclusions', jsonb_build_array(
       'email', 'full_name', 'journal_text', 'free_reflection', 'raw_checkins',
@@ -745,6 +855,18 @@ BEGIN
       COALESCE(p.sport_format, public.classify_sport_format(p.sport)) AS sport_format,
       p.sport_level,
       COALESCE(p.is_test_user, false) AND COALESCE(pi.is_test_instance, false) AS synthetic_test,
+      CASE
+        WHEN COALESCE(p.is_test_user, false) AND COALESCE(pi.is_test_instance, false)
+          THEN COALESCE((
+            SELECT qto.simulated_date
+            FROM public.qa_time_overrides qto
+            WHERE qto.scope = 'user'
+              AND qto.user_id = pi.user_id
+            ORDER BY qto.updated_at DESC, qto.id DESC
+            LIMIT 1
+          ), CURRENT_DATE)
+        ELSE CURRENT_DATE
+      END AS effective_today,
       p.data_contribution_consented_at,
       epe.verified_at,
       public.evidence_eligibility_reason(pi.id, _protocol_version) AS eligibility_reason
@@ -757,7 +879,18 @@ BEGIN
     WHERE pi.team_id IS NULL
       AND pi.program_run_id IS NULL
       AND pi.status IN ('active', 'completed')
-      AND (_include_test OR NOT (COALESCE(p.is_test_user, false) OR COALESCE(pi.is_test_instance, false)))
+      AND (
+        (
+          _include_test
+          AND COALESCE(p.is_test_user, false)
+          AND COALESCE(pi.is_test_instance, false)
+        )
+        OR (
+          NOT _include_test
+          AND NOT COALESCE(p.is_test_user, false)
+          AND NOT COALESCE(pi.is_test_instance, false)
+        )
+      )
       AND (_sport_category IS NULL OR COALESCE(p.sport_category, public.classify_sport_category(p.sport)) = _sport_category)
       AND (_sport_level IS NULL OR p.sport_level = _sport_level)
   ), eligible AS (
@@ -771,22 +904,55 @@ BEGIN
           sp.verified_at::date
         )
       END AS eligible_from,
-      LEAST(CURRENT_DATE, COALESCE(sp.ended_at, CURRENT_DATE)) AS eligible_until
+      LEAST(sp.effective_today, COALESCE(sp.ended_at, sp.effective_today)) AS eligible_until
     FROM scoped_participants sp
     WHERE sp.eligibility_reason IN ('eligible', 'eligible_minor', 'eligible_test')
   ), completions AS (
-    SELECT udc.*
+    SELECT DISTINCT ON (udc.program_instance_id, udc.user_id, udc.day_number)
+      udc.*
     FROM public.user_day_completion udc
     JOIN eligible e
       ON e.program_instance_id = udc.program_instance_id AND e.user_id = udc.user_id
     WHERE udc.completion_status = 'completed'
       AND udc.completed_at::date BETWEEN e.eligible_from AND e.eligible_until
-  ), checkins AS (
-    SELECT dc.*, e.started_at
+      AND udc.day_number BETWEEN 1 AND LEAST(
+        56,
+        GREATEST(0, (e.eligible_until - e.started_at) + 1)
+      )
+    ORDER BY
+      udc.program_instance_id,
+      udc.user_id,
+      udc.day_number,
+      udc.completed_at DESC NULLS LAST,
+      udc.id DESC
+  ), checkin_rows AS (
+    SELECT
+      dc.user_id,
+      dc.program_instance_id,
+      dc.date,
+      e.started_at,
+      CASE WHEN dc.mood_before BETWEEN 1 AND 10 THEN dc.mood_before::numeric END AS mood,
+      CASE WHEN dc.energy_level BETWEEN 1 AND 10 THEN dc.energy_level::numeric END AS energy,
+      CASE WHEN dc.focus_rating BETWEEN 1 AND 10 THEN dc.focus_rating::numeric END AS focus,
+      CASE WHEN dc.wellbeing_metrics ->> 'stress' ~ '^-?[0-9]+(\.[0-9]+)?$'
+        AND (dc.wellbeing_metrics ->> 'stress')::numeric BETWEEN 1 AND 10
+        THEN (dc.wellbeing_metrics ->> 'stress')::numeric END AS stress
     FROM public.daily_checkins dc
     JOIN eligible e
       ON e.program_instance_id = dc.program_instance_id AND e.user_id = dc.user_id
     WHERE dc.date BETWEEN e.eligible_from AND e.eligible_until
+  ), checkins AS (
+    SELECT
+      cr.user_id,
+      cr.program_instance_id,
+      cr.date,
+      cr.started_at,
+      AVG(cr.mood) AS mood,
+      AVG(cr.energy) AS energy,
+      AVG(cr.focus) AS focus,
+      AVG(cr.stress) AS stress
+    FROM checkin_rows cr
+    GROUP BY cr.user_id, cr.program_instance_id, cr.date, cr.started_at
   ), latest_snapshots AS (
     SELECT DISTINCT ON (pps.program_instance_id)
       pps.*
@@ -794,6 +960,11 @@ BEGIN
     JOIN eligible e
       ON e.program_instance_id = pps.program_instance_id AND e.user_id = pps.user_id
     WHERE pps.date BETWEEN e.eligible_from AND e.eligible_until
+      AND pps.days_available BETWEEN 0 AND 56
+      AND pps.days_completed BETWEEN 0 AND pps.days_available
+      AND pps.completion_rate BETWEEN 0 AND 1
+      AND pps.current_streak BETWEEN 0 AND 56
+      AND (pps.comprehension_average IS NULL OR pps.comprehension_average BETWEEN 0 AND 1)
     ORDER BY pps.program_instance_id, pps.date DESC, pps.updated_at DESC
   ), assessment_rows AS (
     SELECT DISTINCT ON (a.program_instance_id, a.assessment_type, a.timing)
@@ -803,6 +974,34 @@ BEGIN
       ON e.program_instance_id = a.program_instance_id AND e.user_id = a.user_id
     WHERE a.created_at::date BETWEEN e.eligible_from AND e.eligible_until
       AND a.timing IN ('pre', 'mid', 'post')
+      AND jsonb_typeof(COALESCE(a.scores::jsonb, '{}'::jsonb)) = 'object'
+      AND CASE a.assessment_type
+        WHEN 'csai2r' THEN
+          (SELECT COUNT(*) FROM jsonb_each(a.scores::jsonb)) = 3
+          AND NOT EXISTS (
+            SELECT 1 FROM jsonb_each_text(a.scores::jsonb) kv
+            WHERE kv.key NOT IN ('cognitive_anxiety', 'somatic_anxiety', 'self_confidence')
+              OR kv.value !~ '^-?[0-9]+(\.[0-9]+)?$'
+              OR kv.value::numeric NOT BETWEEN 1 AND 4
+          )
+        WHEN 'smtq' THEN
+          (SELECT COUNT(*) FROM jsonb_each(a.scores::jsonb)) = 3
+          AND NOT EXISTS (
+            SELECT 1 FROM jsonb_each_text(a.scores::jsonb) kv
+            WHERE kv.key NOT IN ('confidence', 'constancy', 'control')
+              OR kv.value !~ '^-?[0-9]+(\.[0-9]+)?$'
+              OR kv.value::numeric NOT BETWEEN 1 AND 4
+          )
+        WHEN 'flow_short' THEN
+          (SELECT COUNT(*) FROM jsonb_each(a.scores::jsonb)) = 3
+          AND NOT EXISTS (
+            SELECT 1 FROM jsonb_each_text(a.scores::jsonb) kv
+            WHERE kv.key NOT IN ('absorption', 'fluency', 'anxiety')
+              OR kv.value !~ '^-?[0-9]+(\.[0-9]+)?$'
+              OR kv.value::numeric NOT BETWEEN 1 AND 5
+          )
+        ELSE false
+      END
     ORDER BY a.program_instance_id, a.assessment_type, a.timing, a.created_at DESC, a.id DESC
   ), score_rows AS (
     SELECT
@@ -876,6 +1075,7 @@ BEGIN
       dpa.created_at,
       CASE
         WHEN dpa.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+          AND (dpa.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
           THEN (dpa.scores::jsonb ->> 'overall0to100')::numeric
       END AS overall
     FROM public.deep_profile_assessments dpa
@@ -884,6 +1084,8 @@ BEGIN
     WHERE dpa.instrument_id = 'rewire_development_index'
       AND dpa.timing IN ('pre', 'mid', 'post')
       AND dpa.created_at::date BETWEEN e.eligible_from AND e.eligible_until
+      AND dpa.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+      AND (dpa.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
     UNION ALL
     SELECT
       qr.program_instance_id,
@@ -892,6 +1094,7 @@ BEGIN
       qr.created_at,
       CASE
         WHEN qr.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+          AND (qr.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
           THEN (qr.scores::jsonb ->> 'overall0to100')::numeric
       END AS overall
     FROM public.questionnaire_responses qr
@@ -901,6 +1104,8 @@ BEGIN
       AND qr.is_complete = true
       AND qr.timing IN ('pre', 'mid', 'post')
       AND qr.created_at::date BETWEEN e.eligible_from AND e.eligible_until
+      AND qr.scores::jsonb ->> 'overall0to100' ~ '^-?[0-9]+(\.[0-9]+)?$'
+      AND (qr.scores::jsonb ->> 'overall0to100')::numeric BETWEEN 0 AND 100
   ), development_rows AS (
     SELECT DISTINCT ON (ds.program_instance_id, ds.timing)
       ds.program_instance_id,
@@ -935,6 +1140,7 @@ BEGIN
       ON e.program_instance_id = cci.program_instance_id AND e.user_id = cci.user_id
     WHERE cci.status = 'completed'
       AND cci.total_count > 0
+      AND cci.correct_count BETWEEN 0 AND cci.total_count
       AND COALESCE(cci.completed_at, cci.created_at)::date BETWEEN e.eligible_from AND e.eligible_until
     GROUP BY cci.user_id
   ), comprehension AS (
@@ -947,10 +1153,10 @@ BEGIN
     SELECT
       GREATEST(1, LEAST(8, CEIL(((c.date - c.started_at) + 1) / 7.0)::integer)) AS program_week,
       c.user_id,
-      AVG(c.mood_before)::numeric AS mood,
-      AVG(c.energy_level)::numeric AS energy,
-      AVG(c.focus_rating)::numeric AS focus,
-      AVG(CASE WHEN c.wellbeing_metrics ->> 'stress' ~ '^-?[0-9]+(\.[0-9]+)?$' THEN (c.wellbeing_metrics ->> 'stress')::numeric END) AS stress
+      AVG(c.mood)::numeric AS mood,
+      AVG(c.energy)::numeric AS energy,
+      AVG(c.focus)::numeric AS focus,
+      AVG(c.stress)::numeric AS stress
     FROM checkins c
     GROUP BY GREATEST(1, LEAST(8, CEIL(((c.date - c.started_at) + 1) / 7.0)::integer)), c.user_id
   ), weekly_stats AS (
@@ -983,7 +1189,7 @@ BEGIN
       (SELECT COUNT(ls.comprehension_average) FROM latest_snapshots ls)::integer AS participants_with_snapshot_comprehension,
       (SELECT COUNT(*) FROM completions)::integer AS total_completed_days,
       (SELECT COUNT(*) FROM checkins)::integer AS total_checkins,
-      (SELECT COUNT(*) FROM public.daily_journals dj JOIN eligible e ON e.program_instance_id = dj.program_instance_id AND e.user_id = dj.user_id WHERE dj.created_at::date BETWEEN e.eligible_from AND e.eligible_until)::integer AS journal_count_only,
+      (SELECT COUNT(DISTINCT (dj.user_id, dj.created_at::date)) FROM public.daily_journals dj JOIN eligible e ON e.program_instance_id = dj.program_instance_id AND e.user_id = dj.user_id WHERE dj.created_at::date BETWEEN e.eligible_from AND e.eligible_until)::integer AS journal_count_only,
       (SELECT COUNT(DISTINCT ar.user_id) FROM assessment_rows ar WHERE ar.timing = 'pre')::integer AS pre_n,
       (SELECT COUNT(DISTINCT ar.user_id) FROM assessment_rows ar WHERE ar.timing = 'mid')::integer AS mid_n,
       (SELECT COUNT(DISTINCT ar.user_id) FROM assessment_rows ar WHERE ar.timing = 'post')::integer AS post_n,
@@ -1004,6 +1210,7 @@ BEGIN
       'type', 'solo_aggregate',
       'sport_category', _sport_category,
       'sport_level', _sport_level,
+      'data_mode', CASE WHEN _include_test THEN 'qa_only' ELSE 'production_only' END,
       'taxonomy_version', 'sport-taxonomy-v1-2026-07'
     ),
     'sample', jsonb_build_object(
@@ -1018,7 +1225,8 @@ BEGIN
       'aggregate_visible', c.eligible_participants >= 5,
       'low_confidence', c.eligible_participants BETWEEN 5 AND 9,
       'minimum_aggregate_n', 5,
-      'test_data_included', _include_test
+      'test_data_included', _include_test,
+      'data_mode', CASE WHEN _include_test THEN 'qa_only' ELSE 'production_only' END
     ),
     'sport_catalog', COALESCE((
       SELECT jsonb_agg(to_jsonb(cr) ORDER BY cr.sport_category, cr.sport_level)
@@ -1081,7 +1289,9 @@ BEGIN
       'identifiers_present', false,
       'individual_values_present', false,
       'minimum_aggregate_n', 5,
-      'authorization_gate', 'evidence_eligibility_reason'
+      'authorization_gate', 'evidence_eligibility_reason',
+      'duplicate_tracking_rows_collapsed', true,
+      'source_value_ranges_validated', true
     ),
     'claim_boundary', jsonb_build_object(
       'allowed', jsonb_build_array(
@@ -1115,6 +1325,112 @@ $$;
 REVOKE ALL ON FUNCTION public.get_solo_development_evidence_summary(text, text, boolean, text)
   FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_solo_development_evidence_summary(text, text, boolean, text)
+  TO authenticated;
+
+-- The historical transfer aggregate remains useful, but its include-test flag
+-- originally meant "Production plus QA". Keep the production-contamination
+-- probe used by QA parity, while requiring every normal read to stay in one
+-- explicit data mode.
+CREATE OR REPLACE FUNCTION public.get_performance_evidence_summary(
+  _program_run_id uuid DEFAULT NULL,
+  _include_test boolean DEFAULT false,
+  _protocol_version text DEFAULT '56d-transfer-v2-2026-07'
+)
+RETURNS json
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+DECLARE
+  actor_id uuid := auth.uid();
+  result jsonb;
+  minor_enabled boolean;
+  target_is_test boolean;
+BEGIN
+  IF actor_id IS NULL OR NOT public.has_role(actor_id, 'admin'::public.app_role) THEN
+    RAISE EXCEPTION 'admin_role_required' USING ERRCODE = '42501';
+  END IF;
+
+  IF _program_run_id IS NULL AND _include_test THEN
+    RAISE EXCEPTION 'use_solo_qa_evidence_summary';
+  END IF;
+
+  IF _program_run_id IS NOT NULL THEN
+    SELECT COALESCE(t.is_test_team, false)
+    INTO target_is_test
+    FROM public.program_runs pr
+    JOIN public.teams t ON t.id = pr.team_id
+    WHERE pr.id = _program_run_id;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'program_run_not_found';
+    END IF;
+
+    -- A false call on a QA run is an intentional admin-only contamination
+    -- probe. Every actual Production or QA aggregate must be internally pure.
+    IF NOT (target_is_test AND NOT _include_test) THEN
+      IF target_is_test IS DISTINCT FROM _include_test THEN
+        RAISE EXCEPTION 'evidence_data_mode_mismatch';
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM public.program_instances pi
+        JOIN public.profiles p ON p.id = pi.user_id
+        WHERE pi.program_run_id = _program_run_id
+          AND (
+            (target_is_test AND NOT (
+              COALESCE(p.is_test_user, false)
+              AND COALESCE(pi.is_test_instance, false)
+            ))
+            OR (
+              NOT target_is_test
+              AND (
+                COALESCE(p.is_test_user, false)
+                OR COALESCE(pi.is_test_instance, false)
+              )
+            )
+          )
+      ) OR EXISTS (
+        SELECT 1
+        FROM public.athlete_transfer_observations ato
+        WHERE ato.program_run_id = _program_run_id
+          AND COALESCE(ato.is_test, false) IS DISTINCT FROM target_is_test
+      ) OR EXISTS (
+        SELECT 1
+        FROM public.coach_evidence_reviews cer
+        WHERE cer.program_run_id = _program_run_id
+          AND COALESCE(cer.is_test, false) IS DISTINCT FROM target_is_test
+      ) THEN
+        RAISE EXCEPTION 'program_run_data_mode_contamination';
+      END IF;
+    END IF;
+  END IF;
+
+  result := public.get_performance_evidence_summary_v1_core(
+    _program_run_id,
+    _include_test,
+    _protocol_version
+  )::jsonb;
+
+  SELECT ep.minor_collection_enabled
+  INTO minor_enabled
+  FROM public.evidence_protocols ep
+  WHERE ep.version = _protocol_version;
+
+  RETURN jsonb_set(
+    result,
+    '{privacy,minor_collection_enabled}',
+    to_jsonb(COALESCE(minor_enabled, false)),
+    true
+  )::json;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_performance_evidence_summary(uuid, boolean, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_performance_evidence_summary(uuid, boolean, text)
   TO authenticated;
 
 -- Freeze the complete run or solo dossier together with transfer evidence.
@@ -1164,8 +1480,8 @@ BEGIN
     IF NOT FOUND THEN
       RAISE EXCEPTION 'program_run_not_found';
     END IF;
-    IF target_is_test AND NOT _include_test THEN
-      RAISE EXCEPTION 'include_test_required_for_test_run';
+    IF target_is_test IS DISTINCT FROM _include_test THEN
+      RAISE EXCEPTION 'evidence_data_mode_mismatch';
     END IF;
 
     run_evidence := public.get_program_run_development_evidence(
@@ -1260,6 +1576,7 @@ BEGIN
     'program_run_id', _program_run_id,
     'sport_category', _sport_category,
     'sport_level', _sport_level,
+    'data_mode', CASE WHEN _include_test THEN 'qa_only' ELSE 'production_only' END,
     'protocol_version', _protocol_version,
     'snapshot_schema_version', schema_version,
     'checksum_algorithm', 'sha256',
@@ -1326,6 +1643,28 @@ REVOKE ALL ON FUNCTION public.create_evidence_data_lock(uuid, text, text, boolea
   FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.create_evidence_data_lock(uuid, text, text, boolean, text)
   TO authenticated;
+
+-- The Data Lock contract supersedes the older mutable snapshot builders. Keep
+-- historical rows readable for internal operations, but remove every direct
+-- authenticated creation path so exports cannot bypass current eligibility.
+DO $$
+DECLARE
+  legacy_signature text;
+BEGIN
+  FOREACH legacy_signature IN ARRAY ARRAY[
+    'public.create_study_aggregate_snapshot(uuid,boolean)',
+    'public.create_nlz_evidence_snapshot(uuid,boolean)',
+    'public.create_nlz_program_run_snapshot(uuid)'
+  ] LOOP
+    IF to_regprocedure(legacy_signature) IS NOT NULL THEN
+      EXECUTE format(
+        'REVOKE ALL ON FUNCTION %s FROM PUBLIC, anon, authenticated',
+        legacy_signature
+      );
+    END IF;
+  END LOOP;
+END;
+$$;
 
 COMMENT ON FUNCTION public.get_program_run_development_evidence(uuid, text) IS
   'Current-consent and age-authorization-gated run aggregate shared by coach and admin evidence views. No individual values or private text are returned.';

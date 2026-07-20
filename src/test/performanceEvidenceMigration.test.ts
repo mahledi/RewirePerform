@@ -47,7 +47,7 @@ describe("performance evidence migration boundaries", () => {
     }
   });
 
-  it("keeps minors on a prepared but disabled guardian-consent and assent path", () => {
+  it("keeps the historical V1 minor path disabled before the V2 authorization upgrade", () => {
     expect(migration).toContain("minor_collection_enabled boolean NOT NULL DEFAULT false");
     expect(migration).toContain("'guardian_consent_and_athlete_assent_confirmed'");
     expect(migration).toContain("RETURN 'minor_participation_not_enabled'");

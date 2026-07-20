@@ -157,6 +157,29 @@ verify(
     !files.admin.includes('rpc("create_study_aggregate_snapshot"') &&
     !files.admin.includes('rpc("create_nlz_evidence_snapshot"'),
 );
+verify(
+  "invariant",
+  "I-11",
+  "Legacy snapshot builders cannot bypass the current Data Lock eligibility contract",
+  [
+    "public.create_study_aggregate_snapshot(uuid,boolean)",
+    "public.create_nlz_evidence_snapshot(uuid,boolean)",
+    "public.create_nlz_program_run_snapshot(uuid)",
+  ].every((signature) => files.runEvidence.includes(signature)) &&
+    files.runEvidence.includes("FROM PUBLIC, anon, authenticated"),
+);
+verify(
+  "invariant",
+  "I-12",
+  "Production and QA evidence use mutually exclusive participant and observation scopes",
+  [files.evidenceHardening, files.runEvidence].every((source) =>
+    source.includes("COALESCE(p.is_test_user, false)") &&
+    source.includes("COALESCE(pi.is_test_instance, false)") &&
+    source.includes("'data_mode', CASE WHEN _include_test THEN 'qa_only' ELSE 'production_only' END")) &&
+    files.evidenceHardening.includes("COALESCE(ato.is_test, false) = _include_test") &&
+    files.runEvidence.includes("RAISE EXCEPTION 'program_run_data_mode_contamination'") &&
+    files.runEvidence.includes("RAISE EXCEPTION 'evidence_data_mode_mismatch'"),
+);
 
 const hasTeamConsentFilter =
   files.teamMentalStateAggregate.includes("public.evidence_eligibility_reason(pi.id, _protocol_version)") &&

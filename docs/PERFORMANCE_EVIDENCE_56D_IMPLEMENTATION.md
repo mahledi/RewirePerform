@@ -2,6 +2,14 @@
 
 Stand: 15. Juli 2026
 
+> **Historischer V1-Stand.** Die Aussagen zur technisch deaktivierten
+> Minderjaehrigen-Evidence beschreiben das auf Production gepruefte V1-Protokoll
+> vom 15. Juli. Der lokale V2-Kandidat und Mahles Produktentscheidung vom
+> 20. Juli erlauben Evidence nur bei aktuellem freiwilligem Datenbeitrag und
+> vollstaendiger altersgerechter Autorisierung. Production-Aktivierung sowie
+> fachlich-rechtliche Freigabe bleiben offen. Aktueller technischer Vertrag:
+> `docs/TRACKING_EVIDENCE_HARDENING_2026-07-20.md`.
+
 Integrationsbranch: `codex/performance-evidence-integrated-20260714`
 
 Dieser Stand ist auf dem aktuellen `origin/main` mit den App-Store- und Account-Loeschungsarbeiten integriert. Die Evidence-Migration `20260714224000` und die FK-Index-Haertung `20260715085749` wurden am 15. Juli 2026 kontrolliert auf Production `bqsbxesmybthwtxmowfz` angewendet. Die Migrationshistorie, Tabellen, RPC-Rechte, RLS, Protokollkonfiguration, Indizes und Minderjaehrigen-Sperre wurden danach gegen das echte Ziel geprueft. Es wurden dabei keine bestehenden Spieler- oder Trackingzeilen veraendert und keine Evidence-Teilnahme automatisch freigegeben.

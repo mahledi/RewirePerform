@@ -26,6 +26,14 @@ GRANT EXECUTE ON FUNCTION public.is_member_of_team(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.handle_new_user_role() FROM PUBLIC, anon, authenticated;
 
+-- Progress snapshots are derived server data. Athletes may read their own row,
+-- but every write must pass through refresh_my_program_progress_snapshot.
+DROP POLICY IF EXISTS "Users insert own snapshots" ON public.program_progress_snapshots;
+DROP POLICY IF EXISTS "Users update own snapshots" ON public.program_progress_snapshots;
+REVOKE INSERT, UPDATE, DELETE ON TABLE public.program_progress_snapshots
+  FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.program_progress_snapshots TO authenticated;
+
 -- Role lookup is an explicit self-or-admin contract. RLS uses has_role()
 -- directly and is therefore unaffected by this public helper restriction.
 CREATE OR REPLACE FUNCTION public.get_user_role(_user_id uuid)
@@ -303,7 +311,8 @@ BEGIN
   WHERE cci.user_id = actor_id
     AND cci.program_instance_id = target_instance.id
     AND cci.status = 'completed'
-    AND cci.total_count > 0;
+    AND cci.total_count > 0
+    AND cci.correct_count BETWEEN 0 AND cci.total_count;
 
   INSERT INTO public.program_progress_snapshots(
     user_id,

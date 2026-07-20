@@ -14,9 +14,16 @@ Technische Nachtraege:
   historischen Ist-Aufnahme und braucht vor einem Pilot eine konsistente
   fachlich-rechtliche Dokumentation.
 
-Status: Repo, Production und historisches Sentry-Dashboard geprueft; Sentry im
-Release-Kandidaten aus der App entfernt; keine Rechtsfreigabe und keine
-Aktivierung des Minderjaehrigenpfads
+Die Abschnitte 1 bis 9 darunter konservieren bewusst die Production-/Code-
+Baseline vom 15. bis 18. Juli. Sie duerfen nicht als Beschreibung des lokalen
+Hardening-Kandidaten gelesen werden. Dessen aktuelle technische Korrekturen und
+verbleibende Gates stehen in
+`docs/TRACKING_EVIDENCE_HARDENING_2026-07-20.md`.
+
+Status: historische Production-Baseline plus lokaler Hardening-Nachtrag; Sentry
+im Release-Kandidaten aus der App entfernt; keine Rechtsfreigabe, kein Apply der
+neuen Tracking-Migrationen und keine Production-Freigabe des
+Minderjaehrigen-Evidence-Pfads
 
 Dieses Dokument ist die technische Ist-Aufnahme fuer den geplanten Mannschaftspilot. Es ist kein Rechtsgutachten. Aussagen zu Rechtsgrundlagen, Einwilligung, Forschung, Aufbewahrung und Verantwortlichkeiten muessen vor dem Pilot durch eine fuer Deutschland und den konkreten Vereinskontext qualifizierte Stelle bestaetigt werden.
 
@@ -199,7 +206,7 @@ Ob `16 und aelter` fuer jeden vorgesehenen Zweck ohne Guardian ausreicht, ist ke
   `docs/SENTRY_DECOMMISSION_DECISION_2026-07-18.md`.
 - Vercel-Plan, Log-Retention, Analytics-Konfiguration und DPA muessen im echten Projekt verifiziert werden.
 - `npm audit --omit=dev` meldet keine Production-Dependency-Schwachstelle. Der volle Audit meldet eine moderate und eine hohe Advisory im lokalen Vite-/esbuild-Dev-Server; der von npm angebotene Fix ist ein Major-Upgrade und wird separat mit Build- und iOS-Regressionspruefung behandelt.
-- Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build sowie Installation und sichtbarer Start auf temporaerem iPhone 17 Pro Max und iPad Pro 13-inch M5 wurden lokal verifiziert. Wegen des offenen Apple-Account-Supportfalls fehlen weiterhin Signing-Identitaet und Developer Team; Archive, Privacy Report, Upload und echter iPhone-Test bleiben objektiv offen.
+- Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build sowie Installation und sichtbarer Start auf temporaerem iPhone 17 Pro Max und iPad Pro 13-inch M5 wurden lokal verifiziert. Das verifizierte Developer Team `F7A976G38N` ist inzwischen im Xcode-Projekt gesetzt; Distribution-Identitaet/Provisioning, Archive, Privacy Report, Upload und echter iPhone-Test bleiben objektiv offen.
 
 ## 10. Offizielle Ausgangsquellen
 

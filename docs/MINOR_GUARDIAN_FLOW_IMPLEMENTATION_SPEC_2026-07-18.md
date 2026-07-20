@@ -6,6 +6,11 @@ Branch: `codex/minor-guardian-flow-20260718`
 
 Status: lokal vollstaendig implementiert und technisch geprueft; noch nicht migriert, deployed oder fuer reale Minderjaehrige aktiviert
 
+Entscheidungsupdate 20. Juli 2026: Mahle hat ausdruecklich freigegeben, dass
+Minderjaehrige bei vollstaendiger aktueller altersgerechter Autorisierung und
+separatem freiwilligem Datenbeitrag in das Evidence-System aufgenommen werden
+duerfen. Production-Aktivierung und fachlich-rechtliche Freigabe bleiben offen.
+
 ## 1. Produktvertrag
 
 | Thema | Verbindliche Umsetzung |
@@ -20,7 +25,7 @@ Status: lokal vollstaendig implementiert und technisch geprueft; noch nicht migr
 | Marketing | keine Werbung, kein Newsletter, kein Open- oder Link-Tracking fuer Guardian-E-Mails |
 | Produkttracking | nach vollstaendiger Produktfreigabe aktiv, weil es das 56-Tage-Programm bereitstellt |
 | Datenbeitrag | getrenntes freiwilliges Ja/Nein fuer gruppierte Produkt- und Performance-Optimierung |
-| Transfer-Evidence | aktuelles Protokoll bleibt fuer alle Minderjaehrigen technisch deaktiviert |
+| Transfer-Evidence | nur bei aktivem Minderjaehrigen-Protokoll, aktuellem freiwilligem Datenbeitrag und vollstaendiger altersgerechter Freigabe; unter 16 Guardian plus Athlet, bei 16 bis 17 aktuelle eigene Freigabe |
 | Adult-Evidence | Alters-Selbstauskunft und Datenbeitrag erzeugen keine Evidence-Freigabe; die bestehende separate Admin-Verifikation bleibt erforderlich |
 | Trainer-Sicht | nur operative Aktivitaet; keine Guardian-Daten, privaten Antworten oder Einzelwerte |
 | Zweckgrenze | keine Diagnose, Behandlung, Krisenhilfe oder Gesundheitsforschung |

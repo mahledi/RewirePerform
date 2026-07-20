@@ -25,6 +25,13 @@ die eigene aktive Programminstanz. Ein Advisory Lock und ein eindeutiges Upsert
 verhindern konkurrierende Doppelzeilen. Completion, Streak, Check-ins, Journale
 und Comprehension bleiben auf den aktuellen Lauf begrenzt.
 
+Direktes `INSERT`, `UPDATE` oder `DELETE` auf
+`program_progress_snapshots` ist fuer App-Rollen entzogen. Athleten duerfen den
+abgeleiteten Stand lesen, aber nur die serverseitige Refresh-Funktion darf ihn
+schreiben. Doppelte Completion-Zeilen, noch nicht erreichbare Programmtage,
+unmoegliche Comprehension-Werte und ungueltige Snapshot-Bereiche werden nicht
+in die Berechnung uebernommen.
+
 ### 2. Kritische Funktionsrechte werden enger
 
 Die Migration entzieht `anon` unnoetige direkte Ausfuehrungsrechte. Trigger-
@@ -88,9 +95,33 @@ Ein Program-Run-Lock friert in einem versionierten Paket gemeinsam ein:
 - Transfer-Pulse und strukturierte Coach-Aggregate
 - Missingness, Unsicherheit und Claim-Grenzen
 
+Ein Solo-Sport-Lock friert sportartenbezogen gemeinsam ein:
+
+- Stichprobe, Sportkategorie und Leistungsniveau
+- Nutzung, Fortschritt und Adhaerenz
+- Pre-/Mid-/Post-Abdeckung und Development-Index-Aggregate
+- Verstaendniswerte und acht Programmwochen mit metrikspezifischem `n`
+- Transfer-Pulse, Missingness, Unsicherheit und Claim-Grenzen
+
+Die Admin-Oberflaeche erzeugt externe JSON-/CSV-Dateien nur noch aus dem gerade
+erstellten Data Lock. Die drei aelteren Snapshot-Builder bleiben als historische
+Schemaobjekte bestehen, verlieren aber ihr Ausfuehrungsrecht fuer
+`authenticated`; damit existiert kein paralleler Exportpfad am aktuellen
+Eligibility-Gate vorbei.
+
 Mehrfache Pre-/Mid-/Post-Abgaben werden pro Programminstanz, Instrument und
 Messzeitpunkt dedupliziert. Kleine Gruppen sowie einzelne Messfelder mit weniger
 als fuenf gueltigen Beitraegen liefern serverseitig keine Durchschnittswerte.
+Nur bekannte Assessment-Schemata mit vollstaendigen Subskalen und gueltigen
+Wertebereichen werden ausgewertet. Der Development Index wird nur zwischen 0
+und 100 akzeptiert; ein spaeter gespeicherter defekter Wert kann einen aelteren
+gueltigen Messwert nicht verdecken.
+
+Production und QA sind gegenseitig ausschliessende Datenmodi. Ein QA-Aggregat
+enthaelt nur Profile und Programminstanzen, die beide als Test markiert sind;
+ein Production-Aggregat nur Datensaetze ohne beide Testflags. Gemischte
+Mannschaftslaeufe blockieren einen Data Lock mit einem sichtbaren
+Integritaetsfehler.
 
 Ein Lock enthaelt keine E-Mail, keinen Namen, kein Journal, keine Reflexion,
 keine Rohantwort und keinen individuellen Score.
@@ -129,12 +160,39 @@ unveraendert.
 
 ## Lokale Verifikation
 
+Der finale lokale Integrationslauf bestand am 20. Juli 2026:
+
+- `npm run ci`: Typecheck, Production-Build, 48 Testdateien mit 261 Tests,
+  Evidence-SQL, Minderjaehrigen-SQL, Tracking-Runtime-SQL und statisches
+  App-Store-Gate gruen
+- `npm run privacy:verify`: 19 von 19 Privacy-Invarianten gruen
+- `npm run lint`: 0 Fehler, 15 bekannte projektweite Warnungen
+- `npm audit --omit=dev`: 0 bekannte Production-Schwachstellen
+- Evidence-Browsermatrix: 5 von 5 Projekten gruen auf Desktop-Chromium sowie
+  iPhone-/iPad-WebKit hoch und quer; keine Page Errors, keine horizontalen
+  Ueberlaeufe und keine Touch-Ziele unter 44 Pixel
+- `npm run app:verify:xcode:build`: 9 von 9 lokale Xcode-Gates gruen,
+  einschliesslich Xcode 26.6, iOS-26.5-Simulator-Runtime, verifiziertem
+  Developer Team und unsigniertem Simulator-Build
+
+Der vollstaendige Dependency-Audit meldet zwei Befunde ausschliesslich im
+lokalen Vite-/esbuild-Entwicklungsserver. Der angebotene Fix ist ein
+Vite-8-Major-Upgrade und bleibt deshalb ein eigener Build-Tooling-Block. Die
+betroffenen Pakete werden nicht in das Production- oder App-Bundle ausgeliefert.
+
 Die neuen Vertraege werden unter anderem durch folgende Checks abgedeckt:
 
 - atomarer Snapshot, 3-von-7-Rate, Streak und Instance-Scope
 - Self-/Foreign-ID- und Rollen-Negativtests
 - Solo-Aggregat bei `n = 4` gesperrt und bei `n = 5` sichtbar/low confidence
 - Teamaggregat bei `n = 4` gesperrt und bei `n = 5` sichtbar
+- einzelne Teammetriken bleiben bei ihrem eigenen `n < 5` verborgen, auch wenn
+  insgesamt fuenf Athleten eingecheckt haben
+- QA-Teamtrends folgen dem simulierten Teamdatum; Production-Teams verwenden
+  weiterhin ausschliesslich das reale Kalenderdatum
+- QA-Solo-Aggregate enthalten keine Production-Teilnehmer; Production-Solo-
+  Aggregate enthalten keine QA-Teilnehmer oder QA-Beobachtungen
+- ein Team-Data-Lock mit einem zum Lauf unpassenden Datenmodus wird abgewiesen
 - Consent-Widerruf entfernt Werte sofort aus dynamischen Aggregaten
 - abgeschlossener Lauf bleibt nur mit aktueller Autorisierung auswertbar
 - doppelte Pre-Abgabe erhoeht das gepaarte `n` nicht
@@ -144,6 +202,9 @@ Die neuen Vertraege werden unter anderem durch folgende Checks abgedeckt:
   einem gemeinsamen Schema
 - Data Lock unveraenderlich, invalidierbar und pruefsummenbelegt
 - Maschinenzugriff nur als `service_role`
+- alte Snapshot-Builder besitzen kein authentifiziertes Ausfuehrungsrecht mehr
+- App-Rollen koennen Progress-Snapshots lesen, aber nicht direkt schreiben oder
+  loeschen
 - invalidierter oder beschaedigter Lock wird nicht ausgeliefert
 - Maschinenzugriffe und Abweisungen werden append-only auditiert
 - kein Zugriff der API auf Journale, Reflexionen oder Live-Check-ins
@@ -176,12 +237,12 @@ Service-Role-Key darf niemals in MahleOS, Browser, App oder Repository liegen.
 
 ## Offene Gates
 
-1. Der aktuelle Main-Stand aktiviert ein V2-Evidence-Protokoll fuer
-   Minderjaehrige mit konkreten Guardian-/Assent-Receipts. Aeltere Dokumente
-   beschreiben Minderjaehrigen-Evidence weiterhin als deaktiviert. Dieser
-   Widerspruch muss vor einem realen Minderjaehrigenpilot fachlich, rechtlich und
-   dokumentarisch aufgeloest werden. Dieser Tracking-Block aendert die
-   Aktivierungsentscheidung nicht.
+1. Der aktuelle Main-Stand enthaelt ein V2-Evidence-Protokoll fuer
+   Minderjaehrige mit konkreten Guardian-/Assent-Receipts. Der lokale Kandidat
+   bindet alle Evidence-Auswertungen an genau diese aktuellen Receipts. Ob und
+   wann diese Migrationen auf Production aktiviert werden, bleibt vor einem
+   realen Minderjaehrigenpilot ein separates fachliches, rechtliches und
+   produktives Freigabegate.
 2. Widerruf, Aufbewahrung und Loeschung bereits gesperrter Data Locks brauchen
    eine verbindliche fachlich-rechtliche Regel.
 3. Production-Apply, reale RLS-/JWT-Tests und Security-Advisor-Nachpruefung sind

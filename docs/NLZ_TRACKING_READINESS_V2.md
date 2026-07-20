@@ -1,5 +1,10 @@
 # NLZ Tracking Readiness V2
 
+> **Historischer Stand.** Der aktuelle Tagespfad verwendet
+> `save_daily_tracking_v3`; externe Team- und Solo-Evidence wird im lokalen
+> Integrationskandidaten nur noch ueber unveraenderliche Data Locks freigegeben.
+> Source of Truth: `docs/TRACKING_EVIDENCE_HARDENING_2026-07-20.md`.
+
 ## Implementierter Stand
 
 Die V2-Schicht führt eine eindeutige Pilot-Einheit `program_runs` ein. Ein Run verbindet Team, Startdatum, Status und die Programminstanzen aller Athleten. Alle neuen Pilot-Auswertungen sind auf diese Instanzen begrenzt.
@@ -24,7 +29,8 @@ Ein fehlgeschlagener Check-in kann deshalb keine falsche Completion erzeugen. Wi
 - `save_daily_tracking_v2`
 - `get_nlz_pilot_readiness`
 - `get_nlz_evidence_dossier`
-- `create_nlz_program_run_snapshot`
+- `create_nlz_program_run_snapshot` (historisch; im aktuellen Kandidaten fuer
+  App-Nutzer gesperrt)
 
 ## Readiness Gate
 

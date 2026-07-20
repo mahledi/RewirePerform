@@ -83,7 +83,16 @@ describe("auth email confirmation", () => {
     mocks.from.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      maybeSingle: vi.fn().mockResolvedValue({ data: { sport: "Fußball" }, error: null }),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: {
+          sport: "Fußball",
+          sport_category: "teamsport",
+          sport_format: "team",
+          sport_level: "competitive",
+          sport_taxonomy_version: "v1",
+        },
+        error: null,
+      }),
     });
   });
 

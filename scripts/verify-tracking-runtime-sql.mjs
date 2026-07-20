@@ -140,6 +140,14 @@ try {
       ON public.program_progress_snapshots(user_id, program_instance_id, date)
       WHERE program_instance_id IS NOT NULL;
 
+    CREATE POLICY "Users insert own snapshots"
+      ON public.program_progress_snapshots FOR INSERT
+      TO authenticated WITH CHECK (user_id = auth.uid());
+    CREATE POLICY "Users update own snapshots"
+      ON public.program_progress_snapshots FOR UPDATE
+      TO authenticated USING (user_id = auth.uid());
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.program_progress_snapshots TO authenticated;
+
     CREATE FUNCTION public.can_manage_team_calendar(uuid) RETURNS boolean LANGUAGE sql SECURITY DEFINER AS $$ SELECT false $$;
     CREATE FUNCTION public.get_admin_ops_status(boolean) RETURNS json LANGUAGE sql SECURITY DEFINER AS $$ SELECT '{}'::json $$;
     CREATE FUNCTION public.get_admin_overview_stats(boolean) RETURNS json LANGUAGE sql SECURITY DEFINER AS $$ SELECT '{}'::json $$;
@@ -172,6 +180,17 @@ try {
   assert(privilege.auth_signup_trigger === false, "Signup trigger function must not be an authenticated RPC");
   assert(privilege.auth_role_trigger === false, "Role trigger function must not be an authenticated RPC");
   assert(privilege.auth_snapshot === true, "Authenticated users need the self-only snapshot RPC");
+  const snapshotTablePrivileges = await db.query(`
+    SELECT
+      has_table_privilege('authenticated', 'public.program_progress_snapshots', 'SELECT') AS can_select,
+      has_table_privilege('authenticated', 'public.program_progress_snapshots', 'INSERT') AS can_insert,
+      has_table_privilege('authenticated', 'public.program_progress_snapshots', 'UPDATE') AS can_update,
+      has_table_privilege('authenticated', 'public.program_progress_snapshots', 'DELETE') AS can_delete
+  `);
+  assert(snapshotTablePrivileges.rows[0].can_select === true, "Athletes must retain read access to their snapshot");
+  assert(snapshotTablePrivileges.rows[0].can_insert === false, "Athletes must not insert derived snapshots directly");
+  assert(snapshotTablePrivileges.rows[0].can_update === false, "Athletes must not update derived snapshots directly");
+  assert(snapshotTablePrivileges.rows[0].can_delete === false, "Athletes must not delete derived snapshots directly");
 
   await db.query("INSERT INTO auth.users(id) VALUES ($1), ($2), ($3)", [ids.athlete, ids.other, ids.admin]);
   await db.query(
@@ -216,7 +235,9 @@ try {
   await db.query(
     `INSERT INTO public.comprehension_check_instances(
       user_id, program_instance_id, status, correct_count, total_count
-    ) VALUES ($1, $2, 'completed', 3, 4)`,
+    ) VALUES
+      ($1, $2, 'completed', 3, 4),
+      ($1, $2, 'completed', 8, 4)`,
     [ids.athlete, ids.instance],
   );
 

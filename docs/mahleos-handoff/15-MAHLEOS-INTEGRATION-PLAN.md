@@ -43,6 +43,13 @@ Nutzung, Pre-/Mid-/Post-Messung, Teamtrend, Transfer-Evidence und die zugehoerig
 Analysegrenze. MahleOS muss `snapshot_schema_version` pruefen und unbekannte
 Versionen ablehnen, statt Felder still falsch zu interpretieren.
 
+Ein freigegebener Solo-Sport-Lock nutzt
+`solo-sport-evidence-lock-v2-2026-07` und enthaelt gemeinsam aggregierte Nutzung,
+Pre-/Mid-/Post-Abdeckung, Development-Index-Werte, Verstaendniswerte, acht
+Programmwochen und Transfer-Evidence. MahleOS darf nur diese beiden explizit
+unterstuetzten Schema-Versionen akzeptieren und muss jede unbekannte Version
+fail-closed ablehnen.
+
 Ausgeschlossen:
 
 - Namen, E-Mails und User-IDs

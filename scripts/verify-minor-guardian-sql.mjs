@@ -33,11 +33,17 @@ const soloAthletes = Array.from({ length: 5 }, (_, index) => ({
   user: `00000000-0000-4000-8000-00000000030${index + 1}`,
   instance: `10000000-0000-4000-8000-00000000030${index + 1}`,
   score: 6 + index,
+  assessmentScore: 2 + index * 0.2,
 }));
 
 const teamPulse = {
   team: "20000000-0000-4000-8000-000000000301",
   run: "30000000-0000-4000-8000-000000000301",
+};
+
+const qaSolo = {
+  user: "00000000-0000-4000-8000-000000000399",
+  instance: "10000000-0000-4000-8000-000000000399",
 };
 
 const assert = (condition, message) => {
@@ -272,6 +278,8 @@ try {
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES auth.users(id),
       program_instance_id uuid REFERENCES public.program_instances(id),
+      program_run_id uuid,
+      team_id uuid,
       protocol_version text,
       domain_id text NOT NULL DEFAULT 'attention_return',
       day_number integer NOT NULL DEFAULT 4,
@@ -283,7 +291,9 @@ try {
     CREATE TABLE public.coach_evidence_reviews(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       scope_type text NOT NULL,
-      target_program_instance_id uuid REFERENCES public.program_instances(id) ON DELETE CASCADE
+      target_program_instance_id uuid REFERENCES public.program_instances(id) ON DELETE CASCADE,
+      program_run_id uuid,
+      is_test boolean NOT NULL DEFAULT false
     );
     CREATE TABLE public.coach_evidence_observations(
       review_id uuid REFERENCES public.coach_evidence_reviews(id) ON DELETE CASCADE
@@ -328,6 +338,25 @@ try {
       )
     $$;
 
+    -- Historical export builders are present in Production before the current
+    -- hardening migration. The harness grants them deliberately so the new
+    -- migration must prove that it closes the bypass.
+    CREATE FUNCTION public.create_study_aggregate_snapshot(_cohort_id uuid, include_test boolean)
+    RETURNS json LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS $$
+      SELECT json_build_object('legacy', true)
+    $$;
+    CREATE FUNCTION public.create_nlz_evidence_snapshot(_team_id uuid, _include_test boolean)
+    RETURNS json LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS $$
+      SELECT json_build_object('legacy', true)
+    $$;
+    CREATE FUNCTION public.create_nlz_program_run_snapshot(_program_run_id uuid)
+    RETURNS json LANGUAGE sql SECURITY DEFINER SET search_path = pg_catalog AS $$
+      SELECT json_build_object('legacy', true)
+    $$;
+    GRANT EXECUTE ON FUNCTION public.create_study_aggregate_snapshot(uuid, boolean) TO authenticated;
+    GRANT EXECUTE ON FUNCTION public.create_nlz_evidence_snapshot(uuid, boolean) TO authenticated;
+    GRANT EXECUTE ON FUNCTION public.create_nlz_program_run_snapshot(uuid) TO authenticated;
+
     INSERT INTO public.evidence_protocols(
       version, status, program_days, required_consent_version,
       athlete_collection_enabled, coach_collection_enabled,
@@ -363,6 +392,20 @@ try {
   await db.exec(teamAggregateMigration);
   await db.exec(evidenceApiMigration);
   await db.exec(unifiedRunEvidenceMigration);
+
+  const legacySnapshotPrivileges = await db.query(`
+    SELECT
+      has_function_privilege('anon', 'public.create_study_aggregate_snapshot(uuid,boolean)', 'EXECUTE') AS anon_study,
+      has_function_privilege('authenticated', 'public.create_study_aggregate_snapshot(uuid,boolean)', 'EXECUTE') AS auth_study,
+      has_function_privilege('anon', 'public.create_nlz_evidence_snapshot(uuid,boolean)', 'EXECUTE') AS anon_nlz,
+      has_function_privilege('authenticated', 'public.create_nlz_evidence_snapshot(uuid,boolean)', 'EXECUTE') AS auth_nlz,
+      has_function_privilege('anon', 'public.create_nlz_program_run_snapshot(uuid)', 'EXECUTE') AS anon_run,
+      has_function_privilege('authenticated', 'public.create_nlz_program_run_snapshot(uuid)', 'EXECUTE') AS auth_run
+  `);
+  assert(
+    Object.values(legacySnapshotPrivileges.rows[0]).every((allowed) => allowed === false),
+    "Legacy snapshot builders must not remain executable by app roles",
+  );
 
   const sqlTaxonomy = await db.query(`
     SELECT
@@ -584,15 +627,15 @@ try {
       )`,
       [athlete.user, athlete.instance, athlete.score],
     );
-    const postDelta = [1, 2, 1, 3, 2][index];
+    const postDelta = [0.2, 0.4, 0.2, 0.5, 0.3][index];
     await db.query(
       `INSERT INTO public.assessments(
         user_id, program_instance_id, assessment_type, timing, scores, created_at
       ) VALUES
-        ($1, $2, 'smtq', 'pre', jsonb_build_object('confidence', 99), now() - interval '2 hours'),
-        ($1, $2, 'smtq', 'pre', jsonb_build_object('confidence', $3::numeric), now() - interval '1 hour'),
-        ($1, $2, 'smtq', 'post', jsonb_build_object('confidence', $4::numeric), now())`,
-      [athlete.user, athlete.instance, athlete.score, athlete.score + postDelta],
+        ($1, $2, 'smtq', 'pre', jsonb_build_object('confidence', $3::numeric, 'constancy', $3::numeric, 'control', $3::numeric), now() - interval '1 hour'),
+        ($1, $2, 'smtq', 'pre', jsonb_build_object('confidence', 99, 'constancy', 99, 'control', 99), now() - interval '30 minutes'),
+        ($1, $2, 'smtq', 'post', jsonb_build_object('confidence', $4::numeric, 'constancy', $4::numeric, 'control', $4::numeric), now())`,
+      [athlete.user, athlete.instance, athlete.assessmentScore, athlete.assessmentScore + postDelta],
     );
     await db.query(
       `INSERT INTO public.questionnaire_responses(
@@ -620,6 +663,86 @@ try {
     );
   }
 
+  await db.query("INSERT INTO auth.users(id) VALUES ($1)", [qaSolo.user]);
+  await db.query("INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'athlete')", [qaSolo.user]);
+  await db.query(
+    `INSERT INTO public.profiles(
+      id, sport, sport_category, sport_format, sport_level,
+      sport_taxonomy_version, is_test_user
+    ) VALUES (
+      $1, 'Boxen', 'combat_sport', 'individual', 'competitive_amateur',
+      'sport-taxonomy-v1-2026-07', true
+    )`,
+    [qaSolo.user],
+  );
+  await action("set_age", qaSolo.user, { age_band: "adult" });
+  await action("set_data_contribution", qaSolo.user, { data_contribution_authorized: true });
+  await db.query(
+    `INSERT INTO public.program_instances(
+      id, user_id, status, started_at, is_test_instance
+    ) VALUES ($1, $2, 'active', CURRENT_DATE - 13, true)`,
+    [qaSolo.instance, qaSolo.user],
+  );
+  await db.query(
+    `INSERT INTO public.athlete_transfer_observations(
+      user_id, program_instance_id, protocol_version, domain_id,
+      day_number, score, not_observed, is_test
+    ) VALUES (
+      $1, $2, '56d-transfer-v2-2026-07', 'attention_return', 4, 4, false, true
+    )`,
+    [qaSolo.user, qaSolo.instance],
+  );
+  await db.query(
+    `INSERT INTO public.daily_checkins(
+      user_id, program_instance_id, date, mood_before, energy_level,
+      focus_rating, wellbeing_metrics
+    ) VALUES ($1, $2, CURRENT_DATE, 10, 10, 10, jsonb_build_object('stress', 1))`,
+    [qaSolo.user, qaSolo.instance],
+  );
+
+  const firstSolo = soloAthletes[0];
+  await db.query(
+    `INSERT INTO public.user_day_completion(
+      user_id, program_instance_id, completion_status, day_number, completed_at
+    ) VALUES
+      ($1, $2, 'completed', 1, now()),
+      ($1, $2, 'completed', 56, now())`,
+    [firstSolo.user, firstSolo.instance],
+  );
+  await db.query(
+    `INSERT INTO public.daily_checkins(
+      user_id, program_instance_id, date, mood_before, energy_level,
+      focus_rating, wellbeing_metrics
+    ) VALUES (
+      $1, $2, CURRENT_DATE, $3::integer, 7, 8,
+      jsonb_build_object('stress', 3)
+    )`,
+    [firstSolo.user, firstSolo.instance, firstSolo.score],
+  );
+  await db.query(
+    `INSERT INTO public.comprehension_check_instances(
+      user_id, program_instance_id, status, total_count, correct_count, completed_at
+    ) VALUES ($1, $2, 'completed', 5, 99, now())`,
+    [firstSolo.user, firstSolo.instance],
+  );
+  await db.query(
+    `INSERT INTO public.program_progress_snapshots(
+      user_id, program_instance_id, days_available, days_completed,
+      completion_rate, comprehension_average, checkins_completed_count,
+      updated_at
+    ) VALUES ($1, $2, 14, 99, 9, 4, 99, now() + interval '1 minute')`,
+    [firstSolo.user, firstSolo.instance],
+  );
+  await db.query(
+    `INSERT INTO public.questionnaire_responses(
+      user_id, program_instance_id, instrument_id, is_complete, scores, timing, created_at
+    ) VALUES (
+      $1, $2, 'rewire_development_index', true,
+      jsonb_build_object('overall0to100', 999), 'pre', now() - interval '15 minutes'
+    )`,
+    [firstSolo.user, firstSolo.instance],
+  );
+
   await db.query(
     "UPDATE public.athlete_transfer_observations SET is_test = true WHERE user_id = $1",
     [soloAthletes[4].user],
@@ -627,6 +750,19 @@ try {
 
   await db.exec("SET ROLE authenticated");
   await db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [ids.admin]);
+  const qaOnlyTransfer = await db.query(
+    "SELECT public.get_solo_sport_evidence_summary('combat_sport', 'competitive_amateur', true, '56d-transfer-v2-2026-07') AS summary",
+  );
+  assert(qaOnlyTransfer.rows[0].summary.sample.scope_participants_total === 1, "QA Solo transfer evidence must exclude Production participants");
+  assert(qaOnlyTransfer.rows[0].summary.sample.total_observations === 1, "QA Solo transfer evidence must contain only QA observations");
+  assert(qaOnlyTransfer.rows[0].summary.sample.data_mode === "qa_only", "QA Solo transfer evidence must declare its data mode");
+  assert(qaOnlyTransfer.rows[0].summary.domain_aggregates[0].n === 1, "QA Solo transfer n must not be inflated by Production athletes");
+  const qaOnlyDevelopment = await db.query(
+    "SELECT public.get_solo_development_evidence_summary('combat_sport', 'competitive_amateur', true, '56d-transfer-v2-2026-07') AS summary",
+  );
+  assert(qaOnlyDevelopment.rows[0].summary.sample.scope_participants_total === 1, "QA Solo development evidence must exclude Production participants");
+  assert(qaOnlyDevelopment.rows[0].summary.sample.eligible_participants === 1, "A fully test-marked Solo participant must be QA eligible");
+  assert(qaOnlyDevelopment.rows[0].summary.sample.data_mode === "qa_only", "QA Solo development evidence must declare its data mode");
   const belowThreshold = await db.query(
     "SELECT public.get_solo_sport_evidence_summary('combat_sport', 'competitive_amateur', false, '56d-transfer-v2-2026-07') AS summary",
   );
@@ -661,13 +797,16 @@ try {
   assert(soloDevelopmentResult.sample.eligible_participants === 5, "Solo development evidence must count five authorized athletes");
   assert(soloDevelopmentResult.cohort_breakdown.completed_pre_post === 5, "Solo cohorts must use actual participant measurement paths");
   assert(soloPrePost.n_pairs === 5, "Repeated Solo Pre submissions must not inflate paired n");
-  assert(Number(soloPrePost.avg_pre) === 8, "Solo evidence must use the latest valid Pre submission per athlete");
-  assert(Number(soloPrePost.abs_change) === 1.8, "Solo observed change must use five deduplicated pairs");
+  assert(Number(soloPrePost.avg_pre) === 2.4, "Solo evidence must use the latest valid Pre submission per athlete");
+  assert(Number(soloPrePost.abs_change) === 0.32, "Solo observed change must use five deduplicated pairs");
   assert(soloDevelopmentResult.outcomes.development_overall.n === 5, "Solo Development Index must preserve five pairs");
   assert(Number(soloDevelopmentResult.outcomes.development_overall.observed_change) === 5, "Solo Development Index must use paired values");
   assert(soloDevelopmentResult.weekly_state[0].mood_n === 5, "Solo weekly state must report metric-specific n");
   assert(Number(soloDevelopmentResult.weekly_state[0].mood) === 8, "Solo weekly state must aggregate per athlete");
   assert(soloDevelopmentResult.usage.avg_completion_rate !== null, "Five Solo snapshots must allow an aggregate completion rate");
+  assert(soloDevelopmentResult.usage.total_completed_days === 5, "Duplicate and future Solo completions must not inflate usage");
+  assert(soloDevelopmentResult.usage.total_checkins === 5, "Duplicate Solo check-ins must collapse to one athlete-day");
+  assert(soloDevelopmentResult.outcomes.comprehension.total_completed === 5, "Invalid comprehension rows must be excluded");
   for (const athlete of soloAthletes) {
     assert(!JSON.stringify(soloDevelopmentResult).includes(athlete.user), "Solo development evidence must not return athlete identifiers");
   }
@@ -703,6 +842,10 @@ try {
   await db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [ids.teen]);
   await expectFailure(
     () => db.query("SELECT public.get_solo_sport_evidence_summary(NULL, NULL, false, '56d-transfer-v2-2026-07')"),
+    "admin_role_required",
+  );
+  await expectFailure(
+    () => db.query("SELECT public.get_performance_evidence_summary(NULL, false, '56d-transfer-v2-2026-07')"),
     "admin_role_required",
   );
   await db.exec("RESET ROLE");
@@ -894,6 +1037,14 @@ try {
   const qaDate = (await db.query("SELECT (CURRENT_DATE + 30)::text AS value")).rows[0].value;
   await db.query("UPDATE public.teams SET is_test_team = true WHERE id = $1", [teamPulse.team]);
   await db.query(
+    "UPDATE public.profiles SET is_test_user = true WHERE id IN (SELECT user_id FROM public.program_instances WHERE program_run_id = $1)",
+    [teamPulse.run],
+  );
+  await db.query(
+    "UPDATE public.program_instances SET is_test_instance = true WHERE program_run_id = $1",
+    [teamPulse.run],
+  );
+  await db.query(
     "INSERT INTO public.qa_time_overrides(scope, team_id, simulated_date) VALUES ('team', $1, CURRENT_DATE + 30)",
     [teamPulse.team],
   );
@@ -903,14 +1054,35 @@ try {
   );
   await db.exec("SET ROLE authenticated");
   await db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [ids.admin]);
+  await expectFailure(
+    () => db.query(
+      "SELECT public.create_evidence_data_lock($1, NULL, NULL, false, '56d-transfer-v2-2026-07')",
+      [teamPulse.run],
+    ),
+    "evidence_data_mode_mismatch",
+  );
   const qaTeamAggregate = await db.query(
     "SELECT public.get_team_mental_state_aggregate($1, '56d-transfer-v2-2026-07') AS result",
     [teamPulse.team],
   );
   assert(qaTeamAggregate.rows[0].result.wellbeing.today.date === qaDate, "QA team pulse must use the simulated team date");
   assert(qaTeamAggregate.rows[0].result.wellbeing.today.n_users === 5, "QA time travel must preserve the real aggregate path");
+  const qaRunEvidence = await db.query(
+    "SELECT public.get_program_run_development_evidence($1, '56d-transfer-v2-2026-07') AS result",
+    [teamPulse.run],
+  );
+  assert(qaRunEvidence.rows[0].result.meta.effective_date === qaDate, "QA run evidence must use the simulated team date");
+  assert(qaRunEvidence.rows[0].result.team_pulse.daily[0].date === qaDate, "QA run evidence must include simulated-date check-ins");
   await db.exec("RESET ROLE");
   await db.query("UPDATE public.teams SET is_test_team = false WHERE id = $1", [teamPulse.team]);
+  await db.query(
+    "UPDATE public.profiles SET is_test_user = false WHERE id IN (SELECT user_id FROM public.program_instances WHERE program_run_id = $1)",
+    [teamPulse.run],
+  );
+  await db.query(
+    "UPDATE public.program_instances SET is_test_instance = false WHERE program_run_id = $1",
+    [teamPulse.run],
+  );
   await db.query("DELETE FROM public.qa_time_overrides WHERE team_id = $1", [teamPulse.team]);
   await db.query(
     "UPDATE public.daily_checkins SET date = CURRENT_DATE WHERE program_instance_id IN (SELECT id FROM public.program_instances WHERE program_run_id = $1)",
@@ -919,7 +1091,7 @@ try {
 
   await db.exec("RESET ROLE");
   await db.query(
-    "UPDATE public.daily_checkins SET wellbeing_metrics = jsonb_set(wellbeing_metrics, '{stress}', to_jsonb('not-recorded'::text)) WHERE user_id = $1",
+    "UPDATE public.daily_checkins SET wellbeing_metrics = jsonb_set(jsonb_set(wellbeing_metrics, '{stress}', to_jsonb('not-recorded'::text)), '{pressure}', to_jsonb(99)) WHERE user_id = $1",
     [soloAthletes[4].user],
   );
   await db.exec("SET ROLE authenticated");
@@ -933,6 +1105,8 @@ try {
   assert(metricSuppressedTeam.wellbeing.today.mood !== null, "Five valid mood contributors may produce an aggregate");
   assert(metricSuppressedTeam.wellbeing.today.stress_n === 4, "Team pulse must count valid stress values per metric");
   assert(metricSuppressedTeam.wellbeing.today.stress === null, "Team pulse must suppress a metric with fewer than five valid contributors");
+  assert(metricSuppressedTeam.wellbeing.today.pressure_n === 4, "Out-of-range team values must not count as valid contributors");
+  assert(metricSuppressedTeam.wellbeing.today.pressure === null, "Out-of-range team values must remain suppressed");
   const runEvidence = await db.query(
     "SELECT public.get_program_run_development_evidence($1, '56d-transfer-v2-2026-07') AS result",
     [teamPulse.run],
@@ -946,15 +1120,19 @@ try {
   assert(runResult.cohort_breakdown.completed_pre_post === 5, "Cohort status must use actual participant measurement paths");
   assert(runResult.cohort_breakdown.never_started === 0, "Completed Pre/Post participants must not be counted as never started");
   assert(prePostChange.n_pairs === 5, "Repeated Pre submissions must not inflate paired n");
-  assert(Number(prePostChange.avg_pre) === 8, "The latest valid Pre submission must be used per athlete");
-  assert(Number(prePostChange.abs_change) === 1.8, "Observed change must use the five deduplicated pairs");
+  assert(Number(prePostChange.avg_pre) === 2.4, "The latest valid Pre submission must be used per athlete");
+  assert(Number(prePostChange.abs_change) === 0.32, "Observed change must use the five deduplicated pairs");
   assert(runResult.outcomes.development_overall.n === 5, "Development Index must preserve five pairs");
   assert(Number(runResult.outcomes.development_overall.observed_change) === 5, "Development Index change must use paired values");
   assert(runResult.team_pulse.daily[0].mood_n === 5, "Metric-level n must be reported for available mood values");
   assert(runResult.team_pulse.daily[0].stress_n === 4, "Malformed stress input must be excluded from metric-level n");
   assert(runResult.team_pulse.daily[0].stress === null, "A sensitive metric with fewer than five valid values must be suppressed");
+  assert(runResult.team_pulse.daily[0].pressure_n === 4, "Out-of-range run values must be excluded from metric-level n");
+  assert(runResult.team_pulse.daily[0].pressure === null, "Out-of-range run values must remain suppressed");
   assert(runResult.team_pulse.daily[0].mood !== null, "A sensitive metric with five valid values may be aggregated");
   assert(runResult.usage.avg_completion_rate !== null, "Five current progress snapshots must allow an aggregate average");
+  assert(runResult.usage.total_completed_days === 5, "Duplicate and future run completions must not inflate usage");
+  assert(runResult.usage.total_checkins === 5, "Duplicate run check-ins must collapse to one athlete-day");
   for (const athlete of soloAthletes) {
     assert(!JSON.stringify(runResult).includes(athlete.user), "Run evidence must not return athlete identifiers");
   }
