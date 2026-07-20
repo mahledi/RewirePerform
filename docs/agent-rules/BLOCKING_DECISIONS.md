@@ -41,11 +41,11 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 ## BD-05 - Minderjaehrigen-Consent
 
-- Status: Produktregel am 18. Juli 2026 durch Mahle entschieden und im isolierten Branch `codex/minor-guardian-flow-20260718` lokal implementiert; noch nicht migriert, deployed oder fuer reale Minderjaehrige aktiviert.
+- Status: Produktregel am 18. Juli 2026 durch Mahle entschieden und im isolierten Branch `codex/minor-guardian-flow-20260718` lokal implementiert. Am 20. Juli 2026 hat Mahle zusaetzlich ausdruecklich entschieden, dass altersgerecht autorisierte Minderjaehrige am freiwilligen Evidence-System teilnehmen duerfen. Noch nicht migriert, deployed oder fuer reale Minderjaehrige aktiviert.
 - Entschieden: unter 16 direkte Guardian-E-Mail, Guardian-Autorisierung plus eigene Zustimmung; 16 bis 17 eigene altersgerechte Entscheidung; Verein und Trainer sind keine Actors oder Empfaenger des Guardian-Flows.
-- Entschieden: normales Produkttracking wird erst nach aktueller Produktfreigabe aktiv; freiwilliger Datenbeitrag bleibt getrennt; das bestehende Transfer-Evidence-Protokoll bleibt fuer alle Minderjaehrigen deaktiviert.
+- Entschieden: normales Produkttracking wird erst nach aktueller Produktfreigabe aktiv; freiwilliger Datenbeitrag bleibt getrennt. Transfer-Evidence ist fuer Minderjaehrige nur zulaessig, wenn das aktive Protokoll Minderjaehrige erlaubt und alle aktuellen altersbezogenen Receipts sowie der freiwillige Datenbeitrag gueltig sind. Unter 16 sind Guardian- und Athletenfreigabe erforderlich; bei 16 bis 17 die aktuelle eigene altersgerechte Freigabe. Fehlende, veraltete oder widerrufene Freigaben schliessen fail-closed aus Evidence und Data Locks aus.
 - Source of Truth: `docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md`, `docs/MINOR_GUARDIAN_LEGAL_REVIEW_PACKET_2026-07-18.md` und `docs/MINOR_GUARDIAN_REVIEW_HANDOFF_2026-07-18.md`.
-- Weiterhin blockiert: Production-Migration, Function-Deploy, Enforcement-Aktivierung und reale Nutzung mit Minderjaehrigen bis qualifizierte Rechts-/Privacy-Pruefung, Staging-Negativtests, echte E-Mail-Zustellung und operative Freigabe abgeschlossen sind.
+- Weiterhin blockiert: Production-Migration, Function-Deploy, Enforcement-Aktivierung und reale Nutzung mit Minderjaehrigen bis qualifizierte Rechts-/Privacy-Pruefung, Staging-Negativtests, echte E-Mail-Zustellung und operative Freigabe abgeschlossen sind. Die Produktentscheidung ist keine Rechts-, Forschungs-, App-Store- oder Production-Freigabe.
 
 ## Gemeinsame Wirkung
 

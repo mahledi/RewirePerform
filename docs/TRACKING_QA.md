@@ -2,7 +2,7 @@
 
 This runbook verifies the operational evidence layer around RewirePerform:
 team codes, role assignment, activity tracking, progress snapshots, aggregate
-coach/admin views, and presentation-ready exports.
+coach/admin views, and immutable Evidence Data Locks.
 
 ## Goal
 
@@ -91,7 +91,8 @@ For the team, confirm:
 - Coach individual activity shows only operational status: last activity, days completed, completion rate, streak, recent check-in count, journal count only
 - Coach cannot access journal text or raw private answers
 - Admin overview excludes QA data when `include_test = false`
-- Admin QA/test data remains visible only in QA tooling or explicit include-test calls
+- Admin-QA-Daten bleiben nur in QA-Werkzeugen oder einem expliziten
+  `qa_only`-Aufruf sichtbar. Ein solcher Aufruf enthaelt keine Production-Daten.
 - The QA parity report exposes counts and statuses only; it contains no athlete
   names, emails, response values, journals, or reflections
 - QA participants and QA observations are both zero in the production-only
@@ -114,6 +115,26 @@ It is not a substitute for a real-calendar smoke test, a physical iPhone test,
 push-notification testing, or a live athlete pilot. It also does not prove that
 athletes understand the questions, use the app consistently, or improve in
 sport. Those claims require real users and the defined evidence design.
+
+## Automated Hardening Checks
+
+The local integration candidate adds three complementary database contracts:
+
+- `npm run test:tracking-runtime:sql` verifies self-scoped, idempotent progress
+  snapshots, unique completion days, completion rate, streaks, active-instance
+  scope and foreign-user denial.
+- `npm run test:minor:sql` verifies the current adult/minor authorization
+  states, consent withdrawal, solo and team `n = 4/5` boundaries, completed-run
+  read eligibility, immutable Data Locks and the service-role-only machine read
+  contract.
+- `npm run privacy:verify` verifies that private text and individual
+  psychological values stay outside coach and export paths, and that QA and
+  Production evidence scopes remain mutually exclusive.
+
+These checks run against a local PostgreSQL-compatible harness and repository
+contracts. Before production activation, repeat grant, overload, RLS, JWT,
+Edge-Function and aggregate checks against the actual target project without
+reading private content.
 
 ## Supabase Precheck SQL
 
@@ -146,20 +167,20 @@ group by user_id, date
 having count(*) > 1;
 ```
 
-## Presentation Exports
+## Freigegebene Evidence-Exporte
 
-The Admin Control Center provides a dedicated presentation package:
+Live-Metriken im Admin Control Center sind fuer interne operative Kontrolle da.
+Sie koennen nicht direkt exportiert werden. Fuer externe Auswertung muss zuerst
+in der Pilotzentrale ein unveraenderlicher Team- oder Solo-Data-Lock erstellt
+werden. Erst dessen gepruefter Inhalt kann als JSON beziehungsweise als
+abgeleitetes CSV-Paket heruntergeladen werden.
 
-- `presentation_metrics.json`
-- `presentation_team_summaries.csv`
-- `presentation_kpis.csv`
-- `program_progress.csv`
-- `checkin_activity.csv`
-- `comprehension_summary.csv`
-- `system_health.csv`
+Jeder Data Lock enthaelt eine Schema-Version, einen Source-Cutoff, eine
+SHA-256-Pruefsumme, ein Analysemanifest, Gruppengroessen, Missingness und die
+Claim Boundary. Alte Study-/NLZ-Snapshot-Builder besitzen im aktuellen
+Hardening-Kandidaten kein Ausfuehrungsrecht fuer App-Nutzer mehr.
 
-Use these exports for launch review, club presentations, and internal progress
-reporting. Keep all claims performance-oriented:
+Keep all claims performance-oriented:
 
 - use "observed development", "program activity", "completion", "adherence"
 - avoid diagnosis, medical claims, and causal claims without a control group
@@ -171,7 +192,9 @@ Mark the layer as launch-ready only if:
 - team-code role assignment works for player and coach codes
 - all key tracking tables are populated by real user actions
 - progress snapshots match expected completion/adherence values
-- admin exports contain no private text or individual psychological values
+- Data-Lock exports contain no private text or individual psychological values
 - QA data does not pollute production metrics
 - App Store privacy boundaries are still true: no advertising tracking, no data brokers, no marketing pixels, no private content in diagnostics or exports
-- `npm run typecheck`, `npm test`, and `npm run build` pass
+- `npm run typecheck`, `npm test`, `npm run build`,
+  `npm run test:evidence:sql`, `npm run test:minor:sql`,
+  `npm run test:tracking-runtime:sql` and `npm run privacy:verify` pass

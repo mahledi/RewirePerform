@@ -16,6 +16,9 @@ import {
 const read = (path: string) => readFileSync(resolve(path), "utf8");
 const baseMigration = () => read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
 const currentMigration = () => read("supabase/migrations/20260719085701_guardian_personalization_v2.sql");
+const evidenceHardeningMigration = () => read("supabase/migrations/20260720080100_add_structured_solo_evidence_locks.sql");
+const teamAggregateMigration = () => read("supabase/migrations/20260720082309_harden_team_mental_state_aggregate.sql");
+const runEvidenceMigration = () => read("supabase/migrations/20260720090000_unify_program_run_evidence_eligibility.sql");
 
 describe("minor guardian production contract", () => {
   it("allows the configured native Capacitor origin through hardened edge functions", () => {
@@ -98,32 +101,46 @@ describe("minor guardian production contract", () => {
 
   it("filters team aggregates by current consent and authorization before n is evaluated", () => {
     const teamFunction = read("supabase/functions/team-mental-state/index.ts");
-    const consentQuery = teamFunction.indexOf('.eq("data_contribution_consent", true)');
-    const rolloutCheck = teamFunction.indexOf('"enforcement_preflight"');
-    const authorizationFilter = teamFunction.indexOf('"filter_data_contribution"');
-    const sensitiveQuery = teamFunction.indexOf('.select("user_id, date, energy_level');
+    const aggregate = teamAggregateMigration();
+    const hardening = evidenceHardeningMigration();
+    const authorizationGate = aggregate.indexOf("public.evidence_eligibility_reason(pi.id, _protocol_version)");
+    const sensitiveSource = aggregate.indexOf("safe_checkins AS");
 
-    expect(consentQuery).toBeGreaterThan(0);
-    expect(rolloutCheck).toBeGreaterThan(consentQuery);
-    expect(authorizationFilter).toBeGreaterThan(rolloutCheck);
-    expect(sensitiveQuery).toBeGreaterThan(authorizationFilter);
-    expect(teamFunction).toContain("if (enforcementEnabled)");
-    expect(teamFunction).toContain("insufficient_authorized_data");
-    expect(teamFunction).not.toContain("consent_below_min_n");
-    expect(teamFunction).not.toContain("authorization_below_min_n");
+    expect(authorizationGate).toBeGreaterThan(0);
+    expect(sensitiveSource).toBeGreaterThan(authorizationGate);
+    expect(aggregate).toContain("IF eligible_count < 5 THEN");
+    expect(aggregate).toContain("insufficient_authorized_data");
+    expect(aggregate).toContain("individual_values_returned', false");
+    expect(hardening).toContain("participant.data_contribution_athlete IS DISTINCT FROM true");
+    expect(hardening).toContain("participant.data_contribution_guardian IS DISTINCT FROM true");
+    expect(teamFunction).toContain('client.rpc("get_team_mental_state_aggregate"');
+    expect(teamFunction).not.toContain('.from("daily_checkins")');
+    expect(teamFunction).not.toContain("adminClient");
     expect(teamFunction).not.toContain('"Access-Control-Allow-Origin": "*"');
   });
 
   it("keeps operational participation independent from optional aggregate consent", () => {
-    const teamFunction = read("supabase/functions/team-mental-state/index.ts");
-    const operationalQuery = teamFunction.indexOf('.select("user_id, date")');
-    const consentQuery = teamFunction.indexOf('.eq("data_contribution_consent", true)');
+    const aggregate = teamAggregateMigration();
+    const operationalQuery = aggregate.indexOf("INTO active_last_7d");
+    const consentQuery = aggregate.indexOf("INTO eligible_count");
 
     expect(operationalQuery).toBeGreaterThan(0);
     expect(operationalQuery).toBeLessThan(consentQuery);
-    expect(teamFunction).toContain('.in("user_id", initiallyAssignedIds)');
-    expect(teamFunction).toContain("rate: Math.round((activeAthletes / initiallyAssignedIds.length) * 100)");
-    expect(teamFunction).toContain("participation: operationalParticipation");
+    expect(aggregate).toContain("participation_rate := ROUND");
+    expect(aggregate).toContain("'participation', jsonb_build_object('rate', participation_rate, 'total', active_last_7d)");
+  });
+
+  it("uses the same current authorization gate for coach and run dossier evidence", () => {
+    const migration = runEvidenceMigration();
+    const gate = migration.indexOf("public.evidence_eligibility_reason(pi.id, _protocol_version)");
+    const checkinSource = migration.indexOf("checkins AS (");
+
+    expect(gate).toBeGreaterThan(0);
+    expect(checkinSource).toBeGreaterThan(gate);
+    expect(migration).toContain("evidence := public.get_program_run_development_evidence(");
+    expect(migration).toContain("'exclusion_reasons', CASE");
+    expect(migration).toContain("'not_currently_authorized'");
+    expect(migration).toContain("pr.status IN ('active', 'completed')");
   });
 
   it("requires exact age-appropriate receipts for minor evidence eligibility", () => {

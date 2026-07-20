@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
+import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
@@ -125,11 +126,16 @@ const Auth = () => {
   const backfillProfileSport = async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("sport")
+      .select("sport, sport_category, sport_format, sport_level, sport_taxonomy_version")
       .eq("id", userId)
       .maybeSingle();
 
-    if (profile && !profile.sport) {
+    if (profile && (
+      !profile.sport
+      || !profile.sport_category
+      || !profile.sport_format
+      || !profile.sport_taxonomy_version
+    )) {
       const { data: qr } = await supabase
         .from("questionnaire_responses")
         .select("answers")
@@ -142,10 +148,15 @@ const Auth = () => {
         const answers = qr.answers as Record<string, unknown>;
         const s = getSportAnswerText(answers["sport-01"]);
         const position = answers["sport-02"] || null;
+        const level = answers["sport-03"] || null;
         if (s) {
           await supabase
             .from("profiles")
-            .update({ sport: s, team: typeof position === "string" ? position : null })
+            .update({
+              sport: s,
+              position: typeof position === "string" ? position : null,
+              ...buildStructuredSportProfile(s, typeof level === "string" ? level : null),
+            })
             .eq("id", userId);
         }
       }

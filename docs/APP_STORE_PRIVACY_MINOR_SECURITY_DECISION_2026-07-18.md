@@ -7,6 +7,11 @@ Production-Freigabe. Dieses Dokument ist kein Rechtsgutachten.
 
 Update spaeter am 18. Juli 2026: Der Minderjaehrigen-Produktflow ist inzwischen im isolierten Branch `codex/minor-guardian-flow-20260718` lokal implementiert und technisch geprueft. Fuer den aktuellen Stand gelten `docs/MINOR_GUARDIAN_FLOW_IMPLEMENTATION_SPEC_2026-07-18.md` und `docs/MINOR_GUARDIAN_REVIEW_HANDOFF_2026-07-18.md`; Rechtspruefung, Staging, Production und App-Store-Freigabe bleiben offen.
 
+Entscheidungsupdate 20. Juli 2026: Mahle hat Minderjaehrigen-Evidence bei
+vollstaendiger aktueller altersgerechter Autorisierung und separatem
+freiwilligem Datenbeitrag produktseitig freigegeben. Das hebt keines der
+offenen Rechts-, Privacy-, Production- oder App-Store-Gates auf.
+
 ## 1. Kurzurteil
 
 Der aktuelle Kandidat ist fuer weitere interne Entwicklung und synthetische Tests
@@ -85,8 +90,10 @@ empfohlen:
    getrennt erklaert und versioniert.
 5. Ablehnung des optionalen Datenbeitrags darf die normale Programmnutzung nicht
    verschlechtern.
-6. Evidence/Forschung fuer Minderjaehrige bleibt bis zur expliziten Freigabe
-   technisch deaktiviert.
+6. Evidence fuer Minderjaehrige bleibt fail-closed und wird nur bei aktivem
+   Protokoll, aktuellem freiwilligem Datenbeitrag und vollstaendiger
+   altersgerechter Autorisierung einbezogen. Eine formale Forschungsnutzung
+   braucht weiterhin einen eigenen Vertrag und die erforderlichen Pruefungen.
 
 Dieses Modell senkt Betriebs- und Privacy-Risiko, ohne den taeglichen Ablauf fuer
 Athleten mit wiederholten Abfragen zu belasten.

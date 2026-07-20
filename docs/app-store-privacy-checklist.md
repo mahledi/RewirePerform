@@ -31,12 +31,18 @@ Technische Verankerung:
 - `profiles.data_contribution_consented_at`
 - `profiles.data_contribution_updated_at`
 
-Ohne aktive Zustimmung werden Nutzer in Präsentations- und Study-RPCs nicht gezählt:
+Ohne aktuelle Zustimmung und, bei Minderjaehrigen, ohne aktuelle Guardian- plus
+Athletenfreigabe werden Nutzer in dynamischen Evidence-Aggregaten und Data Locks
+nicht gezaehlt. Der lokale aktuelle Vertrag nutzt:
 
-- `get_admin_presentation_metrics`
-- `get_admin_study_overview`
-- `create_study_aggregate_snapshot`
-- `compute_team_outcomes`
+- `evidence_eligibility_reason`
+- `get_program_run_development_evidence`
+- `get_solo_development_evidence_summary`
+- `get_team_mental_state_aggregate`
+- `create_evidence_data_lock`
+
+Aeltere Study-/NLZ-Snapshot-Builder bleiben historisch vorhanden, besitzen im
+lokalen Hardening-Kandidaten aber kein Ausfuehrungsrecht fuer App-Nutzer.
 
 Die Zustimmung ist freiwillig und in den Einstellungen änderbar.
 
@@ -86,11 +92,14 @@ Vor finalem Submit erneut prüfen:
 - Datenschutz-URL und User-Privacy-Choices-URL final bereitstellen.
 - Consent-Screen und Settings-Schalter auf iPhone testen.
 
-Aktuelle Release-Blocker:
+Aktuelle Release-Blocker nach lokalem Hardening:
 
-- altersgerechte Autorisierung vor sensitiven Produktdaten;
-- Consent- und Altersfilter in `team-mental-state` vor Berechnung von `n >= 5`;
-- finaler Privacy-Text mit Verantwortlichem, Anschrift, Providern, Notification-Logs und realen Aufbewahrungsfristen;
+- Production-Aktivierung und reale RLS-/Grant-/JWT-Nachpruefung der lokalen
+  Alters-, Consent- und Aggregat-Haertung;
+- fachlich-rechtliche Freigabe des Minderjaehrigen-/Evidence-Vertrags und eine
+  verbindliche Widerrufs-/Aufbewahrungsregel fuer Data Locks;
+- finaler Abgleich des Privacy-Texts mit realen Provider-, Log-, Backup- und
+  Aufbewahrungsprozessen;
 - verifizierter finaler Build ohne Sentry-SDK, DSN oder Runtime-Capture;
 - Abgleich von Manifest, Xcode Privacy Report und App Store Connect auf dem final signierten Build.
 

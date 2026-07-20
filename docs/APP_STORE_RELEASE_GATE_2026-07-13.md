@@ -1,8 +1,13 @@
 # App Store Release Gate - Stand 18. Juli 2026
 
+Technischer Nachtrag 20. Juli 2026: Fuer die Supabase-Grant-Haertung, den
+serverseitigen Team-Aggregatpfad und atomare Progress-Snapshots existiert jetzt
+ein lokal getesteter Integrationskandidat. Production wurde nicht veraendert.
+Details: `docs/TRACKING_EVIDENCE_HARDENING_2026-07-20.md`.
+
 ## Urteil
 
-**Noch nicht einreichungsbereit.** Web-/Tracking-Kern, E-Mail-Flows und unsignierter nativer Releasepfad sind lokal belastbar. Signing, echter Geraetetest, Privacy Report, Supabase-Grant-Haertung sowie Produkt-/Rechtsentscheidungen bleiben offen. Dieses Dokument trennt Code-Evidenz, lokale Maschinen-Evidenz und offene menschliche Entscheidungen.
+**Noch nicht einreichungsbereit.** Web-/Tracking-Kern, E-Mail-Flows und nativer Releasepfad sind lokal belastbar; das verifizierte Apple-Team ist im Xcode-Projekt gesetzt. Distribution-Identitaet/Provisioning, signiertes Archive, echter Geraetetest, Privacy Report, Production-Aktivierung und -Nachpruefung der Supabase-Grant-Haertung sowie Produkt-/Rechtsentscheidungen bleiben offen. Dieses Dokument trennt Code-Evidenz, lokale Maschinen-Evidenz und offene menschliche Entscheidungen.
 
 ## Gruene Gates
 
@@ -33,11 +38,11 @@
 
 ## Rote Gates vor TestFlight
 
-1. **Supabase-Function-Grants muessen gehaertet werden.** Die read-only Production-Pruefung vom 18. Juli fand 12 fuer `anon` ausfuehrbare `SECURITY DEFINER`-Funktionen. Drei Helper erlauben ohne ausreichende Aufruferbindung Rollen- oder QA-Metadatenabfragen. Eine lokale, policy-sichere Migration und Negativtests sind vor einem realen Pilot erforderlich; Production wurde nicht veraendert.
-2. **Apple-Signing bleibt blockiert.** Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build und Simulator-Start sind gruen. Wegen des offenen Apple-Account-Supportfalls sind jedoch 0 gueltige Code-Signing-Identitaeten installiert und kein `DEVELOPMENT_TEAM` gesetzt. Signierter Device-Build, Archive, Privacy Report und Upload wurden deshalb nicht ausgefuehrt.
+1. **Supabase-Function-Grants muessen auf Production gehaertet und danach erneut geprueft werden.** Die read-only Production-Pruefung vom 18. Juli fand 12 fuer `anon` ausfuehrbare `SECURITY DEFINER`-Funktionen. Der lokale Kandidat `20260720080000_harden_tracking_runtime_permissions_and_snapshots.sql` entzieht die unnoetigen Grants, bindet ID-basierte Helper an Self/Admin und besteht SQL-Negativtests. Migration, vollstaendige Signaturmatrix und Security-Advisor-Nachpruefung auf Production bleiben separat freigabepflichtig.
+2. **Apple-Signing ist konfiguriert, aber noch nicht Ende-zu-Ende verifiziert.** Xcode 26.6, iOS SDK/Simulator 26.5, unsignierter Build und Simulator-Start sind gruen. Das verifizierte Team `F7A976G38N` ist im Xcode-Projekt gesetzt. Eine gueltige Distribution-Identitaet samt Provisioning, signierter Device-Build, Archive, Privacy Report und Upload wurden noch nicht nachgewiesen.
 3. **Production-Zuordnung ist geklaert, Staging fehlt (`BD-01`).** Mahle hat am 14. Juli 2026 `bqsbxesmybthwtxmowfz` (`RewirePerform real`) als aktives Production-Projekt bestaetigt; die Supabase-Projektmetadaten bestaetigen Namen, Ref und gesunden Status. `towgvykgezrmkbyudjen` ist ausdruecklich stillgelegt, ein neues Staging existiert noch nicht. Site URL, iOS-Redirect-URLs und die Vercel-Env-Scope-Zuordnung muessen vor Release weiterhin im jeweiligen Dashboard geprueft werden.
 4. **Account-Loeschung ist fuer den Athlet-in-Team-Pfad live bestaetigt; Restfaelle und Retention bleiben offen (`BD-04`).** Der verifizierte Test entfernte Auth-, Profil-, Teammitgliedschafts-, Programm-, Check-in- und Fragebogendaten ohne Restreferenz. Ein destruktiver Coach-Transferfall und ein Fall mit bereits erzeugtem anonymem Aggregat sind noch nicht live ausgefuehrt. Sentry ist spaeter aus dem App-Kandidaten entfernt worden; Backup-Loeschfrist, Provider-Log-Retention, Privacy-Text und rechtliche Endpruefung bleiben vor der Store-Aussage offen.
-5. **Minderjaehrigen-/Research-Consent ist offen (`BD-05`).** Die Zielgruppe umfasst Minderjaehrige und das Produkt erhebt psychologisch sensible Verlaufsdaten. Altersgrenze, Erziehungsberechtigtenprozess, Forschungsabgrenzung und Rechtsgrundlage brauchen eine bestaetigte Regel.
+5. **Minderjaehrigen-/Research-Consent bleibt als Fach- und Rechtsgate offen (`BD-05`).** Main enthaelt einen versionierten Guardian-/Assent-Flow und ein technisch aktiviertes V2-Evidence-Protokoll. Mahle hat am 20. Juli produktseitig entschieden, dass Minderjaehrige nur bei aktuellem freiwilligem Datenbeitrag und vollstaendiger altersgerechter Autorisierung in Evidence einfliessen duerfen. Rechtsgrundlage, Widerruf bereits gesperrter Data Locks und externe fachlich-rechtliche Pruefung bleiben vor einem realen Minderjaehrigenpilot offen.
 6. **Native Reminder sind noch nicht auf einem iPhone verifiziert.** Die lokale iOS-Implementierung und ihre Unit-Tests sind vorhanden. Berechtigungsdialog, Scheduling, Zustellung, Tap-Routing, Kalender-Resync und Abmelden muessen mit Xcode und einem echten Geraet bestaetigt werden.
 7. **Echter Geraetetest fehlt.** Login, E-Mail-Bestaetigung, Session-Restore, Voice, Offline/Retry, Check-in, Journal, Kalender, Coach-Rolle und App-Neustart muessen auf mindestens einem echten iPhone geprueft werden.
 8. **Store-/Rechtsmaterial ist nur als Entwurf vorhanden.** Privacy- und Support-URL sind technisch live, aber Privacy Policy, Privacy Choices URL, Verantwortlicher/Anschrift, Altersfreigabe, Screenshots, Beschreibung, Keywords, Review Notes und drei funktionierende Review-Konten muessen final geprueft und in App Store Connect eingetragen werden.
@@ -51,8 +56,8 @@
 ## Separates Gate vor einem Evidence-Pilot
 
 - Die Migration `20260714224000_performance_evidence_56d_v1.sql`, die Index-Haertung `20260715085749_performance_evidence_fk_indexes.sql` und `20260717091518_qa_evidence_parity_gate.sql` sind auf Production angewendet; lokale und entfernte Migrationshistorie stimmen ueberein.
-- Tabellenzugriff, RPC-Rechte, fester `search_path`, Protokoll, Mindestgruppengroesse und die deaktivierte Minderjaehrigen-Erhebung wurden gegen Production geprueft. Production-Typen wurden danach neu generiert.
-- Vor einem realen Pilot bleiben ein kontrollierter End-to-End-Test mit eindeutigem Erwachsenen-Testaccount, ein Coach-Testlauf und die reale iPhone-Pruefung Pflicht. Fuer Minderjaehrige bleibt Evidence deaktiviert, bis das eigene Guardian-/Assent-Gate fachlich und rechtlich freigegeben ist.
+- Tabellenzugriff, RPC-Rechte, fester `search_path`, Protokoll und Mindestgruppengroesse wurden fuer den bisherigen Production-Stand geprueft. Der neue lokale Kandidat bindet Minderjaehrigen-Evidence an die aktuellen Guardian-/Assent-Receipts, ist aber noch nicht auf Production angewendet oder dort nachgeprueft.
+- Vor einem realen Pilot bleiben ein kontrollierter End-to-End-Test mit eindeutigem Erwachsenen-Testaccount, ein Coach-Testlauf und die reale iPhone-Pruefung Pflicht. Fuer Minderjaehrige ist zusaetzlich die fachliche und rechtliche Freigabe des bereits implementierten Guardian-/Assent-Gates erforderlich.
 - Das lokale QA-Paritaetsgate weist 16 von 16 vorgesehenen Messzeitpunkten, 5 von 5 synthetischen QA-Athleten, 8 von 8 Coach-Wochen und den Ausschluss der QA-Daten aus Production-Auswertungen nach. Das ist Testevidenz, kein Wirksamkeitsnachweis.
 
 ## Privacy-Label-Basis
@@ -79,7 +84,7 @@ Nicht als Apple-`Tracking` deklarieren, solange keine Daten mit Drittanbieter-Da
 
 1. Supabase-Function-Grants lokal haerten und mit RLS-/RPC-Negativtests verifizieren; Production-Apply separat freigeben.
 2. Die offenen BD-04-Restfaelle und Retentionsthemen abschliessen und BD-05 mit passender rechtlicher/fachlicher Pruefung schliessen.
-3. Apple-Account-Supportfall schliessen, Developer Team setzen und eine gueltige Distribution-Identitaet installieren.
+3. Gueltige Distribution-Identitaet und Provisioning fuer das bereits gesetzte Developer Team installieren beziehungsweise verifizieren.
 4. `npm run app:build`, `npm run app:verify:xcode:build` und `npm run app:verify:simulator` fuer den finalen Kandidaten wiederholen.
 5. Signiertes Archive und Xcode Privacy Report erzeugen und gegen Manifest sowie App Store Connect abgleichen.
 6. Release-Build auf echtem iPhone testen; native Reminder auf Trainings-, Wettkampf- und Ruhetagen inklusive Abmelden und Kalenderaenderung pruefen.
