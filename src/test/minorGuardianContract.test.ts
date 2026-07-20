@@ -21,6 +21,15 @@ const teamAggregateMigration = () => read("supabase/migrations/20260720082309_ha
 const runEvidenceMigration = () => read("supabase/migrations/20260720090000_unify_program_run_evidence_eligibility.sql");
 
 describe("minor guardian production contract", () => {
+  it("allows the configured native Capacitor origin through hardened edge functions", () => {
+    const capacitorConfig = read("capacitor.config.ts");
+    const edgeShared = read("supabase/functions/_shared/minorGuardian.ts");
+    const hostname = capacitorConfig.match(/hostname:\s*"([^"]+)"/)?.[1];
+
+    expect(hostname).toBe("rewireperform.com");
+    expect(edgeShared).toContain(`"capacitor://${hostname}"`);
+  });
+
   it("pins the exact visible policy content to the database receipt hash", () => {
     const calculated = createHash("sha256")
       .update(JSON.stringify(minorPolicyCanonicalDocument))

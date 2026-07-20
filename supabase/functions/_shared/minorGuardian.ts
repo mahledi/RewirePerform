@@ -264,6 +264,7 @@ export const sendTransactionalEmail = async (
 const configuredOrigins = () => new Set([
   "https://rewireperform.com",
   "https://www.rewireperform.com",
+  "capacitor://rewireperform.com",
   "capacitor://localhost",
   "http://localhost",
   "http://localhost:4173",
