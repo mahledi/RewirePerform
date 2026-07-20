@@ -6,6 +6,13 @@ Technische Nachtraege:
 
 - 17. Juli 2026: Xcode-/Simulatorpfad lokal verifiziert; Rechts- und Minderjaehrigenstatus unveraendert.
 - 18. Juli 2026: aktuelles `origin/main` mit Tracking/Evidence und E-Mail-Flows integriert getestet; Production-Function-Grants und Security Advisor read-only geprueft. Keine Rechts-, Minderjaehrigen- oder Production-Freigabe erteilt.
+- 20. Juli 2026: lokaler Tracking-Hardening-Kandidat ersetzt den direkten
+  Service-Role-Teamdatenpfad durch einen JWT-gebundenen Aggregat-RPC, wendet
+  Consent-/Autorisierungsfilter vor `n >= 5` an und entzieht unsichere anonyme
+  Function-Grants. SQL-Negativtests sind lokal gruen; Production ist weiterhin
+  unveraendert. Der aktuelle V2-Minderjaehrigenstatus widerspricht Teilen dieser
+  historischen Ist-Aufnahme und braucht vor einem Pilot eine konsistente
+  fachlich-rechtliche Dokumentation.
 
 Status: Repo, Production und historisches Sentry-Dashboard geprueft; Sentry im
 Release-Kandidaten aus der App entfernt; keine Rechtsfreigabe und keine

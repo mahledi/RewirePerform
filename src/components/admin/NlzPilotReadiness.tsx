@@ -121,6 +121,26 @@ interface PerformanceEvidenceSummary {
   privacy: Record<string, Json | undefined>;
 }
 
+interface LockedRunEvidence {
+  schema_version: string;
+  sample: Record<string, Json>;
+  usage: Record<string, Json>;
+  team_pulse: { daily: Record<string, Json>[]; weekly: Record<string, Json>[] };
+  outcomes: {
+    validated_pre_post: Record<string, Json>[];
+    validated_pre_mid: Record<string, Json>[];
+  };
+  transfer_evidence: PerformanceEvidenceSummary;
+  data_quality: Record<string, Json>;
+}
+
+interface EvidenceDataLockResult {
+  lock_id: string;
+  content_checksum: string;
+  analysis_manifest: Record<string, Json>;
+  evidence: LockedRunEvidence;
+}
+
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String((error as { message?: unknown } | null)?.message ?? error);
 
@@ -192,6 +212,7 @@ const NlzPilotReadiness = () => {
   const [readiness, setReadiness] = useState<PilotReadiness | null>(null);
   const [dossier, setDossier] = useState<EvidenceDossier | null>(null);
   const [performanceEvidence, setPerformanceEvidence] = useState<PerformanceEvidenceSummary | null>(null);
+  const [evidenceLock, setEvidenceLock] = useState<EvidenceDataLockResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [action, setAction] = useState<string | null>(null);
   const [newRunName, setNewRunName] = useState("");
@@ -209,6 +230,7 @@ const NlzPilotReadiness = () => {
     mode: DataMode = "production",
   ) => {
     setLoading(true);
+    setEvidenceLock(null);
     const { data: runRows, error: runsError } = await supabase
       .from("program_runs")
       .select("*")
@@ -374,13 +396,25 @@ const NlzPilotReadiness = () => {
     await loadRunData(teamId, runId, dataMode);
   };
 
-  const createSnapshot = async () => {
+  const createEvidenceLock = async () => {
     if (!runId) return;
-    setAction("snapshot");
-    const { error } = await supabase.rpc("create_nlz_program_run_snapshot", { _program_run_id: runId });
+    if (!window.confirm("Aktuellen Evidence-Stand unveränderlich sperren? Spätere Änderungen erzeugen einen neuen Data Lock.")) return;
+    setAction("evidence-lock");
+    const { data, error } = await supabase.rpc("create_evidence_data_lock", {
+      _program_run_id: runId,
+      _sport_category: undefined,
+      _sport_level: undefined,
+      _include_test: false,
+      _protocol_version: "56d-transfer-v2-2026-07",
+    });
     setAction(null);
-    if (error) toast.error(`Snapshot fehlgeschlagen: ${error.message}`);
-    else toast.success("Run-spezifischer Evidence Snapshot gespeichert.");
+    if (error) {
+      toast.error(`Data Lock konnte nicht erstellt werden: ${error.message}`);
+      return;
+    }
+    const created = jsonRecord<EvidenceDataLockResult>(data);
+    setEvidenceLock(created);
+    toast.success("Evidence Data Lock erstellt und prüfsummenbelegt.");
   };
 
   const setRunStatus = async (status: "completed" | "archived") => {
@@ -403,35 +437,33 @@ const NlzPilotReadiness = () => {
     await loadRunData(teamId, runId, dataMode);
   };
 
-  const exportDossier = () => {
-    if (!dossier || !selectedRun) return;
+  const exportLockedDossier = () => {
+    if (!evidenceLock || !selectedRun) return;
     const prefix = `nlz_${selectedRun.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
-    downloadBlob(`${prefix}_dossier.json`, JSON.stringify(dossier, null, 2), "application/json");
+    downloadBlob(
+      `${prefix}_locked_evidence.json`,
+      JSON.stringify(evidenceLock, null, 2),
+      "application/json",
+    );
   };
 
-  const exportCsvPackage = () => {
-    if (!dossier || !selectedRun) return;
+  const exportLockedCsvPackage = () => {
+    if (!evidenceLock || !selectedRun) return;
     const prefix = `nlz_${selectedRun.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
-    downloadCsv(`${prefix}_summary.csv`, [{ ...dossier.sample, ...dossier.usage }]);
-    downloadCsv(`${prefix}_data_quality.csv`, [dossier.data_quality]);
-    downloadCsv(`${prefix}_weekly_trends.csv`, dossier.team_pulse.weekly);
+    const evidence = evidenceLock.evidence;
+    downloadCsv(`${prefix}_summary.csv`, [{ ...evidence.sample, ...evidence.usage }]);
+    downloadCsv(`${prefix}_data_quality.csv`, [evidence.data_quality]);
+    downloadCsv(`${prefix}_weekly_trends.csv`, evidence.team_pulse.weekly);
     downloadCsv(`${prefix}_assessment_aggregates.csv`, [
-      ...dossier.outcomes.validated_pre_post,
-      ...dossier.outcomes.validated_pre_mid,
+      ...evidence.outcomes.validated_pre_post,
+      ...evidence.outcomes.validated_pre_mid,
     ]);
-  };
-
-  const exportPerformanceEvidence = () => {
-    if (!performanceEvidence || !selectedRun) return;
-    const prefix = `nlz_${selectedRun.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}_56d_evidence`;
-    downloadBlob(`${prefix}.json`, JSON.stringify(performanceEvidence, null, 2), "application/json");
-    downloadCsv(`${prefix}_coverage.csv`, [{
-      ...performanceEvidence.sample,
-      ...performanceEvidence.coverage,
+    downloadCsv(`${prefix}_transfer_coverage.csv`, [{
+      ...evidence.transfer_evidence.sample,
+      ...evidence.transfer_evidence.coverage,
     } as Record<string, unknown>]);
-    downloadCsv(`${prefix}_domains.csv`, performanceEvidence.domain_aggregates as Record<string, unknown>[]);
-    downloadCsv(`${prefix}_weekly.csv`, performanceEvidence.weekly_aggregates as Record<string, unknown>[]);
-    downloadCsv(`${prefix}_coach_team.csv`, performanceEvidence.coach_team_observations as Record<string, unknown>[]);
+    downloadCsv(`${prefix}_transfer_domains.csv`, evidence.transfer_evidence.domain_aggregates as Record<string, unknown>[]);
+    downloadCsv(`${prefix}_coach_team.csv`, evidence.transfer_evidence.coach_team_observations as Record<string, unknown>[]);
   };
 
   if (loading && teams.length === 0) {
@@ -660,18 +692,33 @@ const NlzPilotReadiness = () => {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Run-spezifisches Evidence-Paket</CardTitle></CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={exportDossier} disabled={!dossier}><Download className="mr-2 h-4 w-4" />JSON Dossier</Button>
-              <Button variant="outline" onClick={exportCsvPackage} disabled={!dossier}><Download className="mr-2 h-4 w-4" />CSV Paket</Button>
-              <Button variant="outline" onClick={exportPerformanceEvidence} disabled={!performanceEvidence}>
-                <Download className="mr-2 h-4 w-4" />56d Evidence
-              </Button>
-              <Button onClick={createSnapshot} disabled={!dossier || action !== null}>
-                {action === "snapshot" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Evidence Snapshot
-              </Button>
-              {dossier ? <Badge variant="outline"><CheckCircle2 className="mr-1 h-3 w-3" />Privacy-Filter aktiv</Badge> : null}
+            <CardHeader>
+              <CardTitle className="text-base">Run-spezifisches Evidence-Paket</CardTitle>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Exporte werden erst aus einem unveränderlichen, prüfsummenbelegten Data Lock freigegeben.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={createEvidenceLock} disabled={!dossier || !performanceEvidence || action !== null}>
+                  {action === "evidence-lock" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  Data Lock erstellen
+                </Button>
+                <Button variant="outline" onClick={exportLockedDossier} disabled={!evidenceLock}>
+                  <Download className="mr-2 h-4 w-4" />Gesperrtes JSON
+                </Button>
+                <Button variant="outline" onClick={exportLockedCsvPackage} disabled={!evidenceLock}>
+                  <Download className="mr-2 h-4 w-4" />Gesperrtes CSV-Paket
+                </Button>
+                {dossier ? <Badge variant="outline"><CheckCircle2 className="mr-1 h-3 w-3" />Privacy-Filter aktiv</Badge> : null}
+              </div>
+              {evidenceLock ? (
+                <div className="min-w-0 border-l-2 border-primary pl-3 text-xs text-muted-foreground">
+                  <p className="font-medium text-foreground">Data Lock {evidenceLock.lock_id.slice(0, 8)}</p>
+                  <p className="mt-1 break-all">SHA-256 {evidenceLock.content_checksum}</p>
+                  <p className="mt-1">Schema {evidenceLock.evidence.schema_version}</p>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </>

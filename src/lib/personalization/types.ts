@@ -8,6 +8,16 @@ export type SportCategory =
   | "precision_sport"
   | "unknown_or_other";
 
+export type SportParticipationFormat = "individual" | "team" | "mixed_or_unknown";
+
+export type SportLevel =
+  | "youth"
+  | "amateur"
+  | "competitive_amateur"
+  | "semi_pro"
+  | "pro"
+  | "college";
+
 export type PersonalizationContextType = "training" | "rest" | "competition";
 
 export interface PersonalizationDay {

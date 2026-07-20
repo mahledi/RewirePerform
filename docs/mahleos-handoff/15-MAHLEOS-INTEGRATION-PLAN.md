@@ -1,6 +1,7 @@
 # MahleOS Integration Plan
 
-Status: Entwurf, keine Verbindung aktiviert.
+Status: Entwurf. Ein enger Data-Lock-Lesevertrag ist lokal implementiert und
+getestet; keine Verbindung, kein Secret und kein Production-Deploy ist aktiviert.
 
 ## Ziel
 
@@ -17,8 +18,41 @@ MahleOS soll RewirePerform-Kontext dauerhaft lesen und sichere Aufgaben vorberei
 
 - Repository und freigegebene Dokumente lesen.
 - Git-Status, Tests und offene Doku-Widersprueche melden.
-- keine Secrets, Production-Daten oder privaten Athleteninhalte.
+- optional nach separater Freigabe ausschliesslich aktive, aggregierte und
+  pruefsummenverifizierte Evidence Data Locks ueber `evidence-read` lesen.
+- keine Live-Production-Tabellen, Secrets oder privaten Athleteninhalte.
 - keine automatischen Commits, Branches, PRs oder Deployments.
+
+### Data-Lock-Vertrag
+
+Der lokale Kandidat `evidence-read` ist kein allgemeiner Supabase-Zugang.
+MahleOS darf weder Admin-Login noch Service-Role-Key erhalten. Der einzige
+Maschinenschluessel liegt als Edge-Secret und im macOS Keychain.
+
+Erlaubte Antwort:
+
+- Scope und Protokollversion
+- Source-Cutoff und Lock-Zeitpunkt
+- SHA-256-Pruefsumme und Analysemanifest
+- freigegebene aggregierte Evidence
+- Datenqualitaet, Gruppengroesse, Missingness und Claim Boundary
+
+Ein freigegebener Program-Run-Lock nutzt
+`program-run-evidence-lock-v2-2026-07` und enthaelt gemeinsam aggregierte
+Nutzung, Pre-/Mid-/Post-Messung, Teamtrend, Transfer-Evidence und die zugehoerige
+Analysegrenze. MahleOS muss `snapshot_schema_version` pruefen und unbekannte
+Versionen ablehnen, statt Felder still falsch zu interpretieren.
+
+Ausgeschlossen:
+
+- Namen, E-Mails und User-IDs
+- Journale, Reflexionen und Freitext
+- Rohantworten und einzelne Check-in-Verlaeufe
+- individuelle Scores oder Coach-Beobachtungen
+- Zugriff auf noch nicht gesperrte Live-Daten
+
+Jeder Zugriff wird mit Request-ID, Client-ID, Ergebnis, Lock-ID und Pruefsumme
+append-only auditiert. Der Audit speichert keinen Evidence-Payload.
 
 ## Phase 2 - Kontrollierte Aufgaben
 
@@ -39,7 +73,8 @@ Nur fuer R1/R2 nach gesonderter Freigabe:
 
 ## Nie autonom
 
-- Production-DB lesen oder schreiben, sofern nicht explizit und minimal autorisiert.
+- Production-DB direkt lesen oder schreiben. Auch eine freigegebene Data-Lock-
+  API erlaubt keinen allgemeinen Datenbankzugriff.
 - RLS/Auth/Consent aendern.
 - Nutzer anschreiben oder Accounts bearbeiten.
 - Deploy, DNS, Domain, Store Submission oder Secrets.

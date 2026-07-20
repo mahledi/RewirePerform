@@ -628,6 +628,118 @@ export type Database = {
           },
         ]
       }
+      evidence_api_access_log: {
+        Row: {
+          client_id: string
+          evidence_data_lock_id: string | null
+          id: string
+          outcome: string
+          request_id: string
+          requested_at: string
+          response_checksum: string | null
+        }
+        Insert: {
+          client_id: string
+          evidence_data_lock_id?: string | null
+          id?: string
+          outcome: string
+          request_id: string
+          requested_at?: string
+          response_checksum?: string | null
+        }
+        Update: {
+          client_id?: string
+          evidence_data_lock_id?: string | null
+          id?: string
+          outcome?: string
+          request_id?: string
+          requested_at?: string
+          response_checksum?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_api_access_log_evidence_data_lock_id_fkey"
+            columns: ["evidence_data_lock_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_data_locks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_data_locks: {
+        Row: {
+          analysis_manifest: Json
+          checksum_algorithm: string
+          content_checksum: string
+          evidence_payload: Json
+          id: string
+          include_test: boolean
+          invalidated_at: string | null
+          invalidated_by: string | null
+          invalidation_reason: string | null
+          locked_at: string
+          locked_by: string | null
+          program_run_id: string | null
+          protocol_version: string
+          scope_type: string
+          snapshot_schema_version: string
+          source_cutoff: string
+          sport_category: string | null
+          sport_level: string | null
+          status: string
+        }
+        Insert: {
+          analysis_manifest: Json
+          checksum_algorithm?: string
+          content_checksum: string
+          evidence_payload: Json
+          id?: string
+          include_test?: boolean
+          invalidated_at?: string | null
+          invalidated_by?: string | null
+          invalidation_reason?: string | null
+          locked_at?: string
+          locked_by?: string | null
+          program_run_id?: string | null
+          protocol_version: string
+          scope_type: string
+          snapshot_schema_version: string
+          source_cutoff: string
+          sport_category?: string | null
+          sport_level?: string | null
+          status?: string
+        }
+        Update: {
+          analysis_manifest?: Json
+          checksum_algorithm?: string
+          content_checksum?: string
+          evidence_payload?: Json
+          id?: string
+          include_test?: boolean
+          invalidated_at?: string | null
+          invalidated_by?: string | null
+          invalidation_reason?: string | null
+          locked_at?: string
+          locked_by?: string | null
+          program_run_id?: string | null
+          protocol_version?: string
+          scope_type?: string
+          snapshot_schema_version?: string
+          source_cutoff?: string
+          sport_category?: string | null
+          sport_level?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_data_locks_program_run_id_fkey"
+            columns: ["program_run_id"]
+            isOneToOne: false
+            referencedRelation: "program_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evidence_eligibility_audit: {
         Row: {
           actor_id: string | null
@@ -913,6 +1025,10 @@ export type Database = {
           is_test_user: boolean
           position: string | null
           sport: string | null
+          sport_category: string | null
+          sport_format: string | null
+          sport_level: string | null
+          sport_taxonomy_version: string | null
           team: string | null
           updated_at: string
         }
@@ -927,6 +1043,10 @@ export type Database = {
           is_test_user?: boolean
           position?: string | null
           sport?: string | null
+          sport_category?: string | null
+          sport_format?: string | null
+          sport_level?: string | null
+          sport_taxonomy_version?: string | null
           team?: string | null
           updated_at?: string
         }
@@ -941,6 +1061,10 @@ export type Database = {
           is_test_user?: boolean
           position?: string | null
           sport?: string | null
+          sport_category?: string | null
+          sport_format?: string | null
+          sport_level?: string | null
+          sport_taxonomy_version?: string | null
           team?: string | null
           updated_at?: string
         }
@@ -2104,6 +2228,16 @@ export type Database = {
         Args: { cohort_id?: string; include_test?: boolean }
         Returns: Json
       }
+      create_evidence_data_lock: {
+        Args: {
+          _include_test?: boolean
+          _program_run_id?: string
+          _protocol_version?: string
+          _sport_category?: string
+          _sport_level?: string
+        }
+        Returns: Json
+      }
       create_nlz_program_run_snapshot: {
         Args: { _program_run_id: string }
         Returns: Json
@@ -2170,6 +2304,7 @@ export type Database = {
         }[]
       }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
+      get_evidence_data_lock: { Args: { _lock_id: string }; Returns: Json }
       get_my_evidence_status: {
         Args: {
           _day_number: number
@@ -2187,6 +2322,10 @@ export type Database = {
         Args: { _program_run_id: string }
         Returns: Json
       }
+      get_program_run_development_evidence: {
+        Args: { _program_run_id: string; _protocol_version?: string }
+        Returns: Json
+      }
       get_nlz_pilot_readiness: {
         Args: { _program_run_id?: string; _team_id?: string }
         Returns: Json
@@ -2199,12 +2338,34 @@ export type Database = {
         }
         Returns: Json
       }
+      get_solo_sport_evidence_summary: {
+        Args: {
+          _include_test?: boolean
+          _protocol_version?: string
+          _sport_category?: string
+          _sport_level?: string
+        }
+        Returns: Json
+      }
+      get_solo_development_evidence_summary: {
+        Args: {
+          _include_test?: boolean
+          _protocol_version?: string
+          _sport_category?: string
+          _sport_level?: string
+        }
+        Returns: Json
+      }
       get_qa_evidence_parity: {
         Args: { _program_run_id: string; _protocol_version?: string }
         Returns: Json
       }
       get_team_program_run_status: {
         Args: { _program_run_id: string }
+        Returns: Json
+      }
+      get_team_mental_state_aggregate: {
+        Args: { _protocol_version?: string; _team_id: string }
         Returns: Json
       }
       get_team_questionnaire_status: {
@@ -2232,6 +2393,10 @@ export type Database = {
       is_coach_of_user: { Args: { _user_id: string }; Returns: boolean }
       is_creator_of_team: { Args: { _team_id: string }; Returns: boolean }
       is_member_of_team: { Args: { _team_id: string }; Returns: boolean }
+      invalidate_evidence_data_lock: {
+        Args: { _lock_id: string; _reason: string }
+        Returns: Json
+      }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
       save_coach_evidence_review: {
         Args: {
@@ -2268,6 +2433,22 @@ export type Database = {
           _tasks_completed?: Json
           _team_connection?: number
           _variant_used: string
+        }
+        Returns: Json
+      }
+      refresh_my_program_progress_snapshot: {
+        Args: { _program_instance_id?: string }
+        Returns: Json
+      }
+      read_evidence_data_lock_for_export: {
+        Args: {
+          _client_id: string
+          _lock_id?: string
+          _program_run_id?: string
+          _request_id: string
+          _scope_type?: string
+          _sport_category?: string
+          _sport_level?: string
         }
         Returns: Json
       }

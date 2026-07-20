@@ -20,10 +20,9 @@
 
 ### C-03 Team-Run-Limitierung historisch
 
-- A: `docs/OUTCOMES_LIMITATIONS.md` sagt, echte `program_runs` seien deferred.
-- B: Migration vom 10.07. implementiert `program_runs` und run-spezifische RPCs.
-- Auswirkung: Agent koennte bereits geloestes Problem erneut bauen.
-- Loesung: alte Datei als historische V1-Limitierung markieren.
+- Geloest am 20.07.: `docs/OUTCOMES_LIMITATIONS.md` beschreibt jetzt den
+  aktuellen run-spezifischen Stand und trennt Mannschaftslauf von
+  Kontrollgruppe/Kausalevidenz.
 
 ### C-04 NLZ Privacy Audit Pre-Test-Text
 

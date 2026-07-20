@@ -10,6 +10,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 
 const files = {
   accountDeletion: read("supabase/migrations/20260714084351_account_deletion_self_service.sql"),
+  admin: read("src/pages/Admin.tsx"),
   app: read("src/App.tsx"),
   auth: read("src/pages/Auth.tsx"),
   bunLock: read("bun.lock"),
@@ -20,16 +21,21 @@ const files = {
   errorBoundary: read("src/components/ErrorBoundary.tsx"),
   evidence: read("supabase/migrations/20260714224000_performance_evidence_56d_v1.sql"),
   evidenceMinorUpgrade: read("supabase/migrations/20260719085701_guardian_personalization_v2.sql"),
+  evidenceHardening: read("supabase/migrations/20260720080100_add_structured_solo_evidence_locks.sql"),
+  evidenceParticipationGate: read("src/components/admin/EvidenceParticipationGate.tsx"),
   main: read("src/main.tsx"),
   monitoring: read("src/lib/monitoring.ts"),
+  nlzPilotReadiness: read("src/components/admin/NlzPilotReadiness.tsx"),
   minorGate: read("src/components/minor-consent/MinorAuthorizationGate.tsx"),
   minorMigration: read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql"),
   packageJson: read("package.json"),
   packageLock: read("package-lock.json"),
   privacy: read("src/pages/Privacy.tsx"),
   questionnaireAi: read("supabase/functions/analyze-questionnaire/index.ts"),
+  runEvidence: read("supabase/migrations/20260720090000_unify_program_run_evidence_eligibility.sql"),
   summaryAi: read("supabase/functions/generate-transformation-summary/index.ts"),
   teamMentalState: read("supabase/functions/team-mental-state/index.ts"),
+  teamMentalStateAggregate: read("supabase/migrations/20260720082309_harden_team_mental_state_aggregate.sql"),
   viteEnv: read("src/vite-env.d.ts"),
 };
 
@@ -73,8 +79,14 @@ verify(
   "invariant",
   "I-04",
   "Team psychological aggregates enforce n >= 5 and do not select reflection text",
-  /const MIN_N = 5;/.test(files.teamMentalState) &&
-    !/\.select\([\s\S]{0,350}\breflection\b[\s\S]{0,80}\)/.test(files.teamMentalState),
+  files.teamMentalState.includes('client.rpc("get_team_mental_state_aggregate"') &&
+    files.teamMentalStateAggregate.includes("ds.mood_n >= 5") &&
+    files.teamMentalStateAggregate.includes("ds.stress_n >= 5") &&
+    files.teamMentalStateAggregate.includes("ws.energy_n >= 5") &&
+    files.teamMentalStateAggregate.includes("GROUP BY scr.user_id, scr.date") &&
+    files.teamMentalStateAggregate.includes("GROUP BY wp.week_offset, wp.start_date, wp.label, sc.user_id") &&
+    !files.teamMentalState.includes('.from("daily_checkins")') &&
+    !files.teamMentalStateAggregate.includes("dc.reflection"),
 );
 verify(
   "invariant",
@@ -112,15 +124,47 @@ verify(
     "DELETE FROM public.notification_log",
   ].every((statement) => files.accountDeletion.includes(statement)),
 );
+verify(
+  "invariant",
+  "I-08",
+  "Coach and run dossier evidence share the current consent and age authorization gate",
+  files.runEvidence.includes("public.evidence_eligibility_reason(pi.id, _protocol_version)") &&
+    files.runEvidence.includes("evidence := public.get_program_run_development_evidence(") &&
+    files.runEvidence.includes("'mood', CASE WHEN ds.mood_n >= 5 THEN ds.mood END") &&
+    files.runEvidence.includes("'not_currently_authorized'") &&
+    !files.runEvidence.includes("jsonb_object_agg(er.eligibility_reason"),
+);
+verify(
+  "invariant",
+  "I-09",
+  "Solo development and transfer evidence share the current authorization gate and n >= 5 suppression",
+  files.runEvidence.includes("CREATE OR REPLACE FUNCTION public.get_solo_development_evidence_summary") &&
+    files.runEvidence.includes("public.evidence_eligibility_reason(pi.id, _protocol_version)") &&
+    files.runEvidence.includes("CASE WHEN c.participants_with_snapshot >= 5 THEN c.avg_completion_rate END") &&
+    files.runEvidence.includes("'solo-sport-evidence-lock-v2-2026-07'") &&
+    files.runEvidence.includes("'transfer_evidence', transfer_evidence"),
+);
+verify(
+  "invariant",
+  "I-10",
+  "Admin evidence leaves the app only through immutable Team or Solo Data Locks",
+  files.nlzPilotReadiness.includes('rpc("create_evidence_data_lock"') &&
+    files.evidenceParticipationGate.includes('rpc("create_evidence_data_lock"') &&
+    !files.evidenceParticipationGate.includes('rpc("get_performance_evidence_summary"') &&
+    !files.admin.includes("downloadCsv") &&
+    !files.admin.includes("downloadJson") &&
+    !files.admin.includes("downloadText") &&
+    !files.admin.includes('rpc("create_study_aggregate_snapshot"') &&
+    !files.admin.includes('rpc("create_nlz_evidence_snapshot"'),
+);
 
 const hasTeamConsentFilter =
-  files.teamMentalState.includes("data_contribution_consent") &&
-  files.teamMentalState.includes("data_contribution_consent_version");
+  files.teamMentalStateAggregate.includes("public.evidence_eligibility_reason(pi.id, _protocol_version)") &&
+  files.evidenceHardening.includes("target_profile.data_contribution_consent_version IS DISTINCT FROM target_protocol.required_consent_version");
 const hasTeamAgeGate =
-  files.teamMentalState.includes('"filter_data_contribution"') &&
-  files.minorMigration.includes("IF _action = 'filter_data_contribution'") &&
-  files.minorMigration.includes("pa.product_status = 'authorized'") &&
-  files.minorMigration.includes("pa.data_contribution_status = 'authorized'");
+  files.evidenceHardening.includes("participant.data_contribution_athlete IS DISTINCT FROM true") &&
+  files.evidenceHardening.includes("participant.data_contribution_guardian IS DISTINCT FROM true") &&
+  files.evidenceHardening.includes("participant_policy.athlete_assent_version IS DISTINCT FROM target_protocol.required_athlete_assent_version");
 const guardedAthleteWrites = [
   "questionnaire_responses",
   "daily_checkins",

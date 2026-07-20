@@ -12,6 +12,7 @@ import {
 import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft } from "@/lib/localDrafts";
 import type { Json } from "@/integrations/supabase/types";
+import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
@@ -83,10 +84,15 @@ const QuestionnaireResults = ({
         const positionAnswer = answers["sport-02"] as string || null;
         const levelAnswer = answers["sport-03"] as string || null;
         if (sportAnswer) {
-          await supabase
+          const { error: profileError } = await supabase
             .from("profiles")
-            .update({ sport: sportAnswer, team: positionAnswer })
+            .update({
+              sport: sportAnswer,
+              position: positionAnswer,
+              ...buildStructuredSportProfile(sportAnswer, levelAnswer),
+            })
             .eq("id", userId);
+          if (profileError) throw profileError;
         }
 
         const analysisResult = buildDeterministicQuestionnaireAnalysis(answers, {

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Download, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, Presentation, FlaskConical, MessageSquare, FileDown, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
+import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, Presentation, FlaskConical, MessageSquare, FileDown, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -154,47 +154,6 @@ const evidenceVariant: Record<TeamRow["evidence_status"], "secondary" | "default
   mid_available: "secondary",
   full_pre_post: "default",
 };
-
-function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
-  if (!rows.length) {
-    toast({ title: "Keine Daten zum Export." });
-    return;
-  }
-  const headers = Object.keys(rows[0]);
-  const escape = (v: unknown) => {
-    if (v === null || v === undefined) return "";
-    const s = String(v).replace(/"/g, '""');
-    return /[",\n]/.test(s) ? `"${s}"` : s;
-  };
-  const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => escape(r[h])).join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function downloadJson(filename: string, payload: unknown) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function downloadText(filename: string, text: string) {
-  const blob = new Blob([text], { type: "text/markdown;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -359,8 +318,6 @@ const Admin = () => {
   const [nlzDossier, setNlzDossier] = useState<NlzEvidenceDossier | null>(null);
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [snapshotLoading, setSnapshotLoading] = useState(false);
-  const [nlzSnapshotLoading, setNlzSnapshotLoading] = useState(false);
   const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const isMobile = useIsMobile();
@@ -376,13 +333,13 @@ const Admin = () => {
     { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
-    { id: "evidence", title: "Coach-Wirkung", description: "Teamweite Pre/Mid/Post-Readiness und beobachtete Veränderung.", icon: BarChart3 },
+    { id: "evidence", title: "Coach-Feedback", description: "Teamweite Pre/Mid/Post-Daten und beobachtete Veränderung.", icon: BarChart3 },
     { id: "pilot", title: "Pilot Readiness", description: "Program Runs, Startfreigabe und operative Datenintegrität.", icon: ShieldCheck },
-    { id: "nlz", title: "NLZ Evidence", description: "Studienorientiertes Dossier, Outcome-Matrix und Exportpaket.", icon: ShieldCheck },
-    { id: "presentation", title: "Pilot-Reporting", description: "Consent-aware Kennzahlen für Präsentationen.", icon: Presentation },
-    { id: "study", title: "Wirkungsdaten", description: "Study-Übersicht, Missingness und Snapshots.", icon: FlaskConical },
+    { id: "nlz", title: "NLZ Evidence", description: "Interner Dossierstand und Outcome-Matrix.", icon: ShieldCheck },
+    { id: "presentation", title: "Pilot-Monitoring", description: "Interne Kennzahlen für Pilotsteuerung.", icon: Presentation },
+    { id: "study", title: "Evaluationsstatus", description: "Messabdeckung, Missingness und Kohortenstatus.", icon: FlaskConical },
     { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
-    { id: "exports", title: "Exportpakete", description: "Gruppierte, privacy-sichere CSV/JSON-Pakete.", icon: FileDown },
+    { id: "exports", title: "Freigegebene Exporte", description: "Nur unveränderliche Team- und Solo-Data-Locks.", icon: FileDown },
     { id: "health", title: "Datenqualität & System", description: "Operative Vollständigkeit, Systemgesundheit und Launch-Ops.", icon: HeartPulse },
   ];
   const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
@@ -464,49 +421,6 @@ const Admin = () => {
     loadAll();
   };
 
-  const createStudySnapshot = async () => {
-    setSnapshotLoading(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).rpc("create_study_aggregate_snapshot", {
-      _cohort_id: null,
-      include_test: studyIncludeTest,
-    });
-    setSnapshotLoading(false);
-    if (error) {
-      toast({ title: "Snapshot konnte nicht erstellt werden", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Study-Snapshot erstellt", description: "Manifest und aggregierter Snapshot wurden gespeichert." });
-    loadAll();
-  };
-
-  const createNlzEvidenceSnapshot = async () => {
-    setNlzSnapshotLoading(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).rpc("create_nlz_evidence_snapshot", {
-      cohort_id: null,
-      include_test: studyIncludeTest,
-    });
-    setNlzSnapshotLoading(false);
-    if (error) {
-      toast({ title: "NLZ-Snapshot konnte nicht erstellt werden", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "NLZ Evidence Snapshot erstellt", description: "Der aktuelle Dossier-Stand wurde auditierbar gespeichert." });
-    loadAll();
-  };
-
-  const studyExportManifest = study ? {
-    generated_at: new Date().toISOString(),
-    source_generated_at: study.generated_at,
-    export_type: "launch_study_v1",
-    include_test: study.include_test,
-    privacy_level: study.privacy_level,
-    consent_scope: study.consent_scope,
-    claim_boundary: study.claim_boundary,
-    included_exports: study.export_catalog,
-    privacy_exclusions: study.privacy_exclusions,
-  } : null;
   const evidenceStage = getEvidenceStage(study, presentation, teams, health);
   const missingEvidenceItems = getMissingEvidenceItems(study, presentation, health);
   const generatedAt = study?.generated_at ?? presentation?.generated_at ?? ops?.generated_at ?? null;
@@ -514,24 +428,6 @@ const Admin = () => {
   const nlzValidatedPrePost = asRecordArray(nlzDossier?.outcomes.validated_assessments?.pre_post);
   const nlzValidatedPreMid = asRecordArray(nlzDossier?.outcomes.validated_assessments?.pre_mid);
   const nlzDevelopmentSubscores = asRecordArray(nlzDossier?.outcomes.development_index?.subscores);
-  const nlzClaimBoundaryText = nlzDossier
-    ? [
-        "# RewirePerform NLZ Evidence Claim Boundary",
-        "",
-        nlzDossier.claim_boundary,
-        "",
-        `Datenstand: ${new Date(nlzDossier.generated_at).toLocaleString("de-DE")}`,
-        `Readiness: ${nlzDossier.readiness.stage}`,
-        "",
-        "Erlaubte Sprache: beobachtete Entwicklung, Messqualität, Adherence, Datenlage.",
-        "Nicht erlaubt: Diagnose, medizinische Wirkung, Kausalbehauptung ohne Kontrollgruppe.",
-        "",
-        `Privacy-Level: ${nlzDossier.privacy_level}`,
-        nlzDossier.consent_scope ? `Consent-Scope: ${nlzDossier.consent_scope}` : "",
-        "",
-        `Ausgeschlossen: ${nlzDossier.privacy_exclusions.join(", ")}.`,
-      ].filter(Boolean).join("\n")
-    : "";
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background p-4 md:p-8">
@@ -651,13 +547,13 @@ const Admin = () => {
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
-            <TabsTrigger value="evidence">Coach-Wirkung</TabsTrigger>
+            <TabsTrigger value="evidence">Coach-Feedback</TabsTrigger>
             <TabsTrigger value="pilot">Pilot Readiness</TabsTrigger>
             <TabsTrigger value="nlz">NLZ Evidence</TabsTrigger>
-            <TabsTrigger value="presentation">Pilot-Reporting</TabsTrigger>
-            <TabsTrigger value="study">Wirkungsdaten</TabsTrigger>
+            <TabsTrigger value="presentation">Pilot-Monitoring</TabsTrigger>
+            <TabsTrigger value="study">Evaluationsstatus</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="exports">Exportpakete</TabsTrigger>
+            <TabsTrigger value="exports">Exporte</TabsTrigger>
             <TabsTrigger value="health">Datenqualität</TabsTrigger>
           </TabsList>
 
@@ -1207,32 +1103,16 @@ const Admin = () => {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">NLZ Exportpaket</CardTitle>
-                      <CardDescription>Privacy-sichere Dateien für Gespräch, Prüfung und Archiv.</CardDescription>
+                      <CardTitle className="text-base">Freigegebener NLZ-Export</CardTitle>
+                      <CardDescription>Live-Daten dienen nur der internen Prüfung.</CardDescription>
                     </CardHeader>
-                    <CardContent className="grid gap-2">
-                      <Button variant="outline" className="justify-start" onClick={() => downloadJson("nlz_evidence_dossier.json", nlzDossier)}>
-                        <Download className="w-4 h-4 mr-2" />Dossier JSON
-                      </Button>
-                      <Button variant="outline" className="justify-start" onClick={() => downloadCsv("nlz_summary.csv", [nlzDossier.summary])}>
-                        <Download className="w-4 h-4 mr-2" />Summary CSV
-                      </Button>
-                      <Button variant="outline" className="justify-start" onClick={() => downloadCsv("nlz_outcomes.csv", [
-                        ...nlzValidatedPrePost,
-                        ...nlzValidatedPreMid,
-                        ...nlzDevelopmentSubscores,
-                      ])}>
-                        <Download className="w-4 h-4 mr-2" />Outcomes CSV
-                      </Button>
-                      <Button variant="outline" className="justify-start" onClick={() => downloadCsv("nlz_data_quality.csv", [nlzDossier.data_quality])}>
-                        <Download className="w-4 h-4 mr-2" />Data Quality CSV
-                      </Button>
-                      <Button variant="outline" className="justify-start" onClick={() => downloadText("claim_boundary.md", nlzClaimBoundaryText)}>
-                        <Download className="w-4 h-4 mr-2" />Claim Boundary
-                      </Button>
-                      <Button onClick={createNlzEvidenceSnapshot} disabled={nlzSnapshotLoading || loading} className="justify-start">
-                        {nlzSnapshotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
-                        Snapshot speichern
+                    <CardContent className="space-y-3">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        Externe Dateien werden ausschließlich in der Pilotzentrale als unveränderlicher Data Lock mit
+                        Schema-Version, Analysemanifest und SHA-256-Prüfsumme erstellt.
+                      </p>
+                      <Button onClick={() => setTab("pilot")} className="justify-start">
+                        <ShieldCheck className="mr-2 h-4 w-4" />Zur Pilotzentrale
                       </Button>
                     </CardContent>
                   </Card>
@@ -1351,24 +1231,13 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => downloadJson("presentation_metrics.json", presentation)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />Präsentationspaket JSON
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => downloadCsv("presentation_team_summaries.csv", presentation.team_summaries)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />Team Summaries CSV
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => downloadCsv("presentation_kpis.csv", presentation.presentation_kpis.map((kpi) => ({ ...kpi })))}
-                      >
-                        <Download className="w-4 h-4 mr-2" />KPI CSV
+                    <div className="flex flex-col items-start gap-3 border-l-2 border-primary pl-3">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        Diese Live-Kennzahlen sind internes Monitoring. Freigegebene Exporte entstehen nur aus einem
+                        unveränderlichen Data Lock in der Pilotzentrale.
+                      </p>
+                      <Button variant="outline" onClick={() => setTab("pilot")}>
+                        <ShieldCheck className="mr-2 h-4 w-4" />Zu den Data Locks
                       </Button>
                     </div>
 
@@ -1413,10 +1282,6 @@ const Admin = () => {
                         QA anzeigen
                       </button>
                     </div>
-                    <Button variant="outline" onClick={createStudySnapshot} disabled={snapshotLoading || loading || !study}>
-                      {snapshotLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
-                      Snapshot speichern
-                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -1524,21 +1389,13 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" onClick={() => downloadJson("study_summary.json", study)}>
-                        <Download className="w-4 h-4 mr-2" />study_summary.json
-                      </Button>
-                      <Button variant="outline" onClick={() => downloadCsv("cohort_metrics.csv", study.team_summaries)}>
-                        <Download className="w-4 h-4 mr-2" />cohort_metrics.csv
-                      </Button>
-                      <Button variant="outline" onClick={() => downloadCsv("measurement_windows.csv", study.measurement_windows)}>
-                        <Download className="w-4 h-4 mr-2" />measurement_windows.csv
-                      </Button>
-                      <Button variant="outline" onClick={() => downloadCsv("data_quality.csv", [study.data_quality])}>
-                        <Download className="w-4 h-4 mr-2" />data_quality.csv
-                      </Button>
-                      <Button variant="outline" disabled={!studyExportManifest} onClick={() => studyExportManifest && downloadJson("export_manifest.json", studyExportManifest)}>
-                        <Download className="w-4 h-4 mr-2" />export_manifest.json
+                    <div className="flex flex-col items-start gap-3 border-l-2 border-primary pl-3">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
+                        Dieser Bereich zeigt den aktuellen Evaluationsstatus. Für Analysen außerhalb des Adminbereichs
+                        muss zuerst ein versionierter Data Lock erstellt werden.
+                      </p>
+                      <Button variant="outline" onClick={() => setTab("pilot")}>
+                        <ShieldCheck className="mr-2 h-4 w-4" />Zu den Data Locks
                       </Button>
                     </div>
 
@@ -1613,147 +1470,39 @@ const Admin = () => {
           <TabsContent value="exports" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Exporte (anonymisiert)</CardTitle>
+                <CardTitle>Freigegebene Exporte</CardTitle>
                 <CardDescription>
-                  CSV-Exporte enthalten ausschließlich aggregierte/anonymisierte Daten. Keine Journale, keine freien Reflexionen.
+                  Ein kontrollierter Ausgang für Team- und Solo-Evidence.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
                   <p className="text-sm font-medium text-foreground">Export-Grenze</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Pilot- und Study-Exporte sind consent-aware und enthalten nur aggregierte Kennzahlen.
-                    Keine E-Mails, keine Journaltexte, keine freien Antworten, keine Rohantworten und keine individuellen psychologischen Scores.
+                    Live-Ansichten können sich während eines Pilots verändern und sind nicht für externe Nutzung freigegeben.
+                    Ein Export wird erst nach aktueller Consent- und Altersprüfung als unveränderlicher Data Lock erstellt.
                   </p>
                 </div>
-
-                <div className="grid gap-3 lg:grid-cols-3">
-                  <div className="rounded-lg border border-border/60 p-4">
-                    <h3 className="text-sm font-medium">Pilot-Reporting</h3>
-                    <p className="mb-3 mt-1 text-xs text-muted-foreground">
-                      Für Vereinsgespräche: Nutzung, Fortschritt und Team-Summaries.
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="border-l-2 border-primary pl-3">
+                    <p className="text-sm font-medium text-foreground">Mannschaftslauf</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Usage, Messabdeckung, aggregierte Zustandsverläufe, Pre/Mid/Post und Transfer-Evidence.
                     </p>
-                    <div className="space-y-2">
-                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadJson("presentation_metrics.json", presentation)}>
-                        <Download className="w-4 h-4 mr-2" />Presentation JSON
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("program_progress.csv",
-                        presentation.team_summaries.map(t => ({
-                          team: t.team,
-                          sport: t.sport,
-                          athlete_count: t.athlete_count,
-                          avg_completion_rate: t.avg_completion_rate,
-                          avg_days_completed: t.avg_days_completed,
-                          avg_days_available: t.avg_days_available,
-                          avg_current_streak: t.avg_current_streak,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Program Progress
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("checkin_activity.csv",
-                        presentation.team_summaries.map(t => ({
-                          team: t.team,
-                          athlete_count: t.athlete_count,
-                          checkins: t.checkins,
-                          completed_days: t.completed_days,
-                          journal_entries_count_only: t.journal_entries_count_only,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Check-in Aktivität
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!presentation} onClick={() => presentation && downloadCsv("comprehension_summary.csv",
-                        presentation.team_summaries.map(t => ({
-                          team: t.team,
-                          athlete_count: t.athlete_count,
-                          comprehension_checks: t.comprehension_checks,
-                          avg_comprehension: t.avg_comprehension,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Verständnis
-                      </Button>
-                    </div>
                   </div>
-
-                  <div className="rounded-lg border border-border/60 p-4">
-                    <h3 className="text-sm font-medium">Wirkungsdaten / Study</h3>
-                    <p className="mb-3 mt-1 text-xs text-muted-foreground">
-                      Für Auswertung: Messfenster, Missingness und aggregierte Cohort-Daten.
+                  <div className="border-l-2 border-primary pl-3">
+                    <p className="text-sm font-medium text-foreground">Solo-Athleten</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Sportartenfilter, Nutzung, Entwicklungsdaten, Wochenverläufe und Transfer-Evidence.
                     </p>
-                    <div className="space-y-2">
-                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("teams_summary.csv",
-                        teams.map(t => ({
-                          team: t.name, sport: t.sport, coach: t.coach_name,
-                          members: t.member_count, athletes: t.athlete_count,
-                          pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
-                          avg_adherence: t.avg_completion, avg_days_completed: t.avg_days_completed,
-                          evidence_status: t.evidence_status,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Teams-Übersicht
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("evidence_aggregate.csv",
-                        teams.map(t => ({
-                          team: t.name, athletes: t.athlete_count,
-                          pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
-                          evidence_status: t.evidence_status,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Wirksamkeit aggregiert
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadJson("study_summary.json", study)}>
-                        <Download className="w-4 h-4 mr-2" />Study Summary
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadCsv("cohort_metrics.csv", study.team_summaries)}>
-                        <Download className="w-4 h-4 mr-2" />Study Cohort Metrics
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadCsv("measurement_windows.csv", study.measurement_windows)}>
-                        <Download className="w-4 h-4 mr-2" />Measurement Windows
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border border-border/60 p-4">
-                    <h3 className="text-sm font-medium">Operative Datenqualität</h3>
-                    <p className="mb-3 mt-1 text-xs text-muted-foreground">
-                      Für interne Prüfung vor Pilot- oder Präsentationsterminen.
-                    </p>
-                    <div className="space-y-2">
-                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("adherence.csv",
-                        teams.map(t => ({
-                          team: t.name, athletes: t.athlete_count,
-                          avg_completion_rate: t.avg_completion,
-                          avg_days_completed: t.avg_days_completed,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Adherence
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("assessments_aggregate.csv",
-                        teams.map(t => ({
-                          team: t.name, pre_n: t.pre_n, mid_n: t.mid_n, post_n: t.post_n,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Assessments aggregiert
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!study} onClick={() => study && downloadCsv("data_quality.csv", [study.data_quality])}>
-                        <Download className="w-4 h-4 mr-2" />Study Data Quality
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" disabled={!health} onClick={() => health && downloadCsv("system_health.csv", [health as unknown as Record<string, unknown>])}>
-                        <Download className="w-4 h-4 mr-2" />System Health
-                      </Button>
-                      <Button className="w-full justify-start" variant="outline" onClick={() => downloadCsv("feedback.csv",
-                        feedback.map(f => ({
-                          created_at: f.created_at, type: f.type, status: f.status,
-                          message: f.message, admin_note: f.admin_note,
-                        }))
-                      )}>
-                        <Download className="w-4 h-4 mr-2" />Feedback intern
-                      </Button>
-                    </div>
                   </div>
                 </div>
-
-                <p className="text-xs text-muted-foreground pt-2">
-                  Exporte enthalten keine individuellen Mood/Energy-Verläufe, keine Assessment-Antworten und keine Reflexionen.
+                <Button onClick={() => setTab("pilot")}>
+                  <ShieldCheck className="mr-2 h-4 w-4" />Data Lock erstellen
+                </Button>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Ausgeschlossen bleiben Namen, E-Mails, Journale, freie Reflexionen, Rohantworten,
+                  individuelle Check-in-Verläufe und psychologische Einzelwerte.
                 </p>
               </CardContent>
             </Card>

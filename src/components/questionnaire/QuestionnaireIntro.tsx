@@ -17,6 +17,7 @@ import type { Json } from "@/integrations/supabase/types";
 import type { DataContributionConsentState } from "@/lib/dataContributionConsent";
 import { useMinorAuthorization } from "@/hooks/useMinorAuthorization";
 import { saveAuthorizedDataContribution } from "@/lib/minorAuthorization";
+import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -90,13 +91,15 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
         level: answers["sport-03"] as string,
       });
 
-      await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({
           sport: sportAnswer,
-          team: answers["sport-02"] as string,
+          position: answers["sport-02"] as string,
+          ...buildStructuredSportProfile(sportAnswer, answers["sport-03"] as string),
         })
         .eq("id", user.id);
+      if (profileError) throw profileError;
 
       const { error: insErr } = await supabase
         .from("questionnaire_responses")

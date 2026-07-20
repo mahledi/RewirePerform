@@ -115,6 +115,25 @@ push-notification testing, or a live athlete pilot. It also does not prove that
 athletes understand the questions, use the app consistently, or improve in
 sport. Those claims require real users and the defined evidence design.
 
+## Automated Hardening Checks
+
+The local integration candidate adds three complementary database contracts:
+
+- `npm run test:tracking-runtime:sql` verifies self-scoped, idempotent progress
+  snapshots, unique completion days, completion rate, streaks, active-instance
+  scope and foreign-user denial.
+- `npm run test:minor:sql` verifies the current adult/minor authorization
+  states, consent withdrawal, solo and team `n = 4/5` boundaries, completed-run
+  read eligibility, immutable Data Locks and the service-role-only machine read
+  contract.
+- `npm run privacy:verify` verifies that private text and individual
+  psychological values stay outside coach and export paths.
+
+These checks run against a local PostgreSQL-compatible harness and repository
+contracts. Before production activation, repeat grant, overload, RLS, JWT,
+Edge-Function and aggregate checks against the actual target project without
+reading private content.
+
 ## Supabase Precheck SQL
 
 Run before applying tracking hardening migrations. All queries should return
@@ -174,4 +193,6 @@ Mark the layer as launch-ready only if:
 - admin exports contain no private text or individual psychological values
 - QA data does not pollute production metrics
 - App Store privacy boundaries are still true: no advertising tracking, no data brokers, no marketing pixels, no private content in diagnostics or exports
-- `npm run typecheck`, `npm test`, and `npm run build` pass
+- `npm run typecheck`, `npm test`, `npm run build`,
+  `npm run test:evidence:sql`, `npm run test:minor:sql`,
+  `npm run test:tracking-runtime:sql` and `npm run privacy:verify` pass

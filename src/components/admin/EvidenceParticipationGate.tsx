@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Download, Loader2, RefreshCcw, ShieldCheck, ShieldX } from "lucide-react";
+import { Download, Loader2, RefreshCcw, Save, ShieldCheck, ShieldX } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,16 @@ interface EligibilityPayload {
   participants: EligibilityParticipant[];
 }
 
+interface SoloEvidenceDataLock {
+  lock_id: string;
+  content_checksum: string;
+  analysis_manifest: Record<string, unknown>;
+  evidence: {
+    schema_version: string;
+    [key: string]: unknown;
+  };
+}
+
 const reasonLabel: Record<string, string> = {
   eligible: "Freigegeben",
   eligible_minor: "Altersgerecht freigegeben",
@@ -78,6 +88,7 @@ const EvidenceParticipationGate = () => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [evidenceLock, setEvidenceLock] = useState<SoloEvidenceDataLock | null>(null);
   const [pendingChange, setPendingChange] = useState<{
     participant: EligibilityParticipant;
     verified: boolean;
@@ -86,6 +97,7 @@ const EvidenceParticipationGate = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setEvidenceLock(null);
     try {
       const { data, error } = await supabase.rpc("get_admin_evidence_eligibility", { _include_test: false });
       if (error) throw error;
@@ -119,21 +131,30 @@ const EvidenceParticipationGate = () => {
     }
   };
 
-  const exportSoloAggregate = async () => {
+  const createSoloEvidenceLock = async () => {
+    if (!window.confirm("Aktuellen Solo-Evidence-Stand unveränderlich sperren? Spätere Änderungen erzeugen einen neuen Data Lock.")) return;
     setExporting(true);
     try {
-      const { data, error } = await supabase.rpc("get_performance_evidence_summary", {
+      const { data, error } = await supabase.rpc("create_evidence_data_lock", {
         _program_run_id: null,
+        _sport_category: undefined,
+        _sport_level: undefined,
         _include_test: false,
         _protocol_version: EVIDENCE_PROTOCOL_VERSION,
       });
       if (error) throw error;
-      downloadJson("rewireperform_solo_evidence_aggregate.json", data);
+      setEvidenceLock(data as unknown as SoloEvidenceDataLock);
+      toast.success("Solo Evidence Data Lock erstellt und prüfsummenbelegt.");
     } catch (error) {
-      toast.error(`Solo-Aggregat konnte nicht erstellt werden: ${errorMessage(error)}`);
+      toast.error(`Solo Data Lock konnte nicht erstellt werden: ${errorMessage(error)}`);
     } finally {
       setExporting(false);
     }
+  };
+
+  const exportSoloAggregate = () => {
+    if (!evidenceLock) return;
+    downloadJson("rewireperform_solo_locked_evidence.json", evidenceLock);
   };
 
   return (
@@ -147,13 +168,17 @@ const EvidenceParticipationGate = () => {
               altersgerechter Freigabe erhoben. Alter und Geburtsdatum werden hier nicht gespeichert.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="icon" onClick={() => void load()} disabled={loading} title="Neu laden">
               <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
             </Button>
-            <Button variant="outline" onClick={() => void exportSoloAggregate()} disabled={exporting || !payload}>
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              Solo-Aggregat
+            <Button onClick={() => void createSoloEvidenceLock()} disabled={exporting || !payload}>
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Solo Data Lock
+            </Button>
+            <Button variant="outline" onClick={exportSoloAggregate} disabled={!evidenceLock}>
+              <Download className="h-4 w-4" />
+              Gesperrtes JSON
             </Button>
           </div>
         </div>
@@ -163,6 +188,14 @@ const EvidenceParticipationGate = () => {
           Minderjährige werden nach der aktuellen altersgerechten Pilot-Freigabe automatisch geprüft. Unter 16 sind
           Sorgeberechtigten- und Athletenentscheidung erforderlich; mit 16 oder 17 entscheidet der Athlet selbst.
         </div>
+
+        {evidenceLock ? (
+          <div className="mb-5 min-w-0 border-l-2 border-primary pl-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Data Lock {evidenceLock.lock_id.slice(0, 8)}</p>
+            <p className="mt-1 break-all">SHA-256 {evidenceLock.content_checksum}</p>
+            <p className="mt-1">Schema {evidenceLock.evidence.schema_version}</p>
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="flex min-h-28 items-center justify-center">

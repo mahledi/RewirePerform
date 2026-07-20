@@ -6,8 +6,10 @@ import {
   AlertTriangle,
   Brain,
   Compass,
+  Info,
   Lock,
   Minus,
+  RefreshCw,
   ShieldCheck,
   TrendingDown,
   TrendingUp,
@@ -29,6 +31,7 @@ interface WellbeingDay {
   date?: string;
   n_users: number;
   sufficient_data: boolean;
+  low_confidence?: boolean;
   mood: number | null;
   energy: number | null;
   focus: number | null;
@@ -132,6 +135,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const [team, setTeam] = useState<TeamRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -175,7 +179,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
     };
 
     fetchData();
-  }, [teamId, session]);
+  }, [teamId, session, reloadKey]);
 
   if (loading) {
     return (
@@ -195,9 +199,22 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <AlertTriangle className="w-10 h-10 text-destructive mx-auto mb-3" />
-        <p className="text-muted-foreground text-sm">{error}</p>
+      <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 p-5 text-sm text-muted-foreground">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
+          <div className="min-w-0">
+            <p className="font-heading font-semibold text-foreground">Teamzustand gerade nicht verfügbar</p>
+            <p className="mt-1 leading-relaxed">{error} Die restliche Coach-Übersicht bleibt nutzbar.</p>
+            <button
+              type="button"
+              onClick={() => setReloadKey((value) => value + 1)}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border/60 px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Erneut laden
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -320,6 +337,16 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
           </div>
         </div>
       </section>
+
+      {hasToday && today?.low_confidence && (
+        <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-secondary/30 p-4">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Kleine Datenbasis: Das heutige Bild beruht auf {today.n_users} freigegebenen Check-ins.
+            Nutze es als vorsichtige Momentaufnahme, nicht als Bewertung einzelner Athleten.
+          </p>
+        </div>
+      )}
 
       {!hasToday ? (
         <div className="rounded-2xl border border-border/50 bg-card p-6 text-center">

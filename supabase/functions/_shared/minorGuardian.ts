@@ -73,6 +73,21 @@ export const authenticatedUser = async (req: Request) => {
   return user;
 };
 
+export const authenticatedClient = (req: Request): SupabaseClient => {
+  const authorization = req.headers.get("Authorization") ?? "";
+  if (!/^Bearer\s+\S+/iu.test(authorization)) {
+    throw new MinorFlowError("unauthorized", 401);
+  }
+  return createClient(
+    requiredEnv("SUPABASE_URL"),
+    requiredEnv("SUPABASE_ANON_KEY"),
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { headers: { Authorization: authorization } },
+    },
+  );
+};
+
 export const invokeMinorService = async (
   admin: SupabaseClient,
   action: string,

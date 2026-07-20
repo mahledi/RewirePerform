@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Info, ArrowDown, ArrowUp, Minus, RefreshCw } from "lucide-react";
+import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Info, ArrowDown, ArrowUp, Minus, RefreshCw, Target, Zap } from "lucide-react";
 import { captureAppError } from "@/lib/monitoring";
 
 // Direction per subscale: which direction = improvement
@@ -112,7 +112,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       .then(({ data: rpcData, error: rpcError }) => {
         if (cancelled) return;
         if (rpcError) {
-          setError("Wirksamkeitsdaten konnten gerade nicht geladen werden.");
+          setError("Entwicklungsdaten konnten gerade nicht geladen werden.");
           void captureAppError({
             eventName: "coach_evidence_load_failed",
             error: rpcError,
@@ -152,7 +152,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
           <div className="min-w-0">
-            <p className="font-heading font-semibold text-foreground mb-1">Wirksamkeitsdaten gerade nicht verfügbar</p>
+            <p className="font-heading font-semibold text-foreground mb-1">Entwicklungsdaten gerade nicht verfügbar</p>
             <p className="leading-relaxed">{error} Die restliche Coach-Übersicht bleibt nutzbar.</p>
             <button
               type="button"
@@ -177,12 +177,12 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       <div className="rounded-2xl border border-border/50 bg-card p-6 text-center">
         <BarChart3 className="mx-auto mb-4 h-10 w-10 text-primary" />
         <h3 className="font-heading text-lg font-semibold text-foreground mb-2">
-          {noConsentedData ? "Noch keine freigegebenen Wirksamkeitsdaten" : "Noch keine Wirksamkeitsdaten verfügbar"}
+          {noConsentedData ? "Noch keine freigegebenen Entwicklungsdaten" : "Noch keine Entwicklungsdaten verfügbar"}
         </h3>
         <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
           {noConsentedData
             ? "Diese Ansicht nutzt nur freiwillig freigegebene, aggregierte Datenbeiträge. Das Team kann normal trainieren; Auswertung erscheint erst, wenn genügend freigegebene Messdaten vorliegen."
-            : "Wirksamkeit wird erst sichtbar, wenn Athlet:innen registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen."}
+            : "Entwicklung wird erst sichtbar, wenn Athlet:innen registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen."}
         </p>
       </div>
     );
@@ -383,9 +383,18 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
                 <span className="text-muted-foreground sm:w-24 sm:shrink-0">{w.week_start}</span>
                 {w.sufficient_data ? (
                   <div className="flex min-w-0 flex-1 flex-wrap gap-3">
-                    <span>😊 {w.avg_mood ?? "—"}</span>
-                    <span>⚡ {w.avg_energy ?? "—"}</span>
-                    <span>🎯 {w.avg_focus ?? "—"}</span>
+                    <span className="inline-flex items-center gap-1" aria-label={`Stimmung ${w.avg_mood ?? "nicht verfügbar"}`}>
+                      <Activity className="h-3.5 w-3.5 text-primary" />
+                      {w.avg_mood ?? "—"}
+                    </span>
+                    <span className="inline-flex items-center gap-1" aria-label={`Energie ${w.avg_energy ?? "nicht verfügbar"}`}>
+                      <Zap className="h-3.5 w-3.5 text-primary" />
+                      {w.avg_energy ?? "—"}
+                    </span>
+                    <span className="inline-flex items-center gap-1" aria-label={`Fokus ${w.avg_focus ?? "nicht verfügbar"}`}>
+                      <Target className="h-3.5 w-3.5 text-primary" />
+                      {w.avg_focus ?? "—"}
+                    </span>
                   </div>
                 ) : (
                   <span className="text-muted-foreground italic">Zu wenig Daten</span>
@@ -414,7 +423,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       <div className="bg-muted/40 border border-border/40 rounded-2xl p-4 flex items-start gap-3">
         <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
         <p className="text-xs text-muted-foreground leading-relaxed">
-          {data.disclaimer ?? "Wirksamkeitsdaten werden nur aggregiert angezeigt und erst ab ausreichender Gruppengröße belastbar."}
+          {data.disclaimer ?? "Entwicklungsdaten werden nur aggregiert angezeigt und erst ab ausreichender Gruppengröße belastbar."}
         </p>
       </div>
     </div>
