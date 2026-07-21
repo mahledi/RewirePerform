@@ -18,6 +18,9 @@ const ALLOWED_VIEWS = new Set([
   "tracking_quality",
   "feedback_status",
   "pilot_readiness",
+  "pilot_catalog",
+  "solo_readiness",
+  "evidence_status",
 ]);
 const ALLOWED_BODY_KEYS = new Set(["view", "program_run_id"]);
 

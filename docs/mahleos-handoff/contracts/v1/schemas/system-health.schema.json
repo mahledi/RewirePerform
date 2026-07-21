@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/system-health.schema.json",
+  "title": "MahleOS system health v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "status",
+    "identity_integrity",
+    "program_integrity",
+    "tracking_integrity_7d",
+    "operations_24h",
+    "notifications_7d",
+    "feedback",
+    "privacy_level",
+    "privacy_exclusions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-system-health-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "status": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ]
+    },
+    "identity_integrity": {
+      "type": "object",
+      "required": [
+        "users_missing_profile",
+        "production_profiles_missing_role"
+      ],
+      "properties": {
+        "users_missing_profile": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "production_profiles_missing_role": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "program_integrity": {
+      "type": "object",
+      "required": [
+        "athletes_without_program_instance",
+        "athletes_with_multiple_active_instances",
+        "active_team_instances_without_run",
+        "active_runs_without_start_date"
+      ],
+      "properties": {
+        "athletes_without_program_instance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "athletes_with_multiple_active_instances": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_team_instances_without_run": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_runs_without_start_date": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "tracking_integrity_7d": {
+      "type": "object",
+      "required": [
+        "checkins_missing_instance",
+        "completions_missing_instance",
+        "assessments_missing_instance",
+        "questionnaires_missing_instance",
+        "comprehension_missing_instance"
+      ],
+      "properties": {
+        "checkins_missing_instance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completions_missing_instance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assessments_missing_instance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "questionnaires_missing_instance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "comprehension_missing_instance": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "operations_24h": {
+      "type": "object",
+      "required": [
+        "failed_events",
+        "critical_failed_events",
+        "flow_failures"
+      ],
+      "properties": {
+        "failed_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical_failed_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "flow_failures": {
+          "type": "object",
+          "required": [
+            "auth_login",
+            "auth_signup",
+            "team_join_attempt",
+            "daily_checkin_saved",
+            "journal_saved",
+            "assessment_saved",
+            "coach_evidence_load_failed",
+            "app_runtime_error"
+          ],
+          "properties": {
+            "auth_login": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "auth_signup": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "team_join_attempt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "daily_checkin_saved": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "journal_saved": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "assessment_saved": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "coach_evidence_load_failed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "app_runtime_error": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "notifications_7d": {
+      "type": "object",
+      "required": [
+        "sent",
+        "opened",
+        "failed",
+        "expired_subscriptions"
+      ],
+      "properties": {
+        "sent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opened": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expired_subscriptions": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "feedback": {
+      "type": "object",
+      "required": [
+        "open"
+      ],
+      "properties": {
+        "open": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "privacy_level": {
+      "const": "aggregate_operational_no_user_content"
+    },
+    "privacy_exclusions": {
+      "const": [
+        "names",
+        "emails",
+        "user_ids",
+        "team_names",
+        "feedback_text",
+        "journal_text",
+        "free_reflection",
+        "individual_scores",
+        "raw_checkins"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

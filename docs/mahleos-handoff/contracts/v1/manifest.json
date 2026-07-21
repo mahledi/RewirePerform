@@ -1,0 +1,84 @@
+{
+  "contract_id": "rewireperform-mahleos-machine-read",
+  "contract_version": "1.1.0",
+  "status": "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
+  "reporting_timezone": "UTC",
+  "authentication": {
+    "scheme": "Bearer",
+    "key_format": "64 lowercase or uppercase hexadecimal characters",
+    "current_secret": "MAHLEOS_REWIRE_API_KEY",
+    "previous_secret": "MAHLEOS_REWIRE_API_KEY_PREVIOUS"
+  },
+  "operations_endpoint": {
+    "path": "/functions/v1/mahleos-read",
+    "method": "POST",
+    "content_type": "application/json",
+    "max_request_bytes": 2048,
+    "rate_limit_per_client_per_minute": 30,
+    "request_body_fields": [
+      "view",
+      "program_run_id"
+    ],
+    "views": [
+      "daily_brief",
+      "system_health",
+      "tracking_quality",
+      "feedback_status",
+      "pilot_readiness",
+      "pilot_catalog",
+      "solo_readiness",
+      "evidence_status"
+    ]
+  },
+  "evidence_endpoint": {
+    "path": "/functions/v1/evidence-read",
+    "method": "POST",
+    "content_type": "application/json",
+    "max_request_bytes": 4096,
+    "rate_limit_per_client_per_minute": 30
+  },
+  "retry_policy": {
+    "retryable_http_statuses": [
+      429,
+      503
+    ],
+    "non_retryable_http_statuses": [
+      400,
+      401,
+      404,
+      405,
+      413,
+      415
+    ],
+    "maximum_attempts": 3,
+    "redirects_allowed": false
+  },
+  "checksum_policy": {
+    "response_checksum": "server-side audit reference; do not recalculate from reserialized JSON",
+    "evidence_content_checksum": "verified server-side before response",
+    "transport_integrity": "HTTPS"
+  },
+  "consumer_policy": {
+    "unknown_schema_versions": "BLOCK",
+    "unknown_top_level_fields": "BLOCK",
+    "raw_evidence_persistence": "FORBIDDEN_BEFORE_NORMALIZED_ALLOWLIST_PROJECTION",
+    "incomplete_source_coverage": "MUST_NOT_REPORT_GREEN",
+    "external_release": "HUMAN_APPROVAL_REQUIRED"
+  },
+  "privacy_boundaries": {
+    "minimum_sensitive_aggregate_n": 5,
+    "low_confidence_below_n": 10,
+    "test_data_included": false,
+    "forbidden": [
+      "names",
+      "emails",
+      "user_ids",
+      "journal_text",
+      "reflection_text",
+      "feedback_text",
+      "individual_checkins",
+      "individual_scores",
+      "raw_questionnaire_answers"
+    ]
+  }
+}

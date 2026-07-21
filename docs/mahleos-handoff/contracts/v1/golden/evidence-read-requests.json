@@ -1,0 +1,17 @@
+[
+  {
+    "lock_id": "70000000-0000-4000-8000-000000000501"
+  },
+  {
+    "scope_type": "program_run",
+    "program_run_id": "20000000-0000-4000-8000-000000000501"
+  },
+  {
+    "scope_type": "solo_aggregate"
+  },
+  {
+    "scope_type": "solo_aggregate",
+    "sport_category": "combat_sport",
+    "sport_level": "competitive_amateur"
+  }
+]

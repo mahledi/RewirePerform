@@ -2,9 +2,9 @@
 
 Stand: 21. Juli 2026
 
-Status: lokaler Integrationskandidat auf
-`codex/mahleos-read-contract-20260721`. Die Migration ist lokal gegen einen
-ausfuehrbaren PostgreSQL-Harness geprueft. Keine neue Migration, Edge Function,
+Status: Der Basisvertrag ist ueber PR #90 in `main` integriert. Die additive
+V1.1-Erweiterung ist lokal gegen einen ausfuehrbaren PostgreSQL-Harness und
+veroeffentlichte JSON-Schemas geprueft. Keine neue Migration, Edge Function,
 Umgebungsvariable oder MahleOS-Verbindung wurde auf Production aktiviert.
 
 ## Zweck
@@ -95,6 +95,17 @@ Diese Antworten verwenden die Schema-Versionen:
 MahleOS muss unbekannte Schema-Versionen ablehnen und einen menschlichen Review
 anfordern. Es darf Felder nicht still umdeuten.
 
+### Pilotkatalog
+
+```json
+{"view":"pilot_catalog"}
+```
+
+`mahleos-pilot-catalog-v1` liefert hoechstens 20 aktive Production-Runs mit
+opaker Run-ID und wenigen Readiness-Zaehlern. Teamname, Team-ID, Coach- und
+Athletenidentitaet bleiben ausgeschlossen. `truncated: true` erzwingt einen
+nicht-gruenen Consumer-Zustand statt stiller Vollstaendigkeitsannahme.
+
 ### Pilot Readiness
 
 ```json
@@ -120,6 +131,46 @@ Die Antwort `mahleos-pilot-readiness-v1` enthaelt nur laufbezogene Zaehler:
 Nicht enthalten sind Teamname, Coachname, Athletennamen, User-IDs, Listen
 fehlender Spieler, Einzelwerte oder Coach-Beobachtungswerte. QA-Runs liefern
 `TEST_EXCLUDED` und fliessen nicht in Production-Berichte ein.
+
+### Solo Readiness
+
+```json
+{"view":"solo_readiness"}
+```
+
+`mahleos-solo-readiness-v1` liefert ausschliesslich operative Zaehler fuer
+aktive Production-Solo-Instanzen: Evidence-Berechtigung, validierte
+Pre-Messung, Aktivitaet, Day 1 und faellige Transfer-Messpunkte. Sportkategorie
+und Leistungsniveau erscheinen erst, wenn innerhalb der konkreten Kohorte
+mindestens fuenf aktuell Evidence-berechtigte Athleten vorliegen. Kleinere
+Kohorten liefern nur einen Suppression-Hinweis ohne Sportdimension.
+
+### Evidence-Status
+
+```json
+{"view":"evidence_status"}
+```
+
+`mahleos-evidence-status-v1` liefert nur aktive Production-Data-Lock-Metadaten,
+opake Lock- und Run-Referenzen sowie den serverseitig berechneten
+Pruefsummenstatus. Evidence-Payload, Analysemanifest, Ersteller und
+Invalidierungsdetails werden hier niemals ausgegeben. Der eigentliche
+freigegebene Payload bleibt ausschliesslich dem separaten `evidence-read`
+Endpunkt vorbehalten.
+
+## Maschinenlesbares Handoff
+
+`docs/mahleos-handoff/contracts/v1/` enthaelt:
+
+- Transport- und Privacy-Manifest `manifest.json`
+- JSON-Schemas mit geschlossenen Top-Level-Vertraegen
+- synthetische Golden Responses fuer alle acht Operations-Ansichten
+- Golden Response fuer `evidence-read`
+- vollstaendige dokumentierte Fehlerantworten
+
+Die Dateien werden aus `scripts/generate-mahleos-contract.mjs` erzeugt und in
+CI mit `npm run mahleos:contract:check` gegen Drift geschuetzt. MahleOS muss
+das Paket an einen reviewten RewirePerform-Commit pinnen.
 
 ### Erfolgsantwort
 
@@ -208,8 +259,9 @@ API.
 Erst nach separater Production-Freigabe in dieser Reihenfolge:
 
 1. Branch reviewen und vollstaendiges Repository-Gate erneut gruen ausfuehren.
-2. Migration `20260721082355_add_mahleos_operational_read_contract.sql`
-   kontrolliert anwenden und Grants, RLS, Trigger sowie Security Advisor
+2. Migrationen `20260721082355_add_mahleos_operational_read_contract.sql` und
+   `20260721153000_extend_mahleos_operational_read_contract.sql` kontrolliert
+   in Reihenfolge anwenden und Grants, RLS, Trigger sowie Security Advisor
    nachpruefen.
 3. 256-Bit-Schluessel lokal erzeugen und getrennt als Edge Secret sowie im
    MahleOS Keychain hinterlegen.
@@ -227,11 +279,14 @@ impliziert.
 ```bash
 npm test -- src/test/mahleOsMachineAuth.test.ts \
   src/test/mahleOsReadContract.test.ts \
+  src/test/mahleOsContractPackage.test.ts \
   src/test/evidenceReadContract.test.ts
+npm run mahleos:contract:check
 npm run test:mahleos:sql
 ```
 
 Der SQL-Harness prueft reale PostgreSQL-Funktionsausfuehrung, Rollenrechte,
 Append-only Audit, Request-Replay, Rate Limit, Production-/QA-Trennung,
-Feedback-Freitextschutz, Pilotstatus bei unvollstaendiger und vollstaendiger
-Autorisierung sowie `n = 5`/Low Confidence.
+Feedback-Freitextschutz, Pilotstatus, Pilotkatalog, Solo-Suppression,
+Evidence-Checksum-Status sowie jede erzeugte Erfolgsantwort gegen das
+veroeffentlichte JSON-Schema.

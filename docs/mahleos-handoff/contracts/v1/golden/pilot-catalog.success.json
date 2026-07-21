@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000506",
+  "view": "pilot_catalog",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-pilot-catalog-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "status": "GREEN",
+    "total_active_runs": 1,
+    "returned_runs": 1,
+    "truncated": false,
+    "runs": [
+      {
+        "program_run_id": "20000000-0000-4000-8000-000000000501",
+        "run_status": "active",
+        "started_at": "2026-07-14",
+        "current_program_day": 8,
+        "readiness_status": "GREEN",
+        "athletes": 5,
+        "evidence_eligible": 5,
+        "validated_pre_complete": 5,
+        "active_7d": 5,
+        "aggregate_visible": true,
+        "low_confidence": true
+      }
+    ],
+    "test_data_included": false,
+    "privacy_level": "opaque_run_references_and_operational_counts_only",
+    "privacy_exclusions": [
+      "team_name",
+      "athlete_names",
+      "user_ids",
+      "missing_player_lists",
+      "individual_scores",
+      "coach_observation_values",
+      "journal_text",
+      "reflection"
+    ]
+  }
+}
