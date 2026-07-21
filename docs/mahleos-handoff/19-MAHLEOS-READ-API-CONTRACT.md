@@ -2,10 +2,11 @@
 
 Stand: 21. Juli 2026
 
-Status: Der Basisvertrag ist ueber PR #90 in `main` integriert. Die additive
-V1.1-Erweiterung ist lokal gegen einen ausfuehrbaren PostgreSQL-Harness und
-veroeffentlichte JSON-Schemas geprueft. Keine neue Migration, Edge Function,
-Umgebungsvariable oder MahleOS-Verbindung wurde auf Production aktiviert.
+Status: Der V1.1-Produzentenvertrag ist in `main` integriert. Der aktuelle
+Hardening-Branch ergaenzt konservative No-False-Green-Regeln und rekonstruiert
+eine bereits live angewandte Legacy-Migration im Git-Verlauf. Keine MahleOS-
+Migration, Edge Function, Umgebungsvariable oder Verbindung wurde dadurch auf
+Production aktiviert.
 
 ## Zweck
 
@@ -131,6 +132,12 @@ Die Antwort `mahleos-pilot-readiness-v1` enthaelt nur laufbezogene Zaehler:
 Nicht enthalten sind Teamname, Coachname, Athletennamen, User-IDs, Listen
 fehlender Spieler, Einzelwerte oder Coach-Beobachtungswerte. QA-Runs liefern
 `TEST_EXCLUDED` und fliessen nicht in Production-Berichte ein.
+
+`GREEN` setzt zusaetzlich voraus, dass alle Athleten Tag 1 abgeschlossen haben,
+in den letzten sieben Tagen aktiv waren und alle bis zum aktuellen Programmtag
+faelligen Transferpunkte sowie unterschiedlichen Coach-Wochen vorliegen.
+Zukuenftige Transferpunkte und mehrere Coach-Eintraege derselben Woche koennen
+fehlende faellige Messungen nicht ersetzen.
 
 ### Solo Readiness
 
@@ -259,17 +266,22 @@ API.
 Erst nach separater Production-Freigabe in dieser Reihenfolge:
 
 1. Branch reviewen und vollstaendiges Repository-Gate erneut gruen ausfuehren.
-2. Migrationen `20260721082355_add_mahleos_operational_read_contract.sql` und
-   `20260721153000_extend_mahleos_operational_read_contract.sql` kontrolliert
-   in Reihenfolge anwenden und Grants, RLS, Trigger sowie Security Advisor
-   nachpruefen.
-3. 256-Bit-Schluessel lokal erzeugen und getrennt als Edge Secret sowie im
+2. Die bereits live registrierte Migration
+   `20260721142328_preserve_legacy_team_instances_on_run_assignment.sql` gegen
+   die Git-Datei abgleichen und nicht erneut ausfuehren.
+3. Die noch ausstehenden Migrationen
+   `20260721082355_add_mahleos_operational_read_contract.sql`,
+   `20260721153000_extend_mahleos_operational_read_contract.sql` und
+   `20260721181524_harden_mahleos_readiness_statuses.sql` kontrolliert in
+   dieser Reihenfolge anwenden. Danach Grants, Funktionskonfiguration, Trigger
+   und Security Advisor pruefen.
+4. 256-Bit-Schluessel lokal erzeugen und getrennt als Edge Secret sowie im
    MahleOS Keychain hinterlegen.
-4. `mahleos-read` und die aktualisierte `evidence-read` Function deployen.
-5. Ohne Key, mit falschem Key, altem Rotations-Key, unbekannter View,
+5. `mahleos-read` und die aktualisierte `evidence-read` Function deployen.
+6. Ohne Key, mit falschem Key, altem Rotations-Key, unbekannter View,
    unbekanntem Run und Rate Limit negativ testen.
-6. Mit synthetischem Run und synthetischem Data Lock positiv testen.
-7. Erst danach MahleOS auf den Production-Endpunkt umstellen.
+7. Mit synthetischem Run und synthetischem Data Lock positiv testen.
+8. Erst danach MahleOS auf den Production-Endpunkt umstellen.
 
 Keine dieser Aktivierungsaktionen ist durch den lokalen Implementierungsauftrag
 impliziert.
@@ -280,7 +292,8 @@ impliziert.
 npm test -- src/test/mahleOsMachineAuth.test.ts \
   src/test/mahleOsReadContract.test.ts \
   src/test/mahleOsContractPackage.test.ts \
-  src/test/evidenceReadContract.test.ts
+  src/test/evidenceReadContract.test.ts \
+  src/test/programRunLegacyMigration.test.ts
 npm run mahleos:contract:check
 npm run test:mahleos:sql
 ```

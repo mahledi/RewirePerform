@@ -14,6 +14,7 @@ const machineAuthCoreSource = () => readRepoFile(
 const migrationSource = () => [
   "supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql",
+  "supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
@@ -78,6 +79,11 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("multiple_run_instances");
     expect(migration).toContain("run_instance_team_mismatches");
     expect(migration).toContain("run_instances_outside_team_roster");
+    expect(migration).toContain("_mahleos_tracking_quality_base_v1");
+    expect(migration).toContain("_mahleos_pilot_readiness_base_v1");
+    expect(migration).toContain("fresh_snapshots_today");
+    expect(migration).toContain("COUNT(DISTINCT cer.week_number)");
+    expect(migration).toContain("ets.day_number <= current_program_day");
     expect(migration).toContain("'reporting_timezone', 'UTC'");
     expect(migration).toContain("extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256')");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated");
