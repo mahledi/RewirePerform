@@ -1,11 +1,13 @@
 # MahleOS Integration Plan
 
-Status: RewirePerform-seitiger Read-only Integrationskandidat ist lokal
-implementiert und getestet. Er trennt aktuelle Operations-Daten von gesperrter
-Evidence. Keine Verbindung, kein Secret und kein Production-Deploy ist aktiviert.
+Status: Der RewirePerform-seitige Read-only Basisvertrag ist in `main`
+integriert. Die additive Erweiterung fuer Pilotkatalog, Solo Readiness,
+Evidence-Status und das maschinenlesbare Handoff-Paket wird isoliert geprueft.
+Keine Verbindung, kein Secret und kein Production-Deploy ist aktiviert.
 
 Der verbindliche technische Vertrag steht in
 `19-MAHLEOS-READ-API-CONTRACT.md`.
+Das generierte Consumer-Paket steht unter `contracts/v1/`.
 
 ## Ziel
 
@@ -24,7 +26,8 @@ MahleOS soll RewirePerform-Kontext dauerhaft lesen und sichere Aufgaben vorberei
 - Git-Status, Tests und offene Doku-Widersprueche melden.
 - nach separater Freigabe aktuelle, strikt aggregierte Operations-Signale ueber
   `mahleos-read` lesen: Systemgesundheit, Trackingqualitaet, Feedback-Backlog
-  und run-spezifische Pilot Readiness.
+  und run-spezifische Pilot Readiness sowie den anonymen aktiven Pilotkatalog,
+  Solo Readiness und Data-Lock-Integritaetsstatus.
 - optional nach separater Freigabe ausschliesslich aktive, aggregierte und
   pruefsummenverifizierte Evidence Data Locks ueber `evidence-read` lesen.
 - keine Live-Production-Tabellen, Secrets oder privaten Athleteninhalte.
@@ -114,8 +117,13 @@ Freigabepunkt fuer Commit/Push/Deploy
 
 ## Integrationsreife
 
-MahleOS kann den lokalen Adapter jetzt gegen die dokumentierten V1-Schemas und
-Mocks bauen. Ein echter Production-Read bleibt blockiert, bis Migration,
+MahleOS kann den lokalen Adapter gegen die generierten V1-Schemas und Golden
+Responses bauen. Unbekannte Top-Level-Felder oder Schema-Versionen muessen
+fail-closed blockieren. Website, GitHub CI, Vercel und Support-Mail bleiben
+getrennte Quellen und duerfen bei fehlender Verbindung keinen gruenen
+Gesamtstatus erzeugen.
+
+Ein echter Production-Read bleibt blockiert, bis beide Migrationen,
 Machine-Key und beide Functions separat freigegeben, aktiviert und negativ
 verifiziert sind. Schreibende oder autonome RewirePerform-Aktionen bleiben
 ausgeschlossen.

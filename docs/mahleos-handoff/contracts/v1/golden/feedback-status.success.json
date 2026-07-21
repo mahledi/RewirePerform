@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000504",
+  "view": "feedback_status",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-feedback-status-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "status": "CLEAR",
+    "counts": {
+      "open": 0,
+      "reviewed": 2,
+      "resolved": 4,
+      "new_24h": 0,
+      "new_7d": 1
+    },
+    "open_by_category": {
+      "bug": 0,
+      "suggestion": 0,
+      "general": 0,
+      "other": 0
+    },
+    "feedback_text_exported": false,
+    "user_identifiers_exported": false,
+    "privacy_level": "backlog_counts_only"
+  }
+}

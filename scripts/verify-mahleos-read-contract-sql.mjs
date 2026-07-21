@@ -1,11 +1,41 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
+import Ajv2020 from "ajv/dist/2020.js";
 
 const db = new PGlite();
 const migration = readFileSync(
   resolve("supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql"),
   "utf8",
+);
+const extensionMigration = readFileSync(
+  resolve("supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql"),
+  "utf8",
+);
+const contractSchemaNames = [
+  "system-health",
+  "tracking-quality",
+  "feedback-status",
+  "pilot-readiness",
+  "pilot-catalog",
+  "solo-readiness",
+  "evidence-status",
+  "daily-brief",
+  "operations-success",
+];
+const contractValidator = new Ajv2020({
+  allErrors: true,
+  allowUnionTypes: true,
+  strict: true,
+});
+for (const name of contractSchemaNames) {
+  contractValidator.addSchema(JSON.parse(readFileSync(
+    resolve(`docs/mahleos-handoff/contracts/v1/schemas/${name}.schema.json`),
+    "utf8",
+  )));
+}
+const validateOperationsResponse = contractValidator.getSchema(
+  "https://rewireperform.com/contracts/mahleos/v1/operations-success.schema.json",
 );
 
 const ids = {
@@ -23,11 +53,23 @@ const ids = {
   rateLimitedRequest: "90000000-0000-4000-8000-000000000307",
   duplicateInstanceRequest: "90000000-0000-4000-8000-000000000308",
   teamMismatchRequest: "90000000-0000-4000-8000-000000000309",
+  pilotCatalogRequest: "90000000-0000-4000-8000-000000000310",
+  soloSuppressedRequest: "90000000-0000-4000-8000-000000000311",
+  soloVisibleRequest: "90000000-0000-4000-8000-000000000312",
+  evidenceStatusRequest: "90000000-0000-4000-8000-000000000313",
+  evidenceInvalidRequest: "90000000-0000-4000-8000-000000000314",
+  evidenceLock: "70000000-0000-4000-8000-000000000301",
+  qaEvidenceLock: "70000000-0000-4000-8000-000000000302",
   historicalDuplicateInstance: "30000000-0000-4000-8000-000000000390",
   testUser: "00000000-0000-4000-8000-000000000399",
   athletes: Array.from({ length: 5 }, (_, index) => ({
     user: `00000000-0000-4000-8000-0000000003${index + 1}0`,
     instance: `30000000-0000-4000-8000-0000000003${index + 1}0`,
+  })),
+  soloAthletes: Array.from({ length: 5 }, (_, index) => ({
+    user: `00000000-0000-4000-8000-0000000004${index + 1}0`,
+    instance: `30000000-0000-4000-8000-0000000004${index + 1}0`,
+    assignment: `40000000-0000-4000-8000-0000000004${index + 1}0`,
   })),
 };
 
@@ -49,6 +91,15 @@ const expectFailure = async (task, expectedMessage) => {
 };
 
 const asObject = (value) => typeof value === "string" ? JSON.parse(value) : value;
+
+const assertContractResponse = (response, context) => {
+  assert(validateOperationsResponse, "Operations response schema must compile");
+  const valid = validateOperationsResponse(response);
+  assert(
+    valid,
+    `${context} must match the published contract: ${JSON.stringify(validateOperationsResponse.errors)}`,
+  );
+};
 
 const readAsService = async ({ requestId, view, programRunId = null, clientId = "mahleos-v1" }) => {
   await db.exec("SET ROLE service_role");
@@ -88,7 +139,9 @@ try {
     );
     CREATE TABLE public.profiles(
       id uuid PRIMARY KEY REFERENCES auth.users(id),
-      is_test_user boolean NOT NULL DEFAULT false
+      is_test_user boolean NOT NULL DEFAULT false,
+      sport_category text,
+      sport_level text
     );
     CREATE TABLE public.teams(
       id uuid PRIMARY KEY,
@@ -112,6 +165,7 @@ try {
       team_id uuid REFERENCES public.teams(id),
       program_run_id uuid REFERENCES public.program_runs(id),
       status text NOT NULL,
+      started_at date NOT NULL DEFAULT CURRENT_DATE,
       is_test_instance boolean NOT NULL DEFAULT false,
       evidence_eligible boolean NOT NULL DEFAULT false
     );
@@ -203,6 +257,24 @@ try {
       day_number integer NOT NULL,
       PRIMARY KEY(protocol_version, day_number)
     );
+    CREATE TABLE public.evidence_data_locks(
+      id uuid PRIMARY KEY,
+      status text NOT NULL DEFAULT 'active',
+      scope_type text NOT NULL,
+      program_run_id uuid REFERENCES public.program_runs(id),
+      sport_category text,
+      sport_level text,
+      protocol_version text NOT NULL,
+      snapshot_schema_version text NOT NULL,
+      source_cutoff timestamptz NOT NULL,
+      locked_at timestamptz NOT NULL DEFAULT now(),
+      locked_by uuid REFERENCES public.profiles(id),
+      include_test boolean NOT NULL DEFAULT false,
+      checksum_algorithm text NOT NULL DEFAULT 'sha256',
+      content_checksum text NOT NULL,
+      evidence_payload jsonb NOT NULL,
+      analysis_manifest jsonb NOT NULL
+    );
 
     CREATE FUNCTION public.evidence_eligibility_reason(
       _program_instance_id uuid,
@@ -216,6 +288,7 @@ try {
   `);
 
   await db.exec(migration);
+  await db.exec(extensionMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -239,6 +312,16 @@ try {
         'public._mahleos_system_health()',
         'EXECUTE'
       ) AS service_can_call_helper,
+      has_function_privilege(
+        'service_role',
+        'public._mahleos_solo_readiness()',
+        'EXECUTE'
+      ) AS service_can_call_solo_helper,
+      has_function_privilege(
+        'authenticated',
+        'public._mahleos_evidence_status()',
+        'EXECUTE'
+      ) AS authenticated_can_call_evidence_helper,
       has_table_privilege(
         'service_role',
         'public.mahleos_operations_access_log',
@@ -255,6 +338,8 @@ try {
   assert(privilege.authenticated_can_read === false, "Authenticated users must not call the machine RPC");
   assert(privilege.anon_can_read === false, "Anonymous users must not call the machine RPC");
   assert(privilege.service_can_call_helper === false, "Service role must not bypass the read wrapper");
+  assert(privilege.service_can_call_solo_helper === false, "Service role must not bypass the solo wrapper");
+  assert(privilege.authenticated_can_call_evidence_helper === false, "Authenticated users must not browse Data Lock metadata");
   assert(privilege.service_can_read_audit === false, "Service role must not browse the audit table");
   assert(privilege.service_can_write_audit === false, "Service role must not forge audit rows");
 
@@ -294,6 +379,25 @@ try {
     );
   }
 
+  for (const [index, athlete] of ids.soloAthletes.entries()) {
+    await db.query("INSERT INTO auth.users(id) VALUES ($1)", [athlete.user]);
+    await db.query(
+      `INSERT INTO public.profiles(id, sport_category, sport_level)
+       VALUES ($1, 'combat_sport', 'competitive_amateur')`,
+      [athlete.user],
+    );
+    await db.query(
+      "INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'athlete')",
+      [athlete.user],
+    );
+    await db.query(
+      `INSERT INTO public.program_instances(
+        id, user_id, status, started_at, evidence_eligible
+      ) VALUES ($1, $2, 'active', CURRENT_DATE - 7, $3)`,
+      [athlete.instance, athlete.user, index < 2],
+    );
+  }
+
   await db.query("INSERT INTO auth.users(id) VALUES ($1)", [ids.testUser]);
   await db.query(
     "INSERT INTO public.profiles(id, is_test_user) VALUES ($1, true)",
@@ -327,6 +431,7 @@ try {
     view: "daily_brief",
   });
   assert(daily.ok === true, "Daily brief should be served");
+  assertContractResponse(daily, "Daily brief");
   assert(daily.view === "daily_brief", "Daily brief must identify its view");
   assert(daily.data.reporting_timezone === "UTC", "Date-based counters must declare their timezone");
   assert(/^[a-f0-9]{64}$/u.test(daily.response_checksum), "Daily brief needs a SHA-256 checksum");
@@ -382,8 +487,31 @@ try {
   });
   assert(pilot.ok === true, "Known production pilot should be served");
   assert(pilot.data.status === "YELLOW", "Incomplete authorization and pre data should stay yellow");
+  assertContractResponse(pilot, "Pilot readiness");
   assert(pilot.data.evidence_authorization.eligible === 4, "Eligibility should be count-only");
   assert(!JSON.stringify(pilot).includes(ids.athletes[4].user), "Pilot output must not list missing athletes");
+
+  const pilotCatalog = await readAsService({
+    requestId: ids.pilotCatalogRequest,
+    view: "pilot_catalog",
+  });
+  assertContractResponse(pilotCatalog, "Pilot catalog");
+  assert(pilotCatalog.data.total_active_runs === 1, "Only one production run belongs in the catalog");
+  assert(pilotCatalog.data.runs.length === 1, "QA runs must not enter the catalog");
+  assert(pilotCatalog.data.runs[0].program_run_id === ids.run, "Catalog needs the opaque production run reference");
+  assert(!JSON.stringify(pilotCatalog).includes(ids.testRun), "QA run IDs must remain excluded");
+  assert(!JSON.stringify(pilotCatalog).includes(ids.team), "Team IDs must not leave RewirePerform");
+
+  const soloSuppressed = await readAsService({
+    requestId: ids.soloSuppressedRequest,
+    view: "solo_readiness",
+  });
+  assertContractResponse(soloSuppressed, "Suppressed solo readiness");
+  assert(soloSuppressed.data.setup.athletes === 5, "Solo readiness should count active production athletes");
+  assert(soloSuppressed.data.evidence_authorization.eligible === 2, "Solo authorization must remain count-only");
+  assert(soloSuppressed.data.cohort_breakdown.length === 0, "A cohort with fewer than five eligible athletes must be hidden");
+  assert(soloSuppressed.data.suppressed_cohort_count === 1, "Suppressed cohorts need an explicit coverage signal");
+  assert(!JSON.stringify(soloSuppressed).includes("combat_sport"), "Suppressed sport dimensions must not leave RewirePerform");
 
   await db.query(
     "UPDATE public.program_instances SET evidence_eligible = true WHERE id = $1",
@@ -406,9 +534,159 @@ try {
     programRunId: ids.run,
   });
   assert(readyPilot.data.status === "GREEN", "Complete clean pilot setup should be green");
+  assertContractResponse(readyPilot, "Ready pilot");
   assert(readyPilot.data.evidence_authorization.eligible === 5, "All five athletes should be eligible");
   assert(readyPilot.data.data_quality.aggregate_visible === true, "n=5 should unlock aggregates");
   assert(readyPilot.data.data_quality.low_confidence === true, "n=5 must remain low confidence");
+
+  for (const athlete of ids.soloAthletes) {
+    await db.query(
+      "UPDATE public.program_instances SET evidence_eligible = true WHERE id = $1",
+      [athlete.instance],
+    );
+    for (const assessmentType of ["csai2r", "smtq", "flow_short"]) {
+      await db.query(
+        `INSERT INTO public.assessments(
+          user_id, program_instance_id, timing, assessment_type
+        ) VALUES ($1, $2, 'pre', $3)`,
+        [athlete.user, athlete.instance, assessmentType],
+      );
+    }
+    await db.query(
+      `INSERT INTO public.daily_checkins(user_id, program_instance_id, date)
+       VALUES ($1, $2, CURRENT_DATE)`,
+      [athlete.user, athlete.instance],
+    );
+    await db.query(
+      `INSERT INTO public.user_day_assignments(id, user_id, date)
+       VALUES ($1, $2, CURRENT_DATE)`,
+      [athlete.assignment, athlete.user],
+    );
+    await db.query(
+      `INSERT INTO public.user_day_completion(
+        assignment_id, program_instance_id, user_id, completion_status, day_number, completed_at
+      ) VALUES ($1, $2, $3, 'completed', 1, now())`,
+      [athlete.assignment, athlete.instance, athlete.user],
+    );
+    for (let point = 0; point < 2; point += 1) {
+      await db.query(
+        `INSERT INTO public.athlete_transfer_observations(
+          user_id, program_instance_id, protocol_version, is_test
+        ) VALUES ($1, $2, '56d-transfer-v2-2026-07', false)`,
+        [athlete.user, athlete.instance],
+      );
+    }
+  }
+
+  const soloVisible = await readAsService({
+    requestId: ids.soloVisibleRequest,
+    view: "solo_readiness",
+  });
+  assertContractResponse(soloVisible, "Visible solo readiness");
+  assert(soloVisible.data.status === "GREEN", "Complete solo tracking should become green");
+  assert(soloVisible.data.cohort_breakdown.length === 1, "Five eligible athletes should unlock one cohort");
+  assert(soloVisible.data.cohort_breakdown[0].sport_category === "combat_sport", "Visible cohort should retain the approved taxonomy");
+  assert(soloVisible.data.cohort_breakdown[0].low_confidence === true, "n=5 remains low confidence");
+  assert(soloVisible.data.transfer_tracking.measurements_expected === 10, "Solo transfer expectations must respect each start day");
+  assert(soloVisible.data.transfer_tracking.measurements_completed === 10, "Solo transfer completion should be counted exactly");
+  assert(!ids.soloAthletes.some(({ user }) => JSON.stringify(soloVisible).includes(user)), "Solo output must not contain user IDs");
+
+  await db.query(
+    `WITH source AS (
+       SELECT '{"schema_version":"program-run-evidence-lock-v2-2026-07","private_probe":"MUST-NOT-LEAVE"}'::jsonb AS payload
+     ), checksummed AS (
+       SELECT
+         payload,
+         encode(extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256'), 'hex') AS checksum
+       FROM source
+     )
+     INSERT INTO public.evidence_data_locks(
+       id,
+       scope_type,
+       program_run_id,
+       protocol_version,
+       snapshot_schema_version,
+       source_cutoff,
+       content_checksum,
+       evidence_payload,
+       analysis_manifest
+     )
+     SELECT
+       $1,
+       'program_run',
+       $2,
+       '56d-transfer-v2-2026-07',
+       'program-run-evidence-lock-v2-2026-07',
+       now(),
+       checksum,
+       payload,
+       jsonb_build_object('content_checksum', checksum)
+     FROM checksummed`,
+    [ids.evidenceLock, ids.run],
+  );
+  await db.query(
+    `WITH source AS (
+       SELECT '{"schema_version":"solo-sport-evidence-lock-v2-2026-07","qa_private_probe":"QA-MUST-NOT-LEAVE"}'::jsonb AS payload
+     ), checksummed AS (
+       SELECT
+         payload,
+         encode(extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256'), 'hex') AS checksum
+       FROM source
+     )
+     INSERT INTO public.evidence_data_locks(
+       id,
+       scope_type,
+       sport_category,
+       protocol_version,
+       snapshot_schema_version,
+       source_cutoff,
+       include_test,
+       content_checksum,
+       evidence_payload,
+       analysis_manifest
+     )
+     SELECT
+       $1,
+       'solo_aggregate',
+       'combat_sport',
+       '56d-transfer-v2-2026-07',
+       'solo-sport-evidence-lock-v2-2026-07',
+       now(),
+       true,
+       checksum,
+       payload,
+       jsonb_build_object('content_checksum', checksum)
+     FROM checksummed`,
+    [ids.qaEvidenceLock],
+  );
+
+  const evidenceStatus = await readAsService({
+    requestId: ids.evidenceStatusRequest,
+    view: "evidence_status",
+  });
+  assertContractResponse(evidenceStatus, "Evidence status");
+  assert(evidenceStatus.data.status === "GREEN", "A valid production Data Lock should be green");
+  assert(evidenceStatus.data.active_locks === 1, "QA Data Locks must not enter production status");
+  assert(evidenceStatus.data.checksum_valid === 1, "Valid Data Lock checksum should be visible as a count");
+  assert(evidenceStatus.data.locks[0].lock_id === ids.evidenceLock, "MahleOS needs the opaque lock reference");
+  const serializedEvidenceStatus = JSON.stringify(evidenceStatus);
+  assert(!serializedEvidenceStatus.includes("MUST-NOT-LEAVE"), "Evidence payload must not leave RewirePerform status");
+  assert(!serializedEvidenceStatus.includes(ids.qaEvidenceLock), "QA lock references must remain excluded");
+  assert(!serializedEvidenceStatus.includes('"analysis_manifest":'), "Analysis manifests belong only to evidence-read");
+  assert(!serializedEvidenceStatus.includes('"evidence_payload":'), "Evidence payloads belong only to evidence-read");
+
+  await db.query(
+    "UPDATE public.evidence_data_locks SET content_checksum = $1 WHERE id = $2",
+    ["b".repeat(64), ids.evidenceLock],
+  );
+  const invalidEvidence = await readAsService({
+    requestId: ids.evidenceInvalidRequest,
+    view: "evidence_status",
+  });
+  assertContractResponse(invalidEvidence, "Invalid evidence status");
+  assert(invalidEvidence.data.status === "RED", "Checksum mismatch must fail the Evidence status red");
+  assert(invalidEvidence.data.checksum_invalid === 1, "Checksum mismatch needs an explicit count");
+  assert(invalidEvidence.data.locks[0].integrity_status === "INVALID", "Invalid lock metadata must be explicit");
 
   await db.query(
     "UPDATE public.program_instances SET team_id = $1 WHERE id = $2",
@@ -458,6 +736,7 @@ try {
     view: "pilot_readiness",
     programRunId: ids.testRun,
   });
+  assertContractResponse(testPilot, "Excluded QA pilot");
   assert(testPilot.data.status === "TEST_EXCLUDED", "QA teams must be explicitly excluded");
   assert(testPilot.data.test_data_included === false, "Test data must never enter production reports");
 
@@ -500,6 +779,10 @@ try {
     machineRpcServiceOnly: true,
     privacyPayloadCheck: true,
     pilotReadinessCheck: true,
+    pilotCatalogCheck: true,
+    soloReadinessCheck: true,
+    evidenceStatusCheck: true,
+    publishedSchemaCheck: true,
     auditAppendOnly: true,
     rateLimitCheck: true,
   }));

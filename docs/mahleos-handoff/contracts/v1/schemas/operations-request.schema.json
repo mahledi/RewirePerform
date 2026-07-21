@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/operations-request.schema.json",
+  "title": "MahleOS operations request v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [],
+      "properties": {},
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "daily_brief"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "system_health"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "tracking_quality"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "feedback_status"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "pilot_catalog"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "solo_readiness"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "evidence_status"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "view",
+        "program_run_id"
+      ],
+      "properties": {
+        "view": {
+          "const": "pilot_readiness"
+        },
+        "program_run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

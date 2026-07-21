@@ -11,9 +11,10 @@ const machineAuthSource = () => readRepoFile(
 const machineAuthCoreSource = () => readRepoFile(
   "supabase/functions/_shared/mahleOsMachineAuthCore.ts",
 );
-const migrationSource = () => readRepoFile(
+const migrationSource = () => [
   "supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql",
-);
+  "supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql",
+].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
   it("uses one rotatable 256-bit machine credential for both machine endpoints", () => {
@@ -65,6 +66,9 @@ describe("MahleOS operational read contract", () => {
       "tracking_quality",
       "feedback_status",
       "pilot_readiness",
+      "pilot_catalog",
+      "solo_readiness",
+      "evidence_status",
     ]) {
       expect(migration).toContain(`'${view}'`);
     }
@@ -103,5 +107,37 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("'individual_scores'");
     expect(migration).toContain("'missing_player_lists'");
     expect(migration).not.toContain("target_team.name");
+  });
+
+  it("discovers active pilots without exposing team identity or QA runs", () => {
+    const migration = migrationSource();
+
+    expect(migration).toContain("CREATE OR REPLACE FUNCTION public._mahleos_pilot_catalog()");
+    expect(migration).toContain("NOT COALESCE(t.is_test_team, false)");
+    expect(migration).toContain("'opaque_run_references_and_operational_counts_only'");
+    expect(migration).not.toContain("target_team.name");
+    expect(migration).not.toContain("t.name");
+  });
+
+  it("keeps solo cohort dimensions suppressed until five eligible athletes", () => {
+    const migration = migrationSource();
+
+    expect(migration).toContain("CREATE OR REPLACE FUNCTION public._mahleos_solo_readiness()");
+    expect(migration).toContain("WHERE cc.evidence_eligible >= 5");
+    expect(migration).toContain("'suppressed_cohort_count'");
+    expect(migration).toContain("public.evidence_eligibility_reason(");
+    expect(migration).toContain("NOT COALESCE(pi.is_test_instance, false)");
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'user_id'/u);
+  });
+
+  it("exports only Data Lock metadata and server-side checksum status", () => {
+    const migration = migrationSource();
+
+    expect(migration).toContain("CREATE OR REPLACE FUNCTION public._mahleos_evidence_status()");
+    expect(migration).toContain("AND NOT edl.include_test");
+    expect(migration).toContain("'data_lock_metadata_and_integrity_only'");
+    expect(migration).toContain("'integrity_status'");
+    expect(migration).not.toMatch(/'evidence_payload',\s*edl\./u);
+    expect(migration).not.toMatch(/'analysis_manifest',\s*edl\./u);
   });
 });

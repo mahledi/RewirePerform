@@ -25,7 +25,11 @@ const files = {
   evidenceParticipationGate: read("src/components/admin/EvidenceParticipationGate.tsx"),
   main: read("src/main.tsx"),
   mahleOsEdge: read("supabase/functions/mahleos-read/index.ts"),
-  mahleOsMigration: read("supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql"),
+  mahleOsMigration: [
+    read("supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql"),
+    read("supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql"),
+  ].join("\n"),
+  mahleOsManifest: read("docs/mahleos-handoff/contracts/v1/manifest.json"),
   machineAuth: read("supabase/functions/_shared/mahleOsMachineAuth.ts"),
   machineAuthCore: read("supabase/functions/_shared/mahleOsMachineAuthCore.ts"),
   monitoring: read("src/lib/monitoring.ts"),
@@ -200,6 +204,10 @@ verify(
     files.mahleOsMigration.includes("'test_data_included', false") &&
     files.mahleOsMigration.includes("public.evidence_eligibility_reason(") &&
     files.mahleOsMigration.includes("'feedback_text_exported', false") &&
+    files.mahleOsMigration.includes("WHERE cc.evidence_eligible >= 5") &&
+    files.mahleOsMigration.includes("AND NOT edl.include_test") &&
+    files.mahleOsMigration.includes("'data_lock_metadata_and_integrity_only'") &&
+    files.mahleOsManifest.includes('"raw_evidence_persistence": "FORBIDDEN_BEFORE_NORMALIZED_ALLOWLIST_PROJECTION"') &&
     !files.mahleOsMigration.includes("f.message") &&
     !files.mahleOsMigration.includes("p.full_name") &&
     !files.mahleOsMigration.includes("p.email"),

@@ -1,0 +1,28 @@
+[
+  {},
+  {
+    "view": "daily_brief"
+  },
+  {
+    "view": "system_health"
+  },
+  {
+    "view": "tracking_quality"
+  },
+  {
+    "view": "feedback_status"
+  },
+  {
+    "view": "pilot_readiness",
+    "program_run_id": "20000000-0000-4000-8000-000000000501"
+  },
+  {
+    "view": "pilot_catalog"
+  },
+  {
+    "view": "solo_readiness"
+  },
+  {
+    "view": "evidence_status"
+  }
+]

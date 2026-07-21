@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/evidence-read-success.schema.json",
+  "title": "MahleOS evidence read envelope v1",
+  "type": "object",
+  "required": [
+    "ok",
+    "request_id",
+    "lock_id",
+    "scope_type",
+    "program_run_id",
+    "sport_category",
+    "sport_level",
+    "protocol_version",
+    "snapshot_schema_version",
+    "source_cutoff",
+    "locked_at",
+    "checksum_algorithm",
+    "content_checksum",
+    "analysis_manifest",
+    "evidence"
+  ],
+  "properties": {
+    "ok": {
+      "const": true
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "lock_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "scope_type": {
+      "enum": [
+        "program_run",
+        "solo_aggregate"
+      ]
+    },
+    "program_run_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "sport_category": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "sport_level": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "protocol_version": {
+      "const": "56d-transfer-v2-2026-07"
+    },
+    "snapshot_schema_version": {
+      "enum": [
+        "program-run-evidence-lock-v2-2026-07",
+        "solo-sport-evidence-lock-v2-2026-07"
+      ]
+    },
+    "source_cutoff": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "locked_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "checksum_algorithm": {
+      "const": "sha256"
+    },
+    "content_checksum": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "analysis_manifest": {
+      "type": "object",
+      "required": [
+        "manifest_version",
+        "source_cutoff",
+        "scope_type",
+        "program_run_id",
+        "sport_category",
+        "sport_level",
+        "data_mode",
+        "protocol_version",
+        "snapshot_schema_version",
+        "checksum_algorithm",
+        "content_checksum",
+        "minimum_aggregate_n",
+        "low_confidence_below_n",
+        "included_sections"
+      ],
+      "properties": {
+        "manifest_version": {
+          "const": "evidence-analysis-manifest-v2-2026-07"
+        },
+        "source_cutoff": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "scope_type": {
+          "enum": [
+            "program_run",
+            "solo_aggregate"
+          ]
+        },
+        "program_run_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "sport_category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "sport_level": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "data_mode": {
+          "const": "production_only"
+        },
+        "protocol_version": {
+          "const": "56d-transfer-v2-2026-07"
+        },
+        "snapshot_schema_version": {
+          "enum": [
+            "program-run-evidence-lock-v2-2026-07",
+            "solo-sport-evidence-lock-v2-2026-07"
+          ]
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "content_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "minimum_aggregate_n": {
+          "const": 5
+        },
+        "low_confidence_below_n": {
+          "const": 10
+        },
+        "included_sections": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "generated_at",
+            "schema_version",
+            "scope",
+            "protocol_version",
+            "meta",
+            "sample",
+            "usage",
+            "team_pulse",
+            "measurement",
+            "outcomes",
+            "transfer_evidence",
+            "data_quality",
+            "claim_boundary",
+            "privacy"
+          ],
+          "properties": {
+            "generated_at": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+            },
+            "schema_version": {
+              "const": "program-run-evidence-lock-v2-2026-07"
+            },
+            "scope": {
+              "const": "program_run"
+            },
+            "protocol_version": {
+              "const": "56d-transfer-v2-2026-07"
+            },
+            "meta": {
+              "type": "object"
+            },
+            "sample": {
+              "type": "object"
+            },
+            "usage": {
+              "type": "object"
+            },
+            "team_pulse": {
+              "type": "object"
+            },
+            "measurement": {
+              "type": "object"
+            },
+            "outcomes": {
+              "type": "object"
+            },
+            "transfer_evidence": {
+              "type": "object"
+            },
+            "data_quality": {
+              "type": "object"
+            },
+            "claim_boundary": {
+              "type": "object"
+            },
+            "privacy": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "generated_at",
+            "schema_version",
+            "scope",
+            "protocol_version",
+            "sample",
+            "sport_catalog",
+            "cohort_breakdown",
+            "usage",
+            "measurement",
+            "outcomes",
+            "weekly_state",
+            "transfer_evidence",
+            "data_quality",
+            "claim_boundary",
+            "privacy"
+          ],
+          "properties": {
+            "generated_at": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+            },
+            "schema_version": {
+              "const": "solo-sport-evidence-lock-v2-2026-07"
+            },
+            "scope": {
+              "type": "object"
+            },
+            "protocol_version": {
+              "const": "56d-transfer-v2-2026-07"
+            },
+            "sample": {
+              "type": "object"
+            },
+            "sport_catalog": {
+              "type": "object"
+            },
+            "cohort_breakdown": {
+              "type": "array"
+            },
+            "usage": {
+              "type": "object"
+            },
+            "measurement": {
+              "type": "object"
+            },
+            "outcomes": {
+              "type": "object"
+            },
+            "weekly_state": {
+              "type": "array"
+            },
+            "transfer_evidence": {
+              "type": "object"
+            },
+            "data_quality": {
+              "type": "object"
+            },
+            "claim_boundary": {
+              "type": "object"
+            },
+            "privacy": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

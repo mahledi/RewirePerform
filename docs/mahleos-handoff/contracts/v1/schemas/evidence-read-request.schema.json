@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/evidence-read-request.schema.json",
+  "title": "MahleOS evidence read request v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "lock_id"
+      ],
+      "properties": {
+        "lock_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "scope_type",
+        "program_run_id"
+      ],
+      "properties": {
+        "scope_type": {
+          "const": "program_run"
+        },
+        "program_run_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "scope_type"
+      ],
+      "properties": {
+        "scope_type": {
+          "const": "solo_aggregate"
+        },
+        "sport_category": {
+          "enum": [
+            "invasion_team_sport",
+            "net_or_target_sport",
+            "combat_sport",
+            "aesthetic_or_technical_sport",
+            "endurance_sport",
+            "strength_power_sport",
+            "precision_sport",
+            "unknown_or_other"
+          ]
+        },
+        "sport_level": {
+          "enum": [
+            "youth",
+            "amateur",
+            "competitive_amateur",
+            "semi_pro",
+            "pro",
+            "college"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
