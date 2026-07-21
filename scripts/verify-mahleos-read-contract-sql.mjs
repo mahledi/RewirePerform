@@ -8,8 +8,16 @@ const migration = readFileSync(
   resolve("supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql"),
   "utf8",
 );
+const legacyRunMigration = readFileSync(
+  resolve("supabase/migrations/20260721142328_preserve_legacy_team_instances_on_run_assignment.sql"),
+  "utf8",
+);
 const extensionMigration = readFileSync(
   resolve("supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql"),
+  "utf8",
+);
+const hardeningMigration = readFileSync(
+  resolve("supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql"),
   "utf8",
 );
 const contractSchemaNames = [
@@ -58,13 +66,22 @@ const ids = {
   soloVisibleRequest: "90000000-0000-4000-8000-000000000312",
   evidenceStatusRequest: "90000000-0000-4000-8000-000000000313",
   evidenceInvalidRequest: "90000000-0000-4000-8000-000000000314",
+  emptyTrackingRequest: "90000000-0000-4000-8000-000000000315",
+  pilotUsageMissingRequest: "90000000-0000-4000-8000-000000000316",
+  pilotDueMissingRequest: "90000000-0000-4000-8000-000000000317",
+  pilotDueCompleteRequest: "90000000-0000-4000-8000-000000000318",
   evidenceLock: "70000000-0000-4000-8000-000000000301",
   qaEvidenceLock: "70000000-0000-4000-8000-000000000302",
   historicalDuplicateInstance: "30000000-0000-4000-8000-000000000390",
+  legacyTeam: "10000000-0000-4000-8000-000000000390",
+  legacyRun: "20000000-0000-4000-8000-000000000390",
+  legacyUser: "00000000-0000-4000-8000-000000000390",
+  legacyInstance: "30000000-0000-4000-8000-000000000391",
   testUser: "00000000-0000-4000-8000-000000000399",
   athletes: Array.from({ length: 5 }, (_, index) => ({
     user: `00000000-0000-4000-8000-0000000003${index + 1}0`,
     instance: `30000000-0000-4000-8000-0000000003${index + 1}0`,
+    assignment: `40000000-0000-4000-8000-0000000003${index + 1}0`,
   })),
   soloAthletes: Array.from({ length: 5 }, (_, index) => ({
     user: `00000000-0000-4000-8000-0000000004${index + 1}0`,
@@ -164,8 +181,10 @@ try {
       user_id uuid NOT NULL REFERENCES auth.users(id),
       team_id uuid REFERENCES public.teams(id),
       program_run_id uuid REFERENCES public.program_runs(id),
+      cycle_number integer NOT NULL DEFAULT 1,
       status text NOT NULL,
       started_at date NOT NULL DEFAULT CURRENT_DATE,
+      ended_at date,
       is_test_instance boolean NOT NULL DEFAULT false,
       evidence_eligible boolean NOT NULL DEFAULT false
     );
@@ -244,12 +263,14 @@ try {
       program_instance_id uuid NOT NULL REFERENCES public.program_instances(id),
       program_run_id uuid REFERENCES public.program_runs(id),
       protocol_version text NOT NULL,
+      day_number integer NOT NULL,
       is_test boolean NOT NULL DEFAULT false
     );
     CREATE TABLE public.coach_evidence_reviews(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       program_run_id uuid NOT NULL REFERENCES public.program_runs(id),
       scope_type text NOT NULL,
+      week_number integer NOT NULL,
       is_test boolean NOT NULL DEFAULT false
     );
     CREATE TABLE public.evidence_transfer_schedule(
@@ -285,10 +306,18 @@ try {
       FROM public.program_instances pi
       WHERE pi.id = _program_instance_id
     $$;
+
+    CREATE FUNCTION public.can_manage_team_program_runs(_team_id uuid)
+    RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
+      SELECT COALESCE(current_setting('app.test_can_manage', true), 'false') = 'true'
+    $$;
   `);
 
   await db.exec(migration);
+  await db.exec(legacyRunMigration);
   await db.exec(extensionMigration);
+  await db.exec(hardeningMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -331,7 +360,17 @@ try {
         'service_role',
         'public.mahleos_operations_access_log',
         'INSERT'
-      ) AS service_can_write_audit
+      ) AS service_can_write_audit,
+      has_function_privilege(
+        'authenticated',
+        'public.assign_team_members_to_program_run(uuid)',
+        'EXECUTE'
+      ) AS authenticated_can_assign_run,
+      has_function_privilege(
+        'anon',
+        'public.assign_team_members_to_program_run(uuid)',
+        'EXECUTE'
+      ) AS anon_can_assign_run
   `);
   const privilege = privileges.rows[0];
   assert(privilege.service_can_read === true, "Service role needs the narrow read RPC");
@@ -342,6 +381,94 @@ try {
   assert(privilege.authenticated_can_call_evidence_helper === false, "Authenticated users must not browse Data Lock metadata");
   assert(privilege.service_can_read_audit === false, "Service role must not browse the audit table");
   assert(privilege.service_can_write_audit === false, "Service role must not forge audit rows");
+  assert(privilege.authenticated_can_assign_run === true, "Authenticated managers need the guarded run assignment RPC");
+  assert(privilege.anon_can_assign_run === false, "Anonymous users must not call the run assignment RPC");
+
+  const emptyTracking = await readAsService({
+    requestId: ids.emptyTrackingRequest,
+    view: "tracking_quality",
+  });
+  assertContractResponse(emptyTracking, "Empty tracking quality");
+  assert(emptyTracking.data.activity.active_instances === 0, "Empty coverage needs an explicit zero count");
+  assert(emptyTracking.data.status === "YELLOW", "No active source coverage must never report green");
+
+  await db.query(
+    "INSERT INTO public.teams(id, is_test_team) VALUES ($1, false)",
+    [ids.legacyTeam],
+  );
+  await db.query(
+    `INSERT INTO public.program_runs(id, team_id, status, started_at)
+     VALUES ($1, $2, 'active', CURRENT_DATE - 3)`,
+    [ids.legacyRun, ids.legacyTeam],
+  );
+  await db.query("INSERT INTO auth.users(id) VALUES ($1)", [ids.legacyUser]);
+  await db.query("INSERT INTO public.profiles(id) VALUES ($1)", [ids.legacyUser]);
+  await db.query(
+    "INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'athlete')",
+    [ids.legacyUser],
+  );
+  await db.query(
+    "INSERT INTO public.team_members(team_id, user_id) VALUES ($1, $2)",
+    [ids.legacyTeam, ids.legacyUser],
+  );
+  await db.query(
+    `INSERT INTO public.program_instances(
+      id, user_id, team_id, status, started_at, cycle_number
+    ) VALUES ($1, $2, $3, 'active', CURRENT_DATE - 3, 1)`,
+    [ids.legacyInstance, ids.legacyUser, ids.legacyTeam],
+  );
+
+  await db.exec("SET ROLE authenticated");
+  let legacyAssignment;
+  try {
+    await expectFailure(
+      () => db.query(
+        "SELECT public.assign_team_members_to_program_run($1)",
+        [ids.legacyRun],
+      ),
+      "access_denied",
+    );
+    await db.query("SELECT set_config('app.test_can_manage', 'true', false)");
+    const result = await db.query(
+      "SELECT public.assign_team_members_to_program_run($1) AS response",
+      [ids.legacyRun],
+    );
+    legacyAssignment = asObject(result.rows[0].response);
+  } finally {
+    await db.exec("RESET ROLE");
+  }
+  assert(legacyAssignment.migrated_legacy_instances === 1, "Matching legacy cycles must be linked in place");
+  const preservedLegacy = await db.query(
+    `SELECT id, program_run_id, status, cycle_number
+     FROM public.program_instances
+     WHERE user_id = $1`,
+    [ids.legacyUser],
+  );
+  assert(preservedLegacy.rows.length === 1, "Legacy assignment must not create a replacement cycle");
+  assert(preservedLegacy.rows[0].id === ids.legacyInstance, "Legacy instance identity must stay stable");
+  assert(preservedLegacy.rows[0].program_run_id === ids.legacyRun, "Legacy instance must be linked to the run");
+  assert(preservedLegacy.rows[0].status === "active", "Preserved legacy instance must remain active");
+
+  const assignmentConfig = await db.query(`
+    SELECT p.proconfig::text AS config
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = 'assign_team_members_to_program_run'
+  `);
+  assert(
+    String(assignmentConfig.rows[0].config).includes("search_path=pg_catalog"),
+    "Run assignment SECURITY DEFINER must use a fixed safe search path",
+  );
+
+  await db.query(
+    "UPDATE public.program_instances SET status = 'completed', ended_at = CURRENT_DATE WHERE id = $1",
+    [ids.legacyInstance],
+  );
+  await db.query(
+    "UPDATE public.program_runs SET status = 'completed', ended_at = CURRENT_DATE WHERE id = $1",
+    [ids.legacyRun],
+  );
 
   await db.query(
     "INSERT INTO public.teams(id, is_test_team) VALUES ($1, false), ($2, true)",
@@ -357,7 +484,8 @@ try {
     VALUES
       ('56d-transfer-v2-2026-07', 4),
       ('56d-transfer-v2-2026-07', 7),
-      ('56d-transfer-v2-2026-07', 11);
+      ('56d-transfer-v2-2026-07', 11),
+      ('56d-transfer-v2-2026-07', 18);
   `);
 
   for (const [index, athlete] of ids.athletes.entries()) {
@@ -528,6 +656,40 @@ try {
     }
   }
 
+  const usageMissingPilot = await readAsService({
+    requestId: ids.pilotUsageMissingRequest,
+    view: "pilot_readiness",
+    programRunId: ids.run,
+  });
+  assertContractResponse(usageMissingPilot, "Pilot with missing usage coverage");
+  assert(usageMissingPilot.data.status === "YELLOW", "Missing Day 1 and activity must prevent green");
+  assert(usageMissingPilot.data.daily_tracking.day_1_completed === 0, "Missing Day 1 must remain visible as a count");
+  assert(usageMissingPilot.data.daily_tracking.active_7d === 0, "Missing recent activity must remain visible as a count");
+
+  for (const athlete of ids.athletes) {
+    await db.query(
+      `INSERT INTO public.daily_checkins(user_id, program_instance_id, date)
+       VALUES ($1, $2, CURRENT_DATE)`,
+      [athlete.user, athlete.instance],
+    );
+    await db.query(
+      `INSERT INTO public.user_day_assignments(id, user_id, date)
+       VALUES ($1, $2, CURRENT_DATE)`,
+      [athlete.assignment, athlete.user],
+    );
+    await db.query(
+      `INSERT INTO public.user_day_completion(
+        assignment_id, program_instance_id, user_id, completion_status, day_number, completed_at
+      ) VALUES ($1, $2, $3, 'completed', 1, now())`,
+      [athlete.assignment, athlete.instance, athlete.user],
+    );
+    await db.query(
+      `INSERT INTO public.program_progress_snapshots(program_instance_id, date)
+       VALUES ($1, CURRENT_DATE)`,
+      [athlete.instance],
+    );
+  }
+
   const readyPilot = await readAsService({
     requestId: ids.readyPilotRequest,
     view: "pilot_readiness",
@@ -538,6 +700,62 @@ try {
   assert(readyPilot.data.evidence_authorization.eligible === 5, "All five athletes should be eligible");
   assert(readyPilot.data.data_quality.aggregate_visible === true, "n=5 should unlock aggregates");
   assert(readyPilot.data.data_quality.low_confidence === true, "n=5 must remain low confidence");
+
+  await db.query(
+    "UPDATE public.program_runs SET started_at = CURRENT_DATE - 13 WHERE id = $1",
+    [ids.run],
+  );
+  for (const athlete of ids.athletes) {
+    await db.query(
+      `INSERT INTO public.athlete_transfer_observations(
+        user_id, program_instance_id, program_run_id, protocol_version, day_number, is_test
+      ) VALUES ($1, $2, $3, '56d-transfer-v2-2026-07', 18, false)`,
+      [athlete.user, athlete.instance, ids.run],
+    );
+  }
+  await db.query(
+    `INSERT INTO public.coach_evidence_reviews(program_run_id, scope_type, week_number, is_test)
+     VALUES ($1, 'team', 1, false), ($1, 'team', 1, false)`,
+    [ids.run],
+  );
+
+  const dueMissingPilot = await readAsService({
+    requestId: ids.pilotDueMissingRequest,
+    view: "pilot_readiness",
+    programRunId: ids.run,
+  });
+  assertContractResponse(dueMissingPilot, "Pilot with due measurements missing");
+  assert(dueMissingPilot.data.status === "YELLOW", "Missing due transfer and coach weeks must prevent green");
+  assert(dueMissingPilot.data.transfer_tracking.measurements_expected === 15, "Day 14 should require three transfer points per eligible athlete");
+  assert(dueMissingPilot.data.transfer_tracking.measurements_completed === 0, "Future transfer observations must not satisfy current requirements");
+  assert(dueMissingPilot.data.coach_tracking.weekly_reviews_due === 2, "Day 14 should require two coach weeks");
+  assert(dueMissingPilot.data.coach_tracking.weekly_reviews_completed === 1, "Duplicate reviews for one week must count once");
+
+  for (const athlete of ids.athletes) {
+    for (const dayNumber of [4, 7, 11]) {
+      await db.query(
+        `INSERT INTO public.athlete_transfer_observations(
+          user_id, program_instance_id, program_run_id, protocol_version, day_number, is_test
+        ) VALUES ($1, $2, $3, '56d-transfer-v2-2026-07', $4, false)`,
+        [athlete.user, athlete.instance, ids.run, dayNumber],
+      );
+    }
+  }
+  await db.query(
+    `INSERT INTO public.coach_evidence_reviews(program_run_id, scope_type, week_number, is_test)
+     VALUES ($1, 'team', 2, false)`,
+    [ids.run],
+  );
+
+  const dueCompletePilot = await readAsService({
+    requestId: ids.pilotDueCompleteRequest,
+    view: "pilot_readiness",
+    programRunId: ids.run,
+  });
+  assertContractResponse(dueCompletePilot, "Pilot with due measurements complete");
+  assert(dueCompletePilot.data.status === "GREEN", "Complete due coverage should restore green");
+  assert(dueCompletePilot.data.transfer_tracking.measurements_completed === 15, "Only due transfer observations should count");
+  assert(dueCompletePilot.data.coach_tracking.weekly_reviews_completed === 2, "Distinct completed coach weeks should count");
 
   for (const athlete of ids.soloAthletes) {
     await db.query(
@@ -568,12 +786,12 @@ try {
       ) VALUES ($1, $2, $3, 'completed', 1, now())`,
       [athlete.assignment, athlete.instance, athlete.user],
     );
-    for (let point = 0; point < 2; point += 1) {
+    for (const dayNumber of [4, 7]) {
       await db.query(
         `INSERT INTO public.athlete_transfer_observations(
-          user_id, program_instance_id, protocol_version, is_test
-        ) VALUES ($1, $2, '56d-transfer-v2-2026-07', false)`,
-        [athlete.user, athlete.instance],
+          user_id, program_instance_id, protocol_version, day_number, is_test
+        ) VALUES ($1, $2, '56d-transfer-v2-2026-07', $3, false)`,
+        [athlete.user, athlete.instance, dayNumber],
       );
     }
   }
