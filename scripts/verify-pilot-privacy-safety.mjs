@@ -24,6 +24,10 @@ const files = {
   evidenceHardening: read("supabase/migrations/20260720080100_add_structured_solo_evidence_locks.sql"),
   evidenceParticipationGate: read("src/components/admin/EvidenceParticipationGate.tsx"),
   main: read("src/main.tsx"),
+  mahleOsEdge: read("supabase/functions/mahleos-read/index.ts"),
+  mahleOsMigration: read("supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql"),
+  machineAuth: read("supabase/functions/_shared/mahleOsMachineAuth.ts"),
+  machineAuthCore: read("supabase/functions/_shared/mahleOsMachineAuthCore.ts"),
   monitoring: read("src/lib/monitoring.ts"),
   nlzPilotReadiness: read("src/components/admin/NlzPilotReadiness.tsx"),
   minorGate: read("src/components/minor-consent/MinorAuthorizationGate.tsx"),
@@ -179,6 +183,26 @@ verify(
     files.evidenceHardening.includes("COALESCE(ato.is_test, false) = _include_test") &&
     files.runEvidence.includes("RAISE EXCEPTION 'program_run_data_mode_contamination'") &&
     files.runEvidence.includes("RAISE EXCEPTION 'evidence_data_mode_mismatch'"),
+);
+verify(
+  "invariant",
+  "I-13",
+  "MahleOS receives only allow-listed aggregate reads behind a rotatable machine key",
+  files.mahleOsEdge.includes('rpc("read_mahleos_operational_view"') &&
+    !files.mahleOsEdge.includes(".from(") &&
+    !files.mahleOsEdge.includes("Access-Control-Allow-Origin") &&
+    files.machineAuth.includes('Deno.env.get("MAHLEOS_REWIRE_API_KEY")') &&
+    files.machineAuth.includes('Deno.env.get("MAHLEOS_REWIRE_API_KEY_PREVIOUS")') &&
+    files.machineAuthCore.includes("MACHINE_KEY_PATTERN") &&
+    files.machineAuthCore.includes("constantTimeEqual") &&
+    files.mahleOsMigration.includes("mahleos_operations_access_log_append_only") &&
+    files.mahleOsMigration.includes("TO service_role") &&
+    files.mahleOsMigration.includes("'test_data_included', false") &&
+    files.mahleOsMigration.includes("public.evidence_eligibility_reason(") &&
+    files.mahleOsMigration.includes("'feedback_text_exported', false") &&
+    !files.mahleOsMigration.includes("f.message") &&
+    !files.mahleOsMigration.includes("p.full_name") &&
+    !files.mahleOsMigration.includes("p.email"),
 );
 
 const hasTeamConsentFilter =

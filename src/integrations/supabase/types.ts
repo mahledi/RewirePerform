@@ -935,6 +935,47 @@ export type Database = {
         }
         Relationships: []
       }
+      mahleos_operations_access_log: {
+        Row: {
+          client_id: string
+          id: string
+          outcome: string
+          program_run_id: string | null
+          request_id: string
+          requested_at: string
+          response_checksum: string | null
+          view_name: string
+        }
+        Insert: {
+          client_id: string
+          id?: string
+          outcome: string
+          program_run_id?: string | null
+          request_id: string
+          requested_at?: string
+          response_checksum?: string | null
+          view_name: string
+        }
+        Update: {
+          client_id?: string
+          id?: string
+          outcome?: string
+          program_run_id?: string | null
+          request_id?: string
+          requested_at?: string
+          response_checksum?: string | null
+          view_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mahleos_operations_access_log_program_run_id_fkey"
+            columns: ["program_run_id"]
+            isOneToOne: false
+            referencedRelation: "program_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_log: {
         Row: {
           created_at: string
@@ -2231,7 +2272,7 @@ export type Database = {
       create_evidence_data_lock: {
         Args: {
           _include_test?: boolean
-          _program_run_id?: string
+          _program_run_id?: string | null
           _protocol_version?: string
           _sport_category?: string
           _sport_level?: string
@@ -2449,6 +2490,15 @@ export type Database = {
           _scope_type?: string
           _sport_category?: string
           _sport_level?: string
+        }
+        Returns: Json
+      }
+      read_mahleos_operational_view: {
+        Args: {
+          _client_id: string
+          _program_run_id?: string
+          _request_id: string
+          _view_name?: string
         }
         Returns: Json
       }

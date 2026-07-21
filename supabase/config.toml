@@ -12,7 +12,10 @@ verify_jwt = false
 [functions.team-mental-state]
 verify_jwt = true
 
-# Machine-authenticated endpoint. It verifies MAHLEOS_EVIDENCE_API_KEY itself
-# and can only call a service-role-only RPC that serves active Data Locks.
+# Machine-authenticated endpoints. They verify MAHLEOS_REWIRE_API_KEY inside
+# the handler and may call only their dedicated service-role-only RPCs.
 [functions.evidence-read]
+verify_jwt = false
+
+[functions.mahleos-read]
 verify_jwt = false

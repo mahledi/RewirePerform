@@ -185,7 +185,7 @@ describe("auth email confirmation", () => {
         type: "recovery",
       });
     });
-    expect(screen.getByText("Passwortseite geöffnet")).toBeInTheDocument();
+    expect(await screen.findByText("Passwortseite geöffnet")).toBeInTheDocument();
   });
 
   it("continues normally when Supabase returns an active session", async () => {

@@ -2,6 +2,13 @@
 
 Stand: 20. Juli 2026
 
+Update 21. Juli 2026: Der Maschinenzugang wurde in einem separaten Branch um
+eine Operations-API und einen gemeinsamen rotierbaren 256-Bit-Schluessel
+erweitert. Fuer den aktuellen Namen `MAHLEOS_REWIRE_API_KEY`, die neuen V1-
+Schemas und das Aktivierungsgate gilt
+`docs/mahleos-handoff/19-MAHLEOS-READ-API-CONTRACT.md`. Die folgenden Abschnitte
+7 und Aktivierungsreihenfolge dokumentieren weiterhin den damaligen Stand.
+
 Status: lokaler Integrationskandidat auf
 `codex/tracking-evidence-hardening-20260720`. Keine Migration, Edge Function,
 Umgebungsvariable oder Datenveraenderung wurde auf Production angewendet.
