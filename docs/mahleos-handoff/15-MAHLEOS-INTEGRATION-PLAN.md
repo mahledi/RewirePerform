@@ -1,7 +1,11 @@
 # MahleOS Integration Plan
 
-Status: Entwurf. Ein enger Data-Lock-Lesevertrag ist lokal implementiert und
-getestet; keine Verbindung, kein Secret und kein Production-Deploy ist aktiviert.
+Status: RewirePerform-seitiger Read-only Integrationskandidat ist lokal
+implementiert und getestet. Er trennt aktuelle Operations-Daten von gesperrter
+Evidence. Keine Verbindung, kein Secret und kein Production-Deploy ist aktiviert.
+
+Der verbindliche technische Vertrag steht in
+`19-MAHLEOS-READ-API-CONTRACT.md`.
 
 ## Ziel
 
@@ -18,6 +22,9 @@ MahleOS soll RewirePerform-Kontext dauerhaft lesen und sichere Aufgaben vorberei
 
 - Repository und freigegebene Dokumente lesen.
 - Git-Status, Tests und offene Doku-Widersprueche melden.
+- nach separater Freigabe aktuelle, strikt aggregierte Operations-Signale ueber
+  `mahleos-read` lesen: Systemgesundheit, Trackingqualitaet, Feedback-Backlog
+  und run-spezifische Pilot Readiness.
 - optional nach separater Freigabe ausschliesslich aktive, aggregierte und
   pruefsummenverifizierte Evidence Data Locks ueber `evidence-read` lesen.
 - keine Live-Production-Tabellen, Secrets oder privaten Athleteninhalte.
@@ -25,9 +32,10 @@ MahleOS soll RewirePerform-Kontext dauerhaft lesen und sichere Aufgaben vorberei
 
 ### Data-Lock-Vertrag
 
-Der lokale Kandidat `evidence-read` ist kein allgemeiner Supabase-Zugang.
-MahleOS darf weder Admin-Login noch Service-Role-Key erhalten. Der einzige
-Maschinenschluessel liegt als Edge-Secret und im macOS Keychain.
+Die lokalen Kandidaten `mahleos-read` und `evidence-read` sind kein allgemeiner
+Supabase-Zugang. MahleOS darf weder Admin-Login noch Service-Role-Key erhalten.
+Der einzige rotierbare Maschinenschluessel liegt als Edge-Secret und im macOS
+Keychain.
 
 Erlaubte Antwort:
 
@@ -106,4 +114,8 @@ Freigabepunkt fuer Commit/Push/Deploy
 
 ## Integrationsreife
 
-Read-only R1 ist nach Mahles Review dieses Packs realistisch. Schreibende oder autonome Integration bleibt blockiert, bis Projekt-ID/Production-Stand, aktuelle Prioritaet, Account-Loeschung, Minderjaehrigen-Consent und aktive Regeldateien geklaert sind.
+MahleOS kann den lokalen Adapter jetzt gegen die dokumentierten V1-Schemas und
+Mocks bauen. Ein echter Production-Read bleibt blockiert, bis Migration,
+Machine-Key und beide Functions separat freigegeben, aktiviert und negativ
+verifiziert sind. Schreibende oder autonome RewirePerform-Aktionen bleiben
+ausgeschlossen.

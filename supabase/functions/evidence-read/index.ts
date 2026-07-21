@@ -5,9 +5,13 @@
  * stored in the Edge Function environment and in MahleOS Keychain, never in a
  * browser or repository. Live athlete tables are not queried here.
  */
-import { adminClient } from "../_shared/minorGuardian.ts";
+import { authenticateMahleOsMachine } from "../_shared/mahleOsMachineAuth.ts";
+import {
+  readBoundedRequestText,
+  RequestBodyTooLargeError,
+} from "../_shared/boundedRequestBody.ts";
+import { serviceClient } from "../_shared/supabaseService.ts";
 
-const encoder = new TextEncoder();
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const SPORT_CATEGORIES = new Set([
   "invasion_team_sport",
@@ -26,6 +30,13 @@ const SPORT_LEVELS = new Set([
   "semi_pro",
   "pro",
   "college",
+]);
+const ALLOWED_BODY_KEYS = new Set([
+  "lock_id",
+  "scope_type",
+  "program_run_id",
+  "sport_category",
+  "sport_level",
 ]);
 
 type RequestBody = {
@@ -46,32 +57,8 @@ const responseHeaders = {
 const jsonResponse = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: responseHeaders });
 
-const digest = async (value: string) =>
-  new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
-
-const constantTimeEqual = (left: Uint8Array, right: Uint8Array) => {
-  if (left.length !== right.length) return false;
-  let difference = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    difference |= left[index] ^ right[index];
-  }
-  return difference === 0;
-};
-
-const authenticateMachine = async (req: Request) => {
-  const configuredKey = Deno.env.get("MAHLEOS_EVIDENCE_API_KEY")?.trim() ?? "";
-  if (configuredKey.length < 32) return "service_not_configured" as const;
-
-  const authorization = req.headers.get("Authorization") ?? "";
-  const suppliedKey = authorization.replace(/^Bearer\s+/iu, "");
-  if (!suppliedKey) return "unauthorized" as const;
-
-  const [expectedDigest, suppliedDigest] = await Promise.all([
-    digest(configuredKey),
-    digest(suppliedKey),
-  ]);
-  return constantTimeEqual(expectedDigest, suppliedDigest) ? null : "unauthorized" as const;
-};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 const optionalUuid = (value: unknown) => {
   if (value === undefined || value === null || value === "") return null;
@@ -83,7 +70,7 @@ Deno.serve(async (req) => {
     return jsonResponse(405, { error: "method_not_allowed" });
   }
 
-  const authenticationError = await authenticateMachine(req);
+  const authenticationError = await authenticateMahleOsMachine(req);
   if (authenticationError) {
     return jsonResponse(authenticationError === "service_not_configured" ? 503 : 401, {
       error: authenticationError,
@@ -97,21 +84,29 @@ Deno.serve(async (req) => {
 
   let rawBody: string;
   try {
-    rawBody = await req.text();
-  } catch {
+    rawBody = await readBoundedRequestText(req, 4096);
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return jsonResponse(413, { error: "request_too_large" });
+    }
     return jsonResponse(400, { error: "invalid_request" });
   }
 
-  if (encoder.encode(rawBody).byteLength > 4096) {
-    return jsonResponse(413, { error: "request_too_large" });
-  }
-
-  let body: RequestBody;
+  let parsedBody: unknown;
   try {
-    body = JSON.parse(rawBody) as RequestBody;
+    parsedBody = JSON.parse(rawBody);
   } catch {
     return jsonResponse(400, { error: "invalid_json" });
   }
+
+  if (
+    !isRecord(parsedBody)
+    || Object.keys(parsedBody).some((key) => !ALLOWED_BODY_KEYS.has(key))
+  ) {
+    return jsonResponse(400, { error: "invalid_request" });
+  }
+
+  const body = parsedBody as RequestBody;
 
   const lockId = optionalUuid(body.lock_id);
   const programRunId = optionalUuid(body.program_run_id);
@@ -137,7 +132,7 @@ Deno.serve(async (req) => {
 
   const requestId = crypto.randomUUID();
   try {
-    const { data, error } = await adminClient().rpc("read_evidence_data_lock_for_export", {
+    const { data, error } = await serviceClient().rpc("read_evidence_data_lock_for_export", {
       _request_id: requestId,
       _client_id: "mahleos-v1",
       _lock_id: lockId,

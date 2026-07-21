@@ -5,6 +5,12 @@ import { describe, expect, it } from "vitest";
 const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 const edgeSource = () => readRepoFile("supabase/functions/evidence-read/index.ts");
+const machineAuthSource = () => readRepoFile(
+  "supabase/functions/_shared/mahleOsMachineAuth.ts",
+);
+const machineAuthCoreSource = () => readRepoFile(
+  "supabase/functions/_shared/mahleOsMachineAuthCore.ts",
+);
 const apiMigration = () => readRepoFile(
   "supabase/migrations/20260720082953_add_evidence_read_api_contract.sql",
 );
@@ -15,13 +21,19 @@ const runEvidenceMigration = () => readRepoFile(
 describe("read-only machine Evidence API contract", () => {
   it("requires a dedicated machine secret and performs constant-time authentication", () => {
     const source = edgeSource();
+    const auth = machineAuthSource();
+    const authCore = machineAuthCoreSource();
     const config = readRepoFile("supabase/config.toml");
 
-    expect(source).toContain('Deno.env.get("MAHLEOS_EVIDENCE_API_KEY")');
-    expect(source).toContain("configuredKey.length < 32");
-    expect(source).toContain("constantTimeEqual");
-    expect(source).toContain('crypto.subtle.digest("SHA-256"');
-    expect(source).toContain('authorization.replace(/^Bearer\\s+/iu, "")');
+    expect(source).toContain('authenticateMahleOsMachine(req)');
+    expect(auth).toContain('Deno.env.get("MAHLEOS_REWIRE_API_KEY")');
+    expect(auth).toContain('Deno.env.get("MAHLEOS_REWIRE_API_KEY_PREVIOUS")');
+    expect(authCore).toContain("MACHINE_KEY_PATTERN");
+    expect(authCore).toContain("{64}");
+    expect(authCore).toContain("constantTimeEqual");
+    expect(authCore).toContain('crypto.subtle.digest("SHA-256"');
+    expect(authCore).toContain("/^Bearer ([a-f0-9]{64})$/iu");
+    expect(source).not.toContain("MAHLEOS_EVIDENCE_API_KEY");
     expect(config).toContain("[functions.evidence-read]\nverify_jwt = false");
   });
 
@@ -30,7 +42,8 @@ describe("read-only machine Evidence API contract", () => {
 
     expect(source).toContain('req.method !== "POST"');
     expect(source).toContain('contentType !== "application/json"');
-    expect(source).toContain("encoder.encode(rawBody).byteLength > 4096");
+    expect(source).toContain("readBoundedRequestText(req, 4096)");
+    expect(source).toContain("ALLOWED_BODY_KEYS");
     expect(source).toContain('"Cache-Control": "no-store"');
     expect(source).toContain('"Referrer-Policy": "no-referrer"');
     expect(source).not.toContain("Access-Control-Allow-Origin");

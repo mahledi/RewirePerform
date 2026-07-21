@@ -137,3 +137,4 @@ Scope verstanden, Source of Truth gelesen, minimales konsistentes Diff, Privacy/
 - `src/lib/dailyTracking.ts`
 - neueste Migrationen in `supabase/migrations`
 - `src/test/privacyBoundaries.test.ts`
+- `docs/mahleos-handoff/19-MAHLEOS-READ-API-CONTRACT.md`
