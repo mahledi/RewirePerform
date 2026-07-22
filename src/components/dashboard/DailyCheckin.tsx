@@ -33,7 +33,7 @@ import {
   type MicroAdjustmentOutput,
 } from "@/lib/microAdjustment";
 import { pulseQuestionsByContext } from "@/lib/dayContext";
-import { captureAppError } from "@/lib/monitoring";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
@@ -611,6 +611,18 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               responseDurationMs: transferPulseResponseDurationMs,
             }
           : undefined,
+      });
+      await trackAppEvent({
+        eventName: "daily_checkin_saved",
+        status: "success",
+        role,
+        route: "/dashboard",
+        isTest: isTestUser,
+        metadata: {
+          day_number: resolved.matrix.dayNumber,
+          event_type: eventType,
+          stage: "atomic_tracking",
+        },
       });
     } catch (error) {
       setSaving(false);

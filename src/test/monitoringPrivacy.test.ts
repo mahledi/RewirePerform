@@ -11,7 +11,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { captureAppError, sanitizeMonitoringMetadata } from "@/lib/monitoring";
+import { captureAppError, sanitizeMonitoringMetadata, trackAppEvent } from "@/lib/monitoring";
 
 describe("monitoring privacy boundary", () => {
   beforeEach(() => {
@@ -72,6 +72,37 @@ describe("monitoring privacy boundary", () => {
     expect(serializedPayload).not.toContain("private athlete answer");
     expect(serializedPayload).not.toContain("sensitive detail");
     expect(serializedPayload).not.toContain("draft=private");
+  });
+
+  it("records a successful check-in without private athlete content", async () => {
+    await trackAppEvent({
+      eventName: "daily_checkin_saved",
+      status: "success",
+      role: "athlete",
+      route: "/dashboard?draft=private",
+      isTest: false,
+      metadata: {
+        day_number: 4,
+        event_type: "training",
+        stage: "atomic_tracking",
+      },
+    });
+
+    expect(mocks.insert).toHaveBeenCalledWith({
+      event_name: "daily_checkin_saved",
+      status: "success",
+      role: "athlete",
+      team_id: null,
+      route: "/dashboard",
+      error_code: null,
+      is_test: false,
+      metadata: {
+        day_number: 4,
+        event_type: "training",
+        stage: "atomic_tracking",
+      },
+    });
+    expect(JSON.stringify(mocks.insert.mock.calls[0][0])).not.toContain("draft=private");
   });
 
   it("does not break the user flow or expose provider error details", async () => {
