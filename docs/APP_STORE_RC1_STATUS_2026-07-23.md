@@ -7,8 +7,9 @@ nicht fuer TestFlight oder App Review freigegeben.
 
 Dieser Bericht trennt Code- und Build-Evidenz von Production-Aktivierung,
 echten Nutzerablaeufen, Apple-Distribution und externer Rechtspruefung. Es
-erfolgten kein Push, keine Production-Migration, kein App-Store-Connect-Upload
-und keine Einreichung.
+erfolgten kein Push, kein App-Store-Connect-Upload und keine Einreichung. Die
+einzige Production-Aenderung in diesem RC-Block ist die ausdruecklich
+freigegebene Coach-Haertungsmigration.
 
 ## 1. Kandidat
 
@@ -52,8 +53,11 @@ verifiziert.
 - globale Reduced-Motion-Unterstuetzung und gepruefte grosse Systemschrift.
 
 Die Migration
-`supabase/migrations/20260723101114_harden_public_coach_access.sql` liegt nur im
-RC und wurde nicht auf Production angewendet.
+`supabase/migrations/20260723101114_harden_public_coach_access.sql` ist in
+Production unter Version `20260723151225` aktiv. Der abschliessende Postflight
+bestaetigt unveraendert 1 Admin-, 1 Coach- und 10 Athletenrollen sowie 2 Teams.
+Die Audit-Tabelle ist leer und die transaktionalen Negativtests haben keine
+synthetischen Nutzer oder Teams hinterlassen.
 
 ## 3. Gruene technische Gates
 
@@ -71,6 +75,7 @@ RC und wurde nicht auf Production angewendet.
 | Xcode | Xcode 26.6, iOS SDK 26.5, Team `F7A976G38N`, signierter arm64-Archive-Build gruen |
 | Codesign | `--deep --strict` bestanden; Bundle-ID, Version, Build und Geraetefamilien korrekt |
 | Echtes iPhone 13 | finaler RC erfolgreich installiert; automatischer Starttest wartet nur auf ein entsperrtes Geraet |
+| Production-Coach-Haertung | Migration `20260723151225` aktiv; manipulierte Rollenmetadaten, alte Coach-Codes, direkte Coach-Rollenvergabe, unberechtigte Teamerstellung und nicht administrative Freigaben live negativ getestet und blockiert |
 | Production-Dependencies | `npm audit --omit=dev`: 0 bekannte Schwachstellen |
 | Diff-Hygiene | `git diff --check` gruen |
 
@@ -113,20 +118,6 @@ veraendert. Vor TestFlight braucht dieser konkrete Build einen isolierten,
 reproduzierbaren Realgeraete-Nachtest mit gesicherten Logs; Timing-Aenderungen
 auf Verdacht sind ausgeschlossen.
 
-### P1: Oeffentliche Coach-Haertung ist noch nicht in Production
-
-Der read-only Production-Abgleich bestaetigt weiterhin:
-
-- `handle_new_user_role()` vertraut dort noch auf manipulierbare
-  Rollenmetadaten;
-- `join_team_by_code` akzeptiert dort noch den alten Coach-Code;
-- authentifizierte Konten koennen dort noch direkt Teams erstellen.
-
-Damit ist Production bis zur separat freigegebenen Migration und einem
-anschliessenden negativen Live-Test nicht fuer eine oeffentliche Registrierung
-freigegeben. Bereits bestehende echte Coach-Konten werden von der vorbereiteten
-Migration nicht entfernt.
-
 ### Apple-Distribution
 
 Das signierte Archiv ist gruen. Der lokale App-Store-Export stoppt jedoch
@@ -159,7 +150,11 @@ Vor Production-Aenderungen muss jeweils der reale Aufrufer-, RLS- und
 Performancepfad nachgewiesen werden. Der neue Coach-Freigabeweg prueft
 `auth.uid()`, verlangt eine bestehende Adminrolle, setzt einen festen
 `search_path`, entzieht `PUBLIC`/`anon` die Ausfuehrung und wird durch negative
-SQL-Tests abgesichert.
+SQL-Tests abgesichert. Die Advisor-Hinweise fuer
+`find_coach_access_candidate` und `approve_coach_access` sind bewusst
+akzeptiert: `authenticated` benoetigt den RPC-Zugang, waehrend beide Funktionen
+vor jedem privilegierten Zugriff serverseitig die Adminrolle pruefen. Ein
+synthetischer Athlet konnte beide Wege in Production nicht ausnutzen.
 
 Der vollstaendige Dependency-Audit meldet zwei Dev-Tooling-Befunde im
 Vite-/esbuild-Pfad. Der automatische Fix wuerde ein ungeprueftes
@@ -173,8 +168,8 @@ App-Store-Einreichungsreife. Die naechste kontrollierte Reihenfolge ist:
 
 1. Apple-Distribution in Xcode aktivieren und lokalen App-Store-Export
    wiederholen.
-2. Separate Freigabe fuer die Production-Migration einholen, anwenden und
-   Rollen-Eskalation live negativ testen.
+2. Den offenen Flugmodus-Kaltstart auf dem exakten RC isoliert und mit
+   gesicherten Logs reproduzieren oder schliessen.
 3. Echte iPhone-/iPad-Rollenmatrix sowie Loesch- und Minderjaehrigenfaelle
    abschliessen.
 4. Externe Rechtspruefung und Store-Metadaten finalisieren.
