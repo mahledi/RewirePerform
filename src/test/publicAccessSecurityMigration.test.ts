@@ -53,6 +53,10 @@ describe("public access hardening migration", () => {
 
     expect(approvalFunction).toContain("'admin'::public.app_role");
     expect(approvalFunction).toContain("target_email_not_confirmed");
+    expect(approvalFunction).toContain("team_already_has_different_coach");
+    expect(approvalFunction).toMatch(
+      /UPDATE public\.teams t[\s\S]*SET created_by = _user_id/,
+    );
     expect(approvalFunction).toContain("INSERT INTO public.team_members");
     expect(approvalFunction).toContain("INSERT INTO public.coach_access_audit");
     expect(migration).toMatch(

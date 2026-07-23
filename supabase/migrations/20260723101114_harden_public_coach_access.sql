@@ -268,6 +268,7 @@ DECLARE
   previous_role public.app_role;
   resolved_team_id uuid;
   resolved_team_name text;
+  existing_team_owner_id uuid;
   normalized_team_name text := NULLIF(trim(COALESCE(_new_team_name, '')), '');
   normalized_team_sport text := NULLIF(trim(COALESCE(_new_team_sport, '')), '');
   audit_action text;
@@ -335,8 +336,8 @@ BEGIN
   END IF;
 
   IF _team_id IS NOT NULL THEN
-    SELECT t.id, t.name
-    INTO resolved_team_id, resolved_team_name
+    SELECT t.id, t.name, t.created_by
+    INTO resolved_team_id, resolved_team_name, existing_team_owner_id
     FROM public.teams t
     WHERE t.id = _team_id
       AND COALESCE(t.is_archived, false) = false
@@ -344,6 +345,26 @@ BEGIN
 
     IF resolved_team_id IS NULL THEN
       RAISE EXCEPTION 'active_team_not_found' USING ERRCODE = 'P0002';
+    END IF;
+
+    IF existing_team_owner_id IS DISTINCT FROM _user_id
+       AND EXISTS (
+         SELECT 1
+         FROM public.user_roles owner_role
+         WHERE owner_role.user_id = existing_team_owner_id
+           AND owner_role.role = 'coach'::public.app_role
+       ) THEN
+      RAISE EXCEPTION 'team_already_has_different_coach'
+        USING ERRCODE = '23505';
+    END IF;
+
+    -- Existing coach policies are intentionally ownership-bound. Admin-owned,
+    -- athlete-owned or orphaned teams are handed over atomically so the newly
+    -- approved coach receives the complete, existing coach permission set.
+    IF existing_team_owner_id IS DISTINCT FROM _user_id THEN
+      UPDATE public.teams t
+      SET created_by = _user_id
+      WHERE t.id = resolved_team_id;
     END IF;
   ELSE
     INSERT INTO public.teams (name, sport, created_by)

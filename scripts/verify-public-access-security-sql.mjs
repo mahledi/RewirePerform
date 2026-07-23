@@ -57,6 +57,14 @@ const membershipsFor = async (userId) => {
   return result.rows.map((row) => row.team_id);
 };
 
+const ownerFor = async (teamId) => {
+  const result = await db.query(
+    "SELECT created_by::text FROM public.teams WHERE id = $1::uuid",
+    [teamId],
+  );
+  return result.rows[0]?.created_by ?? null;
+};
+
 try {
   await db.exec(`
     CREATE ROLE anon;
@@ -271,6 +279,10 @@ try {
        ($2::uuid, 'Team Two', 'Boxen', $3::uuid, 'ATH456', 'COA456')`,
     [ids.teamOne, ids.teamTwo, ids.admin],
   );
+  await db.query(
+    "UPDATE public.teams SET created_by = $1::uuid WHERE id = $2::uuid",
+    [ids.coach, ids.teamOne],
+  );
 
   await setActor(ids.athlete);
   const athleteJoin = await db.query(
@@ -341,6 +353,10 @@ try {
       JSON.stringify([ids.teamTwo]),
     "Athlete memberships must not survive coach approval",
   );
+  assert(
+    await ownerFor(ids.teamTwo) === ids.candidate,
+    "Admin-owned team must be handed over to the approved coach",
+  );
 
   await expectFailure(
     () =>
@@ -371,12 +387,30 @@ try {
   );
   await db.query(
     "SELECT public.approve_coach_access($1::uuid, $2::uuid, null, null)",
-    [ids.coach, ids.teamTwo],
+    [ids.coach, ids.teamOne],
   );
   assert(
     JSON.stringify(await membershipsFor(ids.coach)) ===
-      JSON.stringify([ids.teamOne, ids.teamTwo]),
-    "An existing coach should keep existing team assignments",
+      JSON.stringify([ids.teamOne]),
+    "An existing coach should keep an existing owned team assignment",
+  );
+
+  await expectFailure(
+    () =>
+      db.query(
+        "SELECT public.approve_coach_access($1::uuid, $2::uuid, null, null)",
+        [ids.coach, ids.teamTwo],
+      ),
+    "team_already_has_different_coach",
+  );
+  assert(
+    JSON.stringify(await membershipsFor(ids.coach)) ===
+      JSON.stringify([ids.teamOne]),
+    "A team owned by another coach must not be reassigned",
+  );
+  assert(
+    await ownerFor(ids.teamTwo) === ids.candidate,
+    "Rejected reassignment must preserve the current coach owner",
   );
 
   const audit = await db.query(

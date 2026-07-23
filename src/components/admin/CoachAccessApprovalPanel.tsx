@@ -111,7 +111,10 @@ const CoachAccessApprovalPanel = ({
     setApproving(false);
 
     if (error) {
-      toast.error("Die Coach-Freigabe konnte nicht abgeschlossen werden.");
+      const message = error.message.includes("team_already_has_different_coach")
+        ? "Dieses Team ist bereits einem anderen Coach zugeordnet."
+        : "Die Coach-Freigabe konnte nicht abgeschlossen werden.";
+      toast.error(message);
       return;
     }
 
@@ -264,7 +267,7 @@ const CoachAccessApprovalPanel = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Coach-Zugang verbindlich freigeben?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {candidate.full_name} erhält Coach-Rechte und wird dem gewählten Team zugeordnet. Dieser Schritt wird im Audit-Protokoll festgehalten.
+                        {candidate.full_name} erhält Coach-Rechte und wird dem gewählten Team als verantwortlicher Coach zugeordnet. Ein bestehendes Team kann nicht von einem anderen Coach übernommen werden. Dieser Schritt wird im Audit-Protokoll festgehalten.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

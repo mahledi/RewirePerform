@@ -37,6 +37,9 @@ verifiziert.
 - serverseitige Abwehr manipulierter Rollenmetadaten und alter Coach-Codes;
 - admin-geschuetzte, atomare Coach-Freigabe mit Teamzuordnung und minimiertem
   Audit-Eintrag;
+- kontrollierte Eigentumsuebergabe admin-gefuehrter oder verwaister Teams an
+  den freigegebenen Coach; Teams eines anderen Coaches koennen nicht
+  uebernommen werden;
 - unveraenderter Bestandsschutz fuer bereits bestehende Coach-Konten;
 - lokale Spracherkennung mit Tipp-Fallback und angepassten iOS-Hinweisen;
 - Abgleich von Privacy Manifest, oeffentlicher Datenschutzerklaerung,
@@ -56,7 +59,7 @@ RC und wurde nicht auf Production angewendet.
 
 | Gate | Ergebnis |
 |---|---|
-| Vollstaendige CI | 75 Testdateien, 377 Tests, Typecheck, Production-Build und alle SQL-/Tracking-/Evidence-/Minor-/MahleOS-/Access-/Deletion-Gates gruen |
+| Vollstaendige CI | 75 Testdateien, 378 Tests, Typecheck, Production-Build und alle SQL-/Tracking-/Evidence-/Minor-/MahleOS-/Access-/Deletion-Gates gruen |
 | Lint | 0 Fehler, 15 bereits bestehende gepruefte Warnungen |
 | Browser-E2E | 66 bestanden, 4 erwartete browserbedingte Offline-Skips; Chromium, iPhone-WebKit und iPad-WebKit jeweils hoch und quer |
 | iPad-Elternfreigabe | finaler WebKit-Ablauf nach der Interaktionskorrektur 20 von 20 Mal hintereinander gruen |
@@ -99,6 +102,16 @@ Privacy Report:
 - enthaelt weder Sentry noch `Crash Data`.
 
 ## 5. Echte Release-Stopper
+
+### P1: Flugmodus-Kaltstart erneut rot gemeldet
+
+Nach den zuvor drei gruenen echten Offline-Reconnects wurde der
+Flugmodus-Kaltstart am 23. Juli auf dem iPhone erneut als rot gemeldet. Der
+Fehler ist damit nicht geschlossen. Der Reconnect-, Startup- und native
+Supabase-Transport wurde in diesem Coach-Haertungsblock bewusst nicht erneut
+veraendert. Vor TestFlight braucht dieser konkrete Build einen isolierten,
+reproduzierbaren Realgeraete-Nachtest mit gesicherten Logs; Timing-Aenderungen
+auf Verdacht sind ausgeschlossen.
 
 ### P1: Oeffentliche Coach-Haertung ist noch nicht in Production
 

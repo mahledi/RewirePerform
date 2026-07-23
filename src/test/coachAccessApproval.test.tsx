@@ -116,4 +116,42 @@ describe("manual coach access approval", () => {
     expect(screen.queryByRole("button", { name: "Coach-Zugang freigeben" })).not.toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
   });
+
+  it("explains when an existing team already belongs to another coach", async () => {
+    mocks.rpc
+      .mockResolvedValueOnce({
+        data: {
+          user_id: "00000000-0000-4000-8000-000000000012",
+          email: "candidate@example.com",
+          full_name: "Coach Candidate",
+          email_confirmed: true,
+          role: "athlete",
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: "team_already_has_different_coach" },
+      });
+
+    render(<CoachAccessApprovalPanel teams={[]} onApproved={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText("E-Mail des bestehenden Kontos"), {
+      target: { value: "candidate@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Prüfen" }));
+
+    await screen.findByText("Coach Candidate");
+    fireEvent.change(screen.getByLabelText("Teamname"), {
+      target: { value: "RC Team" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Coach-Zugang freigeben" }));
+    fireEvent.click(screen.getByRole("button", { name: "Freigeben" }));
+
+    await waitFor(() => {
+      expect(mocks.toastError).toHaveBeenCalledWith(
+        "Dieses Team ist bereits einem anderen Coach zugeordnet.",
+      );
+    });
+  });
 });
