@@ -88,8 +88,10 @@ test("guardian decision is personalized, explicit and responsive", async ({ page
   await expect(pilot).not.toBeChecked();
   await expect(declaration).not.toBeChecked();
   await expect(page.getByRole("button", { name: "Zugang erlauben" })).toBeDisabled();
-  await declaration.check();
-  await product.check();
+  await declaration.click();
+  await expect(declaration).toBeChecked();
+  await product.click();
+  await expect(product).toBeChecked();
   await expect(page.getByRole("button", { name: "Zugang erlauben" })).toBeEnabled();
   await expectNoHorizontalOverflow(page);
   await expectPrimaryTouchTargets(page);

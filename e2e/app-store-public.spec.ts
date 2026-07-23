@@ -45,7 +45,9 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await page.goto("/auth");
   await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Datenschutz" })).toHaveAttribute("href", "/privacy");
-  await expect(page.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
+  await expect(
+    page.getByLabel("Rechtliches und Hilfe").getByRole("link", { name: "Support" }),
+  ).toHaveAttribute("href", "/support");
 
   await page.getByRole("button", { name: /Allein starten/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
@@ -54,6 +56,101 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await expect(page.getByLabel("Passwort")).toHaveAttribute("autocomplete", "new-password");
   await expectNoHorizontalOverflow(page);
   await capture(page, testInfo, "auth-signup");
+});
+
+test("public introduction completes without collecting personal data", async ({ page }, testInfo) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.goto("/welcome");
+  await page.evaluate(() => window.localStorage.clear());
+  await page.reload();
+
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Ein klarer Ablauf für deine mentale Performance.",
+    }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+  await expectNoHorizontalOverflow(page);
+  await capture(page, testInfo, "introduction-program");
+
+  await page.getByRole("button", { name: "Weiter" }).click();
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Training, Wettkampf und Ruhetag bleiben verschieden.",
+    }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+  await expectNoHorizontalOverflow(page);
+  await capture(page, testInfo, "introduction-day-types");
+
+  await page.getByRole("button", { name: "Weiter" }).click();
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Deine persönlichen Inhalte bleiben privat.",
+    }),
+  ).toBeVisible();
+  await expect(page.getByText(/Journaltexte, Freitexte, rohe Antworten/)).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+  await expectNoHorizontalOverflow(page);
+  await capture(page, testInfo, "introduction-privacy");
+
+  await page.getByRole("button", { name: "RewirePerform starten" }).click();
+  await expect(page).toHaveURL(/\/auth$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Allein starten/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Team beitreten/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Team erstellen/ })).toHaveCount(0);
+  await expect(page.getByText(/Coach-Zugänge werden/)).toBeVisible();
+
+  const storedValues = await page.evaluate(() =>
+    Object.fromEntries(
+      Array.from({ length: window.localStorage.length }, (_, index) => {
+        const key = window.localStorage.key(index) ?? "";
+        return [key, window.localStorage.getItem(key)];
+      }),
+    ),
+  );
+  expect(storedValues).toEqual({ "rewireperform:public-onboarding": "1" });
+  expect(pageErrors).toEqual([]);
+});
+
+test("public introduction remains accessible with reduced motion and large text", async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/welcome");
+  await page.evaluate(() => {
+    window.localStorage.clear();
+    document.documentElement.style.fontSize = "150%";
+  });
+  await page.reload();
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "150%";
+  });
+
+  expect(await page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Ein klarer Ablauf für deine mentale Performance.",
+    }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Seite 1 von 3")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Weiter" })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  const accessibilityTree = await page.locator("main").ariaSnapshot();
+  expect(accessibilityTree).toContain("Ein klarer Ablauf für deine mentale Performance.");
+  expect(accessibilityTree).toContain("Weiter");
+  await capture(page, testInfo, "introduction-large-text-reduced-motion");
+
+  await page.getByRole("button", { name: "Weiter" }).click();
+  await page.getByRole("button", { name: "Weiter" }).click();
+  await expect(page.getByRole("button", { name: "RewirePerform starten" })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
 });
 
 test.describe("email confirmation", () => {

@@ -1,10 +1,16 @@
 # Entscheidungsvorlage: Aufbewahrung und Loeschung
 
-Stand: 15. Juli 2026
+Stand: 23. Juli 2026
 
 Sentry-Dashboard- und Dekommissionierungsnachtrag: 18. Juli 2026
 
 Status: konkret vorgeschlagen, noch nicht rechtlich/operativ freigegeben
+
+Technischer Nachtrag: Das echte Production-Projekt
+`bqsbxesmybthwtxmowfz` wurde am 23. Juli 2026 read-only als gesundes
+Supabase-Free-Projekt in Frankfurt bestätigt. Die unten als technisch aktiv
+markierten Fristen laufen serverseitig; die Backup-Regel bleibt dagegen ein
+noch nicht umgesetztes Betriebs-Gate.
 
 Ziel ist eine Regel, die den 56-Tage-Pilot und serioese spaetere Auswertungen ermoeglicht, aber keine personenbezogenen Daten „auf Vorrat“ behaelt. Vollstaendig anonymisierte Aggregate sind von pseudonymisierten oder nur direkt identifierfreien Datensaetzen zu unterscheiden: Pseudonymisierte Daten bleiben personenbezogen.
 
@@ -13,26 +19,40 @@ Ziel ist eine Regel, die den 56-Tage-Pilot und serioese spaetere Auswertungen er
 | Datenklasse | Startpunkt | Maximale Frist | Loesch-/Sperrregel | Zweck |
 |---|---|---:|---|---|
 | aktiver Account und Programmdaten | Account-Loeschung | sofort im aktiven System | transaktionale Loeschung; kein weiterer Produkt-/Analysezugriff | Betroffenenrecht und Account-Ende |
-| Supabase-managed Backups | Erstellung des Backups | 7 Tage | automatische Rotation; geloeschte Konten duerfen bei Restore nicht wieder aktiv werden | Disaster Recovery |
+| Supabase-managed Backups | providerseitiger Sicherungslauf | keine unbestaetigte Zeilenfrist behaupten | Free bietet keinen fuer RewirePerform nutzbaren automatischen Backupdienst; Pro haelt taegliche Backups 7 Tage; bei Vertragsende sieht der aktuelle DPA nach 30 Tagen Rueckgabefrist die Loeschung aller Covered Data vor | Providerbetrieb/Disaster Recovery |
 | eigene verschluesselte DB-Exports | Erstellung des Exports | 7 Tage | rolling deletion; getrennte Schluessel; Restore nur durch freigegebenen Runbook-Prozess | Free-Plan-Uebergang/Notfall |
 | historische Sentry-Events vor Dekommissionierung | Eventzeitpunkt | providerseitig maximal 30 Tage | keine neuen App-Events nach Deployment; bestehende Events laufen automatisch aus | historische Fehlerdiagnose |
 | `app_event_log` | Eventzeitpunkt | 30 Tage | taeglicher serverseitiger Cleanup | Incident-Diagnose |
-| `notification_log` | Ende des zugehoerigen Programmlaufs | 90 Tage | danach loeschen oder fuer einen genehmigten Evidence-Zweck irreversibel aggregieren | Reminder-/Pilotqualitaet |
+| `notification_log` | Erstellung des Eintrags | 90 Tage | taeglicher serverseitiger Cleanup; keine privaten Inhalte | Reminder-/Pilotqualitaet |
 | Push-Subscription | Opt-out oder Account-Loeschung | sofort | Subscription und Endpoint entfernen | Benachrichtigung |
 | geschlossenes Feedback | Status `resolved`/`closed` | 180 Tage | Inhalt loeschen; nur anonyme Issue-Kategorie behalten | Support/Produktverbesserung |
 | fehlgeschlagener Loeschnachweis | Abschluss/Fehler | 12 Monate | nur Request-ID, Status, Zeitpunkt, minimierter Code; keine E-Mail oder Nutzdaten | Nachweis und Support |
-| Consent-/Guardian-Receipt | Widerruf oder Ende der Verarbeitung | vorgeschlagen 3 Jahre | nur minimierter Nachweis, Version, Scope und Zeitpunkt; Frist rechtlich bestaetigen | Nachweis der Einwilligung |
-| Guardian-Challenge | Ablauf oder Nutzung | 24 Stunden nach Abschluss, spaetestens 7 Tage nach Erstellung | Token-Hash und Zustellmetadaten loeschen; notwendiges Receipt getrennt | Einmal-Autorisierung |
+| Consent-/Guardian-Receipt | Erstellung des Nachweises | technisch 3 Jahre | nur minimierter Nachweis, Version, Scope und Zeitpunkt; Frist rechtlich bestaetigen | Nachweis der Einwilligung |
+| Guardian-Challenge | Erstellung | 7 Tage | verschluesselte Elternadresse, Token-Hash und Zustellmetadaten loeschen; notwendiges Receipt getrennt | Einmal-Autorisierung |
 | personenbezogene Pilot-/Evidence-Rohdaten | finaler Pilotbericht oder Widerruf | konkretes Enddatum im Protokoll, vorgeschlagen hoechstens 12 Monate nach Abschluss | Zweckbindung, pseudonymisiert, Schluessel getrennt; Widerrufsregel anwenden | genehmigte Evaluation |
 | vollstaendig anonyme Gruppenaggregate | irreversible Anonymisierung | keine personenbezogene Frist | Anonymitaet dokumentieren und Re-Identifikationsrisiko pruefen | Langfristige Statistik |
 
-Die Fristen fuer Consent-Nachweise und Evidence-Rohdaten brauchen eine konkrete Rechts-/Studienentscheidung. Sie werden nicht allein aufgrund dieser Vorlage implementiert.
+Die Drei-Jahres-Frist fuer minimierte Consent-Nachweise ist technisch aktiv,
+braucht aber weiterhin eine konkrete Rechtsfreigabe. Die Frist fuer
+Evidence-Rohdaten braucht eine konkrete Rechts-/Pilotentscheidung und wird nicht
+allein aufgrund dieser Vorlage implementiert.
 
 ## 2. Backup-Loeschfrist
 
-Vorgeschlagene harte Regel:
+Verbindliche Regel fuer eigene, von RewirePerform erstellte Exporte:
 
-> Personenbezogene Daten, die aus dem aktiven System geloescht wurden, koennen maximal sieben weitere Kalendertage in verschluesselten, zugriffsgesperrten Backups verbleiben. Sie duerfen in dieser Zeit weder fuer Produkt, Support, Analytics noch Evidence genutzt werden. Nach Ablauf werden sie durch Backup-Rotation geloescht.
+> Ein eigener temporaerer Sicherungsexport darf maximal sieben Kalendertage ab
+> Erstellung verschluesselt und zugriffsgesperrt verbleiben. Er darf in dieser
+> Zeit weder fuer Produkt, Support, Analytics noch Evidence genutzt werden und
+> muss danach nachweisbar geloescht werden.
+
+Diese eigene Frist darf nicht pauschal als Providerfrist bezeichnet werden.
+Supabase dokumentiert fuer Free keinen nutzbaren automatischen Backupdienst und
+fuer Pro taegliche Backups mit sieben Tagen Aufbewahrung. Der aktuelle DPA
+verlangt nach Ende des Vertrags nach einer 30-taegigen Rueckgabefrist die
+Loeschung aller Covered Data. Die konkrete Rotation einer einzelnen im aktiven
+System geloeschten Zeile ist damit nicht bestaetigt und bleibt bis zur
+Provider-/Rechtspruefung ein Release-Gate.
 
 Jeder Restore muss ein Deletion-Replay ausfuehren:
 
@@ -46,14 +66,23 @@ Ohne Deletion-Replay ist ein Backup-Restore fuer einen echten Pilot nicht releas
 
 ## 3. Supabase-Planentscheidung
 
-Supabase dokumentiert aktuell:
+Supabase dokumentiert aktuell, und der Production-Plan wurde am 23. Juli 2026
+read-only als `free` bestätigt:
 
 - Free: keine im Dashboard nutzbaren automatischen Backups; regelmaessige eigene `db dump`-Exports werden empfohlen.
 - Pro: taegliche Backups mit sieben Tagen Aufbewahrung und sieben Tage Log-Retention.
+- DPA bei Vertragsende: 30 Tage Rueckgabefrist, danach Loeschung aller
+  verarbeiteten Covered Data; dies ist keine Zeilen-Backupfrist im laufenden
+  Vertrag.
 
 Fuer interne Entwicklung kann Free ausreichen. Vor einem echten Mannschaftspilot mit Minderjaehrigen ist Pro der konservative Betriebsweg, weil die Sieben-Tage-Backupregel ohne selbst gebaute Backup-Infrastruktur technisch nachvollziehbar wird und das Projekt nicht wegen Inaktivitaet pausiert.
 
 Ein Free-Pilot waere nur vertretbar, wenn vorher ein automatisierter, verschluesselter, getesteter und nach sieben Tagen rotierender Export-/Restore-Prozess existiert. Ein manueller gelegentlicher Dump ist kein belastbarer Pilotbetrieb.
+
+Der vor dem Production-Apply am 14. Juli erstellte verschluesselte Export ist
+vor dem Pilot zu inventarisieren. Er muss entweder nachweisbar geloescht oder
+durch eine dokumentierte Ausnahme mit Verantwortlichem und festem Enddatum neu
+freigegeben werden.
 
 ## 4. Sentry-Aufbewahrung
 
@@ -122,6 +151,7 @@ Vor Implementation auszufuellen:
 
 - Supabase Backups: https://supabase.com/docs/guides/platform/backups
 - Supabase Pricing: https://supabase.com/pricing
+- Supabase DPA: https://supabase.com/downloads/docs/Supabase%2BDPA%2B260601.pdf
 - Apple App Review Guidelines 5.1.1: https://developer.apple.com/app-store/review/guidelines/
 - DSGVO Art. 5, 17 und 25: https://eur-lex.europa.eu/eli/reg/2016/679/oj
 - Sentry GDPR Guidance: https://sentry.io/resources/gdpr/

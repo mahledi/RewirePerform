@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
 import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
+import CoachAccessApprovalPanel from "@/components/admin/CoachAccessApprovalPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
@@ -333,6 +334,7 @@ const Admin = () => {
     { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
+    { id: "access", title: "Coach-Zugänge", description: "Bestehende Konten persönlich prüfen, freigeben und einem Team zuordnen.", icon: Shield },
     { id: "evidence", title: "Coach-Feedback", description: "Teamweite Pre/Mid/Post-Daten und beobachtete Veränderung.", icon: BarChart3 },
     { id: "pilot", title: "Pilot Readiness", description: "Program Runs, Startfreigabe und operative Datenintegrität.", icon: ShieldCheck },
     { id: "nlz", title: "NLZ Evidence", description: "Interner Dossierstand und Outcome-Matrix.", icon: ShieldCheck },
@@ -543,10 +545,11 @@ const Admin = () => {
           </div>
         ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-11 w-full gap-1`}>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 w-full gap-1`}>
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
+            <TabsTrigger value="access">Coach-Zugänge</TabsTrigger>
             <TabsTrigger value="evidence">Coach-Feedback</TabsTrigger>
             <TabsTrigger value="pilot">Pilot Readiness</TabsTrigger>
             <TabsTrigger value="nlz">NLZ Evidence</TabsTrigger>
@@ -807,6 +810,16 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* COACH ACCESS */}
+          <TabsContent value="access" className="mt-4">
+            <CoachAccessApprovalPanel
+              teams={teams.map((team) => ({ id: team.id, name: team.name }))}
+              onApproved={() => {
+                void loadAll();
+              }}
+            />
           </TabsContent>
 
           {/* EVIDENCE */}

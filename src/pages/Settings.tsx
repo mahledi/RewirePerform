@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { motion } from "framer-motion";
-import { ArrowLeft, Bug, ChevronRight, CircleUserRound, HelpCircle, Lightbulb, Loader2, MessageCircle, MessageSquare, Send, Settings2, Smartphone } from "lucide-react";
+import { ArrowLeft, BookOpen, Bug, ChevronRight, CircleUserRound, HelpCircle, Lightbulb, Loader2, MessageCircle, MessageSquare, Send, Settings2, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -131,6 +131,23 @@ const Settings = () => {
               <p className="mt-1 truncate text-sm text-muted-foreground">{user?.email ?? "Account verwalten"}</p>
             </div>
             <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+          </button>
+        </motion.section>
+
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
+          <button
+            type="button"
+            onClick={() => navigate("/welcome?replay=1&return=%2Fsettings")}
+            className="flex w-full items-center gap-3 rounded-lg border border-border bg-card p-5 text-left transition-colors hover:bg-secondary/30"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <BookOpen className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-heading text-base font-semibold">Einführung ansehen</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Programm, Tagestypen und Privatsphäre</p>
+            </div>
+            <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
           </button>
         </motion.section>
 

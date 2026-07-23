@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, Shield, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
+import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
@@ -20,7 +20,7 @@ import {
 } from "@/lib/authEmailFlow";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
-type Intent = "solo" | "join" | "create";
+type Intent = "solo" | "join";
 type TeamJoinStatus = "idle" | "joining" | "error";
 
 const joinTeamByCode = async (rawCode: string) => {
@@ -32,7 +32,7 @@ const joinTeamByCode = async (rawCode: string) => {
   const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
     _code: code,
   });
-  const result = joinResult as { success?: boolean; role?: "athlete" | "coach"; error?: string } | null;
+  const result = joinResult as { success?: boolean; role?: "athlete"; error?: string } | null;
 
   if (joinError) {
     console.error("Team join error:", joinError);
@@ -49,7 +49,7 @@ const joinTeamByCode = async (rawCode: string) => {
     };
   }
 
-  return { success: true as const, role: result.role ?? "athlete" };
+  return { success: true as const };
 };
 
 const Auth = () => {
@@ -174,7 +174,7 @@ const Auth = () => {
     }
 
     toast.success("E-Mail bestätigt und Teambeitritt abgeschlossen.");
-    navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
+    navigate("/questionnaire", { replace: true });
   }, [confirmedTeamJoinCode, navigate]);
 
   useEffect(() => {
@@ -220,7 +220,7 @@ const Auth = () => {
           return;
         }
         toast.success("Teambeitritt abgeschlossen.");
-        navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
+        navigate("/questionnaire", { replace: true });
         setLoading(false);
         return;
       }
@@ -260,13 +260,11 @@ const Auth = () => {
 
     setLoading(true);
 
-    const initialRole: "athlete" | "coach" = intent === "create" ? "coach" : "athlete";
-
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName.trim(), role: initialRole },
+        data: { full_name: fullName.trim() },
         emailRedirectTo: emailRedirectTo(),
       },
     });
@@ -302,8 +300,6 @@ const Auth = () => {
       return;
     }
 
-    let effectiveRole: "athlete" | "coach" = initialRole;
-
     if (intent === "join") {
       const join = await joinTeamByCode(teamCode);
       if (!join.success) {
@@ -311,18 +307,11 @@ const Auth = () => {
         setLoading(false);
         return;
       }
-      effectiveRole = join.role;
     }
 
     toast.success("Konto erstellt! Willkommen.");
 
-    if (intent === "create") {
-      navigate("/coach");
-    } else if (intent === "join") {
-      navigate(effectiveRole === "coach" ? "/coach" : "/questionnaire");
-    } else {
-      navigate("/questionnaire");
-    }
+    navigate("/questionnaire");
     setLoading(false);
   };
 
@@ -392,12 +381,12 @@ const Auth = () => {
         return;
       }
       toast.success("E-Mail bestätigt und Teambeitritt abgeschlossen.");
-      navigate(join.role === "coach" ? "/coach" : "/questionnaire", { replace: true });
+      navigate("/questionnaire", { replace: true });
       return;
     }
 
     toast.success("E-Mail bestätigt.");
-    navigate(intent === "create" ? "/coach" : "/questionnaire", { replace: true });
+    navigate("/questionnaire", { replace: true });
   };
 
   const verifyRecoveryCode = async () => {
@@ -645,13 +634,15 @@ const Auth = () => {
               description="Du hast einen Teamcode von deinem Coach oder Trainer erhalten."
               onClick={() => pickIntent("join")}
             />
-            <IntentCard
-              icon={<Shield className="w-5 h-5" />}
-              title="Team erstellen"
-              description="Du bist Coach und möchtest dein Team aufbauen und begleiten."
-              onClick={() => pickIntent("create")}
-            />
           </div>
+
+          <p className="mt-6 rounded-lg border border-border/60 bg-secondary/30 px-4 py-3 text-center text-xs leading-relaxed text-muted-foreground">
+            Coach-Zugänge werden nach einer Anfrage über den{" "}
+            <Link to="/support" className="font-medium text-primary hover:underline">
+              Support
+            </Link>{" "}
+            persönlich geprüft und freigegeben.
+          </p>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
             Bereits registriert?{" "}
@@ -741,12 +732,10 @@ const Auth = () => {
   // ─── SIGNUP ───────────────────────────────────────────────────
   const intentTitle =
     intent === "solo" ? "Du startest allein."
-    : intent === "join" ? "Du trittst einem Team bei."
-    : "Du erstellst dein Team.";
+    : "Du trittst einem Team bei.";
   const intentSub =
     intent === "solo" ? "Dein personalisiertes Mental-Performance-Programm beginnt gleich."
-    : intent === "join" ? "Gib deinen Teamcode ein — dieser bestimmt deine Rolle (Athlet:in oder Co-Coach)."
-    : "Du legst dein Team direkt nach der Anmeldung im Coach-Bereich an.";
+    : "Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast.";
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
@@ -801,14 +790,8 @@ const Auth = () => {
                 />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 px-1">
-                Dein Code legt fest, ob du als Athlet:in oder Co-Coach beitrittst.
+                Der Teamcode verbindet dein Athletenkonto nach der E-Mail-Bestätigung mit dem Team.
               </p>
-            </div>
-          )}
-
-          {intent === "create" && (
-            <div className="rounded-xl bg-primary/5 border border-primary/20 px-4 py-3 text-xs text-muted-foreground">
-              Nach der Anmeldung kommst du direkt in dein Coach-Dashboard und kannst dein Team anlegen.
             </div>
           )}
 

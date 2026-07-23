@@ -112,6 +112,15 @@ describe("auth email confirmation", () => {
 
     const signUpCall = mocks.signUp.mock.calls[0]?.[0];
     expect(signUpCall.options.emailRedirectTo).toContain("/auth?redirect=%2Fadmin%2Fqa");
+    expect(signUpCall.options.data).toEqual({ full_name: "Test Person" });
+    expect(signUpCall.options.data).not.toHaveProperty("role");
+  });
+
+  it("does not offer public coach registration", () => {
+    renderAuth("/auth");
+
+    expect(screen.queryByRole("button", { name: /Team erstellen/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/Coach-Zugänge werden.*persönlich geprüft/)).toBeInTheDocument();
   });
 
   it("can resend the confirmation using the same safe redirect", async () => {
@@ -214,6 +223,20 @@ describe("auth email confirmation", () => {
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).toHaveBeenCalledWith("join_team_by_code", { _code: "ABC123" });
+  });
+
+  it("never trusts a role returned by a manipulated team-join response", async () => {
+    mocks.authState.user = { id: "user-1" };
+    mocks.authState.role = "athlete";
+    mocks.rpc.mockResolvedValue({
+      data: { success: true, role: "coach" },
+      error: null,
+    });
+
+    renderAuth("/auth?intent=join&code=ABC123");
+
+    expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
+    expect(screen.queryByText("Coach-Bereich geöffnet")).not.toBeInTheDocument();
   });
 
   it("offers a retry when the confirmed team join cannot be completed immediately", async () => {

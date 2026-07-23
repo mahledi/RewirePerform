@@ -54,10 +54,12 @@ for (const dataType of [
   "NSPrivacyCollectedDataTypeOtherUserContent",
   "NSPrivacyCollectedDataTypeCustomerSupport",
   "NSPrivacyCollectedDataTypeProductInteraction",
-  "NSPrivacyCollectedDataTypeCrashData",
   "NSPrivacyCollectedDataTypeOtherDiagnosticData",
 ]) {
   requireText("Privacy manifest", files.privacy, `<string>${dataType}</string>`);
+}
+if (files.privacy.includes("<string>NSPrivacyCollectedDataTypeCrashData</string>")) {
+  failures.push("Privacy manifest: Crash Data must remain absent while the app ships no crash collector");
 }
 if (!/<key>NSPrivacyTracking<\/key>\s*<false\s*\/>/.test(files.privacy)) {
   failures.push("Privacy manifest: NSPrivacyTracking must be false");

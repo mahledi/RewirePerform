@@ -21,7 +21,7 @@ interface QATeam {
 
 interface CreatedCohort {
   password: string;
-  team: { id: string; name: string; access_code: string; coach_access_code: string; program_start_date: string };
+  team: { id: string; name: string; access_code: string; program_start_date: string };
   accounts: { role: string; email: string; user_id: string }[];
 }
 
@@ -225,9 +225,8 @@ const AdminQA = () => {
               </Button>
             </div>
             <div className="mb-4 text-xs text-muted-foreground">
-              Team: <span className="text-foreground">{lastCohort.team.name}</span> · Spieler-Code:{" "}
-              <code className="px-1.5 py-0.5 rounded bg-muted text-foreground">{lastCohort.team.access_code}</code> · Coach-Code:{" "}
-              <code className="px-1.5 py-0.5 rounded bg-muted text-foreground">{lastCohort.team.coach_access_code}</code>
+              Team: <span className="text-foreground">{lastCohort.team.name}</span> · Athleten-Code:{" "}
+              <code className="px-1.5 py-0.5 rounded bg-muted text-foreground">{lastCohort.team.access_code}</code>
             </div>
             <div className="overflow-x-auto">
             <table className="min-w-[640px] w-full text-sm">

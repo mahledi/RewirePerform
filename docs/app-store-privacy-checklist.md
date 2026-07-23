@@ -1,6 +1,6 @@
 # App Store Privacy Checklist
 
-Stand: 2026-07-18
+Stand: 2026-07-23
 
 Diese Checkliste hält fest, wie RewirePerform die App-Store-Privacy-Themen für Pilotbetrieb und spätere iOS/WebView-Veröffentlichung behandelt. Sie ersetzt keine finale Rechtsprüfung, ist aber die technische Produktlinie für Entwicklung, QA und App-Store-Antworten.
 
@@ -81,6 +81,50 @@ erhalten. `app_event_log` bleibt error-only / incident-only. Es speichert nur
 normalisierte Fehlercodes, bereinigte Routen und allow-listete technische
 Metadaten. Normale Aktivität gehört nicht in das Incident-System.
 
+Der native RC deklariert deshalb `Other Diagnostic Data`, aber kein `Crash Data`.
+Es gibt kein Werbe- oder Cross-App-Tracking.
+
+## Aufbewahrung und Backups
+
+Die technisch aktiven Fristen im Production-Schema sind:
+
+- Guardian-Challenges und darin verschlüsselte Elternadressen: sieben Tage;
+- verbrauchte, widerrufene oder abgelaufene Guardian-Zugriffstoken: sieben Tage
+  nach dem jeweiligen Abschluss;
+- minimierte Einwilligungsnachweise: drei Jahre;
+- `app_event_log`: 30 Tage nach Erstellung;
+- `notification_log`: 90 Tage nach Erstellung.
+
+Das Production-Projekt `bqsbxesmybthwtxmowfz` läuft am 23. Juli 2026 im
+Supabase-Free-Plan. Damit steht derzeit kein von RewirePerform nutzbarer
+automatischer Backupdienst zur Verfügung. Supabase empfiehlt für Free-Projekte
+eigene Offsite-Exporte; Pro stellt tägliche Backups mit sieben Tagen
+Aufbewahrung bereit. Diese Pro-Frist darf nicht als aktuelle Free-Plan-Frist
+ausgegeben werden.
+
+Für eigene, ausdrücklich freigegebene temporäre Migrations- oder
+Wiederherstellungsexporte gilt als technische Produktregel eine maximale
+Aufbewahrung von sieben Kalendertagen. Der am 14. Juli vor einer
+Production-Migration erstellte verschlüsselte Export muss vor dem Pilot
+inventarisiert und entweder nachweisbar gelöscht oder durch eine dokumentierte
+Ausnahmeentscheidung mit neuem Enddatum behandelt werden. Bis dahin ist die
+Sieben-Tage-Regel nicht vollständig operationalisiert.
+
+Der aktuelle Supabase-Auftragsverarbeitungsvertrag sieht bei Beendigung des
+Vertrags eine Rückgabefrist von 30 Tagen und danach die Löschung aller
+verarbeiteten personenbezogenen Daten vor. Diese providervertragliche
+Beendigungsfrist ist keine Aussage darüber, wie lange eine einzelne im aktiven
+System gelöschte Zeile in internen Sicherheitskopien enthalten sein kann. Diese
+Zeilen-Löschfrist bleibt Gegenstand der Provider-/Rechtsprüfung und wird
+öffentlich nicht als unbestätigte Sieben-Tage-Frist dargestellt.
+
+Bei Kontolöschung werden personenbezogene Daten unmittelbar aus dem aktiven
+System entfernt. Vollständig anonyme Aggregate dürfen nur bestehen bleiben,
+wenn kein Rückschluss auf Einzelpersonen mehr möglich ist. Providerseitige
+Sicherheits- oder Disaster-Recovery-Kopien sind vom aktiven Produktzugriff
+getrennt und dürfen nicht als Produkt-, Support-, Tracking- oder Evidence-Daten
+weiterverwendet werden.
+
 ## App Store Connect Vorbereitung
 
 Vor finalem Submit erneut prüfen:
@@ -92,16 +136,22 @@ Vor finalem Submit erneut prüfen:
 - Datenschutz-URL und User-Privacy-Choices-URL final bereitstellen.
 - Consent-Screen und Settings-Schalter auf iPhone testen.
 
-Aktuelle Release-Blocker nach lokalem Hardening:
+Vor Upload oder Veröffentlichung noch offene Gates:
 
-- Production-Aktivierung und reale RLS-/Grant-/JWT-Nachpruefung der lokalen
-  Alters-, Consent- und Aggregat-Haertung;
-- fachlich-rechtliche Freigabe des Minderjaehrigen-/Evidence-Vertrags und eine
-  verbindliche Widerrufs-/Aufbewahrungsregel fuer Data Locks;
-- finaler Abgleich des Privacy-Texts mit realen Provider-, Log-, Backup- und
-  Aufbewahrungsprozessen;
-- verifizierter finaler Build ohne Sentry-SDK, DSN oder Runtime-Capture;
-- Abgleich von Manifest, Xcode Privacy Report und App Store Connect auf dem final signierten Build.
+- Die lokale Härtung gegen öffentliche Coach-/Admin-Rechteausweitung ist in
+  isoliertem PostgreSQL grün, aber noch nicht in Production aktiviert. Die
+  Aktivierung benötigt eine separate Production-Freigabe und einen
+  anschließenden realen RLS-/Grant-/JWT-Nachtest.
+- Die bestehende Minderjährigen-, Tracking- und Evidence-Technik benötigt vor
+  der öffentlichen manuellen Veröffentlichung eine fokussierte externe
+  Rechtsprüfung.
+- Backup-/Restore-Verfahren für den echten Team-Pilot verbindlich festlegen und
+  testen; den verschlüsselten Export vom 14. Juli inventarisieren und fristgerecht
+  löschen oder mit dokumentiertem Enddatum neu freigeben.
+- Manifest, erzeugten Xcode Privacy Report und App-Store-Connect-Antworten auf
+  dem final signierten, unveränderten RC abgleichen.
+- Reviewer-Konten und Screenshots ausschließlich mit synthetischen Daten
+  erzeugen und prüfen.
 
 ## QA vor Pilot
 

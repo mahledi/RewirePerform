@@ -129,6 +129,44 @@ export type Database = {
           },
         ]
       }
+      coach_access_audit: {
+        Row: {
+          action: string
+          approved_by: string | null
+          created_at: string
+          id: string
+          previous_role: Database["public"]["Enums"]["app_role"] | null
+          target_user_id: string | null
+          team_id: string | null
+        }
+        Insert: {
+          action: string
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          previous_role?: Database["public"]["Enums"]["app_role"] | null
+          target_user_id?: string | null
+          team_id?: string | null
+        }
+        Update: {
+          action?: string
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          previous_role?: Database["public"]["Enums"]["app_role"] | null
+          target_user_id?: string | null
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_access_audit_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_transfer_observations: {
         Row: {
           assignment_id: string
@@ -2251,6 +2289,15 @@ export type Database = {
         Args: { _program_run_id: string }
         Returns: Json
       }
+      approve_coach_access: {
+        Args: {
+          _new_team_name?: string | null
+          _new_team_sport?: string | null
+          _team_id?: string | null
+          _user_id: string
+        }
+        Returns: Json
+      }
       archive_qa_cohort: { Args: { _team_id: string }; Returns: Json }
       assign_team_members_to_program_run: {
         Args: { _program_run_id: string }
@@ -2294,6 +2341,10 @@ export type Database = {
       evidence_eligibility_reason: {
         Args: { _program_instance_id: string; _protocol_version: string }
         Returns: string
+      }
+      find_coach_access_candidate: {
+        Args: { _email: string }
+        Returns: Json
       }
       get_active_team_program_run: { Args: { _team_id: string }; Returns: Json }
       get_admin_evidence_eligibility: {

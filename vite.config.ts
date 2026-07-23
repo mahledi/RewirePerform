@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     server: {
-      host: "::",
+      host: env.DEV_SERVER_HOST?.trim() || "127.0.0.1",
       port: 8080,
       hmr: {
         overlay: false,

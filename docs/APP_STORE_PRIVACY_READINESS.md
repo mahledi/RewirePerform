@@ -21,13 +21,22 @@ cross-app or third-party marketing tracking.
 For App Store Connect privacy labels, assume these are linked to the user because
 they are tied to the account:
 
-- Account/profile basics needed for roles and team membership.
+- Name, email address, and user ID needed for account access, roles, and team
+  membership.
+- Health and fitness information entered in check-ins and questionnaires for
+  app functionality, personalization, and the separately consented analytics
+  purposes represented by the final data flow.
 - Product interaction data: program progress, completions, check-in completion,
   comprehension completion, notification delivery/open/failure status.
 - User content: journal/reflection/questionnaire answers exist in the product,
   but must remain private to the athlete and excluded from coach/admin exports.
+- Customer support content submitted through the support flow.
 - Diagnostics: incident-only system events with normalized error codes and
   allow-listed technical metadata.
+
+The final RC does not contain a crash collector and therefore must not declare
+`Crash Data`. It declares linked `Other Diagnostic Data` for the minimized
+incident events above. Tracking remains `false`.
 
 ## Coach Visibility
 
@@ -51,9 +60,11 @@ Coach-hidden data:
 
 ## iOS/WebView Submit Checklist
 
-- Add/verify `PrivacyInfo.xcprivacy` for the native wrapper and any listed SDKs.
+- Verify `PrivacyInfo.xcprivacy` for the native wrapper and every embedded SDK.
 - Confirm App Store Connect privacy answers match actual collection.
 - Provide Privacy Policy URL and User Privacy Choices URL.
+- Confirm the Xcode Privacy Report contains no Sentry SDK, DSN, crash capture, or
+  undeclared required-reason API.
 - Recheck Apple requirements before submission; Apple can update SDK privacy
   manifest and required-reason API rules.
 

@@ -1,5 +1,9 @@
 # App Store Release Gate - Stand 18. Juli 2026
 
+> Historical snapshot. Superseded by
+> `docs/APP_STORE_RC1_STATUS_2026-07-23.md`. Do not use the red/green status in
+> this document for current release decisions.
+
 Technischer Nachtrag 20. Juli 2026: Fuer die Supabase-Grant-Haertung, den
 serverseitigen Team-Aggregatpfad und atomare Progress-Snapshots existiert jetzt
 ein lokal getesteter Integrationskandidat. Production wurde nicht veraendert.

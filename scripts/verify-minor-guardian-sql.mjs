@@ -24,6 +24,8 @@ const ids = {
   child: "00000000-0000-4000-8000-000000000103",
   blocked: "00000000-0000-4000-8000-000000000104",
   admin: "00000000-0000-4000-8000-000000000105",
+  declinedChild: "00000000-0000-4000-8000-000000000106",
+  stalePolicyChild: "00000000-0000-4000-8000-000000000107",
   adultInstance: "10000000-0000-4000-8000-000000000101",
   teenInstance: "10000000-0000-4000-8000-000000000102",
   childInstance: "10000000-0000-4000-8000-000000000103",
@@ -511,6 +513,14 @@ try {
   const expired = await action("status", ids.child);
   assert(expired.state === "guardian_expired", "Expired links must fail closed without waiting for the retention cron");
 
+  const resendPayload = await action("prepare_resend", ids.child);
+  assert(
+    resendPayload.guardian_email_ciphertext === "encrypted-email-payload-long-enough"
+      && resendPayload.guardian_email_iv === "encrypted-iv-value"
+      && resendPayload.guardian_email_hash === "b".repeat(64),
+    "Resend preparation must recover only the encrypted guardian contact payload",
+  );
+
   await action("start_challenge", ids.child, {
     token_hash: "f".repeat(64),
     guardian_email_ciphertext: "encrypted-email-payload-long-enough",
@@ -518,6 +528,99 @@ try {
     guardian_email_hash: "b".repeat(64),
     guardian_email_mask: "e•••@b•••.de",
   });
+
+  await db.query("INSERT INTO auth.users(id) VALUES ($1), ($2)", [ids.declinedChild, ids.stalePolicyChild]);
+  await db.query(
+    "INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'athlete'), ($2, 'athlete')",
+    [ids.declinedChild, ids.stalePolicyChild],
+  );
+  await db.query(
+    "INSERT INTO public.profiles(id) VALUES ($1), ($2)",
+    [ids.declinedChild, ids.stalePolicyChild],
+  );
+
+  await action("set_age", ids.declinedChild, { age_band: "under_16" });
+  await action("start_challenge", ids.declinedChild, {
+    token_hash: "1".repeat(64),
+    guardian_email_ciphertext: "decline-encrypted-email-payload",
+    guardian_email_iv: "decline-iv-value",
+    guardian_email_hash: "2".repeat(64),
+    guardian_email_mask: "d•••@e•••.de",
+  });
+  const declinedDecision = await action("guardian_decide", null, {
+    token_hash: "1".repeat(64),
+    product_authorized: false,
+    data_contribution_authorized: true,
+    guardian_declaration: true,
+  });
+  assert(declinedDecision.state === "declined", "Guardian product rejection must be stored");
+  const declinedStatus = await action("status", ids.declinedChild);
+  assert(declinedStatus.state === "declined", "Guardian rejection must keep product access closed");
+  assert(
+    declinedStatus.data_contribution_status === "declined",
+    "Guardian rejection must also disable optional data contribution",
+  );
+  assert(
+    await count("minor_auth.guardian_access_tokens", `user_id = '${ids.declinedChild}'`) === 0,
+    "A declined guardian decision must not create a management token",
+  );
+
+  await action("set_age", ids.stalePolicyChild, { age_band: "under_16" });
+  await action("start_challenge", ids.stalePolicyChild, {
+    token_hash: "3".repeat(64),
+    guardian_email_ciphertext: "stale-encrypted-email-payload",
+    guardian_email_iv: "stale-iv-value",
+    guardian_email_hash: "4".repeat(64),
+    guardian_email_mask: "s•••@e•••.de",
+  });
+  const activePolicy = await db.query(
+    "SELECT id FROM minor_auth.policy_versions WHERE jurisdiction = 'DE' AND status = 'active'",
+  );
+  const activePolicyId = activePolicy.rows[0].id;
+  await db.query(
+    "UPDATE minor_auth.policy_versions SET status = 'retired', retired_at = now() WHERE id = $1",
+    [activePolicyId],
+  );
+  await db.query(
+    `INSERT INTO minor_auth.policy_versions(
+       policy_key, jurisdiction, product_version, guardian_notice_version,
+       guardian_decision_version, athlete_assent_version, data_contribution_version,
+       content_hash, effective_from, status
+     ) VALUES (
+       'de_minor_product_test_replacement', 'DE', 'minor_product_test',
+       'guardian_notice_test', 'guardian_decision_test', 'athlete_assent_test',
+       'data_contribution_test', $1, now(), 'active'
+     )`,
+    ["5".repeat(64)],
+  );
+  await expectFailure(
+    () => action("guardian_decide", null, {
+      token_hash: "3".repeat(64),
+      product_authorized: true,
+      data_contribution_authorized: true,
+      guardian_declaration: true,
+      management_token_hash: "6".repeat(64),
+    }),
+    "guardian_policy_replaced",
+  );
+  const staleLookup = await action("challenge_lookup", null, { token_hash: "3".repeat(64) });
+  assert(staleLookup.state === "invalid", "A challenge for a replaced policy must fail closed");
+  const staleStatus = await action("status", ids.stalePolicyChild);
+  assert(
+    staleStatus.state === "policy_refresh_required",
+    "A participant bound to a replaced policy must require a fresh decision",
+  );
+  await db.exec(
+    "UPDATE minor_auth.policy_versions SET status = 'retired', retired_at = now() WHERE policy_key = 'de_minor_product_test_replacement'",
+  );
+  await db.query(
+    "UPDATE minor_auth.policy_versions SET status = 'active', retired_at = NULL WHERE id = $1",
+    [activePolicyId],
+  );
+  await db.query(
+    "DELETE FROM auth.users WHERE id IN ($1, $2)",
+    [ids.declinedChild, ids.stalePolicyChild],
+  );
 
   const guardianDecision = await action("guardian_decide", null, {
     token_hash: "f".repeat(64),

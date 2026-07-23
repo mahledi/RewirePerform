@@ -236,19 +236,24 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Speicherdauer</h2>
             <p>
               Programmdaten bleiben gespeichert, solange dein Konto aktiv ist. Bei der Kontolöschung werden dein
-              Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. Soweit Daten vorübergehend in
-              technisch notwendigen Sicherungskopien oder Sicherheitsprotokollen verbleiben, sind sie vom aktiven
-              Produktdatenbestand getrennt und für Produkt- oder Analysezwecke gesperrt. Sie werden gelöscht, sobald der
-              Sicherungs- oder Sicherheitszweck und etwaige gesetzliche Aufbewahrungspflichten entfallen. Bereits zuvor mit
-              Einwilligung gebildete Gruppenstatistiken können bestehen bleiben, wenn sie vollständig aggregiert sind und
-              keinen Rückschluss auf einzelne Personen zulassen.
+              Zugang und die personenbezogenen Daten direkt aus dem aktiven System entfernt. RewirePerform betreibt derzeit
+              keinen regelmäßigen eigenen Datenbank-Backupdienst. Falls für eine freigegebene Migration oder
+              Wiederherstellungsprüfung vorübergehend ein eigener verschlüsselter Sicherungsexport erstellt wird, bleibt er
+              vom Produktzugriff getrennt und wird spätestens sieben Kalendertage nach seiner Erstellung gelöscht.
+              Soweit gelöschte Daten vorübergehend in nicht direkt zugänglichen providerseitigen technischen Sicherungs-
+              oder Betriebsdaten enthalten sind, werden sie nicht für Produkt, Support, Analyse oder Evidence genutzt und
+              nach den vertraglichen Providerfristen gelöscht. Bei einer Beendigung des Supabase-Vertrags sieht der aktuelle
+              Auftragsverarbeitungsvertrag nach einer Rückgabefrist von 30 Tagen die Löschung aller dort verarbeiteten
+              personenbezogenen Daten vor. Diese Providerfrist ist von der unmittelbaren Löschung im aktiven System zu
+              unterscheiden. Bereits zuvor mit Einwilligung gebildete Gruppenstatistiken können bestehen bleiben, wenn sie
+              vollständig aggregiert sind und keinen Rückschluss auf einzelne Personen zulassen.
             </p>
             <ul className="mt-3 space-y-1">
-              <li>– Einladungsdaten für die Entscheidung der sorgeberechtigten Person: spätestens sieben Tage nach Erstellung, Nutzung oder Ablauf</li>
+              <li>– Einladungsdaten einschließlich der verschlüsselten Elternadresse: spätestens sieben Tage nach Erstellung der Einladung</li>
               <li>– gehashter Widerrufslink der sorgeberechtigten Person: bis zu 370 Tage aktiv; nach Nutzung, Widerruf oder Ablauf Löschung innerhalb von sieben Tagen</li>
               <li>– minimierte Einwilligungsnachweise ohne E-Mail-Adresse der sorgeberechtigten Person: bis zu drei Jahre ab der jeweiligen Entscheidung</li>
               <li>– interne technische Fehlerereignisse: höchstens 30 Tage</li>
-              <li>– Push-Zustellprotokolle: höchstens 90 Tage nach Ende des zugehörigen Programmlaufs</li>
+              <li>– Push-Zustellprotokolle: höchstens 90 Tage nach ihrer Erstellung</li>
               <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls; bei Widerruf werden personenbezogene Transferdaten unmittelbar aus der Pilot-Auswertung entfernt</li>
               <li>– vollständig anonyme Aggregate: solange sie keinen Personenbezug mehr besitzen</li>
             </ul>

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdirSync, mkdtempSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -63,9 +63,73 @@ const targetScreenshotPath = (key) => {
   return `${stem}-${key}${extension}`;
 };
 
-const verifySimulatorTarget = async ({ key, label, deviceType, runtime, appPath }) => {
+const inspectCenterPixels = (label, screenshotPath, centerCropPath, centerBmpPath) => {
+  rmSync(centerCropPath, { force: true });
+  rmSync(centerBmpPath, { force: true });
+
+  const cropResult = run("sips", [
+    "--cropToHeightWidth",
+    "500",
+    "500",
+    screenshotPath,
+    "--out",
+    centerCropPath,
+  ]);
+  if (!cropResult.ok || !existsSync(centerCropPath)) {
+    throw new Error(`${label} screenshot center extraction failed\n${cropResult.output}`);
+  }
+
+  const bmpResult = run("sips", ["-s", "format", "bmp", screenshotPath, "--out", centerBmpPath]);
+  if (!bmpResult.ok || !existsSync(centerBmpPath)) {
+    throw new Error(`${label} screenshot pixel conversion failed\n${bmpResult.output}`);
+  }
+
+  const bitmap = readFileSync(centerBmpPath);
+  const pixelOffset = bitmap.readUInt32LE(10);
+  const bitsPerPixel = bitmap.readUInt16LE(28);
+  const bytesPerPixel = bitsPerPixel / 8;
+  if (![3, 4].includes(bytesPerPixel) || pixelOffset >= bitmap.length) {
+    throw new Error(`${label} screenshot pixel format unsupported: ${bitsPerPixel} bits`);
+  }
+
+  let sampled = 0;
+  let darkPixels = 0;
+  let brandPixels = 0;
+  let luminanceTotal = 0;
+  for (let offset = pixelOffset; offset + bytesPerPixel <= bitmap.length; offset += bytesPerPixel * 97) {
+    const blue = bitmap[offset];
+    const green = bitmap[offset + 1];
+    const red = bitmap[offset + 2];
+    const luminance = (red * 0.2126) + (green * 0.7152) + (blue * 0.0722);
+    luminanceTotal += luminance;
+    if (luminance < 235) darkPixels += 1;
+    if (green > red + 20 && green > blue + 20 && green > 80) brandPixels += 1;
+    sampled += 1;
+  }
+
+  const darkPixelRatio = sampled ? darkPixels / sampled : 0;
+  const brandPixelRatio = sampled ? brandPixels / sampled : 0;
+  const meanLuminance = sampled ? luminanceTotal / sampled : 255;
+  return {
+    cropSize: statSync(centerCropPath).size,
+    darkPixelRatio,
+    brandPixelRatio,
+    meanLuminance,
+    visiblyNonblank: brandPixelRatio >= 0.001,
+  };
+};
+
+const verifySimulatorTarget = async ({
+  key,
+  label,
+  deviceType,
+  runtime,
+  appPath,
+  uiPreferences = {},
+}) => {
   const screenshotPath = targetScreenshotPath(key);
   const centerCropPath = path.join(derivedDataPath, `simulator-center-${key}.png`);
+  const centerBmpPath = path.join(derivedDataPath, `simulator-center-${key}.bmp`);
   let simulatorId = null;
 
   rmSync(screenshotPath, { force: true });
@@ -83,6 +147,26 @@ const verifySimulatorTarget = async ({ key, label, deviceType, runtime, appPath 
 
     requireSuccess(`${label} simulator boot requested`, run("xcrun", ["simctl", "boot", simulatorId]));
     requireSuccess(`${label} simulator boot completed`, run("xcrun", ["simctl", "bootstatus", simulatorId, "-b"]));
+
+    for (const [preference, value] of Object.entries(uiPreferences)) {
+      requireSuccess(
+        `${label} ${preference} set to ${value}`,
+        run("xcrun", ["simctl", "ui", simulatorId, preference, value]),
+      );
+      const readPreference = run("xcrun", ["simctl", "ui", simulatorId, preference]);
+      requireSuccess(`${label} ${preference} readback`, readPreference);
+      if (readPreference.output.trim() !== value) {
+        throw new Error(
+          `${label} ${preference} readback mismatch: expected ${value}, received ${readPreference.output.trim()}`,
+        );
+      }
+    }
+
+    if (Object.keys(uiPreferences).length > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 25_000));
+      console.log(`PASS ${label} accessibility system overlays settled before app launch`);
+    }
+
     requireSuccess(`${label} app installed`, run("xcrun", ["simctl", "install", simulatorId, appPath]));
     requireSuccess(
       `${label} app launched`,
@@ -90,7 +174,7 @@ const verifySimulatorTarget = async ({ key, label, deviceType, runtime, appPath 
     );
 
     const launchStartedAt = Date.now();
-    let centerCropSize = 0;
+    let centerInspection = null;
     let visibleAfterMs = null;
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -100,30 +184,24 @@ const verifySimulatorTarget = async ({ key, label, deviceType, runtime, appPath 
         throw new Error(`${label} screenshot failed\n${screenshotResult.output}`);
       }
 
-      rmSync(centerCropPath, { force: true });
-      const cropResult = run("sips", [
-        "--cropToHeightWidth",
-        "500",
-        "500",
-        screenshotPath,
-        "--out",
-        centerCropPath,
-      ]);
-      if (!cropResult.ok || !existsSync(centerCropPath)) {
-        throw new Error(`${label} screenshot center extraction failed\n${cropResult.output}`);
-      }
-
-      centerCropSize = statSync(centerCropPath).size;
-      if (centerCropSize >= 10_000) {
+      centerInspection = inspectCenterPixels(label, screenshotPath, centerCropPath, centerBmpPath);
+      if (centerInspection.visiblyNonblank) {
         visibleAfterMs = Date.now() - launchStartedAt;
         break;
       }
     }
 
     console.log(`PASS ${label} simulator screenshot captured: ${screenshotPath}`);
-    console.log(`PASS ${label} screenshot center extracted: ${centerCropSize} bytes`);
+    console.log(
+      `PASS ${label} screenshot center inspected: ${centerInspection?.cropSize ?? 0} bytes, `
+      + `${((centerInspection?.brandPixelRatio ?? 0) * 100).toFixed(2)}% brand pixels, `
+      + `${((centerInspection?.darkPixelRatio ?? 0) * 100).toFixed(1)}% non-white pixels`,
+    );
     if (visibleAfterMs === null) {
-      throw new Error(`${label} app surface stayed blank for 20 seconds (${centerCropSize} byte center crop)`);
+      throw new Error(
+        `${label} app surface stayed visually blank for 20 seconds `
+        + `(mean luminance ${(centerInspection?.meanLuminance ?? 255).toFixed(1)})`,
+      );
     }
     console.log(`PASS ${label} app surface became visibly nonblank after ${visibleAfterMs} ms`);
 
@@ -131,6 +209,13 @@ const verifySimulatorTarget = async ({ key, label, deviceType, runtime, appPath 
     const stabilizedScreenshot = run("xcrun", ["simctl", "io", simulatorId, "screenshot", screenshotPath]);
     if (!stabilizedScreenshot.ok || !existsSync(screenshotPath) || statSync(screenshotPath).size < 10_000) {
       throw new Error(`${label} stabilized screenshot failed\n${stabilizedScreenshot.output}`);
+    }
+    const stabilizedInspection = inspectCenterPixels(label, screenshotPath, centerCropPath, centerBmpPath);
+    if (!stabilizedInspection.visiblyNonblank) {
+      throw new Error(
+        `${label} stabilized app surface is visually blank `
+        + `(mean luminance ${stabilizedInspection.meanLuminance.toFixed(1)})`,
+      );
     }
     console.log(`PASS ${label} stabilized screenshot captured after system overlays settled`);
     requireSuccess(
@@ -221,6 +306,30 @@ try {
     deviceType: iPadType,
     runtime,
     appPath,
+  });
+  await verifySimulatorTarget({
+    key: "accessibility-iphone",
+    label: `${iPhoneType.name} accessibility`,
+    deviceType: iPhoneType,
+    runtime,
+    appPath,
+    uiPreferences: {
+      appearance: "dark",
+      content_size: "accessibility-extra-extra-extra-large",
+      increase_contrast: "enabled",
+    },
+  });
+  await verifySimulatorTarget({
+    key: "accessibility-ipad",
+    label: `${iPadType.name} accessibility`,
+    deviceType: iPadType,
+    runtime,
+    appPath,
+    uiPreferences: {
+      appearance: "dark",
+      content_size: "accessibility-extra-extra-extra-large",
+      increase_contrast: "enabled",
+    },
   });
 
   console.log("");
