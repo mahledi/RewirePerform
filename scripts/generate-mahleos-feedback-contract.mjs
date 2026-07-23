@@ -47,7 +47,7 @@ const technicalContext = strictObject(
     online: { type: ["boolean", "null"] },
     app_version: {
       type: "string",
-      pattern: "^[A-Za-z0-9_.:/-]{1,96}$",
+      pattern: "^(?:unknown|[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}(?:\\+[0-9]{1,10})?)$",
     },
   },
 );

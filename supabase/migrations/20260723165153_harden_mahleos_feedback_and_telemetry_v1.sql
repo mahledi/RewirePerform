@@ -107,11 +107,10 @@ BEGIN
       THEN submitted_context->'online'
     ELSE 'null'::jsonb
   END;
-  safe_app_version := CASE
-    WHEN COALESCE(submitted_context->>'app_version', '') ~ '^[A-Za-z0-9_.:/-]{1,96}$'
-      THEN submitted_context->>'app_version'
-    ELSE 'unknown'
-  END;
+  -- Client-supplied release labels are not authoritative. Keeping this value
+  -- fixed also prevents arbitrary identifier-like strings from entering the
+  -- machine-readable feedback channel.
+  safe_app_version := 'unknown';
 
   NEW.id := gen_random_uuid();
   NEW.user_id := actor_id;
@@ -168,6 +167,20 @@ DECLARE
 BEGIN
   IF actor_id IS NULL THEN
     RETURN NEW;
+  END IF;
+
+  PERFORM pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('app-event-log:' || actor_id::text, 0)
+  );
+
+  IF (
+    SELECT COUNT(*)
+    FROM public.app_event_log event_log
+    WHERE event_log.user_id = actor_id
+      AND event_log.created_at >= pg_catalog.clock_timestamp() - interval '1 minute'
+  ) >= 60 THEN
+    RAISE EXCEPTION 'app_event_rate_limited'
+      USING ERRCODE = 'P0001';
   END IF;
 
   IF NEW.event_name NOT IN (
@@ -287,7 +300,10 @@ BEGIN
     ELSE NULL
   END;
   NEW.is_test := derived_is_test;
-  NEW.metadata := safe_metadata;
+  NEW.metadata := safe_metadata || jsonb_build_object(
+    'source_authority',
+    'client_reported_non_authoritative'
+  );
   RETURN NEW;
 END;
 $$;
@@ -365,6 +381,7 @@ DECLARE
 BEGIN
   IF _request_id IS NULL
     OR _client_id <> 'mahleos-feedback-v1'
+    OR _limit IS NULL
     OR _limit NOT BETWEEN 1 AND 25
     OR ((_cursor_created_at IS NULL) <> (_cursor_id IS NULL))
   THEN
@@ -440,7 +457,8 @@ BEGIN
             ELSE 'null'::jsonb
           END,
           'app_version', CASE
-            WHEN COALESCE(f.technical_context->>'app_version', '') ~ '^[A-Za-z0-9_.:/-]{1,96}$'
+            WHEN COALESCE(f.technical_context->>'app_version', '')
+              ~ '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(\+[0-9]{1,10})?$'
               THEN f.technical_context->>'app_version'
             ELSE 'unknown'
           END

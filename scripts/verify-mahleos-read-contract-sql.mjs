@@ -20,6 +20,12 @@ const hardeningMigration = readFileSync(
   resolve("supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql"),
   "utf8",
 );
+const telemetryAuthorityMigration = readFileSync(
+  resolve(
+    "supabase/migrations/20260723172818_harden_mahleos_operational_telemetry_authority_v1.sql",
+  ),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -70,6 +76,7 @@ const ids = {
   pilotUsageMissingRequest: "90000000-0000-4000-8000-000000000316",
   pilotDueMissingRequest: "90000000-0000-4000-8000-000000000317",
   pilotDueCompleteRequest: "90000000-0000-4000-8000-000000000318",
+  clientTelemetryRequest: "90000000-0000-4000-8000-000000000319",
   evidenceLock: "70000000-0000-4000-8000-000000000301",
   qaEvidenceLock: "70000000-0000-4000-8000-000000000302",
   historicalDuplicateInstance: "30000000-0000-4000-8000-000000000390",
@@ -318,6 +325,7 @@ try {
   await db.exec(legacyRunMigration);
   await db.exec(extensionMigration);
   await db.exec(hardeningMigration);
+  await db.exec(telemetryAuthorityMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -576,6 +584,23 @@ try {
   assert(!serializedDaily.includes("PRIVATE-METADATA-CONTENT"), "Technical metadata must not leave RewirePerform");
   assert(!serializedDaily.includes("QA-PRIVATE-FEEDBACK-CONTENT"), "QA feedback must stay excluded");
   assert(!serializedDaily.includes(ids.athletes[0].user), "User IDs must not leave RewirePerform");
+
+  await db.exec(`
+    INSERT INTO public.app_event_log(event_name, status, metadata, is_test)
+    VALUES ('auth_login', 'failed', '{}'::jsonb, false);
+  `);
+  const clientTelemetryHealth = await readAsService({
+    requestId: ids.clientTelemetryRequest,
+    view: "system_health",
+  });
+  assert(
+    clientTelemetryHealth.data.operations_24h.critical_failed_events === 1,
+    "Client-reported critical failures must remain visible as an operational signal",
+  );
+  assert(
+    clientTelemetryHealth.data.status === "YELLOW",
+    "Client-reported telemetry must not independently establish global RED",
+  );
 
   const duplicate = await readAsService({
     requestId: ids.request,

@@ -279,7 +279,7 @@ try {
       JSON.stringify({
         ...context,
         route: "/admin/private",
-        app_version: "unsafe version",
+        app_version: "1.2.3",
       }),
     ],
   );
@@ -297,7 +297,10 @@ try {
   assert(canonicalRow.admin_note === null, "Client admin notes must be cleared");
   assert(canonicalRow.reviewed_at === null, "Client review timestamp must be cleared");
   assert(canonicalRow.technical_context.route === "/settings", "Feedback route must be fixed");
-  assert(canonicalRow.technical_context.app_version === "unknown", "Unsafe version must be dropped");
+  assert(
+    canonicalRow.technical_context.app_version === "unknown",
+    "Client release labels must remain non-authoritative",
+  );
   assert(
     new Date(canonicalRow.created_at).getTime() > new Date("2026-01-01T00:00:00Z").getTime(),
     "Client timestamps must be replaced",
@@ -348,7 +351,8 @@ try {
   assert(
     eventRow.metadata.day_number === 7
       && eventRow.metadata.stage === "daily_checkin"
-      && Object.keys(eventRow.metadata).length === 2,
+      && eventRow.metadata.source_authority === "client_reported_non_authoritative"
+      && Object.keys(eventRow.metadata).length === 3,
     "Only safe telemetry metadata may remain",
   );
 
@@ -358,6 +362,19 @@ try {
        VALUES ('invented_event', 'failed')`,
     ),
     "app_event_name_invalid",
+  );
+
+  await db.exec(`
+    INSERT INTO public.app_event_log(event_name, status, metadata)
+    SELECT 'app_runtime_error', 'success', '{}'::jsonb
+    FROM generate_series(1, 59);
+  `);
+  await expectFailure(
+    () => db.query(
+      `INSERT INTO public.app_event_log(event_name, status)
+       VALUES ('app_runtime_error', 'failed')`,
+    ),
+    "app_event_rate_limited",
   );
   await db.exec("SELECT set_config('request.jwt.claim.sub', '', false)");
 
@@ -416,6 +433,16 @@ try {
   `);
   assert(rateAuditCount.rows[0].count === 1, "Rate-limit audit must be bounded per minute");
 
+  const nullLimit = await db.query(
+    `SELECT public.read_mahleos_feedback_page($1, $2, NULL, NULL, NULL) AS response`,
+    ["90000000-0000-4000-8000-000000000705", "mahleos-feedback-v1"],
+  );
+  const nullLimitResponse = asObject(nullLimit.rows[0].response);
+  assert(
+    nullLimitResponse.ok === false && nullLimitResponse.error === "invalid_request",
+    "A null page limit must fail closed",
+  );
+
   await db.exec(`
     INSERT INTO public.mahleos_feedback_access_log(
       request_id, client_id, outcome, requested_at
@@ -445,6 +472,8 @@ try {
     clientInputCanonicalized: true,
     directIdentifiersRedacted: true,
     telemetryCanonicalized: true,
+    telemetrySourceNonAuthoritative: true,
+    telemetryRateLimitCheck: true,
     auditAppendOnly: true,
     auditRetentionBounded: true,
     rateLimitCheck: true,

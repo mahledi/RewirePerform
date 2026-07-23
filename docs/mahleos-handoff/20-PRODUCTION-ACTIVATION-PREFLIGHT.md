@@ -55,18 +55,27 @@ prevents incomplete operational coverage from being reported as `GREEN`.
 3. Apply `20260721082355_add_mahleos_operational_read_contract.sql`.
 4. Apply `20260721153000_extend_mahleos_operational_read_contract.sql`.
 5. Apply `20260721181524_harden_mahleos_readiness_statuses.sql`.
-6. Recheck function owners, grants, fixed `search_path`, append-only audit
+6. Apply `20260723154047_mahleos_feedback_read_contract_v1.sql`.
+7. Apply `20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql`.
+8. Apply `20260723172818_harden_mahleos_operational_telemetry_authority_v1.sql`.
+9. Recheck function owners, grants, fixed `search_path`, append-only audit
    triggers, RLS and both Supabase advisor classes.
-7. Create one 256-bit machine key outside the repository and store it only as a
-   Supabase Edge secret and in the MahleOS macOS Keychain.
-8. Deploy `mahleos-read` and `evidence-read` from the reviewed commit.
-9. Run the complete negative matrix: no key, wrong key, malformed key, expired
+10. Create separate 256-bit machine keys outside the repository and store them
+    only as Supabase Edge secrets and in the MahleOS macOS Keychain.
+11. Deploy `mahleos-read`, `evidence-read` and `mahleos-feedback-read` from the
+    reviewed commit.
+12. Run the complete negative matrix: no key, wrong key, malformed key, expired
    rotation key, wrong method, wrong media type, oversized body, unknown field,
    unknown view, missing or malformed run ID, unknown run and rate limit.
-10. Run positive synthetic reads for every Operations view and one synthetic,
-    locked Evidence payload. No real athlete payload is needed for activation.
-11. Pin MahleOS to the reviewed producer commit and manifest checksum.
-12. Enable one synthetic MahleOS read. Human review remains required before any
+13. Run positive synthetic reads for every Operations view, one synthetic,
+    locked Evidence payload and one marked synthetic feedback row. No real
+    athlete payload is needed for activation.
+14. Verify the existing daily 30-day app-event cleanup in Production. Schedule
+    the service-only 90-day feedback-access-log cleanup only after a separate
+    retention approval. Do not schedule deletion of resolved feedback until its
+    retention period is explicitly approved.
+15. Pin MahleOS to the reviewed producer commit and both manifest checksums.
+16. Enable one synthetic MahleOS read. Human review remains required before any
     daily automation or external report is enabled.
 
 ## No-false-green acceptance rules
@@ -97,13 +106,13 @@ read helpers remain revoked from `PUBLIC`, `anon`, `authenticated`, and
 ## Dependency audit boundary
 
 `npm audit --omit=dev` reported zero known Production dependency
-vulnerabilities. The full development audit still reports one high Vite finding
-and one moderate transitive esbuild finding. Both concern development tooling
-and are not shipped in the built application, but they remain real technical
-debt. The available automated fix requires a major Vite upgrade and therefore
-belongs in a separate toolchain change with its own browser, PWA and native
-regression gate. A public or network-exposed Vite development server is not an
-acceptable workaround.
+vulnerabilities. The full development audit reports two high findings
+(`vite`, transitive `fast-uri`) and one moderate transitive `esbuild` finding.
+They concern development tooling and are not shipped in the built application,
+but they remain real technical debt. The available automated Vite fix requires
+a major upgrade and therefore belongs in a separate toolchain change with its
+own browser, PWA and native regression gate. A public or network-exposed Vite
+development server is not an acceptable workaround.
 
 ## Stop conditions
 

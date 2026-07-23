@@ -15,7 +15,11 @@ const migrationSource = () => [
   "supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql",
+  "supabase/migrations/20260723172818_harden_mahleos_operational_telemetry_authority_v1.sql",
 ].map(readRepoFile).join("\n");
+const telemetryAuthorityMigrationSource = () => readRepoFile(
+  "supabase/migrations/20260723172818_harden_mahleos_operational_telemetry_authority_v1.sql",
+);
 
 describe("MahleOS operational read contract", () => {
   it("uses one rotatable 256-bit machine credential for both machine endpoints", () => {
@@ -100,6 +104,15 @@ describe("MahleOS operational read contract", () => {
     expect(migration).not.toContain("p.full_name");
     expect(migration).not.toContain("p.email");
     expect(migration).not.toMatch(/jsonb_build_object\(\s*'user_id'/u);
+  });
+
+  it("keeps client-reported telemetry advisory until independently confirmed", () => {
+    const migration = telemetryAuthorityMigrationSource();
+
+    expect(migration).toContain("Client-reported app events are advisory");
+    expect(migration).not.toContain("OR m.critical_failed_events_24h > 0");
+    expect(migration).toContain("OR m.failed_events_24h > 0");
+    expect(migration).toContain("FROM PUBLIC, anon, authenticated, service_role");
   });
 
   it("keeps pilot output count-only and explicitly excludes test data", () => {

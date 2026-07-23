@@ -1,6 +1,7 @@
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
-const SAFE_TOKEN_PATTERN = /^[A-Za-z0-9_.:/-]{1,96}$/;
+const RELEASE_VERSION_PATTERN =
+  /^(?:unknown|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?:\+[0-9]{1,10})?)$/u;
 const RFC3339_TIMESTAMP_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/u;
 const ALLOWED_REQUEST_KEYS = new Set(["cursor", "limit"]);
@@ -169,7 +170,7 @@ const projectTechnicalContext = (value: unknown): FeedbackTechnicalContext | nul
         || /[?#]/u.test(value.route)))
     || (value.online !== null && typeof value.online !== "boolean")
     || typeof value.app_version !== "string"
-    || !SAFE_TOKEN_PATTERN.test(value.app_version)
+    || !RELEASE_VERSION_PATTERN.test(value.app_version)
   ) {
     return null;
   }

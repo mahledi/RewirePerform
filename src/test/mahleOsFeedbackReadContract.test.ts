@@ -98,6 +98,11 @@ describe("MahleOS feedback read contract", () => {
     } as never;
     expect(projectFeedbackReadResult(resultWithUnknownContext)).toBeNull();
 
+    const resultWithIdentifierLikeVersion = validResult();
+    resultWithIdentifierLikeVersion.items[0].technical_context.app_version =
+      "customer:123e4567-e89b-12d3-a456-426614174000";
+    expect(projectFeedbackReadResult(resultWithIdentifierLikeVersion)).toBeNull();
+
     const falselyModelSafe = validResult();
     falselyModelSafe.privacy.model_safe_without_redaction = true;
     expect(projectFeedbackReadResult(falselyModelSafe)).toBeNull();
@@ -127,6 +132,9 @@ describe("MahleOS feedback read contract", () => {
     const hardening = readRepoFile(
       "supabase/migrations/20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql",
     );
+    const retention = readRepoFile(
+      "supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql",
+    );
 
     expect(migration).toContain("mahleos_feedback_access_log_append_only");
     expect(migration).toContain("recent_requests >= 30");
@@ -139,7 +147,13 @@ describe("MahleOS feedback read contract", () => {
     expect(migration).toContain("'model_safe_without_redaction', false");
     expect(hardening).toContain("canonicalize_feedback_insert");
     expect(hardening).toContain("canonicalize_app_event_insert");
+    expect(hardening).toContain("client_reported_non_authoritative");
+    expect(hardening).toContain("app_event_rate_limited");
+    expect(hardening).toContain("OR _limit IS NULL");
     expect(hardening).toContain("cleanup_mahleos_feedback_access_log");
+    expect(retention).toContain("DELETE FROM public.app_event_log ael");
+    expect(retention).toContain("ael.created_at < now() - interval '30 days'");
+    expect(retention).toContain("'SELECT minor_auth.cleanup_retention();'");
     expect(migration).not.toContain("p.full_name");
     expect(migration).not.toContain("p.email");
     expect(migration).not.toMatch(/jsonb_build_object\(\s*'user_id'/u);
