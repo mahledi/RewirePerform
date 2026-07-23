@@ -2,52 +2,62 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMinorAuthorization } from "@/hooks/useMinorAuthorization";
 import AppLoadingShell from "@/components/AppLoadingShell";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import AccessStatusScreen from "@/components/access/AccessStatusScreen";
 
 const MinorAuthorizationGate = ({ children }: { children: React.ReactNode }) => {
-  const { role, loading: authLoading, roleVerified } = useAuth();
-  const { status, loading, error, refresh } = useMinorAuthorization();
+  const {
+    role,
+    loading: authLoading,
+    roleVerified,
+  } = useAuth();
+  const { status, loading, phase, error, refresh } = useMinorAuthorization();
   const location = useLocation();
+
+  const retryAccess = () => void refresh();
+  const checking = loading
+    || phase === "checking_role"
+    || phase === "checking_authorization"
+    || (phase === "idle" && !error);
 
   if (authLoading) return <AppLoadingShell subtitle="Prüfe deine Rolle..." />;
 
   if (!roleVerified || role === null) {
+    if (checking) {
+      return (
+        <AccessStatusScreen
+          checking
+          title="Zugang wird geprüft"
+          message="Wir stellen deine sichere Sitzung wieder her."
+        />
+      );
+    }
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-5 text-foreground">
-        <section className="w-full max-w-md text-center">
-          <AlertTriangle className="mx-auto h-10 w-10 text-amber-500" />
-          <h1 className="mt-5 font-heading text-2xl font-semibold">Rolle konnte nicht sicher geprüft werden</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Geschützte Programmdaten bleiben gesperrt, bis deine Rolle serverseitig bestätigt ist.
-          </p>
-          <Button type="button" className="mt-6" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-4 w-4" />
-            Neu laden
-          </Button>
-        </section>
-      </main>
+      <AccessStatusScreen
+        title="Rolle konnte nicht sicher geprüft werden"
+        message="Deine Daten bleiben geschützt. Stelle die Verbindung wieder her und prüfe den Zugang erneut."
+        onRetry={retryAccess}
+      />
     );
   }
 
   if (role === "coach" || role === "admin") return <>{children}</>;
-  if (loading || (!status && !error)) return <AppLoadingShell subtitle="Prüfe deinen sicheren Zugang..." />;
+  if (checking) {
+    return (
+      <AccessStatusScreen
+        checking
+        title="Zugang wird geprüft"
+        message="Wir prüfen deine Freigabe und öffnen anschließend deinen Bereich."
+      />
+    );
+  }
 
   if (error || !status) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background px-5 text-foreground">
-        <section className="w-full max-w-md text-center">
-          <AlertTriangle className="mx-auto h-10 w-10 text-amber-500" />
-          <h1 className="mt-5 font-heading text-2xl font-semibold">Zugang konnte nicht geprüft werden</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Deine Daten bleiben geschützt. Bitte stelle die Verbindung wieder her und versuche es erneut.
-          </p>
-          <Button type="button" className="mt-6" onClick={() => void refresh()}>
-            <RefreshCw className="h-4 w-4" />
-            Erneut prüfen
-          </Button>
-        </section>
-      </main>
+      <AccessStatusScreen
+        title="Zugang konnte nicht geprüft werden"
+        message="Deine Daten bleiben geschützt. Stelle die Verbindung wieder her und prüfe den Zugang erneut."
+        onRetry={retryAccess}
+      />
     );
   }
 

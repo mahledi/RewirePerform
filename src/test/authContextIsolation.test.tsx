@@ -58,17 +58,24 @@ describe("AuthProvider session isolation", () => {
     mocks.authCallback = null;
     mocks.contextQueries.clear();
     mocks.signOut.mockResolvedValue({ error: null });
-    mocks.from.mockImplementation((table: string) => ({
-      select: () => ({
-        eq: (_column: string, userId: string) => ({
-          maybeSingle: () => {
-            const query = mocks.contextQueries.get(`${table}:${userId}`);
-            if (!query) throw new Error(`Missing mocked query for ${table}:${userId}`);
-            return query;
-          },
-        }),
-      }),
-    }));
+    mocks.from.mockImplementation((table: string) => {
+      let userId = "";
+      const queryBuilder = {
+        select: () => queryBuilder,
+        eq: (_column: string, value: string) => {
+          userId = value;
+          return queryBuilder;
+        },
+        retry: () => queryBuilder,
+        abortSignal: () => queryBuilder,
+        maybeSingle: () => {
+          const query = mocks.contextQueries.get(`${table}:${userId}`);
+          if (!query) throw new Error(`Missing mocked query for ${table}:${userId}`);
+          return query;
+        },
+      };
+      return queryBuilder;
+    });
   });
 
   it("ignores a previous user's context when accounts switch", async () => {
@@ -86,6 +93,7 @@ describe("AuthProvider session isolation", () => {
     await waitFor(() => expect(mocks.from).toHaveBeenCalledTimes(2));
     emitAuth("SIGNED_IN", sessionFor("user-b"));
     await waitFor(() => expect(mocks.from).toHaveBeenCalledTimes(4));
+    expect(screen.getByTestId("auth-state")).toHaveTextContent("user-b|none|real|loading");
 
     await act(async () => {
       roleB.resolve({ data: { role: "coach" }, error: null });
