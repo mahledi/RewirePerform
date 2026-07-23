@@ -14,7 +14,10 @@ import { supabase } from "@/integrations/supabase/client";
 let cache: { userId: string; iso: string; fetchedAt: number } | null = null;
 const TTL_MS = 60_000;
 
-export const getEffectiveTodayISO = async (userId: string | null | undefined): Promise<string> => {
+export const getEffectiveTodayISO = async (
+  userId: string | null | undefined,
+  signal?: AbortSignal,
+): Promise<string> => {
   const realToday = new Date().toISOString().slice(0, 10);
   if (!userId) return realToday;
   const now = Date.now();
@@ -22,7 +25,11 @@ export const getEffectiveTodayISO = async (userId: string | null | undefined): P
     return cache.iso;
   }
   try {
-    const { data, error } = await supabase.rpc("get_effective_today", { _user_id: userId });
+    const query = supabase
+      .rpc("get_effective_today", { _user_id: userId })
+      .retry(false);
+    if (signal) query.abortSignal(signal);
+    const { data, error } = await query;
     if (error || !data) {
       cache = { userId, iso: realToday, fetchedAt: now };
       return realToday;
@@ -31,12 +38,16 @@ export const getEffectiveTodayISO = async (userId: string | null | undefined): P
     cache = { userId, iso, fetchedAt: now };
     return iso;
   } catch {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
     return realToday;
   }
 };
 
-export const getEffectiveTodayDate = async (userId: string | null | undefined): Promise<Date> => {
-  const iso = await getEffectiveTodayISO(userId);
+export const getEffectiveTodayDate = async (
+  userId: string | null | undefined,
+  signal?: AbortSignal,
+): Promise<Date> => {
+  const iso = await getEffectiveTodayISO(userId, signal);
   // Parse as local date (midnight) consistent with date-fns format(d, "yyyy-MM-dd")
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, (m ?? 1) - 1, d ?? 1);

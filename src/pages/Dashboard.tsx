@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, RefreshCw, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen, Hourglass } from "lucide-react";
+import { ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen, Hourglass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
@@ -20,10 +20,30 @@ import { BrandLockup } from "@/components/brand/BrandLogo";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
 import AppLoadingShell from "@/components/AppLoadingShell";
+import AccessStatusScreen from "@/components/access/AccessStatusScreen";
 import { hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
+import {
+  loadDashboardInitialStatus,
+  resolveDashboardProgramStart,
+} from "@/lib/dashboardInitialStatus";
+import {
+  DashboardBootstrapError,
+  loadDashboardBootstrapStages,
+  runDashboardBootstrap,
+} from "@/lib/dashboardBootstrap";
 
 type EventType = "training" | "rest" | "competition";
 type SetupState = "ready" | "setup" | "waiting";
+
+interface DashboardSetupResult {
+  state: SetupState;
+  events: CalendarEvent[];
+  mode: ProgramMode;
+  teamProgramStart: string | null;
+  programStartDate: string | null;
+  competitionDate: string;
+  competitionName: string;
+}
 
 interface CalendarEvent {
   id: string;
@@ -121,6 +141,59 @@ const writeAcknowledgedMissedReviews = (userId: string, instanceId: string | nul
   } catch {
     // localStorage can be unavailable in strict browser modes.
   }
+};
+
+const buildInitialMissedDayReviews = ({
+  userId,
+  instanceId,
+  startDate,
+  referenceDate,
+  completionRows,
+  events,
+}: {
+  userId: string;
+  instanceId: string;
+  startDate: string | null;
+  referenceDate: Date;
+  completionRows: FlameCompletionRow[];
+  events: CalendarEvent[];
+}): MissedDayReview[] => {
+  const dayInfo = getCurrentProgramDay(startDate, referenceDate);
+  if (!startDate || !dayInfo || dayInfo.dayNumber <= 1) return [];
+
+  const completedDays = new Set(
+    completionRows
+      .filter((row) => row.completion_status === "completed")
+      .map((row) => row.day_number),
+  );
+  const acknowledged = readAcknowledgedMissedReviews(userId, instanceId);
+  const start = new Date(`${startDate}T00:00:00`);
+  const reviews: MissedDayReview[] = [];
+
+  for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= 1 && reviews.length < 3; dayNumber -= 1) {
+    if (completedDays.has(dayNumber)) continue;
+    const dayDate = addDays(start, dayNumber - 1);
+    const date = format(dayDate, "yyyy-MM-dd");
+    const key = `${date}:${dayNumber}`;
+    if (acknowledged.has(key)) continue;
+
+    const eventType = events.find((event) => event.date === date)?.event_type ?? "training";
+    const resolved = resolveDay(dayNumber, dayDate, eventType);
+    if (!resolved) continue;
+
+    reviews.push({
+      key,
+      dayNumber,
+      date,
+      eventType,
+      lens: resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens,
+      scienceFact: resolved.content.scienceBite.fact,
+      coreShift: resolved.content.coreShift,
+      tasks: resolved.content.tasks.map((task) => task.title),
+    });
+  }
+
+  return reviews;
 };
 
 // ─── Calendar Setup ─────────────────────────────────────
@@ -388,6 +461,8 @@ const Dashboard = () => {
   const [showCheckin, setShowCheckin] = useState(false);
   const [setupMode, setSetupMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+  const [bootstrapAttempt, setBootstrapAttempt] = useState(0);
   const [syncing, setSyncing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [competitionDate, setCompetitionDate] = useState("");
@@ -459,9 +534,6 @@ const Dashboard = () => {
 
     let cancelled = false;
     const cachedDashboard = getDashboardMemoryCache(user.id);
-    const canUseCachedStatus =
-      Boolean(cachedDashboard) &&
-      Date.now() - (cachedDashboard?.cachedAt ?? 0) < 60_000;
 
     if (cachedDashboard) {
       applyDashboardCache(cachedDashboard);
@@ -470,7 +542,9 @@ const Dashboard = () => {
       setLoading(true);
     }
 
-    const loadCompletedQuestionnaire = async (): Promise<boolean> => {
+    setBootstrapError(null);
+
+    const loadCompletedQuestionnaire = async (signal: AbortSignal): Promise<Analysis | null> => {
       const { data, error } = await supabase
         .from("questionnaire_responses")
         .select("id, analysis, answers, is_complete, instrument_id")
@@ -478,50 +552,100 @@ const Dashboard = () => {
         .eq("is_complete", true)
         .not("analysis", "is", null)
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(5)
+        .retry(false)
+        .abortSignal(signal);
 
-      if (error) {
-        console.error("Error loading completed questionnaire:", error);
-      }
+      if (error) throw error;
 
       const completedOnboarding = (data ?? []).find(hasValidCompletedOnboarding);
-
-      if (completedOnboarding?.analysis) {
-        if (cancelled) return false;
-        setAnalysis(completedOnboarding.analysis as unknown as Analysis);
-        return true;
-      } else {
-        if (!cancelled) {
-          toast.info("Bitte schließe zuerst dein Startprofil ab.");
-          navigate("/questionnaire", { replace: true });
-        }
-        return false;
-      }
+      return completedOnboarding?.analysis
+        ? completedOnboarding.analysis as unknown as Analysis
+        : null;
     };
 
     const initializeDashboard = async () => {
-      const hasCompletedQuestionnaire = await loadCompletedQuestionnaire();
-      if (!hasCompletedQuestionnaire || cancelled) return;
-      const resolvedToday = await getEffectiveTodayDate(user.id).catch(() => new Date());
-      if (cancelled) return;
-      setEffectiveToday(resolvedToday);
-      const setupState = await checkSetup(resolvedToday);
-      if (cancelled) return;
-      setLoading(false);
-      if (setupState === "ready") {
-        if (!canUseCachedStatus) {
-          void refreshDashboardStatus(resolvedToday);
-        } else {
-          void loadMissedDayReviews(resolvedToday);
+      try {
+        const [completedAnalysis, resolvedToday, setup, status] = await runDashboardBootstrap(
+          (signal) => loadDashboardBootstrapStages({
+            loadAnalysis: loadCompletedQuestionnaire,
+            loadReferenceDate: (requestSignal) =>
+              getEffectiveTodayDate(user.id, requestSignal),
+            loadSetup: loadDashboardSetup,
+            loadStatus: (today, requestSignal) =>
+              loadDashboardInitialStatus(user.id, today, null, requestSignal),
+          }, signal),
+        );
+
+        if (cancelled) return;
+        if (!completedAnalysis) {
+          toast.info("Bitte schließe zuerst dein Startprofil ab.");
+          navigate("/questionnaire", { replace: true });
+          return;
+        }
+
+        const effectiveStart = resolveDashboardProgramStart(
+          setup.teamProgramStart,
+          setup.programStartDate,
+        );
+        const initialMissedReviews = buildInitialMissedDayReviews({
+          userId: user.id,
+          instanceId: status.instanceId,
+          startDate: effectiveStart,
+          referenceDate: resolvedToday,
+          completionRows: status.completionRows,
+          events: setup.events,
+        });
+
+        // All first-frame dashboard values are committed together. React 18
+        // batches this synchronous block into one visible render.
+        setAnalysis(completedAnalysis);
+        setEffectiveToday(resolvedToday);
+        setEvents(setup.events);
+        setProgramMode(setup.mode);
+        setTeamProgramStart(setup.teamProgramStart);
+        setProgramStartDate(effectiveStart);
+        setCompetitionDate(setup.competitionDate);
+        setCompetitionName(setup.competitionName);
+        setSetupMode(setup.state === "setup");
+        setWaitingForCoach(setup.state === "waiting");
+        setPreTestsDone(status.preTestsDone);
+        setMidTestsDone(status.midTestsDone);
+        setPostTestsDone(status.postTestsDone);
+        setMidTestDue(status.midTestDue);
+        setPostTestDue(status.postTestDue);
+        setTodayCheckinDone(status.todayCheckinDone);
+        setTodayJournalDone(status.todayJournalDone);
+        setCheckinStatusLoading(false);
+        setBaselineDone(status.baselineDone);
+        setRetestDone(status.retestDone);
+        setFlameStats(status.flameStats);
+        setMissedDayReviews(initialMissedReviews);
+        lastStatusRefreshAt.current = Date.now();
+        setBootstrapError(null);
+        setLoading(false);
+
+        // Evidence refresh is idempotent and must never delay the first frame.
+        void upsertTodaySnapshot(user.id).catch((error) => {
+          console.error("snapshot error", error);
+        });
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Dashboard bootstrap failed:", error);
+        if (!cachedDashboard) {
+          setLoading(false);
+          setBootstrapError(
+            error instanceof DashboardBootstrapError ? error.code : "unknown",
+          );
         }
       }
     };
 
-    initializeDashboard();
+    void initializeDashboard();
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [bootstrapAttempt, user?.id]);
 
   useEffect(() => {
     if (!user?.id || loading) return;
@@ -579,43 +703,58 @@ const Dashboard = () => {
     effectiveToday,
   ]);
 
-  const checkSetup = async (referenceDate = effectiveToday): Promise<SetupState> => {
-    const [{ data: settingsArr }, modeInfo] = await Promise.all([
-      supabase.from("program_settings").select("*").eq("user_id", user!.id),
-      getProgramModeInfo(user!.id),
-    ]);
+  const loadDashboardSetup = async (
+    referenceDate: Date,
+    signal: AbortSignal,
+  ): Promise<DashboardSetupResult> => {
+    const modeInfo = await getProgramModeInfo(user!.id, signal);
+    const { data: settingsArr, error: settingsError } = await supabase
+      .from("program_settings")
+      .select("*")
+      .eq("user_id", user!.id)
+      .retry(false)
+      .abortSignal(signal);
+    if (settingsError) throw settingsError;
     const settingsData = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
-
-    setProgramMode(modeInfo.mode);
 
     // Team-Athleten: Coach besitzt den Kalender. Kein Solo-Setup, keine eigenen Events nötig.
     if (modeInfo.mode === "team") {
-      setTeamProgramStart(modeInfo.teamStartDate ?? null);
-      setSetupMode(false);
-
       if (!modeInfo.teamStartDate) {
-        // Coach hat Programm noch nicht gestartet
-        setWaitingForCoach(true);
-        return "waiting";
+        return {
+          state: "waiting",
+          events: [],
+          mode: "team",
+          teamProgramStart: null,
+          programStartDate: null,
+          competitionDate: settingsData?.competition_date || "",
+          competitionName: settingsData?.competition_name || "",
+        };
       }
 
       const today = format(referenceDate, "yyyy-MM-dd");
       if (modeInfo.teamStartDate > today) {
-        setWaitingForCoach(true);
-        return "waiting";
+        return {
+          state: "waiting",
+          events: [],
+          mode: "team",
+          teamProgramStart: modeInfo.teamStartDate,
+          programStartDate: modeInfo.teamStartDate,
+          competitionDate: settingsData?.competition_date || "",
+          competitionName: settingsData?.competition_name || "",
+        };
       }
-      setWaitingForCoach(false);
+
+      let teamEvents: CalendarEvent[] = [];
       if (modeInfo.teamId) {
-        const { data: teamEvents, error: teamEventsError } = await supabase
+        const { data, error: teamEventsError } = await supabase
           .from("team_calendar_events")
           .select("id,date,event_type,title,training_local_hour,training_local_minute,training_timezone")
           .eq("team_id", modeInfo.teamId)
-          .order("date", { ascending: true });
-        if (teamEventsError) {
-          toast.error("Teamkalender konnte nicht geladen werden. Standard-Trainingstage bleiben aktiv.");
-          setEvents([]);
-        } else {
-          setEvents((teamEvents ?? []).map((event) => ({
+          .order("date", { ascending: true })
+          .retry(false)
+          .abortSignal(signal);
+        if (teamEventsError) throw teamEventsError;
+        teamEvents = (data ?? []).map((event) => ({
             id: event.id,
             date: event.date,
             event_type: event.event_type as EventType,
@@ -624,29 +763,50 @@ const Dashboard = () => {
             training_local_hour: event.training_local_hour,
             training_local_minute: event.training_local_minute,
             training_timezone: event.training_timezone,
-          })));
-        }
-      } else {
-        setEvents([]);
+          }));
       }
-      return "ready";
+
+      return {
+        state: "ready",
+        events: teamEvents,
+        mode: "team",
+        teamProgramStart: modeInfo.teamStartDate,
+        programStartDate: modeInfo.teamStartDate,
+        competitionDate: settingsData?.competition_date || "",
+        competitionName: settingsData?.competition_name || "",
+      };
     }
 
     // Solo-Mode
-    const { data: eventData } = await supabase.from("calendar_events").select("*").eq("user_id", user!.id);
+    const { data: eventData, error: eventsError } = await supabase
+      .from("calendar_events")
+      .select("*")
+      .eq("user_id", user!.id)
+      .retry(false)
+      .abortSignal(signal);
+    if (eventsError) throw eventsError;
+
     if (eventData && eventData.length > 0) {
-      setEvents(eventData as CalendarEvent[]);
-      if (settingsData) {
-        setCompetitionDate(settingsData.competition_date || "");
-        setCompetitionName(settingsData.competition_name || "");
-        setProgramStartDate(settingsData.program_start || null);
-      }
-      setSetupMode(false);
-      return "ready";
-    } else {
-      setSetupMode(true);
-      return "setup";
+      return {
+        state: "ready",
+        events: eventData as CalendarEvent[],
+        mode: "solo",
+        teamProgramStart: null,
+        programStartDate: settingsData?.program_start || null,
+        competitionDate: settingsData?.competition_date || "",
+        competitionName: settingsData?.competition_name || "",
+      };
     }
+
+    return {
+      state: "setup",
+      events: [],
+      mode: "solo",
+      teamProgramStart: null,
+      programStartDate: settingsData?.program_start || null,
+      competitionDate: settingsData?.competition_date || "",
+      competitionName: settingsData?.competition_name || "",
+    };
   };
 
   const handleSetupComplete = (newEvents: CalendarEvent[]) => {
@@ -1078,6 +1238,16 @@ const Dashboard = () => {
         variant="dashboard"
         title="RewirePerform"
         subtitle="Lade deinen heutigen Flow..."
+      />
+    );
+  }
+
+  if (bootstrapError) {
+    return (
+      <AccessStatusScreen
+        title="Dashboard konnte nicht geladen werden"
+        message="Die Verbindung steht, aber deine Programmdaten konnten nicht vollständig geladen werden."
+        onRetry={() => setBootstrapAttempt((attempt) => attempt + 1)}
       />
     );
   }

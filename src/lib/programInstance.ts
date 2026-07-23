@@ -33,23 +33,32 @@ export function clearInstanceCache(userId?: string) {
   else memo = {};
 }
 
-export async function getActiveInstance(userId: string): Promise<ProgramInstance | null> {
-  const { data } = await supabase
+export async function getActiveInstance(
+  userId: string,
+  signal?: AbortSignal,
+): Promise<ProgramInstance | null> {
+  const requestSignal = signal ?? new AbortController().signal;
+  const { data, error } = await supabase
     .from("program_instances")
     .select("*")
     .eq("user_id", userId)
     .eq("status", "active")
+    .retry(false)
+    .abortSignal(requestSignal)
     .maybeSingle();
 
+  if (error) throw error;
   return (data as ProgramInstance | null) ?? null;
 }
 
 export async function getOrCreateActiveInstance(
-  userId: string
+  userId: string,
+  signal?: AbortSignal,
 ): Promise<ProgramInstance | null> {
   if (memo[userId]) return memo[userId];
+  const requestSignal = signal ?? new AbortController().signal;
 
-  const existing = await getActiveInstance(userId);
+  const existing = await getActiveInstance(userId, requestSignal);
 
   if (existing) {
     memo[userId] = existing;
@@ -57,18 +66,19 @@ export async function getOrCreateActiveInstance(
   }
 
   // Create one. Derive team_id + start date.
-  const effective = await getEffectiveProgramStart(userId);
+  const effective = await getEffectiveProgramStart(userId, requestSignal);
 
   const { data: memberships, error: membershipError } = await supabase
     .from("team_members")
     .select("team_id, joined_at")
     .eq("user_id", userId)
     .order("joined_at", { ascending: false })
-    .limit(10);
+    .limit(10)
+    .retry(false)
+    .abortSignal(requestSignal);
 
   if (membershipError) {
-    console.error("getOrCreateActiveInstance membership error:", membershipError);
-    return null;
+    throw membershipError;
   }
 
   const teamIds = (memberships ?? []).map((membership) => membership.team_id);
@@ -79,11 +89,12 @@ export async function getOrCreateActiveInstance(
         .in("team_id", teamIds)
         .eq("status", "active")
         .limit(2)
+        .retry(false)
+        .abortSignal(requestSignal)
     : { data: [], error: null };
 
   if (activeRunError) {
-    console.error("getOrCreateActiveInstance active run error:", activeRunError);
-    return null;
+    throw activeRunError;
   }
 
   // A managed run must be assigned by Coach/Admin. Creating an unscoped
@@ -96,12 +107,15 @@ export async function getOrCreateActiveInstance(
   const teamId = memberships?.[0]?.team_id ?? null;
 
   // Find next cycle number
-  const { data: prior } = await supabase
+  const { data: prior, error: priorError } = await supabase
     .from("program_instances")
     .select("cycle_number")
     .eq("user_id", userId)
     .order("cycle_number", { ascending: false })
-    .limit(1);
+    .limit(1)
+    .retry(false)
+    .abortSignal(requestSignal);
+  if (priorError) throw priorError;
   const nextCycle = (prior?.[0]?.cycle_number ?? 0) + 1;
 
   const { data: created, error } = await supabase
@@ -114,18 +128,20 @@ export async function getOrCreateActiveInstance(
       status: "active",
       started_at: effective.startDate ?? new Date().toISOString().slice(0, 10),
     })
+    .abortSignal(requestSignal)
     .select()
     .single();
 
   if (error || !created) {
     if (error?.code === "23505") {
-      const concurrent = await getActiveInstance(userId);
+      const concurrent = await getActiveInstance(userId, requestSignal);
       if (concurrent) {
         memo[userId] = concurrent;
         return concurrent;
       }
     }
-    console.error("getOrCreateActiveInstance error:", error);
+    if (error) throw error;
+    console.error("getOrCreateActiveInstance returned no created row");
     return null;
   }
   memo[userId] = created as ProgramInstance;
