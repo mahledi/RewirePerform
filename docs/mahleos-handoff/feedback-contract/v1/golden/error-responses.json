@@ -1,0 +1,36 @@
+[
+  {
+    "error": "invalid_request",
+    "request_id": "90000000-0000-4000-8000-000000000701"
+  },
+  {
+    "error": "invalid_json"
+  },
+  {
+    "error": "unauthorized"
+  },
+  {
+    "error": "method_not_allowed"
+  },
+  {
+    "error": "request_too_large"
+  },
+  {
+    "error": "unsupported_media_type"
+  },
+  {
+    "error": "rate_limited",
+    "request_id": "90000000-0000-4000-8000-000000000701"
+  },
+  {
+    "error": "service_not_configured"
+  },
+  {
+    "error": "feedback_read_unavailable",
+    "request_id": "90000000-0000-4000-8000-000000000701"
+  },
+  {
+    "error": "contract_projection_failed",
+    "request_id": "90000000-0000-4000-8000-000000000701"
+  }
+]

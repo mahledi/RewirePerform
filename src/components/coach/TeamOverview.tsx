@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
-import { captureAppError } from "@/lib/monitoring";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 
 interface TeamStats {
   member_count: number;
@@ -168,6 +168,15 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         setActivityRows(activityStatus.error ? [] : ((activityStatus.data ?? []) as ActivityRow[]));
         setPartialWarnings(warnings);
         setDetailsLoading(false);
+        if (warnings.length === 0) {
+          void trackAppEvent({
+            eventName: "coach_dashboard_loaded",
+            status: "success",
+            role: "coach",
+            route: "/coach",
+            metadata: { stage: "team_overview_complete" },
+          });
+        }
       } catch (err) {
         if (!cancelled) {
           setDetailsLoading(false);

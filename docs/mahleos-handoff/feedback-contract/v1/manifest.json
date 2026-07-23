@@ -1,0 +1,51 @@
+{
+  "contract_id": "rewireperform-mahleos-feedback-read",
+  "contract_version": "1.0.0",
+  "status": "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
+  "endpoint": {
+    "path": "/functions/v1/mahleos-feedback-read",
+    "method": "POST",
+    "content_type": "application/json",
+    "max_request_bytes": 1024,
+    "max_page_size": 25,
+    "rate_limit_per_client_per_minute": 30,
+    "redirects_allowed": false
+  },
+  "authentication": {
+    "scheme": "Bearer",
+    "key_format": "64 hexadecimal characters",
+    "current_secret": "MAHLEOS_FEEDBACK_READ_KEY",
+    "previous_secret": "MAHLEOS_FEEDBACK_READ_KEY_PREVIOUS",
+    "shared_with_aggregate_api": false
+  },
+  "retry_policy": {
+    "retryable_http_statuses": [
+      429,
+      503
+    ],
+    "non_retryable_http_statuses": [
+      400,
+      401,
+      405,
+      413,
+      415
+    ],
+    "maximum_attempts": 2
+  },
+  "privacy_boundaries": {
+    "test_data_included": false,
+    "user_identifiers_exported": false,
+    "admin_notes_exported": false,
+    "attachments_exported": false,
+    "raw_feedback_persistence_in_mahleos": "FORBIDDEN",
+    "model_use_before_local_redaction": "FORBIDDEN",
+    "sensitive_feedback_model_use": "FORBIDDEN"
+  },
+  "consumer_policy": {
+    "unknown_schema_versions": "BLOCK",
+    "unknown_fields": "BLOCK",
+    "missing_source_status": "NOT_CONNECTED",
+    "source_may_make_global_status_green": false,
+    "push_merge_deploy": "HUMAN_APPROVAL_REQUIRED"
+  }
+}

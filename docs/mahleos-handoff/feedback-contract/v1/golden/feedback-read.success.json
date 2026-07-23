@@ -1,0 +1,31 @@
+{
+  "ok": true,
+  "schema_version": "mahleos-feedback-read-v1",
+  "request_id": "90000000-0000-4000-8000-000000000701",
+  "generated_at": "2026-07-23T15:30:00.000Z",
+  "items": [
+    {
+      "feedback_reference": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "category": "bug",
+      "status": "open",
+      "created_at": "2026-07-23T15:30:00.000Z",
+      "message": "Beim Speichern blieb die Ansicht offen.",
+      "technical_context": {
+        "schema_version": "feedback-technical-context-v1",
+        "runtime": "native",
+        "platform": "ios",
+        "route": "/settings",
+        "online": true,
+        "app_version": "1.0.0"
+      }
+    }
+  ],
+  "has_more": false,
+  "next_cursor": null,
+  "privacy": {
+    "user_identifiers_exported": false,
+    "admin_notes_exported": false,
+    "attachments_exported": false,
+    "model_safe_without_redaction": false
+  }
+}

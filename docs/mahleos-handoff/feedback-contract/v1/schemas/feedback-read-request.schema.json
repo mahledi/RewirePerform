@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos-feedback/v1/feedback-read-request.schema.json",
+  "title": "MahleOS feedback read request v1",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "cursor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9_-]{1,256}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25
+    }
+  },
+  "additionalProperties": false
+}

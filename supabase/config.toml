@@ -19,3 +19,6 @@ verify_jwt = false
 
 [functions.mahleos-read]
 verify_jwt = false
+
+[functions.mahleos-feedback-read]
+verify_jwt = false

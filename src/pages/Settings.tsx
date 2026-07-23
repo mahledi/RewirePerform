@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { TrainingAndNotifications } from "@/components/settings/TrainingAndNotifications";
+import { buildFeedbackTechnicalContext } from "@/lib/feedbackTechnicalContext";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { toast } from "sonner";
 
 const feedbackTypes = [
@@ -85,12 +87,31 @@ const Settings = () => {
         user_id: user.id,
         type: feedbackType,
         message: feedbackMessage.trim().slice(0, 2000),
+        technical_context: buildFeedbackTechnicalContext(),
       });
       if (error) throw error;
+      void trackAppEvent({
+        eventName: "feedback_submitted",
+        status: "success",
+        route: "/settings",
+        metadata: {
+          event_type: feedbackType,
+          stage: "feedback_intake",
+        },
+      });
       toast.success("Danke für dein Feedback!");
       setFeedbackMessage("");
       setFeedbackType("general");
-    } catch {
+    } catch (error) {
+      void captureAppError({
+        eventName: "feedback_submitted",
+        error,
+        route: "/settings",
+        metadata: {
+          event_type: feedbackType,
+          stage: "feedback_intake",
+        },
+      });
       toast.error("Feedback konnte nicht gesendet werden.");
     } finally {
       setSending(false);

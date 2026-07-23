@@ -948,6 +948,7 @@ export type Database = {
           message: string
           reviewed_at: string | null
           status: string
+          technical_context: Json
           type: string
           user_id: string
         }
@@ -958,6 +959,7 @@ export type Database = {
           message: string
           reviewed_at?: string | null
           status?: string
+          technical_context?: Json
           type?: string
           user_id: string
         }
@@ -968,6 +970,7 @@ export type Database = {
           message?: string
           reviewed_at?: string | null
           status?: string
+          technical_context?: Json
           type?: string
           user_id?: string
         }

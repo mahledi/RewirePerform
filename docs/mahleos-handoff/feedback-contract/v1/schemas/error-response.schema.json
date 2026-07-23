@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos-feedback/v1/error-response.schema.json",
+  "title": "MahleOS feedback read error v1",
+  "type": "object",
+  "required": [
+    "error"
+  ],
+  "properties": {
+    "error": {
+      "enum": [
+        "invalid_request",
+        "invalid_json",
+        "unauthorized",
+        "method_not_allowed",
+        "request_too_large",
+        "unsupported_media_type",
+        "rate_limited",
+        "service_not_configured",
+        "feedback_read_unavailable",
+        "contract_projection_failed"
+      ]
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  },
+  "additionalProperties": false
+}

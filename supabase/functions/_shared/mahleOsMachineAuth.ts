@@ -12,3 +12,13 @@ export const authenticateMahleOsMachine = async (
     previousKey: Deno.env.get("MAHLEOS_REWIRE_API_KEY_PREVIOUS")?.trim() ?? "",
   });
 };
+
+export const authenticateMahleOsFeedbackMachine = async (
+  req: Request,
+): Promise<MahleOsMachineAuthError | null> => {
+  return authenticateMahleOsAuthorization({
+    authorization: req.headers.get("Authorization") ?? "",
+    currentKey: Deno.env.get("MAHLEOS_FEEDBACK_READ_KEY")?.trim() ?? "",
+    previousKey: Deno.env.get("MAHLEOS_FEEDBACK_READ_KEY_PREVIOUS")?.trim() ?? "",
+  });
+};

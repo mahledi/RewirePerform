@@ -9,6 +9,7 @@ export type AppEventName =
   | "assessment_saved"
   | "deep_profile_saved"
   | "daily_checkin_saved"
+  | "feedback_submitted"
   | "journal_saved"
   | "pre_training_opened"
   | "push_clicked"

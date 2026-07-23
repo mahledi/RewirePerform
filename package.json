@@ -24,7 +24,7 @@
     "release:verify:staging": "node scripts/validate-release-target.mjs --expected staging --mode staging",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false && tsc -p tsconfig.node.json --noEmit --pretty false",
     "validate:env": "node scripts/validate-env.mjs",
-    "ci": "npm run validate:env -- --example-only && npm run brand:verify && npm run email:templates:check && npm run mahleos:contract:check && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run test:comprehension:sql && npm run test:minor:sql && npm run test:tracking-runtime:sql && npm run test:mahleos:sql && npm run test:access:sql && npm run test:deletion:sql && npm run app:verify",
+    "ci": "npm run validate:env -- --example-only && npm run brand:verify && npm run email:templates:check && npm run mahleos:contract:check && npm run mahleos:feedback-contract:check && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run test:comprehension:sql && npm run test:minor:sql && npm run test:tracking-runtime:sql && npm run test:mahleos:sql && npm run test:mahleos:feedback:sql && npm run test:access:sql && npm run test:deletion:sql && npm run app:verify",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
@@ -34,6 +34,7 @@
     "test:minor:sql": "node scripts/verify-minor-guardian-sql.mjs",
     "test:tracking-runtime:sql": "node scripts/verify-tracking-runtime-sql.mjs",
     "test:mahleos:sql": "node scripts/verify-mahleos-read-contract-sql.mjs",
+    "test:mahleos:feedback:sql": "node scripts/verify-mahleos-feedback-read-sql.mjs",
     "test:access:sql": "node scripts/verify-public-access-security-sql.mjs",
     "test:deletion:sql": "node scripts/verify-account-deletion-sql.mjs",
     "privacy:verify": "node scripts/verify-pilot-privacy-safety.mjs",
@@ -44,7 +45,9 @@
     "email:templates:build": "node scripts/generate-auth-email-templates.mjs",
     "email:templates:check": "node scripts/generate-auth-email-templates.mjs --check",
     "mahleos:contract:build": "node scripts/generate-mahleos-contract.mjs",
-    "mahleos:contract:check": "node scripts/generate-mahleos-contract.mjs --check"
+    "mahleos:contract:check": "node scripts/generate-mahleos-contract.mjs --check",
+    "mahleos:feedback-contract:build": "node scripts/generate-mahleos-feedback-contract.mjs",
+    "mahleos:feedback-contract:check": "node scripts/generate-mahleos-feedback-contract.mjs --check"
   },
   "dependencies": {
     "@capacitor/app": "8.1.1",

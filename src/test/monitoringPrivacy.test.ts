@@ -105,6 +105,34 @@ describe("monitoring privacy boundary", () => {
     expect(JSON.stringify(mocks.insert.mock.calls[0][0])).not.toContain("draft=private");
   });
 
+  it("records feedback intake status without storing feedback text", async () => {
+    await trackAppEvent({
+      eventName: "feedback_submitted",
+      status: "success",
+      route: "/settings",
+      metadata: {
+        event_type: "bug",
+        stage: "feedback_intake",
+        feedback_text: "private report",
+      } as never,
+    });
+
+    expect(mocks.insert).toHaveBeenCalledWith({
+      event_name: "feedback_submitted",
+      status: "success",
+      role: null,
+      team_id: null,
+      route: "/settings",
+      error_code: null,
+      is_test: false,
+      metadata: {
+        event_type: "bug",
+        stage: "feedback_intake",
+      },
+    });
+    expect(JSON.stringify(mocks.insert.mock.calls[0][0])).not.toContain("private report");
+  });
+
   it("does not break the user flow or expose provider error details", async () => {
     mocks.insert.mockResolvedValue({
       data: null,
