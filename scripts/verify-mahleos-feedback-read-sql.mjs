@@ -4,10 +4,10 @@ import { PGlite } from "@electric-sql/pglite";
 import Ajv2020 from "ajv/dist/2020.js";
 
 const db = new PGlite();
-const migration = readFileSync(
-  resolve("supabase/migrations/20260723154047_mahleos_feedback_read_contract_v1.sql"),
-  "utf8",
-);
+const migration = [
+  "supabase/migrations/20260723154047_mahleos_feedback_read_contract_v1.sql",
+  "supabase/migrations/20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql",
+].map((path) => readFileSync(resolve(path), "utf8")).join("\n");
 const successSchema = JSON.parse(readFileSync(
   resolve("docs/mahleos-handoff/feedback-contract/v1/schemas/feedback-read-success.schema.json"),
   "utf8",
@@ -23,6 +23,10 @@ const ids = {
   request: "90000000-0000-4000-8000-000000000701",
   pageRequest: "90000000-0000-4000-8000-000000000702",
   rateRequest: "90000000-0000-4000-8000-000000000703",
+  repeatedRateRequest: "90000000-0000-4000-8000-000000000704",
+  canonicalFeedback: "20000000-0000-4000-8000-000000000704",
+  canonicalEvent: "30000000-0000-4000-8000-000000000701",
+  team: "40000000-0000-4000-8000-000000000701",
 };
 
 const assert = (condition, message) => {
@@ -71,6 +75,11 @@ try {
     CREATE SCHEMA auth;
     CREATE SCHEMA extensions;
 
+    CREATE FUNCTION auth.uid()
+    RETURNS uuid LANGUAGE sql STABLE AS $$
+      SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid
+    $$;
+
     CREATE FUNCTION extensions.digest(_value bytea, _algorithm text)
     RETURNS bytea LANGUAGE sql IMMUTABLE AS $$
       SELECT decode(md5(_value), 'hex')
@@ -82,13 +91,40 @@ try {
       id uuid PRIMARY KEY REFERENCES auth.users(id),
       is_test_user boolean NOT NULL DEFAULT false
     );
+    CREATE TABLE public.user_roles(
+      user_id uuid NOT NULL REFERENCES auth.users(id),
+      role text NOT NULL
+    );
+    CREATE TABLE public.teams(
+      id uuid PRIMARY KEY,
+      created_by uuid REFERENCES auth.users(id)
+    );
+    CREATE TABLE public.team_members(
+      team_id uuid NOT NULL REFERENCES public.teams(id),
+      user_id uuid NOT NULL REFERENCES auth.users(id)
+    );
     CREATE TABLE public.feedback(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES auth.users(id),
       type text NOT NULL DEFAULT 'general',
       message text NOT NULL,
       status text NOT NULL DEFAULT 'open',
+      admin_note text,
+      reviewed_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.app_event_log(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      created_at timestamptz NOT NULL DEFAULT now(),
+      user_id uuid REFERENCES auth.users(id),
+      role text,
+      team_id uuid REFERENCES public.teams(id),
+      event_name text NOT NULL,
+      status text NOT NULL DEFAULT 'success',
+      route text,
+      error_code text,
+      is_test boolean NOT NULL DEFAULT false,
+      metadata jsonb NOT NULL DEFAULT '{}'::jsonb
     );
   `);
 
@@ -123,6 +159,14 @@ try {
   await db.query(
     "INSERT INTO public.profiles(id, is_test_user) VALUES ($1, false), ($2, true)",
     [ids.productionUser, ids.testUser],
+  );
+  await db.query(
+    "INSERT INTO public.user_roles(user_id, role) VALUES ($1, 'athlete')",
+    [ids.productionUser],
+  );
+  await db.query(
+    "INSERT INTO public.teams(id, created_by) VALUES ($1, $2)",
+    [ids.team, ids.productionUser],
   );
 
   const context = {
@@ -174,6 +218,16 @@ try {
   assert(!serialized.includes(ids.productionUser), "User IDs must never leave the database contract");
   assert(!serialized.includes("QA-MUST-NOT-LEAVE"), "Test feedback must remain excluded");
   assert(!serialized.includes('"admin_note":'), "Admin notes must remain excluded");
+  assert(
+    firstPage.schema_version === "mahleos-feedback-read-v1.1",
+    "The hardened response version must be explicit",
+  );
+  assert(
+    firstPage.privacy.structured_user_identifiers_exported === false
+      && firstPage.privacy.recognized_direct_identifiers_redacted === true
+      && firstPage.privacy.free_text_may_contain_personal_data === true,
+    "Privacy metadata must be conservative and explicit",
+  );
 
   const secondPage = await readFeedbackAsService({
     requestId: ids.pageRequest,
@@ -200,6 +254,121 @@ try {
     ),
     "feedback_technical_context_contract_v1",
   );
+
+  await db.query(
+    "SELECT set_config('request.jwt.claim.sub', $1, false)",
+    [ids.productionUser],
+  );
+  await db.query(
+    `INSERT INTO public.feedback(
+      id, user_id, type, message, status, created_at, admin_note, reviewed_at, technical_context
+    ) VALUES (
+      $1,
+      $2,
+      'not-a-category',
+      'Kontakt: private@example.com oder +49 170 1234567',
+      'resolved',
+      '2020-01-01T00:00:00Z',
+      'must disappear',
+      now(),
+      $3
+    )`,
+    [
+      ids.canonicalFeedback,
+      ids.testUser,
+      JSON.stringify({
+        ...context,
+        route: "/admin/private",
+        app_version: "unsafe version",
+      }),
+    ],
+  );
+  const canonicalFeedback = await db.query(
+    `SELECT id, user_id, type, message, status, admin_note, reviewed_at,
+            technical_context, created_at
+     FROM public.feedback
+     WHERE message LIKE 'Kontakt:%'`,
+  );
+  const canonicalRow = canonicalFeedback.rows[0];
+  assert(canonicalRow.id !== ids.canonicalFeedback, "Client feedback ID must be replaced");
+  assert(canonicalRow.user_id === ids.productionUser, "Feedback owner must come from auth.uid()");
+  assert(canonicalRow.type === "general", "Unknown categories must be canonicalized");
+  assert(canonicalRow.status === "open", "Client moderation state must be ignored");
+  assert(canonicalRow.admin_note === null, "Client admin notes must be cleared");
+  assert(canonicalRow.reviewed_at === null, "Client review timestamp must be cleared");
+  assert(canonicalRow.technical_context.route === "/settings", "Feedback route must be fixed");
+  assert(canonicalRow.technical_context.app_version === "unknown", "Unsafe version must be dropped");
+  assert(
+    new Date(canonicalRow.created_at).getTime() > new Date("2026-01-01T00:00:00Z").getTime(),
+    "Client timestamps must be replaced",
+  );
+
+  await db.query(
+    `INSERT INTO public.app_event_log(
+      id, created_at, user_id, role, team_id, event_name, status,
+      route, error_code, is_test, metadata
+    ) VALUES (
+      $1,
+      '2020-01-01T00:00:00Z',
+      $2,
+      'admin',
+      $3,
+      'daily_checkin_saved',
+      'failed',
+      '/private?token=secret',
+      'unsafe error value',
+      true,
+      $4
+    )`,
+    [
+      ids.canonicalEvent,
+      ids.testUser,
+      ids.team,
+      JSON.stringify({
+        day_number: 7,
+        stage: "daily_checkin",
+        email: "private@example.com",
+        source: "unsafe source with spaces",
+      }),
+    ],
+  );
+  const canonicalEvent = await db.query(
+    `SELECT id, user_id, role, team_id, route, error_code, is_test, metadata, created_at
+     FROM public.app_event_log
+     WHERE event_name = 'daily_checkin_saved'`,
+  );
+  const eventRow = canonicalEvent.rows[0];
+  assert(eventRow.id !== ids.canonicalEvent, "Client event ID must be replaced");
+  assert(eventRow.user_id === ids.productionUser, "Event owner must come from auth.uid()");
+  assert(eventRow.role === "athlete", "Event role must be derived server-side");
+  assert(eventRow.team_id === ids.team, "Valid team membership/ownership must be retained");
+  assert(eventRow.route === null, "Unknown routes must be removed");
+  assert(eventRow.error_code === null, "Unsafe error codes must be removed");
+  assert(eventRow.is_test === false, "Test status must be derived from the profile");
+  assert(
+    eventRow.metadata.day_number === 7
+      && eventRow.metadata.stage === "daily_checkin"
+      && Object.keys(eventRow.metadata).length === 2,
+    "Only safe telemetry metadata may remain",
+  );
+
+  await expectFailure(
+    () => db.query(
+      `INSERT INTO public.app_event_log(event_name, status)
+       VALUES ('invented_event', 'failed')`,
+    ),
+    "app_event_name_invalid",
+  );
+  await db.exec("SELECT set_config('request.jwt.claim.sub', '', false)");
+
+  const redacted = await db.query(
+    `SELECT public.redact_mahleos_feedback_text(
+      'Mail private@example.com, Tel +49 170 1234567, Token Bearer abcdefghijklmnopqrstuvwxyz123456'
+    ) AS value`,
+  );
+  assert(!redacted.rows[0].value.includes("private@example.com"), "Email must be redacted");
+  assert(!redacted.rows[0].value.includes("+49 170 1234567"), "Phone must be redacted");
+  assert(!redacted.rows[0].value.includes("abcdefghijklmnopqrstuvwxyz"), "Token must be redacted");
 
   await expectFailure(
     () => db.query(
@@ -232,6 +401,40 @@ try {
     rateLimited.ok === false && rateLimited.error === "rate_limited",
     "The 31st request in one minute must be rate limited",
   );
+  const repeatedRateLimited = await readFeedbackAsService({
+    requestId: ids.repeatedRateRequest,
+  });
+  assert(
+    repeatedRateLimited.ok === false && repeatedRateLimited.error === "rate_limited",
+    "Repeated excessive reads must stay rate limited",
+  );
+  const rateAuditCount = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE outcome = 'rate_limited'
+      AND requested_at >= now() - interval '1 minute'
+  `);
+  assert(rateAuditCount.rows[0].count === 1, "Rate-limit audit must be bounded per minute");
+
+  await db.exec(`
+    INSERT INTO public.mahleos_feedback_access_log(
+      request_id, client_id, outcome, requested_at
+    ) VALUES (
+      gen_random_uuid(), 'mahleos-feedback-v1', 'success', now() - interval '91 days'
+    )
+  `);
+  await db.exec("SET ROLE service_role");
+  const cleanup = await db.query(
+    "SELECT public.cleanup_mahleos_feedback_access_log() AS removed",
+  );
+  await db.exec("RESET ROLE");
+  assert(cleanup.rows[0].removed === 1, "Retention must remove only expired audit rows");
+  const remainingAudit = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE requested_at < now() - interval '90 days'
+  `);
+  assert(remainingAudit.rows[0].count === 0, "No expired audit rows may remain");
 
   console.log(JSON.stringify({
     migrationApplied: true,
@@ -239,7 +442,11 @@ try {
     productionOnly: true,
     stablePagination: true,
     technicalContextAllowlist: true,
+    clientInputCanonicalized: true,
+    directIdentifiersRedacted: true,
+    telemetryCanonicalized: true,
     auditAppendOnly: true,
+    auditRetentionBounded: true,
     rateLimitCheck: true,
   }));
 } finally {

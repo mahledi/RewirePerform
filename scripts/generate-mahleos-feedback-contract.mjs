@@ -77,7 +77,7 @@ const successSchema = schema(
     ],
     {
       ok: { const: true },
-      schema_version: { const: "mahleos-feedback-read-v1" },
+      schema_version: { const: "mahleos-feedback-read-v1.1" },
       request_id: uuid,
       generated_at: dateTime,
       items: {
@@ -106,13 +106,17 @@ const successSchema = schema(
       next_cursor: nullableCursor,
       privacy: strictObject(
         [
-          "user_identifiers_exported",
+          "structured_user_identifiers_exported",
+          "recognized_direct_identifiers_redacted",
+          "free_text_may_contain_personal_data",
           "admin_notes_exported",
           "attachments_exported",
           "model_safe_without_redaction",
         ],
         {
-          user_identifiers_exported: { const: false },
+          structured_user_identifiers_exported: { const: false },
+          recognized_direct_identifiers_redacted: { const: true },
+          free_text_may_contain_personal_data: { const: true },
           admin_notes_exported: { const: false },
           attachments_exported: { const: false },
           model_safe_without_redaction: { const: false },
@@ -161,7 +165,7 @@ const requestId = "90000000-0000-4000-8000-000000000701";
 
 const manifest = {
   contract_id: "rewireperform-mahleos-feedback-read",
-  contract_version: "1.0.0",
+  contract_version: "1.1.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   endpoint: {
     path: "/functions/v1/mahleos-feedback-read",
@@ -186,7 +190,9 @@ const manifest = {
   },
   privacy_boundaries: {
     test_data_included: false,
-    user_identifiers_exported: false,
+    structured_user_identifiers_exported: false,
+    recognized_direct_identifiers_redacted: true,
+    free_text_may_contain_personal_data: true,
     admin_notes_exported: false,
     attachments_exported: false,
     raw_feedback_persistence_in_mahleos: "FORBIDDEN",
@@ -204,7 +210,7 @@ const manifest = {
 
 const goldenSuccess = {
   ok: true,
-  schema_version: "mahleos-feedback-read-v1",
+  schema_version: "mahleos-feedback-read-v1.1",
   request_id: requestId,
   generated_at: generatedAt,
   items: [
@@ -227,7 +233,9 @@ const goldenSuccess = {
   has_more: false,
   next_cursor: null,
   privacy: {
-    user_identifiers_exported: false,
+    structured_user_identifiers_exported: false,
+    recognized_direct_identifiers_redacted: true,
+    free_text_may_contain_personal_data: true,
     admin_notes_exported: false,
     attachments_exported: false,
     model_safe_without_redaction: false,
@@ -243,7 +251,10 @@ It is intentionally not part of the aggregate Tracking or Evidence contract.
 
 - Dedicated 256-bit machine credential; never an admin password.
 - HTTPS POST only, no redirects and no free filters.
-- No names, emails, account IDs, admin notes or attachments.
+- No structured names, emails, account IDs, admin notes or attachments.
+- Recognized email addresses, phone numbers and credential-shaped values are
+  redacted before export. Free text can still contain personal data, including
+  names, and must therefore be treated as personal data.
 - Production feedback only; marked test users are excluded.
 - Raw feedback text is processed ephemerally by MahleOS and is never persisted.
 - Local redaction runs before any optional model analysis.

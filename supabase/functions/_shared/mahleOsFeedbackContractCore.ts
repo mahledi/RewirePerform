@@ -32,7 +32,9 @@ const ALLOWED_CONTEXT_KEYS = new Set([
   "app_version",
 ]);
 const ALLOWED_PRIVACY_KEYS = new Set([
-  "user_identifiers_exported",
+  "structured_user_identifiers_exported",
+  "recognized_direct_identifiers_redacted",
+  "free_text_may_contain_personal_data",
   "admin_notes_exported",
   "attachments_exported",
   "model_safe_without_redaction",
@@ -74,14 +76,16 @@ export type FeedbackReadItem = {
 
 export type FeedbackReadProjection = {
   ok: true;
-  schema_version: "mahleos-feedback-read-v1";
+  schema_version: "mahleos-feedback-read-v1.1";
   request_id: string;
   generated_at: string;
   items: FeedbackReadItem[];
   has_more: boolean;
   next_cursor: string | null;
   privacy: {
-    user_identifiers_exported: false;
+    structured_user_identifiers_exported: false;
+    recognized_direct_identifiers_redacted: true;
+    free_text_may_contain_personal_data: true;
     admin_notes_exported: false;
     attachments_exported: false;
     model_safe_without_redaction: false;
@@ -206,7 +210,7 @@ export const projectFeedbackReadResult = (value: unknown): FeedbackReadProjectio
   if (!isRecord(value) || !hasOnlyKeys(value, ALLOWED_RESULT_KEYS)) return null;
   if (
     value.ok !== true
-    || value.schema_version !== "mahleos-feedback-read-v1"
+    || value.schema_version !== "mahleos-feedback-read-v1.1"
     || typeof value.request_id !== "string"
     || !UUID_PATTERN.test(value.request_id)
     || !isIsoTimestamp(value.generated_at)
@@ -222,7 +226,9 @@ export const projectFeedbackReadResult = (value: unknown): FeedbackReadProjectio
       : value.next_cursor_created_at !== null || value.next_cursor_id !== null)
     || !isRecord(value.privacy)
     || !hasOnlyKeys(value.privacy, ALLOWED_PRIVACY_KEYS)
-    || value.privacy.user_identifiers_exported !== false
+    || value.privacy.structured_user_identifiers_exported !== false
+    || value.privacy.recognized_direct_identifiers_redacted !== true
+    || value.privacy.free_text_may_contain_personal_data !== true
     || value.privacy.admin_notes_exported !== false
     || value.privacy.attachments_exported !== false
     || value.privacy.model_safe_without_redaction !== false
@@ -242,14 +248,16 @@ export const projectFeedbackReadResult = (value: unknown): FeedbackReadProjectio
 
   return {
     ok: true,
-    schema_version: "mahleos-feedback-read-v1",
+    schema_version: "mahleos-feedback-read-v1.1",
     request_id: value.request_id,
     generated_at: value.generated_at,
     items: items as FeedbackReadItem[],
     has_more: value.has_more,
     next_cursor: nextCursor,
     privacy: {
-      user_identifiers_exported: false,
+      structured_user_identifiers_exported: false,
+      recognized_direct_identifiers_redacted: true,
+      free_text_may_contain_personal_data: true,
       admin_notes_exported: false,
       attachments_exported: false,
       model_safe_without_redaction: false,

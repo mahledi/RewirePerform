@@ -18,7 +18,7 @@
       "const": true
     },
     "schema_version": {
-      "const": "mahleos-feedback-read-v1"
+      "const": "mahleos-feedback-read-v1.1"
     },
     "request_id": {
       "type": "string",
@@ -138,14 +138,22 @@
     "privacy": {
       "type": "object",
       "required": [
-        "user_identifiers_exported",
+        "structured_user_identifiers_exported",
+        "recognized_direct_identifiers_redacted",
+        "free_text_may_contain_personal_data",
         "admin_notes_exported",
         "attachments_exported",
         "model_safe_without_redaction"
       ],
       "properties": {
-        "user_identifiers_exported": {
+        "structured_user_identifiers_exported": {
           "const": false
+        },
+        "recognized_direct_identifiers_redacted": {
+          "const": true
+        },
+        "free_text_may_contain_personal_data": {
+          "const": true
         },
         "admin_notes_exported": {
           "const": false

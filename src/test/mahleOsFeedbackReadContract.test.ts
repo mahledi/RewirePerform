@@ -16,7 +16,7 @@ const createdAt = "2026-07-23T15:30:00.123456+00:00";
 
 const validResult = () => ({
   ok: true,
-  schema_version: "mahleos-feedback-read-v1",
+  schema_version: "mahleos-feedback-read-v1.1",
   request_id: requestId,
   generated_at: createdAt,
   items: [
@@ -40,7 +40,9 @@ const validResult = () => ({
   next_cursor_created_at: createdAt,
   next_cursor_id: feedbackId,
   privacy: {
-    user_identifiers_exported: false,
+    structured_user_identifiers_exported: false,
+    recognized_direct_identifiers_redacted: true,
+    free_text_may_contain_personal_data: true,
     admin_notes_exported: false,
     attachments_exported: false,
     model_safe_without_redaction: false,
@@ -65,11 +67,13 @@ describe("MahleOS feedback read contract", () => {
 
     expect(projected).toMatchObject({
       ok: true,
-      schema_version: "mahleos-feedback-read-v1",
+      schema_version: "mahleos-feedback-read-v1.1",
       request_id: requestId,
       has_more: true,
       privacy: {
-        user_identifiers_exported: false,
+        structured_user_identifiers_exported: false,
+        recognized_direct_identifiers_redacted: true,
+        free_text_may_contain_personal_data: true,
         model_safe_without_redaction: false,
       },
     });
@@ -101,16 +105,17 @@ describe("MahleOS feedback read contract", () => {
 
   it("keeps the edge function separate, machine-authenticated and non-browser-accessible", () => {
     const edge = readRepoFile("supabase/functions/mahleos-feedback-read/index.ts");
+    const handler = readRepoFile("supabase/functions/_shared/mahleOsFeedbackHandler.ts");
     const auth = readRepoFile("supabase/functions/_shared/mahleOsMachineAuth.ts");
     const config = readRepoFile("supabase/config.toml");
 
-    expect(edge).toContain('req.method !== "POST"');
-    expect(edge).toContain("readBoundedRequestText(req, 1024)");
-    expect(edge).toContain("parseFeedbackReadRequest");
-    expect(edge).toContain("projectFeedbackReadResult");
+    expect(handler).toContain('request.method !== "POST"');
+    expect(handler).toContain("readBoundedRequestText(request, 1024)");
+    expect(handler).toContain("parseFeedbackReadRequest");
+    expect(handler).toContain("projectFeedbackReadResult");
     expect(edge).toContain('rpc("read_mahleos_feedback_page"');
     expect(edge).not.toContain(".from(");
-    expect(edge).not.toContain("Access-Control-Allow-Origin");
+    expect(handler).not.toContain("Access-Control-Allow-Origin");
     expect(auth).toContain('Deno.env.get("MAHLEOS_FEEDBACK_READ_KEY")');
     expect(config).toContain("[functions.mahleos-feedback-read]\nverify_jwt = false");
   });
@@ -119,14 +124,22 @@ describe("MahleOS feedback read contract", () => {
     const migration = readRepoFile(
       "supabase/migrations/20260723154047_mahleos_feedback_read_contract_v1.sql",
     );
+    const hardening = readRepoFile(
+      "supabase/migrations/20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql",
+    );
 
     expect(migration).toContain("mahleos_feedback_access_log_append_only");
     expect(migration).toContain("recent_requests >= 30");
     expect(migration).toContain("NOT COALESCE(p.is_test_user, false)");
     expect(migration).toContain("TO service_role");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated");
-    expect(migration).toContain("'user_identifiers_exported', false");
+    expect(hardening).toContain("'structured_user_identifiers_exported', false");
+    expect(hardening).toContain("'recognized_direct_identifiers_redacted', true");
+    expect(hardening).toContain("'free_text_may_contain_personal_data', true");
     expect(migration).toContain("'model_safe_without_redaction', false");
+    expect(hardening).toContain("canonicalize_feedback_insert");
+    expect(hardening).toContain("canonicalize_app_event_insert");
+    expect(hardening).toContain("cleanup_mahleos_feedback_access_log");
     expect(migration).not.toContain("p.full_name");
     expect(migration).not.toContain("p.email");
     expect(migration).not.toMatch(/jsonb_build_object\(\s*'user_id'/u);

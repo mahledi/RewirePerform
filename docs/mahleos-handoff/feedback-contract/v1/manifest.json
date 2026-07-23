@@ -1,6 +1,6 @@
 {
   "contract_id": "rewireperform-mahleos-feedback-read",
-  "contract_version": "1.0.0",
+  "contract_version": "1.1.0",
   "status": "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   "endpoint": {
     "path": "/functions/v1/mahleos-feedback-read",
@@ -34,7 +34,9 @@
   },
   "privacy_boundaries": {
     "test_data_included": false,
-    "user_identifiers_exported": false,
+    "structured_user_identifiers_exported": false,
+    "recognized_direct_identifiers_redacted": true,
+    "free_text_may_contain_personal_data": true,
     "admin_notes_exported": false,
     "attachments_exported": false,
     "raw_feedback_persistence_in_mahleos": "FORBIDDEN",

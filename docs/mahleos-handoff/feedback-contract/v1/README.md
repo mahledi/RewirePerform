@@ -7,7 +7,10 @@ It is intentionally not part of the aggregate Tracking or Evidence contract.
 
 - Dedicated 256-bit machine credential; never an admin password.
 - HTTPS POST only, no redirects and no free filters.
-- No names, emails, account IDs, admin notes or attachments.
+- No structured names, emails, account IDs, admin notes or attachments.
+- Recognized email addresses, phone numbers and credential-shaped values are
+  redacted before export. Free text can still contain personal data, including
+  names, and must therefore be treated as personal data.
 - Production feedback only; marked test users are excluded.
 - Raw feedback text is processed ephemerally by MahleOS and is never persisted.
 - Local redaction runs before any optional model analysis.

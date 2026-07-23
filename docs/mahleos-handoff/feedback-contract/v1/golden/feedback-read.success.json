@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "schema_version": "mahleos-feedback-read-v1",
+  "schema_version": "mahleos-feedback-read-v1.1",
   "request_id": "90000000-0000-4000-8000-000000000701",
   "generated_at": "2026-07-23T15:30:00.000Z",
   "items": [
@@ -23,7 +23,9 @@
   "has_more": false,
   "next_cursor": null,
   "privacy": {
-    "user_identifiers_exported": false,
+    "structured_user_identifiers_exported": false,
+    "recognized_direct_identifiers_redacted": true,
+    "free_text_may_contain_personal_data": true,
     "admin_notes_exported": false,
     "attachments_exported": false,
     "model_safe_without_redaction": false
