@@ -380,7 +380,7 @@ const Journal = () => {
               Sprich deine Antworten ein.
             </p>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Beim lauten Verbalisieren feuern mehr neuronale Netzwerke gleichzeitig — dein Gehirn verknüpft neue Bahnen schneller als beim Tippen.
+              Nutze Sprache, wenn du Gedanken damit direkter festhalten kannst. Du kannst den übernommenen Text anschließend bearbeiten oder vollständig tippen.
             </p>
           </div>
         </motion.div>

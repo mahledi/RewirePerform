@@ -14,7 +14,7 @@ export const CoachDashboardDemo = () => {
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-primary">Coach-Ansicht</p>
           <h2 className="font-heading text-3xl font-bold md:text-5xl">Orientierung, ohne private Reflexion zu öffnen.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-            Die Demo zeigt beispielhaft, wie Teamzustand, Adherence, Wirksamkeit und Coaching-Impulse wirken können.
+            Die Demo zeigt beispielhaft Teamzustand, Aktivität, beobachtete Entwicklung und Coaching-Impulse.
             Alle Werte sind statisch.
           </p>
         </div>

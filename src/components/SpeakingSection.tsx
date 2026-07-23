@@ -4,18 +4,18 @@ import { Mic, Brain, Sparkles, Network } from "lucide-react";
 const cards = [
   {
     icon: Network,
-    title: "Mehr Netzwerke gleichzeitig",
-    text: "Beim Sprechen feuern Broca, Wernicke, motorischer Cortex und auditiver Rückkopplungs-Loop parallel. Mehrere Bahnen kodieren denselben Gedanken — eine multimodale Spur statt einer einzigen.",
+    title: "Aktiv formulieren",
+    text: "Eigene Worte zu finden ist aktive Auseinandersetzung statt passives Lesen. So wird aus einem Gedanken eine konkrete Aussage, mit der du weiterarbeiten kannst.",
   },
   {
     icon: Brain,
-    title: "Klarere Einsicht",
-    text: "Über sich selbst zu sprechen aktiviert den medialen präfrontalen Cortex und reguliert die Amygdala runter (Kross, Univ. Michigan). Weniger Grübeln, mehr Distanz, schärfere Reflexion.",
+    title: "Reaktionen benennen",
+    text: "Das Benennen von Gefühlen und Reaktionen war in Laborstudien mit veränderter Aktivität in präfrontalen und limbischen Regionen verbunden. Das kann helfen, Erlebtes mit etwas mehr Abstand zu betrachten.",
   },
   {
     icon: Sparkles,
-    title: "Schnellere Verdrahtung",
-    text: "Synchrone Co-Aktivierung beschleunigt synaptische Bahnung (Hebbian Plasticity, LTP). Der Generation Effect zeigt: Selbst ausgesprochene Inhalte bleiben deutlich besser hängen als gelesene.",
+    title: "Direkt festhalten",
+    text: "Wenn Sprechen für dich schneller oder natürlicher ist, hältst du den Gedanken fest, bevor du ihn glättest oder verlierst. Der übernommene Text bleibt vollständig bearbeitbar.",
   },
 ];
 
@@ -38,20 +38,19 @@ const SpeakingSection = () => {
             </span>
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
-            Du denkst nicht nur.
+            Aus Gedanken wird
             <br />
-            <span className="text-gradient">Du verdrahtest.</span>
+            <span className="text-gradient">konkretes Training.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-            Reflexion und Journal werden bei RewirePerform <strong className="text-foreground">eingesprochen</strong>,
-            nicht getippt. Sprechen aktiviert mehr neuronale Netzwerke gleichzeitig —
-            Sprache, Motorik, Hören und Selbst-Wahrnehmung. Genau diese Synchronität
-            beschleunigt, wie schnell sich neue Verbindungen im Gehirn bilden.
+            Bei RewirePerform kannst du Reflexionen <strong className="text-foreground">einsprechen oder tippen</strong>.
+            Lautes Formulieren macht Gedanken explizit und kann dabei helfen,
+            Reaktionen zu benennen, zu ordnen und aus etwas Distanz zu betrachten.
+            Entscheidend ist die aktive, wiederholte Auseinandersetzung.
           </p>
           <p className="text-sm text-muted-foreground/80 italic">
-            Hebbian Plasticity, Generation Effect, Self-distancing through speech —
-            drei unabhängige Forschungslinien zeigen dasselbe: laut aussprechen
-            verdrahtet schneller und tiefer als stilles Tippen.
+            Sprechen ist freiwillig. In der iPhone- und iPad-App wird es lokal auf dem Gerät
+            in Text umgewandelt; Tippen bleibt gleichwertig möglich.
           </p>
         </motion.div>
 

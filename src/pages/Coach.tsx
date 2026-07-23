@@ -61,8 +61,8 @@ const SECTIONS: SectionMeta[] = [
   },
   {
     id: "evidence",
-    title: "Wirksamkeit",
-    description: "Pre/Mid/Post-Veränderungen und Adherence.",
+    title: "Entwicklung",
+    description: "Beobachtete Pre/Mid/Post-Veränderungen und Aktivität.",
     icon: BarChart3,
     requiresTeam: true,
   },
@@ -310,7 +310,7 @@ const Coach = () => {
           <div className="grid grid-cols-5 gap-1 rounded-xl border border-border/70 bg-muted/50 p-1 shadow-card">
             <TabButton active={tab === "overview"} onClick={() => openTab("overview")} icon={Users} label="Übersicht" />
             <TabButton active={tab === "mental"} onClick={() => openTab("mental")} icon={Activity} label="Zustand" />
-            <TabButton active={tab === "evidence"} onClick={() => openTab("evidence")} icon={BarChart3} label="Wirksamkeit" />
+            <TabButton active={tab === "evidence"} onClick={() => openTab("evidence")} icon={BarChart3} label="Entwicklung" />
             <TabButton active={tab === "toolkit"} onClick={() => openTab("toolkit")} icon={Sparkles} label="Toolkit" />
             <TabButton active={tab === "manage"} onClick={() => openTab("manage")} icon={Settings} label="Team" />
           </div>
@@ -370,7 +370,7 @@ const Coach = () => {
                     : "Dein Team"}
               </h1>
               <p className="text-sm leading-relaxed text-muted-foreground">
-                Aggregierter Teamzustand, Wirksamkeit und Coaching-Material — privat, ruhig, fokussiert.
+                Aggregierter Teamzustand, beobachtete Entwicklung und Coaching-Material — privat, ruhig, fokussiert.
               </p>
             </div>
 

@@ -24,7 +24,7 @@ const Support = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Support</h1>
         <p className="text-muted-foreground mb-8">
-          Hilfe für Athleten, Coaches, Teams und App-Store-Review.
+          Hilfe für Athleten, Coaches und Teams.
         </p>
 
         <div className="grid gap-4">
@@ -45,11 +45,11 @@ const Support = () => {
           </section>
 
           <section className="rounded-xl border border-border bg-card p-5">
-            <h2 className="font-heading text-lg font-semibold mb-2">Hinweis für Apple Review</h2>
+            <h2 className="font-heading text-lg font-semibold mb-2">Hinweis zum Angebot</h2>
             <p className="text-sm text-muted-foreground">
               RewirePerform ist ein mentales Performance- und Reflexionssystem für Sportler. Die App ist nicht als
-              medizinisches Produkt gedacht und stellt keine Diagnosen. Demo-Zugänge werden in den Review Notes
-              bereitgestellt.
+              medizinisches Produkt gedacht, stellt keine Diagnosen und ersetzt keine medizinische oder
+              psychotherapeutische Behandlung.
             </p>
           </section>
         </div>

@@ -27,9 +27,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Mit dem Mikrofon kannst du Antworten in Check-ins, Fragebögen und Reflexionen freiwillig einsprechen. Tippen bleibt jederzeit möglich.</string>
+	<string>Wenn du „Einsprechen“ auswählst, wandelt RewirePerform deine Stimme ausschließlich auf diesem Gerät in Text um. Tippen bleibt jederzeit möglich.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>RewirePerform nutzt Apples Spracherkennung, um deine freiwillig gesprochenen Antworten in Text umzuwandeln. RewirePerform speichert keine Audioaufnahme.</string>
+	<string>RewirePerform nutzt die lokale Spracherkennung dieses Geräts. Deine Stimme verlässt das Gerät nicht und RewirePerform speichert keine Audioaufnahme.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

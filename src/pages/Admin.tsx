@@ -776,7 +776,7 @@ const Admin = () => {
                           <TableHead className="text-right">Athleten</TableHead>
                           <TableHead className="text-right">Pre/Mid/Post</TableHead>
                           <TableHead className="text-right">Ø Adherence</TableHead>
-                          <TableHead>Wirksamkeit</TableHead>
+                          <TableHead>Datenlage</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -813,7 +813,7 @@ const Admin = () => {
           <TabsContent value="evidence" className="space-y-4 mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Wirksamkeit (aggregiert)</CardTitle>
+                <CardTitle>Beobachtete Entwicklung (aggregiert)</CardTitle>
                 <CardDescription>
                   Beobachtete Veränderung während des Programms. Keine Kausalaussage ohne Kontrollgruppe.
                 </CardDescription>
@@ -1525,7 +1525,7 @@ const Admin = () => {
                     <StatCard label="Assessments ohne Programmbezug" value={health.assessments_missing_instance} />
                     <StatCard label="Tagesabschlüsse ohne Programmbezug" value={health.completions_missing_instance} />
                     <StatCard label="Check-ins ohne Programmbezug" value={health.checkins_missing_instance} />
-                    <StatCard label="Teams ohne Wirksamkeitsdaten" value={health.teams_without_evidence} />
+                    <StatCard label="Teams ohne Entwicklungsdaten" value={health.teams_without_evidence} />
                   </div>
                 )}
                 <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground">
