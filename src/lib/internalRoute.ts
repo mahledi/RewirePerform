@@ -42,3 +42,12 @@ export const safeInternalRoute = (
 
   return value;
 };
+
+export const safeInternalUrl = (
+  value: string | null,
+  origin: string,
+  fallback = "/",
+): string => {
+  const route = safeInternalRoute(value) ?? safeInternalRoute(fallback) ?? "/";
+  return new URL(route, origin).href;
+};

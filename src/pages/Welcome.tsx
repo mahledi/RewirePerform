@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, CalendarDays, LockKeyhole, RotateCcw } from "luc
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
+import { safeInternalRoute } from "@/lib/internalRoute";
 import { completePublicOnboarding } from "@/lib/publicOnboarding";
 
 const pages = [
@@ -26,9 +27,6 @@ const pages = [
   },
 ] as const;
 
-const safeReturnPath = (value: string | null) =>
-  value && /^\/(?!\/)/.test(value) ? value : null;
-
 const Welcome = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,7 +34,7 @@ const Welcome = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const isReplay = searchParams.get("replay") === "1";
   const returnPath = useMemo(
-    () => safeReturnPath(searchParams.get("return")) ?? (isReplay ? "/settings" : "/auth"),
+    () => safeInternalRoute(searchParams.get("return")) ?? (isReplay ? "/settings" : "/auth"),
     [isReplay, searchParams],
   );
   const page = pages[pageIndex];

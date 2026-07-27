@@ -1,6 +1,8 @@
 /// <reference lib="webworker" />
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { safeInternalUrl } from "./lib/internalRoute";
+
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
 const OFFLINE_URL = "/offline.html";
@@ -105,7 +107,10 @@ self.addEventListener("push", (event: PushEvent) => {
 
 self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
-  const targetUrl = new URL((event.notification.data as any)?.url || "/", self.location.origin).href;
+  const targetUrl = safeInternalUrl(
+    (event.notification.data as any)?.url || "/",
+    self.location.origin,
+  );
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clients) => {
       const appClient = clients.find((client) => "focus" in client) as WindowClient | undefined;
