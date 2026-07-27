@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,16 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, Presentation, FlaskConical, MessageSquare, FileDown, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
+import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-} from "recharts";
 import { Textarea } from "@/components/ui/textarea";
 import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
+import AdminComprehensionInsights from "@/components/admin/AdminComprehensionInsights";
 import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
 import CoachAccessApprovalPanel from "@/components/admin/CoachAccessApprovalPanel";
@@ -323,6 +321,7 @@ const Admin = () => {
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const isMobile = useIsMobile();
   const [tab, setTab] = useState<string>("overview");
+  const [evidenceView, setEvidenceView] = useState<"overview" | "portfolio" | "team" | "solo" | "comprehension">("overview");
   const [didInitDevice, setDidInitDevice] = useState(false);
   useEffect(() => {
     if (didInitDevice) return;
@@ -335,13 +334,9 @@ const Admin = () => {
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
     { id: "access", title: "Coach-Zugänge", description: "Bestehende Konten persönlich prüfen, freigeben und einem Team zuordnen.", icon: Shield },
-    { id: "evidence", title: "Coach-Feedback", description: "Teamweite Pre/Mid/Post-Daten und beobachtete Veränderung.", icon: BarChart3 },
-    { id: "pilot", title: "Pilot Readiness", description: "Program Runs, Startfreigabe und operative Datenintegrität.", icon: ShieldCheck },
-    { id: "nlz", title: "NLZ Evidence", description: "Interner Dossierstand und Outcome-Matrix.", icon: ShieldCheck },
-    { id: "presentation", title: "Pilot-Monitoring", description: "Interne Kennzahlen für Pilotsteuerung.", icon: Presentation },
-    { id: "study", title: "Evaluationsstatus", description: "Messabdeckung, Missingness und Kohortenstatus.", icon: FlaskConical },
+    { id: "pilot", title: "Pilotsteuerung", description: "Programmläufe, Zuordnung und operative Startbereitschaft.", icon: ShieldCheck },
+    { id: "evidence", title: "Daten & Exporte", description: "Ergebnisse, Exporte und internes Programmverständnis.", icon: BarChart3 },
     { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
-    { id: "exports", title: "Freigegebene Exporte", description: "Nur unveränderliche Team- und Solo-Data-Locks.", icon: FileDown },
     { id: "health", title: "Datenqualität & System", description: "Operative Vollständigkeit, Systemgesundheit und Launch-Ops.", icon: HeartPulse },
   ];
   const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
@@ -349,8 +344,12 @@ const Admin = () => {
   const showMobileBack = isMobile && tab !== "home";
 
   const isAdmin = role === "admin";
+  const openEvidence = (view: typeof evidenceView) => {
+    setEvidenceView(view);
+    setTab("evidence");
+  };
 
-  const loadAll = async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setOpsError(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -379,12 +378,12 @@ const Admin = () => {
     }
     if (!fb.error && fb.data) setFeedback(fb.data as FeedbackRow[]);
     setLoading(false);
-  };
+  }, [studyIncludeTest]);
 
   useEffect(() => {
     if (!authLoading && isAdmin) loadAll();
     else if (!authLoading) setLoading(false);
-  }, [authLoading, isAdmin, studyIncludeTest]);
+  }, [authLoading, isAdmin, loadAll]);
 
   if (authLoading) {
     return (
@@ -545,18 +544,14 @@ const Admin = () => {
           </div>
         ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 w-full gap-1`}>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 w-full gap-1`}>
             <TabsTrigger value="overview">Übersicht</TabsTrigger>
             <TabsTrigger value="days">Tage</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
             <TabsTrigger value="access">Coach-Zugänge</TabsTrigger>
-            <TabsTrigger value="evidence">Coach-Feedback</TabsTrigger>
-            <TabsTrigger value="pilot">Pilot Readiness</TabsTrigger>
-            <TabsTrigger value="nlz">NLZ Evidence</TabsTrigger>
-            <TabsTrigger value="presentation">Pilot-Monitoring</TabsTrigger>
-            <TabsTrigger value="study">Evaluationsstatus</TabsTrigger>
+            <TabsTrigger value="pilot">Pilotsteuerung</TabsTrigger>
+            <TabsTrigger value="evidence">Daten & Exporte</TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="exports">Exporte</TabsTrigger>
             <TabsTrigger value="health">Datenqualität</TabsTrigger>
           </TabsList>
 
@@ -727,9 +722,9 @@ const Admin = () => {
                       <CardTitle className="text-sm">Nächste Bereiche</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-2">
-                      <Button variant="outline" className="justify-start" onClick={() => setTab("study")}>Wirkungsdaten öffnen</Button>
-                      <Button variant="outline" className="justify-start" onClick={() => setTab("presentation")}>Pilot-Reporting öffnen</Button>
-                      <Button variant="outline" className="justify-start" onClick={() => setTab("exports")}>Exportpakete öffnen</Button>
+                      <Button variant="outline" className="justify-start" onClick={() => openEvidence("overview")}>Ergebnisse öffnen</Button>
+                      <Button variant="outline" className="justify-start" onClick={() => openEvidence("portfolio")}>Gesamtdaten öffnen</Button>
+                      <Button variant="outline" className="justify-start" onClick={() => openEvidence("team")}>Team-Export öffnen</Button>
                     </CardContent>
                   </Card>
                 </div>
@@ -822,73 +817,42 @@ const Admin = () => {
             />
           </TabsContent>
 
-          {/* EVIDENCE */}
-          <TabsContent value="evidence" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Beobachtete Entwicklung (aggregiert)</CardTitle>
-                <CardDescription>
-                  Beobachtete Veränderung während des Programms. Keine Kausalaussage ohne Kontrollgruppe.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <StatCard label="Teams mit Daten" value={teams.filter(t => t.evidence_status === "full_pre_post" || t.evidence_status === "mid_available").length} />
-                  <StatCard label="Teams ohne genug Daten" value={teams.filter(t => t.evidence_status === "not_enough_data" || t.evidence_status === "pre_partial").length} />
-                  <StatCard label="Athleten mit Pre" value={teams.reduce((s, t) => s + t.pre_n, 0)} />
-                  <StatCard label="Athleten mit Post" value={teams.reduce((s, t) => s + t.post_n, 0)} />
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Adherence pro Team</h3>
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer>
-                      <BarChart data={teams.map(t => ({ name: t.name, adherence: t.avg_completion ? Math.round(t.avg_completion * 100) : 0 }))}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                        <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} unit="%" />
-                        <Tooltip />
-                        <Bar dataKey="adherence" fill="hsl(var(--primary))" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Pre / Mid / Post pro Team</h3>
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer>
-                      <BarChart data={teams.map(t => ({ name: t.name, pre: t.pre_n, mid: t.mid_n, post: t.post_n }))}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                        <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip />
-                        <Bar dataKey="pre" fill="hsl(var(--muted-foreground))" />
-                        <Bar dataKey="mid" fill="hsl(var(--secondary))" />
-                        <Bar dataKey="post" fill="hsl(var(--primary))" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <p className="text-xs text-muted-foreground">
-                  Hinweis: Aggregierte Teamdaten. Veränderungen sind beobachtet, nicht kausal.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* PILOT READINESS */}
+          {/* PILOT CONTROL */}
           <TabsContent value="pilot" className="mt-4">
-            <div className="space-y-4">
-              <NlzPilotReadiness />
-              <EvidenceParticipationGate />
-            </div>
+            <NlzPilotReadiness view="operations" />
           </TabsContent>
 
-          {/* NLZ EVIDENCE */}
-          <TabsContent value="nlz" className="space-y-4 mt-4">
-            {loading || !nlzDossier ? (
+          {/* DATA & EXPORTS */}
+          <TabsContent value="evidence" className="space-y-4 mt-4">
+            <div className="border-b border-border pb-3">
+              <div className="flex gap-1 overflow-x-auto" role="group" aria-label="Daten und Exporte">
+                {[
+                  { id: "overview" as const, label: "Ergebnisse" },
+                  { id: "portfolio" as const, label: "Gesamtdaten" },
+                  { id: "team" as const, label: "Team-Export" },
+                  { id: "solo" as const, label: "Solo-Export" },
+                  { id: "comprehension" as const, label: "Programmverständnis" },
+                ].map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={evidenceView === item.id ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => setEvidenceView(item.id)}
+                    aria-pressed={evidenceView === item.id}
+                    className="shrink-0"
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {evidenceView === "team" ? <NlzPilotReadiness view="evidence" /> : null}
+            {evidenceView === "solo" ? <EvidenceParticipationGate /> : null}
+            {evidenceView === "comprehension" ? <AdminComprehensionInsights /> : null}
+
+            {evidenceView === "overview" ? (
+              loading || !nlzDossier ? (
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -1124,8 +1088,8 @@ const Admin = () => {
                         Externe Dateien werden ausschließlich in der Pilotzentrale als unveränderlicher Data Lock mit
                         Schema-Version, Analysemanifest und SHA-256-Prüfsumme erstellt.
                       </p>
-                      <Button onClick={() => setTab("pilot")} className="justify-start">
-                        <ShieldCheck className="mr-2 h-4 w-4" />Zur Pilotzentrale
+                      <Button onClick={() => setEvidenceView("team")} className="justify-start">
+                        <ShieldCheck className="mr-2 h-4 w-4" />Team-Export öffnen
                       </Button>
                     </CardContent>
                   </Card>
@@ -1182,12 +1146,13 @@ const Admin = () => {
                   </CardContent>
                 </Card>
               </>
-            )}
-          </TabsContent>
+              )
+            ) : null}
 
-          {/* PRESENTATION DATA */}
-          <TabsContent value="presentation" className="space-y-4 mt-4">
-            <Card>
+            {/* PORTFOLIO DATA */}
+            {evidenceView === "portfolio" ? (
+              <div className="space-y-4">
+                <Card>
               <CardHeader>
                 <CardTitle>Präsentationsdaten</CardTitle>
                 <CardDescription>
@@ -1249,7 +1214,7 @@ const Admin = () => {
                         Diese Live-Kennzahlen sind internes Monitoring. Freigegebene Exporte entstehen nur aus einem
                         unveränderlichen Data Lock in der Pilotzentrale.
                       </p>
-                      <Button variant="outline" onClick={() => setTab("pilot")}>
+                      <Button variant="outline" onClick={() => setEvidenceView("team")}>
                         <ShieldCheck className="mr-2 h-4 w-4" />Zu den Data Locks
                       </Button>
                     </div>
@@ -1260,12 +1225,10 @@ const Admin = () => {
                   </>
                 )}
               </CardContent>
-            </Card>
-          </TabsContent>
+                </Card>
 
-          {/* STUDY / EVIDENCE */}
-          <TabsContent value="study" className="space-y-4 mt-4">
-            <Card>
+                {/* STUDY / EVIDENCE */}
+                <Card>
               <CardHeader>
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
@@ -1407,7 +1370,7 @@ const Admin = () => {
                         Dieser Bereich zeigt den aktuellen Evaluationsstatus. Für Analysen außerhalb des Adminbereichs
                         muss zuerst ein versionierter Data Lock erstellt werden.
                       </p>
-                      <Button variant="outline" onClick={() => setTab("pilot")}>
+                      <Button variant="outline" onClick={() => setEvidenceView("team")}>
                         <ShieldCheck className="mr-2 h-4 w-4" />Zu den Data Locks
                       </Button>
                     </div>
@@ -1427,7 +1390,9 @@ const Admin = () => {
                   </>
                 )}
               </CardContent>
-            </Card>
+                </Card>
+              </div>
+            ) : null}
           </TabsContent>
 
           {/* FEEDBACK */}
@@ -1475,48 +1440,6 @@ const Admin = () => {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* EXPORTS */}
-          <TabsContent value="exports" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Freigegebene Exporte</CardTitle>
-                <CardDescription>
-                  Ein kontrollierter Ausgang für Team- und Solo-Evidence.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-sm font-medium text-foreground">Export-Grenze</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Live-Ansichten können sich während eines Pilots verändern und sind nicht für externe Nutzung freigegeben.
-                    Ein Export wird erst nach aktueller Consent- und Altersprüfung als unveränderlicher Data Lock erstellt.
-                  </p>
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="border-l-2 border-primary pl-3">
-                    <p className="text-sm font-medium text-foreground">Mannschaftslauf</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Usage, Messabdeckung, aggregierte Zustandsverläufe, Pre/Mid/Post und Transfer-Evidence.
-                    </p>
-                  </div>
-                  <div className="border-l-2 border-primary pl-3">
-                    <p className="text-sm font-medium text-foreground">Solo-Athleten</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Sportartenfilter, Nutzung, Entwicklungsdaten, Wochenverläufe und Transfer-Evidence.
-                    </p>
-                  </div>
-                </div>
-                <Button onClick={() => setTab("pilot")}>
-                  <ShieldCheck className="mr-2 h-4 w-4" />Data Lock erstellen
-                </Button>
-                <p className="text-xs leading-relaxed text-muted-foreground">
-                  Ausgeschlossen bleiben Namen, E-Mails, Journale, freie Reflexionen, Rohantworten,
-                  individuelle Check-in-Verläufe und psychologische Einzelwerte.
-                </p>
               </CardContent>
             </Card>
           </TabsContent>

@@ -2351,6 +2351,10 @@ export type Database = {
         Args: { _include_test?: boolean }
         Returns: Json
       }
+      get_admin_comprehension_insights: {
+        Args: { _include_test?: boolean }
+        Returns: Json
+      }
       get_admin_evidence_quality: {
         Args: { include_test?: boolean }
         Returns: Json

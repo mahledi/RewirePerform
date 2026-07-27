@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { Check, Dumbbell, FlaskConical, ShieldCheck, Users } from "lucide-react";
+import { BarChart3, Check, Dumbbell, FlaskConical, ShieldCheck, Users } from "lucide-react";
 import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
 import CoachWeeklyReview from "@/components/evidence/CoachWeeklyReview";
+import AdminComprehensionInsights, {
+  type ComprehensionInsights,
+} from "@/components/admin/AdminComprehensionInsights";
 import QaEvidenceParityPanel from "@/components/admin/QaEvidenceParityPanel";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +18,68 @@ import type { QaEvidenceParityReport } from "@/lib/qaEvidenceParity";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
 
 const previewPulse = getTransferPulseForDay(18, "training");
+
+const comprehensionPreview: ComprehensionInsights = {
+  schema_version: "admin-comprehension-insights-v1",
+  generated_at: "2026-07-27T12:30:00.000Z",
+  include_test: false,
+  summary: {
+    participants: 12,
+    completed_checks: 84,
+    question_responses: 168,
+    correct_responses: 127,
+    incorrect_responses: 41,
+    accuracy: 0.756,
+    sufficient_data: true,
+  },
+  weeks: [
+    { week_number: 1, participants: 12, completed_checks: 21, question_responses: 42, correct_responses: 34, incorrect_responses: 8, accuracy: 0.81, sufficient_data: true },
+    { week_number: 2, participants: 11, completed_checks: 22, question_responses: 44, correct_responses: 31, incorrect_responses: 13, accuracy: 0.705, sufficient_data: true },
+    { week_number: 3, participants: 10, completed_checks: 19, question_responses: 38, correct_responses: 27, incorrect_responses: 11, accuracy: 0.711, sufficient_data: true },
+    { week_number: 4, participants: 10, completed_checks: 22, question_responses: 44, correct_responses: 35, incorrect_responses: 9, accuracy: 0.795, sufficient_data: true },
+  ],
+  days: [],
+  questions: [
+    {
+      day_number: 8,
+      week_number: 2,
+      question_id: "d8-q1",
+      question_version_key: "preview-d8",
+      target: "Nächste Aktion",
+      stem: "Was hilft dir nach einem Fehler am schnellsten zurück in die nächste Aktion?",
+      participants: 11,
+      times_shown: 11,
+      correct_responses: 7,
+      incorrect_responses: 4,
+      accuracy: 0.636,
+      needs_content_review: true,
+      sufficient_data: true,
+    },
+    {
+      day_number: 17,
+      week_number: 3,
+      question_id: "d17-q2",
+      question_version_key: "preview-d17",
+      target: "Fokus",
+      stem: "Woran erkennst du, dass du deinen Fokus wieder auf das Spiel gerichtet hast?",
+      participants: 10,
+      times_shown: 10,
+      correct_responses: 6,
+      incorrect_responses: 4,
+      accuracy: 0.6,
+      needs_content_review: true,
+      sufficient_data: true,
+    },
+  ],
+  privacy: {
+    minimum_participants_for_scores: 5,
+    journal_or_reflection_text_included: false,
+    selected_options_included: false,
+    user_identifiers_included: false,
+    names_or_emails_included: false,
+    test_data_included: false,
+  },
+};
 
 const buildQaPreview = (simulatedDayNumber: number): QaEvidenceParityReport => {
   const reachedDays = TRANSFER_PULSE_SCHEDULE.filter((pulse) => pulse.dayNumber <= simulatedDayNumber);
@@ -120,7 +185,7 @@ const EvidencePreview = () => {
 
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <Tabs defaultValue="athlete">
-          <TabsList className="grid h-[52px] w-full max-w-lg grid-cols-3">
+          <TabsList className="grid h-[52px] w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="athlete" className="h-11 gap-2">
               <Dumbbell className="h-4 w-4" aria-hidden="true" /> Athlet
             </TabsTrigger>
@@ -129,6 +194,9 @@ const EvidencePreview = () => {
             </TabsTrigger>
             <TabsTrigger value="qa" className="h-11 gap-2">
               <FlaskConical className="h-4 w-4" aria-hidden="true" /> QA Gate
+            </TabsTrigger>
+            <TabsTrigger value="admin" className="h-11 gap-2">
+              <BarChart3 className="h-4 w-4" aria-hidden="true" /> Admin
             </TabsTrigger>
           </TabsList>
 
@@ -185,6 +253,10 @@ const EvidencePreview = () => {
                 onJumpToDay={async (dayNumber) => setQaDay(dayNumber)}
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="admin" className="mt-8">
+            <AdminComprehensionInsights payloadOverride={comprehensionPreview} />
           </TabsContent>
         </Tabs>
       </div>

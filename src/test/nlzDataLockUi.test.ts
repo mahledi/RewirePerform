@@ -42,7 +42,10 @@ describe("NLZ Data Lock export UI", () => {
     const source = read("src/pages/Admin.tsx");
 
     expect(source).toContain("Live-Daten dienen nur der internen Prüfung");
-    expect(source).toContain("Data Lock erstellen");
+    expect(source).toContain('label: "Team-Export"');
+    expect(source).toContain('label: "Solo-Export"');
+    expect(source).toContain('<NlzPilotReadiness view="evidence" />');
+    expect(source).toContain("<EvidenceParticipationGate />");
     expect(source).not.toContain("downloadCsv");
     expect(source).not.toContain("downloadJson");
     expect(source).not.toContain("downloadText");
