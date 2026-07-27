@@ -87,5 +87,20 @@ test("athlete and coach evidence previews stay concise and operable", async ({ p
   await expectNoHorizontalOverflow(page);
   await expectTouchTargets(page);
   await capture(page, testInfo, "qa-evidence-parity");
+
+  await page.getByRole("tab", { name: "Admin" }).click();
+  await expect(page.getByRole("heading", { name: "Verständnis der Tagesinhalte" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tagesinhalte mit Klärungsbedarf" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /csv/i })).toHaveCount(0);
+  await expect(page.getByText("Production ohne QA")).toBeVisible();
+  await expect(page.getByText("Scores ab n ≥ 5")).toBeVisible();
+  await expect(
+    page.locator("td:visible, p:visible").filter({
+      hasText: "Was hilft dir nach einem Fehler am schnellsten zurück in die nächste Aktion?",
+    }),
+  ).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await capture(page, testInfo, "admin-comprehension-insights");
+
   expect(browserErrors).toEqual([]);
 });

@@ -141,6 +141,10 @@ interface EvidenceDataLockResult {
   evidence: LockedRunEvidence;
 }
 
+interface NlzPilotReadinessProps {
+  view?: "operations" | "evidence";
+}
+
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String((error as { message?: unknown } | null)?.message ?? error);
 
@@ -203,7 +207,7 @@ const MissingList = ({ title, players }: { title: string; players: MissingPlayer
   </div>
 );
 
-const NlzPilotReadiness = () => {
+const NlzPilotReadiness = ({ view = "operations" }: NlzPilotReadinessProps) => {
   const [teams, setTeams] = useState<TeamOption[]>([]);
   const [runs, setRuns] = useState<ProgramRun[]>([]);
   const [dataMode, setDataMode] = useState<DataMode>("production");
@@ -476,30 +480,38 @@ const NlzPilotReadiness = () => {
         <CardHeader className="pb-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle className="text-xl">NLZ Pilotzentrale</CardTitle>
+              <CardTitle className="text-xl">
+                {view === "operations" ? "Pilotsteuerung" : "Team-Evidence & Export"}
+              </CardTitle>
               <p className="mt-2 text-sm text-muted-foreground">
-                Operativer Startstatus pro Mannschaftslauf. Keine privaten Texte oder psychologischen Einzelwerte.
+                {view === "operations"
+                  ? "Programmläufe planen, zuordnen und den operativen Startstatus prüfen."
+                  : "Einen Mannschaftslauf auswählen, Datenlage prüfen und einen unveränderlichen Export erstellen."}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex border border-border p-1" role="group" aria-label="Datenmodus">
-                <Button
-                  variant={dataMode === "production" ? "secondary" : "ghost"}
-                  size="sm"
-                  onClick={() => void changeDataMode("production")}
-                  aria-pressed={dataMode === "production"}
-                >
-                  <Database className="mr-2 h-4 w-4" />Production
-                </Button>
-                <Button
-                  variant={dataMode === "qa" ? "secondary" : "ghost"}
-                  size="sm"
-                  onClick={() => void changeDataMode("qa")}
-                  aria-pressed={dataMode === "qa"}
-                >
-                  <FlaskConical className="mr-2 h-4 w-4" />QA
-                </Button>
-              </div>
+              {view === "operations" ? (
+                <div className="flex border border-border p-1" role="group" aria-label="Datenmodus">
+                  <Button
+                    variant={dataMode === "production" ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => void changeDataMode("production")}
+                    aria-pressed={dataMode === "production"}
+                  >
+                    <Database className="mr-2 h-4 w-4" />Production
+                  </Button>
+                  <Button
+                    variant={dataMode === "qa" ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => void changeDataMode("qa")}
+                    aria-pressed={dataMode === "qa"}
+                  >
+                    <FlaskConical className="mr-2 h-4 w-4" />QA
+                  </Button>
+                </div>
+              ) : (
+                <Badge variant="outline">Production ohne QA</Badge>
+              )}
               <Button variant="outline" size="icon" onClick={() => teamId && loadRunData(teamId, runId, dataMode)} disabled={loading || !teamId} title="Neu laden">
                 <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </Button>
@@ -522,7 +534,7 @@ const NlzPilotReadiness = () => {
             </Select>
           </div>
 
-          {dataMode === "production" ? (
+          {view === "operations" && dataMode === "production" ? (
             <div className="grid gap-3 border-t border-border pt-5 md:grid-cols-[1fr_170px_auto]">
               <Input value={newRunName} onChange={(event) => setNewRunName(event.target.value)} placeholder="z. B. U17 Pilot Herbst 2026" />
               <Input type="date" value={newRunStart} onChange={(event) => setNewRunStart(event.target.value)} />
@@ -531,7 +543,7 @@ const NlzPilotReadiness = () => {
                 Run planen
               </Button>
             </div>
-          ) : (
+          ) : view === "operations" ? (
             <div className="flex flex-col gap-2 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">QA-Modus ist schreibgeschützt</p>
@@ -541,9 +553,9 @@ const NlzPilotReadiness = () => {
                 <a href="/admin/qa"><FlaskConical className="mr-2 h-4 w-4" />QA Test Lab</a>
               </Button>
             </div>
-          )}
+          ) : null}
 
-          {selectedRun && dataMode === "production" ? (
+          {view === "operations" && selectedRun && dataMode === "production" ? (
             <div className="flex flex-wrap gap-2 border-t border-border pt-5">
               <Badge variant="outline">{selectedRun.status}</Badge>
               <Badge variant="outline">Start {selectedRun.started_at ?? "offen"}</Badge>
@@ -587,71 +599,86 @@ const NlzPilotReadiness = () => {
         )
       ) : readiness ? (
         <>
-          <div className={`rounded-lg border p-5 ${statusStyle[readiness.status]}`}>
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  {readiness.status === "GREEN" ? <ShieldCheck className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
-                  <p className="text-xs font-semibold uppercase">{readiness.status}</p>
-                </div>
-                <h3 className="mt-2 text-xl font-semibold">{readiness.status_label}</h3>
-                <p className="mt-2 text-xs opacity-80">Stand {new Date(readiness.generated_at).toLocaleString("de-DE")}</p>
-              </div>
-              <Badge variant="outline">{readiness.privacy_level}</Badge>
-            </div>
-            {readiness.blockers.length > 0 ? (
-              <div className="mt-4 space-y-1 text-sm">{readiness.blockers.map((message) => <p key={message}>• {message}</p>)}</div>
-            ) : null}
-            {readiness.warnings.length > 0 ? (
-              <div className="mt-4 border-t border-current/20 pt-3 space-y-1 text-xs opacity-90">{readiness.warnings.map((message) => <p key={message}>• {message}</p>)}</div>
-            ) : null}
-          </div>
-
-          <Card>
-            <CardContent className="p-5 md:p-6">
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <Metric label="Athleten" value={readiness.setup.athletes} detail={`${readiness.setup.coaches} Coach(es)`} />
-                <Metric label="Run-Zuordnung" value={`${readiness.activation.with_program_run_id}/${readiness.setup.athletes}`} />
-                <Metric label="Consent" value={formatPercent(readiness.consent.rate)} detail={`${readiness.consent.null} offen`} />
-                <Metric label="Aggregate" value={readiness.data_quality.aggregate_visible ? "sichtbar" : "gesperrt"} detail={readiness.data_quality.low_confidence ? "Low Confidence" : "n-Grenze geprüft"} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2 text-base"><CalendarCheck className="h-4 w-4 text-primary" />Pre-Messung</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-5">
-                <Metric label="Validiert" value={`${readiness.pre_measurement.validated_complete}/${readiness.setup.athletes}`} />
-                <Metric label="Development" value={`${readiness.pre_measurement.development_index_complete}/${readiness.setup.athletes}`} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Activity className="h-4 w-4 text-primary" />Nutzung</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-5">
-                <Metric label="Check-ins heute" value={readiness.daily_tracking.checkins_today} />
-                <Metric label="7 Tage aktiv" value={readiness.daily_tracking.active_7d} />
-                <Metric label="Day 1" value={readiness.daily_tracking.day_1_completed} />
-                <Metric label="Ø Completion" value={formatPercent(readiness.daily_tracking.avg_completion_rate)} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Database className="h-4 w-4 text-primary" />Datenintegrität</CardTitle></CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {Object.entries(readiness.data_quality)
-                  .filter(([, value]) => typeof value === "number")
-                  .slice(0, 8)
-                  .map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2">
-                      <span className="text-xs text-muted-foreground">{key.replaceAll("_", " ")}</span>
-                      <span className="font-medium">{String(value)}</span>
+          {view === "operations" ? (
+            <>
+              <div className={`rounded-lg border p-5 ${statusStyle[readiness.status]}`}>
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      {readiness.status === "GREEN" ? <ShieldCheck className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
+                      <p className="text-xs font-semibold uppercase">{readiness.status}</p>
                     </div>
-                  ))}
+                    <h3 className="mt-2 text-xl font-semibold">{readiness.status_label}</h3>
+                    <p className="mt-2 text-xs opacity-80">Stand {new Date(readiness.generated_at).toLocaleString("de-DE")}</p>
+                  </div>
+                  <Badge variant="outline">{readiness.privacy_level}</Badge>
+                </div>
+                {readiness.blockers.length > 0 ? (
+                  <div className="mt-4 space-y-1 text-sm">{readiness.blockers.map((message) => <p key={message}>• {message}</p>)}</div>
+                ) : null}
+                {readiness.warnings.length > 0 ? (
+                  <div className="mt-4 border-t border-current/20 pt-3 space-y-1 text-xs opacity-90">{readiness.warnings.map((message) => <p key={message}>• {message}</p>)}</div>
+                ) : null}
+              </div>
+
+              <Card>
+                <CardContent className="p-5 md:p-6">
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <Metric label="Athleten" value={readiness.setup.athletes} detail={`${readiness.setup.coaches} Coach(es)`} />
+                    <Metric label="Run-Zuordnung" value={`${readiness.activation.with_program_run_id}/${readiness.setup.athletes}`} />
+                    <Metric label="Consent" value={formatPercent(readiness.consent.rate)} detail={`${readiness.consent.null} offen`} />
+                    <Metric label="Aggregate" value={readiness.data_quality.aggregate_visible ? "sichtbar" : "gesperrt"} detail={readiness.data_quality.low_confidence ? "Low Confidence" : "n-Grenze geprüft"} />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2 text-base"><CalendarCheck className="h-4 w-4 text-primary" />Pre-Messung</CardTitle></CardHeader>
+                  <CardContent className="grid grid-cols-2 gap-5">
+                    <Metric label="Validiert" value={`${readiness.pre_measurement.validated_complete}/${readiness.setup.athletes}`} />
+                    <Metric label="Development" value={`${readiness.pre_measurement.development_index_complete}/${readiness.setup.athletes}`} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Activity className="h-4 w-4 text-primary" />Nutzung</CardTitle></CardHeader>
+                  <CardContent className="grid grid-cols-2 gap-5">
+                    <Metric label="Check-ins heute" value={readiness.daily_tracking.checkins_today} />
+                    <Metric label="7 Tage aktiv" value={readiness.daily_tracking.active_7d} />
+                    <Metric label="Day 1" value={readiness.daily_tracking.day_1_completed} />
+                    <Metric label="Ø Completion" value={formatPercent(readiness.daily_tracking.avg_completion_rate)} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Database className="h-4 w-4 text-primary" />Datenintegrität</CardTitle></CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    {Object.entries(readiness.data_quality)
+                      .filter(([, value]) => typeof value === "number")
+                      .slice(0, 8)
+                      .map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2">
+                          <span className="text-xs text-muted-foreground">{key.replaceAll("_", " ")}</span>
+                          <span className="font-medium">{String(value)}</span>
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="p-5 md:p-6">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  <Metric label="Athleten" value={readiness.setup.athletes} />
+                  <Metric label="Consent" value={formatPercent(readiness.consent.rate)} detail={`${readiness.consent.null} offen`} />
+                  <Metric label="Ø Completion" value={formatPercent(readiness.daily_tracking.avg_completion_rate)} />
+                  <Metric label="Aggregate" value={readiness.data_quality.aggregate_visible ? "sichtbar" : "gesperrt"} detail={readiness.data_quality.low_confidence ? "Low Confidence" : "n-Grenze geprüft"} />
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
 
-          {performanceEvidence ? (
+          {view === "evidence" && performanceEvidence ? (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">56-Tage Transfer-Coverage</CardTitle>
@@ -682,15 +709,18 @@ const NlzPilotReadiness = () => {
             </Card>
           ) : null}
 
-          <Card>
-            <CardHeader><CardTitle className="text-base">Fehlende Zuordnungen und Messungen</CardTitle></CardHeader>
-            <CardContent className="grid gap-5 md:grid-cols-3">
-              <MissingList title="Programminstanz" players={readiness.missing_players.program_instance} />
-              <MissingList title="Validierte Pre-Messung" players={readiness.missing_players.validated_pre} />
-              <MissingList title="Development Index Pre" players={readiness.missing_players.development_pre} />
-            </CardContent>
-          </Card>
+          {view === "operations" ? (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Fehlende Zuordnungen und Messungen</CardTitle></CardHeader>
+              <CardContent className="grid gap-5 md:grid-cols-3">
+                <MissingList title="Programminstanz" players={readiness.missing_players.program_instance} />
+                <MissingList title="Validierte Pre-Messung" players={readiness.missing_players.validated_pre} />
+                <MissingList title="Development Index Pre" players={readiness.missing_players.development_pre} />
+              </CardContent>
+            </Card>
+          ) : null}
 
+          {view === "evidence" ? (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Run-spezifisches Evidence-Paket</CardTitle>
@@ -721,6 +751,32 @@ const NlzPilotReadiness = () => {
               ) : null}
             </CardContent>
           </Card>
+          ) : null}
+
+          {view === "evidence" && performanceEvidence && performanceEvidence.coach_team_observations.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Aggregierte Coach-Beobachtungen</CardTitle>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Teamweite Beobachtungen aus den Wochenreviews. Keine individuellen Coach-Bewertungen.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {performanceEvidence.coach_team_observations.slice(0, 12).map((row, index) => (
+                    <div
+                      key={`${String(row.week_number ?? index)}-${String(row.domain_id ?? index)}`}
+                      className="grid gap-2 border-b border-border/60 pb-3 text-sm sm:grid-cols-[100px_minmax(0,1fr)_auto]"
+                    >
+                      <span className="text-muted-foreground">Woche {String(row.week_number ?? "-")}</span>
+                      <span>{String(row.domain_label ?? row.domain_id ?? "Beobachtung")}</span>
+                      <span className="font-medium">{String(row.avg_value ?? row.value ?? "-")}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
         </>
       ) : (
         <div className="rounded-lg border border-border p-6 text-sm text-muted-foreground">
