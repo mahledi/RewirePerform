@@ -29,7 +29,7 @@ export type MahleOsFeedbackHandlerDependencies = {
   readPage: (parameters: {
     requestId: string;
     cursorCreatedAt: string | null;
-    cursorId: string | null;
+    cursorReference: string | null;
     limit: number;
   }) => Promise<FeedbackRpcResult>;
   randomUUID?: () => string;
@@ -142,7 +142,7 @@ export const handleMahleOsFeedbackRead = async (
     const { data, error } = await dependencies.readPage({
       requestId,
       cursorCreatedAt: parsedRequest.cursor?.createdAt ?? null,
-      cursorId: parsedRequest.cursor?.id ?? null,
+      cursorReference: parsedRequest.cursor?.reference ?? null,
       limit: parsedRequest.limit,
     });
 

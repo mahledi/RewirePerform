@@ -23,12 +23,12 @@ Deno.serve((request) =>
       );
       return { data, error };
     },
-    readPage: async ({ requestId, cursorCreatedAt, cursorId, limit }) => {
+    readPage: async ({ requestId, cursorCreatedAt, cursorReference, limit }) => {
       const { data, error } = await serviceClient().rpc("read_mahleos_feedback_page", {
         _request_id: requestId,
         _client_id: "mahleos-feedback-v1",
         _cursor_created_at: cursorCreatedAt,
-        _cursor_id: cursorId,
+        _cursor_reference: cursorReference,
         _limit: limit,
       });
       return { data, error };

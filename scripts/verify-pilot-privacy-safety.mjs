@@ -25,6 +25,14 @@ const files = {
   evidenceParticipationGate: read("src/components/admin/EvidenceParticipationGate.tsx"),
   main: read("src/main.tsx"),
   mahleOsEdge: read("supabase/functions/mahleos-read/index.ts"),
+  mahleOsFeedbackAuth: read("supabase/functions/_shared/mahleOsMachineAuth.ts"),
+  mahleOsFeedbackCore: read("supabase/functions/_shared/mahleOsFeedbackContractCore.ts"),
+  mahleOsFeedbackEdge: read("supabase/functions/mahleos-feedback-read/index.ts"),
+  mahleOsFeedbackManifest: read("docs/mahleos-handoff/feedback-contract/v1/manifest.json"),
+  mahleOsFeedbackMigration: [
+    read("supabase/migrations/20260723154047_mahleos_feedback_read_contract_v1.sql"),
+    read("supabase/migrations/20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql"),
+  ].join("\n"),
   mahleOsMigration: [
     read("supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql"),
     read("supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql"),
@@ -191,7 +199,7 @@ verify(
 verify(
   "invariant",
   "I-13",
-  "MahleOS receives only allow-listed aggregate reads behind a rotatable machine key",
+  "MahleOS aggregate reads remain allow-listed behind a rotatable machine key",
   files.mahleOsEdge.includes('rpc("read_mahleos_operational_view"') &&
     !files.mahleOsEdge.includes(".from(") &&
     !files.mahleOsEdge.includes("Access-Control-Allow-Origin") &&
@@ -211,6 +219,32 @@ verify(
     !files.mahleOsMigration.includes("f.message") &&
     !files.mahleOsMigration.includes("p.full_name") &&
     !files.mahleOsMigration.includes("p.email"),
+);
+verify(
+  "invariant",
+  "I-14",
+  "MahleOS feedback reads are a separate least-privilege channel with explicit free-text limits",
+  files.mahleOsFeedbackEdge.includes('rpc("read_mahleos_feedback_page"') &&
+    files.mahleOsFeedbackEdge.includes('"audit_mahleos_feedback_invalid_request"') &&
+    !files.mahleOsFeedbackEdge.includes(".from(") &&
+    !files.mahleOsFeedbackEdge.includes("Access-Control-Allow-Origin") &&
+    files.mahleOsFeedbackAuth.includes('Deno.env.get("MAHLEOS_FEEDBACK_READ_KEY")') &&
+    files.mahleOsFeedbackCore.includes('"next_cursor_reference"') &&
+    !files.mahleOsFeedbackCore.includes('"next_cursor_id"') &&
+    files.mahleOsFeedbackMigration.includes(
+      "FROM PUBLIC, anon, authenticated, service_role",
+    ) &&
+    files.mahleOsFeedbackMigration.includes(
+      "GRANT SELECT, INSERT ON TABLE public.mahleos_feedback_access_log",
+    ) &&
+    files.mahleOsFeedbackMigration.includes("NOT COALESCE(p.is_test_user, false)") &&
+    files.mahleOsFeedbackMigration.includes("'free_text_may_contain_personal_data', true") &&
+    files.mahleOsFeedbackManifest.includes(
+      '"raw_feedback_persistence_in_mahleos": "FORBIDDEN"',
+    ) &&
+    files.mahleOsFeedbackManifest.includes(
+      '"sensitive_feedback_model_use": "FORBIDDEN"',
+    ),
 );
 
 const hasTeamConsentFilter =
@@ -297,6 +331,16 @@ verify(
   "G-05E",
   "Published privacy text is not marked as awaiting final legal review",
   !/vor App-Store-Veröffentlichung[^.]*juristisch final geprüft/i.test(files.privacy),
+);
+verify(
+  "release_gate",
+  "G-05F",
+  "Privacy text distinguishes private reflections from voluntarily submitted feedback",
+  files.privacy.includes("Journal- und private Reflexionstexte") &&
+    files.privacy.includes("Feedback an RewirePerform") &&
+    files.privacy.includes("lokal kontrollierte MahleOS-Sicherheitssystem") &&
+    files.privacy.includes("nicht automatisch an eine KI weitergegeben") &&
+    files.privacy.includes("Trainer sehen dieses Feedback nicht"),
 );
 
 for (const result of results) {

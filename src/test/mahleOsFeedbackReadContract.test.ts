@@ -12,6 +12,7 @@ const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path)
 
 const requestId = "11111111-1111-4111-8111-111111111111";
 const feedbackId = "22222222-2222-4222-8222-222222222222";
+const feedbackReference = "a".repeat(64);
 const createdAt = "2026-07-23T15:30:00.123456+00:00";
 
 const validResult = () => ({
@@ -21,7 +22,7 @@ const validResult = () => ({
   generated_at: createdAt,
   items: [
     {
-      feedback_reference: "a".repeat(64),
+      feedback_reference: feedbackReference,
       category: "bug",
       status: "open",
       created_at: createdAt,
@@ -38,7 +39,7 @@ const validResult = () => ({
   ],
   has_more: true,
   next_cursor_created_at: createdAt,
-  next_cursor_id: feedbackId,
+  next_cursor_reference: feedbackReference,
   privacy: {
     structured_user_identifiers_exported: false,
     recognized_direct_identifiers_redacted: true,
@@ -57,8 +58,14 @@ describe("MahleOS feedback read contract", () => {
     expect(parseFeedbackReadRequest({ limit: 26 })).toBeNull();
     expect(parseFeedbackReadRequest({ filter: "open" })).toBeNull();
 
-    const encoded = encodeFeedbackCursor({ createdAt, id: feedbackId });
-    expect(decodeFeedbackCursor(encoded)).toEqual({ createdAt, id: feedbackId });
+    const encoded = encodeFeedbackCursor({ createdAt, reference: feedbackReference });
+    expect(decodeFeedbackCursor(encoded)).toEqual({
+      createdAt,
+      reference: feedbackReference,
+    });
+    const normalized = encoded.replaceAll("-", "+").replaceAll("_", "/");
+    const decodedPayload = atob(normalized + "=".repeat((4 - normalized.length % 4) % 4));
+    expect(decodedPayload).not.toContain(feedbackId);
     expect(parseFeedbackReadRequest({ cursor: `${encoded}tampered` })).toBeNull();
   });
 
@@ -78,7 +85,7 @@ describe("MahleOS feedback read contract", () => {
       },
     });
     expect(projected?.next_cursor).toEqual(expect.any(String));
-    expect(JSON.stringify(projected)).not.toContain("next_cursor_id");
+    expect(JSON.stringify(projected)).not.toContain(feedbackId);
   });
 
   it("fails closed on schema drift, identifiers and unsafe privacy claims", () => {
@@ -141,7 +148,10 @@ describe("MahleOS feedback read contract", () => {
     expect(migration).toContain("recent_requests >= 30");
     expect(migration).toContain("NOT COALESCE(p.is_test_user, false)");
     expect(migration).toContain("TO service_role");
-    expect(migration).toContain("FROM PUBLIC, anon, authenticated");
+    expect(migration).toContain("FROM PUBLIC, anon, authenticated, service_role");
+    expect(migration).toContain("GRANT SELECT, INSERT ON TABLE public.mahleos_feedback_access_log");
+    expect(migration).toContain("_cursor_reference text DEFAULT NULL");
+    expect(migration).not.toContain("_cursor_id");
     expect(hardening).toContain("'structured_user_identifiers_exported', false");
     expect(hardening).toContain("'recognized_direct_identifiers_redacted', true");
     expect(hardening).toContain("'free_text_may_contain_personal_data', true");

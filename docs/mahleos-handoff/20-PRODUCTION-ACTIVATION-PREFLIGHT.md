@@ -70,16 +70,19 @@ prevents incomplete operational coverage from being reported as `GREEN`.
    successful machine authentication, malformed feedback reads must create only
    a generic payload-free audit row and must share the same 30/minute window as
    valid reads.
-13. Run positive synthetic reads for every Operations view, one synthetic,
-    locked Evidence payload and one marked synthetic feedback row. No real
-    athlete payload is needed for activation.
+13. Run positive synthetic reads for every Operations view and one synthetic,
+    locked Evidence payload. For feedback, first prove that one marked
+    synthetic row is excluded, then run exactly one positive read against
+    deliberately submitted, non-sensitive owner feedback. Never disguise an
+    unmarked test account as Production. No real athlete payload is needed.
 14. Verify the existing daily 30-day app-event cleanup in Production. Schedule
     the service-only 90-day feedback-access-log cleanup only after a separate
     retention approval. Do not schedule deletion of resolved feedback until its
     retention period is explicitly approved.
 15. Pin MahleOS to the reviewed producer commit and both manifest checksums.
-16. Enable one synthetic MahleOS read. Human review remains required before any
-    daily automation or external report is enabled.
+16. Enable one supervised MahleOS feedback read using only that approved owner
+    feedback. Human review remains required before any daily automation or
+    external report is enabled.
 
 ## No-false-green acceptance rules
 

@@ -38,7 +38,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: 23. Juli 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
+          Stand: 27. Juli 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert.
         </p>
@@ -62,7 +62,7 @@ const Privacy = () => {
           <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Die kurze Wahrheit zuerst</h2>
             <ul className="space-y-2">
-              <li><span className="text-foreground">Deine Journale und Freitexte werden nicht gelesen, nicht analysiert, nicht von einer KI verarbeitet und nicht in Statistiken einbezogen.</span> Sie liegen zugriffsgeschützt in deinem Konto, damit <em>du</em> sie später wieder sehen kannst. Mehr nicht.</li>
+              <li><span className="text-foreground">Deine Journal- und privaten Reflexionstexte werden nicht gelesen, nicht analysiert, nicht von einer KI verarbeitet und nicht in Statistiken einbezogen.</span> Sie liegen zugriffsgeschützt in deinem Konto, damit <em>du</em> sie später wieder sehen kannst. Mehr nicht.</li>
               <li><span className="text-foreground">Trainer sehen keine privaten Athleteninhalte.</span> Keine Stimmungswerte, keine Journale, keine Einzelantworten und keine psychologischen Bezeichnungen. Trainer können nur eigene, strukturierte Beobachtungen zu sichtbarem Sportverhalten erfassen.</li>
               <li><span className="text-foreground">Gruppierte Fortschrittsdaten ohne direkte Identifikatoren</span> können beobachtete Veränderungen und Datenqualität dokumentieren - <em>aber nur, wenn du aktiv zustimmst</em>. Du entscheidest. Du kannst jederzeit widerrufen.</li>
             </ul>
@@ -79,14 +79,15 @@ const Privacy = () => {
               Erhoben wird ausschließlich, was für drei Zwecke nötig ist:
               <span className="text-foreground"> (1)</span> dein Programm sauber durchzuführen,
               <span className="text-foreground"> (2)</span> dir am Ende ehrlich zu zeigen, was sich verändert hat, und
-              <span className="text-foreground"> (3)</span> - wenn du zustimmst - beobachtete Veränderungen gruppiert und mit klaren Aussagegrenzen auszuwerten.
+              <span className="text-foreground"> (3)</span> - wenn du zustimmst - beobachtete Veränderungen gruppiert und mit klaren Aussagegrenzen auszuwerten und
+              <span className="text-foreground"> (4)</span> freiwillig gesendetes Feedback für Support, Fehlerbehebung, Sicherheit und Produktqualität zu bearbeiten.
             </p>
           </section>
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Rechtsgrundlage (DSGVO)</h2>
             <ul className="space-y-2">
-              <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
+              <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Programmfortschritt, Tageslogik, Check-ins, Assessments, auf Wunsch Erinnerungen sowie freiwillig gesendetes Feedback für angefragten Support und Fehlerbehebung. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. <span className="text-foreground">Ohne dein aktives Ja passiert hier nichts.</span></li>
               <li><span className="text-foreground">Art. 9 Abs. 2 lit. a DSGVO - ausdrückliche Einwilligung:</span> Soweit psychologisch sensible Angaben verarbeitet werden, ist dafür eine gesonderte, ausdrückliche Einwilligung erforderlich.</li>
               <li><span className="text-foreground">Minderjährige:</span> Unter 16 werden datenabhängige Programmfunktionen erst freigeschaltet, wenn eine sorgeberechtigte Person und der Jugendliche selbst der aktuellen Version zugestimmt haben. Mit 16 oder 17 entscheidet der Jugendliche im vorgesehenen Deutschland-Flow selbst. Der Verein ist an diesem Freigabeprozess nicht beteiligt.</li>
@@ -115,7 +116,8 @@ const Privacy = () => {
               <li><span className="text-foreground">Strukturierte Assessments und Fragebögen:</span> Werte zu Beginn, in der Mitte und am Ende, um beobachtete Veränderungen über die 56 Tage zu dokumentieren. Aussagekraft, Version und Nutzungsrechte jedes Instruments werden getrennt bewertet.</li>
               <li><span className="text-foreground">Strukturierte Transfer-Beobachtungen:</span> An ausgewählten Tagen eine kurze Antwort zu einem konkreten Verhalten in Training oder Wettkampf. Sie ersetzt die optionale freie Reflexion und enthält keinen Freitext.</li>
               <li><span className="text-foreground">Trainer-Beobachtungen:</span> Strukturierte Bewertungen direkt beobachtbaren Sportverhaltens. Sie enthalten keine Diagnose und keinen Pflicht-Freitext.</li>
-              <li><span className="text-foreground">Journal- und Freitexte:</span> werden ausschließlich gespeichert, damit du sie wiederfindest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer KI gelesen, nicht in Gruppenwerte einbezogen und nicht für Personalisierung verwendet.</span></li>
+              <li><span className="text-foreground">Journal- und private Reflexionstexte:</span> werden ausschließlich gespeichert, damit du sie wiederfindest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer KI gelesen, nicht in Gruppenwerte einbezogen und nicht für Personalisierung verwendet.</span></li>
+              <li><span className="text-foreground">Feedback an RewirePerform:</span> Wenn du selbst Feedback sendest, verarbeiten wir Kategorie, Nachricht, Status, Zeitpunkt und eine eng begrenzte technische Umgebung. Für Support, Fehlerbehebung, Sicherheit und Produktqualität dürfen autorisierte Administration und das lokal kontrollierte MahleOS-Sicherheitssystem den serverseitig bereinigten Feedbacktext lesen. <span className="text-foreground">Trainer sehen dieses Feedback nicht. Es fließt nicht in psychologische Auswertungen oder Pilot-Evidence ein und wird nicht automatisch an eine KI weitergegeben.</span> Weil Freitext trotz Filterung persönliche Angaben enthalten kann, solltest du dort keine Passwörter, Zugangsdaten oder unnötigen sensiblen Informationen eingeben.</li>
               <li><span className="text-foreground">Trainingszeiten und Benachrichtigungseinstellungen:</span> nur, wenn du Erinnerungen aktivierst.</li>
             </ul>
           </section>
@@ -144,13 +146,13 @@ const Privacy = () => {
           </section>
 
           <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
-            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Journale & Freitexte — die ehrliche Klarstellung</h2>
+            <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Journale & private Reflexionen — die ehrliche Klarstellung</h2>
             <p>
               In früheren Versionen dieser Seite stand sinngemäß, das System könne „wiederkehrende Themen
               vorsichtig erkennen". Das stimmt nicht und wird hiermit korrigiert.
             </p>
             <p className="mt-3 text-foreground">
-              Wahrheit: Deine Journale und Freitexte werden gespeichert, damit du sie selbst wieder lesen kannst.
+              Wahrheit: Deine Journal- und privaten Reflexionstexte werden gespeichert, damit du sie selbst wieder lesen kannst.
               Sonst nichts.
             </p>
             <p className="mt-3">
@@ -179,7 +181,7 @@ const Privacy = () => {
             </ul>
             <p className="mt-3 text-foreground">Was niemals einfließt — auch nicht mit deiner Zustimmung:</p>
             <ul className="mt-2 space-y-1">
-              <li>– Journaltexte, Freitexte, persönliche Reflexionen</li>
+              <li>– Journaltexte, persönliche Reflexionen und Feedback-Freitext</li>
               <li>– identifizierbare Einzelantworten oder individuelle Athletenprofile in Berichten und Präsentationen</li>
               <li>– Identifizierende Merkmale (Name, E-Mail, Geburtsdatum, Position, Verein)</li>
               <li>– Werte aus Gruppen mit weniger als fünf freigegebenen Personen</li>
@@ -198,7 +200,7 @@ const Privacy = () => {
               Das System ordnet Check-ins, Aufgaben und Assessments dem richtigen Programmtag zu, berechnet
               Serien und Abschlüsse, entscheidet, welcher Tagesinhalt heute angezeigt wird, und bereitet
               deinen Vergleich zwischen Anfang und Ende auf. Personalisierte Inhalte (zum Beispiel KI-generierte Aufgaben) basieren
-              auf strukturierten Profildaten und Assessment-Werten — <span className="text-foreground">nie auf Journal- oder Freitexten</span>.
+              auf strukturierten Profildaten und Assessment-Werten — <span className="text-foreground">nie auf Journal- oder privaten Reflexionstexten</span>.
             </p>
           </section>
 

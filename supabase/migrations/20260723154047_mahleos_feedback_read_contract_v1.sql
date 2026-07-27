@@ -65,7 +65,8 @@ CREATE TABLE IF NOT EXISTS public.mahleos_feedback_access_log (
 
 ALTER TABLE public.mahleos_feedback_access_log ENABLE ROW LEVEL SECURITY;
 
-REVOKE ALL ON TABLE public.mahleos_feedback_access_log FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.mahleos_feedback_access_log
+  FROM PUBLIC, anon, authenticated, service_role;
 GRANT SELECT, INSERT ON TABLE public.mahleos_feedback_access_log TO service_role;
 
 CREATE OR REPLACE FUNCTION public.mahleos_feedback_access_log_append_only()
@@ -92,7 +93,7 @@ CREATE OR REPLACE FUNCTION public.read_mahleos_feedback_page(
   _request_id uuid,
   _client_id text,
   _cursor_created_at timestamptz DEFAULT NULL,
-  _cursor_id uuid DEFAULT NULL,
+  _cursor_reference text DEFAULT NULL,
   _limit integer DEFAULT 25
 )
 RETURNS jsonb
@@ -104,13 +105,37 @@ DECLARE
   recent_requests integer;
   response_payload jsonb;
   returned_count integer;
+  cursor_id uuid;
 BEGIN
   IF _request_id IS NULL
     OR _client_id <> 'mahleos-feedback-v1'
     OR _limit NOT BETWEEN 1 AND 25
-    OR ((_cursor_created_at IS NULL) <> (_cursor_id IS NULL))
+    OR ((_cursor_created_at IS NULL) <> (_cursor_reference IS NULL))
+    OR (
+      _cursor_reference IS NOT NULL
+      AND _cursor_reference !~ '^[a-f0-9]{64}$'
+    )
   THEN
     RETURN jsonb_build_object('ok', false, 'error', 'invalid_request');
+  END IF;
+
+  IF _cursor_reference IS NOT NULL THEN
+    SELECT f.id
+    INTO cursor_id
+    FROM public.feedback f
+    INNER JOIN public.profiles p
+      ON p.id = f.user_id
+     AND NOT COALESCE(p.is_test_user, false)
+    WHERE f.created_at = _cursor_created_at
+      AND encode(
+        extensions.digest(convert_to(f.id::text, 'UTF8'), 'sha256'),
+        'hex'
+      ) = _cursor_reference
+    LIMIT 1;
+
+    IF cursor_id IS NULL THEN
+      RETURN jsonb_build_object('ok', false, 'error', 'invalid_request');
+    END IF;
   END IF;
 
   PERFORM pg_advisory_xact_lock(hashtext('mahleos-feedback-read:' || _client_id));
@@ -137,6 +162,8 @@ BEGIN
     SELECT
       f.id,
       f.created_at,
+      encode(extensions.digest(convert_to(f.id::text, 'UTF8'), 'sha256'), 'hex')
+        AS feedback_reference,
       jsonb_build_object(
         'feedback_reference',
           encode(extensions.digest(convert_to(f.id::text, 'UTF8'), 'sha256'), 'hex'),
@@ -160,7 +187,7 @@ BEGIN
      AND NOT COALESCE(p.is_test_user, false)
     WHERE _cursor_created_at IS NULL
       OR f.created_at < _cursor_created_at
-      OR (f.created_at = _cursor_created_at AND f.id < _cursor_id)
+      OR (f.created_at = _cursor_created_at AND f.id < cursor_id)
     ORDER BY f.created_at DESC, f.id DESC
     LIMIT _limit + 1
   ),
@@ -172,12 +199,15 @@ BEGIN
   ),
   page_summary AS (
     SELECT
-      COALESCE(jsonb_agg(item ORDER BY created_at DESC, id DESC), '[]'::jsonb) AS items,
+      COALESCE(
+        jsonb_agg(item ORDER BY created_at DESC, id DESC),
+        '[]'::jsonb
+      ) AS items,
       COUNT(*)::integer AS item_count
     FROM page_rows
   ),
   cursor_row AS (
-    SELECT created_at, id
+    SELECT created_at, id, feedback_reference
     FROM page_rows
     ORDER BY created_at ASC, id ASC
     LIMIT 1
@@ -194,9 +224,9 @@ BEGIN
         WHEN (SELECT COUNT(*) FROM candidates) > _limit THEN cursor_row.created_at
         ELSE NULL
       END,
-    'next_cursor_id',
+    'next_cursor_reference',
       CASE
-        WHEN (SELECT COUNT(*) FROM candidates) > _limit THEN cursor_row.id
+        WHEN (SELECT COUNT(*) FROM candidates) > _limit THEN cursor_row.feedback_reference
         ELSE NULL
       END,
     'privacy', jsonb_build_object(
@@ -234,19 +264,19 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.mahleos_feedback_access_log_append_only()
-  FROM PUBLIC, anon, authenticated;
+  FROM PUBLIC, anon, authenticated, service_role;
 REVOKE ALL ON FUNCTION public.read_mahleos_feedback_page(
   uuid,
   text,
   timestamptz,
-  uuid,
+  text,
   integer
-) FROM PUBLIC, anon, authenticated;
+) FROM PUBLIC, anon, authenticated, service_role;
 
 GRANT EXECUTE ON FUNCTION public.read_mahleos_feedback_page(
   uuid,
   text,
   timestamptz,
-  uuid,
+  text,
   integer
 ) TO service_role;

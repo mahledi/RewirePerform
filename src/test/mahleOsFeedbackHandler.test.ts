@@ -31,7 +31,7 @@ const validDatabaseResult = () => ({
   ],
   has_more: false,
   next_cursor_created_at: null,
-  next_cursor_id: null,
+  next_cursor_reference: null,
   privacy: {
     structured_user_identifiers_exported: false,
     recognized_direct_identifiers_redacted: true,
@@ -177,7 +177,7 @@ describe("MahleOS feedback Edge handler", () => {
     expect(readPage).toHaveBeenCalledWith({
       requestId,
       cursorCreatedAt: null,
-      cursorId: null,
+      cursorReference: null,
       limit: 10,
     });
     expect(result).toMatchObject({
@@ -188,7 +188,7 @@ describe("MahleOS feedback Edge handler", () => {
         model_safe_without_redaction: false,
       },
     });
-    expect(result).not.toHaveProperty("next_cursor_id");
+    expect(result).not.toHaveProperty("next_cursor_reference");
   });
 
   it("maps database errors, rate limits and invalid projections fail closed", async () => {

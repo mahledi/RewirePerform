@@ -13,7 +13,7 @@ const ALLOWED_RESULT_KEYS = new Set([
   "items",
   "has_more",
   "next_cursor_created_at",
-  "next_cursor_id",
+  "next_cursor_reference",
   "privacy",
 ]);
 const ALLOWED_ITEM_KEYS = new Set([
@@ -49,7 +49,7 @@ type RecordValue = Record<string, unknown>;
 
 export type FeedbackReadCursor = {
   createdAt: string;
-  id: string;
+  reference: string;
 };
 
 export type FeedbackReadRequest = {
@@ -118,8 +118,8 @@ const base64UrlDecode = (value: string) => {
   return atob(`${normalized}${padding}`);
 };
 
-export const encodeFeedbackCursor = ({ createdAt, id }: FeedbackReadCursor) =>
-  base64UrlEncode(JSON.stringify({ v: 1, created_at: createdAt, id }));
+export const encodeFeedbackCursor = ({ createdAt, reference }: FeedbackReadCursor) =>
+  base64UrlEncode(JSON.stringify({ v: 1, created_at: createdAt, reference }));
 
 export const decodeFeedbackCursor = (cursor: string): FeedbackReadCursor | null => {
   if (!/^[A-Za-z0-9_-]{1,256}$/u.test(cursor)) return null;
@@ -128,15 +128,15 @@ export const decodeFeedbackCursor = (cursor: string): FeedbackReadCursor | null 
     const decoded = JSON.parse(base64UrlDecode(cursor)) as unknown;
     if (
       !isRecord(decoded)
-      || !hasOnlyKeys(decoded, new Set(["v", "created_at", "id"]))
+      || !hasOnlyKeys(decoded, new Set(["v", "created_at", "reference"]))
       || decoded.v !== 1
       || !isIsoTimestamp(decoded.created_at)
-      || typeof decoded.id !== "string"
-      || !UUID_PATTERN.test(decoded.id)
+      || typeof decoded.reference !== "string"
+      || !HASH_PATTERN.test(decoded.reference)
     ) {
       return null;
     }
-    return { createdAt: decoded.created_at, id: decoded.id };
+    return { createdAt: decoded.created_at, reference: decoded.reference };
   } catch {
     return null;
   }
@@ -220,11 +220,12 @@ export const projectFeedbackReadResult = (value: unknown): FeedbackReadProjectio
     || typeof value.has_more !== "boolean"
     || (value.has_more && value.items.length === 0)
     || (value.next_cursor_created_at !== null && !isIsoTimestamp(value.next_cursor_created_at))
-    || (value.next_cursor_id !== null
-      && (typeof value.next_cursor_id !== "string" || !UUID_PATTERN.test(value.next_cursor_id)))
+    || (value.next_cursor_reference !== null
+      && (typeof value.next_cursor_reference !== "string"
+        || !HASH_PATTERN.test(value.next_cursor_reference)))
     || (value.has_more
-      ? value.next_cursor_created_at === null || value.next_cursor_id === null
-      : value.next_cursor_created_at !== null || value.next_cursor_id !== null)
+      ? value.next_cursor_created_at === null || value.next_cursor_reference === null
+      : value.next_cursor_created_at !== null || value.next_cursor_reference !== null)
     || !isRecord(value.privacy)
     || !hasOnlyKeys(value.privacy, ALLOWED_PRIVACY_KEYS)
     || value.privacy.structured_user_identifiers_exported !== false
@@ -243,7 +244,7 @@ export const projectFeedbackReadResult = (value: unknown): FeedbackReadProjectio
   const nextCursor = value.has_more
     ? encodeFeedbackCursor({
       createdAt: value.next_cursor_created_at as string,
-      id: value.next_cursor_id as string,
+      reference: value.next_cursor_reference as string,
     })
     : null;
 

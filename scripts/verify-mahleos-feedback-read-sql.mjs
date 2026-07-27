@@ -62,7 +62,7 @@ const asObject = (value) => typeof value === "string" ? JSON.parse(value) : valu
 const readFeedbackAsService = async ({
   requestId,
   cursorCreatedAt = null,
-  cursorId = null,
+  cursorReference = null,
   limit = 25,
   clientId = "mahleos-feedback-v1",
 }) => {
@@ -70,7 +70,7 @@ const readFeedbackAsService = async ({
   try {
     const result = await db.query(
       `SELECT public.read_mahleos_feedback_page($1, $2, $3, $4, $5) AS response`,
-      [requestId, clientId, cursorCreatedAt, cursorId, limit],
+      [requestId, clientId, cursorCreatedAt, cursorReference, limit],
     );
     return asObject(result.rows[0].response);
   } finally {
@@ -110,6 +110,9 @@ try {
     CREATE ROLE service_role;
     CREATE SCHEMA auth;
     CREATE SCHEMA extensions;
+
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public
+      GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO service_role;
 
     CREATE FUNCTION auth.uid()
     RETURNS uuid LANGUAGE sql STABLE AS $$
@@ -170,17 +173,17 @@ try {
     SELECT
       has_function_privilege(
         'service_role',
-        'public.read_mahleos_feedback_page(uuid,text,timestamptz,uuid,integer)',
+        'public.read_mahleos_feedback_page(uuid,text,timestamptz,text,integer)',
         'EXECUTE'
       ) AS service_can_read,
       has_function_privilege(
         'authenticated',
-        'public.read_mahleos_feedback_page(uuid,text,timestamptz,uuid,integer)',
+        'public.read_mahleos_feedback_page(uuid,text,timestamptz,text,integer)',
         'EXECUTE'
       ) AS authenticated_can_read,
       has_function_privilege(
         'anon',
-        'public.read_mahleos_feedback_page(uuid,text,timestamptz,uuid,integer)',
+        'public.read_mahleos_feedback_page(uuid,text,timestamptz,text,integer)',
         'EXECUTE'
       ) AS anon_can_read,
       has_function_privilege(
@@ -211,6 +214,33 @@ try {
     privileges.rows[0].anon_can_audit_invalid === false,
     "anon must not call the invalid-request audit",
   );
+  const tablePrivileges = await db.query(`
+    SELECT
+      has_table_privilege(
+        'service_role',
+        'public.mahleos_feedback_access_log',
+        'SELECT'
+      ) AS service_can_select,
+      has_table_privilege(
+        'service_role',
+        'public.mahleos_feedback_access_log',
+        'INSERT'
+      ) AS service_can_insert,
+      has_table_privilege(
+        'service_role',
+        'public.mahleos_feedback_access_log',
+        'UPDATE'
+      ) AS service_can_update,
+      has_table_privilege(
+        'service_role',
+        'public.mahleos_feedback_access_log',
+        'DELETE'
+      ) AS service_can_delete
+  `);
+  assert(tablePrivileges.rows[0].service_can_select === true, "service_role must select access logs");
+  assert(tablePrivileges.rows[0].service_can_insert === true, "service_role must append access logs");
+  assert(tablePrivileges.rows[0].service_can_update === false, "service_role must not update access logs");
+  assert(tablePrivileges.rows[0].service_can_delete === false, "service_role must not delete access logs");
 
   await db.query(
     "INSERT INTO auth.users(id) VALUES ($1), ($2)",
@@ -263,7 +293,7 @@ try {
     next_cursor: "synthetic-cursor",
   };
   delete edgeProjectionShape.next_cursor_created_at;
-  delete edgeProjectionShape.next_cursor_id;
+  delete edgeProjectionShape.next_cursor_reference;
   assert(
     validateSuccess(edgeProjectionShape),
     `Feedback response must match contract: ${JSON.stringify(validateSuccess.errors)}`,
@@ -276,11 +306,19 @@ try {
   );
   const serialized = JSON.stringify(firstPage);
   assert(!serialized.includes(ids.productionUser), "User IDs must never leave the database contract");
+  assert(
+    !serialized.includes(ids.productionFeedbackNewest),
+    "Raw feedback IDs must never leave the database contract",
+  );
   assert(!serialized.includes("QA-MUST-NOT-LEAVE"), "Test feedback must remain excluded");
   assert(!serialized.includes('"admin_note":'), "Admin notes must remain excluded");
   assert(
     firstPage.schema_version === "mahleos-feedback-read-v1.1",
     "The hardened response version must be explicit",
+  );
+  assert(
+    firstPage.next_cursor_reference === firstPage.items[0].feedback_reference,
+    "Pagination must use the non-reversible feedback reference",
   );
   assert(
     firstPage.privacy.structured_user_identifiers_exported === false
@@ -292,7 +330,7 @@ try {
   const secondPage = await readFeedbackAsService({
     requestId: ids.pageRequest,
     cursorCreatedAt: firstPage.next_cursor_created_at,
-    cursorId: firstPage.next_cursor_id,
+    cursorReference: firstPage.next_cursor_reference,
     limit: 1,
   });
   assert(secondPage.items.length === 1, "Cursor must expose the next production item");
@@ -647,8 +685,10 @@ try {
   console.log(JSON.stringify({
     migrationApplied: true,
     machineRpcServiceOnly: true,
+    auditTableLeastPrivilege: true,
     productionOnly: true,
     stablePagination: true,
+    cursorContainsNoRawFeedbackId: true,
     technicalContextAllowlist: true,
     clientInputCanonicalized: true,
     directIdentifiersRedacted: true,

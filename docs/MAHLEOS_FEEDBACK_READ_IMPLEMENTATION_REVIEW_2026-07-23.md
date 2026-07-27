@@ -55,6 +55,11 @@ Freitext kann trotz serverseitiger Musterbereinigung persönliche Angaben und in
   ausschliesslich der technischen Triage und darf weder Evidence noch
   Wirkungsaussagen beeinflussen,
 - serverseitige Ableitung von Rolle, Teambezug und Teststatus für technische App-Ereignisse,
+- Pagination-Cursor enthalten nur Zeitpunkt und nicht rückrechenbare
+  Feedback-Referenz, niemals die interne Feedback-ID,
+- die Access-Log-Tabelle erlaubt der `service_role` ausschließlich `SELECT`
+  und `INSERT`; `UPDATE` und `DELETE` werden auch bei alten Supabase-
+  Standardrechten explizit entzogen,
 - maximal 60 clientseitige App-Ereignisse je Nutzer und Minute,
 - clientseitige Ereignisse sind ausdrücklich nicht autoritativ und können den globalen Zustand allein nicht auf Rot setzen,
 - Produktionsdaten und nicht als Test markierte Feedbackzeilen,
@@ -87,6 +92,12 @@ Router-Major-Upgrade wird nicht ungeprüft mit dem Feedback- und
 Guardian-Sicherheitsblock vermischt; der Befund bleibt bis zu einem eigenen,
 vollständig getesteten Dependency-Hardening-Block offen.
 
+Das unabhängige R4-Hardening vom 27. Juli 2026 bestätigte erneut die
+vollständige CI mit 67 Testdateien und 367 Tests, die ausführbare
+PGlite-Migration einschließlich Least-Privilege-Rechten und cursorfreier
+interner IDs, Privacy Safety mit 22 von 22 Prüfungen sowie die
+Datenschutzdarstellung ohne horizontalen Überlauf auf Desktop und Mobil.
+
 ## Offene Aktivierungsgates
 
 Vor einem Live-Zugriff sind separat erforderlich:
@@ -95,8 +106,10 @@ Vor einem Live-Zugriff sind separat erforderlich:
 2. Konkrete Production-Freigabe für genau diese Migration.
 3. Konkrete Deployment-Freigabe für genau diese Edge Function.
 4. Getrennter Machine-Key in Supabase und macOS Keychain.
-5. Beaufsichtigter synthetischer Read mit Testfeedback.
-6. Negativtests für falschen Key, Testdaten, unbekannte Felder, gemeinsames
+5. Beaufsichtigter positiver Read mit einem bewusst vom Betreiber eingereichten,
+   nicht sensiblen Feedback. Ein nicht markierter Testaccount darf dafür nicht
+   als Produktionsnutzer ausgegeben werden.
+6. Negativtests für falschen Key, markierte Testdaten, unbekannte Felder, gemeinsames
    Valid-/Invalid-Request-Limit und Rohtextpersistenz.
 7. In Production nachweisen, dass die bestehende 30-Tage-Bereinigung für App-Ereignisse aktiv läuft.
 8. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und freigeben.
