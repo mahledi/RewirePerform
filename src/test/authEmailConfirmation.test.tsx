@@ -144,6 +144,21 @@ describe("auth email confirmation", () => {
     expect(resendUrl.searchParams.get("redirect")).toBe("/admin/qa");
   });
 
+  it("removes a backslash-normalized external redirect from confirmation links", async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { user: { id: "user-1" }, session: null },
+      error: null,
+    });
+
+    renderAuth(`/auth?redirect=${encodeURIComponent("/\\evil.example")}`);
+    submitSoloSignup();
+
+    expect(await screen.findByRole("heading", { name: "Bestätige deine E-Mail." })).toBeInTheDocument();
+    const redirectUrl = new URL(mocks.signUp.mock.calls[0]?.[0].options.emailRedirectTo);
+    expect(redirectUrl.origin).toBe(window.location.origin);
+    expect(redirectUrl.searchParams.has("redirect")).toBe(false);
+  });
+
   it("can confirm the signup with the six-digit fallback code", async () => {
     mocks.signUp.mockResolvedValue({
       data: { user: { id: "user-1" }, session: null },

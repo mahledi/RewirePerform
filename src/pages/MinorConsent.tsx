@@ -31,9 +31,10 @@ import { athletePolicyCopy, minorProductSummary } from "@/content/minorPolicy";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { safeInternalRoute } from "@/lib/internalRoute";
 
 const safeNextRoute = (value: string | null) =>
-  value && /^\/(?!\/)/u.test(value) && !value.startsWith("/minor-consent") ? value : "/dashboard";
+  safeInternalRoute(value, { blockedPathPrefixes: ["/minor-consent"] }) ?? "/dashboard";
 
 const Shell = ({ children }: { children: React.ReactNode }) => (
   <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 sm:py-10">

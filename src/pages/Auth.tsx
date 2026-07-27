@@ -18,6 +18,7 @@ import {
   passwordResetRedirectUrl,
   publicAuthOrigin,
 } from "@/lib/authEmailFlow";
+import { safeInternalRoute } from "@/lib/internalRoute";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join";
@@ -57,7 +58,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const forceSwitch = searchParams.get("switch") === "1";
   const redirectTo = searchParams.get("redirect");
-  const safeRedirect = redirectTo && /^\/(?!\/)/.test(redirectTo) ? redirectTo : null;
+  const safeRedirect = safeInternalRoute(redirectTo);
   const urlIntent = searchParams.get("intent");
   const authFlow = searchParams.get("flow");
   const legacyTeamCode = authFlow === "signup" ? null : searchParams.get("code");

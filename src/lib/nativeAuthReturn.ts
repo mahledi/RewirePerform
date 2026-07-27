@@ -1,3 +1,5 @@
+import { safeInternalRoute } from "@/lib/internalRoute";
+
 export const NATIVE_AUTH_RETURN_ORIGIN = "https://rewireperform.com";
 export const NATIVE_SIGNUP_RETURN_PATH = "/auth";
 
@@ -15,11 +17,6 @@ export type NativeSignupReturn =
 
 const readParams = (value: string) => new URLSearchParams(value.replace(/^[?#]/u, ""));
 
-const safeLocalRoute = (value: string | null) =>
-  value && /^\/(?!\/)/u.test(value) && !value.startsWith("/guardian/decision")
-    ? value
-    : null;
-
 const readSignupContext = (url: URL): NativeSignupContext | null => {
   const intent = url.searchParams.get("intent") === "join" ? "join" : "solo";
   const teamCode = url.searchParams.get("team")?.trim().toUpperCase() ?? null;
@@ -28,7 +25,9 @@ const readSignupContext = (url: URL): NativeSignupContext | null => {
   return {
     intent,
     teamCode: intent === "join" ? teamCode : null,
-    redirect: safeLocalRoute(url.searchParams.get("redirect")),
+    redirect: safeInternalRoute(url.searchParams.get("redirect"), {
+      blockedPathPrefixes: ["/guardian/decision"],
+    }),
   };
 };
 

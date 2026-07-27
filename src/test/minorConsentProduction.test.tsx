@@ -187,4 +187,12 @@ describe("minor consent production flow", () => {
     renderFlow("/minor-consent?next=%2Fprogress");
     expect(await screen.findByText("Fortschritt erreicht")).toBeInTheDocument();
   });
+
+  it("falls back to the dashboard for a backslash-normalized external next route", async () => {
+    context.status = baseStatus({ state: "product_authorized", product_status: "authorized", age_band: "adult" });
+    renderFlow(`/minor-consent?next=${encodeURIComponent("/\\evil.example")}`);
+
+    expect(await screen.findByText("Dashboard erreicht")).toBeInTheDocument();
+    expect(screen.queryByText("Fortschritt erreicht")).not.toBeInTheDocument();
+  });
 });

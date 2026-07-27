@@ -88,6 +88,11 @@ describe("native signup auth return", () => {
       "flow=signup&redirect=https%3A%2F%2Fevil.example",
     ))).toMatchObject({ kind: "session", redirect: null });
 
+    expect(parseNativeSignupReturn(sessionUrl(
+      "https://rewireperform.com",
+      `flow=signup&redirect=${encodeURIComponent("/\\evil.example")}`,
+    ))).toMatchObject({ kind: "session", redirect: null });
+
     expect(parseNativeSignupReturn(
       "https://rewireperform.com/auth?flow=signup#error=access_denied&error_code=otp_expired",
     )).toEqual({ kind: "error", errorCode: "otp_expired" });
