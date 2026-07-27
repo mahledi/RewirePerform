@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeInternalRoute } from "@/lib/internalRoute";
+import { safeInternalRoute, safeInternalUrl } from "@/lib/internalRoute";
 
 describe("safe internal route", () => {
   it("accepts local paths with query parameters and fragments", () => {
@@ -21,5 +21,23 @@ describe("safe internal route", () => {
     expect(safeInternalRoute("/guardian/decision#token=secret", {
       blockedPathPrefixes: ["/guardian/decision"],
     })).toBeNull();
+  });
+
+  it.each([
+    "https://evil.example/",
+    "//evil.example/",
+    "/\\evil.example",
+    "/%5cevil.example",
+    "/%2fevil.example",
+  ])("falls back to the app origin for an unsafe notification target: %s", (value) => {
+    expect(safeInternalUrl(value, "https://rewireperform.com")).toBe(
+      "https://rewireperform.com/",
+    );
+  });
+
+  it("builds an absolute same-origin URL for a safe notification target", () => {
+    expect(
+      safeInternalUrl("/progress?view=week#latest", "https://rewireperform.com"),
+    ).toBe("https://rewireperform.com/progress?view=week#latest");
   });
 });

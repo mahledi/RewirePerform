@@ -58,4 +58,18 @@ describe("public onboarding", () => {
 
     expect(screen.getByText("Einstellungen geöffnet")).toBeInTheDocument();
   });
+
+  it.each([
+    "%2F%5Cevil.example",
+    "%2F%2Fevil.example",
+    "%2F%252fevil.example",
+  ])("falls back to auth for an unsafe return path: %s", (returnPath) => {
+    renderWelcome(`/welcome?return=${returnPath}`);
+
+    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
+    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
+    fireEvent.click(screen.getByRole("button", { name: "RewirePerform starten" }));
+
+    expect(screen.getByText("Anmeldung geöffnet")).toBeInTheDocument();
+  });
 });
