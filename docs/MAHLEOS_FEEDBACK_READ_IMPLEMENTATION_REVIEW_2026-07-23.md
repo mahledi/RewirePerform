@@ -8,7 +8,8 @@ MahleOS soll technisches und produktbezogenes In-App-Feedback read-only lesen k�
 
 - Branch: `codex/mahleos-observability-v1`
 - Ausgangscommit dieses Hardening-Schritts: `fb972334cf8e96720b2c0157b4bb3fc6a2ccce31`
-- finaler Producer-Commit: wird beim bytegenauen Handoff aus dem abgeschlossenen lokalen Commit übernommen
+- finaler integrierter Producer-Commit: wird nach diesem Dokumentationsabschluss
+  bytegenau in MahleOS gepinnt
 - Contract: `rewireperform-mahleos-feedback-read` `1.1.0`
 - Status: `IMPLEMENTED_NOT_PRODUCTION_ACTIVATED`
 - Production-Migration: nicht angewendet
@@ -85,35 +86,44 @@ Am 23. Juli 2026 bestanden:
 - Secret-Musterprüfung ohne reale Zugangsdaten; ausschließlich erwartete synthetische Negativtestwerte und leere Beispielvariablen,
 - `git diff --check`.
 
-Der am 27. Juli 2026 erneut ausgeführte `npm audit --omit=dev` meldete acht
-bekannte Treffer: unter anderem in Build-/CLI-Ketten sowie in der aktuellen
-React-Router-6-Linie. Diese Änderung ergänzt keine neue Abhängigkeit. Ein
-Router-Major-Upgrade wird nicht ungeprüft mit dem Feedback- und
-Guardian-Sicherheitsblock vermischt; der Befund bleibt bis zu einem eigenen,
-vollständig getesteten Dependency-Hardening-Block offen.
+Der integrierte App-Store-RC verwendet den vollständig getesteten React Router
+`7.18.1`. Damit sind die für diese Client-App relevanten Redirect-Befunde aus
+Router 6 auf Paketebene geschlossen. `npm audit --omit=dev` meldet noch zwei
+hohe Paketknoten für denselben RSC-Advisory. Dieser betrifft laut offiziellem
+Advisory ausschließlich instabile React-Server-Components-APIs; RewirePerform
+nutzt diese APIs und React-Router-Serverpakete nicht. `app:verify` erzwingt
+diese Client-only-Grenze. Der vollständige Audit inklusive
+Entwicklungswerkzeugen bleibt mit 1 moderaten und 20 hohen Paketknoten ein
+separater Toolchain-Hardeningblock.
 
-Das unabhängige R4-Hardening vom 27. Juli 2026 bestätigte erneut die
-vollständige CI mit 67 Testdateien und 367 Tests, die ausführbare
-PGlite-Migration einschließlich Least-Privilege-Rechten und cursorfreier
-interner IDs, Privacy Safety mit 22 von 22 Prüfungen sowie die
-Datenschutzdarstellung ohne horizontalen Überlauf auf Desktop und Mobil.
+Das unabhängige R4-Review vom 27. Juli 2026 bestätigte auf dem integrierten
+Release Candidate:
+
+- vollständige CI mit 85 Testdateien und 441 Tests,
+- die ausführbare PGlite-Migration einschließlich service-role-only RPC,
+  Least-Privilege-Access-Log und cursorfreier interner IDs,
+- die fail-closed Edge Function mit separatem Machine-Key, striktem
+  Request-/Response-Schema und doppelter Privacy-Projektion,
+- Privacy Safety mit 22 von 22 Prüfungen,
+- App-Store-Statik, Xcode-Readiness und Signierung,
+- die iPhone-/iPad-Simulatormatrix in normaler und barrierearmer Darstellung,
+- öffentliche Pflichtseiten auf Desktop und Mobil.
 
 ## Offene Aktivierungsgates
 
 Vor einem Live-Zugriff sind separat erforderlich:
 
-1. Erneutes unabhängiges R4-Review von Migration, Funktion, Rechte- und Privacy-Grenzen.
-2. Konkrete Production-Freigabe für genau diese Migration.
-3. Konkrete Deployment-Freigabe für genau diese Edge Function.
-4. Getrennter Machine-Key in Supabase und macOS Keychain.
-5. Beaufsichtigter positiver Read mit einem bewusst vom Betreiber eingereichten,
+1. Konkrete Production-Freigabe für genau diese Migration.
+2. Konkrete Deployment-Freigabe für genau diese Edge Function.
+3. Getrennter Machine-Key in Supabase und macOS Keychain.
+4. Beaufsichtigter positiver Read mit einem bewusst vom Betreiber eingereichten,
    nicht sensiblen Feedback. Ein nicht markierter Testaccount darf dafür nicht
    als Produktionsnutzer ausgegeben werden.
-6. Negativtests für falschen Key, markierte Testdaten, unbekannte Felder, gemeinsames
+5. Negativtests für falschen Key, markierte Testdaten, unbekannte Felder, gemeinsames
    Valid-/Invalid-Request-Limit und Rohtextpersistenz.
-7. In Production nachweisen, dass die bestehende 30-Tage-Bereinigung für App-Ereignisse aktiv läuft.
-8. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und freigeben.
-9. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes Feedback festlegen; bis dahin keine automatische Löschung erfinden.
-10. Erst danach zeitgesteuerter Schattenbetrieb.
+6. In Production nachweisen, dass die bestehende 30-Tage-Bereinigung für App-Ereignisse aktiv läuft.
+7. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und freigeben.
+8. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes Feedback festlegen; bis dahin keine automatische Löschung erfinden.
+9. Erst danach zeitgesteuerter Schattenbetrieb.
 
 Keines dieser Gates wurde durch die lokale Implementierung automatisch freigegeben.
