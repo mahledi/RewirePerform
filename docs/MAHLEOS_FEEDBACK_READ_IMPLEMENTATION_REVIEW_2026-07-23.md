@@ -10,7 +10,7 @@ MahleOS soll technisches und produktbezogenes In-App-Feedback read-only lesen k�
 - Ausgangscommit dieses Hardening-Schritts: `fb972334cf8e96720b2c0157b4bb3fc6a2ccce31`
 - Production-Runtime-Fix: `c641524`
 - Contract: `rewireperform-mahleos-feedback-read` `1.1.0`
-- Status: `PRODUCTION_ACTIVATED_SUPERVISED_EMPTY_READ_VERIFIED`
+- Status: `PRODUCTION_ACTIVATED_SUPERVISED_POSITIVE_READ_VERIFIED`
 - Production-Migrationen: `20260723154047` und `20260723165153` angewendet
 - Edge Function: `mahleos-feedback-read` Version 2 aktiv
 - Machine Key: getrennt in Supabase und macOS Keychain hinterlegt
@@ -127,9 +127,16 @@ Nach dem erneuten Deployment wurde verifiziert:
   `3455e27abf7995d13f9c5bd8c741ceceae1be18892e01588c1d33d369e00983a`,
 - kein Key und falscher Key jeweils `401`,
 - echter Key über die macOS Keychain liefert `CONNECTED_READ_ONLY`,
-- aktuell `0` Production-Feedbackzeilen, keine Rohtextpersistenz in MahleOS,
-- erfolgreicher Read mit `returned_count = 0` und Response-Checksum im
+- initialer leerer Read mit `returned_count = 0` und Response-Checksum im
   payloadfreien Access-Log,
+- ein bewusst eingereichtes, nicht sensibles und nicht als Test markiertes
+  Production-Feedback wurde anschließend beaufsichtigt mit
+  `returned_count = 1` gelesen,
+- der Feedbacktext wurde lokal nochmals in `redacted_text` überführt; weder
+  Rohtext noch interne Feedback-ID wurden persistiert oder ausgegeben,
+- die lokale Sensitivitätsprüfung meldete keine Sensitivitätsflags und keine
+  verbleibenden E-Mail- oder Bearer-Token-Muster; es wurde kein Modell
+  aufgerufen,
 - authentifiziertes ungültiges JSON liefert `400` und ausschließlich den
   generischen Auditcode `invalid_json`,
 - die tägliche Production-Retention `minor-auth-retention-daily` ist aktiv;
@@ -144,16 +151,13 @@ Nach dem erneuten Deployment wurde verifiziert:
 Die sichere technische Verbindung ist aktiv. Für einen belastbaren realen
 Pilotnachweis bleiben getrennt:
 
-1. Ein bewusst vom Betreiber eingereichtes, nicht sensibles echtes Feedback
-   beaufsichtigt lesen. Ein nicht markierter Testaccount darf nicht als
-   Produktionsnutzer ausgegeben werden.
-2. Den Ausschluss einer markierten synthetischen Feedbackzeile in Production
+1. Den Ausschluss einer markierten synthetischen Feedbackzeile in Production
    nachweisen, ohne echte Nutzerdaten zu verändern.
-3. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und
+2. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und
    freigeben.
-4. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes
+3. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes
    Feedback festlegen; bis dahin keine automatische Löschung erfinden.
-5. Erst danach einen zeitgesteuerten Schattenbetrieb aktivieren.
+4. Erst danach einen zeitgesteuerten Schattenbetrieb aktivieren.
 
 Die Support-E-Mail-Anbindung, automatische Modellanalyse und autonome
 Production-Fixes sind nicht Bestandteil dieser Aktivierung und bleiben
