@@ -55,7 +55,6 @@ vi.mock("sonner", () => ({
 const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
   <MemoryRouter
     initialEntries={[initialEntry]}
-    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
   >
     <Routes>
       <Route path="/auth" element={<Auth />} />

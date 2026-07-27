@@ -1,12 +1,29 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const readText = (relativePath) =>
   readFileSync(path.join(root, relativePath), "utf8");
+const readSourceTree = (relativePath) => {
+  const sources = [];
+  const visit = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        visit(entryPath);
+      } else if (/\.[cm]?[jt]sx?$/.test(entry.name)) {
+        sources.push(readFileSync(entryPath, "utf8"));
+      }
+    }
+  };
+
+  visit(path.join(root, relativePath));
+  return sources.join("\n");
+};
 
 const files = {
+  app: readText("src/App.tsx"),
   capacitor: readText("capacitor.config.ts"),
   entitlements: readText("ios/App/App/App.entitlements"),
   info: readText("ios/App/App/Info.plist"),
@@ -18,6 +35,7 @@ const files = {
   nativeNotifications: readText("src/lib/nativeNotifications.ts"),
   nativeNotificationRouter: readText("src/components/notifications/NativeNotificationRouter.tsx"),
   package: JSON.parse(readText("package.json")),
+  source: readSourceTree("src"),
 };
 
 const failures = [];
@@ -93,7 +111,6 @@ if (
 
 for (const dependency of [
   "@capacitor/app",
-  "@capacitor/cli",
   "@capacitor/core",
   "@capacitor/ios",
   "@capacitor/local-notifications",
@@ -102,6 +119,46 @@ for (const dependency of [
   if (!version || !/^\^?8\./.test(version)) {
     failures.push(`package.json: ${dependency} must use Capacitor 8`);
   }
+}
+
+const capacitorCliVersion = files.package.devDependencies?.["@capacitor/cli"];
+if (
+  files.package.dependencies?.["@capacitor/cli"]
+  || !capacitorCliVersion
+  || !/^\^?8\./.test(capacitorCliVersion)
+) {
+  failures.push("package.json: @capacitor/cli must use Capacitor 8 as a development-only dependency");
+}
+
+if (
+  files.package.dependencies?.["tailwindcss-animate"]
+  || !files.package.devDependencies?.["tailwindcss-animate"]
+) {
+  failures.push("package.json: tailwindcss-animate must remain a development-only dependency");
+}
+
+if (files.package.dependencies?.["react-router-dom"] !== "7.18.1") {
+  failures.push("package.json: react-router-dom must remain pinned to the reviewed 7.18.1 client release");
+}
+
+for (const dependency of [
+  "@react-router/cloudflare",
+  "@react-router/dev",
+  "@react-router/fs-routes",
+  "@react-router/node",
+  "@react-router/serve",
+]) {
+  if (
+    files.package.dependencies?.[dependency]
+    || files.package.devDependencies?.[dependency]
+  ) {
+    failures.push(`package.json: ${dependency} is not allowed in the client-only App Store build`);
+  }
+}
+
+requireText("Client-only router", files.app, "<BrowserRouter>");
+if (/unstable_[A-Za-z]*(?:RSC|CallServer)/.test(files.source)) {
+  failures.push("Client-only router: unstable React Server Components APIs are not allowed");
 }
 
 const pngSignature = "89504e470d0a1a0a";

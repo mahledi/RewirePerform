@@ -23,7 +23,6 @@ vi.mock("@/integrations/supabase/client", () => ({
 const renderPage = () => render(
   <MemoryRouter
     initialEntries={[`${window.location.pathname}${window.location.search}${window.location.hash}`]}
-    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
   >
     <Routes>
       <Route path="/auth/reset-password" element={<ResetPassword />} />

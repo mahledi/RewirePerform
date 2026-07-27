@@ -36,30 +36,43 @@ acht betroffene Paketknoten: fuenf hoch und drei moderat. Sichere
 Lockfile-Patchupdates aktualisieren unter anderem `postcss`, `sucrase` und
 `tar` und entfernen den veralteten produktiven `glob`-Pfad.
 
+Der integrierte Release Candidate nutzt jetzt den clientseitigen React Router
+`7.18.1`. Damit sind die fuer die App relevanten offenen Redirect-Befunde aus
+Router 6 auf Paketebene geschlossen; die bereits implementierte strikte interne
+Routenpruefung bleibt als zusaetzliche Schutzschicht erhalten. Build-only-Pakete
+wie die Capacitor CLI und `tailwindcss-animate` sind aus den
+Production-Abhaengigkeiten entfernt.
+
 Nach einem frischen `npm ci` meldet `npm audit --omit=dev`:
 
 - 0 kritisch;
-- 0 hoch;
-- 2 moderat (`react-router` und `react-router-dom`).
+- 2 hoch (`react-router` und `react-router-dom`);
+- 0 moderat.
 
-Die zwei Paketknoten repraesentieren drei React-Router-Advisories:
+Die zwei Paketknoten repraesentieren denselben RSC-Advisory
+`GHSA-qwww-vcr4-c8h2`. Laut offiziellem Advisory ist er ausschliesslich fuer
+Anwendungen relevant, die React Routers instabile React-Server-Components-APIs
+nutzen. Diese Vite-SPA nutzt den deklarativen `BrowserRouter`, keine
+Server-Side-Rendering- oder RSC-APIs und keine React-Router-Serverpakete.
 
-- Der SSR-Hydration-Befund ist fuer diese Vite-SPA nicht anwendbar. Die App
-  nutzt den deklarativen `BrowserRouter` und weder Server-Side Rendering noch
-  `RouterProvider`, `StaticRouter`, `hydrateRoot` oder `deserializeErrors`.
 - Die Redirect-Befunde sind in den tatsaechlich nutzersteuerbaren
   Navigationsflaechen defensiv geschlossen. Auth, Minderjaehrigen-Rueckweg,
   nativer Auth-Rueckweg, Einfuehrungs-Rueckweg und Push-Klicks verwenden eine
   gemeinsame strikte interne Routenpruefung. Externe URLs, doppelte
   Schraegstriche, Backslashes, codierte Pfadtrenner und Steuerzeichen werden
   verworfen.
-- Ein blindes `npm audit fix --force` wuerde React Router 7 als Major-Upgrade
-  installieren. Dieses Upgrade bleibt ein eigener Migrationsblock und wird
-  nicht unkontrolliert in den Release Candidate gezogen.
+- `app:verify` erzwingt den geprueften Router-Pin, den clientseitigen
+  `BrowserRouter`, die Abwesenheit der React-Router-Serverpakete sowie die
+  Abwesenheit instabiler RSC-APIs. Ein spaeteres Router-Update muss dieses Gate
+  erneut passieren.
+- Der vollstaendige Audit inklusive Entwicklungswerkzeugen meldet 1 moderaten
+  und 20 hohe Paketknoten. Diese Toolchain-Befunde werden nicht als
+  produktionsfreie Null ausgegeben und muessen in einem separaten
+  Toolchain-Upgrade geschlossen werden.
 
 Vollstaendige Verifikation dieses Blocks:
 
-- 79 Testdateien und 413 Tests gruen;
+- 82 Testdateien und 434 Tests gruen;
 - TypeScript, Lint und `git diff --check` gruen;
 - Production-Web-Build und Service-Worker-Build gruen;
 - alle Evidence-, Minor-, Tracking-, MahleOS-, Access- und Deletion-SQL-Gates
