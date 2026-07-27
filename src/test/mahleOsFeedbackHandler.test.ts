@@ -191,6 +191,21 @@ describe("MahleOS feedback Edge handler", () => {
     expect(result).not.toHaveProperty("next_cursor_reference");
   });
 
+  it("uses the runtime UUID generator without losing its receiver", async () => {
+    const readPage = vi.fn().mockResolvedValue({ data: validDatabaseResult(), error: null });
+    const deps = dependencies({ readPage });
+    delete deps.randomUUID;
+
+    const response = await handleMahleOsFeedbackRead(request("{}"), deps);
+
+    expect(response.status).toBe(200);
+    expect(readPage).toHaveBeenCalledWith(expect.objectContaining({
+      requestId: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      ),
+    }));
+  });
+
   it("maps database errors, rate limits and invalid projections fail closed", async () => {
     const unavailable = await handleMahleOsFeedbackRead(
       request("{}"),

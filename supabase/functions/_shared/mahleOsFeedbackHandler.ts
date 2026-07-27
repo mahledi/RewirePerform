@@ -107,7 +107,7 @@ export const handleMahleOsFeedbackRead = async (
     });
   }
 
-  const requestId = (dependencies.randomUUID ?? crypto.randomUUID)();
+  const requestId = dependencies.randomUUID?.() ?? crypto.randomUUID();
   const contentType = request.headers.get("Content-Type")
     ?.split(";", 1)[0]
     ?.trim()
