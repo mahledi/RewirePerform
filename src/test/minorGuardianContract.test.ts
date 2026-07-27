@@ -184,6 +184,19 @@ describe("minor guardian production contract", () => {
     expect(edgeShared).toContain("reply_to: SUPPORT_EMAIL");
   });
 
+  it("rejects a normalized guardian address that matches the authenticated athlete", () => {
+    const shared = read("supabase/functions/_shared/minorGuardian.ts");
+    const userEdge = read("supabase/functions/minor-guardian-user/index.ts");
+    const normalizedAthlete = userEdge.indexOf("normalizeGuardianEmail(user.email)");
+    const rejected = userEdge.indexOf('new MinorFlowError("guardian_email_matches_athlete", 400)');
+    const encrypted = userEdge.indexOf("encrypted = await encryptEmail(email)");
+
+    expect(shared).toContain("value.trim().toLowerCase()");
+    expect(normalizedAthlete).toBeGreaterThan(-1);
+    expect(rejected).toBeGreaterThan(normalizedAthlete);
+    expect(encrypted).toBeGreaterThan(rejected);
+  });
+
   it("keeps guardian secrets out of hosting query logs", () => {
     const guardianEmails = read("supabase/functions/_shared/guardianEmails.ts");
 

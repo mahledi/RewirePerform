@@ -53,9 +53,9 @@ Deno.serve(async (req) => {
 
       if (action === "start") {
         email = normalizeGuardianEmail(body.guardianEmail);
-        encrypted = await encryptEmail(email);
-        emailHash = await guardianEmailHash(email);
-        emailMask = maskEmail(email);
+        encrypted = { ciphertext: "", iv: "" };
+        emailHash = "";
+        emailMask = "";
       } else {
         const prepared = await invokeMinorService(admin, "prepare_resend", user.id);
         const ciphertext = String(prepared.guardian_email_ciphertext ?? "");
@@ -64,6 +64,19 @@ Deno.serve(async (req) => {
         encrypted = { ciphertext, iv };
         emailHash = String(prepared.guardian_email_hash ?? "");
         emailMask = String(prepared.guardian_email_mask ?? "");
+      }
+
+      const athleteEmail = typeof user.email === "string"
+        ? normalizeGuardianEmail(user.email)
+        : null;
+      if (athleteEmail && email === athleteEmail) {
+        throw new MinorFlowError("guardian_email_matches_athlete", 400);
+      }
+
+      if (action === "start") {
+        encrypted = await encryptEmail(email);
+        emailHash = await guardianEmailHash(email);
+        emailMask = maskEmail(email);
       }
 
       const token = randomToken();

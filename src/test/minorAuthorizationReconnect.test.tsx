@@ -12,9 +12,30 @@ const mocks = vi.hoisted(() => ({
     roleVerified: true,
     loading: false,
   },
+  native: false,
+  appStateListener: null as ((state: { isActive: boolean }) => void) | null,
+  removeAppStateListener: vi.fn(),
   getStatus: vi.fn(),
   refreshSession: vi.fn(),
   verifyRole: vi.fn(),
+}));
+
+vi.mock("@capacitor/core", () => ({
+  Capacitor: {
+    isNativePlatform: () => mocks.native,
+  },
+}));
+
+vi.mock("@capacitor/app", () => ({
+  App: {
+    addListener: vi.fn(async (
+      event: string,
+      listener: (state: { isActive: boolean }) => void,
+    ) => {
+      if (event === "appStateChange") mocks.appStateListener = listener;
+      return { remove: mocks.removeAppStateListener };
+    }),
+  },
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -41,6 +62,10 @@ vi.mock("@/lib/minorAuthorization", async (importOriginal) => {
 const authorized = {
   state: "product_authorized",
   product_status: "authorized",
+} as const;
+const guardianPending = {
+  state: "guardian_pending",
+  product_status: "pending",
 } as const;
 
 const deferred = <T,>() => {
@@ -72,6 +97,8 @@ describe("minor authorization reconnect recovery", () => {
     mocks.auth.role = "athlete";
     mocks.auth.roleVerified = true;
     mocks.auth.loading = false;
+    mocks.native = false;
+    mocks.appStateListener = null;
     mocks.verifyRole.mockResolvedValue({ ok: true, value: "athlete" });
     mocks.refreshSession.mockResolvedValue({ data: { session: {} }, error: null });
     mocks.getStatus.mockResolvedValue(authorized);
@@ -111,6 +138,44 @@ describe("minor authorization reconnect recovery", () => {
     expect(mocks.getStatus).toHaveBeenCalledTimes(1);
 
     await act(async () => request.resolve(authorized));
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "authorized|ready|ready|no-error",
+    ));
+  });
+
+  it("refreshes a cached guardian-pending state immediately when the app regains focus", async () => {
+    mocks.getStatus
+      .mockResolvedValueOnce(guardianPending)
+      .mockResolvedValueOnce(authorized);
+
+    render(<MinorAuthorizationProvider><Probe /></MinorAuthorizationProvider>);
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "pending|ready|ready|no-error",
+    ));
+
+    act(() => window.dispatchEvent(new Event("focus")));
+
+    await waitFor(() => expect(mocks.getStatus).toHaveBeenCalledTimes(2), { timeout: 2_000 });
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "authorized|ready|ready|no-error",
+    ));
+  });
+
+  it("refreshes a cached guardian-pending state when the native app becomes active", async () => {
+    mocks.native = true;
+    mocks.getStatus
+      .mockResolvedValueOnce(guardianPending)
+      .mockResolvedValueOnce(authorized);
+
+    render(<MinorAuthorizationProvider><Probe /></MinorAuthorizationProvider>);
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "pending|ready|ready|no-error",
+    ));
+    await waitFor(() => expect(mocks.appStateListener).not.toBeNull());
+
+    act(() => mocks.appStateListener?.({ isActive: true }));
+
+    await waitFor(() => expect(mocks.getStatus).toHaveBeenCalledTimes(2), { timeout: 2_000 });
     await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
       "authorized|ready|ready|no-error",
     ));

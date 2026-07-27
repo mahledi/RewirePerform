@@ -59,7 +59,9 @@ const Auth = () => {
   const redirectTo = searchParams.get("redirect");
   const safeRedirect = redirectTo && /^\/(?!\/)/.test(redirectTo) ? redirectTo : null;
   const urlIntent = searchParams.get("intent");
-  const urlCode = searchParams.get("code");
+  const authFlow = searchParams.get("flow");
+  const legacyTeamCode = authFlow === "signup" ? null : searchParams.get("code");
+  const urlCode = searchParams.get("team") ?? legacyTeamCode;
   const requestedMode = searchParams.get("mode");
   const authLinkError = parseAuthLinkError(window.location.search, window.location.hash);
   const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
@@ -108,11 +110,12 @@ const Auth = () => {
 
   const emailRedirectTo = () => {
     const redirectUrl = new URL("/auth", publicAuthOrigin(window.location));
+    redirectUrl.searchParams.set("flow", "signup");
     if (safeRedirect) redirectUrl.searchParams.set("redirect", safeRedirect);
     if (intent === "join") {
       redirectUrl.searchParams.set("intent", "join");
       const code = normalizedTeamCode();
-      if (code) redirectUrl.searchParams.set("code", code);
+      if (code) redirectUrl.searchParams.set("team", code);
     }
     return redirectUrl.toString();
   };

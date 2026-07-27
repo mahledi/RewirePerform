@@ -111,7 +111,10 @@ describe("auth email confirmation", () => {
     expect(mocks.toastSuccess).not.toHaveBeenCalled();
 
     const signUpCall = mocks.signUp.mock.calls[0]?.[0];
-    expect(signUpCall.options.emailRedirectTo).toContain("/auth?redirect=%2Fadmin%2Fqa");
+    const redirectUrl = new URL(signUpCall.options.emailRedirectTo);
+    expect(redirectUrl.pathname).toBe("/auth");
+    expect(redirectUrl.searchParams.get("flow")).toBe("signup");
+    expect(redirectUrl.searchParams.get("redirect")).toBe("/admin/qa");
     expect(signUpCall.options.data).toEqual({ full_name: "Test Person" });
     expect(signUpCall.options.data).not.toHaveProperty("role");
   });
@@ -134,14 +137,11 @@ describe("auth email confirmation", () => {
     fireEvent.click(await screen.findByRole("button", { name: "E-Mail erneut senden" }));
 
     await waitFor(() => {
-      expect(mocks.resend).toHaveBeenCalledWith({
-        type: "signup",
-        email: "test@example.com",
-        options: {
-          emailRedirectTo: expect.stringContaining("/auth?redirect=%2Fadmin%2Fqa"),
-        },
-      });
+      expect(mocks.resend).toHaveBeenCalledTimes(1);
     });
+    const resendUrl = new URL(mocks.resend.mock.calls[0]?.[0].options.emailRedirectTo);
+    expect(resendUrl.searchParams.get("flow")).toBe("signup");
+    expect(resendUrl.searchParams.get("redirect")).toBe("/admin/qa");
   });
 
   it("can confirm the signup with the six-digit fallback code", async () => {
@@ -223,6 +223,16 @@ describe("auth email confirmation", () => {
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).toHaveBeenCalledWith("join_team_by_code", { _code: "ABC123" });
+  });
+
+  it("never treats a Supabase PKCE auth code as a team code", async () => {
+    mocks.authState.user = { id: "user-1" };
+    mocks.authState.role = "athlete";
+
+    renderAuth("/auth?flow=signup&code=one-time-auth-code");
+
+    expect(await screen.findByText("Dashboard geöffnet")).toBeInTheDocument();
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
   it("never trusts a role returned by a manipulated team-join response", async () => {

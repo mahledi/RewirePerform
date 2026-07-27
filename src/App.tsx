@@ -16,6 +16,7 @@ import IosInputPolish from "./components/IosInputPolish";
 import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
 import PublicOnboardingGate from "./components/onboarding/PublicOnboardingGate";
+import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -94,6 +95,7 @@ const AppRoutes = () => {
           <Toaster />
           <Sonner />
           <QATestBanner />
+          <NativeAuthReturnHandler />
           <NotificationOpenTracker />
           <NativeNotificationRouter />
           <IosInputPolish />
