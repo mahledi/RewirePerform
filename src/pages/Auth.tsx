@@ -8,8 +8,13 @@ import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
-import { BrandLockup } from "@/components/brand/BrandLogo";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  AuthStatusLayout,
+  BrandMark,
+  LegalLinks,
+  StatusAction,
+} from "@/components/auth/AuthStatusLayout";
 import {
   authErrorMessage,
   isEmailNotConfirmedError,
@@ -536,75 +541,70 @@ const Auth = () => {
           loading={verifyingCode}
           label="Code prüfen"
         />
-        <button
-          type="button"
+        <StatusAction
+          variant="secondary"
           onClick={() => void requestPasswordReset()}
           disabled={resending}
-          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/50 px-4 py-3 font-heading text-sm font-semibold hover:bg-secondary disabled:opacity-50"
+          className="mt-4"
         >
           {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
           E-Mail erneut senden
-        </button>
-        <button
-          type="button"
+        </StatusAction>
+        <StatusAction
+          variant="link"
           onClick={() => {
             setEmail(pendingEmail);
             setMode("forgot");
           }}
-          className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
+          className="mt-3"
         >
           E-Mail-Adresse ändern
-        </button>
+        </StatusAction>
       </AuthStatusLayout>
     );
   }
 
   if (mode === "verify") {
     return (
-      <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md min-w-0 text-center"
-        >
-          <BrandMark className="mb-8" />
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <MailCheck className="h-7 w-7" aria-hidden="true" />
-          </div>
-          <h1 className="mb-3 font-heading text-3xl font-bold">Bestätige deine E-Mail.</h1>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+      <AuthStatusLayout
+        icon={<MailCheck className="h-7 w-7" aria-hidden="true" />}
+        title="Bestätige deine E-Mail."
+        description={(
+          <>
+            <p>
             Wir haben einen Bestätigungslink an<br />
             <strong className="break-all text-foreground">{pendingEmail}</strong> gesendet.
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Öffne den Link in der E-Mail oder gib den sechsstelligen Code ein.
-          </p>
-          <AuthCodeEntry
-            value={verificationCode}
-            onChange={setVerificationCode}
-            onSubmit={() => void completeEmailVerification()}
-            loading={verifyingCode}
-            label="E-Mail bestätigen"
-          />
-          <button
-            type="button"
-            onClick={() => void resendConfirmation()}
-            disabled={resending}
-            className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border/60 bg-secondary/50 px-4 py-3 font-heading text-sm font-semibold transition-colors hover:bg-secondary disabled:opacity-50"
-          >
-            {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
-            E-Mail erneut senden
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("signup")}
-            className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
-          >
-            E-Mail-Adresse ändern
-          </button>
-          <LegalLinks />
-        </motion.div>
-      </div>
+            </p>
+            <p className="mt-3">
+              Öffne den Link in der E-Mail oder gib den sechsstelligen Code ein.
+            </p>
+          </>
+        )}
+      >
+        <AuthCodeEntry
+          value={verificationCode}
+          onChange={setVerificationCode}
+          onSubmit={() => void completeEmailVerification()}
+          loading={verifyingCode}
+          label="E-Mail bestätigen"
+        />
+        <StatusAction
+          variant="secondary"
+          onClick={() => void resendConfirmation()}
+          disabled={resending}
+          className="mt-8"
+        >
+          {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
+          E-Mail erneut senden
+        </StatusAction>
+        <StatusAction
+          variant="link"
+          onClick={() => setMode("signup")}
+          className="mt-3"
+        >
+          E-Mail-Adresse ändern
+        </StatusAction>
+      </AuthStatusLayout>
     );
   }
 
@@ -839,47 +839,6 @@ const IntentCard = ({
   </button>
 );
 
-const BrandMark = ({ className = "" }: { className?: string }) => (
-  <Link
-    to="/"
-    aria-label="Zur Startseite"
-    className={`mx-auto flex w-fit items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
-  >
-    <BrandLockup symbolSize={34} textClassName="text-xl" />
-  </Link>
-);
-
-const AuthStatusLayout = ({
-  icon,
-  title,
-  description,
-  tone = "default",
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: React.ReactNode;
-  tone?: "default" | "error";
-  children: React.ReactNode;
-}) => (
-  <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md min-w-0 text-center"
-    >
-      <BrandMark />
-      <div className={`mx-auto mb-5 mt-8 flex h-14 w-14 items-center justify-center rounded-full ${tone === "error" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
-        {icon}
-      </div>
-      <h1 className="mb-3 font-heading text-3xl font-bold">{title}</h1>
-      <div className="text-sm leading-relaxed text-muted-foreground">{description}</div>
-      {children}
-      <LegalLinks />
-    </motion.div>
-  </div>
-);
-
 const AuthCodeEntry = ({
   value,
   onChange,
@@ -963,20 +922,6 @@ const FieldPassword = ({
       className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
     />
   </div>
-);
-
-const LegalLinks = () => (
-  <nav aria-label="Rechtliches und Hilfe" className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-    <Link to="/privacy" className="transition-colors hover:text-foreground">
-      Datenschutz
-    </Link>
-    <Link to="/imprint" className="transition-colors hover:text-foreground">
-      Impressum
-    </Link>
-    <Link to="/support" className="transition-colors hover:text-foreground">
-      Support
-    </Link>
-  </nav>
 );
 
 const SubmitButton = ({ loading, label }: { loading: boolean; label: string }) => (

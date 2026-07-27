@@ -5,11 +5,9 @@ import {
   ArrowLeft,
   CheckCircle2,
   ChevronRight,
-  Clock3,
   Loader2,
   LockKeyhole,
   Mail,
-  PencilLine,
   RefreshCw,
   ShieldCheck,
   UserRoundCheck,
@@ -34,6 +32,10 @@ import AppLoadingShell from "@/components/AppLoadingShell";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { safeInternalRoute } from "@/lib/internalRoute";
+import {
+  GuardianEmailChangeStatus,
+  GuardianPendingStatus,
+} from "@/components/minor-consent/GuardianEmailStatus";
 
 const safeNextRoute = (value: string | null) =>
   safeInternalRoute(value, { blockedPathPrefixes: ["/minor-consent"] }) ?? "/dashboard";
@@ -257,99 +259,37 @@ const MinorConsent = () => {
   }
 
   if (status.state === "guardian_pending") {
+    if (editingGuardianEmail) {
+      return (
+        <GuardianEmailChangeStatus
+          value={guardianEmail}
+          invalid={guardianMatchesAthlete}
+          errorMessage={guardianMatchesAthlete
+            ? "Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein."
+            : undefined}
+          submitting={busy === "change-email"}
+          disabled={!validGuardianEmail || busy === "change-email"}
+          onChange={setGuardianEmail}
+          onSubmit={() => void replaceGuardianEmail()}
+          onCancel={() => {
+            setGuardianEmail("");
+            setEditingGuardianEmail(false);
+          }}
+        />
+      );
+    }
+
     return (
-      <Shell>
-        <Intro icon={Clock3} title="Entscheidung noch offen">
-          <p>Der Link wurde an {status.guardian_email_mask ?? "die angegebene Adresse"} gesendet. Sobald die Entscheidung vorliegt, kannst du hier selbst zustimmen.</p>
-        </Intro>
-        <div className="flex items-center justify-between gap-4 rounded-md border border-amber-400/25 bg-amber-400/10 p-4">
-          <div><p className="text-sm font-semibold">Freigabe durch eine sorgeberechtigte Person</p><p className="mt-1 text-xs text-muted-foreground">Noch nicht entschieden</p></div>
-          <Clock3 className="h-5 w-5 text-amber-500" />
-        </div>
-        {editingGuardianEmail && (
-          <div className="mt-5 space-y-3 rounded-md border border-border p-4">
-            <div className="space-y-2">
-              <Label htmlFor="replacement-guardian-email">Andere E-Mail-Adresse</Label>
-              <Input
-                id="replacement-guardian-email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                autoFocus
-                value={guardianEmail}
-                onChange={(event) => setGuardianEmail(event.target.value)}
-                placeholder="elternteil@beispiel.de"
-                className="h-12"
-                aria-invalid={guardianMatchesAthlete}
-                aria-describedby={guardianMatchesAthlete ? "replacement-guardian-email-error" : undefined}
-              />
-              {guardianMatchesAthlete && (
-                <p
-                  id="replacement-guardian-email-error"
-                  role="alert"
-                  className="text-sm leading-5 text-destructive"
-                >
-                  Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein.
-                </p>
-              )}
-            </div>
-            <p className="text-xs leading-5 text-muted-foreground">
-              Der bisherige Link wird ungültig, sobald der neue Link sicher erstellt wurde.
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Button
-                disabled={!validGuardianEmail || busy === "change-email"}
-                onClick={() => void replaceGuardianEmail()}
-              >
-                {busy === "change-email" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                Neuen Link senden
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={busy !== null}
-                onClick={() => {
-                  setGuardianEmail("");
-                  setEditingGuardianEmail(false);
-                }}
-              >
-                Abbrechen
-              </Button>
-            </div>
-          </div>
-        )}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Button
-            variant="outline"
-            disabled={busy !== null || checkingStatus}
-            onClick={() => void checkStatus()}
-          >
-            {checkingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Status prüfen
-          </Button>
-          <Button variant="secondary" disabled={busy !== null} onClick={() => void run("resend", resendGuardianAuthorization)}>
-            {busy === "resend" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-            Erneut senden
-          </Button>
-        </div>
-        <Button
-          className="mt-3 w-full"
-          variant="outline"
-          disabled={busy !== null || checkingStatus}
-          onClick={() => setEditingGuardianEmail((current) => !current)}
-        >
-          <PencilLine className="h-4 w-4" />
-          E-Mail-Adresse ändern
-        </Button>
-        <Button
-          className="mt-3 w-full"
-          variant="ghost"
-          disabled={busy !== null}
-          onClick={() => navigate("/settings")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Zurück zu den Einstellungen
-        </Button>
-      </Shell>
+      <GuardianPendingStatus
+        guardianEmail={status.guardian_email_mask ?? "die angegebene Adresse"}
+        checkingStatus={checkingStatus}
+        resending={busy === "resend"}
+        disabled={busy !== null}
+        onCheckStatus={() => void checkStatus()}
+        onResend={() => void run("resend", resendGuardianAuthorization)}
+        onChangeEmail={() => setEditingGuardianEmail(true)}
+        onBackToSettings={() => navigate("/settings")}
+      />
     );
   }
 
