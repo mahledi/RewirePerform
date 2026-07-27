@@ -202,7 +202,7 @@ try {
   `);
 
   const migration = readFileSync(
-    resolve("supabase/migrations/20260727123000_admin_comprehension_insights_v1.sql"),
+    resolve("supabase/migrations/20260727121946_admin_comprehension_insights_v1.sql"),
     "utf8",
   );
   await db.exec(migration);

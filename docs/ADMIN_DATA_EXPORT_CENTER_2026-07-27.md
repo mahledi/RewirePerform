@@ -95,6 +95,15 @@ kein Bestandteil von Investor-, Vereins- oder Website-Unterlagen.
 
 ## Aktivierung
 
-Die neue Migration ist in diesem Branch nur vorgeschlagen. Sie ist nicht in
-Production angewendet. Bis zu einer ausdruecklichen Freigabe bleibt die neue
-Verstaendnisansicht dort ohne Daten.
+Die Migration `20260727121946_admin_comprehension_insights_v1` ist in
+Production angewendet. Verifiziert wurden:
+
+- Admin-Aufruf erfolgreich;
+- Nicht-Admin serverseitig blockiert;
+- `anon` und `PUBLIC` ohne Ausfuehrungsrecht;
+- `authenticated` nur als RPC-Einstieg mit zusaetzlicher Adminpruefung;
+- `search_path=pg_catalog`;
+- QA-/Testdaten aus;
+- Score-Sperre bei `n < 5`;
+- keine Journale, Reflexionstexte, Einzelantworten, Namen, E-Mails oder
+  Nutzerkennungen im Rueckgabevertrag.

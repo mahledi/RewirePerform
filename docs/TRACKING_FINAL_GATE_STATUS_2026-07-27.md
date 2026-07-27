@@ -28,7 +28,7 @@ freigegeben oder vollstaendig produktionsbewiesen bezeichnet werden.
 
 | Gate | Status | Beleg | Noch offen |
 |---|---|---|---|
-| 53 privilegierte Production-Funktionen | GELB | Production read-only inventarisiert; `anon` 0; 53 feste Suchpfade; fokussierte Rollen-Negativtests; Coach-Haertung ist jetzt auf `main` | Production-Abgleich der Migrationshistorie; vorgeschlagene 54. Admin-Verstaendnisfunktion vor Aktivierung separat pruefen |
+| 54 privilegierte Production-Funktionen | GELB | 54. Admin-Verstaendnisfunktion live; Admin positiv, Nicht-Admin negativ, `anon`/`PUBLIC` ohne Execute; feste Suchpfade und fokussierte Rollen-Negativtests | Aeltere Migrationsversion `20260723101114` gegen Production-Version `20260723151225` reconciliieren |
 | Production-Dependencies | GELB | Hohe und kritische Befunde geschlossen; zwei moderate React-Router-Hinweise verbleiben; kontrollierte interne Navigation und Regressionstests sind auf `main` | React-Router-Major-Upgrade separat planen und vollstaendig gegen Web und iOS validieren |
 | Synthetischer Production-Teamlauf | BEREIT, NICHT AUSGEFUEHRT | Vollstaendiges Runbook mit Rollen-, n-, Consent-, Data-Lock-, Export- und Cleanup-Gates | Separate Freigabe fuer kontrollierte Production-Schreibvorgaenge und beaufsichtigte Ausfuehrung |
 | Externe Rechtspruefung | PAKET BEREIT | Konsolidiertes Paket zu Minderjaehrigen, Consent, Retention, Loeschung, Evidence, Claims und App Privacy | Schriftliche Pruefung durch qualifizierte externe Stelle |
@@ -78,7 +78,7 @@ Das System kann technisch und datenschutzbewusst erfassen:
 - Adhaerenz, Aktivitaet, Streaks und Verstaendnis
 - interne aggregierte Hinweise darauf, ob Tagesinhalt und Anwendung verstanden
   wurden, ohne private Antworten und mit Score-Sperre unter `n < 5`
-  (vorgeschlagen, noch nicht Production-aktiv)
+  (Production-aktiv und rollengetestet)
 - consent- und guardian-abhaengige Evidence-Eignung
 - Aggregate erst ab der vorgeschriebenen Mindestgruppengroesse
 - versionierte Data Locks und privacy-begrenzte Exporte
@@ -114,17 +114,16 @@ Ohne geeignetes Studiendesign bleiben insbesondere unzulaessig:
 
 1. Migrationsversion `20260723101114` gegen Production-Version
    `20260723151225` reconciliieren.
-2. Die neue Admin-Verstaendnis-Migration unabhaengig pruefen und erst nach
-   Freigabe anwenden.
-3. React-Router-Major-Upgrade separat vorbereiten und den kompletten nativen
+2. React-Router-Major-Upgrade separat vorbereiten und den kompletten nativen
    und Web-Release-Lauf wiederholen.
-4. Synthetischen Production-Teamlauf nach separater Freigabe durchfuehren.
-5. Externe Rechts-/Datenschutzpruefung abschliessen.
-6. MahleOS 48 Stunden im beaufsichtigten Schattenbetrieb ausfuehren.
-7. Erst danach das finale Tracking-Gate auf gruen setzen.
+3. Synthetischen Production-Teamlauf nach separater Freigabe durchfuehren.
+4. Externe Rechts-/Datenschutzpruefung abschliessen.
+5. MahleOS 48 Stunden im beaufsichtigten Schattenbetrieb ausfuehren.
+6. Erst danach das finale Tracking-Gate auf gruen setzen.
 
 ## Arbeitsgrenzen
 
-In diesem Block wurden keine Production-Daten geschrieben, keine Migration
-angewendet, keine Edge Function deployed und weder der App-Store- noch der
-MahleOS-Worktree veraendert. Es wurde nichts gepusht, gemergt oder deployed.
+In diesem Block wurden keine Athleten- oder Testdaten geschrieben und keine
+Edge Function deployed. Die admin-only Verstaendnis-Migration wurde nach
+Merge und Freigabe in Production angewendet und negativ wie positiv
+verifiziert. Der App-Store- und der MahleOS-Worktree wurden nicht veraendert.

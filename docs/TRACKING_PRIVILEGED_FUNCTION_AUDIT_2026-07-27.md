@@ -2,18 +2,18 @@
 
 Stand: 27. Juli 2026
 
-Scope: alle 53 `SECURITY DEFINER`-Funktionen im Production-Schema `public`, die
+Scope: alle 54 `SECURITY DEFINER`-Funktionen im Production-Schema `public`, die
 von `authenticated` ausgefuehrt werden koennen.
 
 ## Kurzurteil
 
-Die 53 Advisor-Warnungen sind nicht mit 53 frei ausnutzbaren Funktionen
-gleichzusetzen. Der read-only Production-Audit hat fuer alle 53 bestaetigt:
+Die 54 Advisor-Warnungen sind nicht mit 54 frei ausnutzbaren Funktionen
+gleichzusetzen. Der read-only Production-Audit hat fuer alle 54 bestaetigt:
 
 - `anon` besitzt kein Ausfuehrungsrecht;
 - `authenticated` besitzt nur den vorgesehenen RPC-Einstieg;
 - jede Funktion besitzt einen festen funktionsbezogenen `search_path`;
-- 42 Funktionen pruefen `auth.uid()` direkt;
+- 43 Funktionen pruefen `auth.uid()` direkt;
 - zehn weitere delegieren an einen Rollen-, Team- oder Ownership-Guard;
 - `get_nlz_evidence_dossier` delegiert an zwei bereits geschuetzte
   run-spezifische Funktionen.
@@ -24,7 +24,7 @@ bestehen bleiben, solange die App die Funktionen als RPCs benoetigt.
 
 ## Teststand
 
-- Alle 53 aktuell in Production inventarisierten Funktionen besitzen im
+- Alle 54 aktuell in Production inventarisierten Funktionen besitzen im
   aktuellen Repository einen lokalen Negativtest oder einen expliziten
   Guard-/Privacy-Vertrag.
 - Der neue fokussierte PGlite-Test
@@ -109,23 +109,26 @@ Legende:
 
 ## Production-Abgleich
 
-Production meldet 53 passende Funktionen und keine fuer `anon` ausfuehrbare
+Production meldet 54 passende Funktionen und keine fuer `anon` ausfuehrbare
 Funktion in diesem Scope. Die Verteilung der finalen Suchpfade ist:
 
-- 27 Funktionen: `search_path=pg_catalog`
+- 28 Funktionen: `search_path=pg_catalog`
 - 26 Funktionen: `search_path=public`
 - 0 Funktionen ohne festen Suchpfad
+
+Insgesamt existieren 83 `SECURITY DEFINER`-Funktionen in `public`; alle 83
+besitzen einen festen Suchpfad. Die uebrigen 29 sind nicht als
+`authenticated`-RPC-Einstieg freigegeben.
 
 `search_path=public` ist hier nicht automatisch ein Exploit, weil der Pfad
 funktionsbezogen fixiert ist und normale App-Rollen keine Objekte in `public`
 erzeugen duerfen. Fuer neue oder erneut gehaertete Funktionen bleibt
 `pg_catalog` plus vollqualifizierte Objektnamen der bevorzugte Standard.
 
-## Vorgeschlagene 54. Funktion
+## Aktivierte 54. Funktion
 
-Dieser Branch fuegt
-`get_admin_comprehension_insights(boolean)` als neue, noch nicht in Production
-aktivierte Funktion hinzu. Sie:
+`get_admin_comprehension_insights(boolean)` ist als 54. privilegierte
+Production-Funktion aktiviert. Sie:
 
 - prueft die Adminrolle serverseitig;
 - verwendet `search_path=pg_catalog` und vollqualifizierte Objekte;
@@ -133,10 +136,12 @@ aktivierte Funktion hinzu. Sie:
 - unterdrueckt Scores unter fuenf unterschiedlichen Athleten;
 - gibt keine Nutzerkennungen, Namen, E-Mails, gewaehlten Antwortoptionen,
   Journale oder Reflexionen aus;
-- besitzt einen eigenen PGlite-Negativtest.
+- besitzt einen eigenen PGlite-Negativtest;
+- wurde in Production positiv als Admin und negativ als Nicht-Admin
+  verifiziert;
+- ist fuer `anon` und `PUBLIC` nicht ausfuehrbar.
 
-Nach Anwendung in Production muss die Inventur deshalb 54 statt 53 Funktionen
-erwarten. Vorher bleibt die Production-Zahl korrekt bei 53.
+Die Production-Inventur erwartet damit 54 statt 53 Funktionen.
 
 ## Merge-Gate
 
@@ -144,6 +149,5 @@ Gruen erst wenn:
 
 1. die Migration `20260723101114` gegen die bereits als `20260723151225`
    angewendete Production-Version reconciled ist;
-2. die neue Verstaendnisfunktion unabhaengig geprueft und ausdruecklich fuer
-   Production freigegeben ist;
-3. der komplette SQL-, Privacy- und CI-Lauf vom finalen `main` erneut gruen ist.
+2. der komplette SQL-, Privacy- und CI-Lauf vom finalen `main` erneut gruen
+   bleibt.
