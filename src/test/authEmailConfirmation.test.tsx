@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     role: null as "admin" | "coach" | "athlete" | null,
     loading: false,
   },
+  captureAppError: vi.fn(),
   from: vi.fn(),
   resend: vi.fn(),
   resetPasswordForEmail: vi.fn(),
@@ -38,6 +39,10 @@ vi.mock("@/integrations/supabase/client", () => ({
     from: mocks.from,
     rpc: mocks.rpc,
   },
+}));
+
+vi.mock("@/lib/monitoring", () => ({
+  captureAppError: mocks.captureAppError,
 }));
 
 vi.mock("sonner", () => ({
@@ -268,7 +273,7 @@ describe("auth email confirmation", () => {
     mocks.authState.user = { id: "user-1" };
     mocks.authState.role = "athlete";
     mocks.rpc
-      .mockResolvedValueOnce({ data: { success: false }, error: null })
+      .mockResolvedValueOnce({ data: { success: false, error: "invalid_code" }, error: null })
       .mockResolvedValueOnce({ data: { success: true, role: "athlete" }, error: null });
 
     renderAuth("/auth?intent=join&code=ABC123");
@@ -278,5 +283,23 @@ describe("auth email confirmation", () => {
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledTimes(2);
+    expect(mocks.captureAppError).not.toHaveBeenCalled();
+  });
+
+  it("reports only a sanitized technical team-join failure after authentication", async () => {
+    mocks.authState.user = { id: "user-1" };
+    mocks.authState.role = "athlete";
+    const rpcError = { code: "PGRST500", message: "private provider details" };
+    mocks.rpc.mockResolvedValue({ data: null, error: rpcError });
+
+    renderAuth("/auth?intent=join&code=ABC123");
+
+    expect(await screen.findByRole("heading", { name: "Teambeitritt noch offen." })).toBeInTheDocument();
+    expect(mocks.captureAppError).toHaveBeenCalledWith({
+      error: rpcError,
+      eventName: "team_join_attempt",
+      route: "/auth",
+      metadata: { stage: "team_join_rpc" },
+    });
   });
 });

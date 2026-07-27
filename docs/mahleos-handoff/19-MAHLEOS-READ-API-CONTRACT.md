@@ -1,12 +1,12 @@
 # MahleOS Read API Contract
 
-Stand: 21. Juli 2026
+Stand: 27. Juli 2026
 
-Status: Der V1.1-Produzentenvertrag ist in `main` integriert. Der aktuelle
-Hardening-Branch ergaenzt konservative No-False-Green-Regeln und rekonstruiert
-eine bereits live angewandte Legacy-Migration im Git-Verlauf. Keine MahleOS-
-Migration, Edge Function, Umgebungsvariable oder Verbindung wurde dadurch auf
-Production aktiviert.
+Status: Der V1.2-Produzentenvertrag ist lokal implementiert und noch nicht in
+`main` integriert oder auf Production aktiviert. Er ergaenzt eine explizite
+Abdeckungskarte fuer Login, Registrierung, Teambeitritt und
+Minderjaehrigenautorisierung. Keine Migration, Edge Function,
+Umgebungsvariable oder Verbindung wurde dadurch auf Production aktiviert.
 
 ## Zweck
 
@@ -66,6 +66,8 @@ Enthaelt gemeinsam:
 - `system_health` mit fest definierten Identitaets-, Programm- und
   Tracking-Integritaetszaehlern
 - technische Fehlerzaehler der letzten 24 Stunden fuer feste Kernflows
+- eine explizite Abdeckungskarte, die nicht verbundene oder nur teilweise
+  beobachtete kritische Nutzerpfade niemals als gesund ausgibt
 - Push-Zustellung der letzten sieben Tage
 - `tracking_quality` mit Aktivitaet, Instance-Scope, Doppelzeilen und
   atomaren Check-in-/Completion-Abweichungen
@@ -89,12 +91,24 @@ Enthaelt gemeinsam:
 
 Diese Antworten verwenden die Schema-Versionen:
 
-- `mahleos-system-health-v1`
+- `mahleos-system-health-v1.2`
 - `mahleos-tracking-quality-v1`
 - `mahleos-feedback-status-v1`
 
 MahleOS muss unbekannte Schema-Versionen ablehnen und einen menschlichen Review
 anfordern. Es darf Felder nicht still umdeuten.
+
+`critical_journey_coverage` trennt vier unterschiedliche Beweisstaerken:
+
+- Loginfehler bleiben `NOT_CONNECTED`, bis Supabase-Auth-Logs ueber einen
+  separat freigegebenen read-only Connector erreichbar sind.
+- Registrierung ist `STRUCTURAL_ONLY`: fehlende Profile oder Rollen sind
+  serverseitig sichtbar, der fehlgeschlagene Auth-Versuch selbst noch nicht.
+- Teambeitrittsfehler sind `ADVISORY_ONLY` und werden nach bestehender
+  Authentifizierung ohne Teamcode, E-Mail oder freien Fehlertext erfasst.
+- Minderjaehrigenautorisierung ist vor Enforcement `NOT_CONNECTED`; danach
+  werden nur Struktur und Guardian-Zustellfehler aggregiert, niemals Alter,
+  Guardian-Adresse, Receipt oder individuelle Entscheidung.
 
 ### Pilotkatalog
 

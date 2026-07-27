@@ -5,7 +5,7 @@
   "checksum_algorithm": "sha256",
   "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "data": {
-    "schema_version": "mahleos-system-health-v1",
+    "schema_version": "mahleos-system-health-v1.2",
     "generated_at": "2026-07-21T12:00:00Z",
     "reporting_timezone": "UTC",
     "status": "GREEN",
@@ -38,6 +38,28 @@
         "assessment_saved": 0,
         "coach_evidence_load_failed": 0,
         "app_runtime_error": 0
+      }
+    },
+    "critical_journey_coverage": {
+      "auth_login": {
+        "coverage": "NOT_CONNECTED",
+        "authority": "supabase_auth_logs",
+        "failures_24h": null
+      },
+      "auth_signup": {
+        "coverage": "STRUCTURAL_ONLY",
+        "authority": "identity_integrity",
+        "failures_24h": null
+      },
+      "team_join": {
+        "coverage": "ADVISORY_ONLY",
+        "authority": "authenticated_incident_log",
+        "failures_24h": 0
+      },
+      "minor_authorization": {
+        "coverage": "NOT_CONNECTED",
+        "authority": "minor_auth_state_machine",
+        "failures_24h": null
       }
     },
     "notifications_7d": {

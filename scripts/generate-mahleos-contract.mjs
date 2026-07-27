@@ -110,6 +110,41 @@ const healthFlowFailures = strictObject(
   ].map((key) => [key, nonnegativeInteger])),
 );
 
+const journeyCoverageSignal = (coverage, authority, failures = nullableNonnegativeInteger) =>
+  strictObject(
+    ["coverage", "authority", "failures_24h"],
+    {
+      coverage,
+      authority: { const: authority },
+      failures_24h: failures,
+    },
+  );
+
+const criticalJourneyCoverage = strictObject(
+  ["auth_login", "auth_signup", "team_join", "minor_authorization"],
+  {
+    auth_login: journeyCoverageSignal(
+      { const: "NOT_CONNECTED" },
+      "supabase_auth_logs",
+      { type: "null" },
+    ),
+    auth_signup: journeyCoverageSignal(
+      { const: "STRUCTURAL_ONLY" },
+      "identity_integrity",
+      { type: "null" },
+    ),
+    team_join: journeyCoverageSignal(
+      { const: "ADVISORY_ONLY" },
+      "authenticated_incident_log",
+      nonnegativeInteger,
+    ),
+    minor_authorization: journeyCoverageSignal(
+      { enum: ["NOT_CONNECTED", "STRUCTURAL_AND_DELIVERY_ONLY"] },
+      "minor_auth_state_machine",
+    ),
+  },
+);
+
 const systemHealthSchema = schema("system-health", "MahleOS system health v1", strictObject(
   [
     "schema_version",
@@ -120,13 +155,14 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
     "program_integrity",
     "tracking_integrity_7d",
     "operations_24h",
+    "critical_journey_coverage",
     "notifications_7d",
     "feedback",
     "privacy_level",
     "privacy_exclusions",
   ],
   {
-    schema_version: { const: "mahleos-system-health-v1" },
+    schema_version: { const: "mahleos-system-health-v1.2" },
     generated_at: dateTime,
     reporting_timezone: reportingTimezone,
     status: operationalStatus,
@@ -175,6 +211,7 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
         flow_failures: healthFlowFailures,
       },
     ),
+    critical_journey_coverage: criticalJourneyCoverage,
     notifications_7d: strictObject(
       ["sent", "opened", "failed", "expired_subscriptions"],
       {
@@ -958,7 +995,7 @@ const lockId = "70000000-0000-4000-8000-000000000501";
 const checksum = "a".repeat(64);
 
 const systemHealth = {
-  schema_version: "mahleos-system-health-v1",
+  schema_version: "mahleos-system-health-v1.2",
   generated_at: generatedAt,
   reporting_timezone: "UTC",
   status: "GREEN",
@@ -988,6 +1025,28 @@ const systemHealth = {
       assessment_saved: 0,
       coach_evidence_load_failed: 0,
       app_runtime_error: 0,
+    },
+  },
+  critical_journey_coverage: {
+    auth_login: {
+      coverage: "NOT_CONNECTED",
+      authority: "supabase_auth_logs",
+      failures_24h: null,
+    },
+    auth_signup: {
+      coverage: "STRUCTURAL_ONLY",
+      authority: "identity_integrity",
+      failures_24h: null,
+    },
+    team_join: {
+      coverage: "ADVISORY_ONLY",
+      authority: "authenticated_incident_log",
+      failures_24h: 0,
+    },
+    minor_authorization: {
+      coverage: "NOT_CONNECTED",
+      authority: "minor_auth_state_machine",
+      failures_24h: null,
     },
   },
   notifications_7d: { sent: 4, opened: 2, failed: 0, expired_subscriptions: 0 },
@@ -1214,7 +1273,7 @@ const evidenceResponse = {
 
 const manifest = {
   contract_id: "rewireperform-mahleos-machine-read",
-  contract_version: "1.1.0",
+  contract_version: "1.2.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   reporting_timezone: "UTC",
   authentication: {

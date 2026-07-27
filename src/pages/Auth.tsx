@@ -19,6 +19,7 @@ import {
   publicAuthOrigin,
 } from "@/lib/authEmailFlow";
 import { safeInternalRoute } from "@/lib/internalRoute";
+import { captureAppError } from "@/lib/monitoring";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join";
@@ -37,6 +38,12 @@ const joinTeamByCode = async (rawCode: string) => {
 
   if (joinError) {
     console.error("Team join error:", joinError);
+    void captureAppError({
+      error: joinError,
+      eventName: "team_join_attempt",
+      route: "/auth",
+      metadata: { stage: "team_join_rpc" },
+    });
     return {
       success: false as const,
       message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",
@@ -44,6 +51,14 @@ const joinTeamByCode = async (rawCode: string) => {
   }
 
   if (!result || result.success !== true) {
+    if (!result || result.error !== "invalid_code") {
+      void captureAppError({
+        error: { code: "team_join_result_invalid" },
+        eventName: "team_join_attempt",
+        route: "/auth",
+        metadata: { stage: "team_join_rpc" },
+      });
+    }
     return {
       success: false as const,
       message: "Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.",

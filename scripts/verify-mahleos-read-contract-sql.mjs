@@ -26,6 +26,12 @@ const telemetryAuthorityMigration = readFileSync(
   ),
   "utf8",
 );
+const criticalJourneyMigration = readFileSync(
+  resolve(
+    "supabase/migrations/20260727120000_add_mahleos_critical_journey_coverage_v1.sql",
+  ),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -145,6 +151,7 @@ try {
     CREATE ROLE service_role;
     CREATE SCHEMA auth;
     CREATE SCHEMA extensions;
+    CREATE SCHEMA minor_auth;
 
     -- PGlite has no pgcrypto bundle. This deterministic 32-byte test double
     -- preserves the production digest(bytea, text) signature.
@@ -264,6 +271,18 @@ try {
       status text NOT NULL DEFAULT 'open',
       created_at timestamptz NOT NULL DEFAULT now()
     );
+    CREATE TABLE minor_auth.system_settings(
+      singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+      enforcement_enabled boolean NOT NULL DEFAULT false
+    );
+    INSERT INTO minor_auth.system_settings(singleton, enforcement_enabled)
+    VALUES (true, false);
+    CREATE TABLE minor_auth.guardian_challenges(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES auth.users(id),
+      delivery_status text NOT NULL DEFAULT 'queued',
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
     CREATE TABLE public.athlete_transfer_observations(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES auth.users(id),
@@ -326,6 +345,7 @@ try {
   await db.exec(extensionMigration);
   await db.exec(hardeningMigration);
   await db.exec(telemetryAuthorityMigration);
+  await db.exec(criticalJourneyMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -579,6 +599,24 @@ try {
     daily.data.system_health.operations_24h.flow_failures.daily_checkin_saved === 0,
     "QA failures must be excluded from production operations",
   );
+  assert(
+    daily.data.system_health.critical_journey_coverage.auth_login.coverage === "NOT_CONNECTED"
+      && daily.data.system_health.critical_journey_coverage.auth_login.failures_24h === null,
+    "Unconnected Auth logs must expose null rather than a false zero",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.auth_signup.coverage === "STRUCTURAL_ONLY",
+    "Signup coverage must not overstate identity integrity as full Auth telemetry",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.team_join.coverage === "ADVISORY_ONLY",
+    "Authenticated team-join incident telemetry must remain advisory",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.minor_authorization.coverage === "NOT_CONNECTED"
+      && daily.data.system_health.critical_journey_coverage.minor_authorization.failures_24h === null,
+    "Disabled minor enforcement must remain explicitly disconnected",
+  );
   const serializedDaily = JSON.stringify(daily);
   assert(!serializedDaily.includes("PRIVATE-FEEDBACK-CONTENT"), "Feedback text must not leave RewirePerform");
   assert(!serializedDaily.includes("PRIVATE-METADATA-CONTENT"), "Technical metadata must not leave RewirePerform");
@@ -600,6 +638,10 @@ try {
   assert(
     clientTelemetryHealth.data.status === "YELLOW",
     "Client-reported telemetry must not independently establish global RED",
+  );
+  assert(
+    clientTelemetryHealth.data.critical_journey_coverage.auth_login.failures_24h === null,
+    "A client-reported Auth event must not masquerade as connected Auth-log coverage",
   );
 
   const duplicate = await readAsService({

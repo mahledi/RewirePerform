@@ -1,6 +1,6 @@
 {
   "contract_id": "rewireperform-mahleos-machine-read",
-  "contract_version": "1.1.0",
+  "contract_version": "1.2.0",
   "status": "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   "reporting_timezone": "UTC",
   "authentication": {

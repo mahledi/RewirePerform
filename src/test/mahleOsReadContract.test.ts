@@ -16,6 +16,7 @@ const migrationSource = () => [
   "supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql",
   "supabase/migrations/20260723172818_harden_mahleos_operational_telemetry_authority_v1.sql",
+  "supabase/migrations/20260727120000_add_mahleos_critical_journey_coverage_v1.sql",
 ].map(readRepoFile).join("\n");
 const telemetryAuthorityMigrationSource = () => readRepoFile(
   "supabase/migrations/20260723172818_harden_mahleos_operational_telemetry_authority_v1.sql",
@@ -89,6 +90,11 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("COUNT(DISTINCT cer.week_number)");
     expect(migration).toContain("ets.day_number <= current_program_day");
     expect(migration).toContain("'reporting_timezone', 'UTC'");
+    expect(migration).toContain("'critical_journey_coverage'");
+    expect(migration).toContain("'NOT_CONNECTED'");
+    expect(migration).toContain("'STRUCTURAL_ONLY'");
+    expect(migration).toContain("'ADVISORY_ONLY'");
+    expect(migration).toContain("'STRUCTURAL_AND_DELIVERY_ONLY'");
     expect(migration).toContain("extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256')");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated");
     expect(migration).toContain("TO service_role");
@@ -113,6 +119,17 @@ describe("MahleOS operational read contract", () => {
     expect(migration).not.toContain("OR m.critical_failed_events_24h > 0");
     expect(migration).toContain("OR m.failed_events_24h > 0");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated, service_role");
+  });
+
+  it("never turns absent Auth or minor coverage into a false zero", () => {
+    const migration = migrationSource();
+
+    expect(migration).toContain("'authority', 'supabase_auth_logs'");
+    expect(migration).toContain("'authority', 'identity_integrity'");
+    expect(migration).toContain("'authority', 'authenticated_incident_log'");
+    expect(migration).toContain("'authority', 'minor_auth_state_machine'");
+    expect(migration).toMatch(/'auth_login'[\s\S]+?'failures_24h', NULL/u);
+    expect(migration).toMatch(/WHEN journey\.minor_enforcement_enabled[\s\S]+?ELSE NULL/u);
   });
 
   it("keeps pilot output count-only and explicitly excludes test data", () => {
