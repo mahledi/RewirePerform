@@ -8,7 +8,7 @@ MahleOS soll technisches und produktbezogenes In-App-Feedback read-only lesen k�
 
 - Branch: `codex/mahleos-observability-v1`
 - Ausgangscommit dieses Hardening-Schritts: `fb972334cf8e96720b2c0157b4bb3fc6a2ccce31`
-- Production-Runtime-Fix: `ca76783`
+- Production-Runtime-Fix: `c641524`
 - Contract: `rewireperform-mahleos-feedback-read` `1.1.0`
 - Status: `PRODUCTION_ACTIVATED_SUPERVISED_EMPTY_READ_VERIFIED`
 - Production-Migrationen: `20260723154047` und `20260723165153` angewendet
@@ -115,7 +115,7 @@ Feedback-Migrationen angewendet, ein separater 256-Bit-Machine-Key außerhalb
 des Repositories gespeichert und die dedizierte Edge Function aktiviert.
 
 Der erste korrekt authentifizierte Live-Aufruf deckte einen Deno-Laufzeitfehler
-bei der Request-ID-Erzeugung auf. Der minimale Fix `ca76783` bindet die native
+bei der Request-ID-Erzeugung auf. Der minimale Fix `c641524` bindet die native
 UUID-Funktion nicht mehr als losgelöste Methode ein. Ein eigener Regressionstest
 deckt genau den echten Runtime-Pfad ohne injizierten Testgenerator ab.
 
@@ -132,6 +132,9 @@ Nach dem erneuten Deployment wurde verifiziert:
   payloadfreien Access-Log,
 - authentifiziertes ungültiges JSON liefert `400` und ausschließlich den
   generischen Auditcode `invalid_json`,
+- die tägliche Production-Retention `minor-auth-retention-daily` ist aktiv;
+  die letzten drei Läufe waren erfolgreich und es gibt keine App-Ereigniszeile
+  älter als 30 Tage,
 - vollständiges `npm run ci` mit 85 Testdateien und 442 Tests,
 - sämtliche Feedback-SQL-, Privacy-, Contract- und statischen
   App-Store-Readiness-Gates grün.
@@ -146,13 +149,11 @@ Pilotnachweis bleiben getrennt:
    Produktionsnutzer ausgegeben werden.
 2. Den Ausschluss einer markierten synthetischen Feedbackzeile in Production
    nachweisen, ohne echte Nutzerdaten zu verändern.
-3. In Production nachweisen, dass die bestehende 30-Tage-Bereinigung für
-   App-Ereignisse aktiv läuft.
-4. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und
+3. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und
    freigeben.
-5. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes
+4. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes
    Feedback festlegen; bis dahin keine automatische Löschung erfinden.
-6. Erst danach einen zeitgesteuerten Schattenbetrieb aktivieren.
+5. Erst danach einen zeitgesteuerten Schattenbetrieb aktivieren.
 
 Die Support-E-Mail-Anbindung, automatische Modellanalyse und autonome
 Production-Fixes sind nicht Bestandteil dieser Aktivierung und bleiben
