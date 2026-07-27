@@ -144,9 +144,10 @@ describe("minor authorization reconnect recovery", () => {
   });
 
   it("refreshes a cached guardian-pending state immediately when the app regains focus", async () => {
+    const refreshed = deferred<typeof authorized>();
     mocks.getStatus
       .mockResolvedValueOnce(guardianPending)
-      .mockResolvedValueOnce(authorized);
+      .mockReturnValueOnce(refreshed.promise);
 
     render(<MinorAuthorizationProvider><Probe /></MinorAuthorizationProvider>);
     await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
@@ -156,6 +157,10 @@ describe("minor authorization reconnect recovery", () => {
     act(() => window.dispatchEvent(new Event("focus")));
 
     await waitFor(() => expect(mocks.getStatus).toHaveBeenCalledTimes(2), { timeout: 2_000 });
+    expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "pending|loading|checking_authorization|no-error",
+    );
+    await act(async () => refreshed.resolve(authorized));
     await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
       "authorized|ready|ready|no-error",
     ));
