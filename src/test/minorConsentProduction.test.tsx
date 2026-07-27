@@ -61,6 +61,7 @@ const renderFlow = (entry = "/minor-consent") => render(
       <Route path="/minor-consent" element={<MinorConsent />} />
       <Route path="/dashboard" element={<div>Dashboard erreicht</div>} />
       <Route path="/progress" element={<div>Fortschritt erreicht</div>} />
+      <Route path="/settings" element={<div>Einstellungen erreicht</div>} />
     </Routes>
   </MemoryRouter>,
 );
@@ -152,6 +153,66 @@ describe("minor consent production flow", () => {
       "Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein.",
     );
     expect(api.startGuardianAuthorization).not.toHaveBeenCalled();
+  });
+
+  it("keeps the pending screen visible during a background status refresh", () => {
+    context.status = baseStatus({
+      state: "guardian_pending",
+      age_band: "under_16",
+      guardian_status: "pending",
+      guardian_email_mask: "e•••@b•••.de",
+    });
+    context.loading = true;
+
+    const { container } = renderFlow();
+
+    expect(screen.getByRole("heading", { name: "Entscheidung noch offen" })).toBeInTheDocument();
+    expect(container.querySelector('[data-app-loading-shell="true"]')).not.toBeInTheDocument();
+  });
+
+  it("replaces a pending guardian address and invalidates the old link through a new challenge", async () => {
+    const pending = baseStatus({
+      state: "guardian_pending",
+      age_band: "under_16",
+      guardian_status: "pending",
+      guardian_email_mask: "n•••@e•••.de",
+    });
+    context.status = baseStatus({
+      state: "guardian_pending",
+      age_band: "under_16",
+      guardian_status: "pending",
+      guardian_email_mask: "a•••@e•••.de",
+    });
+    api.startGuardianAuthorization.mockResolvedValue(pending);
+    renderFlow();
+
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail-Adresse ändern" }));
+    fireEvent.change(screen.getByLabelText("Andere E-Mail-Adresse"), {
+      target: { value: "neue-adresse@example.de" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Neuen Link senden" }));
+
+    await waitFor(() => expect(api.startGuardianAuthorization).toHaveBeenCalledWith(
+      "neue-adresse@example.de",
+    ));
+    expect(context.setStatus).toHaveBeenCalledWith(pending);
+  });
+
+  it.each([
+    ["guardian_pending", "Entscheidung noch offen"],
+    ["guardian_declined", "Die Freigabe wurde nicht erteilt"],
+  ] as const)("offers a safe settings exit from %s", (state, heading) => {
+    context.status = baseStatus({
+      state,
+      age_band: "under_16",
+      guardian_status: state === "guardian_pending" ? "pending" : "declined",
+    });
+    renderFlow();
+
+    expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Zurück zu den Einstellungen" }));
+
+    expect(screen.getByText("Einstellungen erreicht")).toBeInTheDocument();
   });
 
   it("never lets an under-16 athlete exceed the guardian's data-contribution choice", async () => {

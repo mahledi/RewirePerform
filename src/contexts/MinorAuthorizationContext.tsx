@@ -196,8 +196,10 @@ export const MinorAuthorizationProvider = ({ children }: { children: ReactNode }
       setLoading(true);
       setError(null);
       setPhase("checking_role");
-      statusRef.current = null;
-      setStatusState(null);
+      if (trigger === "initial") {
+        statusRef.current = null;
+        setStatusState(null);
+      }
       traceAccessRecovery({ cycle, phase: "checking_role", event: `start_${trigger}` });
 
       if (trigger === "initial" && !window.navigator.onLine && !authRef.current.roleVerified) {

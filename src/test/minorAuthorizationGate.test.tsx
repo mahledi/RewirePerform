@@ -67,6 +67,16 @@ describe("minor authorization production gate", () => {
     expect(screen.getByText("Geschützter Inhalt")).toBeInTheDocument();
   });
 
+  it("keeps authorized content visible during a background access refresh", () => {
+    state.loading = true;
+    state.phase = "checking_authorization";
+
+    const { container } = renderGate();
+
+    expect(screen.getByText("Geschützter Inhalt")).toBeInTheDocument();
+    expect(container.querySelector('[data-app-loading-shell="true"]')).not.toBeInTheDocument();
+  });
+
   it("preserves the intended route while redirecting an unauthorized athlete", () => {
     state.status = { product_status: "pending" };
     renderGate("/dashboard?tab=progress");

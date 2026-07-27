@@ -14,10 +14,12 @@ const MinorAuthorizationGate = ({ children }: { children: React.ReactNode }) => 
   const location = useLocation();
 
   const retryAccess = () => void refresh();
-  const checking = loading
+  const checking = !status && (
+    loading
     || phase === "checking_role"
     || phase === "checking_authorization"
-    || (phase === "idle" && !error);
+    || (phase === "idle" && !error)
+  );
 
   if (authLoading) return <AppLoadingShell subtitle="Prüfe deine Rolle..." />;
 
@@ -51,7 +53,7 @@ const MinorAuthorizationGate = ({ children }: { children: React.ReactNode }) => 
     );
   }
 
-  if (error || !status) {
+  if (!status) {
     return (
       <AccessStatusScreen
         title="Zugang konnte nicht geprüft werden"

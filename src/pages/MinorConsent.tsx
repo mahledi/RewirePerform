@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
+  ArrowLeft,
   CheckCircle2,
   ChevronRight,
   Clock3,
   Loader2,
   LockKeyhole,
   Mail,
+  PencilLine,
   RefreshCw,
   ShieldCheck,
   UserRoundCheck,
@@ -92,6 +94,17 @@ const MinorConsent = () => {
   const [productAccepted, setProductAccepted] = useState(false);
   const [contributionAccepted, setContributionAccepted] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [editingGuardianEmail, setEditingGuardianEmail] = useState(false);
+  const normalizedGuardianEmail = guardianEmail.trim().toLowerCase();
+  const normalizedAthleteEmail = user?.email?.trim().toLowerCase() ?? "";
+  const guardianMatchesAthlete = Boolean(
+    normalizedGuardianEmail
+    && normalizedAthleteEmail
+    && normalizedGuardianEmail === normalizedAthleteEmail,
+  );
+  const validGuardianEmail = /^\S+@\S+\.\S+$/u.test(normalizedGuardianEmail)
+    && !guardianMatchesAthlete;
 
   useEffect(() => {
     if (status?.product_status === "authorized") navigate(nextRoute, { replace: true });
@@ -125,8 +138,28 @@ const MinorConsent = () => {
     }
   };
 
-  if (loading || (!status && !error)) return <AppLoadingShell subtitle="Öffne deinen sicheren Zugang..." />;
-  if (error || !status) {
+  const checkStatus = async () => {
+    setCheckingStatus(true);
+    try {
+      await refresh();
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
+  const replaceGuardianEmail = async () => {
+    const next = await run(
+      "change-email",
+      () => startGuardianAuthorization(normalizedGuardianEmail),
+    );
+    if (next) {
+      setGuardianEmail("");
+      setEditingGuardianEmail(false);
+    }
+  };
+
+  if (!status && (loading || !error)) return <AppLoadingShell subtitle="Öffne deinen sicheren Zugang..." />;
+  if (!status) {
     return (
       <Shell>
         <Intro icon={AlertCircle} title="Zugang konnte nicht geprüft werden">
@@ -170,14 +203,6 @@ const MinorConsent = () => {
   }
 
   if (status.state === "guardian_contact_required" || status.state === "guardian_expired" || status.state === "guardian_declined") {
-    const normalizedGuardianEmail = guardianEmail.trim().toLowerCase();
-    const normalizedAthleteEmail = user?.email?.trim().toLowerCase() ?? "";
-    const guardianMatchesAthlete = Boolean(
-      normalizedGuardianEmail
-      && normalizedAthleteEmail
-      && normalizedGuardianEmail === normalizedAthleteEmail,
-    );
-    const validEmail = /^\S+@\S+\.\S+$/u.test(normalizedGuardianEmail) && !guardianMatchesAthlete;
     return (
       <Shell>
         <Intro icon={Mail} title={status.state === "guardian_declined" ? "Die Freigabe wurde nicht erteilt" : "E-Mail einer sorgeberechtigten Person"}>
@@ -212,11 +237,20 @@ const MinorConsent = () => {
         <Button
           className="mt-7 w-full"
           size="lg"
-          disabled={!validEmail || busy === "send"}
+          disabled={!validGuardianEmail || busy === "send"}
           onClick={() => void run("send", () => startGuardianAuthorization(normalizedGuardianEmail))}
         >
           {busy === "send" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
           Sicheren Link senden
+        </Button>
+        <Button
+          className="mt-3 w-full"
+          variant="ghost"
+          disabled={busy !== null}
+          onClick={() => navigate("/settings")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zu den Einstellungen
         </Button>
       </Shell>
     );
@@ -232,15 +266,89 @@ const MinorConsent = () => {
           <div><p className="text-sm font-semibold">Freigabe durch eine sorgeberechtigte Person</p><p className="mt-1 text-xs text-muted-foreground">Noch nicht entschieden</p></div>
           <Clock3 className="h-5 w-5 text-amber-500" />
         </div>
+        {editingGuardianEmail && (
+          <div className="mt-5 space-y-3 rounded-md border border-border p-4">
+            <div className="space-y-2">
+              <Label htmlFor="replacement-guardian-email">Andere E-Mail-Adresse</Label>
+              <Input
+                id="replacement-guardian-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoFocus
+                value={guardianEmail}
+                onChange={(event) => setGuardianEmail(event.target.value)}
+                placeholder="elternteil@beispiel.de"
+                className="h-12"
+                aria-invalid={guardianMatchesAthlete}
+                aria-describedby={guardianMatchesAthlete ? "replacement-guardian-email-error" : undefined}
+              />
+              {guardianMatchesAthlete && (
+                <p
+                  id="replacement-guardian-email-error"
+                  role="alert"
+                  className="text-sm leading-5 text-destructive"
+                >
+                  Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein.
+                </p>
+              )}
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Der bisherige Link wird ungültig, sobald der neue Link sicher erstellt wurde.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                disabled={!validGuardianEmail || busy === "change-email"}
+                onClick={() => void replaceGuardianEmail()}
+              >
+                {busy === "change-email" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                Neuen Link senden
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={busy !== null}
+                onClick={() => {
+                  setGuardianEmail("");
+                  setEditingGuardianEmail(false);
+                }}
+              >
+                Abbrechen
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Button variant="outline" disabled={busy !== null} onClick={() => void refresh()}>
-            <RefreshCw className="h-4 w-4" /> Status prüfen
+          <Button
+            variant="outline"
+            disabled={busy !== null || checkingStatus}
+            onClick={() => void checkStatus()}
+          >
+            {checkingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Status prüfen
           </Button>
           <Button variant="secondary" disabled={busy !== null} onClick={() => void run("resend", resendGuardianAuthorization)}>
             {busy === "resend" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
             Erneut senden
           </Button>
         </div>
+        <Button
+          className="mt-3 w-full"
+          variant="outline"
+          disabled={busy !== null || checkingStatus}
+          onClick={() => setEditingGuardianEmail((current) => !current)}
+        >
+          <PencilLine className="h-4 w-4" />
+          E-Mail-Adresse ändern
+        </Button>
+        <Button
+          className="mt-3 w-full"
+          variant="ghost"
+          disabled={busy !== null}
+          onClick={() => navigate("/settings")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zu den Einstellungen
+        </Button>
       </Shell>
     );
   }
@@ -297,6 +405,15 @@ const MinorConsent = () => {
         <Button className="w-full" size="lg" disabled={busy === "restart"} onClick={() => void run("restart", restartMinorAuthorization)}>
           {busy === "restart" ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           Freigabe erneut starten
+        </Button>
+        <Button
+          className="mt-3 w-full"
+          variant="ghost"
+          disabled={busy !== null}
+          onClick={() => navigate("/settings")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zu den Einstellungen
         </Button>
       </Shell>
     );
