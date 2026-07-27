@@ -33,7 +33,7 @@ Der Schreibtest darf erst beginnen, wenn:
 2. die Migration `20260723101114`/Production-Version `20260723151225`
    reconciled ist;
 3. der Redirect-Befund geschlossen ist;
-4. alle 53 privilegierten Funktionen vom finalen `main` erneut geprueft sind;
+4. alle 54 privilegierten Funktionen vom finalen `main` erneut geprueft sind;
 5. `npm run ci`, `npm run privacy:verify`, Lint und Dependency-Audit gruen sind;
 6. Mahle eine separate ausdrueckliche Freigabe fuer synthetische
    Production-Schreibdaten erteilt;
@@ -63,7 +63,7 @@ echten Minderjaehrigen werden verwendet.
 - Doppelte aktive Programminstanzen suchen.
 - Trackingzeilen ohne `program_instance_id` zaehlen.
 - aktive Runs, gemischte Testflags und ungueltige Evidence-Locks pruefen.
-- 53 Funktionsrechte, `anon`-Sperren und Suchpfade erneut erfassen.
+- 54 Funktionsrechte, `anon`-Sperren und Suchpfade erneut erfassen.
 - Baseline-Zaehler fuer alle spaeter bereinigten Tabellen speichern.
 
 Abbruch bei jeder nicht erklaerten Abweichung.
@@ -83,7 +83,7 @@ Abbruch bei jeder nicht erklaerten Abweichung.
 - Outsider kann Teamstatus, Readiness und Coachdaten nicht lesen.
 - Athlet kann Run weder erstellen, aktivieren, zuweisen noch abschliessen.
 - Coach kann nur das eigene Team verwalten.
-- `anon` kann keinen der 53 privilegierten RPCs ausfuehren.
+- `anon` kann keinen der 54 privilegierten RPCs ausfuehren.
 - nicht administrative Konten koennen keinen Data Lock erstellen oder
   invalidieren.
 
@@ -212,4 +212,3 @@ Der Lauf ist nur gruen, wenn:
 | Testlauf ausgefuehrt | Engineering |  |  |
 | Privacy-Ausgabe geprueft | Privacy Review |  |  |
 | Bereinigung bestaetigt | Engineering |  |  |
-

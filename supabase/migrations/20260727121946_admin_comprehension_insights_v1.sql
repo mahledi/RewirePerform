@@ -1,4 +1,5 @@
 -- Admin-only product comprehension insights.
+-- Production migration version: 20260727121946.
 -- Uses structured multiple-choice checks; never returns journal or reflection text,
 -- selected options, user identifiers, names, or email addresses.
 
