@@ -9,14 +9,13 @@ export type FeedbackTechnicalContext = {
   app_version: string;
 };
 
-const SAFE_TOKEN_PATTERN = /^[A-Za-z0-9_.:/-]{1,96}$/;
+const RELEASE_VERSION_PATTERN =
+  /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?:\+[0-9]{1,10})?$/;
 
-const safeAppVersion = () => {
-  const configured = import.meta.env.VITE_APP_VERSION;
-  return typeof configured === "string" && SAFE_TOKEN_PATTERN.test(configured)
-    ? configured
+export const normalizeFeedbackAppVersion = (value: unknown) =>
+  typeof value === "string" && RELEASE_VERSION_PATTERN.test(value)
+    ? value
     : "unknown";
-};
 
 const safeRoute = () => {
   if (typeof window === "undefined") return null;
@@ -46,6 +45,6 @@ export const buildFeedbackTechnicalContext = (): FeedbackTechnicalContext => {
     platform,
     route: safeRoute(),
     online: typeof navigator === "undefined" ? null : navigator.onLine,
-    app_version: safeAppVersion(),
+    app_version: normalizeFeedbackAppVersion(import.meta.env.VITE_APP_VERSION),
   };
 };

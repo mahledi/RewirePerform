@@ -119,6 +119,7 @@ describe("MahleOS feedback read contract", () => {
     expect(handler).toContain("parseFeedbackReadRequest");
     expect(handler).toContain("projectFeedbackReadResult");
     expect(edge).toContain('rpc("read_mahleos_feedback_page"');
+    expect(edge).toContain('"audit_mahleos_feedback_invalid_request"');
     expect(edge).not.toContain(".from(");
     expect(handler).not.toContain("Access-Control-Allow-Origin");
     expect(auth).toContain('Deno.env.get("MAHLEOS_FEEDBACK_READ_KEY")');
@@ -148,8 +149,11 @@ describe("MahleOS feedback read contract", () => {
     expect(hardening).toContain("canonicalize_feedback_insert");
     expect(hardening).toContain("canonicalize_app_event_insert");
     expect(hardening).toContain("client_reported_non_authoritative");
+    expect(hardening).toContain("audit_mahleos_feedback_invalid_request");
+    expect(hardening).toContain("request_error_code");
+    expect(hardening).toContain("'invalid_schema'");
     expect(hardening).toContain("app_event_rate_limited");
-    expect(hardening).toContain("OR _limit IS NULL");
+    expect(hardening).toContain("IF _limit IS NULL");
     expect(hardening).toContain("cleanup_mahleos_feedback_access_log");
     expect(retention).toContain("DELETE FROM public.app_event_log ael");
     expect(retention).toContain("ael.created_at < now() - interval '30 days'");

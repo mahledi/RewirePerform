@@ -13,8 +13,19 @@ type FeedbackRpcResult = {
   error: unknown;
 };
 
+type InvalidRequestAuditCode =
+  | "unsupported_media_type"
+  | "request_too_large"
+  | "invalid_json"
+  | "invalid_schema"
+  | "invalid_request";
+
 export type MahleOsFeedbackHandlerDependencies = {
   authenticate: (request: Request) => Promise<MahleOsMachineAuthError | null>;
+  auditInvalidRequest: (parameters: {
+    requestId: string;
+    errorCode: InvalidRequestAuditCode;
+  }) => Promise<FeedbackRpcResult>;
   readPage: (parameters: {
     requestId: string;
     cursorCreatedAt: string | null;
@@ -34,6 +45,53 @@ const responseHeaders = {
 const jsonResponse = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: responseHeaders });
 
+const authenticatedRequestErrors: Record<
+  InvalidRequestAuditCode,
+  { status: number; responseCode: string }
+> = {
+  unsupported_media_type: { status: 415, responseCode: "unsupported_media_type" },
+  request_too_large: { status: 413, responseCode: "request_too_large" },
+  invalid_json: { status: 400, responseCode: "invalid_json" },
+  invalid_schema: { status: 400, responseCode: "invalid_request" },
+  invalid_request: { status: 400, responseCode: "invalid_request" },
+};
+
+const isExactRecord = (value: unknown, keys: string[]): value is Record<string, unknown> => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const actualKeys = Object.keys(value);
+  return actualKeys.length === keys.length && actualKeys.every((key) => keys.includes(key));
+};
+
+const auditAuthenticatedRequestError = async (
+  requestId: string,
+  errorCode: InvalidRequestAuditCode,
+  dependencies: MahleOsFeedbackHandlerDependencies,
+) => {
+  try {
+    const { data, error } = await dependencies.auditInvalidRequest({ requestId, errorCode });
+    if (error) {
+      return jsonResponse(503, { error: "feedback_read_unavailable", request_id: requestId });
+    }
+    if (isExactRecord(data, ["ok"]) && data.ok === true) {
+      const response = authenticatedRequestErrors[errorCode];
+      return jsonResponse(response.status, {
+        error: response.responseCode,
+        request_id: requestId,
+      });
+    }
+    if (
+      isExactRecord(data, ["ok", "error"])
+      && data.ok === false
+      && data.error === "rate_limited"
+    ) {
+      return jsonResponse(429, { error: "rate_limited", request_id: requestId });
+    }
+    return jsonResponse(503, { error: "feedback_read_unavailable", request_id: requestId });
+  } catch {
+    return jsonResponse(503, { error: "feedback_read_unavailable", request_id: requestId });
+  }
+};
+
 export const handleMahleOsFeedbackRead = async (
   request: Request,
   dependencies: MahleOsFeedbackHandlerDependencies,
@@ -49,12 +107,13 @@ export const handleMahleOsFeedbackRead = async (
     });
   }
 
+  const requestId = (dependencies.randomUUID ?? crypto.randomUUID)();
   const contentType = request.headers.get("Content-Type")
     ?.split(";", 1)[0]
     ?.trim()
     .toLowerCase();
   if (contentType !== "application/json") {
-    return jsonResponse(415, { error: "unsupported_media_type" });
+    return auditAuthenticatedRequestError(requestId, "unsupported_media_type", dependencies);
   }
 
   let rawBody: string;
@@ -62,22 +121,23 @@ export const handleMahleOsFeedbackRead = async (
     rawBody = await readBoundedRequestText(request, 1024);
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) {
-      return jsonResponse(413, { error: "request_too_large" });
+      return auditAuthenticatedRequestError(requestId, "request_too_large", dependencies);
     }
-    return jsonResponse(400, { error: "invalid_request" });
+    return auditAuthenticatedRequestError(requestId, "invalid_request", dependencies);
   }
 
   let parsedBody: unknown;
   try {
     parsedBody = JSON.parse(rawBody);
   } catch {
-    return jsonResponse(400, { error: "invalid_json" });
+    return auditAuthenticatedRequestError(requestId, "invalid_json", dependencies);
   }
 
   const parsedRequest = parseFeedbackReadRequest(parsedBody);
-  if (!parsedRequest) return jsonResponse(400, { error: "invalid_request" });
+  if (!parsedRequest) {
+    return auditAuthenticatedRequestError(requestId, "invalid_schema", dependencies);
+  }
 
-  const requestId = (dependencies.randomUUID ?? crypto.randomUUID)();
   try {
     const { data, error } = await dependencies.readPage({
       requestId,

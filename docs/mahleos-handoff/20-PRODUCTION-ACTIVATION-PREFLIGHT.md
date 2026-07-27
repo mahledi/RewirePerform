@@ -66,7 +66,10 @@ prevents incomplete operational coverage from being reported as `GREEN`.
     reviewed commit.
 12. Run the complete negative matrix: no key, wrong key, malformed key, expired
    rotation key, wrong method, wrong media type, oversized body, unknown field,
-   unknown view, missing or malformed run ID, unknown run and rate limit.
+   unknown view, missing or malformed run ID, unknown run and rate limit. After
+   successful machine authentication, malformed feedback reads must create only
+   a generic payload-free audit row and must share the same 30/minute window as
+   valid reads.
 13. Run positive synthetic reads for every Operations view, one synthetic,
     locked Evidence payload and one marked synthetic feedback row. No real
     athlete payload is needed for activation.
@@ -101,7 +104,8 @@ These existing advisor findings are not silently declared resolved by local
 tests. They must be triaged again after the approved migration release. The
 current branch introduces no new publicly callable MahleOS helper: all internal
 read helpers remain revoked from `PUBLIC`, `anon`, `authenticated`, and
-`service_role`; only the narrow audited wrapper is granted to `service_role`.
+`service_role`; only the narrow audited feedback-read and invalid-request-audit
+wrappers are granted to `service_role`.
 
 ## Dependency audit boundary
 
@@ -120,3 +124,7 @@ Stop the release immediately if migration history differs, a helper becomes
 callable outside its intended role, a forbidden field appears in a response,
 an invalid request is not audited, a synthetic response fails its strict JSON
 Schema, or any incomplete source can still produce a green status.
+
+The bounded feedback `app_version` is client-reported and non-authoritative. It
+may be used to group technical reports by release, but it must not affect
+Evidence, psychological interpretation, or impact claims.

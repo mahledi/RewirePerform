@@ -4,7 +4,8 @@
     "request_id": "90000000-0000-4000-8000-000000000701"
   },
   {
-    "error": "invalid_json"
+    "error": "invalid_json",
+    "request_id": "90000000-0000-4000-8000-000000000701"
   },
   {
     "error": "unauthorized"
@@ -13,10 +14,12 @@
     "error": "method_not_allowed"
   },
   {
-    "error": "request_too_large"
+    "error": "request_too_large",
+    "request_id": "90000000-0000-4000-8000-000000000701"
   },
   {
-    "error": "unsupported_media_type"
+    "error": "unsupported_media_type",
+    "request_id": "90000000-0000-4000-8000-000000000701"
   },
   {
     "error": "rate_limited",

@@ -107,10 +107,14 @@ BEGIN
       THEN submitted_context->'online'
     ELSE 'null'::jsonb
   END;
-  -- Client-supplied release labels are not authoritative. Keeping this value
-  -- fixed also prevents arbitrary identifier-like strings from entering the
-  -- machine-readable feedback channel.
-  safe_app_version := 'unknown';
+  -- This bounded release label is useful for triage, but remains explicitly
+  -- client-reported and non-authoritative. It must never become Evidence.
+  safe_app_version := CASE
+    WHEN COALESCE(submitted_context->>'app_version', '')
+      ~ '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(\+[0-9]{1,10})?$'
+      THEN submitted_context->>'app_version'
+    ELSE 'unknown'
+  END;
 
   NEW.id := gen_random_uuid();
   NEW.user_id := actor_id;
@@ -142,6 +146,47 @@ CREATE TRIGGER canonicalize_feedback_insert
 BEFORE INSERT ON public.feedback
 FOR EACH ROW
 EXECUTE FUNCTION public.canonicalize_feedback_insert();
+
+ALTER TABLE public.feedback
+  DROP CONSTRAINT IF EXISTS feedback_technical_context_contract_v1;
+ALTER TABLE public.feedback
+  ADD CONSTRAINT feedback_technical_context_contract_v1
+  CHECK (
+    jsonb_typeof(technical_context) = 'object'
+    AND technical_context ?& ARRAY[
+      'schema_version',
+      'runtime',
+      'platform',
+      'route',
+      'online',
+      'app_version'
+    ]
+    AND technical_context - ARRAY[
+      'schema_version',
+      'runtime',
+      'platform',
+      'route',
+      'online',
+      'app_version'
+    ] = '{}'::jsonb
+    AND technical_context->>'schema_version' = 'feedback-technical-context-v1'
+    AND technical_context->>'runtime' IN ('native', 'standalone', 'browser', 'unknown')
+    AND technical_context->>'platform' IN ('ios', 'android', 'web', 'unknown')
+    AND (
+      jsonb_typeof(technical_context->'route') = 'null'
+      OR (
+        jsonb_typeof(technical_context->'route') = 'string'
+        AND technical_context->>'route' ~ '^/[^?#]{0,159}$'
+      )
+    )
+    AND (
+      jsonb_typeof(technical_context->'online') = 'null'
+      OR jsonb_typeof(technical_context->'online') = 'boolean'
+    )
+    AND jsonb_typeof(technical_context->'app_version') = 'string'
+    AND technical_context->>'app_version'
+      ~ '^(unknown|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(\+[0-9]{1,10})?)$'
+  );
 
 ALTER TABLE public.feedback
   DROP CONSTRAINT IF EXISTS feedback_message_bounds_v1;
@@ -321,6 +366,38 @@ REVOKE ALL ON FUNCTION public.canonicalize_app_event_insert()
 CREATE INDEX IF NOT EXISTS mahleos_feedback_access_client_time_idx
   ON public.mahleos_feedback_access_log (client_id, requested_at DESC);
 
+ALTER TABLE public.mahleos_feedback_access_log
+  ADD COLUMN IF NOT EXISTS request_error_code text;
+
+ALTER TABLE public.mahleos_feedback_access_log
+  DROP CONSTRAINT IF EXISTS mahleos_feedback_access_log_outcome_check;
+ALTER TABLE public.mahleos_feedback_access_log
+  DROP CONSTRAINT IF EXISTS mahleos_feedback_access_log_outcome_v2_check;
+ALTER TABLE public.mahleos_feedback_access_log
+  ADD CONSTRAINT mahleos_feedback_access_log_outcome_v2_check
+  CHECK (outcome IN ('success', 'invalid_request', 'rate_limited'));
+
+ALTER TABLE public.mahleos_feedback_access_log
+  DROP CONSTRAINT IF EXISTS mahleos_feedback_access_log_request_error_v1_check;
+ALTER TABLE public.mahleos_feedback_access_log
+  ADD CONSTRAINT mahleos_feedback_access_log_request_error_v1_check
+  CHECK (
+    (
+      outcome = 'invalid_request'
+      AND request_error_code IN (
+        'unsupported_media_type',
+        'request_too_large',
+        'invalid_json',
+        'invalid_schema',
+        'invalid_request'
+      )
+    )
+    OR (
+      outcome IN ('success', 'rate_limited')
+      AND request_error_code IS NULL
+    )
+  );
+
 CREATE OR REPLACE FUNCTION public.mahleos_feedback_access_log_append_only()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -362,6 +439,92 @@ REVOKE ALL ON FUNCTION public.cleanup_mahleos_feedback_access_log()
 GRANT EXECUTE ON FUNCTION public.cleanup_mahleos_feedback_access_log()
   TO service_role;
 
+CREATE OR REPLACE FUNCTION public.audit_mahleos_feedback_invalid_request(
+  _request_id uuid,
+  _client_id text,
+  _error_code text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  recent_requests integer;
+BEGIN
+  IF _request_id IS NULL
+    OR _client_id <> 'mahleos-feedback-v1'
+    OR _error_code NOT IN (
+      'unsupported_media_type',
+      'request_too_large',
+      'invalid_json',
+      'invalid_schema',
+      'invalid_request'
+    )
+  THEN
+    RETURN jsonb_build_object('ok', false, 'error', 'invalid_request');
+  END IF;
+
+  PERFORM pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('mahleos-feedback-read:' || _client_id, 0)
+  );
+
+  SELECT COUNT(*)::integer
+  INTO recent_requests
+  FROM public.mahleos_feedback_access_log access_log
+  WHERE access_log.client_id = _client_id
+    AND access_log.requested_at >= pg_catalog.now() - interval '1 minute';
+
+  IF recent_requests >= 30 THEN
+    IF NOT EXISTS (
+      SELECT 1
+      FROM public.mahleos_feedback_access_log access_log
+      WHERE access_log.client_id = _client_id
+        AND access_log.outcome = 'rate_limited'
+        AND access_log.requested_at >= pg_catalog.now() - interval '1 minute'
+    ) THEN
+      INSERT INTO public.mahleos_feedback_access_log (
+        request_id,
+        client_id,
+        outcome,
+        returned_count
+      )
+      VALUES (_request_id, _client_id, 'rate_limited', 0);
+    END IF;
+
+    RETURN jsonb_build_object('ok', false, 'error', 'rate_limited');
+  END IF;
+
+  INSERT INTO public.mahleos_feedback_access_log (
+    request_id,
+    client_id,
+    outcome,
+    request_error_code,
+    returned_count
+  )
+  VALUES (
+    _request_id,
+    _client_id,
+    'invalid_request',
+    _error_code,
+    0
+  );
+
+  RETURN jsonb_build_object('ok', true);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.audit_mahleos_feedback_invalid_request(
+  uuid,
+  text,
+  text
+) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.audit_mahleos_feedback_invalid_request(
+  uuid,
+  text,
+  text
+) TO service_role;
+
 CREATE OR REPLACE FUNCTION public.read_mahleos_feedback_page(
   _request_id uuid,
   _client_id text,
@@ -378,17 +541,30 @@ DECLARE
   recent_requests integer;
   response_payload jsonb;
   returned_count integer;
+  invalid_request_audit jsonb;
 BEGIN
-  IF _request_id IS NULL
-    OR _client_id <> 'mahleos-feedback-v1'
-    OR _limit IS NULL
-    OR _limit NOT BETWEEN 1 AND 25
-    OR ((_cursor_created_at IS NULL) <> (_cursor_id IS NULL))
-  THEN
+  IF _request_id IS NULL OR _client_id <> 'mahleos-feedback-v1' THEN
     RETURN jsonb_build_object('ok', false, 'error', 'invalid_request');
   END IF;
 
-  PERFORM pg_advisory_xact_lock(hashtext('mahleos-feedback-read:' || _client_id));
+  IF _limit IS NULL
+    OR _limit NOT BETWEEN 1 AND 25
+    OR ((_cursor_created_at IS NULL) <> (_cursor_id IS NULL))
+  THEN
+    invalid_request_audit := public.audit_mahleos_feedback_invalid_request(
+      _request_id,
+      _client_id,
+      'invalid_schema'
+    );
+    IF invalid_request_audit->>'error' = 'rate_limited' THEN
+      RETURN invalid_request_audit;
+    END IF;
+    RETURN jsonb_build_object('ok', false, 'error', 'invalid_request');
+  END IF;
+
+  PERFORM pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('mahleos-feedback-read:' || _client_id, 0)
+  );
 
   SELECT COUNT(*)::integer
   INTO recent_requests
@@ -567,3 +743,7 @@ COMMENT ON FUNCTION public.cleanup_mahleos_feedback_access_log() IS
   'Manual, service-role-only 90-day retention gate. This migration does not schedule it.';
 COMMENT ON FUNCTION public.redact_mahleos_feedback_text(text) IS
   'Best-effort direct identifier redaction. Free text can still contain personal data.';
+COMMENT ON FUNCTION public.audit_mahleos_feedback_invalid_request(uuid, text, text) IS
+  'Service-only bounded audit for authenticated malformed feedback reads. Stores no body or identity.';
+COMMENT ON COLUMN public.feedback.technical_context IS
+  'Bounded technical triage context. app_version is client_reported_non_authoritative and is not Evidence.';

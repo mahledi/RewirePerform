@@ -261,6 +261,13 @@ It is intentionally not part of the aggregate Tracking or Evidence contract.
 - Feedback concerning minors, mental health, privacy or secrets is never sent
   automatically to a model.
 - Unknown fields or schema versions block the source.
+- After successful machine authentication, malformed media, oversized bodies,
+  invalid JSON and invalid schemas are counted in the same 30/minute window as
+  valid reads and leave only a generic audit classification. Request bodies and
+  identities are never written to that audit.
+- \`app_version\` is retained only as \`x.y.z\` or \`x.y.z+build\`. It is
+  \`client_reported_non_authoritative\`, useful only for technical triage, and is
+  never Evidence.
 
 The package does not deploy the Edge Function, apply its migration, install a
 secret, connect MahleOS or activate automation. The reviewed producer commit is
@@ -282,11 +289,11 @@ const files = new Map([
   ["golden/feedback-read.success.json", json(goldenSuccess)],
   ["golden/error-responses.json", json([
     { error: "invalid_request", request_id: requestId },
-    { error: "invalid_json" },
+    { error: "invalid_json", request_id: requestId },
     { error: "unauthorized" },
     { error: "method_not_allowed" },
-    { error: "request_too_large" },
-    { error: "unsupported_media_type" },
+    { error: "request_too_large", request_id: requestId },
+    { error: "unsupported_media_type", request_id: requestId },
     { error: "rate_limited", request_id: requestId },
     { error: "service_not_configured" },
     { error: "feedback_read_unavailable", request_id: requestId },

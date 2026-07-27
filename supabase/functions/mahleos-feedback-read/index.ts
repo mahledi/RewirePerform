@@ -12,6 +12,17 @@ import { serviceClient } from "../_shared/supabaseService.ts";
 Deno.serve((request) =>
   handleMahleOsFeedbackRead(request, {
     authenticate: authenticateMahleOsFeedbackMachine,
+    auditInvalidRequest: async ({ requestId, errorCode }) => {
+      const { data, error } = await serviceClient().rpc(
+        "audit_mahleos_feedback_invalid_request",
+        {
+          _request_id: requestId,
+          _client_id: "mahleos-feedback-v1",
+          _error_code: errorCode,
+        },
+      );
+      return { data, error };
+    },
     readPage: async ({ requestId, cursorCreatedAt, cursorId, limit }) => {
       const { data, error } = await serviceClient().rpc("read_mahleos_feedback_page", {
         _request_id: requestId,

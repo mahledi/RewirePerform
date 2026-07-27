@@ -4,10 +4,20 @@ import { PGlite } from "@electric-sql/pglite";
 import Ajv2020 from "ajv/dist/2020.js";
 
 const db = new PGlite();
-const migration = [
-  "supabase/migrations/20260723154047_mahleos_feedback_read_contract_v1.sql",
-  "supabase/migrations/20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql",
-].map((path) => readFileSync(resolve(path), "utf8")).join("\n");
+const baseMigration = readFileSync(
+  resolve("supabase/migrations/20260723154047_mahleos_feedback_read_contract_v1.sql"),
+  "utf8",
+);
+const hardeningMigration = readFileSync(
+  resolve("supabase/migrations/20260723165153_harden_mahleos_feedback_and_telemetry_v1.sql"),
+  "utf8",
+);
+const migration = `${baseMigration}\n${hardeningMigration}`;
+const sharedFeedbackLock = [
+  "pg_catalog.pg_advisory_xact_lock(",
+  "    pg_catalog.hashtextextended('mahleos-feedback-read:' || _client_id, 0)",
+  "  )",
+].join("\n");
 const successSchema = JSON.parse(readFileSync(
   resolve("docs/mahleos-handoff/feedback-contract/v1/schemas/feedback-read-success.schema.json"),
   "utf8",
@@ -25,6 +35,7 @@ const ids = {
   rateRequest: "90000000-0000-4000-8000-000000000703",
   repeatedRateRequest: "90000000-0000-4000-8000-000000000704",
   canonicalFeedback: "20000000-0000-4000-8000-000000000704",
+  invalidVersionFeedback: "20000000-0000-4000-8000-000000000705",
   canonicalEvent: "30000000-0000-4000-8000-000000000701",
   team: "40000000-0000-4000-8000-000000000701",
 };
@@ -67,7 +78,32 @@ const readFeedbackAsService = async ({
   }
 };
 
+const auditInvalidRequestAsService = async ({
+  requestId,
+  errorCode = "invalid_schema",
+}) => {
+  await db.exec("SET ROLE service_role");
+  try {
+    const result = await db.query(
+      `SELECT public.audit_mahleos_feedback_invalid_request($1, $2, $3) AS response`,
+      [requestId, "mahleos-feedback-v1", errorCode],
+    );
+    return asObject(result.rows[0].response);
+  } finally {
+    await db.exec("RESET ROLE");
+  }
+};
+
 try {
+  assert(
+    hardeningMigration.split(sharedFeedbackLock).length - 1 === 2,
+    "Both feedback RPCs must use the exact same 64-bit advisory lock key",
+  );
+  assert(
+    !hardeningMigration.includes("pg_advisory_xact_lock(hashtext('mahleos-feedback-read:"),
+    "No feedback RPC may retain the divergent 32-bit advisory lock key",
+  );
+
   await db.exec(`
     CREATE ROLE anon;
     CREATE ROLE authenticated;
@@ -146,11 +182,35 @@ try {
         'anon',
         'public.read_mahleos_feedback_page(uuid,text,timestamptz,uuid,integer)',
         'EXECUTE'
-      ) AS anon_can_read
+      ) AS anon_can_read,
+      has_function_privilege(
+        'service_role',
+        'public.audit_mahleos_feedback_invalid_request(uuid,text,text)',
+        'EXECUTE'
+      ) AS service_can_audit_invalid,
+      has_function_privilege(
+        'authenticated',
+        'public.audit_mahleos_feedback_invalid_request(uuid,text,text)',
+        'EXECUTE'
+      ) AS authenticated_can_audit_invalid,
+      has_function_privilege(
+        'anon',
+        'public.audit_mahleos_feedback_invalid_request(uuid,text,text)',
+        'EXECUTE'
+      ) AS anon_can_audit_invalid
   `);
   assert(privileges.rows[0].service_can_read === true, "service_role must read feedback");
   assert(privileges.rows[0].authenticated_can_read === false, "authenticated must not read feedback");
   assert(privileges.rows[0].anon_can_read === false, "anon must not read feedback");
+  assert(privileges.rows[0].service_can_audit_invalid === true, "service_role must audit invalid requests");
+  assert(
+    privileges.rows[0].authenticated_can_audit_invalid === false,
+    "authenticated must not call the invalid-request audit",
+  );
+  assert(
+    privileges.rows[0].anon_can_audit_invalid === false,
+    "anon must not call the invalid-request audit",
+  );
 
   await db.query(
     "INSERT INTO auth.users(id) VALUES ($1), ($2)",
@@ -279,7 +339,7 @@ try {
       JSON.stringify({
         ...context,
         route: "/admin/private",
-        app_version: "1.2.3",
+        app_version: "1.2.3+45",
       }),
     ],
   );
@@ -298,12 +358,33 @@ try {
   assert(canonicalRow.reviewed_at === null, "Client review timestamp must be cleared");
   assert(canonicalRow.technical_context.route === "/settings", "Feedback route must be fixed");
   assert(
-    canonicalRow.technical_context.app_version === "unknown",
-    "Client release labels must remain non-authoritative",
+    canonicalRow.technical_context.app_version === "1.2.3+45",
+    "A bounded client release label must remain available for non-authoritative triage",
   );
   assert(
     new Date(canonicalRow.created_at).getTime() > new Date("2026-01-01T00:00:00Z").getTime(),
     "Client timestamps must be replaced",
+  );
+
+  await db.query(
+    `INSERT INTO public.feedback(
+      id, user_id, message, technical_context
+    ) VALUES ($1, $2, 'ungueltige Versionsangabe', $3)`,
+    [
+      ids.invalidVersionFeedback,
+      ids.productionUser,
+      JSON.stringify({
+        ...context,
+        app_version: "1.2.3-private-user",
+      }),
+    ],
+  );
+  const invalidVersionFeedback = await db.query(
+    "SELECT technical_context FROM public.feedback WHERE message = 'ungueltige Versionsangabe'",
+  );
+  assert(
+    invalidVersionFeedback.rows[0].technical_context.app_version === "unknown",
+    "An invalid or identifier-like client release label must become unknown",
   );
 
   await db.query(
@@ -400,39 +481,16 @@ try {
     FROM information_schema.columns
     WHERE table_schema = 'public'
       AND table_name = 'mahleos_feedback_access_log'
-      AND column_name IN ('message', 'payload', 'response_payload', 'user_id', 'email')
+      AND column_name IN ('message', 'payload', 'raw_body', 'response_payload', 'user_id', 'email')
   `);
   assert(forbiddenColumns.rows.length === 0, "Audit log must not store feedback or identity");
 
-  await db.exec(`
-    INSERT INTO public.mahleos_feedback_access_log(
-      request_id, client_id, outcome, requested_at
-    )
-    SELECT gen_random_uuid(), 'mahleos-feedback-v1', 'success', now()
-    FROM generate_series(1, 30);
-  `);
-  const rateLimited = await readFeedbackAsService({
-    requestId: ids.rateRequest,
-  });
-  assert(
-    rateLimited.ok === false && rateLimited.error === "rate_limited",
-    "The 31st request in one minute must be rate limited",
-  );
-  const repeatedRateLimited = await readFeedbackAsService({
-    requestId: ids.repeatedRateRequest,
-  });
-  assert(
-    repeatedRateLimited.ok === false && repeatedRateLimited.error === "rate_limited",
-    "Repeated excessive reads must stay rate limited",
-  );
-  const rateAuditCount = await db.query(`
+  const auditBeforeInvalidSchema = await db.query(`
     SELECT COUNT(*)::integer AS count
     FROM public.mahleos_feedback_access_log
-    WHERE outcome = 'rate_limited'
-      AND requested_at >= now() - interval '1 minute'
+    WHERE outcome = 'invalid_request'
+      AND request_error_code = 'invalid_schema'
   `);
-  assert(rateAuditCount.rows[0].count === 1, "Rate-limit audit must be bounded per minute");
-
   const nullLimit = await db.query(
     `SELECT public.read_mahleos_feedback_page($1, $2, NULL, NULL, NULL) AS response`,
     ["90000000-0000-4000-8000-000000000705", "mahleos-feedback-v1"],
@@ -442,6 +500,129 @@ try {
     nullLimitResponse.ok === false && nullLimitResponse.error === "invalid_request",
     "A null page limit must fail closed",
   );
+  const auditAfterInvalidSchema = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE outcome = 'invalid_request'
+      AND request_error_code = 'invalid_schema'
+  `);
+  assert(
+    auditAfterInvalidSchema.rows[0].count === auditBeforeInvalidSchema.rows[0].count + 1,
+    "A service-authenticated invalid schema must leave a generic audit row",
+  );
+
+  const auditBeforeUnknownError = await db.query(
+    "SELECT COUNT(*)::integer AS count FROM public.mahleos_feedback_access_log",
+  );
+  const rejectedUnknownError = await auditInvalidRequestAsService({
+    requestId: "90000000-0000-4000-8000-000000000707",
+    errorCode: "private@example.com",
+  });
+  assert(
+    rejectedUnknownError.ok === false && rejectedUnknownError.error === "invalid_request",
+    "Unknown audit error codes must fail closed",
+  );
+  const auditAfterUnknownError = await db.query(
+    "SELECT COUNT(*)::integer AS count FROM public.mahleos_feedback_access_log",
+  );
+  assert(
+    auditAfterUnknownError.rows[0].count === auditBeforeUnknownError.rows[0].count,
+    "Unknown or identifier-like audit error codes must never be persisted",
+  );
+  await expectFailure(
+    () => db.query(
+      `INSERT INTO public.mahleos_feedback_access_log(
+        request_id, client_id, outcome, request_error_code
+      ) VALUES ($1, 'mahleos-feedback-v1', 'invalid_request', 'private@example.com')`,
+      ["90000000-0000-4000-8000-000000000708"],
+    ),
+    "mahleos_feedback_access_log_request_error_v1_check",
+  );
+
+  const currentWindow = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE client_id = 'mahleos-feedback-v1'
+      AND requested_at >= now() - interval '1 minute'
+  `);
+  const invalidRequestsNeeded = 29 - currentWindow.rows[0].count;
+  assert(invalidRequestsNeeded >= 1, "The shared-limit fixture must leave room for invalid requests");
+  for (let index = 0; index < invalidRequestsNeeded; index += 1) {
+    const invalidAudit = await auditInvalidRequestAsService({
+      requestId: `91000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+      errorCode: index % 2 === 0 ? "invalid_json" : "request_too_large",
+    });
+    assert(invalidAudit.ok === true, "Authenticated invalid requests must be audited below the limit");
+  }
+  const preparedWindow = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE client_id = 'mahleos-feedback-v1'
+      AND outcome IN ('success', 'invalid_request')
+      AND requested_at >= now() - interval '1 minute'
+  `);
+  assert(
+    preparedWindow.rows[0].count === 29,
+    "The controlled parallel test must start with exactly 29 accepted requests",
+  );
+
+  let releaseParallelRequests;
+  const parallelStart = new Promise((resolveStart) => {
+    releaseParallelRequests = resolveStart;
+  });
+  await db.exec("SET ROLE service_role");
+  let parallelResponses;
+  try {
+    const validRead = parallelStart.then(async () => {
+      const result = await db.query(
+        `SELECT public.read_mahleos_feedback_page($1, $2, NULL, NULL, $3) AS response`,
+        [ids.rateRequest, "mahleos-feedback-v1", 25],
+      );
+      return asObject(result.rows[0].response);
+    });
+    const invalidRead = parallelStart.then(async () => {
+      const result = await db.query(
+        `SELECT public.audit_mahleos_feedback_invalid_request($1, $2, $3) AS response`,
+        [ids.repeatedRateRequest, "mahleos-feedback-v1", "unsupported_media_type"],
+      );
+      return asObject(result.rows[0].response);
+    });
+    releaseParallelRequests();
+    parallelResponses = await Promise.all([validRead, invalidRead]);
+  } finally {
+    await db.exec("RESET ROLE");
+  }
+
+  const acceptedParallelRequests = parallelResponses.filter((response) => response.ok === true);
+  const rateLimitedParallelRequests = parallelResponses.filter(
+    (response) => response.ok === false && response.error === "rate_limited",
+  );
+  assert(
+    acceptedParallelRequests.length === 1,
+    "At 29 requests, at most one parallel valid/invalid request may be accepted",
+  );
+  assert(
+    rateLimitedParallelRequests.length === 1,
+    "The other parallel request must be rate limited",
+  );
+  const acceptedWindowCount = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE client_id = 'mahleos-feedback-v1'
+      AND outcome IN ('success', 'invalid_request')
+      AND requested_at >= now() - interval '1 minute'
+  `);
+  assert(
+    acceptedWindowCount.rows[0].count <= 30,
+    "Parallel valid/invalid requests must never raise accepted requests above 30",
+  );
+  const rateAuditCount = await db.query(`
+    SELECT COUNT(*)::integer AS count
+    FROM public.mahleos_feedback_access_log
+    WHERE outcome = 'rate_limited'
+      AND requested_at >= now() - interval '1 minute'
+  `);
+  assert(rateAuditCount.rows[0].count <= 1, "Rate-limit audit must be bounded to one row per minute");
 
   await db.exec(`
     INSERT INTO public.mahleos_feedback_access_log(
@@ -474,6 +655,12 @@ try {
     telemetryCanonicalized: true,
     telemetrySourceNonAuthoritative: true,
     telemetryRateLimitCheck: true,
+    feedbackVersionClientReportedNonAuthoritative: true,
+    invalidRequestAuditServiceOnly: true,
+    invalidRequestAuditNoPayload: true,
+    sharedReadAndInvalidRequestRateLimit: true,
+    sharedAdvisoryLockKey: true,
+    controlledParallelRateLimitCheck: true,
     auditAppendOnly: true,
     auditRetentionBounded: true,
     rateLimitCheck: true,

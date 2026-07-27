@@ -42,9 +42,18 @@ Freitext kann trotz serverseitiger Musterbereinigung persönliche Angaben und in
 - eigener Machine-Key nur für Feedback, getrennt von der Aggregate-API,
 - ausschließlich `POST`,
 - unbekannte Felder und Contract-Versionen blockieren,
+- nach erfolgreicher Machine-Authentifizierung werden auch falscher Medientyp,
+  zu grosse Bodies, ungueltiges JSON und ungueltige Schemas serverseitig
+  begrenzt und ohne Request-Body oder Nutzerangaben auditiert,
+- gueltige und ungueltige authentifizierte Requests teilen dasselbe Limit von
+  30 Requests pro Minute; Methoden- und Auth-Fehler bleiben davor,
 - Retry nur einmal bei `429` oder `503`,
 - service-role-only Datenbankfunktion,
 - serverseitige Kanonisierung von Nutzer, Status, Zeitpunkt, Kategorie und technischer Umgebung,
+- `app_version` bleibt nur im streng begrenzten Format `x.y.z` oder
+  `x.y.z+build` erhalten. Der Wert ist `client_reported_non_authoritative`, dient
+  ausschliesslich der technischen Triage und darf weder Evidence noch
+  Wirkungsaussagen beeinflussen,
 - serverseitige Ableitung von Rolle, Teambezug und Teststatus für technische App-Ereignisse,
 - maximal 60 clientseitige App-Ereignisse je Nutzer und Minute,
 - clientseitige Ereignisse sind ausdrücklich nicht autoritativ und können den globalen Zustand allein nicht auf Rot setzen,
@@ -58,18 +67,25 @@ Am 23. Juli 2026 bestanden:
 
 - Typecheck,
 - Build,
-- 67 Testdateien mit 365 Tests,
+- 67 Testdateien mit 367 Tests,
 - globaler Lint ohne Fehler und mit 15 bereits bestehenden Warnungen,
 - Feedback-Contract- und Privacy-Tests,
-- ausführbare Handler-Tests für Auth-, Methoden-, Größen-, Schema-, Datenbank- und Projektionsfehler,
-- PGlite-Verifikation für Rechte, Testdatenausschluss, stabile Pagination, serverseitige Kanonisierung, direkte Musterbereinigung, technische Feldgrenzen, Audit, Retention und Rate Limit,
+- ausführbare Handler-Tests für Auth-, Methoden-, Größen-, Schema-, Audit-, Datenbank- und Projektionsfehler,
+- PGlite-Verifikation für Rechte, Testdatenausschluss, stabile Pagination, serverseitige Kanonisierung, direkte Musterbereinigung, technische Feldgrenzen, generisches Invalid-Request-Audit ohne Payload, gemeinsame Rate-Limit-Grenze, Retention und Rate Limit,
 - vollständiges `npm run ci`,
 - Privacy Safety mit 20 von 20 Prüfungen,
-- Produktionsabhängigkeiten mit 0 bekannten Schwachstellen,
+- aktueller Dependency-Audit mit acht bekannten Treffern
+  (fünf hoch, drei moderat), getrennt vom erfolgreichen Funktions- und
+  Privacy-Nachweis,
 - Secret-Musterprüfung ohne reale Zugangsdaten; ausschließlich erwartete synthetische Negativtestwerte und leere Beispielvariablen,
 - `git diff --check`.
 
-Der vollständige Dependency-Audit meldete drei bereits bestehende Hinweise in Entwicklungswerkzeugen: zwei hohe und einen moderaten. Der reine Production-Audit blieb bei null bekannten Schwachstellen. Es wurde kein neuer Runtime-Dependency ergänzt und kein riskantes Major-Upgrade in diesen Scope gezogen.
+Der am 27. Juli 2026 erneut ausgeführte `npm audit --omit=dev` meldete acht
+bekannte Treffer: unter anderem in Build-/CLI-Ketten sowie in der aktuellen
+React-Router-6-Linie. Diese Änderung ergänzt keine neue Abhängigkeit. Ein
+Router-Major-Upgrade wird nicht ungeprüft mit dem Feedback- und
+Guardian-Sicherheitsblock vermischt; der Befund bleibt bis zu einem eigenen,
+vollständig getesteten Dependency-Hardening-Block offen.
 
 ## Offene Aktivierungsgates
 
@@ -80,7 +96,8 @@ Vor einem Live-Zugriff sind separat erforderlich:
 3. Konkrete Deployment-Freigabe für genau diese Edge Function.
 4. Getrennter Machine-Key in Supabase und macOS Keychain.
 5. Beaufsichtigter synthetischer Read mit Testfeedback.
-6. Negativtests für falschen Key, Testdaten, unbekannte Felder und Rohtextpersistenz.
+6. Negativtests für falschen Key, Testdaten, unbekannte Felder, gemeinsames
+   Valid-/Invalid-Request-Limit und Rohtextpersistenz.
 7. In Production nachweisen, dass die bestehende 30-Tage-Bereinigung für App-Ereignisse aktiv läuft.
 8. Die 90-Tage-Bereinigung des Machine-Zugriffslogs separat terminieren und freigeben.
 9. Eine fachlich und rechtlich freigegebene Aufbewahrungsfrist für erledigtes Feedback festlegen; bis dahin keine automatische Löschung erfinden.

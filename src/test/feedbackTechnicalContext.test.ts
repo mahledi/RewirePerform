@@ -9,7 +9,10 @@ vi.mock("@capacitor/core", () => ({
   Capacitor: capacitor,
 }));
 
-import { buildFeedbackTechnicalContext } from "@/lib/feedbackTechnicalContext";
+import {
+  buildFeedbackTechnicalContext,
+  normalizeFeedbackAppVersion,
+} from "@/lib/feedbackTechnicalContext";
 
 describe("feedback technical context", () => {
   beforeEach(() => {
@@ -53,5 +56,14 @@ describe("feedback technical context", () => {
     });
 
     expect(buildFeedbackTechnicalContext().runtime).toBe("standalone");
+  });
+
+  it("keeps only bounded semver-like client release labels", () => {
+    expect(normalizeFeedbackAppVersion("1.2.3")).toBe("1.2.3");
+    expect(normalizeFeedbackAppVersion("1.2.3+45")).toBe("1.2.3+45");
+    expect(normalizeFeedbackAppVersion("1.2.3-beta")).toBe("unknown");
+    expect(normalizeFeedbackAppVersion("customer:123e4567-e89b-12d3-a456-426614174000"))
+      .toBe("unknown");
+    expect(normalizeFeedbackAppVersion(undefined)).toBe("unknown");
   });
 });

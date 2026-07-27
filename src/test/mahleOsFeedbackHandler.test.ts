@@ -46,6 +46,7 @@ const dependencies = (
   overrides: Partial<MahleOsFeedbackHandlerDependencies> = {},
 ): MahleOsFeedbackHandlerDependencies => ({
   authenticate: vi.fn().mockResolvedValue(null),
+  auditInvalidRequest: vi.fn().mockResolvedValue({ data: { ok: true }, error: null }),
   readPage: vi.fn().mockResolvedValue({ data: validDatabaseResult(), error: null }),
   randomUUID: () => requestId,
   ...overrides,
@@ -85,10 +86,11 @@ describe("MahleOS feedback Edge handler", () => {
 
     expect(response.status).toBe(status);
     expect(await body(response)).toEqual({ error });
+    expect(deps.auditInvalidRequest).not.toHaveBeenCalled();
     expect(deps.readPage).not.toHaveBeenCalled();
   });
 
-  it("rejects unsupported media, invalid JSON, unknown fields and oversized bodies", async () => {
+  it("audits unsupported media, invalid JSON, unknown fields and oversized bodies", async () => {
     const deps = dependencies();
     const unsupported = await handleMahleOsFeedbackRead(
       request("{}", { "Content-Type": "text/plain" }),
@@ -105,7 +107,62 @@ describe("MahleOS feedback Edge handler", () => {
     expect(invalidJson.status).toBe(400);
     expect(unknownField.status).toBe(400);
     expect(oversized.status).toBe(413);
+    expect(await body(unsupported)).toEqual({
+      error: "unsupported_media_type",
+      request_id: requestId,
+    });
+    expect(await body(invalidJson)).toEqual({ error: "invalid_json", request_id: requestId });
+    expect(await body(unknownField)).toEqual({
+      error: "invalid_request",
+      request_id: requestId,
+    });
+    expect(await body(oversized)).toEqual({
+      error: "request_too_large",
+      request_id: requestId,
+    });
+    expect(deps.auditInvalidRequest).toHaveBeenNthCalledWith(1, {
+      requestId,
+      errorCode: "unsupported_media_type",
+    });
+    expect(deps.auditInvalidRequest).toHaveBeenNthCalledWith(2, {
+      requestId,
+      errorCode: "invalid_json",
+    });
+    expect(deps.auditInvalidRequest).toHaveBeenNthCalledWith(3, {
+      requestId,
+      errorCode: "invalid_schema",
+    });
+    expect(deps.auditInvalidRequest).toHaveBeenNthCalledWith(4, {
+      requestId,
+      errorCode: "request_too_large",
+    });
     expect(deps.readPage).not.toHaveBeenCalled();
+  });
+
+  it("uses the shared server limit for invalid authenticated requests", async () => {
+    const rateLimited = await handleMahleOsFeedbackRead(
+      request("{"),
+      dependencies({
+        auditInvalidRequest: vi.fn().mockResolvedValue({
+          data: { ok: false, error: "rate_limited" },
+          error: null,
+        }),
+      }),
+    );
+    const auditUnavailable = await handleMahleOsFeedbackRead(
+      request(JSON.stringify({ filter: "open" })),
+      dependencies({
+        auditInvalidRequest: vi.fn().mockResolvedValue({ data: null, error: "db" }),
+      }),
+    );
+
+    expect(rateLimited.status).toBe(429);
+    expect(await body(rateLimited)).toEqual({ error: "rate_limited", request_id: requestId });
+    expect(auditUnavailable.status).toBe(503);
+    expect(await body(auditUnavailable)).toEqual({
+      error: "feedback_read_unavailable",
+      request_id: requestId,
+    });
   });
 
   it("passes only parsed paging parameters and projects a valid response", async () => {
