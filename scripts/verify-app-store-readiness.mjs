@@ -8,7 +8,10 @@ const readText = (relativePath) =>
 
 const files = {
   capacitor: readText("capacitor.config.ts"),
+  entitlements: readText("ios/App/App/App.entitlements"),
   info: readText("ios/App/App/Info.plist"),
+  nativeAuthReturn: readText("src/components/auth/NativeAuthReturnHandler.tsx"),
+  association: JSON.parse(readText("public/.well-known/apple-app-site-association")),
   privacy: readText("ios/App/App/PrivacyInfo.xcprivacy"),
   project: readText("ios/App/App.xcodeproj/project.pbxproj"),
   nativeShell: readText("src/lib/nativeApp.ts"),
@@ -54,18 +57,42 @@ for (const dataType of [
   "NSPrivacyCollectedDataTypeOtherUserContent",
   "NSPrivacyCollectedDataTypeCustomerSupport",
   "NSPrivacyCollectedDataTypeProductInteraction",
-  "NSPrivacyCollectedDataTypeCrashData",
   "NSPrivacyCollectedDataTypeOtherDiagnosticData",
 ]) {
   requireText("Privacy manifest", files.privacy, `<string>${dataType}</string>`);
+}
+if (files.privacy.includes("<string>NSPrivacyCollectedDataTypeCrashData</string>")) {
+  failures.push("Privacy manifest: Crash Data must remain absent while the app ships no crash collector");
 }
 if (!/<key>NSPrivacyTracking<\/key>\s*<false\s*\/>/.test(files.privacy)) {
   failures.push("Privacy manifest: NSPrivacyTracking must be false");
 }
 requireText("Privacy manifest resource", files.project, "PrivacyInfo.xcprivacy in Resources");
 requireText("Bundle id", files.project, "PRODUCT_BUNDLE_IDENTIFIER = com.rewireperform.app;");
+requireText("Associated domains entitlement", files.entitlements, "<string>applinks:rewireperform.com</string>");
+requireText("Associated domains project capability", files.project, "com.apple.AssociatedDomains");
+requireText("Associated domains codesign input", files.project, "CODE_SIGN_ENTITLEMENTS = App/App.entitlements;");
+requireText("Native auth URL listener", files.nativeAuthReturn, '"appUrlOpen"');
+requireText("Native auth cold-start listener", files.nativeAuthReturn, "getLaunchUrl()");
+if (files.nativeAuthReturn.includes("console.")) {
+  failures.push("Native auth return: callback URLs and credentials must not be logged");
+}
+
+const associationDetail = files.association?.applinks?.details?.[0];
+if (
+  !associationDetail
+  || JSON.stringify(associationDetail.appIDs) !== JSON.stringify(["F7A976G38N.com.rewireperform.app"])
+  || JSON.stringify(associationDetail.components) !== JSON.stringify([{
+    "/": "/auth",
+    "?": { flow: "signup" },
+    comment: "RewirePerform signup confirmation only",
+  }])
+) {
+  failures.push("AASA: expected the exact RewirePerform signup-only universal-link contract");
+}
 
 for (const dependency of [
+  "@capacitor/app",
   "@capacitor/cli",
   "@capacitor/core",
   "@capacitor/ios",

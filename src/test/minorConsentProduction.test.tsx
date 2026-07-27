@@ -20,6 +20,14 @@ const context = vi.hoisted(() => ({
   setStatus: vi.fn(),
 }));
 
+const auth = vi.hoisted(() => ({
+  user: { id: "athlete-1", email: "athlete@example.de" } as { id: string; email: string } | null,
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => auth,
+}));
+
 vi.mock("@/lib/minorAuthorization", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/minorAuthorization")>(),
   ...api,
@@ -62,6 +70,7 @@ describe("minor consent production flow", () => {
     context.status = baseStatus();
     context.loading = false;
     context.error = null;
+    auth.user = { id: "athlete-1", email: "athlete@example.de" };
     context.refresh.mockClear();
     context.setStatus.mockClear();
     for (const mock of Object.values(api)) mock.mockReset();
@@ -117,6 +126,34 @@ describe("minor consent production flow", () => {
     expect(screen.getByText(/keine Weitergabe an Trainer oder Verein/)).toBeInTheDocument();
   });
 
+  it("blocks the athlete address after trimming and case normalization", () => {
+    context.status = baseStatus({
+      state: "guardian_contact_required",
+      age_band: "under_16",
+      guardian_status: "required",
+    });
+    renderFlow();
+
+    const send = screen.getByRole("button", { name: "Sicheren Link senden" });
+    fireEvent.change(screen.getByLabelText("E-Mail der sorgeberechtigten Person"), {
+      target: { value: "  ATHLETE@EXAMPLE.DE " },
+    });
+
+    expect(screen.getByLabelText("E-Mail der sorgeberechtigten Person")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(screen.getByLabelText("E-Mail der sorgeberechtigten Person")).toHaveAttribute(
+      "aria-describedby",
+      "guardian-email-error",
+    );
+    expect(send).toBeDisabled();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein.",
+    );
+    expect(api.startGuardianAuthorization).not.toHaveBeenCalled();
+  });
+
   it("never lets an under-16 athlete exceed the guardian's data-contribution choice", async () => {
     const authorized = baseStatus({
       state: "product_authorized",
@@ -149,5 +186,13 @@ describe("minor consent production flow", () => {
     context.status = baseStatus({ state: "product_authorized", product_status: "authorized", age_band: "adult" });
     renderFlow("/minor-consent?next=%2Fprogress");
     expect(await screen.findByText("Fortschritt erreicht")).toBeInTheDocument();
+  });
+
+  it("falls back to the dashboard for a backslash-normalized external next route", async () => {
+    context.status = baseStatus({ state: "product_authorized", product_status: "authorized", age_band: "adult" });
+    renderFlow(`/minor-consent?next=${encodeURIComponent("/\\evil.example")}`);
+
+    expect(await screen.findByText("Dashboard erreicht")).toBeInTheDocument();
+    expect(screen.queryByText("Fortschritt erreicht")).not.toBeInTheDocument();
   });
 });

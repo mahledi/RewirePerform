@@ -4,7 +4,7 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/((?!assets/|app-icon.png|og-image.png|robots.txt|offline.html|sw.js|workbox-|manifest.webmanifest|site.webmanifest).*)",
+      "source": "/((?!\\.well-known/|assets/|app-icon.png|og-image.png|robots.txt|offline.html|sw.js|workbox-|manifest.webmanifest|site.webmanifest).*)",
       "destination": "/index.html"
     }
   ],
@@ -27,6 +27,19 @@
         {
           "key": "Permissions-Policy",
           "value": "camera=(), microphone=(self), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
         }
       ]
     },

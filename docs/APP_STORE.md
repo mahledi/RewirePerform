@@ -1,5 +1,8 @@
 # RewirePerform App Store Readiness
 
+Current RC status and release gates:
+`docs/APP_STORE_RC1_STATUS_2026-07-23.md`.
+
 RewirePerform ships as a premium Capacitor WebView app: the React/Supabase product remains the runtime core, while iOS provides the App Store shell, icon, splash screen, safe-area handling, and future native capability surface.
 
 ## App Identity
@@ -10,7 +13,8 @@ Bundle ID: com.rewireperform.app
 Primary domain: https://rewireperform.com
 Support URL: https://rewireperform.com/support
 Privacy Policy URL: https://rewireperform.com/privacy
-Category: Health & Fitness or Sports
+Primary category: Sports
+Secondary category: Health & Fitness
 Audience: Athletes and coaches using mental performance routines
 ```
 
@@ -156,7 +160,7 @@ Sensitive handling:
 
 The current source of truth for localized copy, field limits, screenshots, review
 notes and unresolved owner/legal fields is
-`docs/APP_STORE_CONNECT_PACKAGE_2026-07-13.md`.
+`docs/APP_STORE_CONNECT_PACKAGE_2026-07-23.md`.
 
 ## TestFlight Gate
 

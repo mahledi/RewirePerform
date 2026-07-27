@@ -15,6 +15,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import IosInputPolish from "./components/IosInputPolish";
 import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
+import PublicOnboardingGate from "./components/onboarding/PublicOnboardingGate";
+import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -23,6 +25,7 @@ const evidencePreviewEnabled = import.meta.env.DEV
 const Index = lazy(() => import("./pages/Index.tsx"));
 const Demo = lazy(() => import("./demo/DemoPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
+const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const Questionnaire = lazy(() => import("./pages/Questionnaire.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
@@ -92,6 +95,7 @@ const AppRoutes = () => {
           <Toaster />
           <Sonner />
           <QATestBanner />
+          <NativeAuthReturnHandler />
           <NotificationOpenTracker />
           <NativeNotificationRouter />
           <IosInputPolish />
@@ -106,7 +110,8 @@ const AppRoutes = () => {
             <Route path="/support" element={<Support />} />
             <Route path="/guardian/decision" element={<GuardianDecision />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/auth" element={<PublicOnboardingGate><Auth /></PublicOnboardingGate>} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/minor-consent" element={
               <ProtectedRoute><MinorConsent /></ProtectedRoute>

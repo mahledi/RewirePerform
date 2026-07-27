@@ -89,7 +89,7 @@ export const demoScienceBite = {
 export const coachTabs: DemoCoachTab[] = [
   { id: "overview", label: "Übersicht", Icon: Activity },
   { id: "readiness", label: "Mental & Bereitschaft", Icon: Brain },
-  { id: "evidence", label: "Wirksamkeit", Icon: BarChart3 },
+  { id: "evidence", label: "Entwicklung", Icon: BarChart3 },
   { id: "toolkit", label: "Coach Toolkit", Icon: ClipboardList },
   { id: "teams", label: "Teams", Icon: Users },
 ];

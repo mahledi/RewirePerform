@@ -441,26 +441,28 @@ const GuardianDecision = () => {
           </div>
 
           <div className="px-5 sm:px-6">
-            <Label htmlFor="guardian-declaration" className="flex cursor-pointer items-start gap-3 border-b border-border py-5">
+            <div className="flex items-start gap-3 border-b border-border py-5">
               <Checkbox id="guardian-declaration" checked={guardianDeclaration} onCheckedChange={(value) => setGuardianDeclaration(value === true)} className="mt-0.5" />
-              <span className="text-sm font-medium leading-6">{guardianPolicyCopy.declaration}</span>
-            </Label>
+              <Label htmlFor="guardian-declaration" className="min-h-11 min-w-0 flex-1 cursor-pointer text-sm font-medium leading-6">
+                {guardianPolicyCopy.declaration}
+              </Label>
+            </div>
 
-            <Label htmlFor="guardian-product" className="flex cursor-pointer items-start gap-3 border-b border-border py-5">
+            <div className="flex items-start gap-3 border-b border-border py-5">
               <Checkbox id="guardian-product" checked={productAccepted} onCheckedChange={(value) => setProductAccepted(value === true)} className="mt-0.5" />
-              <span>
+              <Label htmlFor="guardian-product" className="min-h-11 min-w-0 flex-1 cursor-pointer">
                 <span className="block text-sm font-semibold">{guardianPolicyCopy.productLabel}</span>
                 <span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{guardianPolicyCopy.productDetail}</span>
-              </span>
-            </Label>
+              </Label>
+            </div>
 
-            <Label htmlFor="guardian-contribution" className="flex cursor-pointer items-start gap-3 py-5">
+            <div className="flex items-start gap-3 py-5">
               <Checkbox id="guardian-contribution" checked={contribution} onCheckedChange={(value) => setContribution(value === true)} className="mt-0.5" />
-              <span>
+              <Label htmlFor="guardian-contribution" className="min-h-11 min-w-0 flex-1 cursor-pointer">
                 <span className="block text-sm font-semibold">{guardianPolicyCopy.contributionLabel}</span>
                 <span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{guardianPolicyCopy.contributionDetail}</span>
-              </span>
-            </Label>
+              </Label>
+            </div>
           </div>
 
           <div className="border-t border-border px-5 py-5 sm:px-6">

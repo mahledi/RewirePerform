@@ -44,15 +44,16 @@ Allowed outputs:
 
 1. Login as admin and open `/admin/qa`.
 2. Create a fresh QA cohort.
-3. Record the generated coach, athlete accounts, player code, and coach code.
+3. Record the generated coach account, athlete accounts, and athlete team code.
 4. Validate player-code join with a fresh test athlete:
-   - role becomes `athlete`
+   - role remains `athlete`
    - user becomes a `team_members` row
    - user lands in player onboarding/dashboard flow
-5. Validate coach-code join with a fresh test coach:
-   - role becomes `coach`
-   - user becomes a `team_members` row
-   - user lands in coach flow
+5. Validate the protected coach path:
+   - a public athlete signup cannot request or insert the `coach` role
+   - legacy coach codes are rejected by the public join function
+   - an admin finds the confirmed existing account by exact email
+   - the atomic approval assigns the coach role, one team, and one audit row
 6. Start with day 1 and complete the normal dashboard flow with at least one QA athlete.
 7. Use the Evidence Parity Gate to jump directly to each scheduled transfer day:
    `4, 7, 11, 14, 18, 21, 25, 28, 32, 35, 39, 42, 46, 49, 53, 56`.
@@ -189,7 +190,10 @@ Keep all claims performance-oriented:
 
 Mark the layer as launch-ready only if:
 
-- team-code role assignment works for player and coach codes
+- athlete team codes join without changing roles, while legacy coach codes and
+  manipulated role requests cannot elevate access
+- admin-approved coach access is atomic, audited, and tied to a confirmed
+  existing account
 - all key tracking tables are populated by real user actions
 - progress snapshots match expected completion/adherence values
 - Data-Lock exports contain no private text or individual psychological values
@@ -197,4 +201,5 @@ Mark the layer as launch-ready only if:
 - App Store privacy boundaries are still true: no advertising tracking, no data brokers, no marketing pixels, no private content in diagnostics or exports
 - `npm run typecheck`, `npm test`, `npm run build`,
   `npm run test:evidence:sql`, `npm run test:minor:sql`,
-  `npm run test:tracking-runtime:sql` and `npm run privacy:verify` pass
+  `npm run test:tracking-runtime:sql`, `npm run test:access:sql`,
+  `npm run test:deletion:sql` and `npm run privacy:verify` pass

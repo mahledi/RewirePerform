@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Square } from "lucide-react";
+import {
+  OnDeviceSpeech,
+  REWIREPERFORM_SPEECH_CONTEXT,
+  isNativeOnDeviceSpeechPlatform,
+} from "@/lib/onDeviceSpeech";
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
@@ -35,6 +40,30 @@ const getSpeechErrorMessage = (error: string) => {
   return "Spracherkennung konnte nicht gestartet werden. Du kannst deine Antwort weiterhin tippen.";
 };
 
+const getNativeSpeechErrorMessage = (error: unknown) => {
+  const code =
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string"
+      ? error.code
+      : "";
+
+  if (code === "PERMISSION_DENIED") {
+    return "Spracherkennung ist nicht erlaubt. Aktiviere Mikrofon und Spracherkennung in den iOS-Einstellungen oder tippe deine Antwort.";
+  }
+  if (
+    code === "ON_DEVICE_UNAVAILABLE" ||
+    code === "UNSUPPORTED_LANGUAGE"
+  ) {
+    return "Lokale Spracherkennung ist auf diesem iPhone nicht verfügbar. Du kannst deine Antwort weiterhin tippen.";
+  }
+  if (code === "AUDIO_START_FAILED") {
+    return "Das Mikrofon konnte nicht gestartet werden. Du kannst deine Antwort weiterhin tippen.";
+  }
+  return "Lokale Spracherkennung konnte nicht gestartet werden. Du kannst deine Antwort weiterhin tippen.";
+};
+
 interface SpeechRecognitionLike {
   lang: string;
   interimResults: boolean;
@@ -48,6 +77,7 @@ interface SpeechRecognitionLike {
 }
 
 type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+type SpeechMode = "native" | "web" | null;
 
 // Check for browser support
 const getSpeechRecognition = () => {
@@ -71,6 +101,8 @@ const VoiceInput = ({
 }: VoiceInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
+  const [speechMode, setSpeechMode] = useState<SpeechMode>(null);
+  const [nativeListenersReady, setNativeListenersReady] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [pulseLevel, setPulseLevel] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -79,6 +111,7 @@ const VoiceInput = ({
   const pulseIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentValueRef = useRef(currentValue);
   const interimTextRef = useRef("");
+  const committedNativeTranscriptRef = useRef("");
   const isListeningRef = useRef(false); // Ref-Spiegel für stabile Closures
   const onTranscriptRef = useRef(onTranscript);
   const startingRef = useRef(false); // Schutz gegen doppelten Start
@@ -93,10 +126,35 @@ const VoiceInput = ({
   }, [onTranscript]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    if (isNativeOnDeviceSpeechPlatform()) {
+      setNativeListenersReady(false);
+      setSpeechMode(null);
+      setIsSupported(false);
+      void OnDeviceSpeech.getAvailability({ language })
+        .then(({ available }) => {
+          if (cancelled) return;
+          setSpeechMode(available ? "native" : null);
+          setIsSupported(available);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setSpeechMode(null);
+          setIsSupported(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
     const SpeechRecognition = getSpeechRecognition();
+    setSpeechMode(SpeechRecognition ? "web" : null);
     setIsSupported(!!SpeechRecognition);
 
     return () => {
+      cancelled = true;
       isListeningRef.current = false;
       if (recognitionRef.current) {
         try {
@@ -114,7 +172,7 @@ const VoiceInput = ({
         pulseIntervalRef.current = null;
       }
     };
-  }, []);
+  }, [language]);
 
   const cleanupRecognition = useCallback(() => {
     if (recognitionRef.current) {
@@ -137,17 +195,154 @@ const VoiceInput = ({
     setInterimText("");
   }, []);
 
-  const startListening = useCallback(() => {
-    // WICHTIG: synchron im User-Gesture-Kontext bleiben.
+  const startPulse = useCallback(() => {
+    if (pulseIntervalRef.current) clearInterval(pulseIntervalRef.current);
+    pulseIntervalRef.current = setInterval(() => {
+      setPulseLevel(Math.random());
+    }, 150);
+  }, []);
+
+  const stopPulse = useCallback(() => {
+    if (pulseIntervalRef.current) {
+      clearInterval(pulseIntervalRef.current);
+      pulseIntervalRef.current = null;
+    }
+    setPulseLevel(0);
+  }, []);
+
+  const commitTranscript = useCallback((transcript: string) => {
+    const final = transcript.trim();
+    if (!final) return;
+
+    const cur = currentValueRef.current;
+    const separator = cur && !cur.endsWith(" ") ? " " : "";
+    const newValue = cur + separator + final;
+    currentValueRef.current = newValue;
+    onTranscriptRef.current(newValue);
+  }, []);
+
+  useEffect(() => {
+    if (speechMode !== "native") return;
+
+    let disposed = false;
+    const handles: Array<{ remove: () => Promise<void> }> = [];
+    setNativeListenersReady(false);
+
+    const registerListeners = async () => {
+      const transcriptHandle = await OnDeviceSpeech.addListener(
+        "transcript",
+        ({ transcript, isFinal }) => {
+          if (disposed) return;
+
+          if (isFinal) {
+            const finalTranscript = transcript.trim();
+            if (
+              finalTranscript &&
+              committedNativeTranscriptRef.current !== finalTranscript
+            ) {
+              committedNativeTranscriptRef.current = finalTranscript;
+              commitTranscript(finalTranscript);
+            }
+            interimTextRef.current = "";
+            setInterimText("");
+            return;
+          }
+
+          interimTextRef.current = transcript;
+          setInterimText(transcript);
+        },
+      );
+      const stateHandle = await OnDeviceSpeech.addListener(
+        "stateChange",
+        ({ state }) => {
+          if (disposed || state !== "stopped") return;
+          isListeningRef.current = false;
+          setIsListening(false);
+          stopPulse();
+        },
+      );
+      const errorHandle = await OnDeviceSpeech.addListener(
+        "speechError",
+        (event) => {
+          if (disposed) return;
+          isListeningRef.current = false;
+          setIsListening(false);
+          stopPulse();
+          setErrorMessage(getNativeSpeechErrorMessage(event));
+        },
+      );
+
+      if (disposed) {
+        await Promise.all([
+          transcriptHandle.remove(),
+          stateHandle.remove(),
+          errorHandle.remove(),
+        ]);
+        return;
+      }
+
+      handles.push(transcriptHandle, stateHandle, errorHandle);
+      setNativeListenersReady(true);
+    };
+
+    void registerListeners().catch(() => {
+      if (!disposed) {
+        setNativeListenersReady(false);
+        setIsSupported(false);
+        setSpeechMode(null);
+      }
+    });
+
+    return () => {
+      disposed = true;
+      isListeningRef.current = false;
+      void OnDeviceSpeech.cancel().catch(() => undefined);
+      for (const handle of handles) {
+        void handle.remove();
+      }
+      stopPulse();
+    };
+  }, [commitTranscript, speechMode, stopPulse]);
+
+  const startListening = useCallback(async () => {
     if (startingRef.current) return;
     startingRef.current = true;
+    setErrorMessage(null);
+
+    if (speechMode === "native") {
+      try {
+        committedNativeTranscriptRef.current = "";
+        let permission = await OnDeviceSpeech.checkPermissions();
+        if (permission.speechRecognition === "prompt") {
+          permission = await OnDeviceSpeech.requestPermissions();
+        }
+        if (permission.speechRecognition !== "granted") {
+          throw { code: "PERMISSION_DENIED" };
+        }
+
+        await OnDeviceSpeech.start({
+          language,
+          contextualStrings: REWIREPERFORM_SPEECH_CONTEXT,
+        });
+        isListeningRef.current = true;
+        setIsListening(true);
+        startPulse();
+      } catch (error) {
+        isListeningRef.current = false;
+        setIsListening(false);
+        stopPulse();
+        setErrorMessage(getNativeSpeechErrorMessage(error));
+      } finally {
+        startingRef.current = false;
+      }
+      return;
+    }
 
     const SpeechRecognition = getSpeechRecognition();
     if (!SpeechRecognition) {
       startingRef.current = false;
       return;
     }
-    setErrorMessage(null);
 
     // Falls eine alte Instanz noch existiert: sauber entfernen.
     if (recognitionRef.current) {
@@ -219,11 +414,7 @@ const VoiceInput = ({
     isListeningRef.current = true;
     setIsListening(true);
 
-    // Fake pulse animation
-    if (pulseIntervalRef.current) clearInterval(pulseIntervalRef.current);
-    pulseIntervalRef.current = setInterval(() => {
-      setPulseLevel(Math.random());
-    }, 150);
+    startPulse();
 
     try {
       recognition.start();
@@ -249,23 +440,58 @@ const VoiceInput = ({
         startingRef.current = false;
       }, 50);
     }
-  }, [language, cleanupRecognition]);
+  }, [
+    cleanupRecognition,
+    language,
+    speechMode,
+    startPulse,
+    stopPulse,
+  ]);
 
-  const stopListening = useCallback(() => {
+  const stopListening = useCallback(async () => {
     isListeningRef.current = false;
-    const pending = interimTextRef.current.trim();
-    if (pending) {
-      const cur = currentValueRef.current;
-      const separator = cur && !cur.endsWith(" ") ? " " : "";
-      const newValue = cur + separator + pending;
-      currentValueRef.current = newValue;
-      onTranscriptRef.current(newValue);
+
+    if (speechMode === "native") {
+      const pending = interimTextRef.current;
+      setIsListening(false);
+      stopPulse();
+
+      try {
+        const result = await OnDeviceSpeech.stop();
+        const finalTranscript = (result.transcript || pending).trim();
+        if (
+          finalTranscript &&
+          committedNativeTranscriptRef.current !== finalTranscript
+        ) {
+          committedNativeTranscriptRef.current = finalTranscript;
+          commitTranscript(finalTranscript);
+        }
+      } catch (error) {
+        setErrorMessage(getNativeSpeechErrorMessage(error));
+      } finally {
+        interimTextRef.current = "";
+        setInterimText("");
+      }
+      return;
     }
+
+    const pending = interimTextRef.current.trim();
+    commitTranscript(pending);
     cleanupRecognition();
     setIsListening(false);
-  }, [cleanupRecognition]);
+  }, [
+    cleanupRecognition,
+    commitTranscript,
+    speechMode,
+    stopPulse,
+  ]);
 
-  if (!isSupported) return null;
+  if (
+    !isSupported ||
+    (speechMode === "native" && !nativeListenersReady)
+  ) {
+    return null;
+  }
 
   return (
     <div className="space-y-3">
@@ -278,7 +504,7 @@ const VoiceInput = ({
         >
           <Mic className="w-3.5 h-3.5 text-primary shrink-0" />
           <p className="text-xs text-primary/80">
-            <span className="font-medium">Tipp:</span> Sprich deine Antwort einfach ein – das ist oft ehrlicher als Tippen.
+            <span className="font-medium">Tipp:</span> Sprich deine Antwort ein, wenn das für dich direkter ist. Du kannst den Text danach bearbeiten.
           </p>
         </motion.div>
       )}

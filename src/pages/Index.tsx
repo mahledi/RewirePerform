@@ -14,6 +14,7 @@ import CTASection from "@/components/CTASection";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import { BrandLockup } from "@/components/brand/BrandLogo";
+import { hasCompletedPublicOnboarding } from "@/lib/publicOnboarding";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Index = () => {
   useEffect(() => {
     if (loading) return;
     if (!user && Capacitor.isNativePlatform()) {
-      navigate("/auth", { replace: true });
+      navigate(hasCompletedPublicOnboarding() ? "/auth" : "/welcome", { replace: true });
       return;
     }
     if (!user || !role) return;

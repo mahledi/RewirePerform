@@ -1,0 +1,20 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "F7A976G38N.com.rewireperform.app"
+        ],
+        "components": [
+          {
+            "/": "/auth",
+            "?": {
+              "flow": "signup"
+            },
+            "comment": "RewirePerform signup confirmation only"
+          }
+        ]
+      }
+    ]
+  }
+}

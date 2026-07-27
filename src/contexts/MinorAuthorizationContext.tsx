@@ -16,6 +16,8 @@ import {
   MinorAuthorizationError,
   type MinorAuthorizationStatus,
 } from "@/lib/minorAuthorization";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
 
 const ACCESS_RECOVERY_DEADLINE_MS = 9_000;
 const LIFECYCLE_RECOVERY_DEADLINE_MS = 13_000;
@@ -324,7 +326,12 @@ export const MinorAuthorizationProvider = ({ children }: { children: ReactNode }
   useEffect(() => {
     const recoverIfNeeded = () => {
       const current = authRef.current;
-      if (!current.userId || statusRef.current || recoveryInFlightRef.current) return;
+      const currentStatus = statusRef.current;
+      if (
+        !current.userId
+        || recoveryInFlightRef.current
+        || (currentStatus && currentStatus.state !== "guardian_pending")
+      ) return;
       void recoverAccess("lifecycle");
     };
     const handleVisibility = () => {
@@ -340,6 +347,32 @@ export const MinorAuthorizationProvider = ({ children }: { children: ReactNode }
       window.removeEventListener("focus", recoverIfNeeded);
       window.removeEventListener("pageshow", recoverIfNeeded);
       document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [recoverAccess]);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let disposed = false;
+    let listener: PluginListenerHandle | null = null;
+    void CapacitorApp.addListener("appStateChange", ({ isActive }) => {
+      if (!isActive) return;
+      const currentStatus = statusRef.current;
+      if (
+        authRef.current.userId
+        && !recoveryInFlightRef.current
+        && (!currentStatus || currentStatus.state === "guardian_pending")
+      ) {
+        void recoverAccess("lifecycle");
+      }
+    }).then((handle) => {
+      if (disposed) void handle.remove();
+      else listener = handle;
+    });
+
+    return () => {
+      disposed = true;
+      if (listener) void listener.remove();
     };
   }, [recoverAccess]);
 

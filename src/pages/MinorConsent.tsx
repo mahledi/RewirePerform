@@ -30,9 +30,11 @@ import {
 import { athletePolicyCopy, minorProductSummary } from "@/content/minorPolicy";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { safeInternalRoute } from "@/lib/internalRoute";
 
 const safeNextRoute = (value: string | null) =>
-  value && /^\/(?!\/)/u.test(value) && !value.startsWith("/minor-consent") ? value : "/dashboard";
+  safeInternalRoute(value, { blockedPathPrefixes: ["/minor-consent"] }) ?? "/dashboard";
 
 const Shell = ({ children }: { children: React.ReactNode }) => (
   <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 sm:py-10">
@@ -83,6 +85,7 @@ const MinorConsent = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { status, loading, error, refresh, setStatus } = useMinorAuthorization();
+  const { user } = useAuth();
   const nextRoute = useMemo(() => safeNextRoute(searchParams.get("next")), [searchParams]);
   const [ageBand, setAgeBand] = useState<MinorAgeBand | "">("");
   const [guardianEmail, setGuardianEmail] = useState("");
@@ -112,6 +115,8 @@ const MinorConsent = () => {
         ? "Zu viele E-Mails in kurzer Zeit. Bitte versuche es später erneut."
         : code === "invalid_email"
           ? "Bitte prüfe die E-Mail-Adresse."
+          : code === "guardian_email_matches_athlete"
+            ? "Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein."
           : "Die Entscheidung konnte gerade nicht sicher gespeichert werden.";
       toast.error(message);
       return null;
@@ -165,7 +170,14 @@ const MinorConsent = () => {
   }
 
   if (status.state === "guardian_contact_required" || status.state === "guardian_expired" || status.state === "guardian_declined") {
-    const validEmail = /^\S+@\S+\.\S+$/u.test(guardianEmail.trim());
+    const normalizedGuardianEmail = guardianEmail.trim().toLowerCase();
+    const normalizedAthleteEmail = user?.email?.trim().toLowerCase() ?? "";
+    const guardianMatchesAthlete = Boolean(
+      normalizedGuardianEmail
+      && normalizedAthleteEmail
+      && normalizedGuardianEmail === normalizedAthleteEmail,
+    );
+    const validEmail = /^\S+@\S+\.\S+$/u.test(normalizedGuardianEmail) && !guardianMatchesAthlete;
     return (
       <Shell>
         <Intro icon={Mail} title={status.state === "guardian_declined" ? "Die Freigabe wurde nicht erteilt" : "E-Mail einer sorgeberechtigten Person"}>
@@ -184,7 +196,14 @@ const MinorConsent = () => {
             onChange={(event) => setGuardianEmail(event.target.value)}
             placeholder="elternteil@beispiel.de"
             className="h-12"
+            aria-invalid={guardianMatchesAthlete}
+            aria-describedby={guardianMatchesAthlete ? "guardian-email-error" : undefined}
           />
+          {guardianMatchesAthlete && (
+            <p id="guardian-email-error" role="alert" className="text-sm leading-5 text-destructive">
+              Diese Adresse gehört bereits zu deinem Athletenkonto. Bitte gib die E-Mail einer sorgeberechtigten Person ein.
+            </p>
+          )}
         </div>
         <div className="mt-4 flex gap-3 rounded-md border border-border bg-secondary/30 p-4 text-sm leading-6 text-muted-foreground">
           <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -194,7 +213,7 @@ const MinorConsent = () => {
           className="mt-7 w-full"
           size="lg"
           disabled={!validEmail || busy === "send"}
-          onClick={() => void run("send", () => startGuardianAuthorization(guardianEmail.trim()))}
+          onClick={() => void run("send", () => startGuardianAuthorization(normalizedGuardianEmail))}
         >
           {busy === "send" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
           Sicheren Link senden

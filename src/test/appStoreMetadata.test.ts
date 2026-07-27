@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const metadata = readFileSync(
   resolve(
     process.cwd(),
-    "docs/APP_STORE_CONNECT_PACKAGE_2026-07-13.md",
+    "docs/APP_STORE_CONNECT_PACKAGE_2026-07-23.md",
   ),
   "utf8",
 );
@@ -45,11 +45,15 @@ describe("App Store metadata package", () => {
     expect(description).not.toMatch(/Fußball|Fussball|Torwart|Stürmer|Boxer|Turner/i);
   });
 
-  it("keeps unresolved legal gates visibly blocked", () => {
-    expect(metadata).toContain("Account deletion: BLOCKED by `BD-04`");
+  it("keeps external actions and legal gates visibly blocked", () => {
     expect(metadata).toContain(
-      "Minor/guardian and research consent: BLOCKED by `BD-05`",
+      "No App Store Connect app record, build upload, TestFlight group",
     );
-    expect(metadata).toContain("Do not submit with that");
+    expect(metadata).toContain(
+      "External legal review remains mandatory",
+    );
+    expect(metadata).toMatch(
+      /No real user, including Farin, may be\s+used for destructive testing/,
+    );
   });
 });

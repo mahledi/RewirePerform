@@ -119,7 +119,8 @@ describe("account deletion contract", () => {
   it("does not promise unconfigured automatic backup deletion", () => {
     expect(accountDeletedPage).not.toMatch(/höchstens 30 Tagen automatisch/);
     expect(privacyPage).not.toMatch(/höchstens 30 Tagen automatisch/);
-    expect(privacyPage).toContain("Sicherungskopien oder Sicherheitsprotokollen");
-    expect(privacyPage).toContain("für Produkt- oder Analysezwecke gesperrt");
+    expect(privacyPage).toContain("nicht direkt zugänglichen providerseitigen technischen Sicherungs-");
+    expect(privacyPage).toContain("nicht für Produkt, Support, Analyse oder Evidence genutzt");
+    expect(privacyPage).toContain("Rückgabefrist von 30 Tagen");
   });
 });
