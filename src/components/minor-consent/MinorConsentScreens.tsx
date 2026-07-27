@@ -31,6 +31,10 @@ import {
   type MinorGuardianPreviewState,
 } from "@/content/minorGuardianDraft";
 import { cn } from "@/lib/utils";
+import {
+  GuardianEmailChangeStatus,
+  GuardianPendingStatus,
+} from "@/components/minor-consent/GuardianEmailStatus";
 
 type Navigate = (state: MinorGuardianPreviewState) => void;
 
@@ -206,43 +210,44 @@ const GuardianContactScreen = ({ onNavigate }: { onNavigate: Navigate }) => {
   );
 };
 
-const GuardianPendingScreen = ({ onNavigate }: { onNavigate: Navigate }) => (
-  <FlowLayout step="Schritt 2 von 3" onBack={() => onNavigate("guardian-contact")}>
-    <Intro
-      icon={Clock3}
-      eyebrow="Bestätigung offen"
-      title="Wir warten auf die Entscheidung"
-      body={`Der persönliche Link wurde an ${previewGuardianEmail} gesendet. Du kannst weitermachen, sobald die sorgeberechtigte Person zugestimmt hat.`}
+const GuardianPendingScreen = ({ onNavigate }: { onNavigate: Navigate }) => {
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [replacementEmail, setReplacementEmail] = useState("");
+  const replacementLooksValid = /^\S+@\S+\.\S+$/.test(replacementEmail);
+
+  if (editingEmail) {
+    return (
+      <GuardianEmailChangeStatus
+        value={replacementEmail}
+        invalid={false}
+        submitting={false}
+        disabled={!replacementLooksValid}
+        onChange={setReplacementEmail}
+        onSubmit={() => {
+          setReplacementEmail("");
+          setEditingEmail(false);
+        }}
+        onCancel={() => {
+          setReplacementEmail("");
+          setEditingEmail(false);
+        }}
+      />
+    );
+  }
+
+  return (
+    <GuardianPendingStatus
+      guardianEmail={previewGuardianEmail}
+      checkingStatus={false}
+      resending={false}
+      disabled={false}
+      onCheckStatus={() => undefined}
+      onResend={() => undefined}
+      onChangeEmail={() => setEditingEmail(true)}
+      onBackToSettings={() => onNavigate("age-check")}
     />
-
-    <div className="mb-6 rounded-md border border-border bg-background/50 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium">Freigabe durch eine sorgeberechtigte Person</p>
-          <p className="mt-1 text-xs text-muted-foreground">Noch nicht entschieden</p>
-        </div>
-        <StatusPill tone="warning">
-          <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
-          Offen
-        </StatusPill>
-      </div>
-    </div>
-
-    <Notice>
-      Deine Trainer sehen nur, dass dein Zugang noch nicht abgeschlossen ist. Sie sehen weder die E-Mail-Adresse noch den Grund für eine mögliche Ablehnung.
-    </Notice>
-
-    <div className="mt-7 grid gap-3 sm:grid-cols-2">
-      <Button type="button" variant="outline" onClick={() => onNavigate("guardian-contact")}>
-        E-Mail ändern
-      </Button>
-      <Button type="button" variant="secondary">
-        <RefreshCw aria-hidden="true" />
-        Erneut senden
-      </Button>
-    </div>
-  </FlowLayout>
-);
+  );
+};
 
 const GuardianEmailScreen = ({ onNavigate }: { onNavigate: Navigate }) => (
   <div className="min-h-[720px] bg-[#f2f4f7] px-4 py-8 text-[#18212f] sm:px-8 sm:py-12">

@@ -187,7 +187,8 @@ describe("minor consent production flow", () => {
     renderFlow();
 
     fireEvent.click(screen.getByRole("button", { name: "E-Mail-Adresse ändern" }));
-    fireEvent.change(screen.getByLabelText("Andere E-Mail-Adresse"), {
+    expect(screen.getByRole("heading", { name: "E-Mail-Adresse ändern." })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("E-Mail der sorgeberechtigten Person"), {
       target: { value: "neue-adresse@example.de" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Neuen Link senden" }));
@@ -196,6 +197,42 @@ describe("minor consent production flow", () => {
       "neue-adresse@example.de",
     ));
     expect(context.setStatus).toHaveBeenCalledWith(pending);
+  });
+
+  it("uses the same centered email-status hierarchy as account confirmation", () => {
+    context.status = baseStatus({
+      state: "guardian_pending",
+      age_band: "under_16",
+      guardian_status: "pending",
+      guardian_email_mask: "e•••@b•••.de",
+    });
+    renderFlow();
+
+    expect(screen.getByRole("link", { name: "Zur Startseite" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Entscheidung noch offen" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Status prüfen" })).toHaveClass("bg-primary");
+    expect(screen.getByRole("button", { name: "E-Mail erneut senden" })).toHaveClass("bg-secondary/50");
+    expect(screen.getByRole("button", { name: "E-Mail-Adresse ändern" })).toHaveClass("text-primary");
+  });
+
+  it("opens email replacement as a clean standalone screen and can cancel back", () => {
+    context.status = baseStatus({
+      state: "guardian_pending",
+      age_band: "under_16",
+      guardian_status: "pending",
+      guardian_email_mask: "e•••@b•••.de",
+    });
+    renderFlow();
+
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail-Adresse ändern" }));
+
+    expect(screen.queryByRole("heading", { name: "Entscheidung noch offen" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "E-Mail-Adresse ändern." })).toBeInTheDocument();
+    expect(screen.getByLabelText("E-Mail der sorgeberechtigten Person")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Abbrechen" }));
+
+    expect(screen.getByRole("heading", { name: "Entscheidung noch offen" })).toBeInTheDocument();
   });
 
   it.each([

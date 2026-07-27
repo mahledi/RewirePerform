@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { MinorConsentScreen } from "@/components/minor-consent/MinorConsentScreens";
 import {
   MINOR_GUARDIAN_DRAFT,
@@ -13,7 +14,11 @@ import {
 afterEach(cleanup);
 
 const renderState = (state: MinorGuardianPreviewState, onNavigate = vi.fn()) => {
-  render(<MinorConsentScreen state={state} onNavigate={onNavigate} />);
+  render(
+    <MemoryRouter>
+      <MinorConsentScreen state={state} onNavigate={onNavigate} />
+    </MemoryRouter>,
+  );
   return onNavigate;
 };
 
@@ -124,7 +129,11 @@ describe("minor and guardian preview contract", () => {
     expect(new Set(ids).size).toBe(ids.length);
 
     for (const state of ids) {
-      const { container, unmount } = render(<MinorConsentScreen state={state} onNavigate={vi.fn()} />);
+      const { container, unmount } = render(
+        <MemoryRouter>
+          <MinorConsentScreen state={state} onNavigate={vi.fn()} />
+        </MemoryRouter>,
+      );
       expect(container.firstElementChild).not.toBeNull();
       unmount();
     }
