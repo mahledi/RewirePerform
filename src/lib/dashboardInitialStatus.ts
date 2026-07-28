@@ -1,6 +1,11 @@
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { buildFlameStats, type FlameCompletionRow, type FlameStats } from "@/lib/flameStats";
+import {
+  buildFlameStats,
+  countActiveApplications,
+  type FlameCompletionRow,
+  type FlameStats,
+} from "@/lib/flameStats";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
 
@@ -21,6 +26,7 @@ type SnapshotRow = {
   days_available: number;
   days_completed: number;
   program_day: number | null;
+  tasks_completed_count: number;
 };
 
 export interface DashboardInitialStatus {
@@ -34,6 +40,7 @@ export interface DashboardInitialStatus {
   baselineDone: boolean;
   retestDone: boolean;
   flameStats: FlameStats;
+  tasksCompletedCount: number;
   completionRows: FlameCompletionRow[];
   instanceId: string;
 }
@@ -111,14 +118,14 @@ export async function loadDashboardInitialStatus(
   const [completionsResult, snapshotsResult] = await Promise.all([
     supabase
       .from("user_day_completion")
-      .select("day_number,completed_at,completion_status")
+      .select("day_number,completed_at,completion_status,task_completion")
       .eq("user_id", userId)
       .eq("program_instance_id", instance.id)
       .retry(false)
       .abortSignal(requestSignal),
     supabase
       .from("program_progress_snapshots")
-      .select("current_streak,longest_streak,days_available,days_completed,program_day")
+      .select("current_streak,longest_streak,days_available,days_completed,program_day,tasks_completed_count")
       .eq("user_id", userId)
       .eq("program_instance_id", instance.id)
       .order("date", { ascending: false })
@@ -184,6 +191,10 @@ export async function loadDashboardInitialStatus(
         : baseFlameStats.completionRate,
       missedDaysCount: Math.max(0, daysAvailable - baseFlameStats.totalCompletedDays),
     },
+    tasksCompletedCount: Math.max(
+      countActiveApplications(completionRows),
+      snapshot?.tasks_completed_count ?? 0,
+    ),
     completionRows,
     instanceId: instance.id,
   };

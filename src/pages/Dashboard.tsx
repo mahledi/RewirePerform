@@ -14,7 +14,12 @@ import { getProgramModeInfo, type ProgramMode } from "@/lib/programMode";
 import { normalizeDateString } from "@/lib/utils";
 import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
-import { buildFlameStats, type FlameCompletionRow, type FlameStats } from "@/lib/flameStats";
+import {
+  buildFlameStats,
+  countActiveApplications,
+  type FlameCompletionRow,
+  type FlameStats,
+} from "@/lib/flameStats";
 import { setAthleteProgressCache } from "@/lib/athleteProgressCache";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
@@ -811,6 +816,10 @@ const Dashboard = () => {
         setBaselineDone(status.baselineDone);
         setRetestDone(status.retestDone);
         setFlameStats(status.flameStats);
+        setAthleteProgressCache(user.id, status.flameStats, {
+          activeApplications: status.tasksCompletedCount,
+          referenceDateIso: resolvedToday.toISOString(),
+        });
         setMissedDayReviews(initialMissedReviews);
         lastStatusRefreshAt.current = Date.now();
         setBootstrapError(null);
@@ -896,8 +905,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!user?.id || !flameStats) return;
-    setAthleteProgressCache(user.id, flameStats);
-  }, [user?.id, flameStats]);
+    setAthleteProgressCache(user.id, flameStats, {
+      referenceDateIso: effectiveToday.toISOString(),
+    });
+  }, [user?.id, flameStats, effectiveToday]);
 
   const loadDashboardSetup = async (
     referenceDate: Date,
@@ -1020,13 +1031,13 @@ const Dashboard = () => {
 
       let completionsQ = supabase
         .from("user_day_completion")
-        .select("day_number, completed_at, completion_status, program_instance_id")
+        .select("day_number, completed_at, completion_status, task_completion, program_instance_id")
         .eq("user_id", user.id);
       if (instanceId) completionsQ = completionsQ.eq("program_instance_id", instanceId);
 
       let snapshotQ = supabase
         .from("program_progress_snapshots")
-        .select("current_streak, longest_streak, days_available, days_completed, program_day, program_instance_id, date")
+        .select("current_streak, longest_streak, days_available, days_completed, program_day, tasks_completed_count, program_instance_id, date")
         .eq("user_id", user.id)
         .order("date", { ascending: false })
         .limit(1);
@@ -1054,12 +1065,20 @@ const Dashboard = () => {
           : null,
         today: referenceDate,
       });
-      setFlameStats({
+      const nextStats: FlameStats = {
         ...stats,
         daysAvailable,
         programDay: dayInfo?.dayNumber ?? stats.programDay,
         completionRate: daysAvailable > 0 ? Math.min(1, stats.totalCompletedDays / daysAvailable) : stats.completionRate,
         missedDaysCount: Math.max(0, daysAvailable - stats.totalCompletedDays),
+      };
+      setFlameStats(nextStats);
+      setAthleteProgressCache(user.id, nextStats, {
+        activeApplications: Math.max(
+          countActiveApplications((completions ?? []) as FlameCompletionRow[]),
+          snapshot?.tasks_completed_count ?? 0,
+        ),
+        referenceDateIso: referenceDate.toISOString(),
       });
     } catch (e) {
       console.error("loadFlameStats error", e);
