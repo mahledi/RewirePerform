@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowLeft, BookOpen, ChevronDown, Loader2, LockKeyhole } from "lucide-react";
+import { BookOpen, ChevronDown, Loader2, LockKeyhole } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 
 interface JournalEntry {
   id: string;
@@ -61,20 +62,15 @@ const JournalHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-lg hover:bg-secondary">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Privater Rückblick</p>
-            <h1 className="font-heading font-semibold text-sm truncate">Deine Journale</h1>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen min-h-[100dvh] bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteScreenHeader
+        title="Deine Journale"
+        eyebrow="Privater Rückblick"
+        onBack={() => navigate(-1)}
+        backLabel="Zurück"
+      />
 
-      <main className="max-w-2xl mx-auto px-6 py-8">
+      <main className="mx-auto max-w-2xl px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
         <div className="mb-6 rounded-2xl border border-primary/15 bg-primary/5 p-4 flex gap-3">
           <LockKeyhole className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground leading-relaxed">

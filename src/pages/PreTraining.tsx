@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Loader2, Target } from "lucide-react";
+import { CheckCircle2, Loader2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import { captureAppError } from "@/lib/monitoring";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { getProgramModeInfo } from "@/lib/programMode";
 import { format } from "date-fns";
+import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -85,20 +86,15 @@ const PreTraining = () => {
   }, [user, role, isTestUser]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <span className="font-heading font-bold text-lg">Pre-Training</span>
-        </div>
-      </div>
+    <div className="min-h-screen min-h-[100dvh] bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteScreenHeader
+        title={eventType === "competition" ? "Pre-Wettkampf" : "Pre-Training"}
+        eyebrow="Vor deiner Einheit"
+        onBack={() => navigate("/dashboard")}
+        backLabel="Zurück zum Dashboard"
+      />
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-2xl px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -132,7 +128,7 @@ const PreTraining = () => {
               </p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+            <div className="space-y-3 rounded-[24px] border border-white/[0.065] bg-white/[0.025] p-5">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
@@ -156,7 +152,7 @@ const PreTraining = () => {
               {resolved.content.tasks.map((task, i) => (
                 <div
                   key={task.id}
-                  className="rounded-xl border border-border bg-card p-4 flex gap-3"
+                  className="flex gap-3 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-4"
                 >
                   <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0 font-semibold">
                     {i + 1}

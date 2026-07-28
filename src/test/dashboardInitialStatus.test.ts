@@ -70,8 +70,8 @@ describe("dashboard initial status", () => {
       daily_journals: { data: [{ id: "journal-1" }], error: null },
       user_day_completion: {
         data: [
-          { day_number: 1, completed_at: "2026-06-25T10:00:00Z", completion_status: "completed" },
-          { day_number: 2, completed_at: "2026-06-26T10:00:00Z", completion_status: "completed" },
+          { day_number: 1, completed_at: "2026-06-25T10:00:00Z", completion_status: "completed", task_completion: ["A", "B"] },
+          { day_number: 2, completed_at: "2026-06-26T10:00:00Z", completion_status: "completed", task_completion: ["C", "D", "E"] },
         ],
         error: null,
       },
@@ -82,6 +82,7 @@ describe("dashboard initial status", () => {
           days_available: 28,
           days_completed: 2,
           program_day: 28,
+          tasks_completed_count: 5,
         }],
         error: null,
       },
@@ -108,6 +109,7 @@ describe("dashboard initial status", () => {
       baselineDone: true,
       retestDone: false,
       instanceId: "instance-1",
+      tasksCompletedCount: 5,
     });
     expect(result.flameStats).toMatchObject({
       currentStreak: 2,

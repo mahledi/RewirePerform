@@ -45,6 +45,7 @@ import {
   shouldPreserveReflectionDraft,
   type TransferPulseResponse,
 } from "@/lib/performanceEvidence";
+import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 
 type EventType = CalendarEventType;
 
@@ -795,27 +796,47 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     );
   };
 
+  const flowStepTitles = [
+    "Science Bite",
+    "Dein Tages-Puls",
+    activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
+    "Deine Aufgaben",
+    "Verständnis-Check",
+    "Abgeschlossen",
+  ] as const;
+
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background flex flex-col">
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Zurück</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <config.icon className={`w-4 h-4 ${config.color}`} />
-            <span className="text-sm font-heading font-medium">{config.label}</span>
+    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteScreenHeader
+        title={flowStepTitles[step] ?? "Daily Flow"}
+        eyebrow={`Daily Flow · ${config.label}`}
+        onBack={handleBack}
+        backLabel="Im Daily Flow zurück"
+        trailing={(
+          <div className="flex items-center gap-2 rounded-full border border-white/[0.065] bg-white/[0.035] px-3 py-2 text-[11px] text-white/52">
+            <config.icon className={`h-3.5 w-3.5 ${config.color}`} />
+            {format(date, "d. MMM", { locale: de })}
           </div>
-          <span className="text-xs text-muted-foreground">{format(date, "d. MMM", { locale: de })}</span>
+        )}
+      />
+      <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
+        <div className="mx-auto flex max-w-lg items-center gap-2">
+          {Array.from({ length: 5 }, (_, index) => (
+            <div
+              key={index}
+              className={`h-1 flex-1 rounded-full ${
+                step > index || step === 5 ? "bg-primary" : step === index ? "bg-primary/55" : "bg-white/[0.065]"
+              }`}
+            />
+          ))}
+          <span className="ml-1 text-[10px] tabular-nums text-white/42">
+            {step === 5 ? "5/5" : `${Math.min(step + 1, 5)}/5`}
+          </span>
         </div>
       </div>
 
-      <div ref={contentScrollRef} className="flex-1 flex items-start justify-center px-4 sm:px-6 py-8 overflow-y-auto">
-        <div className="max-w-lg w-full">
+      <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-5 py-7">
+        <div className="mx-auto w-full max-w-lg">
           {saveError && (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
               {saveError}
@@ -863,13 +884,13 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                         <div key={q.label}>
                           <label className="text-sm font-semibold block mb-1">{q.label}</label>
                           <p className="text-xs text-muted-foreground mb-2">{q.question}</p>
-                          <div className="grid grid-cols-10 gap-1.5">
+                          <div className="grid grid-cols-5 gap-2">
                             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                               <button
                                 key={n}
                                 data-testid={`pulse-${q.id}-${n}`}
                                 onClick={() => q.set(n)}
-                                className={`aspect-square rounded-lg text-sm font-semibold transition-all ${
+                                className={`min-h-11 rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                   q.value === n
                                     ? "bg-primary text-primary-foreground shadow-glow"
                                     : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
@@ -1004,17 +1025,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       </div>
 
       {(step === 1 || step === 2 || step === 3) && !selectedTask && (
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-4 sm:px-6 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+        <div className="sticky bottom-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
           <div className="max-w-lg mx-auto flex items-center justify-between">
-            <button onClick={handleBack} className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors">
+            <button onClick={handleBack} className="flex min-h-12 items-center gap-2 rounded-xl px-4 py-3 text-white/52 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               <ArrowLeft className="w-4 h-4" />
               Zurück
             </button>
-            <div className="flex gap-1.5">
-              {[0, 1, 2, 3, 4].map((s) => (
-                <div key={s} className={`w-2 h-2 rounded-full transition-colors ${s === step ? "bg-primary" : "bg-muted"}`} />
-              ))}
-            </div>
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
@@ -1038,7 +1054,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     else if (step === 3 && tasksComplete) setStep(4);
                   }}
                   disabled={blocked}
-                  className={`flex items-center gap-2 px-4 sm:px-6 py-3 rounded-xl font-heading font-semibold text-sm sm:text-base whitespace-nowrap transition-all ${
+                  className={`flex min-h-12 items-center gap-2 whitespace-nowrap rounded-2xl px-5 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     blocked
                       ? "bg-muted text-muted-foreground cursor-not-allowed"
                       : "bg-primary text-primary-foreground hover:shadow-glow"

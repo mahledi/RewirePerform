@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { motion } from "framer-motion";
-import { ArrowLeft, BookOpen, Bug, ChevronRight, CircleUserRound, HelpCircle, Lightbulb, Loader2, MessageCircle, MessageSquare, Send, Settings2, Smartphone } from "lucide-react";
+import { BookOpen, Bug, ChevronRight, CircleUserRound, HelpCircle, Lightbulb, Loader2, MessageCircle, MessageSquare, Send, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { TrainingAndNotifications } from "@/components/settings/TrainingAndNotifications";
 import { toast } from "sonner";
+import {
+  AthleteAppHeader,
+  AthleteBottomNavigation,
+  athleteAppBackground,
+  athleteAppViewport,
+} from "@/components/app/AthleteAppChrome";
 
 const feedbackTypes = [
   { value: "bug", label: "Bug melden", icon: Bug },
@@ -98,25 +104,17 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/90 px-4 py-3 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard")}
-            aria-label="Zurück zum Dashboard"
-            className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-secondary"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Settings2 className="h-5 w-5 text-primary" />
-            <h1 className="font-heading text-lg font-bold">Einstellungen</h1>
-          </div>
-        </div>
-      </header>
+    <div className={athleteAppBackground}>
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(46,173,137,0.08),transparent_34%)]" />
+      <AthleteAppHeader />
 
-      <main className="mx-auto max-w-2xl space-y-6 px-4 py-6">
+      <main className={`${athleteAppViewport} space-y-6`}>
+        <div className="pb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Mehr</p>
+          <h1 className="mt-3 text-[32px] font-semibold leading-none tracking-[-0.045em]">Dein Bereich.</h1>
+          <p className="mt-4 text-sm leading-6 text-white/58">Konto, Erinnerungen, Hilfe und Feedback an einem Ort.</p>
+        </div>
+
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <button
             type="button"
@@ -278,8 +276,9 @@ const Settings = () => {
           </motion.section>
         )}
 
-        <div className="pb-8" />
+        <div className="pb-3" />
       </main>
+      <AthleteBottomNavigation active="more" />
     </div>
   );
 };
