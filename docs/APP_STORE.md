@@ -1,7 +1,7 @@
 # RewirePerform App Store Readiness
 
-Current RC status and release gates:
-`docs/APP_STORE_RC1_STATUS_2026-07-23.md`.
+Current V1 status and the fixed remaining release gates:
+`docs/APP_STORE_READINESS_STATUS_2026-07-28.md`.
 
 RewirePerform ships as a premium Capacitor WebView app: the React/Supabase product remains the runtime core, while iOS provides the App Store shell, icon, splash screen, safe-area handling, and future native capability surface.
 

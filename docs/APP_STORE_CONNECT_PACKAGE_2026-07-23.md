@@ -1,10 +1,15 @@
 # App Store Connect Package - 2026-07-23
 
-Status: Prepared locally. Not entered in App Store Connect. Not submitted.
+Status: Prepared locally and reconciled with the technically validated V1
+archive on 28 July 2026. The App Store Connect web form has not yet been
+audited in an authenticated browser. No TestFlight build, App Review
+submission, or release has been created.
 
 This is the metadata source of truth for the first iOS version. It prepares
-values locally only. No App Store Connect record, upload, TestFlight start,
-submission, or release is authorized by this document.
+the values for controlled entry. Xcode has successfully validated version
+`1.0 (1)` against App Store Connect, but that validation does not prove that
+every web metadata field is complete. No TestFlight start, submission, or
+release is authorized by this document.
 
 ## App information
 
@@ -144,14 +149,23 @@ iPad, so prepare both required sets from the final native build:
 - iPad 13-inch portrait: 2064 x 2752 or 2048 x 2732 pixels.
 - Capture the same six scenes in the same order for both device families.
 
-Planned scenes:
+The native V1 build and both physical device families are green. Screenshot
+capture remains open because it requires a clean synthetic review state and
+the final Store localization.
 
-1. Athlete dashboard with the current 56-day program context.
-2. Training-day check-in with sport-neutral language.
-3. Rest-day reflection showing that no sports action is invented.
-4. Competition preparation with concise instructions.
-5. Personal progress view without unsupported efficacy claims.
-6. Coach team view containing synthetic status/aggregate data only.
+Planned scenes for the primary athlete listing:
+
+1. `Heute`: current real program day and next action.
+2. `Plan`: weekly strip and daily timeline with real calendar context.
+3. Daily check-in: sport-neutral questions and practical tasks.
+4. Private journal: structured reflection without identifiable content.
+5. `Entwicklung`: real program adherence, phases, streak and applications
+   without psychological scores or unsupported efficacy claims.
+6. `Mehr`: privacy, optional reminders, support and account controls.
+
+If a separate coach-focused scene is used, it may contain only synthetic
+status and privacy-safe aggregate data. It must not replace the coherent
+athlete story in the primary screenshot set.
 
 Capture rules:
 
