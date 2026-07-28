@@ -21,6 +21,11 @@ import {
   type AthleteProgressData,
 } from "@/lib/athleteProgressCache";
 import {
+  getAthleteMeasurementDisplay,
+  resolveProgressReferenceDateIso,
+} from "@/lib/athleteProgressPresentation";
+import { getRetestStatus } from "@/lib/programProgress";
+import {
   AthleteAppHeader,
   AthleteBottomNavigation,
   athleteAppBackground,
@@ -49,6 +54,17 @@ interface AdherencePoint {
 interface ActivitySnapshot extends FlameSnapshot {
   tasks_completed_count: number;
 }
+
+export const buildAdherenceDayLabels = (
+  points: AdherencePoint[],
+  daysAvailable: number,
+  referenceDateIso: string,
+): string[] => {
+  const referenceDate = new Date(referenceDateIso);
+  return points.map((point) =>
+    format(addDays(referenceDate, point.day - Math.max(1, daysAvailable)), "EE", { locale: de }),
+  );
+};
 
 export const buildSevenDayAdherencePoints = (
   completedDayNumbers: number[],
@@ -95,10 +111,7 @@ const AdherenceChart = ({
     .map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`)
     .join(" ");
   const areaPath = `${linePath} L${points[points.length - 1].x},${CHART_BOTTOM} L0,${CHART_BOTTOM} Z`;
-  const referenceDate = new Date(referenceDateIso);
-  const dayLabels = points.map((point) =>
-    format(addDays(referenceDate, point.day - Math.max(1, daysAvailable)), "EE", { locale: de }),
-  );
+  const dayLabels = buildAdherenceDayLabels(points, daysAvailable, referenceDateIso);
 
   return (
     <div className="relative mt-8">
@@ -170,10 +183,11 @@ const Progress = () => {
     setError(false);
 
     try {
-      const [today, instance, effectiveStart] = await Promise.all([
+      const [today, instance, effectiveStart, measurementStatus] = await Promise.all([
         getEffectiveTodayDate(user.id, signal),
         getOrCreateActiveInstance(user.id, signal),
         getEffectiveProgramStart(user.id, signal),
+        getRetestStatus(user.id),
       ]);
       const instanceId = instance?.id ?? null;
 
@@ -232,12 +246,14 @@ const Progress = () => {
           countActiveApplications((completions ?? []) as FlameCompletionRow[]),
           snapshot?.tasks_completed_count ?? 0,
         ),
-        referenceDateIso: today.toISOString(),
+        referenceDateIso: resolveProgressReferenceDateIso(startDate, today),
+        measurementStatus,
       };
 
       setAthleteProgressCache(user.id, nextStats, {
         activeApplications: nextData.activeApplications,
         referenceDateIso: nextData.referenceDateIso,
+        measurementStatus: nextData.measurementStatus,
       });
       setProgressData(nextData);
     } catch (loadError) {
@@ -306,14 +322,10 @@ const Progress = () => {
     );
   }
 
-  const { stats, activeApplications, referenceDateIso } = progressData;
+  const { stats, activeApplications, referenceDateIso, measurementStatus } = progressData;
   const hasProgramStarted = stats.daysAvailable > 0 || stats.programDay !== null;
   const adherencePercent = Math.round(stats.completionRate * 100);
-  const measurementCopy = (stats.programDay ?? 0) < 28
-    ? "Zwischenmessung an Tag 28. Bis dahin zählt deine tägliche Praxis."
-    : (stats.programDay ?? 0) < 56
-      ? "Abschlussmessung an Tag 56. Bis dahin zählt deine tägliche Praxis."
-      : "Dein nächster Messpunkt ist jetzt verfügbar.";
+  const measurementDisplay = getAthleteMeasurementDisplay(measurementStatus);
 
   return (
     <div className={athleteAppBackground}>
@@ -473,8 +485,8 @@ const Progress = () => {
               <div className="flex items-start gap-3">
                 <Gauge className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div>
-                  <h2 className="text-sm font-semibold">Nächster Messpunkt</h2>
-                  <p className="mt-1 text-xs leading-5 text-white/42">{measurementCopy}</p>
+                  <h2 className="text-sm font-semibold">{measurementDisplay.title}</h2>
+                  <p className="mt-1 text-xs leading-5 text-white/42">{measurementDisplay.copy}</p>
                 </div>
               </div>
             </motion.section>

@@ -81,9 +81,11 @@ describe("V1 athlete UI integration contract", () => {
 
   it("shows athlete development as real program effort without assessment scores", () => {
     const progress = readSource("src/pages/Progress.tsx");
+    const progressPresentation = readSource("src/lib/athleteProgressPresentation.ts");
     expect(progress).toContain('from("user_day_completion")');
     expect(progress).toContain('from("program_progress_snapshots")');
     expect(progress).toContain("buildFlameStats");
+    expect(progress).toContain("getRetestStatus");
     expect(progress).toContain("tasks_completed_count");
     expect(progress).toContain("buildSevenDayAdherencePoints");
     expect(progress).toContain("getAthleteProgressCache");
@@ -94,7 +96,8 @@ describe("V1 athlete UI integration contract", () => {
     expect(progress).toContain("Dein 56‑Tage‑Weg");
     expect(progress).toContain("Tage in Folge");
     expect(progress).toContain("aktive Anwendungen");
-    expect(progress).toContain("Nächster Messpunkt");
+    expect(progressPresentation).toContain("Nächster Messpunkt");
+    expect(progressPresentation).toContain("Messungen abgeschlossen");
     expect(progress).not.toContain("<FlameProgressGrid");
     expect(progress).not.toContain("scoreDevelopmentIndex");
     expect(progress).not.toContain("deep_profile_assessments");

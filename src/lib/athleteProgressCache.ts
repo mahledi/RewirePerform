@@ -1,4 +1,5 @@
 import type { FlameStats } from "@/lib/flameStats";
+import type { AthleteMeasurementStatus } from "@/lib/athleteProgressPresentation";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -6,6 +7,7 @@ export interface AthleteProgressData {
   stats: FlameStats;
   activeApplications: number;
   referenceDateIso: string;
+  measurementStatus: AthleteMeasurementStatus | null;
 }
 
 interface AthleteProgressCache extends AthleteProgressData {
@@ -24,6 +26,7 @@ export const getAthleteProgressCache = (
     stats: memoryCache.stats,
     activeApplications: memoryCache.activeApplications,
     referenceDateIso: memoryCache.referenceDateIso,
+    measurementStatus: memoryCache.measurementStatus,
   };
 };
 
@@ -33,6 +36,7 @@ export const setAthleteProgressCache = (
   metadata?: {
     activeApplications?: number;
     referenceDateIso?: string;
+    measurementStatus?: AthleteMeasurementStatus | null;
   },
 ) => {
   const existing = memoryCache?.userId === userId ? memoryCache : null;
@@ -41,6 +45,7 @@ export const setAthleteProgressCache = (
     stats,
     activeApplications: metadata?.activeApplications ?? existing?.activeApplications ?? 0,
     referenceDateIso: metadata?.referenceDateIso ?? existing?.referenceDateIso ?? new Date().toISOString(),
+    measurementStatus: metadata?.measurementStatus ?? existing?.measurementStatus ?? null,
     cachedAt: Date.now(),
   };
 };

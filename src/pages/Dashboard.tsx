@@ -21,6 +21,7 @@ import {
   type FlameStats,
 } from "@/lib/flameStats";
 import { setAthleteProgressCache } from "@/lib/athleteProgressCache";
+import { resolveProgressReferenceDateIso } from "@/lib/athleteProgressPresentation";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
@@ -818,7 +819,14 @@ const Dashboard = () => {
         setFlameStats(status.flameStats);
         setAthleteProgressCache(user.id, status.flameStats, {
           activeApplications: status.tasksCompletedCount,
-          referenceDateIso: resolvedToday.toISOString(),
+          referenceDateIso: resolveProgressReferenceDateIso(effectiveStart, resolvedToday),
+          measurementStatus: {
+            midDue: status.midTestDue,
+            midDone: status.midTestsDone,
+            postDue: status.postTestDue,
+            postDone: status.postTestsDone,
+            programDay: status.flameStats.programDay,
+          },
         });
         setMissedDayReviews(initialMissedReviews);
         lastStatusRefreshAt.current = Date.now();
@@ -906,9 +914,25 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user?.id || !flameStats) return;
     setAthleteProgressCache(user.id, flameStats, {
-      referenceDateIso: effectiveToday.toISOString(),
+      referenceDateIso: resolveProgressReferenceDateIso(programStartDate, effectiveToday),
+      measurementStatus: {
+        midDue: midTestDue,
+        midDone: midTestsDone,
+        postDue: postTestDue,
+        postDone: postTestsDone,
+        programDay: flameStats.programDay,
+      },
     });
-  }, [user?.id, flameStats, effectiveToday]);
+  }, [
+    user?.id,
+    flameStats,
+    effectiveToday,
+    programStartDate,
+    midTestDue,
+    midTestsDone,
+    postTestDue,
+    postTestsDone,
+  ]);
 
   const loadDashboardSetup = async (
     referenceDate: Date,
@@ -1078,7 +1102,7 @@ const Dashboard = () => {
           countActiveApplications((completions ?? []) as FlameCompletionRow[]),
           snapshot?.tasks_completed_count ?? 0,
         ),
-        referenceDateIso: referenceDate.toISOString(),
+        referenceDateIso: resolveProgressReferenceDateIso(effectiveStart.startDate, referenceDate),
       });
     } catch (e) {
       console.error("loadFlameStats error", e);
