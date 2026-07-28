@@ -35,7 +35,7 @@ export const AthleteAppHeader = ({ actions }: AthleteAppHeaderProps) => {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.055] bg-[#0D0E12]/88 px-5 pb-3 pt-[max(14px,env(safe-area-inset-top))] backdrop-blur-2xl">
-      <div className="mx-auto flex w-full max-w-[560px] items-center justify-between gap-4">
+      <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4">
         <button
           type="button"
           onClick={() => navigate("/dashboard")}
@@ -72,7 +72,7 @@ export const AthleteBottomNavigation = ({ active, onPlan }: AthleteBottomNavigat
   return (
     <nav
       aria-label="App-Navigation"
-      className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[560px] border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-2xl"
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-4xl border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-2xl"
     >
       <div className="grid grid-cols-4">
         {appSections.map((section) => {
@@ -151,4 +151,4 @@ export const athleteAppBackground =
   "min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#0D0E12] text-[#EEF0F2]";
 
 export const athleteAppViewport =
-  "relative mx-auto w-full max-w-[560px] px-5 pb-[calc(env(safe-area-inset-bottom)+6.75rem)] pt-6";
+  "relative mx-auto w-full max-w-4xl px-5 pb-[calc(env(safe-area-inset-bottom)+6.75rem)] pt-6 sm:px-6 md:px-8";

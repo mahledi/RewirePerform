@@ -55,4 +55,31 @@ describe("V1 athlete UI integration contract", () => {
     expect(app).not.toContain("UiExperiencePreview");
     expect(app).not.toContain("/internal/ui-preview");
   });
+
+  it("uses one responsive athlete shell instead of a phone-width tablet column", () => {
+    const chrome = readSource("src/components/app/AthleteAppChrome.tsx");
+    expect(chrome).toContain("max-w-4xl");
+    expect(chrome).toContain("md:px-8");
+    expect(chrome).not.toContain("max-w-[560px]");
+  });
+
+  it("keeps the start focused and renders Plan from real calendar data", () => {
+    const dashboard = readSource("src/pages/Dashboard.tsx");
+    expect(dashboard).not.toContain("import FlameCard");
+    expect(dashboard).not.toContain("<FlameCard");
+    expect(dashboard).toContain("selectedPlanEvents = getEventsForDate(planSelectedDate)");
+    expect(dashboard).toContain("upcomingPlanEvents = [...events]");
+    expect(dashboard).toContain("<PlanTimelineRow");
+    expect(dashboard).toContain("Monatsübersicht");
+    expect(dashboard).toContain("dashboardSection === \"plan\"");
+  });
+
+  it("renders the development graph from the existing scored assessments", () => {
+    const progress = readSource("src/pages/Progress.tsx");
+    expect(progress).toContain("scoreDevelopmentIndex");
+    expect(progress).toContain("<DevelopmentProfileChart");
+    expect(progress).toContain("baselineScore.subscores");
+    expect(progress).toContain("Interner Entwicklungsindex");
+    expect(progress).not.toContain("getAdherencePercent");
+  });
 });
