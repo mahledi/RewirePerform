@@ -72,6 +72,8 @@ describe("V1 athlete UI integration contract", () => {
     expect(dashboard).toContain("<PlanTimelineRow");
     expect(dashboard).toContain("Monatsübersicht");
     expect(dashboard).toContain("dashboardSection === \"plan\"");
+    expect(dashboard).toContain("selectedIsToday && selectedDateHasProgram && selectedPrimaryEventType");
+    expect(dashboard).not.toContain("onClick={() => selectedPrimaryEventType && setShowCheckin(true)}");
   });
 
   it("renders the development graph from the existing scored assessments", () => {

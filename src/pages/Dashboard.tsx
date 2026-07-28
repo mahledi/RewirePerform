@@ -2165,7 +2165,7 @@ const Dashboard = () => {
               </div>
 
               <div className="mt-4 border-l border-white/10 pl-5">
-                {selectedIsToday && selectedDateHasProgram && (
+                {selectedIsToday && selectedDateHasProgram && selectedPrimaryEventType && (
                   <PlanTimelineRow
                     time="Heute"
                     icon={Brain}
@@ -2173,7 +2173,7 @@ const Dashboard = () => {
                     detail={todayCheckinDone ? "Tages-Puls und Aufgaben gespeichert" : "10 Tages-Puls-Fragen, Aufgaben und Verständnis-Check"}
                     active={!todayCheckinDone}
                     done={todayCheckinDone}
-                    onClick={() => selectedPrimaryEventType && setShowCheckin(true)}
+                    onClick={() => setShowCheckin(true)}
                   />
                 )}
 
