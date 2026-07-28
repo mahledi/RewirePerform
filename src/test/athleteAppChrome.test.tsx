@@ -52,6 +52,31 @@ describe("athlete app navigation", () => {
     expect(onPlan).toHaveBeenCalledTimes(1);
   });
 
+  it("cancels a pending route change when a newer tab tap wins", () => {
+    vi.useFakeTimers();
+    const onPlan = vi.fn();
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <AthleteBottomNavigation active="today" onPlan={onPlan} />
+        <CurrentLocation />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Entwicklung" }));
+    fireEvent.click(screen.getByRole("button", { name: "Heute" }));
+    act(() => vi.advanceTimersByTime(150));
+    expect(screen.getByTestId("location")).toHaveTextContent("/dashboard");
+    expect(screen.getByRole("button", { name: "Heute" })).toHaveAttribute("aria-current", "page");
+
+    fireEvent.click(screen.getByRole("button", { name: "Entwicklung" }));
+    fireEvent.click(screen.getByRole("button", { name: "Plan" }));
+    act(() => vi.advanceTimersByTime(150));
+    expect(onPlan).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("location")).toHaveTextContent("/dashboard");
+    expect(screen.getByRole("button", { name: "Plan" })).toHaveAttribute("aria-current", "page");
+    vi.useRealTimers();
+  });
+
   it("exposes a named back control on full-screen flows", () => {
     const onBack = vi.fn();
     render(

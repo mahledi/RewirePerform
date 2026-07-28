@@ -70,6 +70,10 @@ export const AthleteBottomNavigation = ({ active, onPlan }: AthleteBottomNavigat
   }, []);
 
   const selectSection = (section: (typeof appSections)[number]) => {
+    if (navigationTimer.current !== null) {
+      window.clearTimeout(navigationTimer.current);
+      navigationTimer.current = null;
+    }
     setVisualActive(section.id);
     if (section.id === "plan" && onPlan) {
       onPlan();
@@ -81,8 +85,10 @@ export const AthleteBottomNavigation = ({ active, onPlan }: AthleteBottomNavigat
         navigate(section.path);
         return;
       }
-      if (navigationTimer.current !== null) window.clearTimeout(navigationTimer.current);
-      navigationTimer.current = window.setTimeout(() => navigate(section.path), 150);
+      navigationTimer.current = window.setTimeout(() => {
+        navigationTimer.current = null;
+        navigate(section.path);
+      }, 150);
     }
   };
 
