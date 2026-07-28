@@ -109,4 +109,38 @@ describe("V1 athlete UI integration contract", () => {
     const dashboard = readSource("src/pages/Dashboard.tsx");
     expect(dashboard).not.toContain("Dein Fortschritt (Deep Dive)");
   });
+
+  it("keeps missed-program-day review capped at three in cached and refreshed state", () => {
+    const dashboard = readSource("src/pages/Dashboard.tsx");
+    expect(dashboard.match(/reviews\.length < 3/g)).toHaveLength(2);
+  });
+
+  it("stores assessments without presenting athlete-facing scores or inferred improvement", () => {
+    const assessment = readSource("src/pages/Assessment.tsx");
+    const deepProfile = readSource("src/pages/DeepProfile.tsx");
+    const dashboard = readSource("src/pages/Dashboard.tsx");
+
+    expect(assessment).toContain("Sie sind keine Bewertung deiner Person oder deiner sportlichen Eignung.");
+    expect(assessment).not.toContain("Deine Werte auf den wissenschaftlichen Subskalen.");
+    expect(assessment).not.toContain("Vergleich zwischen Start- und Abschlussmessung.");
+    expect(assessment).not.toContain("savedScores.subscaleScores");
+    expect(assessment).not.toContain("isImproved");
+    expect(deepProfile).not.toContain("Fortschritt ansehen");
+    expect(dashboard).not.toContain("vergleiche deine Entwicklung");
+  });
+
+  it("keeps coach surfaces free of selection, talent and career recommendations", () => {
+    const coachSources = [
+      "src/pages/Coach.tsx",
+      "src/components/coach/TeamOverview.tsx",
+      "src/components/coach/TeamMentalState.tsx",
+      "src/components/coach/TeamEvidence.tsx",
+      "src/components/coach/CoachEvidenceReviewPanel.tsx",
+      "src/components/evidence/CoachWeeklyReview.tsx",
+    ].map(readSource).join("\n");
+
+    expect(coachSources).not.toMatch(/Startelf|Aufstellung|Talentbewertung|Karriereempfehlung|Spielerempfehlung/i);
+    expect(coachSources).toContain("Bewerte ausschließlich konkrete Situationen, die du selbst beobachtet hast.");
+    expect(coachSources).toContain("Keine Antworten, keine Stimmungswerte, keine Journale.");
+  });
 });

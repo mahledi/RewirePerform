@@ -1870,7 +1870,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive Baseline erstellen</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Erstelle dein detailliertes Profil als Ausgangspunkt. Nach 8 Wochen kannst du deine Entwicklung vergleichen.
+                  Dokumentiere deinen Ausgangspunkt. Nach 8 Wochen kannst du dieselben Fragen erneut beantworten.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -1894,7 +1894,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <h3 className="font-heading font-semibold text-sm mb-1">Deep-Dive erneut verfügbar.</h3>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Dein 8-Wochen-Programm ist abgeschlossen. Beantworte den Deep-Dive erneut und vergleiche deine Entwicklung.
+                  Dein 8-Wochen-Programm ist abgeschlossen. Beantworte dieselben Fragen erneut; die Antworten werden als zweiter Messpunkt gespeichert.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}

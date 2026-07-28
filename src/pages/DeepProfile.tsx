@@ -123,7 +123,7 @@ const DeepProfile = () => {
       return;
     }
 
-    toast.success(timing === "pre" ? "Startwert gespeichert." : "Entwicklungsindex gespeichert.");
+    toast.success(timing === "pre" ? "Startmessung gespeichert." : "Abschlussmessung gespeichert.");
     setSaving(false);
     setDone(true);
   };
@@ -152,16 +152,16 @@ const DeepProfile = () => {
             <Check className="w-10 h-10 text-primary" />
           </motion.div>
           <h2 className="font-heading text-2xl font-bold mb-2">
-            {timing === "pre" ? "Startwert gespeichert" : "Entwicklung gespeichert"}
+            {timing === "pre" ? "Startmessung gespeichert" : "Abschlussmessung gespeichert"}
           </h2>
           <p className="text-muted-foreground mb-8">
             Deine Antworten wurden gespeichert. Freitext bleibt privat; Coaches sehen nur geschützte Team-Aggregate ab ausreichender Gruppengröße.
           </p>
           <button
-            onClick={() => navigate(timing === "post" ? "/progress" : "/dashboard")}
+            onClick={() => navigate("/dashboard")}
             className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
           >
-            {timing === "post" ? "Fortschritt ansehen" : "Zum Dashboard"}
+            Zum Dashboard
           </button>
         </motion.div>
       </div>
@@ -174,11 +174,11 @@ const DeepProfile = () => {
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold text-sm">RewirePerform Development Index</span>
+            <span className="font-heading font-bold text-sm">RewirePerform Deep-Dive</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-secondary">
-              {timing === "pre" ? "Pre" : timing === "mid" ? "Mid" : "Post"}
+              {timing === "pre" ? "Start" : timing === "mid" ? "Zwischen" : "Abschluss"}
             </span>
             <span className="text-xs text-muted-foreground">
               {currentIndex + 1} / {deepQuestions.length}
