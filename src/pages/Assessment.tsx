@@ -1,7 +1,7 @@
-import { useCallback, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Check, ClipboardCheck, BarChart3, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, ClipboardCheck, Loader2 } from "lucide-react";
 import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/validatedAssessments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,14 +12,7 @@ import { captureAppError } from "@/lib/monitoring";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import type { Json } from "@/integrations/supabase/types";
 
-type Phase = "select" | "instructions" | "items" | "results" | "sequence-done" | "comparison";
-
-interface SavedResult {
-  assessment_type: string;
-  scores: Record<string, number>;
-  total_score: number;
-  timing: string;
-}
+type Phase = "select" | "instructions" | "items" | "sequence-done";
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -33,13 +26,8 @@ const Assessment = () => {
   const [currentItem, setCurrentItem] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
-  const [savedScores, setSavedScores] = useState<{ subscaleScores: Record<string, number>; totalScore: number } | null>(null);
-
   const [sequenceIndex, setSequenceIndex] = useState(0);
-  const [sequenceResults, setSequenceResults] = useState<SavedResult[]>([]);
-
-  const [preResults, setPreResults] = useState<SavedResult[]>([]);
-  const [postResults, setPostResults] = useState<SavedResult[]>([]);
+  const [completedAssessmentIds, setCompletedAssessmentIds] = useState<string[]>([]);
 
   const isSequentialMode = mode !== null;
 
@@ -83,26 +71,6 @@ const Assessment = () => {
     guardRetestAccess();
   }, [mode, navigate, user?.id]);
 
-  const loadPreResults = useCallback(async () => {
-    if (!user?.id) return;
-    const instance = await getOrCreateActiveInstance(user.id);
-    if (!instance?.id) return;
-    let q = supabase
-      .from("assessments")
-      .select("assessment_type, scores, total_score, timing")
-      .eq("timing", "pre")
-      .eq("user_id", user.id);
-    if (instance?.id) q = q.eq("program_instance_id", instance.id);
-    const { data } = await q;
-    if (data) setPreResults(data as SavedResult[]);
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (mode === "post") {
-      void loadPreResults();
-    }
-  }, [loadPreResults, mode]);
-
   const startTest = (test: AssessmentInstrument, t: "pre" | "mid" | "post") => {
     setSelectedTest(test);
     setTiming(t);
@@ -128,7 +96,6 @@ const Assessment = () => {
     setSaving(true);
 
     const scores = calculateScores(selectedTest, answers);
-    setSavedScores(scores);
 
     const instance = await getOrCreateActiveInstance(user.id);
     if (!instance?.id) {
@@ -171,46 +138,16 @@ const Assessment = () => {
       }
     }
 
-    const result: SavedResult = {
-      assessment_type: selectedTest.id,
-      scores: scores.subscaleScores,
-      total_score: scores.totalScore,
-      timing,
-    };
-    setSequenceResults((prev) => [...prev, result]);
+    setCompletedAssessmentIds((previous) =>
+      previous.includes(selectedTest.id) ? previous : [...previous, selectedTest.id],
+    );
 
     setSaving(false);
 
-    if (isSequentialMode) {
-      if (sequenceIndex < allAssessments.length - 1) {
-        setPhase("results");
-      } else {
-        if (mode === "post") {
-          let preQ = supabase
-            .from("assessments")
-            .select("assessment_type, scores, total_score, timing")
-            .eq("timing", "pre")
-            .eq("user_id", user.id);
-          let postQ = supabase
-            .from("assessments")
-            .select("assessment_type, scores, total_score, timing")
-            .eq("timing", "post")
-            .eq("user_id", user.id);
-          if (instance?.id) {
-            preQ = preQ.eq("program_instance_id", instance.id);
-            postQ = postQ.eq("program_instance_id", instance.id);
-          }
-          const { data: allPre } = await preQ;
-          const { data: allPost } = await postQ;
-          setPreResults((allPre || []) as SavedResult[]);
-          setPostResults((allPost || []) as SavedResult[]);
-          setPhase("comparison");
-        } else {
-          setPhase("sequence-done");
-        }
-      }
+    if (isSequentialMode && sequenceIndex < allAssessments.length - 1) {
+      nextInSequence();
     } else {
-      setPhase("results");
+      setPhase("sequence-done");
     }
 
     toast.success(`${selectedTest.titleShort} ${timingTitle(timing)} gespeichert.`);
@@ -222,7 +159,6 @@ const Assessment = () => {
     setSelectedTest(allAssessments[nextIdx]);
     setAnswers({});
     setCurrentItem(0);
-    setSavedScores(null);
     setPhase("instructions");
   };
 
@@ -412,67 +348,21 @@ const Assessment = () => {
             </motion.div>
           )}
 
-          {/* ─── Results ─── */}
-          {phase === "results" && selectedTest && savedScores && (
-            <motion.div key="results" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-8">
-              <div className="text-center mb-10">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="w-8 h-8 text-primary" />
-                </motion.div>
-                <h2 className="font-heading text-2xl font-bold mb-2">{selectedTest.titleShort} – {timingTitle(timing)}</h2>
-                <p className="text-muted-foreground text-sm">Deine Werte auf den wissenschaftlichen Subskalen.</p>
-              </div>
-              <div className="space-y-4 mb-10">
-                {selectedTest.subscales.map((sub) => {
-                  const score = savedScores.subscaleScores[sub.id] || 0;
-                  const [, max] = selectedTest.scaleRange;
-                  const percentage = (score / max) * 100;
-                  return (
-                    <div key={sub.id} className="p-5 rounded-2xl bg-gradient-card border-glow">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-heading font-semibold text-sm">{sub.name}</h4>
-                        <span className="text-primary font-heading font-bold">{score.toFixed(1)}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-3">{sub.description}</p>
-                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ delay: 0.3, duration: 0.8 }} className="h-full bg-primary rounded-full" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex gap-3 justify-center">
-                {isSequentialMode && sequenceIndex < allAssessments.length - 1 ? (
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={nextInSequence} className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all">
-                    Nächste Messung ({sequenceIndex + 2}/{allAssessments.length}) <ArrowRight className="w-4 h-4" />
-                  </motion.button>
-                ) : !isSequentialMode ? (
-                  <>
-                    <button onClick={() => { setPhase("select"); setSelectedTest(null); setSavedScores(null); }} className="px-6 py-3 rounded-xl bg-secondary text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">Weitere Messungen</button>
-                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => navigate("/dashboard")} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all text-sm">
-                      Zum Dashboard <ArrowRight className="w-4 h-4" />
-                    </motion.button>
-                  </>
-                ) : null}
-              </div>
-            </motion.div>
-          )}
-
           {/* ─── Sequence Done ─── */}
           {phase === "sequence-done" && (
             <motion.div key="sequence-done" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-16 text-center">
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-6">
                 <Check className="w-10 h-10 text-primary" />
               </motion.div>
-              <h2 className="font-heading text-2xl font-bold mb-3">Startmessung abgeschlossen.</h2>
+              <h2 className="font-heading text-2xl font-bold mb-3">{timingTitle(timing)} abgeschlossen.</h2>
               <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8 leading-relaxed">
-                Dein Ausgangspunkt wurde dokumentiert. Nach 4 Wochen wirst du die gleichen Fragebögen erneut ausfüllen, um deine Entwicklung sichtbar zu machen.
+                Deine Antworten wurden als Messpunkt gespeichert. Sie sind keine Bewertung deiner Person oder deiner sportlichen Eignung.
               </p>
               <div className="flex flex-wrap gap-2 justify-center mb-8">
-                {sequenceResults.map((r) => {
-                  const test = allAssessments.find(t => t.id === r.assessment_type);
+                {completedAssessmentIds.map((assessmentId) => {
+                  const test = allAssessments.find((item) => item.id === assessmentId);
                   return (
-                    <span key={r.assessment_type} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
+                    <span key={assessmentId} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium">
                       ✓ {test?.titleShort}
                     </span>
                   );
@@ -484,81 +374,6 @@ const Assessment = () => {
             </motion.div>
           )}
 
-          {/* ─── Start/End Comparison ─── */}
-          {phase === "comparison" && (
-            <motion.div key="comparison" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="py-8">
-              <div className="text-center mb-10">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="w-8 h-8 text-primary" />
-                </motion.div>
-                <h2 className="font-heading text-2xl font-bold mb-2">Deine <span className="text-gradient">Entwicklung</span></h2>
-                <p className="text-muted-foreground text-sm">Vergleich zwischen Start- und Abschlussmessung.</p>
-              </div>
-
-              {allAssessments.map((test) => {
-                const pre = preResults.find(r => r.assessment_type === test.id);
-                const post = postResults.find(r => r.assessment_type === test.id);
-                if (!pre || !post) return null;
-                const preScores = (pre.scores || {}) as Record<string, number>;
-                const postScores = (post.scores || {}) as Record<string, number>;
-
-                return (
-                  <div key={test.id} className="mb-8 p-6 rounded-2xl bg-gradient-card border-glow">
-                    <h3 className="font-heading font-semibold mb-1">{test.titleShort}</h3>
-                    <p className="text-xs text-muted-foreground mb-5">{test.title}</p>
-
-                    <div className="space-y-4">
-                      {test.subscales.map((sub) => {
-                        const preVal = preScores[sub.id] || 0;
-                        const postVal = postScores[sub.id] || 0;
-                        const diff = postVal - preVal;
-                        const [, max] = test.scaleRange;
-                        const isAnxietyScale = sub.id.includes("anxiety") || sub.id.includes("somatic");
-                        const isImproved = isAnxietyScale ? diff < 0 : diff > 0;
-                        const isDeclined = isAnxietyScale ? diff > 0 : diff < 0;
-
-                        return (
-                          <div key={sub.id}>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium">{sub.name}</span>
-                              <div className="flex items-center gap-2">
-                                {diff !== 0 && (
-                                  <span className={`flex items-center gap-1 text-xs font-medium ${isImproved ? "text-primary" : isDeclined ? "text-destructive" : "text-muted-foreground"}`}>
-                                    {isImproved ? <TrendingUp className="w-3 h-3" /> : isDeclined ? <TrendingDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-                                    {diff > 0 ? "+" : ""}{diff.toFixed(1)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-muted-foreground w-8">Start</span>
-                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                                  <motion.div initial={{ width: 0 }} animate={{ width: `${(preVal / max) * 100}%` }} transition={{ delay: 0.3 }} className="h-full bg-muted-foreground/40 rounded-full" />
-                                </div>
-                                <span className="text-xs text-muted-foreground w-8 text-right">{preVal.toFixed(1)}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-primary w-8">Ende</span>
-                                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                                  <motion.div initial={{ width: 0 }} animate={{ width: `${(postVal / max) * 100}%` }} transition={{ delay: 0.5 }} className={`h-full rounded-full ${isImproved ? "bg-primary" : isDeclined ? "bg-destructive" : "bg-muted-foreground"}`} />
-                                </div>
-                                <span className="text-xs font-medium w-8 text-right">{postVal.toFixed(1)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-
-              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => navigate("/dashboard")} className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all mx-auto">
-                Zum Dashboard <ArrowRight className="w-4 h-4" />
-              </motion.button>
-            </motion.div>
-          )}
         </AnimatePresence>
       </div>
     </div>
