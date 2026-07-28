@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -13,6 +13,7 @@ const CurrentLocation = () => {
 
 describe("athlete app navigation", () => {
   it("uses real routes for today, progress and settings", () => {
+    vi.useFakeTimers();
     render(
       <MemoryRouter initialEntries={["/dashboard"]}>
         <AthleteBottomNavigation active="today" />
@@ -21,16 +22,22 @@ describe("athlete app navigation", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Entwicklung" }));
+    expect(screen.getByRole("button", { name: "Entwicklung" })).toHaveAttribute("aria-current", "page");
+    act(() => vi.advanceTimersByTime(150));
     expect(screen.getByTestId("location")).toHaveTextContent("/progress");
 
     fireEvent.click(screen.getByRole("button", { name: "Plan" }));
+    act(() => vi.advanceTimersByTime(150));
     expect(screen.getByTestId("location")).toHaveTextContent("/dashboard#dashboard-plan");
 
     fireEvent.click(screen.getByRole("button", { name: "Mehr" }));
+    act(() => vi.advanceTimersByTime(150));
     expect(screen.getByTestId("location")).toHaveTextContent("/settings");
 
     fireEvent.click(screen.getByRole("button", { name: "Heute" }));
+    act(() => vi.advanceTimersByTime(150));
     expect(screen.getByTestId("location")).toHaveTextContent("/dashboard");
+    vi.useRealTimers();
   });
 
   it("keeps the dashboard plan interaction in the real dashboard", () => {

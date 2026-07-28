@@ -61,6 +61,9 @@ describe("V1 athlete UI integration contract", () => {
     expect(chrome).toContain("max-w-4xl");
     expect(chrome).toContain("md:px-8");
     expect(chrome).not.toContain("max-w-[560px]");
+    expect(chrome).toContain("visualActive");
+    expect(chrome).toContain("setVisualActive(section.id)");
+    expect(chrome).toContain('prefers-reduced-motion: reduce');
   });
 
   it("keeps the start focused and renders Plan from real calendar data", () => {
@@ -76,12 +79,25 @@ describe("V1 athlete UI integration contract", () => {
     expect(dashboard).not.toContain("onClick={() => selectedPrimaryEventType && setShowCheckin(true)}");
   });
 
-  it("renders the development graph from the existing scored assessments", () => {
+  it("shows athlete development as real program effort without assessment scores", () => {
     const progress = readSource("src/pages/Progress.tsx");
-    expect(progress).toContain("scoreDevelopmentIndex");
-    expect(progress).toContain("<DevelopmentProfileChart");
-    expect(progress).toContain("baselineScore.subscores");
-    expect(progress).toContain("Interner Entwicklungsindex");
-    expect(progress).not.toContain("getAdherencePercent");
+    expect(progress).toContain('from("user_day_completion")');
+    expect(progress).toContain('from("program_progress_snapshots")');
+    expect(progress).toContain("buildFlameStats");
+    expect(progress).toContain("<FlameProgressGrid");
+    expect(progress).toContain("getAthleteProgressCache");
+    expect(progress).toContain('aria-busy="true"');
+    expect(progress).toContain('<AthleteBottomNavigation active="progress" />');
+    expect(progress).toContain("Aktive Tage");
+    expect(progress).toContain("Dein 56‑Tage‑Weg");
+    expect(progress).not.toContain("scoreDevelopmentIndex");
+    expect(progress).not.toContain("deep_profile_assessments");
+    expect(progress).not.toContain("Antworten im Detail");
+    expect(progress).not.toContain("Interner Entwicklungsindex");
+    expect(progress).not.toContain("baselineScore.subscores");
+    expect(progress).not.toContain("Entwicklung wird geladen");
+
+    const dashboard = readSource("src/pages/Dashboard.tsx");
+    expect(dashboard).not.toContain("Dein Fortschritt (Deep Dive)");
   });
 });

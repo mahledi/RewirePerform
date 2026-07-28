@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -58,14 +58,31 @@ interface AthleteBottomNavigationProps {
 export const AthleteBottomNavigation = ({ active, onPlan }: AthleteBottomNavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [visualActive, setVisualActive] = useState(active);
+  const navigationTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    setVisualActive(active);
+  }, [active]);
+
+  useEffect(() => () => {
+    if (navigationTimer.current !== null) window.clearTimeout(navigationTimer.current);
+  }, []);
 
   const selectSection = (section: (typeof appSections)[number]) => {
+    setVisualActive(section.id);
     if (section.id === "plan" && onPlan) {
       onPlan();
       return;
     }
     if (`${location.pathname}${location.hash}` !== section.path) {
-      navigate(section.path);
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduceMotion) {
+        navigate(section.path);
+        return;
+      }
+      if (navigationTimer.current !== null) window.clearTimeout(navigationTimer.current);
+      navigationTimer.current = window.setTimeout(() => navigate(section.path), 150);
     }
   };
 
@@ -77,7 +94,7 @@ export const AthleteBottomNavigation = ({ active, onPlan }: AthleteBottomNavigat
       <div className="grid grid-cols-4">
         {appSections.map((section) => {
           const Icon = section.icon;
-          const isActive = active === section.id;
+          const isActive = visualActive === section.id;
           return (
             <button
               key={section.id}
