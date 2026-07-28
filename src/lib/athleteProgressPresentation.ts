@@ -23,8 +23,10 @@ export const getAthleteMeasurementDisplay = (
 
   if (status.postDone) {
     return {
-      title: "Messungen abgeschlossen",
-      copy: "Deine Start-, Zwischen- und Abschlussmessung sind abgeschlossen.",
+      title: status.midDone ? "Messungen abgeschlossen" : "Abschlussmessung abgeschlossen",
+      copy: status.midDone
+        ? "Deine Start-, Zwischen- und Abschlussmessung sind abgeschlossen."
+        : "Deine Abschlussmessung ist abgeschlossen.",
     };
   }
 

@@ -79,6 +79,14 @@ describe("program activity progress", () => {
         copy: "Deine Start-, Zwischen- und Abschlussmessung sind abgeschlossen.",
       },
     },
+    {
+      label: "does not claim a skipped mid measurement was completed",
+      status: { programDay: 56, midDue: false, midDone: false, postDue: false, postDone: true },
+      expected: {
+        title: "Abschlussmessung abgeschlossen",
+        copy: "Deine Abschlussmessung ist abgeschlossen.",
+      },
+    },
   ])("$label", ({ status, expected }) => {
     expect(getAthleteMeasurementDisplay(status)).toEqual(expected);
   });
