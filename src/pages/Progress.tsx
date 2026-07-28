@@ -1,11 +1,17 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, TrendingUp, Sparkles, BarChart3, FileText } from "lucide-react";
+import { Loader2, Sparkles, BarChart3, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { REWIRE_DEVELOPMENT_INDEX } from "@/content/questionnaireV2";
 import { buildDeterministicProgressSummary } from "@/lib/deterministicProgressSummary";
+import {
+  AthleteAppHeader,
+  AthleteBottomNavigation,
+  athleteAppBackground,
+  athleteAppViewport,
+} from "@/components/app/AthleteAppChrome";
 
 interface ProfileData {
   timing: string;
@@ -92,47 +98,42 @@ const Progress = () => {
 
   if (!baseline) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-6" />
-          <h2 className="font-heading text-2xl font-bold mb-3">Noch kein Baseline-Profil</h2>
-          <p className="text-muted-foreground mb-8">Erstelle zuerst dein Deep-Dive Baseline-Profil, um später deinen Fortschritt zu sehen.</p>
-          <button onClick={() => navigate("/deep-profile?timing=baseline")} className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all">
-            Baseline erstellen
-          </button>
-        </div>
+      <div className={athleteAppBackground}>
+        <AthleteAppHeader />
+        <main className={`${athleteAppViewport} flex min-h-[calc(100dvh-9rem)] items-center justify-center`}>
+          <div className="max-w-md text-center">
+            <BarChart3 className="mx-auto mb-6 h-12 w-12 text-white/35" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Entwicklung</p>
+            <h2 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.04em]">Noch kein Baseline-Profil</h2>
+            <p className="mt-4 text-sm leading-6 text-white/55">Erstelle zuerst dein Deep-Dive Baseline-Profil, um später deinen Fortschritt zu sehen.</p>
+            <button onClick={() => navigate("/deep-profile?timing=baseline")} className="mt-8 min-h-12 rounded-2xl bg-primary px-8 py-3 font-semibold text-primary-foreground hover:shadow-glow">
+              Baseline erstellen
+            </button>
+          </div>
+        </main>
+        <AthleteBottomNavigation active="progress" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Dashboard</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <span className="text-sm font-heading font-medium">Dein Fortschritt</span>
-          </div>
-          <div />
-        </div>
-      </div>
+    <div className={athleteAppBackground}>
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(46,173,137,0.09),transparent_34%)]" />
+      <AthleteAppHeader />
 
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <main className={athleteAppViewport}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-heading text-2xl md:text-3xl font-bold mb-2">
-            Dein Fortschritt <span className="text-gradient">(Deep Dive)</span>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">Deine Entwicklung</p>
+          <h1 className="mt-3 text-[32px] font-semibold leading-none tracking-[-0.045em]">
+            Fortschritt.
           </h1>
-          <p className="text-muted-foreground text-sm mb-8">
-            {retest ? "Baseline vs. Re-Test – deine Entwicklung im Vergleich." : "Dein Baseline-Profil. Der Re-Test wird nach Abschluss des Programms freigeschaltet."}
+          <p className="mt-4 text-sm leading-6 text-white/58">
+            {retest ? "Baseline und Re-Test — deine Antworten im Vergleich." : "Dein Baseline-Profil. Der Re-Test wird nach Abschluss des Programms freigeschaltet."}
           </p>
         </motion.div>
 
         {retest && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-card border-glow mb-8">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-5">
             <div className="flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-primary" />
               <h3 className="font-heading font-semibold">Verlaufszusammenfassung</h3>
@@ -146,7 +147,7 @@ const Progress = () => {
           </motion.div>
         )}
 
-        <div className="space-y-6">
+        <div className="mt-8 space-y-4">
           {deepQuestions.map((q, i) => {
             const baseAnswer = baseline?.answers[q.id];
             const retestAnswer = retest?.answers[q.id];
@@ -159,7 +160,7 @@ const Progress = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="p-5 rounded-2xl bg-gradient-card border-glow"
+                className="rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-5"
               >
                 <p className="text-sm font-medium mb-4">{q.question}</p>
 
@@ -222,7 +223,8 @@ const Progress = () => {
             <p className="text-xs text-muted-foreground mb-4">Der Re-Test wird nach Ablauf deines 56-Tage-Programms freigeschaltet.</p>
           </div>
         )}
-      </div>
+      </main>
+      <AthleteBottomNavigation active="progress" />
     </div>
   );
 };

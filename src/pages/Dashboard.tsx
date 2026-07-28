@@ -4,7 +4,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday
 import { de } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Dumbbell, Moon, Trophy, Plus, X, Check, Sparkles, Loader2, Calendar, ArrowRight, Info, Settings, Flag, ClipboardCheck, LogOut, AlertTriangle, Shield, Microscope, TrendingUp, BookOpen, Hourglass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import DailyCheckin from "@/components/dashboard/DailyCheckin";
 import ScienceBite from "@/components/dashboard/ScienceBite";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +31,12 @@ import {
   loadDashboardBootstrapStages,
   runDashboardBootstrap,
 } from "@/lib/dashboardBootstrap";
+import {
+  AthleteAppHeader,
+  AthleteBottomNavigation,
+  athleteAppBackground,
+  athleteAppViewport,
+} from "@/components/app/AthleteAppChrome";
 
 type EventType = "training" | "rest" | "competition";
 type SetupState = "ready" | "setup" | "waiting";
@@ -85,6 +91,115 @@ const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; col
   training: { label: "Training", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
   rest: { label: "Ruhetag", icon: Moon, color: "text-blue-400", bg: "bg-blue-400/20" },
   competition: { label: "Wettkampf", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
+};
+
+const phaseShortNames = ["", "Fundament", "Skills", "Transfer", "Meisterschaft"] as const;
+
+const ProgramDayRing = ({ day }: { day: number }) => {
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (day / 56) * circumference;
+
+  return (
+    <div
+      className="relative flex h-[76px] w-[76px] shrink-0 items-center justify-center"
+      aria-label={`Programmtag ${day} von 56`}
+    >
+      <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 76 76" aria-hidden="true">
+        <circle cx="38" cy="38" r="28" fill="none" stroke="rgba(255,255,255,.065)" strokeWidth="3.5" />
+        <motion.circle
+          cx="38"
+          cy="38"
+          r="28"
+          fill="none"
+          stroke="#2EAD89"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="text-center">
+        <span className="block text-lg font-semibold leading-none">{day}</span>
+        <span className="mt-1 block text-[9px] uppercase tracking-[0.12em] text-white/48">von 56</span>
+      </div>
+    </div>
+  );
+};
+
+const DailyCompletionRing = ({ completed }: { completed: number }) => (
+  <div
+    className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/[0.09]"
+    aria-label={`${completed} von 2 Tagesaktionen erledigt`}
+  >
+    <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="2" />
+      <motion.circle
+        cx="24"
+        cy="24"
+        r="21"
+        fill="none"
+        stroke="#2EAD89"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeDasharray={132}
+        animate={{ strokeDashoffset: 132 - (132 * completed) / 2 }}
+        transition={{ duration: 0.6 }}
+      />
+    </svg>
+    <span className="text-[11px] font-semibold">{completed}/2</span>
+  </div>
+);
+
+const DashboardActionRow = ({
+  icon: Icon,
+  eyebrow,
+  title,
+  detail,
+  onClick,
+  done = false,
+  disabled = false,
+  last = false,
+}: {
+  icon: typeof Dumbbell;
+  eyebrow: string;
+  title: string;
+  detail: string;
+  onClick?: () => void;
+  done?: boolean;
+  disabled?: boolean;
+  last?: boolean;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    className={`flex min-h-[76px] w-full items-center gap-3.5 px-4 py-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${
+      last ? "" : "border-b border-white/[0.055]"
+    } ${disabled ? "cursor-default opacity-65" : "hover:bg-white/[0.025] active:bg-white/[0.045]"}`}
+  >
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-white/[0.045]">
+      <Icon className={`h-[18px] w-[18px] ${done ? "text-primary" : "text-white/62"}`} strokeWidth={1.7} />
+    </span>
+    <span className="min-w-0 flex-1">
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-white/48">{eyebrow}</span>
+      <span className="mt-1 block text-sm font-semibold leading-5">{title}</span>
+      <span className="mt-1 block text-[11px] leading-4 text-white/52">{detail}</span>
+    </span>
+    {done ? (
+      <Check className="h-4 w-4 shrink-0 text-primary" />
+    ) : !disabled ? (
+      <ChevronRight className="h-4 w-4 shrink-0 text-white/25" />
+    ) : null}
+  </button>
+);
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 11) return "Guten Morgen.";
+  if (hour < 18) return "Guten Tag.";
+  return "Guten Abend.";
 };
 
 interface DashboardMemoryCache {
@@ -451,6 +566,7 @@ const CalendarSetup = ({ analysis, onComplete }: CalendarSetupProps) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut, user, role } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -486,6 +602,9 @@ const Dashboard = () => {
   const [missedDayReviews, setMissedDayReviews] = useState<MissedDayReview[]>([]);
   const [effectiveToday, setEffectiveToday] = useState<Date>(new Date());
   const [showTeamCalendar, setShowTeamCalendar] = useState(false);
+  const [dashboardSection, setDashboardSection] = useState<"today" | "plan">(
+    location.hash === "#dashboard-plan" ? "plan" : "today",
+  );
   const lastStatusRefreshAt = useRef(0);
   
 
@@ -528,6 +647,19 @@ const Dashboard = () => {
       navigate("/coach");
     }
   }, [role, navigate]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (location.hash === "#dashboard-plan") {
+      setDashboardSection("plan");
+      window.requestAnimationFrame(() => {
+        document.getElementById("dashboard-plan")?.scrollIntoView({ block: "start" });
+      });
+      return;
+    }
+    setDashboardSection("today");
+    window.scrollTo({ top: 0, left: 0 });
+  }, [loading, location.hash]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -1206,7 +1338,6 @@ const Dashboard = () => {
           ? 3
           : 4
     : null;
-  const phaseNames = ["", "Fundament & Selbstanalyse", "Skill-Erwerb", "Transfer", "Meisterschaft"] as const;
   const programProgress = currentProgramDay ? (currentProgramDay / 56) * 100 : 0;
   const showDeepProfileBaselineBanner =
     !baselineDone &&
@@ -1230,6 +1361,14 @@ const Dashboard = () => {
       setSelectedDate(nextTeamEvent ? parseCalendarDate(nextTeamEvent.date) : effectiveToday);
     }
     setShowTeamCalendar((current) => !current);
+  };
+  const dailyCompletionCount = Number(todayCheckinDone) + Number(todayJournalDone);
+  const openPlan = () => {
+    setDashboardSection("plan");
+    navigate("/dashboard#dashboard-plan", { replace: true });
+    window.requestAnimationFrame(() => {
+      document.getElementById("dashboard-plan")?.scrollIntoView({ block: "start" });
+    });
   };
 
   if (loading) {
@@ -1350,37 +1489,47 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            aria-label="RewirePerform Startseite"
-            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            <BrandLockup symbolSize={26} textClassName="text-base" />
-          </button>
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/assessment")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Wissenschaftliche Messungen">
-              <ClipboardCheck className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <button onClick={() => navigate("/settings")} className="p-2 rounded-lg hover:bg-secondary transition-colors" title="Info & Hilfe">
-              <Settings className="w-4 h-4 text-muted-foreground" />
+    <div className={athleteAppBackground}>
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(46,173,137,0.10),transparent_34%),linear-gradient(180deg,#0B0C10_0%,#08090C_62%,#060709_100%)]" />
+      <AthleteAppHeader
+        actions={(
+          <>
+            <button
+              type="button"
+              onClick={() => navigate("/assessment")}
+              aria-label="Wissenschaftliche Messungen"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-white/48 hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ClipboardCheck className="h-[18px] w-[18px]" />
             </button>
             <button
-              onClick={async () => { await signOut(); navigate("/"); }}
-              className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
-              title="Abmelden"
+              type="button"
+              onClick={() => navigate("/settings")}
+              aria-label="Einstellungen und Hilfe"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.075] bg-white/[0.035] text-white/58 hover:bg-white/[0.065] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <LogOut className="w-4 h-4 text-muted-foreground" />
+              <Settings className="h-[18px] w-[18px]" />
             </button>
-          </div>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
-      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-5 sm:py-8">
+      <div className={athleteAppViewport}>
+        <section className="mb-7">
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/48">
+            {format(effectiveToday, "EEEE, d. MMMM", { locale: de })}
+          </p>
+          <div className="mt-2 flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="text-[30px] font-semibold leading-none tracking-[-0.045em]">{getGreeting()}</h1>
+              <p className="mt-3 text-sm text-white/58">
+                {programMode === "team" ? "Coach-Plan und deine Praxis sind verbunden." : "Dein System ist bereit."}
+              </p>
+            </div>
+            <DailyCompletionRing completed={dailyCompletionCount} />
+          </div>
+        </section>
+
         {/* Settings Panel */}
         <AnimatePresence>
           {showSettings && (
@@ -1493,52 +1642,99 @@ const Dashboard = () => {
 
         {/* Daily Focus & Program Progress */}
         {currentProgramDay && currentPhase && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-5 sm:mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-card border-glow overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-widest text-primary font-semibold mb-2">Heute im Programm</p>
-                <h2 className="font-heading text-xl font-bold leading-tight">
-                  Tag {currentProgramDay}/56
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative mb-7 overflow-hidden rounded-[28px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(29,32,37,0.95),rgba(15,17,21,0.97))] p-5 shadow-[0_28px_70px_-42px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.055)]"
+          >
+            <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-primary/[0.085] blur-3xl" />
+            <div className="relative flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                    Tag {currentProgramDay}
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-white/25" />
+                  <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-white/48">
+                    {phaseShortNames[currentPhase]}
+                  </span>
+                  {todayEventType && (
+                    <>
+                      <span className="h-1 w-1 rounded-full bg-white/25" />
+                      <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-white/48">
+                        {eventConfig[todayEventType].label}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <h2 className="mt-4 line-clamp-3 max-w-[270px] text-[clamp(1.6rem,7vw,1.9rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
+                  {todayResolved?.content.title
+                    ?? todayResolved?.content.lens
+                    ?? todayResolved?.matrix.lens
+                    ?? `Woche ${Math.ceil(currentProgramDay / 7)} von 8`}
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1 leading-snug">
-                  Phase {currentPhase}: {phaseNames[currentPhase]}
-                </p>
               </div>
-              <div className="shrink-0 text-left sm:text-right flex sm:block items-center gap-2">
-                <p className="text-xs text-muted-foreground">Woche {Math.ceil(currentProgramDay / 7)}/8</p>
-                {todayEventType && (
-                  <p className="text-xs text-primary mt-1">{eventConfig[todayEventType].label}</p>
-                )}
-              </div>
+              <ProgramDayRing day={currentProgramDay} />
             </div>
 
             {todayResolved && (
-              <div className="mb-4 p-4 rounded-xl bg-secondary/35 border border-border/40">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Heutige Linse</p>
-                <p className="text-sm font-heading font-semibold leading-snug">
-                  {todayResolved.content.title ?? todayResolved.content.lens ?? todayResolved.matrix.lens}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {todayResolved.context.focus}
-                </p>
+              <p className="relative mt-5 line-clamp-3 max-w-[390px] text-[13px] leading-5 text-white/58">
+                {todayResolved.context.focus}
+              </p>
+            )}
+
+            {todayEventType && checkinStatusLoading ? (
+              <div className="relative mt-6 flex min-h-16 items-center justify-center rounded-2xl border border-white/[0.065] bg-white/[0.035]">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" aria-label="Check-in-Status wird geladen" />
+              </div>
+            ) : todayEventType && !todayCheckinDone ? (
+              <motion.button
+                data-testid="daily-checkin-start"
+                type="button"
+                whileTap={{ scale: 0.985 }}
+                onClick={() => setShowCheckin(true)}
+                className="relative mt-6 flex min-h-[64px] w-full items-center justify-between rounded-2xl bg-primary px-4 py-3.5 text-left text-[#08110E] shadow-[0_14px_35px_-18px_rgba(46,173,137,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/10">
+                    <Sparkles className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold">Daily Flow starten</span>
+                    <span className="mt-0.5 block text-xs text-black/65">
+                      {todayResolved
+                        ? `10 Tages-Puls-Fragen · ${todayResolved.content.tasks.length} Aufgaben`
+                        : "Tages-Puls, Aufgaben und Verständnis-Check"}
+                    </span>
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-black/60" />
+              </motion.button>
+            ) : todayEventType ? (
+              <div className="relative mt-6 flex min-h-[64px] items-center gap-3 rounded-2xl border border-primary/25 bg-primary/[0.09] px-4 py-3.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15">
+                  <Check className="h-4 w-4 text-primary" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-primary">Daily Flow abgeschlossen</span>
+                  <span className="mt-0.5 block text-xs text-white/52">Dein Check-in ist gespeichert.</span>
+                </span>
+              </div>
+            ) : (
+              <div className="relative mt-6 rounded-2xl border border-white/[0.065] bg-white/[0.035] px-4 py-4 text-sm text-white/58">
+                Heute ist kein Eintrag geplant.
               </div>
             )}
 
-            <div className="h-2 bg-muted rounded-full overflow-hidden mb-2">
+            <div className="relative mt-5 h-1 overflow-hidden rounded-full bg-white/[0.055]">
               <motion.div
-                className="h-full bg-primary rounded-full"
+                className="h-full rounded-full bg-primary"
                 initial={{ width: 0 }}
                 animate={{ width: `${programProgress}%` }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
               />
             </div>
-            <div className="grid grid-cols-4 gap-1 text-[10px] text-muted-foreground">
-              <span className={`min-w-0 truncate ${currentPhase === 1 ? "text-primary font-semibold" : ""}`}>Fundament</span>
-              <span className={`min-w-0 truncate text-center ${currentPhase === 2 ? "text-primary font-semibold" : ""}`}>Skills</span>
-              <span className={`min-w-0 truncate text-center ${currentPhase === 3 ? "text-primary font-semibold" : ""}`}>Transfer</span>
-              <span className={`min-w-0 truncate text-right ${currentPhase === 4 ? "text-primary font-semibold" : ""}`}>Meister</span>
-            </div>
-          </motion.div>
+          </motion.section>
         )}
 
         {/* Flame / Consistency Card */}
@@ -1665,7 +1861,7 @@ const Dashboard = () => {
         )}
 
         {/* Today's Check-in CTA */}
-        {todayEventType && checkinStatusLoading ? (
+        {!currentProgramDay && (todayEventType && checkinStatusLoading ? (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center">
             <p className="text-muted-foreground text-sm">Check-in Status wird geladen...</p>
           </motion.div>
@@ -1701,50 +1897,91 @@ const Dashboard = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 p-6 rounded-2xl bg-secondary/30 border border-border/50 text-center">
             <p className="text-muted-foreground text-sm">Heute ist kein Eintrag geplant. Genieße deinen freien Tag.</p>
           </motion.div>
-        )}
+        ))}
 
-        {/* Tagesjournal — gleiche visuelle Bedeutung wie der Check-in */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <button
-            onClick={() => navigate("/journal")}
-            className={`w-full p-6 rounded-2xl transition-all group ${
-              todayJournalDone
-                ? "bg-primary/10 border border-primary/30"
-                : "bg-gradient-card border-glow hover:shadow-glow"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-primary" />
-                </div>
-                <div className="text-left">
-                  <p className="font-heading font-semibold">
-                    {todayJournalDone ? "Tagesjournal erledigt" : "Tagesjournal"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {todayJournalDone ? "Deine Reflexion ist gespeichert." : "Heute Abend reflektieren →"}
-                  </p>
-                </div>
-              </div>
-              {todayJournalDone ? (
-                <Check className="w-5 h-5 text-primary" />
-              ) : (
-                <Sparkles className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-              )}
-            </div>
-          </button>
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+          aria-labelledby="dashboard-day-title"
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <h2 id="dashboard-day-title" className="text-[12px] font-semibold uppercase tracking-[0.15em] text-white/52">
+              Dein Tag
+            </h2>
+            <button
+              type="button"
+              onClick={openPlan}
+              className="-mr-2 flex min-h-11 items-center gap-1 px-2 text-[11px] font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Plan öffnen
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="overflow-hidden rounded-[22px] border border-white/[0.065] bg-white/[0.025]">
+            <DashboardActionRow
+              icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
+              eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
+              title={todayEventType === "rest" ? "Heute kein Pre-Training" : "Pre-Training"}
+              detail={
+                todayEventType === "rest"
+                  ? "Für Ruhetage ist keine Vorbereitung vorgesehen."
+                  : todayEventType
+                    ? todayResolved
+                      ? `${eventConfig[todayEventType].label} · heutige Linse und ${todayResolved.content.tasks.length} Aufgaben`
+                      : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
+                    : "Sobald dein heutiger Termin feststeht."
+              }
+              disabled={!todayEventType || todayEventType === "rest"}
+              onClick={() => navigate("/pre-training")}
+            />
+            <DashboardActionRow
+              icon={BookOpen}
+              eyebrow="Nach dem Tag"
+              title={todayJournalDone ? "Tagesjournal erledigt" : "Tagesjournal"}
+              detail={
+                todayJournalDone
+                  ? "Deine private Reflexion ist gespeichert."
+                  : `${todayResolved?.content.journal.questions.length ?? 3} Tagesfragen · privat`
+              }
+              done={todayJournalDone}
+              onClick={() => navigate("/journal")}
+            />
+            <DashboardActionRow
+              icon={Calendar}
+              eyebrow={programMode === "team" ? "Coach-Plan" : "Deine Planung"}
+              title={programMode === "team" ? "Teamkalender" : "Wochenplan"}
+              detail={programMode === "team" ? nextTeamEventSummary : "Training, Regeneration und Wettkämpfe"}
+              onClick={openPlan}
+              last
+            />
+          </div>
           <button
             type="button"
             onClick={() => navigate("/journal/history")}
-            className="mt-3 w-full rounded-xl border border-border/50 bg-secondary/25 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/40 hover:text-foreground"
+            className="mt-3 flex min-h-11 w-full items-center justify-center rounded-xl text-sm font-medium text-white/48 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Frühere Journal-Einträge ansehen
           </button>
-        </motion.div>
+        </motion.section>
 
         {/* Science Bite */}
         <ScienceBite />
+
+        <section id="dashboard-plan" className="scroll-mt-24 pt-2" aria-labelledby="dashboard-plan-title">
+          <div className="mb-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+              {currentProgramDay ? `Woche ${Math.ceil(currentProgramDay / 7)} von 8` : "Planübersicht"}
+            </p>
+            <h2 id="dashboard-plan-title" className="mt-3 text-[30px] font-semibold leading-none tracking-[-0.045em]">
+              Dein Plan.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-white/58">
+              {programMode === "team"
+                ? "Coach-Termine und deine mentale Praxis in einer gemeinsamen Linie."
+                : "Training, Wettkampf und mentale Praxis in einer Linie."}
+            </p>
+          </div>
 
         {/* Stats — nur Solo-Modus (Team-Athleten besitzen keinen eigenen Kalender) */}
         {programMode === "solo" && (
@@ -2001,6 +2238,8 @@ const Dashboard = () => {
             </AnimatePresence>
           </motion.div>
         )}
+        </section>
+
         {/* Privacy notice for athletes in teams */}
         <div className="mt-6 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
           <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
@@ -2010,6 +2249,10 @@ const Dashboard = () => {
           </p>
         </div>
       </div>
+      <AthleteBottomNavigation
+        active={dashboardSection}
+        onPlan={openPlan}
+      />
     </div>
   );
 };

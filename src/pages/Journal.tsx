@@ -14,6 +14,7 @@ import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrent
 import { resolveDay } from "@/lib/getDayContent";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { getProgramModeInfo } from "@/lib/programMode";
+import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 import { captureAppError } from "@/lib/monitoring";
 import { upsertTodaySnapshot } from "@/lib/programProgress";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
@@ -310,31 +311,20 @@ const Journal = () => {
   const displayLens = content.lens ?? matrix.practiceFocus;
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 sm:px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="Zurück zum Dashboard"
-            onClick={() => navigate("/dashboard")}
-            className="w-10 h-10 -ml-2 rounded-lg hover:bg-secondary inline-flex items-center justify-center"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              Tag {matrix.dayNumber} · {resolved.context.label} · {format(new Date(resolved.date), "d. MMM", { locale: de })}
-            </p>
-            <h1 className="font-heading font-semibold text-sm truncate">{j.journalTitle}</h1>
+    <div className="min-h-screen min-h-[100dvh] bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteScreenHeader
+        title={j.journalTitle}
+        eyebrow={`Tag ${matrix.dayNumber} · ${resolved.context.label} · ${format(new Date(resolved.date), "d. MMM", { locale: de })}`}
+        onBack={() => navigate("/dashboard")}
+        backLabel="Zurück zum Dashboard"
+        trailing={(
+          <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${contextConfig.bg}`}>
+            <ContextIcon className={`h-4 w-4 ${contextConfig.color}`} />
           </div>
-          <div className={`w-9 h-9 rounded-lg inline-flex items-center justify-center shrink-0 ${contextConfig.bg}`}>
-            <ContextIcon className={`w-4 h-4 ${contextConfig.color}`} />
-          </div>
-        </div>
-      </div>
+        )}
+      />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 pb-[calc(env(safe-area-inset-bottom)+2rem)] space-y-6">
+      <div className="mx-auto max-w-2xl space-y-6 px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
         {/* Lens reminder */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-card border-glow">
           <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Heute im Fokus</p>
