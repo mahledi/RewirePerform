@@ -10,6 +10,7 @@ const config: CapacitorConfig = {
     iosScheme: "capacitor",
   },
   ios: {
+    backgroundColor: "#0D0E12",
     contentInset: "automatic",
     limitsNavigationsToAppBoundDomains: false,
   },

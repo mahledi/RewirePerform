@@ -28,6 +28,11 @@ const requireText = (label, source, expected) => {
 requireText("Capacitor app id", files.capacitor, 'appId: "com.rewireperform.app"');
 requireText("Capacitor app name", files.capacitor, 'appName: "RewirePerform"');
 requireText("Capacitor hostname", files.capacitor, 'hostname: "rewireperform.com"');
+requireText(
+  "iOS WebView background",
+  files.capacitor,
+  'ios: {\n    backgroundColor: "#0D0E12"',
+);
 requireText("Status bar config", files.capacitor, 'style: "LIGHT"');
 requireText("Native status bar", files.nativeShell, "Style.Light");
 requireText("Local notification config", files.capacitor, "LocalNotifications:");
