@@ -57,6 +57,9 @@ const EmailPreview = evidencePreviewEnabled
 const MinorConsentPreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/MinorConsentPreview.tsx"))
   : null;
+const FirstRunExperiencePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/FirstRunExperiencePreview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -68,7 +71,13 @@ const AppRoutes = () => {
   const isEvidencePreview = EvidencePreview !== null && location.pathname === "/internal/evidence-preview";
   const isEmailPreview = EmailPreview !== null && location.pathname === "/internal/email-preview";
   const isMinorConsentPreview = MinorConsentPreview !== null && location.pathname === "/internal/minor-consent-preview";
-  const isDemoRoute = location.pathname === "/demo" || isEvidencePreview || isEmailPreview || isMinorConsentPreview;
+  const isFirstRunExperiencePreview = FirstRunExperiencePreview !== null
+    && location.pathname === "/internal/first-run-preview";
+  const isDemoRoute = location.pathname === "/demo"
+    || isEvidencePreview
+    || isEmailPreview
+    || isMinorConsentPreview
+    || isFirstRunExperiencePreview;
 
   if (isDemoRoute) {
     return (
@@ -81,6 +90,9 @@ const AppRoutes = () => {
             {EvidencePreview && <Route path="/internal/evidence-preview" element={<EvidencePreview />} />}
             {EmailPreview && <Route path="/internal/email-preview" element={<EmailPreview />} />}
             {MinorConsentPreview && <Route path="/internal/minor-consent-preview" element={<MinorConsentPreview />} />}
+            {FirstRunExperiencePreview && (
+              <Route path="/internal/first-run-preview" element={<FirstRunExperiencePreview />} />
+            )}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
