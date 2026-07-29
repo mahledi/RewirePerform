@@ -76,13 +76,13 @@ const slideDefinitions = [
     audience: "PRE-TRAINING",
   },
   {
-    id: "06-reflektieren-und-privat-bleiben",
+    id: "06-reflektieren-und-festigen",
     eyebrow: "DEIN JOURNAL",
-    headline: "Reflektieren –\nund privat bleiben.",
+    headline: "Reflektieren.\nBewusst festigen.",
     support:
-      "Deine Antworten und Journaltexte bleiben außerhalb der Coach-Ansicht.",
+      "Halte Erfahrungen fest und richte mit Dankbarkeit deine Aufmerksamkeit bewusst aus.",
     sources: ["journal"],
-    audience: "PRIVATE REFLEXION",
+    audience: "REFLEXION & DANKBARKEIT",
   },
   {
     id: "07-nicht-ein-test-ein-verlauf",
@@ -113,13 +113,13 @@ const slideDefinitions = [
     coach: true,
   },
   {
-    id: "10-privates-bleibt-privat",
-    eyebrow: "PRIVACY BY DESIGN",
-    headline: "Überblick für Coaches.\nPrivates bleibt privat.",
+    id: "10-teamzustand-heute",
+    eyebrow: "HEUTIGES LAGEBILD",
+    headline: "Den Teamzustand\ntäglich im Blick.",
     support:
-      "Teamstatus sehen – ohne Journaltexte, Freitexte oder persönliche Stimmungswerte.",
-    sources: ["coach-privacy"],
-    audience: "GESCHÜTZTE TEAMANSICHT",
+      "Teamdurchschnitte zu Fokus, Schlaf, Energie, Stimmung und mehr – anonymisiert und ohne Einzelantworten.",
+    sources: ["coach-daily-state"],
+    audience: "TEAMZUSTAND",
     coach: true,
   },
 ];
@@ -266,13 +266,14 @@ const captureCoachSources = async (browser) => {
     path: join(sourceDirectory, "coach-overview.png"),
   });
 
-  const privacyHeading = page.getByText("Privatsphäre geschützt", {
-    exact: true,
-  });
-  await privacyHeading.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(200);
+  await page.setViewportSize({ width: 460, height: 1_100 });
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
+  await page.getByText("Teamzustand", { exact: true }).click();
+  await page.getByRole("heading", { name: "Heutiges Lagebild" }).waitFor();
+  await page.waitForTimeout(250);
+  await assertImagesLoaded(page, "Coach daily state capture");
   await page.screenshot({
-    path: join(sourceDirectory, "coach-privacy.png"),
+    path: join(sourceDirectory, "coach-daily-state.png"),
   });
 
   if (consoleErrors.length > 0) {
@@ -285,7 +286,7 @@ const buildSourceMap = async () => {
   const sourceNames = [
     ...sceneCaptures.map((item) => item.key),
     "coach-overview",
-    "coach-privacy",
+    "coach-daily-state",
   ];
   const entries = await Promise.all(
     sourceNames.map(async (name) => {
@@ -300,7 +301,7 @@ const deviceMarkup = ({ slide, sourceMap, format }) => {
   const isDouble = slide.sources.length === 2;
   const coachClass = slide.coach ? " coach" : "";
   return `
-    <div class="device-stage${isDouble ? " double" : ""}${coachClass}">
+    <div class="device-stage slide-${slide.id}${isDouble ? " double" : ""}${coachClass}">
       <div class="ambient"></div>
       ${slide.sources
         .map(
@@ -508,6 +509,22 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
           transform: rotate(3deg);
         }
         .iphone .device-stage.double .device img { border-radius: 40px; }
+        .iphone .device-stage.slide-02-wissen-wird-zur-anwendung .ambient {
+          background: rgba(46,173,137,.22);
+        }
+        .iphone .device-stage.slide-02-wissen-wird-zur-anwendung .device {
+          border-color: rgba(46,173,137,.28);
+        }
+        .iphone .device-stage.slide-02-wissen-wird-zur-anwendung .device-1 {
+          left: -510px;
+          top: 120px;
+          transform: none;
+        }
+        .iphone .device-stage.slide-02-wissen-wird-zur-anwendung .device-2 {
+          left: -150px;
+          top: 360px;
+          transform: none;
+        }
         .iphone .audience {
           left: 50%;
           bottom: 24px;
@@ -562,6 +579,22 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
           transform: rotate(3deg);
         }
         .ipad .device-stage.double .device img { border-radius: 38px; }
+        .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .ambient {
+          background: rgba(46,173,137,.22);
+        }
+        .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device {
+          border-color: rgba(46,173,137,.28);
+        }
+        .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device-1 {
+          left: -880px;
+          top: 90px;
+          transform: none;
+        }
+        .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device-2 {
+          left: -500px;
+          top: 550px;
+          transform: none;
+        }
         .ipad .audience {
           right: 90px;
           bottom: 180px;
@@ -678,18 +711,21 @@ await Promise.all([
 ]);
 
 const mainServer = startViteServer({ port: 4_181 });
-const coachServer = startViteServer({ port: 4_182, config: coachConfig });
+let coachServer;
 const browser = await chromium.launch({
   headless: true,
   executablePath: chromeExecutable,
 });
 
 try {
-  await Promise.all([
-    waitForServer("http://127.0.0.1:4181"),
-    waitForServer("http://127.0.0.1:4182"),
-  ]);
+  await waitForServer("http://127.0.0.1:4181");
   await captureAthleteSources(browser);
+
+  // Start the isolated Coach harness only after the athlete capture. Launching
+  // both Vite configurations together can invalidate an in-flight optimized
+  // dependency and produce a transient "Outdated Optimize Dep" response.
+  coachServer = startViteServer({ port: 4_182, config: coachConfig });
+  await waitForServer("http://127.0.0.1:4182");
   await captureCoachSources(browser);
 
   const sourceMap = await buildSourceMap();
@@ -723,7 +759,7 @@ try {
 } finally {
   await browser.close();
   mainServer.kill("SIGTERM");
-  coachServer.kill("SIGTERM");
+  coachServer?.kill("SIGTERM");
 }
 
 console.log(`App Store screenshot drafts written to ${outputRoot}`);

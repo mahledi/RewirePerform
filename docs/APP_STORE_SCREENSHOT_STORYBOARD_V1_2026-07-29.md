@@ -162,21 +162,27 @@ UI source:
 - sport-neutral cue and action;
 - no phrase such as "mit auf den Platz".
 
-### 6. Reflection and privacy — Journal
+### 6. Reflection and gratitude — Journal
 
 Candidate headline:
 
-> Reflektieren — und privat bleiben.
+> Reflektieren. Bewusst festigen.
 
 Candidate support:
 
-> Deine Antworten und Journaltexte bleiben außerhalb der Coach-Ansicht.
+> Halte Erfahrungen fest und richte mit Dankbarkeit deine Aufmerksamkeit bewusst aus.
 
 UI source:
 
 - real Journal structure;
 - fictional, non-sensitive sample text only if text is needed;
 - prefer empty or neutral structured fields over realistic personal content.
+
+Truth boundary:
+
+- describes the real reflection and gratitude structure;
+- does not promise accelerated growth, guaranteed learning, or a psychological
+  outcome.
 
 ### 7. Measurement network — 56-day path
 
@@ -230,21 +236,32 @@ Truth boundary:
 - no selection, talent, starting-lineup, career, or performance recommendation;
 - no individual psychological interpretation.
 
-### 10. Coach privacy boundary — team structure
+### 10. Daily team state — aggregated Check-ins
 
 Candidate headline:
 
-> Überblick für Coaches. Privates bleibt privat.
+> Den Teamzustand täglich im Blick.
 
 Candidate support:
 
-> Teamstatus sehen — ohne private Journaltexte oder persönliche Freitexte.
+> Teamdurchschnitte zu Fokus, Schlaf, Energie, Stimmung und mehr — anonymisiert und ohne Einzelantworten.
 
 UI source:
 
-- real privacy-safe coach status surface;
-- no private athlete material;
-- no individual coach score in a team summary.
+- real current Teamzustand surface;
+- today's aggregated Check-in metrics for mood, energy, focus, stress,
+  recovery, sleep, physical readiness, motivation, pressure, and team
+  connection;
+- synthetic values for a six-athlete example team;
+- no individual Check-ins, raw answers, reflections, journal content, or
+  psychological player scores.
+
+Truth boundary:
+
+- team aggregates appear only when the existing minimum-group threshold is
+  satisfied;
+- Screenshot 9 may show individual operational participation status, while
+  Screenshot 10 must not imply access to an individual athlete's mental state.
 
 ## Data and capture rules
 
