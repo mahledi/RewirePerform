@@ -91,6 +91,8 @@ describe("public onboarding", () => {
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();
     advanceToFinalScene();
     expect(screen.getByRole("heading", { name: "Dein Weg beginnt mit dem ersten Tag." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Solo" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Team" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Registrierung starten" }));
 
     expect(screen.getByText("Anmeldung geöffnet: ?mode=signup&intent=solo")).toBeInTheDocument();
@@ -121,6 +123,9 @@ describe("public onboarding", () => {
     renderWelcome("/welcome?replay=1&return=%2Fsettings");
 
     advanceToFinalScene();
+    expect(screen.queryByRole("group", { name: "Programmweg auswählen" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Solo" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Team" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Zurück zu den Einstellungen" }));
 
     expect(screen.getByText("Einstellungen geöffnet")).toBeInTheDocument();

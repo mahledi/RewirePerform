@@ -46,6 +46,7 @@ import {
   type TransferPulseResponse,
 } from "@/lib/performanceEvidence";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
+import { getDailyCheckinGreeting } from "@/lib/athleteGreeting";
 
 type EventType = CalendarEventType;
 
@@ -216,6 +217,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     && evidenceStatus.domainId === scheduledTransferPulse.domainId
       ? scheduledTransferPulse
       : null;
+  const personalGreeting = getDailyCheckinGreeting(
+    previewMode ? null : user?.user_metadata?.full_name,
+  );
 
   useEffect(() => {
     if (
@@ -683,6 +687,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : (
           <div className="space-y-4">
+            <p
+              data-testid="daily-personal-greeting"
+              className="text-sm font-semibold tracking-[-0.01em] text-white/72"
+            >
+              {personalGreeting}
+            </p>
             <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
               <div className="p-5 border-b border-border/50 flex items-center justify-between gap-4">
                 <div>

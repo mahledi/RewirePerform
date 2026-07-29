@@ -984,7 +984,7 @@ const FirstRunExperiencePreview = ({
             </motion.div>
           </AnimatePresence>
 
-          {isLast && (
+          {isLast && !replay && (
             <div className="mt-4">
               <div className="flex gap-2" role="group" aria-label="Programmweg auswählen">
                 {(["solo", "team"] as const).map((item) => (
