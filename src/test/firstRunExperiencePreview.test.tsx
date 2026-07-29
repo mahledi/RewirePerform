@@ -36,6 +36,8 @@ describe("first run experience preview", () => {
     expect(preview).toContain("overflow-clip");
     expect(preview).toContain("cameraViewportRef.current.scrollTop = 0");
     expect(preview).toContain("duration: 0.01");
+    expect(preview).not.toContain('id: "pulse"');
+    expect(preview).not.toContain('id: "reflection"');
     expect(preview).not.toContain("onClick={() => goTo(index)}");
     expect(app).toContain("FirstRunExperiencePreview = evidencePreviewEnabled");
     expect(app).toContain('path="/internal/first-run-preview"');
@@ -45,21 +47,13 @@ describe("first run experience preview", () => {
     render(<FirstRunExperiencePreview />);
 
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();
-    expect(screen.getByText("Guten Tag.")).toBeInTheDocument();
+    expect(screen.getByText("Hallo Noah.")).toBeInTheDocument();
     expect(screen.getAllByText("Dein Prozess ist dein Arbeitsfokus").length).toBeGreaterThan(0);
     expect(screen.getByText("10 Tages-Puls-Fragen · 3 Aufgaben")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Zuerst verstehst du den Fokus des Tages." })).toBeInTheDocument();
     expect(screen.getByText("Ein System bleibt stabiler, wenn es weiß, wohin es zurückkehrt")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Dann hältst du kurz fest, wie du ankommst." })).toBeInTheDocument();
-    expect(screen.getByText("Wohlbefinden & Bereitschaft")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Du verbindest den Fokus mit deinem heutigen Zustand." })).toBeInTheDocument();
-    expect(screen.getByText("Optional: Was beeinflusst deinen Zustand heute?")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Drei konkrete Aufgaben bringen ihn in deinen Alltag." })).toBeInTheDocument();
@@ -97,7 +91,7 @@ describe("first run experience preview", () => {
   it("keeps the preview replayable and makes the Solo/Team choice explicit", () => {
     render(<FirstRunExperiencePreview />);
 
-    for (let index = 0; index < 10; index += 1) {
+    for (let index = 0; index < 8; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     }
     fireEvent.click(screen.getByRole("button", { name: "Team" }));
