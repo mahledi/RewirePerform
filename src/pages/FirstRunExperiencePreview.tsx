@@ -4,16 +4,22 @@ import {
   ArrowLeft,
   ArrowRight,
   BarChart3,
-  Bell,
+  Brain,
   BookOpen,
+  Calendar,
   CalendarDays,
   Check,
+  CheckCircle2,
   ChevronRight,
+  ClipboardCheck,
+  Dumbbell,
   Flame,
   Home,
-  LockKeyhole,
   Menu,
+  Mic,
+  Moon,
   RotateCcw,
+  Settings,
   ShieldCheck,
   Sparkles,
   Target,
@@ -40,59 +46,94 @@ const scenes: Scene[] = [
     position: { x: 0, y: 0, scale: 0.92 },
   },
   {
-    id: "daily",
-    eyebrow: "Daily Flow",
-    title: "Kurz einchecken. Klar in den Tag.",
-    position: { x: 520, y: -90, scale: 1 },
+    id: "science",
+    eyebrow: "Daily Flow · 1 von 5",
+    title: "Zuerst verstehst du den Fokus des Tages.",
+    position: { x: 500, y: -60, scale: 0.96 },
+  },
+  {
+    id: "pulse",
+    eyebrow: "Daily Flow · 2 von 5",
+    title: "Dann hältst du kurz fest, wie du ankommst.",
+    position: { x: 980, y: -220, scale: 0.96 },
+  },
+  {
+    id: "reflection",
+    eyebrow: "Daily Flow · 3 von 5",
+    title: "Du verbindest den Fokus mit deinem heutigen Zustand.",
+    position: { x: 1320, y: -720, scale: 0.96 },
+  },
+  {
+    id: "tasks",
+    eyebrow: "Daily Flow · 4 von 5",
+    title: "Drei konkrete Aufgaben bringen ihn in deinen Alltag.",
+    position: { x: 980, y: -1190, scale: 0.96 },
+  },
+  {
+    id: "check",
+    eyebrow: "Daily Flow · 5 von 5",
+    title: "Ein kurzer Check festigt, was du heute brauchst.",
+    position: { x: 430, y: -1370, scale: 0.96 },
   },
   {
     id: "anchor",
     eyebrow: "Vor deiner Einheit",
-    title: "Dein Anker kommt im richtigen Moment zurück.",
-    position: { x: 560, y: -790, scale: 1 },
+    title: "Vor dem Training siehst du denselben Fokus wieder.",
+    position: { x: -80, y: -1120, scale: 0.96 },
   },
   {
     id: "journal",
     eyebrow: "Nach deinem Tag",
-    title: "Drei Fragen. Privat festgehalten.",
-    position: { x: -10, y: -940, scale: 1 },
+    title: "Am Abend reflektierst du den echten Tag.",
+    position: { x: -600, y: -1220, scale: 0.96 },
   },
   {
     id: "development",
     eyebrow: "Deine Entwicklung",
     title: "Du siehst deine Wiederholungen, nicht eine Bewertung.",
-    position: { x: -600, y: -690, scale: 0.96 },
+    position: { x: -1090, y: -820, scale: 0.94 },
   },
   {
     id: "team",
     eyebrow: "Solo oder im Team",
     title: "Der gleiche klare Ablauf – passend zu deinem Alltag.",
-    position: { x: -650, y: 80, scale: 0.98 },
+    position: { x: -1120, y: -120, scale: 0.96 },
   },
   {
     id: "start",
     eyebrow: "Bereit",
     title: "Dein Weg beginnt mit dem ersten Tag.",
-    position: { x: 0, y: 760, scale: 0.92 },
+    position: { x: -520, y: 560, scale: 0.92 },
   },
 ];
 
 const worldScreens = [
   { id: "today", x: 0, y: 0 },
-  { id: "daily", x: 520, y: -90 },
-  { id: "anchor", x: 560, y: -790 },
-  { id: "journal", x: -10, y: -940 },
-  { id: "development", x: -600, y: -690 },
-  { id: "team", x: -650, y: 80 },
-  { id: "start", x: 0, y: 760 },
+  { id: "science", x: 500, y: -60 },
+  { id: "pulse", x: 980, y: -220 },
+  { id: "reflection", x: 1320, y: -720 },
+  { id: "tasks", x: 980, y: -1190 },
+  { id: "check", x: 430, y: -1370 },
+  { id: "anchor", x: -80, y: -1120 },
+  { id: "journal", x: -600, y: -1220 },
+  { id: "development", x: -1090, y: -820 },
+  { id: "team", x: -1120, y: -120 },
+  { id: "start", x: -520, y: 560 },
 ] as const;
 
-const MiniTopBar = ({ compact = false }: { compact?: boolean }) => (
-  <div className="flex h-12 items-center justify-between border-b border-white/[0.055] px-4">
-    <BrandLockup symbolSize={compact ? 18 : 20} textClassName="text-[10px] tracking-[-0.02em]" />
-    <span className="rounded-full border border-primary/20 bg-primary/[0.08] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.14em] text-primary">
-      Vorschau
-    </span>
+const MiniTopBar = ({ actions = false }: { actions?: boolean }) => (
+  <div className="flex h-12 items-center justify-between border-b border-white/[0.055] bg-[#0D0E12]/88 px-4">
+    <BrandLockup symbolSize={20} textClassName="text-[10px] tracking-[-0.02em]" />
+    {actions && (
+      <div className="flex items-center gap-1">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full text-white/48">
+          <ClipboardCheck className="h-4 w-4" />
+        </span>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.075] bg-white/[0.035] text-white/58">
+          <Settings className="h-4 w-4" />
+        </span>
+      </div>
+    )}
   </div>
 );
 
@@ -127,11 +168,15 @@ const AppScreen = ({
   children,
   active = "today",
   className,
+  chrome = "app",
+  headerActions = false,
   labelledBy,
 }: {
   children: ReactNode;
   active?: PreviewSection;
   className?: string;
+  chrome?: "app" | "none";
+  headerActions?: boolean;
   labelledBy: string;
 }) => (
   <section
@@ -143,207 +188,502 @@ const AppScreen = ({
     )}
   >
     <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-6%,rgba(46,173,137,0.13),transparent_34%)]" />
-    <MiniTopBar />
-    <div className="relative h-[500px] overflow-hidden">{children}</div>
-    <MiniBottomNav active={active} />
+    {chrome === "app" && <MiniTopBar actions={headerActions} />}
+    <div className={cn("relative overflow-hidden", chrome === "app" ? "h-[500px]" : "h-full")}>{children}</div>
+    {chrome === "app" && <MiniBottomNav active={active} />}
   </section>
 );
 
-const Ring = ({ value = 22 }: { value?: number }) => (
-  <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[conic-gradient(#2EAD89_0_39%,rgba(255,255,255,0.08)_39%_100%)]">
-    <div className="absolute inset-[3px] rounded-full bg-[#111317]" />
-    <div className="relative text-center">
-      <p className="text-[15px] font-semibold leading-none">{value}</p>
-      <p className="mt-0.5 text-[6px] uppercase tracking-[0.12em] text-white/40">von 56</p>
+const ProgramDayRingPreview = ({ day = 22 }: { day?: number }) => {
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (day / 56) * circumference;
+
+  return (
+    <div className="relative flex h-[76px] w-[76px] shrink-0 items-center justify-center">
+      <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 76 76" aria-hidden="true">
+        <circle cx="38" cy="38" r="28" fill="none" stroke="rgba(255,255,255,.065)" strokeWidth="3.5" />
+        <circle
+          cx="38"
+          cy="38"
+          r="28"
+          fill="none"
+          stroke="#2EAD89"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+        />
+      </svg>
+      <div className="text-center">
+        <span className="block text-lg font-semibold leading-none">{day}</span>
+        <span className="mt-1 block text-[9px] uppercase tracking-[0.12em] text-white/48">von 56</span>
+      </div>
     </div>
+  );
+};
+
+const DailyCompletionRingPreview = () => (
+  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/[0.09]">
+    <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
+      <circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="2" />
+      <circle
+        cx="24"
+        cy="24"
+        r="21"
+        fill="none"
+        stroke="#2EAD89"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeDasharray={132}
+        strokeDashoffset={132}
+      />
+    </svg>
+    <span className="text-[11px] font-semibold">0/2</span>
   </div>
 );
 
 const TodayScreen = () => (
-  <AppScreen labelledBy="preview-today-title">
+  <AppScreen labelledBy="preview-today-title" headerActions>
     <div className="px-5 pt-5">
-      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Dienstag · Training</p>
-      <div className="mt-3 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] text-white/42">Hallo Noah</p>
-          <h2 id="preview-today-title" className="mt-1 max-w-[210px] text-[26px] font-semibold leading-[1.02] tracking-[-0.045em]">
-            Nächste Aktion.
-          </h2>
+      <section className="mb-5">
+        <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-white/48">Dienstag, 29. Juli</p>
+        <div className="mt-2 flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h2 id="preview-today-title" className="text-[26px] font-semibold leading-none tracking-[-0.045em]">Guten Tag.</h2>
+            <p className="mt-2 text-[11px] text-white/58">Dein System ist bereit.</p>
+          </div>
+          <DailyCompletionRingPreview />
         </div>
-        <Ring />
-      </div>
-      <p className="mt-4 max-w-[270px] text-[10px] leading-4 text-white/48">
-        Heute kehrst du nach jeder Unterbrechung direkt zur nächsten Handlung zurück.
-      </p>
+      </section>
 
-      <div className="mt-5 rounded-[20px] border border-primary/20 bg-primary/[0.08] p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[#07110E]">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(29,32,37,0.95),rgba(15,17,21,0.97))] p-4 shadow-[0_28px_70px_-42px_rgba(0,0,0,1),inset_0_1px_0_rgba(255,255,255,0.055)]">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-primary/[0.085] blur-3xl" />
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">Tag 22</span>
+              <span className="h-1 w-1 rounded-full bg-white/25" />
+              <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/48">Skills</span>
+              <span className="h-1 w-1 rounded-full bg-white/25" />
+              <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/48">Training</span>
+            </div>
+            <p className="mt-3 max-w-[185px] text-[22px] font-semibold leading-[1.05] tracking-[-0.04em]">
+              Dein Prozess ist dein Arbeitsfokus
+            </p>
+          </div>
+          <ProgramDayRingPreview />
+        </div>
+        <p className="relative mt-4 line-clamp-3 text-[10px] leading-4 text-white/58">
+          Wenn alles enger, lauter oder wichtiger wird, brauchst du einen verlässlichen Ort zum Arbeiten: deinen Prozess.
+        </p>
+        <div className="relative mt-4 flex min-h-[58px] items-center justify-between rounded-2xl bg-primary px-3.5 py-3 text-left text-[#08110E] shadow-[0_14px_35px_-18px_rgba(46,173,137,0.7)]">
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/10">
               <Sparkles className="h-3.5 w-3.5" />
             </span>
-            <div>
-              <p className="text-[11px] font-semibold">Daily Flow</p>
-              <p className="mt-0.5 text-[8px] text-white/42">10 Tages-Puls-Fragen · 3 Aufgaben</p>
-            </div>
-          </div>
-          <ChevronRight className="h-4 w-4 text-primary" />
+            <span>
+              <span className="block text-[11px] font-semibold">Daily Flow starten</span>
+              <span className="mt-0.5 block text-[8px] text-black/65">10 Tages-Puls-Fragen · 3 Aufgaben</span>
+            </span>
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-black/60" />
         </div>
-      </div>
+        <div className="relative mt-4 h-1 overflow-hidden rounded-full bg-white/[0.055]">
+          <div className="h-full w-[39%] rounded-full bg-primary" />
+        </div>
+      </section>
 
-      <div className="mt-5 flex items-center justify-between">
-        <p className="text-[8px] font-semibold uppercase tracking-[0.15em] text-white/45">Dein Tag</p>
-        <span className="text-[8px] font-medium text-primary">Plan öffnen</span>
-      </div>
-      <div className="mt-2 overflow-hidden rounded-[18px] border border-white/[0.065] bg-white/[0.025]">
-        {[
-          { time: "Jetzt", title: "Daily Flow", icon: Sparkles, done: false },
-          { time: "17:20", title: "Pre-Training", icon: Target, done: false },
-          { time: "Abends", title: "Tagesjournal", icon: BookOpen, done: false },
-        ].map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <div key={item.title} className={cn("flex h-[52px] items-center gap-3 px-3", index < 2 && "border-b border-white/[0.05]")}>
-              <Icon className="h-3.5 w-3.5 text-primary" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[7px] uppercase tracking-[0.12em] text-white/32">{item.time}</p>
-                <p className="mt-0.5 text-[10px] font-medium">{item.title}</p>
-              </div>
-              <ChevronRight className="h-3.5 w-3.5 text-white/24" />
-            </div>
-          );
-        })}
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-white/52">Dein Tag</p>
+        <span className="text-[9px] font-medium text-primary">Plan öffnen</span>
       </div>
     </div>
   </AppScreen>
 );
 
-const PulseScale = ({ label, value }: { label: string; value: number }) => (
-  <div>
-    <div className="mb-1.5 flex items-center justify-between text-[8px]">
-      <span className="font-medium text-white/72">{label}</span>
-      <span className="text-white/30">{value}/10</span>
+const FlowHeader = ({ title, step }: { title: string; step: number }) => (
+  <>
+    <div className="flex min-h-[64px] items-center gap-2 border-b border-white/[0.055] bg-[#0D0E12]/88 px-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white/62">
+        <ArrowLeft className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[7px] font-medium uppercase tracking-[0.16em] text-white/45">Daily Flow · Training</p>
+        <p className="mt-0.5 truncate text-[11px] font-semibold tracking-[-0.015em]">{title}</p>
+      </div>
+      <div className="flex items-center gap-1.5 rounded-full border border-white/[0.065] bg-white/[0.035] px-2.5 py-2 text-[8px] text-white/52">
+        <Dumbbell className="h-3 w-3 text-primary" />
+        29. Juli
+      </div>
     </div>
-    <div className="grid grid-cols-10 gap-1">
-      {Array.from({ length: 10 }, (_, index) => (
+    <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-4 py-2">
+      <div className="flex items-center gap-1.5">
+        {Array.from({ length: 5 }, (_, index) => (
+          <span
+            key={index}
+            className={cn(
+              "h-1 flex-1 rounded-full",
+              step > index ? "bg-primary" : step === index ? "bg-primary/55" : "bg-white/[0.065]",
+            )}
+          />
+        ))}
+        <span className="ml-1 text-[8px] tabular-nums text-white/42">{step + 1}/5</span>
+      </div>
+    </div>
+  </>
+);
+
+const FlowScreen = ({
+  title,
+  step,
+  labelledBy,
+  children,
+}: {
+  title: string;
+  step: number;
+  labelledBy: string;
+  children: ReactNode;
+}) => (
+  <AppScreen labelledBy={labelledBy} chrome="none">
+    <FlowHeader title={title} step={step} />
+    <div className="h-[500px] overflow-hidden px-5 py-5">{children}</div>
+  </AppScreen>
+);
+
+const ScienceScreen = () => (
+  <FlowScreen title="Science Bite" step={0} labelledBy="preview-science-title">
+    <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-border/50 p-4">
+        <div>
+          <p className="mb-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Science Bite</p>
+          <h2 id="preview-science-title" className="text-[19px] font-bold leading-tight">
+            Ein System bleibt stabiler, wenn es weiß, wohin es zurückkehrt
+          </h2>
+        </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+          <Brain className="h-4 w-4 text-primary" />
+        </span>
+      </div>
+      <div className="space-y-3 p-4">
+        <p className="text-[10px] leading-4 text-muted-foreground">
+          Viele Athleten verlieren unter Druck, nach Fehlern oder in hektischen Phasen nicht nur ihre Ruhe, sondern auch ihren inneren Arbeitsort.
+        </p>
+        <p className="text-[10px] leading-4 text-muted-foreground">
+          Ein Prozessanker gibt deiner Aufmerksamkeit einen klaren Punkt, der beeinflussbar, konkret und handlungsnah ist.
+        </p>
+        <p className="text-[10px] leading-4 text-muted-foreground">
+          Prozess ist ein Ort, an dem dein System wieder arbeiten kann, wenn anderes zu laut wird.
+        </p>
+      </div>
+    </div>
+    <div className="mt-3 rounded-2xl border border-border/50 bg-primary/10 p-4">
+      <div className="flex items-start gap-3">
+        <Dumbbell className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <div>
+          <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-primary">Heute als Training</p>
+          <p className="mt-1 text-[10px] leading-4 text-foreground">
+            Sobald Druck oder Ergebnisgedanken dich aus der Aufgabe ziehen, kehrst du an deinen klaren Prozesspunkt zurück.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div className="mt-3 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
+      Verstanden <ArrowRight className="ml-2 h-3.5 w-3.5" />
+    </div>
+  </FlowScreen>
+);
+
+const PulseQuestionPreview = ({
+  label,
+  question,
+  selected,
+}: {
+  label: string;
+  question: string;
+  selected: number;
+}) => (
+  <div>
+    <p className="text-[10px] font-semibold">{label}</p>
+    <p className="mt-1 text-[8px] leading-3 text-muted-foreground">{question}</p>
+    <div className="mt-2 grid grid-cols-5 gap-1.5">
+      {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => (
         <span
-          key={index}
-          className={cn("h-3 rounded-[3px]", index < value ? "bg-primary" : "bg-white/[0.07]")}
-        />
+          key={value}
+          className={cn(
+            "flex h-8 items-center justify-center rounded-xl text-[9px] font-semibold",
+            value === selected ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-muted-foreground",
+          )}
+        >
+          {value}
+        </span>
       ))}
     </div>
   </div>
 );
 
-const DailyScreen = () => (
-  <AppScreen labelledBy="preview-daily-title">
-    <div className="border-b border-white/[0.055] px-4 py-3">
-      <p className="text-[7px] font-medium uppercase tracking-[0.15em] text-white/35">Daily Flow · Training</p>
-      <h2 id="preview-daily-title" className="mt-1 text-[12px] font-semibold">Tages-Puls</h2>
+const PulseScreen = () => (
+  <FlowScreen title="Dein Tages-Puls" step={1} labelledBy="preview-pulse-title">
+    <h2 id="preview-pulse-title" className="text-[20px] font-bold">Wohlbefinden &amp; Bereitschaft</h2>
+    <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Dein Tages-Puls</p>
+    <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
+      Kurze Einschätzung vor deinem heutigen Flow. Deine Antworten bleiben privat.
+    </p>
+    <div className="mt-5 space-y-5">
+      <PulseQuestionPreview label="Stimmung" question="Wie ist deine Stimmung gerade?" selected={7} />
+      <PulseQuestionPreview label="Energie" question="Wie viel Energie hast du heute?" selected={6} />
     </div>
-    <div className="px-5 pt-5">
-      <div className="flex items-center justify-between">
-        <p className="text-[8px] font-semibold uppercase tracking-[0.15em] text-primary">1 von 4</p>
-        <p className="text-[8px] text-white/35">ca. 4 Minuten</p>
-      </div>
-      <h3 className="mt-3 text-[24px] font-semibold leading-[1.04] tracking-[-0.04em]">Wie kommst du heute an?</h3>
-      <p className="mt-2 text-[9px] leading-4 text-white/42">Kurz auswählen. Es gibt hier kein richtig oder falsch.</p>
+  </FlowScreen>
+);
 
-      <div className="mt-6 space-y-5 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-4">
-        <PulseScale label="Energie" value={7} />
-        <PulseScale label="Fokus" value={6} />
-        <PulseScale label="Körperliche Bereitschaft" value={8} />
-      </div>
-
-      <div className="mt-5 rounded-[20px] border border-primary/20 bg-primary/[0.07] p-4">
-        <p className="text-[7px] font-semibold uppercase tracking-[0.16em] text-primary">Heute im Fokus</p>
-        <p className="mt-2 text-[13px] font-semibold">Fehler bindet Aufmerksamkeit.</p>
-        <p className="mt-2 text-[9px] leading-4 text-white/48">
-          Wenn dein Kopf am Ergebnis hängen bleibt, fehlt Fokus für die nächste Aktion.
-        </p>
-      </div>
-
-      <div className="mt-4 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-[#07110E]">
-        Weiter
-        <ArrowRight className="ml-2 h-3.5 w-3.5" />
+const ReflectionScreen = () => (
+  <FlowScreen title="Reflexion" step={2} labelledBy="preview-reflection-title">
+    <h2 id="preview-reflection-title" className="text-[20px] font-bold leading-tight">
+      Optional: Was beeinflusst deinen Zustand heute?
+    </h2>
+    <p className="mt-3 text-[10px] leading-4 text-muted-foreground">
+      Gibt es etwas, das deinen Fokus, deinen Druck oder deine Bereitschaft heute deutlich beeinflusst?
+    </p>
+    <div className="mt-4 flex items-start gap-2 rounded-xl border border-primary/15 bg-primary/5 p-3">
+      <Moon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+      <p className="text-[9px] leading-4 text-muted-foreground">
+        <span className="font-medium text-foreground">Heute Abend:</span> Im Journal hältst du fest, wie verlässlich du an deinen Arbeitsort zurückkehren konntest.
+      </p>
+    </div>
+    <div className="mt-5 flex items-center gap-3 rounded-xl border border-white/[0.07] bg-secondary/25 p-3">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Mic className="h-4 w-4" />
+      </span>
+      <div>
+        <p className="text-[10px] font-medium">Sprich deine Antwort ein</p>
+        <p className="mt-0.5 text-[8px] text-muted-foreground">Oder tippe wie gewohnt.</p>
       </div>
     </div>
-  </AppScreen>
+    <div className="mt-3 h-32 rounded-2xl border border-border/50 bg-secondary/40 px-4 py-3 text-[9px] text-muted-foreground">
+      Optional. Nur für dich sichtbar.
+    </div>
+    <div className="mt-4 flex justify-between">
+      <span className="flex h-11 items-center px-3 text-[9px] text-white/52">Zurück</span>
+      <span className="flex h-11 items-center rounded-xl bg-primary px-5 text-[9px] font-semibold text-primary-foreground">
+        Weiter <ArrowRight className="ml-2 h-3 w-3" />
+      </span>
+    </div>
+  </FlowScreen>
+);
+
+const TasksScreen = () => (
+  <FlowScreen title="Deine Aufgaben" step={3} labelledBy="preview-tasks-title">
+    <h2 id="preview-tasks-title" className="text-[20px] font-bold">Heute im Fokus</h2>
+    <p className="mt-1 text-[9px] text-muted-foreground">Tag 22 · Dein Prozess ist dein Arbeitsfokus</p>
+    <p className="mt-3 text-[9px] leading-4 text-muted-foreground">
+      Öffne jede Aufgabe und markiere sie erst, wenn du weißt, wie du sie heute konkret nutzt.
+    </p>
+    <div className="mt-4 space-y-3">
+      {[
+        { icon: Target, title: "Lege deinen Prozessanker fest", when: "Vor dem Training oder vor einer wichtigen Phase" },
+        { icon: RotateCcw, title: "Kehre an den Arbeitsort zurück", when: "Wenn Druck, Drift oder Ergebnisdenken hochgehen" },
+        { icon: ArrowRight, title: "Arbeite von dort aus weiter", when: "In der direkt nächsten Handlung" },
+      ].map((task) => {
+        const Icon = task.icon;
+        return (
+          <div key={task.title} className="rounded-2xl border border-border/50 bg-gradient-card p-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
+                <Icon className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold">{task.title}</p>
+                <p className="mt-1 text-[8px] leading-3 text-muted-foreground">{task.when}</p>
+              </div>
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </FlowScreen>
+);
+
+const CheckScreen = () => (
+  <FlowScreen title="Verständnis-Check" step={4} labelledBy="preview-check-title">
+    <h2 id="preview-check-title" className="text-[20px] font-bold">Kurzer Verständnis-Check</h2>
+    <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
+      Drei Fragen zur heutigen Linse. Kein Test — nur Festigung.
+    </p>
+    <div className="mt-5">
+      <p className="text-[11px] font-semibold leading-4">Was heißt „Prozess als Heimat“?</p>
+      <div className="mt-4 space-y-2">
+        {[
+          "Ein klarer Prozess dient dir als verlässlicher Ankerpunkt, wenn Druck aufkommt.",
+          "Du musst dich voll auf den Prozess konzentrieren, um deine Leistung zu steigern.",
+          "Du optimierst deinen Prozess so, dass keine Fehler mehr passieren.",
+          "Du nutzt nur Prozesse, die sich immer sicher und gut anfühlen.",
+        ].map((answer, index) => (
+          <div
+            key={answer}
+            className={cn(
+              "rounded-xl border px-3 py-3 text-[9px] leading-4",
+              index === 0
+                ? "border-primary/35 bg-primary/10 text-foreground"
+                : "border-border/50 bg-secondary/25 text-muted-foreground",
+            )}
+          >
+            <span className="mr-2 font-semibold">{String.fromCharCode(65 + index)}.</span>{answer}
+          </div>
+        ))}
+      </div>
+    </div>
+  </FlowScreen>
+);
+
+const ScreenHeaderPreview = ({
+  title,
+  eyebrow,
+  trailing,
+}: {
+  title: string;
+  eyebrow: string;
+  trailing?: ReactNode;
+}) => (
+  <div className="flex min-h-[64px] items-center gap-2 border-b border-white/[0.055] bg-[#0D0E12]/88 px-3">
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white/62">
+      <ArrowLeft className="h-4 w-4" />
+    </span>
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-[7px] font-medium uppercase tracking-[0.16em] text-white/45">{eyebrow}</p>
+      <p className="mt-0.5 truncate text-[11px] font-semibold tracking-[-0.015em]">{title}</p>
+    </div>
+    {trailing}
+  </div>
 );
 
 const AnchorScreen = () => (
-  <AppScreen labelledBy="preview-anchor-title">
-    <div className="flex h-full flex-col px-5 pt-7">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] border border-primary/25 bg-primary/[0.10]">
-        <Bell className="h-6 w-6 text-primary" />
+  <AppScreen labelledBy="preview-anchor-title" chrome="none">
+    <ScreenHeaderPreview title="Pre-Training" eyebrow="Vor deiner Einheit" />
+    <div className="h-[546px] overflow-hidden px-5 py-6">
+      <div>
+        <p className="mb-3 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Pre-Training</p>
+        <h2 id="preview-anchor-title" className="text-[24px] font-bold leading-tight tracking-[-0.035em]">
+          Bereit für die nächste Einheit
+        </h2>
+        <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
+          Kurz sortieren, klare Linse setzen, dann raus in die Arbeit.
+        </p>
       </div>
-      <p className="mt-6 text-center text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">17:20 · Vor deiner Einheit</p>
-      <h2 id="preview-anchor-title" className="mx-auto mt-3 max-w-[250px] text-center text-[26px] font-semibold leading-[1.05] tracking-[-0.045em]">
-        Dein Anker ist bereit.
-      </h2>
 
-      <div className="mt-7 rounded-[24px] border border-white/[0.075] bg-white/[0.028] p-5">
+      <div className="mt-5 rounded-[24px] border border-white/[0.065] bg-white/[0.025] p-4">
         <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-[#07110E]">
-            <Target className="h-4 w-4" />
-          </span>
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <div>
-            <p className="text-[7px] uppercase tracking-[0.14em] text-white/34">Heute auf dem Platz</p>
-            <p className="mt-1.5 text-[15px] font-semibold leading-tight">Blick hoch. Nächste Aktion.</p>
+            <p className="text-[8px] uppercase tracking-[0.14em] text-muted-foreground">Heutige Linse</p>
+            <p className="mt-1 text-[11px] font-semibold">Dein Prozess ist dein Arbeitsfokus</p>
+            <p className="mt-1 text-[9px] leading-4 text-muted-foreground">
+              Wenn alles enger, lauter oder wichtiger wird, brauche ich einen verlässlichen Ort zum Arbeiten.
+            </p>
+            <p className="mt-3 text-[8px] leading-3.5 text-muted-foreground">
+              Sobald Druck oder Ergebnisgedanken dich aus der Aufgabe ziehen, kehrst du an deinen klaren Prozesspunkt zurück.
+            </p>
           </div>
         </div>
-        <div className="mt-5 h-px bg-white/[0.06]" />
-        <div className="mt-4 flex items-center justify-between text-[9px] text-white/42">
-          <span>Training</span>
-          <span>17:30</span>
-        </div>
       </div>
 
-      <div className="mt-5 flex h-12 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-[#07110E]">
-        Bereit fürs Training
-      </div>
-      <p className="mt-3 text-center text-[8px] text-white/30">Deine heutige Linse und drei konkrete Aufgaben.</p>
-    </div>
-  </AppScreen>
-);
-
-const JournalScreen = () => (
-  <AppScreen labelledBy="preview-journal-title">
-    <div className="px-5 pt-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[8px] font-semibold uppercase tracking-[0.17em] text-primary">Tagesjournal</p>
-          <h2 id="preview-journal-title" className="mt-2 text-[25px] font-semibold leading-none tracking-[-0.045em]">Kurz festhalten.</h2>
-        </div>
-        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.03]">
-          <LockKeyhole className="h-4 w-4 text-primary" />
-        </span>
-      </div>
-      <p className="mt-3 text-[9px] leading-4 text-white/43">Drei Fragen zu deinem Tag. Deine Antworten bleiben privat.</p>
-
-      <div className="mt-5 space-y-3">
+      <div className="mt-4 space-y-2.5">
         {[
-          "Wo ist dir die nächste Aktion gelungen?",
-          "Was hat dich heute kurz festgehalten?",
-          "Was nimmst du in die nächste Einheit mit?",
-        ].map((question, index) => (
-          <div key={question} className="rounded-[18px] border border-white/[0.065] bg-white/[0.025] p-4">
-            <div className="flex items-start gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/[0.10] text-[8px] font-semibold text-primary">
-                {index + 1}
-              </span>
-              <p className="pt-0.5 text-[10px] font-medium leading-4">{question}</p>
-            </div>
-            <div className="mt-3 h-8 rounded-lg border border-white/[0.055] bg-black/10 px-3 py-2 text-[8px] text-white/25">
-              Deine Antwort …
+          ["1", "Lege deinen Prozessanker fest", "Bestimme genau einen klaren Prozessanker, auf den du heute immer wieder zurückkommst."],
+          ["2", "Kehre an den Arbeitsort zurück", "Nutze den Anker, sobald Druck, Drift oder Ergebnisdenken dich herausziehen."],
+          ["3", "Arbeite von dort aus weiter", "Setze deinen Prozesspunkt direkt in der nächsten Handlung um."],
+        ].map(([number, title, copy]) => (
+          <div key={title} className="flex gap-3 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-3">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[9px] font-semibold text-primary">
+              {number}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold leading-tight">{title}</p>
+              <p className="mt-1 line-clamp-2 text-[8px] leading-3 text-muted-foreground">{copy}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 flex items-center gap-2 text-[8px] text-white/32">
+      <div className="mt-4 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
+        <Target className="mr-2 h-3.5 w-3.5" />
+        Bereit fürs Training
+      </div>
+    </div>
+  </AppScreen>
+);
+
+const JournalScreen = () => (
+  <AppScreen labelledBy="preview-journal-title" chrome="none">
+    <ScreenHeaderPreview
+      title="Wo war heute mein Arbeitsort — und wann habe ich ihn verloren?"
+      eyebrow="Tag 22 · Training · 29. Juli"
+      trailing={(
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Dumbbell className="h-3.5 w-3.5" />
+        </span>
+      )}
+    />
+    <div className="h-[546px] overflow-hidden px-5 py-5">
+      <div className="rounded-2xl bg-gradient-card border-glow p-4">
+        <p className="mb-2 text-[8px] uppercase tracking-widest text-primary">Heute im Fokus</p>
+        <h2 id="preview-journal-title" className="text-[11px] font-semibold leading-snug">
+          Dein Prozess ist dein Arbeitsfokus
+        </h2>
+        <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
+          Wenn alles enger, lauter oder wichtiger wird, brauche ich einen verlässlichen Ort zum Arbeiten.
+        </p>
+        <div className="mt-3 flex items-start gap-2 border-t border-border/50 pt-3">
+          <Dumbbell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <p className="text-[8px] leading-3.5 text-muted-foreground">
+            Reflektiere, wie verlässlich du heute an deinen Arbeitsort zurückkehren konntest.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-secondary/25 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <BookOpen className="h-4 w-4 shrink-0 text-primary" />
+          <div>
+            <p className="text-[10px] font-semibold">Frühere Einträge ansehen</p>
+            <p className="mt-0.5 text-[8px] text-muted-foreground">Privater Rückblick, nach Tagen geordnet.</p>
+          </div>
+        </div>
+        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      </div>
+
+      <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Mic className="h-3.5 w-3.5" />
+        </span>
+        <div>
+          <p className="text-[9px] font-medium">Sprich deine Antworten ein.</p>
+          <p className="mt-1 text-[8px] leading-3 text-muted-foreground">
+            Du kannst den übernommenen Text anschließend bearbeiten oder vollständig tippen.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {[
+          ["Was war heute mein klarer Prozessanker?", "Benenne ihn so konkret wie möglich."],
+          ["In welchen Momenten hat mein System diesen Arbeitsort besonders leicht verloren?", "Druck, Fehler, Drift, Ergebnisgedanken …"],
+        ].map(([question, placeholder]) => (
+          <div key={question}>
+            <p className="text-[9px] font-medium leading-3.5">{question}</p>
+            <div className="mt-2 h-12 rounded-xl border border-border/40 bg-secondary/40 px-3 py-2 text-[8px] text-muted-foreground">
+              {placeholder}
+            </div>
+            <div className="mt-1.5 flex items-center gap-1.5 text-[8px] text-primary">
+              <Mic className="h-3 w-3" />
+              Antwort einsprechen
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex items-center gap-2 text-[8px] text-white/35">
         <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-        Coaches sehen keine Journaltexte.
+        Deine Journalantworten bleiben privat.
       </div>
     </div>
   </AppScreen>
@@ -413,46 +753,67 @@ const DevelopmentScreen = () => (
 const TeamScreen = () => (
   <AppScreen labelledBy="preview-team-title" active="plan">
     <div className="px-5 pt-5">
-      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Teammodus</p>
-      <h2 id="preview-team-title" className="mt-2 max-w-[280px] text-[26px] font-semibold leading-[1.02] tracking-[-0.045em]">Dein Plan bleibt verbunden.</h2>
-      <p className="mt-3 text-[9px] leading-4 text-white/42">Termine vom Coach. Dein persönlicher Daily Flow.</p>
+      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Woche 4 von 8</p>
+      <h2 id="preview-team-title" className="mt-2 text-[26px] font-semibold leading-none tracking-[-0.045em]">Dein Plan.</h2>
+      <p className="mt-3 text-[9px] leading-4 text-white/58">Coach-Termine und deine mentale Praxis in einer gemeinsamen Linie.</p>
 
-      <div className="mt-5 rounded-[22px] border border-white/[0.07] bg-white/[0.026] p-4">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/[0.10]">
-            <Users className="h-4 w-4 text-primary" />
-          </span>
-          <div>
-            <p className="text-[7px] uppercase tracking-[0.13em] text-white/32">Dein Team</p>
-            <p className="mt-1 text-[12px] font-semibold">SV Nord · U17</p>
-          </div>
-        </div>
+      <div className="mt-4 flex items-start gap-3 rounded-[18px] border border-primary/15 bg-primary/[0.045] p-3">
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+        <p className="text-[8px] leading-3.5 text-white/55">
+          Dein Coach plant Termine. Deine privaten Antworten und Journaltexte bleiben außerhalb der Teamansicht.
+        </p>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[20px] border border-white/[0.065] bg-white/[0.025]">
+      <div className="mt-4 grid grid-cols-7 gap-1">
         {[
-          { day: "Heute", time: "17:30", title: "Teamtraining", active: true },
-          { day: "Donnerstag", time: "18:00", title: "Training", active: false },
-          { day: "Samstag", time: "14:00", title: "Wettkampf", active: false },
-        ].map((event, index) => (
-          <div key={event.day} className={cn("flex h-[64px] items-center gap-3 px-4", index < 2 && "border-b border-white/[0.05]")}>
-            <span className={cn("h-8 w-1 rounded-full", event.active ? "bg-primary" : "bg-white/[0.08]")} />
-            <div className="min-w-0 flex-1">
-              <p className={cn("text-[7px] uppercase tracking-[0.13em]", event.active ? "text-primary" : "text-white/28")}>
-                {event.day} · {event.time}
-              </p>
-              <p className="mt-1 text-[10px] font-medium">{event.title}</p>
-            </div>
-            {event.active && <span className="rounded-full bg-primary/[0.10] px-2 py-1 text-[7px] font-medium text-primary">Dein Flow</span>}
+          ["Mo", "27"], ["Di", "28"], ["Mi", "29"], ["Do", "30"], ["Fr", "31"], ["Sa", "1"], ["So", "2"],
+        ].map(([day, date], index) => (
+          <div key={`${day}-${date}`} className="flex min-h-[50px] flex-col items-center justify-center gap-1">
+            <span className="text-[7px] uppercase tracking-[0.1em] text-white/45">{day}</span>
+            <span className={cn(
+              "flex h-7 w-7 items-center justify-center rounded-full border text-[9px] font-semibold",
+              index === 2 ? "border-primary bg-primary text-[#08110E]" : "border-white/[0.075] text-white/52",
+            )}>
+              {date}
+            </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-5 flex items-start gap-3 rounded-[18px] border border-primary/15 bg-primary/[0.055] p-4">
-        <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-        <div>
-          <p className="text-[10px] font-semibold">Dein persönlicher Bereich bleibt deiner.</p>
-          <p className="mt-1 text-[8px] leading-3.5 text-white/40">Journaltexte und freie Antworten sind für Coaches nicht sichtbar.</p>
+      <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.15em] text-white/52">Dienstag, 29. Juli</p>
+      <div className="mt-2 border-l border-white/10 pl-4">
+        {[
+          ["Heute", Brain, "Daily Flow", "10 Tages-Puls-Fragen, Aufgaben und Verständnis-Check", true],
+          ["17:30", Dumbbell, "Pre-Training", "Teamtraining · deine heutige Vorbereitung", true],
+          ["Später", BookOpen, "Tagesjournal", "4 Tagesfragen · privat", false],
+        ].map(([time, Icon, title, detail, active], index) => {
+          const RowIcon = Icon as typeof Brain;
+          return (
+            <div key={String(title)} className={cn("relative flex gap-3 py-2.5", index === 2 && "pb-0")}>
+              <span className={cn(
+                "absolute -left-[19px] top-[17px] h-2 w-2 rounded-full ring-4 ring-[#0D0E12]",
+                active ? "bg-primary" : "bg-white/28",
+              )} />
+              <span className="w-9 shrink-0 pt-0.5 text-[7px] font-medium text-white/38">{String(time)}</span>
+              <span className={cn(
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
+                active ? "bg-primary/10 text-primary" : "bg-white/[0.035] text-white/38",
+              )}>
+                <RowIcon className="h-3.5 w-3.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-semibold">{String(title)}</p>
+                <p className="mt-1 text-[7px] leading-3 text-white/42">{String(detail)}</p>
+              </div>
+              <ChevronRight className="mt-2 h-3 w-3 shrink-0 text-white/28" />
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4 rounded-xl border border-white/[0.055] bg-white/[0.025] px-3 py-2.5">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-3.5 w-3.5 text-primary" />
+          <p className="text-[8px] font-medium">Teamkalender</p>
         </div>
       </div>
     </div>
@@ -460,7 +821,7 @@ const TeamScreen = () => (
 );
 
 const StartScreen = ({ mode }: { mode: PreviewMode }) => (
-  <AppScreen labelledBy="preview-start-title">
+  <AppScreen labelledBy="preview-start-title" chrome="none">
     <div className="flex h-full flex-col items-center px-5 pt-9 text-center">
       <div className="relative">
         <div className="absolute inset-0 rounded-full bg-primary/25 blur-2xl" />
@@ -581,7 +942,7 @@ const FirstRunExperiencePreview = () => {
 
         <div
           ref={cameraViewportRef}
-          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(76dvh,760px)]"
+          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(68dvh,700px)]"
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#0D0E12]/40 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#0D0E12]/35 to-transparent" />
@@ -609,7 +970,11 @@ const FirstRunExperiencePreview = () => {
                 aria-hidden={screen.id !== scene.id}
               >
                 {screen.id === "today" && <TodayScreen />}
-                {screen.id === "daily" && <DailyScreen />}
+                {screen.id === "science" && <ScienceScreen />}
+                {screen.id === "pulse" && <PulseScreen />}
+                {screen.id === "reflection" && <ReflectionScreen />}
+                {screen.id === "tasks" && <TasksScreen />}
+                {screen.id === "check" && <CheckScreen />}
                 {screen.id === "anchor" && <AnchorScreen />}
                 {screen.id === "journal" && <JournalScreen />}
                 {screen.id === "development" && <DevelopmentScreen />}
