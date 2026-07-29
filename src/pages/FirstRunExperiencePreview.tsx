@@ -930,7 +930,7 @@ const FirstRunExperiencePreview = ({
   const goTo = (next: number) => setStep(Math.max(0, Math.min(scenes.length - 1, next)));
 
   return (
-    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[max(14px,env(safe-area-inset-top))] text-[#EEF0F2] sm:px-7">
+    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] px-4 pb-[max(18px,env(safe-area-inset-bottom))] pt-[max(14px,env(safe-area-inset-top))] text-[#EEF0F2] sm:px-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(46,173,137,0.12),transparent_30%),radial-gradient(circle_at_10%_80%,rgba(46,173,137,0.06),transparent_28%)]" />
       <header className="relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between">
         <BrandLockup symbolSize={27} textClassName="text-[13px] tracking-[-0.02em]" />
@@ -963,7 +963,10 @@ const FirstRunExperiencePreview = ({
         </div>
       </header>
 
-      <section className="relative z-10 mx-auto mt-4 flex w-full max-w-6xl flex-1 flex-col md:mt-6 md:grid md:grid-cols-[minmax(230px,320px)_1fr] md:items-center md:gap-6 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-10">
+      <section
+        data-testid="first-run-stage"
+        className="relative z-10 mx-auto mt-4 flex min-h-0 w-full max-w-6xl flex-1 flex-col md:mt-6 md:grid md:grid-cols-[minmax(230px,320px)_1fr] md:items-center md:gap-6 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-10"
+      >
         <div className="relative z-20 order-2 mt-4 md:order-1 md:mt-0">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -1010,7 +1013,7 @@ const FirstRunExperiencePreview = ({
 
         <div
           ref={cameraViewportRef}
-          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(68dvh,700px)] [@media(max-height:700px)]:h-[350px] [@media(max-height:700px)]:min-h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]"
+          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] shrink overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(68dvh,700px)] [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]"
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#0D0E12]/40 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#0D0E12]/35 to-transparent" />
@@ -1068,7 +1071,10 @@ const FirstRunExperiencePreview = ({
         </div>
       </section>
 
-      <footer className="absolute inset-x-4 bottom-[max(18px,env(safe-area-inset-bottom))] z-30 mx-auto max-w-6xl sm:inset-x-7">
+      <footer
+        data-testid="first-run-footer"
+        className="relative z-30 mx-auto mt-4 w-full max-w-6xl shrink-0"
+      >
         <div className="grid w-full grid-cols-[3rem_1fr] gap-3 md:ml-auto md:max-w-[650px]">
           <button
             type="button"

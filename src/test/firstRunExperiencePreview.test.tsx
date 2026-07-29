@@ -37,9 +37,14 @@ describe("first run experience preview", () => {
     expect(preview).toContain("overflow-clip");
     expect(preview).toContain("cameraViewportRef.current.scrollTop = 0");
     expect(preview).toContain("h-[100dvh]");
-    expect(preview).toContain("bottom-[max(18px,env(safe-area-inset-bottom))]");
-    expect(preview).toContain("absolute inset-x-4");
+    expect(preview).toContain("pb-[max(18px,env(safe-area-inset-bottom))]");
+    expect(preview).toContain('data-testid="first-run-stage"');
+    expect(preview).toContain("flex min-h-0");
+    expect(preview).toContain('data-testid="first-run-footer"');
+    expect(preview).toContain("relative z-30");
+    expect(preview).not.toContain("<footer className=\"absolute");
     expect(preview).toContain("duration: 0.01");
+    expect(preview).toContain("[@media(max-height:800px)]:min-h-[350px]");
     expect(preview).toContain("[@media(max-height:700px)]:h-[350px]");
     expect(preview).toContain("[@media(max-height:500px)]:!h-[210px]");
     expect(preview).not.toContain('id: "pulse"');
