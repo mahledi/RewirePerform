@@ -43,6 +43,7 @@ import {
   athleteAppBackground,
   athleteAppViewport,
 } from "@/components/app/AthleteAppChrome";
+import { getAthleteGreeting } from "@/lib/athleteGreeting";
 
 type EventType = "training" | "rest" | "competition";
 type SetupState = "ready" | "setup" | "waiting";
@@ -259,13 +260,6 @@ const PlanTimelineRow = ({
     )}
   </div>
 );
-
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 11) return "Guten Morgen.";
-  if (hour < 18) return "Guten Tag.";
-  return "Guten Abend.";
-};
 
 interface DashboardMemoryCache {
   userId: string;
@@ -1646,7 +1640,9 @@ const Dashboard = () => {
           </p>
           <div className="mt-2 flex items-end justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="text-[30px] font-semibold leading-none tracking-[-0.045em]">{getGreeting()}</h1>
+              <h1 className="text-[30px] font-semibold leading-none tracking-[-0.045em]">
+                {getAthleteGreeting(user?.user_metadata?.full_name)}
+              </h1>
               <p className="mt-3 text-sm text-white/58">
                 {programMode === "team" ? "Coach-Plan und deine Praxis sind verbunden." : "Dein System ist bereit."}
               </p>

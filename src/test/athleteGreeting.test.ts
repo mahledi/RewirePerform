@@ -2,21 +2,26 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  getAthleteGreeting,
   getAthleteGreetingByHour,
-  getDailyCheckinGreeting,
   getFirstName,
 } from "@/lib/athleteGreeting";
 
-describe("athlete Daily Check-in greeting", () => {
-  it("is wired to the real signed-in account and stays neutral in preview mode", () => {
+describe("athlete dashboard greeting", () => {
+  it("is wired to the visible Dashboard heading and not duplicated in Daily Check-in", () => {
+    const dashboard = readFileSync(
+      resolve(process.cwd(), "src/pages/Dashboard.tsx"),
+      "utf8",
+    );
     const dailyCheckin = readFileSync(
       resolve(process.cwd(), "src/components/dashboard/DailyCheckin.tsx"),
       "utf8",
     );
 
-    expect(dailyCheckin).toContain("getDailyCheckinGreeting(");
-    expect(dailyCheckin).toContain("previewMode ? null : user?.user_metadata?.full_name");
-    expect(dailyCheckin).toContain('data-testid="daily-personal-greeting"');
+    expect(dashboard).toContain("getAthleteGreeting(user?.user_metadata?.full_name)");
+    expect(dashboard).not.toContain("const getGreeting =");
+    expect(dailyCheckin).not.toContain("getAthleteGreeting");
+    expect(dailyCheckin).not.toContain("daily-personal-greeting");
   });
 
   it.each([
@@ -32,25 +37,26 @@ describe("athlete Daily Check-in greeting", () => {
 
   it("uses only the real first name from existing account metadata", () => {
     expect(getFirstName("  Noah   Müller  ")).toBe("Noah");
-    expect(getDailyCheckinGreeting("Noah Müller", new Date(2026, 6, 29, 10, 59))).toBe(
+    expect(getAthleteGreeting("Noah Müller", new Date(2026, 6, 29, 10, 59))).toBe(
       "Guten Morgen, Noah",
     );
-    expect(getDailyCheckinGreeting("Noah Müller", new Date(2026, 6, 29, 11, 0))).toBe(
+    expect(getAthleteGreeting("Noah Müller", new Date(2026, 6, 29, 11, 0))).toBe(
       "Hallo, Noah",
     );
-    expect(getDailyCheckinGreeting("Noah Müller", new Date(2026, 6, 29, 18, 0))).toBe(
+    expect(getAthleteGreeting("Noah Müller", new Date(2026, 6, 29, 18, 0))).toBe(
       "Guten Abend, Noah",
     );
   });
 
-  it.each([undefined, null, "", "   "])(
-    "uses an honest neutral fallback when no name is available",
-    (fullName) => {
-      expect(getDailyCheckinGreeting(fullName, new Date(2026, 6, 29, 20, 0))).toBe(
-        "Willkommen zu deinem Daily Flow.",
-      );
-    },
-  );
+  it.each([
+    [10, "Guten Morgen."],
+    [11, "Hallo."],
+    [16, "Hallo."],
+    [18, "Guten Abend."],
+  ])("uses an honest time-based fallback at hour %i", (hour, expected) => {
+    expect(getAthleteGreeting(undefined, new Date(2026, 6, 29, hour, 0))).toBe(expected);
+    expect(getAthleteGreeting("   ", new Date(2026, 6, 29, hour, 0))).toBe(expected);
+  });
 
   it("fails safely for an invalid hour", () => {
     expect(getAthleteGreetingByHour(-1)).toBe("Hallo");

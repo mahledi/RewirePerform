@@ -18,11 +18,12 @@ export const getFirstName = (fullName: unknown) => {
   return normalized ? normalized.split(" ")[0] : null;
 };
 
-export const getDailyCheckinGreeting = (
+export const getAthleteGreeting = (
   fullName: unknown,
   localDate = new Date(),
 ) => {
+  const greeting = getAthleteGreetingByHour(localDate.getHours());
   const firstName = getFirstName(fullName);
-  if (!firstName) return "Willkommen zu deinem Daily Flow.";
-  return `${getAthleteGreetingByHour(localDate.getHours())}, ${firstName}`;
+  if (!firstName) return `${greeting}.`;
+  return `${greeting}, ${firstName}`;
 };
