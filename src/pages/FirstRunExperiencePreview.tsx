@@ -917,7 +917,7 @@ const FirstRunExperiencePreview = () => {
   const goTo = (next: number) => setStep(Math.max(0, Math.min(scenes.length - 1, next)));
 
   return (
-    <main className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] px-4 pb-[max(18px,env(safe-area-inset-bottom))] pt-[max(14px,env(safe-area-inset-top))] text-[#EEF0F2] sm:px-7">
+    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-[max(14px,env(safe-area-inset-top))] text-[#EEF0F2] sm:px-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(46,173,137,0.12),transparent_30%),radial-gradient(circle_at_10%_80%,rgba(46,173,137,0.06),transparent_28%)]" />
       <header className="relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between">
         <BrandLockup symbolSize={27} textClassName="text-[13px] tracking-[-0.02em]" />
@@ -1034,39 +1034,41 @@ const FirstRunExperiencePreview = () => {
         </div>
       </section>
 
-      <footer className="relative z-30 mx-auto mt-4 grid w-full max-w-6xl grid-cols-[3rem_1fr] gap-3 md:max-w-[650px] md:self-end">
-        <button
-          type="button"
-          onClick={() => goTo(step - 1)}
-          disabled={step === 0}
-          aria-label="Zurück"
-          className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/62 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (isLast) {
-              goTo(0);
-              return;
-            }
-            goTo(step + 1);
-          }}
-          className="flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-[#07110E] shadow-[0_16px_35px_-18px_rgba(46,173,137,0.78)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-        >
-          {isLast ? (
-            <>
-              Vorschau erneut ansehen
-              <RotateCcw className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Weiter
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </button>
+      <footer className="absolute inset-x-4 bottom-[max(18px,env(safe-area-inset-bottom))] z-30 mx-auto max-w-6xl sm:inset-x-7">
+        <div className="grid w-full grid-cols-[3rem_1fr] gap-3 md:ml-auto md:max-w-[650px]">
+          <button
+            type="button"
+            onClick={() => goTo(step - 1)}
+            disabled={step === 0}
+            aria-label="Zurück"
+            className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/62 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (isLast) {
+                goTo(0);
+                return;
+              }
+              goTo(step + 1);
+            }}
+            className="flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-[#07110E] shadow-[0_16px_35px_-18px_rgba(46,173,137,0.78)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            {isLast ? (
+              <>
+                Vorschau erneut ansehen
+                <RotateCcw className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Weiter
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </button>
+        </div>
       </footer>
 
       <div className="sr-only" aria-live="polite">

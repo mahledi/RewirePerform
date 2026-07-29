@@ -35,6 +35,9 @@ describe("first run experience preview", () => {
     expect(preview).toContain("useReducedMotion");
     expect(preview).toContain("overflow-clip");
     expect(preview).toContain("cameraViewportRef.current.scrollTop = 0");
+    expect(preview).toContain("h-[100dvh]");
+    expect(preview).toContain("bottom-[max(18px,env(safe-area-inset-bottom))]");
+    expect(preview).toContain("absolute inset-x-4");
     expect(preview).toContain("duration: 0.01");
     expect(preview).not.toContain('id: "pulse"');
     expect(preview).not.toContain('id: "reflection"');
