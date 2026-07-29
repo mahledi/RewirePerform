@@ -87,10 +87,11 @@ describe("first run experience preview", () => {
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Viele Signale. Ein gemeinsamer Verlauf." })).toBeInTheDocument();
     expect(screen.getByText("Nicht ein Test. Ein Verlauf.")).toBeInTheDocument();
-    expect(screen.getByText("16 Pulse")).toBeInTheDocument();
+    expect(screen.getByText("Programmtage")).toBeInTheDocument();
+    expect(screen.getByText("Bis zu 16")).toBeInTheDocument();
     expect(screen.getByText("Coach-Reviews im Team")).toBeInTheDocument();
     expect(screen.getByText("Du entscheidest. Keine Bewertung deiner Person.")).toBeInTheDocument();
-    expect(screen.getByText(/individuelle Coach-Werte bleiben ausgeschlossen/)).toBeInTheDocument();
+    expect(screen.getByText(/individuelle Coach-Werte fließen nicht in diese Zusammenfassung ein/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Der gleiche klare Ablauf – passend zu deinem Alltag." })).toBeInTheDocument();

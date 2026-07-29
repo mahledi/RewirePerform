@@ -750,8 +750,8 @@ const MeasurementScreen = () => (
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           {[
-            { icon: CheckCircle2, value: "Täglich", label: "Check-ins & Verständnis" },
-            { icon: Target, value: "16 Pulse", label: "Transfer im echten Alltag" },
+            { icon: CheckCircle2, value: "Programmtage", label: "Check-ins & Verständnis" },
+            { icon: Target, value: "Bis zu 16", label: "Spieler-Pulse im Alltag" },
             { icon: ClipboardCheck, value: "3 Messungen", label: "Start · Tag 28 · Tag 56" },
             { icon: Users, value: "Bis zu 8", label: "Coach-Reviews im Team" },
           ].map((signal) => {
@@ -775,7 +775,7 @@ const MeasurementScreen = () => (
           <div>
             <p className="text-[9px] font-semibold">Du entscheidest. Keine Bewertung deiner Person.</p>
             <p className="mt-1 text-[7px] leading-3 text-white/42">
-              Nur freigegebene Daten werden zusammengefasst, um RewirePerform für weitere Athleten zu verbessern. Private Journaltexte, Freitexte und individuelle Coach-Werte bleiben ausgeschlossen.
+              Nur freigegebene Daten werden zusammengefasst, um RewirePerform für weitere Athleten zu verbessern. Private Journal- und Freitexte bleiben ausgeschlossen; individuelle Coach-Werte fließen nicht in diese Zusammenfassung ein.
             </p>
           </div>
         </div>
