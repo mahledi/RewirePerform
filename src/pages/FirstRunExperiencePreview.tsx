@@ -82,8 +82,8 @@ const scenes: Scene[] = [
   },
   {
     id: "measurement",
-    eyebrow: "Deine Messpunkte",
-    title: "Du hältst deinen Weg fest – und kannst anderen helfen.",
+    eyebrow: "Messung über 56 Tage",
+    title: "Viele Signale. Ein gemeinsamer Verlauf.",
     position: { x: -1320, y: -280, scale: 0.96 },
   },
   {
@@ -716,69 +716,69 @@ const MeasurementScreen = () => (
   <AppScreen labelledBy="preview-measurement-title" chrome="none">
     <div className="flex h-[58px] items-center justify-between border-b border-border/50 bg-[#0D0E12]/88 px-4">
       <BrandLockup symbolSize={20} textClassName="text-[10px] tracking-[-0.02em]" />
-      <span className="text-[8px] font-medium text-muted-foreground">Wissenschaftliche Messungen</span>
+      <span className="text-[8px] font-medium text-muted-foreground">56 Tage · mehrere Perspektiven</span>
     </div>
     <div className="h-[552px] overflow-hidden px-5 py-5">
-      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Deine Messpunkte</p>
+      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Dein Messsystem</p>
       <h2 id="preview-measurement-title" className="mt-2 text-[24px] font-bold leading-[1.05] tracking-[-0.04em]">
-        Drei Messpunkte. Keine Bewertung.
+        Nicht ein Test. Ein Verlauf.
       </h2>
       <p className="mt-3 text-[9px] leading-4 text-muted-foreground">
-        Gleiche Fragen zeigen dir, wo du startest und wie sich deine Antworten im Programm verändern.
+        RewirePerform verbindet feste Messungen mit kurzen Signalen aus deinem echten Programmalltag.
       </p>
 
-      <div className="mt-5 overflow-hidden rounded-[20px] border border-white/[0.065] bg-white/[0.025]">
-        {[
-          { label: "Startmessung", timing: "Vor Tag 1", state: "active" },
-          { label: "Zwischenmessung", timing: "Ab Tag 28", state: "later" },
-          { label: "Abschlussmessung", timing: "Ab Tag 56", state: "later" },
-        ].map((point, index) => (
-          <div
-            key={point.label}
-            className={cn(
-              "flex min-h-[58px] items-center gap-3 px-3.5 py-3",
-              index < 2 && "border-b border-white/[0.055]",
-            )}
-          >
-            <span className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
-              point.state === "active"
-                ? "border-primary/40 bg-primary/[0.10] text-primary"
-                : "border-white/[0.08] text-white/30",
-            )}>
-              {point.state === "active" ? <ClipboardCheck className="h-3.5 w-3.5" /> : <span className="text-[8px] font-semibold">{index + 1}</span>}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[10px] font-semibold">{point.label}</span>
-              <span className="mt-0.5 block text-[8px] text-white/38">{point.timing}</span>
-            </span>
-            {point.state === "active" && (
-              <span className="rounded-full bg-primary/[0.10] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-primary">
-                Start
+      <div className="mt-4 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-3.5">
+        <div className="relative grid grid-cols-3">
+          <span className="absolute left-[16.7%] right-[16.7%] top-4 h-px bg-gradient-to-r from-primary/45 via-primary/20 to-white/10" />
+          {[
+            { label: "Start", timing: "Vor Tag 1", active: true },
+            { label: "Zwischen", timing: "Tag 28", active: false },
+            { label: "Abschluss", timing: "Tag 56", active: false },
+          ].map((point, index) => (
+            <div key={point.label} className="relative flex flex-col items-center text-center">
+              <span className={cn(
+                "z-10 flex h-8 w-8 items-center justify-center rounded-full border bg-[#111319]",
+                point.active ? "border-primary/45 text-primary" : "border-white/[0.10] text-white/35",
+              )}>
+                {point.active ? <ClipboardCheck className="h-3.5 w-3.5" /> : <span className="text-[8px] font-semibold">{index + 1}</span>}
               </span>
-            )}
-          </div>
-        ))}
-      </div>
+              <span className="mt-2 text-[8px] font-semibold">{point.label}</span>
+              <span className="mt-0.5 text-[7px] text-white/34">{point.timing}</span>
+            </div>
+          ))}
+        </div>
 
-      <div className="mt-4 rounded-[18px] border border-primary/15 bg-primary/[0.055] p-4">
-        <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          <div>
-            <p className="text-[10px] font-semibold">Du entscheidest, ob du zusätzlich hilfst.</p>
-            <p className="mt-1.5 text-[8px] leading-3.5 text-white/45">
-              Mit deiner Zustimmung können freigegebene Daten zusammengefasst ausgewertet werden, um RewirePerform für weitere Athleten zu verbessern.
-            </p>
-            <p className="mt-2 text-[8px] leading-3.5 text-white/35">
-              Private Journaltexte und freie Antworten werden dafür nie verwendet.
-            </p>
-          </div>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {[
+            { icon: CheckCircle2, value: "Täglich", label: "Check-ins & Verständnis" },
+            { icon: Target, value: "16 Pulse", label: "Transfer im echten Alltag" },
+            { icon: ClipboardCheck, value: "3 Messungen", label: "Start · Tag 28 · Tag 56" },
+            { icon: Users, value: "Bis zu 8", label: "Coach-Reviews im Team" },
+          ].map((signal) => {
+            const Icon = signal.icon;
+            return (
+              <div key={signal.label} className="rounded-[13px] border border-white/[0.055] bg-black/15 p-2.5">
+                <div className="flex items-center gap-1.5 text-primary">
+                  <Icon className="h-3 w-3" strokeWidth={1.8} />
+                  <span className="text-[8px] font-semibold">{signal.value}</span>
+                </div>
+                <p className="mt-1.5 text-[7px] leading-3 text-white/42">{signal.label}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="mt-4 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
-        Startmessung beginnen
-        <ArrowRight className="ml-2 h-3.5 w-3.5" />
+      <div className="mt-3 rounded-[16px] border border-primary/15 bg-primary/[0.055] p-3">
+        <div className="flex items-start gap-2.5">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <div>
+            <p className="text-[9px] font-semibold">Du entscheidest. Keine Bewertung deiner Person.</p>
+            <p className="mt-1 text-[7px] leading-3 text-white/42">
+              Nur freigegebene Daten werden zusammengefasst, um RewirePerform für weitere Athleten zu verbessern. Private Journaltexte, Freitexte und individuelle Coach-Werte bleiben ausgeschlossen.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </AppScreen>
