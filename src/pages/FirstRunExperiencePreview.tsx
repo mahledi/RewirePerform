@@ -81,6 +81,12 @@ const scenes: Scene[] = [
     position: { x: -980, y: -620, scale: 0.94 },
   },
   {
+    id: "measurement",
+    eyebrow: "Deine Messpunkte",
+    title: "Du hältst deinen Weg fest – und kannst anderen helfen.",
+    position: { x: -1320, y: -280, scale: 0.96 },
+  },
+  {
     id: "team",
     eyebrow: "Solo oder im Team",
     title: "Der gleiche klare Ablauf – passend zu deinem Alltag.",
@@ -102,6 +108,7 @@ const worldScreens = [
   { id: "anchor", x: 100, y: -1120 },
   { id: "journal", x: -500, y: -1050 },
   { id: "development", x: -980, y: -620 },
+  { id: "measurement", x: -1320, y: -280 },
   { id: "team", x: -1000, y: 0 },
   { id: "start", x: -520, y: 560 },
 ] as const;
@@ -227,6 +234,32 @@ const DailyCompletionRingPreview = () => (
   </div>
 );
 
+const DashboardActionRowPreview = ({
+  icon: Icon,
+  eyebrow,
+  title,
+  detail,
+  last = false,
+}: {
+  icon: typeof Dumbbell;
+  eyebrow: string;
+  title: string;
+  detail: string;
+  last?: boolean;
+}) => (
+  <div className={cn("flex min-h-[64px] items-center gap-3 px-3 py-3", !last && "border-b border-white/[0.055]")}>
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[13px] bg-white/[0.045]">
+      <Icon className="h-4 w-4 text-white/62" strokeWidth={1.7} />
+    </span>
+    <span className="min-w-0 flex-1">
+      <span className="block text-[7px] font-semibold uppercase tracking-[0.15em] text-white/48">{eyebrow}</span>
+      <span className="mt-0.5 block text-[10px] font-semibold leading-4">{title}</span>
+      <span className="mt-0.5 block truncate text-[8px] leading-3 text-white/52">{detail}</span>
+    </span>
+    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-white/25" />
+  </div>
+);
+
 const TodayScreen = () => (
   <AppScreen labelledBy="preview-today-title" headerActions>
     <div className="px-5 pt-5">
@@ -281,6 +314,27 @@ const TodayScreen = () => (
       <div className="mt-4 flex items-center justify-between">
         <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-white/52">Dein Tag</p>
         <span className="text-[9px] font-medium text-primary">Plan öffnen</span>
+      </div>
+      <div className="mt-2 overflow-hidden rounded-[18px] border border-white/[0.065] bg-white/[0.025]">
+        <DashboardActionRowPreview
+          icon={Dumbbell}
+          eyebrow="Vor dem Training"
+          title="Pre-Training"
+          detail="Training · heutige Linse und 3 Aufgaben"
+        />
+        <DashboardActionRowPreview
+          icon={BookOpen}
+          eyebrow="Nach dem Tag"
+          title="Tagesjournal"
+          detail="4 Tagesfragen · privat"
+        />
+        <DashboardActionRowPreview
+          icon={Calendar}
+          eyebrow="Deine Planung"
+          title="Wochenplan"
+          detail="Training, Regeneration und Wettkämpfe"
+          last
+        />
       </div>
     </div>
   </AppScreen>
@@ -658,6 +712,78 @@ const DevelopmentScreen = () => (
   </AppScreen>
 );
 
+const MeasurementScreen = () => (
+  <AppScreen labelledBy="preview-measurement-title" chrome="none">
+    <div className="flex h-[58px] items-center justify-between border-b border-border/50 bg-[#0D0E12]/88 px-4">
+      <BrandLockup symbolSize={20} textClassName="text-[10px] tracking-[-0.02em]" />
+      <span className="text-[8px] font-medium text-muted-foreground">Wissenschaftliche Messungen</span>
+    </div>
+    <div className="h-[552px] overflow-hidden px-5 py-5">
+      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Deine Messpunkte</p>
+      <h2 id="preview-measurement-title" className="mt-2 text-[24px] font-bold leading-[1.05] tracking-[-0.04em]">
+        Drei Messpunkte. Keine Bewertung.
+      </h2>
+      <p className="mt-3 text-[9px] leading-4 text-muted-foreground">
+        Gleiche Fragen zeigen dir, wo du startest und wie sich deine Antworten im Programm verändern.
+      </p>
+
+      <div className="mt-5 overflow-hidden rounded-[20px] border border-white/[0.065] bg-white/[0.025]">
+        {[
+          { label: "Startmessung", timing: "Vor Tag 1", state: "active" },
+          { label: "Zwischenmessung", timing: "Ab Tag 28", state: "later" },
+          { label: "Abschlussmessung", timing: "Ab Tag 56", state: "later" },
+        ].map((point, index) => (
+          <div
+            key={point.label}
+            className={cn(
+              "flex min-h-[58px] items-center gap-3 px-3.5 py-3",
+              index < 2 && "border-b border-white/[0.055]",
+            )}
+          >
+            <span className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
+              point.state === "active"
+                ? "border-primary/40 bg-primary/[0.10] text-primary"
+                : "border-white/[0.08] text-white/30",
+            )}>
+              {point.state === "active" ? <ClipboardCheck className="h-3.5 w-3.5" /> : <span className="text-[8px] font-semibold">{index + 1}</span>}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[10px] font-semibold">{point.label}</span>
+              <span className="mt-0.5 block text-[8px] text-white/38">{point.timing}</span>
+            </span>
+            {point.state === "active" && (
+              <span className="rounded-full bg-primary/[0.10] px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.1em] text-primary">
+                Start
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-[18px] border border-primary/15 bg-primary/[0.055] p-4">
+        <div className="flex items-start gap-3">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div>
+            <p className="text-[10px] font-semibold">Du entscheidest, ob du zusätzlich hilfst.</p>
+            <p className="mt-1.5 text-[8px] leading-3.5 text-white/45">
+              Mit deiner Zustimmung können freigegebene Daten zusammengefasst ausgewertet werden, um RewirePerform für weitere Athleten zu verbessern.
+            </p>
+            <p className="mt-2 text-[8px] leading-3.5 text-white/35">
+              Private Journaltexte und freie Antworten werden dafür nie verwendet.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
+        Startmessung beginnen
+        <ArrowRight className="ml-2 h-3.5 w-3.5" />
+      </div>
+    </div>
+  </AppScreen>
+);
+
 const TeamScreen = () => (
   <AppScreen labelledBy="preview-team-title" active="plan">
     <div className="px-5 pt-5">
@@ -884,6 +1010,7 @@ const FirstRunExperiencePreview = () => {
                 {screen.id === "anchor" && <AnchorScreen />}
                 {screen.id === "journal" && <JournalScreen />}
                 {screen.id === "development" && <DevelopmentScreen />}
+                {screen.id === "measurement" && <MeasurementScreen />}
                 {screen.id === "team" && <TeamScreen />}
                 {screen.id === "start" && <StartScreen mode={mode} />}
               </motion.div>

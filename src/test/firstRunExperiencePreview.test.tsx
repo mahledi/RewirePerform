@@ -50,6 +50,9 @@ describe("first run experience preview", () => {
     expect(screen.getByText("Hallo Noah.")).toBeInTheDocument();
     expect(screen.getAllByText("Dein Prozess ist dein Arbeitsfokus").length).toBeGreaterThan(0);
     expect(screen.getByText("10 Tages-Puls-Fragen · 3 Aufgaben")).toBeInTheDocument();
+    expect(screen.getAllByText("Pre-Training").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Tagesjournal").length).toBeGreaterThan(0);
+    expect(screen.getByText("Wochenplan")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Zuerst verstehst du den Fokus des Tages." })).toBeInTheDocument();
@@ -79,6 +82,12 @@ describe("first run experience preview", () => {
     expect(screen.getByText("Nicht als Urteil. Als sichtbare Spur deiner Wiederholungen.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
+    expect(screen.getByRole("heading", { name: "Du hältst deinen Weg fest – und kannst anderen helfen." })).toBeInTheDocument();
+    expect(screen.getByText("Drei Messpunkte. Keine Bewertung.")).toBeInTheDocument();
+    expect(screen.getByText("Du entscheidest, ob du zusätzlich hilfst.")).toBeInTheDocument();
+    expect(screen.getByText("Private Journaltexte und freie Antworten werden dafür nie verwendet.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Der gleiche klare Ablauf – passend zu deinem Alltag." })).toBeInTheDocument();
     expect(screen.getByText("Coach-Termine und deine mentale Praxis in einer gemeinsamen Linie.")).toBeInTheDocument();
 
@@ -91,7 +100,7 @@ describe("first run experience preview", () => {
   it("keeps the preview replayable and makes the Solo/Team choice explicit", () => {
     render(<FirstRunExperiencePreview />);
 
-    for (let index = 0; index < 8; index += 1) {
+    for (let index = 0; index < 9; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     }
     fireEvent.click(screen.getByRole("button", { name: "Team" }));
