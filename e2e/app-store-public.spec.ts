@@ -16,6 +16,19 @@ const capture = async (page: Page, testInfo: TestInfo, name: string) => {
   });
 };
 
+const firstRunSceneHeadings = [
+  "Du siehst sofort, was ansteht.",
+  "Zuerst verstehst du den Fokus des Tages.",
+  "Drei konkrete Aufgaben bringen ihn in deinen Alltag.",
+  "Ein kurzer Check festigt, was du heute brauchst.",
+  "Vor dem Training siehst du denselben Fokus wieder.",
+  "Am Abend reflektierst du den echten Tag.",
+  "Du siehst deine Wiederholungen, nicht eine Bewertung.",
+  "Viele Signale. Ein gemeinsamer Verlauf.",
+  "Der gleiche klare Ablauf – passend zu deinem Alltag.",
+  "Dein Weg beginnt mit dem ersten Tag.",
+] as const;
+
 test("public product and legal routes render cleanly", async ({ page }, testInfo) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -66,46 +79,27 @@ test("public introduction completes without collecting personal data", async ({ 
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
 
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "Ein klarer Ablauf für deine mentale Performance.",
-    }),
-  ).toBeVisible();
-  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
-  await expectNoHorizontalOverflow(page);
-  await capture(page, testInfo, "introduction-program");
+  for (const [index, heading] of firstRunSceneHeadings.entries()) {
+    await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+    await expect(page.getByLabel(`Schritt ${index + 1} von 10`)).toBeVisible();
+    expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+    await expectNoHorizontalOverflow(page);
 
-  await page.getByRole("button", { name: "Weiter" }).click();
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "Training, Wettkampf und Ruhetag bleiben verschieden.",
-    }),
-  ).toBeVisible();
-  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
-  await expectNoHorizontalOverflow(page);
-  await capture(page, testInfo, "introduction-day-types");
+    if (index === 0) await capture(page, testInfo, "introduction-today");
+    if (index === 7) await capture(page, testInfo, "introduction-measurement");
+    if (index < firstRunSceneHeadings.length - 1) {
+      await page.getByRole("button", { name: "Weiter" }).click();
+    }
+  }
 
-  await page.getByRole("button", { name: "Weiter" }).click();
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "Deine persönlichen Inhalte bleiben privat.",
-    }),
-  ).toBeVisible();
-  await expect(page.getByText(/Journaltexte, Freitexte, rohe Antworten/)).toBeVisible();
-  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
-  await expectNoHorizontalOverflow(page);
-  await capture(page, testInfo, "introduction-privacy");
+  await expect(page.getByRole("group", { name: "Programmweg auswählen" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Solo" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Team" })).toHaveAttribute("aria-pressed", "false");
+  await capture(page, testInfo, "introduction-start");
 
-  await page.getByRole("button", { name: "RewirePerform starten" }).click();
-  await expect(page).toHaveURL(/\/auth$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Allein starten/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Team beitreten/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Team erstellen/ })).toHaveCount(0);
-  await expect(page.getByText(/Coach-Zugänge werden/)).toBeVisible();
+  await page.getByRole("button", { name: "Registrierung starten" }).click();
+  await expect(page).toHaveURL(/\/auth\?mode=signup&intent=solo$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
 
   const storedValues = await page.evaluate(() =>
     Object.fromEntries(
@@ -132,24 +126,31 @@ test("public introduction remains accessible with reduced motion and large text"
   });
 
   expect(await page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
-  await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "Ein klarer Ablauf für deine mentale Performance.",
-    }),
-  ).toBeVisible();
-  await expect(page.getByLabel("Seite 1 von 3")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).toBeVisible();
+  await expect(page.getByLabel("Schritt 1 von 10")).toBeVisible();
   await expect(page.getByRole("button", { name: "Weiter" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   const accessibilityTree = await page.locator("main").ariaSnapshot();
-  expect(accessibilityTree).toContain("Ein klarer Ablauf für deine mentale Performance.");
+  expect(accessibilityTree).toContain(firstRunSceneHeadings[0]);
   expect(accessibilityTree).toContain("Weiter");
   await capture(page, testInfo, "introduction-large-text-reduced-motion");
 
-  await page.getByRole("button", { name: "Weiter" }).click();
-  await page.getByRole("button", { name: "Weiter" }).click();
-  await expect(page.getByRole("button", { name: "RewirePerform starten" })).toBeVisible();
+  for (let index = 1; index < firstRunSceneHeadings.length; index += 1) {
+    await page.getByRole("button", { name: "Weiter" }).click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[index] }),
+    ).toBeVisible();
+  }
+
+  await expect(page.getByRole("button", { name: "Registrierung starten" })).toBeVisible();
+  const roleGroup = page.getByRole("group", { name: "Programmweg auswählen" });
+  await roleGroup.scrollIntoViewIfNeeded();
+  const roleGroupBox = await roleGroup.boundingBox();
+  const footerBox = await page.getByTestId("first-run-footer").boundingBox();
+  expect(roleGroupBox).not.toBeNull();
+  expect(footerBox).not.toBeNull();
+  expect(roleGroupBox!.y + roleGroupBox!.height).toBeLessThanOrEqual(footerBox!.y + 1);
   await expectNoHorizontalOverflow(page);
 });
 

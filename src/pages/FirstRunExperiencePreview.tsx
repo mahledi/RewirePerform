@@ -915,6 +915,7 @@ const FirstRunExperiencePreview = ({
   const [step, setStep] = useState(0);
   const [mode, setMode] = useState<FirstRunMode>("solo");
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const stageRef = useRef<HTMLElement>(null);
   const cameraViewportRef = useRef<HTMLDivElement>(null);
   const scene = scenes[step];
   const isLast = step === scenes.length - 1;
@@ -923,6 +924,10 @@ const FirstRunExperiencePreview = ({
     if (cameraViewportRef.current) {
       cameraViewportRef.current.scrollTop = 0;
       cameraViewportRef.current.scrollLeft = 0;
+    }
+    if (stageRef.current) {
+      stageRef.current.scrollTop = 0;
+      stageRef.current.scrollLeft = 0;
     }
     headingRef.current?.focus({ preventScroll: true });
   }, [step]);
@@ -964,8 +969,9 @@ const FirstRunExperiencePreview = ({
       </header>
 
       <section
+        ref={stageRef}
         data-testid="first-run-stage"
-        className="relative z-10 mx-auto mt-4 flex min-h-0 w-full max-w-6xl flex-1 flex-col md:mt-6 md:grid md:grid-cols-[minmax(230px,320px)_1fr] md:items-center md:gap-6 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-10"
+        className="relative z-10 mx-auto mt-4 flex min-h-0 w-full max-w-6xl flex-1 flex-col overflow-y-auto overscroll-y-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mt-6 md:grid md:grid-cols-[minmax(230px,320px)_1fr] md:items-center md:gap-6 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-10"
       >
         <div className="relative z-20 order-2 mt-4 md:order-1 md:mt-0">
           <AnimatePresence mode="wait" initial={false}>
