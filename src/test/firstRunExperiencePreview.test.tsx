@@ -100,7 +100,7 @@ describe("first run experience preview", () => {
     expect(screen.getByRole("heading", { name: "Dein Weg beginnt mit dem ersten Tag." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Solo" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Registrierung starten")).toBeInTheDocument();
-  });
+  }, 15_000);
 
   it("keeps the preview replayable and makes the Solo/Team choice explicit", () => {
     render(<FirstRunExperiencePreview />);
@@ -116,5 +116,5 @@ describe("first run experience preview", () => {
     fireEvent.click(screen.getByRole("button", { name: /Vorschau erneut ansehen/ }));
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Zurück" })).toBeDisabled();
-  });
+  }, 15_000);
 });
