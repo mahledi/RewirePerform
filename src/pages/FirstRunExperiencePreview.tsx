@@ -23,12 +23,20 @@ import {
   Sparkles,
   Target,
   Users,
+  X,
 } from "lucide-react";
 import { BrandLockup, BrandSymbol } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
 type PreviewSection = "today" | "plan" | "progress" | "more";
-type PreviewMode = "solo" | "team";
+export type FirstRunMode = "solo" | "team";
+
+type FirstRunExperiencePreviewProps = {
+  onComplete?: (mode: FirstRunMode) => void;
+  onLogin?: () => void;
+  onClose?: () => void;
+  replay?: boolean;
+};
 
 type Scene = {
   id: string;
@@ -854,7 +862,7 @@ const TeamScreen = () => (
   </AppScreen>
 );
 
-const StartScreen = ({ mode }: { mode: PreviewMode }) => (
+const StartScreen = ({ mode }: { mode: FirstRunMode }) => (
   <AppScreen labelledBy="preview-start-title" chrome="none">
     <div className="flex h-full flex-col items-center px-5 pt-9 text-center">
       <div className="relative">
@@ -897,10 +905,15 @@ const StartScreen = ({ mode }: { mode: PreviewMode }) => (
   </AppScreen>
 );
 
-const FirstRunExperiencePreview = () => {
+const FirstRunExperiencePreview = ({
+  onComplete,
+  onLogin,
+  onClose,
+  replay = false,
+}: FirstRunExperiencePreviewProps = {}) => {
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
-  const [mode, setMode] = useState<PreviewMode>("solo");
+  const [mode, setMode] = useState<FirstRunMode>("solo");
   const headingRef = useRef<HTMLHeadingElement>(null);
   const cameraViewportRef = useRef<HTMLDivElement>(null);
   const scene = scenes[step];
@@ -928,6 +941,25 @@ const FirstRunExperiencePreview = () => {
           <span className="rounded-full border border-white/[0.08] bg-white/[0.035] px-3 py-1.5 text-[9px] font-semibold text-white/55">
             {step + 1} / {scenes.length}
           </span>
+          {onLogin && !replay && (
+            <button
+              type="button"
+              onClick={onLogin}
+              className="flex min-h-11 items-center rounded-xl px-2 text-[11px] font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3 sm:text-xs"
+            >
+              Anmelden
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Einführung schließen"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -952,31 +984,33 @@ const FirstRunExperiencePreview = () => {
             </motion.div>
           </AnimatePresence>
 
-          {isLast && (
-            <div className="mt-4 flex gap-2" role="group" aria-label="Programmweg auswählen">
-              {(["solo", "team"] as const).map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setMode(item)}
-                  aria-pressed={mode === item}
-                  className={cn(
-                    "min-h-11 rounded-xl border px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    mode === item
-                      ? "border-primary/40 bg-primary/[0.10] text-primary"
-                      : "border-white/[0.08] bg-white/[0.025] text-white/48",
-                  )}
-                >
-                  {item === "solo" ? "Solo" : "Team"}
-                </button>
-              ))}
+          {isLast && !replay && (
+            <div className="mt-4">
+              <div className="flex gap-2" role="group" aria-label="Programmweg auswählen">
+                {(["solo", "team"] as const).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setMode(item)}
+                    aria-pressed={mode === item}
+                    className={cn(
+                      "min-h-11 rounded-xl border px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      mode === item
+                        ? "border-primary/40 bg-primary/[0.10] text-primary"
+                        : "border-white/[0.08] bg-white/[0.025] text-white/48",
+                    )}
+                  >
+                    {item === "solo" ? "Solo" : "Team"}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
         <div
           ref={cameraViewportRef}
-          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(68dvh,700px)]"
+          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(68dvh,700px)] [@media(max-height:700px)]:h-[350px] [@media(max-height:700px)]:min-h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]"
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#0D0E12]/40 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#0D0E12]/35 to-transparent" />
@@ -1049,6 +1083,10 @@ const FirstRunExperiencePreview = () => {
             type="button"
             onClick={() => {
               if (isLast) {
+                if (onComplete) {
+                  onComplete(mode);
+                  return;
+                }
                 goTo(0);
                 return;
               }
@@ -1058,8 +1096,8 @@ const FirstRunExperiencePreview = () => {
           >
             {isLast ? (
               <>
-                Vorschau erneut ansehen
-                <RotateCcw className="ml-2 h-4 w-4" />
+                {onComplete ? (replay ? "Zurück zu den Einstellungen" : "Registrierung starten") : "Vorschau erneut ansehen"}
+                {onComplete ? <ArrowRight className="ml-2 h-4 w-4" /> : <RotateCcw className="ml-2 h-4 w-4" />}
               </>
             ) : (
               <>

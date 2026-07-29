@@ -95,6 +95,10 @@ const Auth = () => {
     ? "link-error"
     : requestedMode === "forgot"
       ? "forgot"
+      : requestedMode === "login"
+        ? "login"
+        : requestedMode === "signup"
+          ? "signup"
       : urlIntent === "join" || urlCode
         ? "signup"
         : "intent";

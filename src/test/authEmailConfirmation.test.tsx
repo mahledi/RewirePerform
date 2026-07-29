@@ -126,6 +126,30 @@ describe("auth email confirmation", () => {
     expect(screen.getByText(/Coach-Zugänge werden.*persönlich geprüft/)).toBeInTheDocument();
   });
 
+  it("opens the solo signup selected in the first-run experience without a duplicate intent step", () => {
+    renderAuth("/auth?mode=signup&intent=solo");
+
+    expect(screen.getByRole("heading", { name: "Du startest allein." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Konto erstellen" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Teamcode")).not.toBeInTheDocument();
+  });
+
+  it("opens the team signup selected in the first-run experience and still requires a real team code", () => {
+    renderAuth("/auth?mode=signup&intent=join");
+
+    expect(screen.getByRole("heading", { name: "Du trittst einem Team bei." })).toBeInTheDocument();
+    expect(screen.getByLabelText("Teamcode")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Konto erstellen" })).toBeInTheDocument();
+  });
+
+  it("opens the shared login path used by registered athletes and coaches", () => {
+    renderAuth("/auth?mode=login");
+
+    expect(screen.getByRole("heading", { name: "Willkommen zurück." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Anmelden" })).toBeInTheDocument();
+    expect(screen.queryByText(/Coach-Zugänge werden.*persönlich geprüft/)).not.toBeInTheDocument();
+  });
+
   it("can resend the confirmation using the same safe redirect", async () => {
     mocks.signUp.mockResolvedValue({
       data: { user: { id: "user-1" }, session: null },

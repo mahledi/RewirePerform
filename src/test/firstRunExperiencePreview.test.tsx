@@ -25,12 +25,13 @@ vi.mock("framer-motion", async () => {
 });
 
 describe("first run experience preview", () => {
-  it("keeps the cinematic preview internal, scroll-stable and reduced-motion aware", () => {
+  it("keeps the internal route gated while the approved experience is reused by productive onboarding", () => {
     const preview = readFileSync(
       resolve(process.cwd(), "src/pages/FirstRunExperiencePreview.tsx"),
       "utf8",
     );
     const app = readFileSync(resolve(process.cwd(), "src/App.tsx"), "utf8");
+    const welcome = readFileSync(resolve(process.cwd(), "src/pages/Welcome.tsx"), "utf8");
 
     expect(preview).toContain("useReducedMotion");
     expect(preview).toContain("overflow-clip");
@@ -39,11 +40,17 @@ describe("first run experience preview", () => {
     expect(preview).toContain("bottom-[max(18px,env(safe-area-inset-bottom))]");
     expect(preview).toContain("absolute inset-x-4");
     expect(preview).toContain("duration: 0.01");
+    expect(preview).toContain("[@media(max-height:700px)]:h-[350px]");
+    expect(preview).toContain("[@media(max-height:500px)]:!h-[210px]");
     expect(preview).not.toContain('id: "pulse"');
     expect(preview).not.toContain('id: "reflection"');
     expect(preview).not.toContain("onClick={() => goTo(index)}");
     expect(app).toContain("FirstRunExperiencePreview = evidencePreviewEnabled");
     expect(app).toContain('path="/internal/first-run-preview"');
+    expect(welcome).toContain("import FirstRunExperiencePreview");
+    expect(welcome).toContain("onComplete={finish}");
+    expect(welcome).toContain('"/auth?mode=signup&intent=solo"');
+    expect(welcome).toContain('"/auth?mode=signup&intent=join"');
   });
 
   it("moves through the real-system story without account or network actions", () => {
