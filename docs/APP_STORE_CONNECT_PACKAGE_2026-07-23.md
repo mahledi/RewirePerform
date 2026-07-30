@@ -38,43 +38,51 @@ release is authorized by this document.
 
 ## German localization
 
-Subtitle, 25/30 characters:
+Subtitle, 30/30 characters:
 
 ```text
-Mentale Routinen im Sport
+Mentale Performance trainieren
 ```
 
-Promotional text, 124/170 characters:
+Promotional text, 148/170 characters:
 
 ```text
-Dein strukturiertes 56-Tage-Programm für mentale Routinen, Check-ins und Reflexion rund um Training, Wettkampf und Ruhetage.
+Was körperliches Training längst hat, bekommt jetzt auch mentales Training: Struktur, Wiederholung und Kontinuität – in einem klaren 56-Tage-System.
 ```
 
-Keywords, 89/100 UTF-8 bytes:
+Keywords, 95/100 UTF-8 bytes:
 
 ```text
-mentaltraining,athlet,sport,training,fokus,routine,journal,reflexion,coach,team,wettkampf
+mentaltraining,sportler,fokus,routine,coach,trainer,team,journal,reflexion,wettkampf,motivation
 ```
 
 Description:
 
 ```text
-RewirePerform begleitet Athletinnen und Athleten durch ein strukturiertes 56-Tage-Programm für mentale Routinen im Sport.
+Du trainierst deinen Körper und deine sportlichen Abläufe immer wieder. Mentales Training bleibt dagegen oft punktuell – obwohl der Kopf mitbestimmt, wie viel von deinem Können im entscheidenden Moment verfügbar ist.
 
-Jeder Programmtag verbindet kurze Impulse mit praktischen Aufgaben, einem kontextbezogenen Check-in und persönlicher Reflexion. Die Inhalte passen sich daran an, ob Training, Wettkampf oder Ruhetag geplant ist. So bleibt der Ablauf für verschiedene Sportarten nutzbar, ohne eine sportliche Situation zu erfinden, wenn keine stattgefunden hat.
+RewirePerform gibt mentalem Training deshalb das, was körperliches Training längst hat: Struktur, Wiederholung und Kontinuität.
 
-Funktionen:
-• Tagesplan für 56 Tage
-• Check-ins für Training, Wettkampf und Ruhetag
-• Privates Journal und Reflexion
-• Vorbereitung vor Training und Wettkampf
-• Persönlicher Fortschritt
-• Optionale lokale Erinnerungen
-• Team- und Coach-Bereiche mit status- und aggregatbasierten Einblicken
+Das Programm begleitet dich über 56 Tage. Sein Aufbau orientiert sich an Prinzipien von Lernen und Neuroplastizität: kurze Impulse, konkrete Anwendung, Wiederholung und Reflexion. So wird mentale Arbeit zu einer festen Praxis in deinem Sportalltag.
 
-Private Journaltexte und freie persönliche Antworten bleiben für Coaches verborgen. RewirePerform ist kein medizinisches Produkt, stellt keine Diagnose und ersetzt keine medizinische oder psychotherapeutische Behandlung.
+Ziel ist nicht, nie Druck zu spüren oder Fehler zu machen. Ziel ist, schneller zu dem zurückzufinden, was du beeinflussen kannst – und im entscheidenden Moment klarer, präsenter und freier zu handeln.
 
-Für die Nutzung ist ein Konto erforderlich.
+DAS ERWARTET DICH
+
+• Ein klar strukturierter 56-Tage-Weg
+• Kurze Wissensimpulse und konkrete mentale Aufgaben
+• Mentale Vorbereitung für Training und Wettkampf
+• Check-ins, Reflexion und ein privates Journal
+• Eine ehrliche Übersicht deiner Programmpraxis
+• Nutzung als Solo-Athlet oder gemeinsam im Team
+
+FÜR TEAMS UND COACHES
+
+RewirePerform gibt Teams einen gemeinsamen mentalen Rahmen. Coaches erhalten Einblicke in Teilnahme und zusammengefasste Teamzustände – private Journaltexte und persönliche freie Antworten bleiben geschützt.
+
+Du kannst RewirePerform selbstständig nutzen. Vereine und Coaches können über support@rewireperform.com einen Teamzugang anfragen.
+
+RewirePerform ist kein medizinisches Produkt, stellt keine Diagnosen und ersetzt keine medizinische oder psychotherapeutische Behandlung. Für die Nutzung ist ein Konto erforderlich.
 ```
 
 URLs:

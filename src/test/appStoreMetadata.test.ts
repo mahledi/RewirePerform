@@ -20,17 +20,17 @@ function textBlockAfter(label: string) {
 
 describe("App Store metadata package", () => {
   it("stays within Apple's current localized field limits", () => {
-    const subtitle = textBlockAfter("Subtitle, 25/30 characters:");
-    const promotionalText = textBlockAfter("Promotional text, 124/170 characters:");
-    const keywords = textBlockAfter("Keywords, 89/100 UTF-8 bytes:");
+    const subtitle = textBlockAfter("Subtitle, 30/30 characters:");
+    const promotionalText = textBlockAfter("Promotional text, 148/170 characters:");
+    const keywords = textBlockAfter("Keywords, 95/100 UTF-8 bytes:");
     const description = textBlockAfter("Description:");
     const reviewNotes = textBlockAfter("Review notes draft:");
 
-    expect([...subtitle]).toHaveLength(25);
+    expect([...subtitle]).toHaveLength(30);
     expect([...subtitle].length).toBeLessThanOrEqual(30);
-    expect([...promotionalText]).toHaveLength(124);
+    expect([...promotionalText]).toHaveLength(148);
     expect([...promotionalText].length).toBeLessThanOrEqual(170);
-    expect(Buffer.byteLength(keywords, "utf8")).toBe(89);
+    expect(Buffer.byteLength(keywords, "utf8")).toBe(95);
     expect(Buffer.byteLength(keywords, "utf8")).toBeLessThanOrEqual(100);
     expect([...description].length).toBeLessThanOrEqual(4_000);
     expect(Buffer.byteLength(reviewNotes, "utf8")).toBeLessThanOrEqual(4_000);
@@ -39,9 +39,11 @@ describe("App Store metadata package", () => {
   it("keeps the first version sport-neutral and inside the claim boundary", () => {
     const description = textBlockAfter("Description:");
 
-    expect(description).toContain("Athletinnen und Athleten");
-    expect(description).toContain("Training, Wettkampf oder Ruhetag");
+    expect(description).toContain("Prinzipien von Lernen und Neuroplastizität");
+    expect(description).toContain("klarer, präsenter und freier zu handeln");
+    expect(description).toContain("zusammengefasste Teamzustände");
     expect(description).toContain("kein medizinisches Produkt");
+    expect(description).not.toMatch(/garantiert|bewiesen|wirksam|Heilung/i);
     expect(description).not.toMatch(/Fußball|Fussball|Torwart|Stürmer|Boxer|Turner/i);
   });
 
