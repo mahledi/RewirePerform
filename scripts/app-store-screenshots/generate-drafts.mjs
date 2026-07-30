@@ -17,6 +17,13 @@ const iphoneDirectory = join(outputRoot, "iphone-6.9-drafts");
 const ipadDirectory = join(outputRoot, "ipad-13-drafts");
 const chromeExecutable = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const viteExecutable = join(repositoryRoot, "node_modules", "vite", "bin", "vite.js");
+const requestedFormat = process.argv
+  .find((argument) => argument.startsWith("--format="))
+  ?.split("=")[1];
+const reuseSources = process.argv.includes("--reuse-sources");
+if (requestedFormat && !["iphone", "ipad"].includes(requestedFormat)) {
+  throw new Error(`Unsupported screenshot format: ${requestedFormat}`);
+}
 const coachConfig = join(
   repositoryRoot,
   "tools",
@@ -533,50 +540,65 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
         .ipad .brand { left: 118px; top: 100px; }
         .ipad .counter { right: 118px; top: 124px; }
         .ipad .copy {
-          left: 124px;
-          top: 470px;
-          width: 780px;
+          left: 150px;
+          right: 150px;
+          top: 300px;
+          width: auto;
+          text-align: center;
         }
         .ipad .eyebrow { font-size: 25px; }
-        .ipad h1 { font-size: 94px; }
-        .ipad .support { max-width: 740px; font-size: 36px; }
-        .ipad .device-stage {
-          right: 74px;
-          top: 320px;
-          width: 1,030px;
-          height: 2,190px;
+        .ipad h1 { font-size: 98px; }
+        .ipad .support {
+          max-width: 1500px;
+          margin-left: auto;
+          margin-right: auto;
+          font-size: 36px;
         }
-        .ipad .ambient { width: 1,040px; height: 1,040px; }
+        .ipad .device-stage {
+          left: 50%;
+          top: 810px;
+          width: 1600px;
+          height: 1900px;
+          transform: translateX(-50%);
+        }
+        .ipad .ambient {
+          top: 48%;
+          width: 1240px;
+          height: 1240px;
+        }
         .ipad .device {
           left: 50%;
-          top: 80px;
-          width: 850px;
-          height: 1,508px;
+          top: 130px;
+          width: 980px;
+          height: 1740px;
           transform: translateX(-50%);
           border-radius: 74px;
           padding: 28px;
         }
         .ipad .device img { border-radius: 48px; }
+        .ipad .device-stage.coach {
+          top: 760px;
+        }
         .ipad .device-stage.coach .device {
-          width: 830px;
-          height: 1,796px;
+          width: 860px;
+          height: 1860px;
           padding: 24px;
         }
         .ipad .device-stage.double .device {
-          width: 620px;
-          height: 1,100px;
+          width: 680px;
+          height: 1206px;
           padding: 20px;
           border-radius: 58px;
         }
         .ipad .device-stage.double .device-1 {
-          left: 10px;
-          top: 90px;
-          transform: rotate(-3deg);
+          left: 120px;
+          top: 110px;
+          transform: none;
         }
         .ipad .device-stage.double .device-2 {
-          left: 390px;
-          top: 550px;
-          transform: rotate(3deg);
+          left: 800px;
+          top: 410px;
+          transform: none;
         }
         .ipad .device-stage.double .device img { border-radius: 38px; }
         .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .ambient {
@@ -586,28 +608,19 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
           border-color: rgba(46,173,137,.28);
         }
         .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device-1 {
-          left: -880px;
-          top: 90px;
+          left: 120px;
+          top: 110px;
           transform: none;
         }
         .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device-2 {
-          left: -500px;
-          top: 550px;
+          left: 800px;
+          top: 410px;
           transform: none;
         }
         .ipad .audience {
-          right: 90px;
-          bottom: 180px;
-        }
-        .ipad .canvas::before {
-          content: "";
-          position: absolute;
-          left: 94px;
-          top: 390px;
-          width: 54px;
-          height: 5px;
-          border-radius: 999px;
-          background: ${colors.green};
+          left: 50%;
+          top: 0;
+          transform: translateX(-50%);
         }
       </style>
     </head>
@@ -648,6 +661,40 @@ const renderSlides = async ({ browser, sourceMap, logoUrl, format }) => {
       { waitUntil: "networkidle" },
     );
     await page.evaluate(() => document.fonts.ready);
+    if (isIpad) {
+      const layout = await page.evaluate(() => {
+        const canvas = document.querySelector(".canvas").getBoundingClientRect();
+        const copy = document.querySelector(".copy").getBoundingClientRect();
+        const audience = document.querySelector(".audience").getBoundingClientRect();
+        const devices = [...document.querySelectorAll(".device")].map((element) =>
+          element.getBoundingClientRect());
+        const deviceLeft = Math.min(...devices.map((rect) => rect.left));
+        const deviceRight = Math.max(...devices.map((rect) => rect.right));
+        return {
+          canvasWidth: canvas.width,
+          copyLeft: copy.left,
+          copyRight: copy.right,
+          copyCenter: copy.left + copy.width / 2,
+          audienceCenter: audience.left + audience.width / 2,
+          deviceLeft,
+          deviceRight,
+          deviceCenter: (deviceLeft + deviceRight) / 2,
+        };
+      });
+      const expectedCenter = layout.canvasWidth / 2;
+      const centered = [layout.copyCenter, layout.audienceCenter, layout.deviceCenter]
+        .every((center) => Math.abs(center - expectedCenter) <= 1);
+      const horizontallyContained =
+        layout.copyLeft >= 0 &&
+        layout.copyRight <= layout.canvasWidth &&
+        layout.deviceLeft >= 0 &&
+        layout.deviceRight <= layout.canvasWidth;
+      if (!centered || !horizontallyContained) {
+        throw new Error(
+          `Invalid centered iPad layout for ${slide.id}: ${JSON.stringify(layout)}`,
+        );
+      }
+    }
     await page.waitForTimeout(100);
     await page.screenshot({
       path: join(targetDirectory, `${slide.id}.png`),
@@ -710,7 +757,7 @@ await Promise.all([
   mkdir(ipadDirectory, { recursive: true }),
 ]);
 
-const mainServer = startViteServer({ port: 4_181 });
+let mainServer;
 let coachServer;
 const browser = await chromium.launch({
   headless: true,
@@ -718,15 +765,18 @@ const browser = await chromium.launch({
 });
 
 try {
-  await waitForServer("http://127.0.0.1:4181");
-  await captureAthleteSources(browser);
+  if (!reuseSources) {
+    mainServer = startViteServer({ port: 4_181 });
+    await waitForServer("http://127.0.0.1:4181");
+    await captureAthleteSources(browser);
 
-  // Start the isolated Coach harness only after the athlete capture. Launching
-  // both Vite configurations together can invalidate an in-flight optimized
-  // dependency and produce a transient "Outdated Optimize Dep" response.
-  coachServer = startViteServer({ port: 4_182, config: coachConfig });
-  await waitForServer("http://127.0.0.1:4182");
-  await captureCoachSources(browser);
+    // Start the isolated Coach harness only after the athlete capture. Launching
+    // both Vite configurations together can invalidate an in-flight optimized
+    // dependency and produce a transient "Outdated Optimize Dep" response.
+    coachServer = startViteServer({ port: 4_182, config: coachConfig });
+    await waitForServer("http://127.0.0.1:4182");
+    await captureCoachSources(browser);
+  }
 
   const sourceMap = await buildSourceMap();
   const logoSvg = await readFile(
@@ -734,31 +784,35 @@ try {
   );
   const logoUrl = dataUrl("image/svg+xml", logoSvg);
 
-  await renderSlides({
-    browser,
-    sourceMap,
-    logoUrl,
-    format: "iphone",
-  });
-  await renderSlides({
-    browser,
-    sourceMap,
-    logoUrl,
-    format: "ipad",
-  });
-  await renderContactSheet({
-    browser,
-    directory: iphoneDirectory,
-    format: "iphone",
-  });
-  await renderContactSheet({
-    browser,
-    directory: ipadDirectory,
-    format: "ipad",
-  });
+  if (!requestedFormat || requestedFormat === "iphone") {
+    await renderSlides({
+      browser,
+      sourceMap,
+      logoUrl,
+      format: "iphone",
+    });
+    await renderContactSheet({
+      browser,
+      directory: iphoneDirectory,
+      format: "iphone",
+    });
+  }
+  if (!requestedFormat || requestedFormat === "ipad") {
+    await renderSlides({
+      browser,
+      sourceMap,
+      logoUrl,
+      format: "ipad",
+    });
+    await renderContactSheet({
+      browser,
+      directory: ipadDirectory,
+      format: "ipad",
+    });
+  }
 } finally {
   await browser.close();
-  mainServer.kill("SIGTERM");
+  mainServer?.kill("SIGTERM");
   coachServer?.kill("SIGTERM");
 }
 
