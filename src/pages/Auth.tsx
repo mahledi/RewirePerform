@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
@@ -8,6 +8,7 @@ import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
+import AccessStatusScreen from "@/components/access/AccessStatusScreen";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   AuthStatusLayout,
@@ -24,39 +25,17 @@ import {
   publicAuthOrigin,
 } from "@/lib/authEmailFlow";
 import { safeInternalRoute } from "@/lib/internalRoute";
+import {
+  beginPostSignupOnboarding,
+  pendingPostAuthorizationTeamCode,
+  pendingPostSignupIntent,
+  queuePostAuthorizationTeamJoin,
+} from "@/lib/postSignupOnboarding";
+import { normalizeTeamInviteCode } from "@/lib/teamInvite";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join";
-type TeamJoinStatus = "idle" | "joining" | "error";
-
-const joinTeamByCode = async (rawCode: string) => {
-  const code = rawCode.trim().toUpperCase();
-  if (code.length !== 6) {
-    return { success: false as const, message: "Bitte gib einen gültigen 6-stelligen Teamcode ein." };
-  }
-
-  const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
-    _code: code,
-  });
-  const result = joinResult as { success?: boolean; role?: "athlete"; error?: string } | null;
-
-  if (joinError) {
-    console.error("Team join error:", joinError);
-    return {
-      success: false as const,
-      message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",
-    };
-  }
-
-  if (!result || result.success !== true) {
-    return {
-      success: false as const,
-      message: "Teamcode nicht gefunden. Bitte prüfe den Code und versuche es erneut.",
-    };
-  }
-
-  return { success: true as const };
-};
+type TeamJoinStatus = "idle" | "confirmation";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -66,16 +45,17 @@ const Auth = () => {
   const safeRedirect = safeInternalRoute(redirectTo);
   const urlIntent = searchParams.get("intent");
   const authFlow = searchParams.get("flow");
+  const inviteLinkInvalid = searchParams.get("invite_error") === "invalid";
   const legacyTeamCode = authFlow === "signup" ? null : searchParams.get("code");
   const urlCode = searchParams.get("team") ?? legacyTeamCode;
   const requestedMode = searchParams.get("mode");
   const authLinkError = parseAuthLinkError(window.location.search, window.location.hash);
   const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
   const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, role, roleVerified, loading: authLoading, verifyRole } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
   const [teamJoinStatus, setTeamJoinStatus] = useState<TeamJoinStatus>("idle");
-  const attemptedTeamJoinCodeRef = useRef<string | null>(null);
+  const [retryingRole, setRetryingRole] = useState(false);
 
   useEffect(() => {
     if (!forceSwitch) return;
@@ -117,11 +97,20 @@ const Auth = () => {
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
 
   const normalizedTeamCode = () => teamCode.trim().toUpperCase();
+  const activeTeamJoinCode = intent === "join"
+    ? confirmedTeamJoinCode || normalizedTeamCode()
+    : "";
+  const signupMetadata = user?.user_metadata as Record<string, unknown> | undefined;
+  const metadataOnboardingIntent = authFlow === "signup"
+    && signupMetadata?.rewireperform_post_signup_onboarding_version === "1"
+    && (signupMetadata?.rewireperform_post_signup_onboarding_intent === "solo"
+      || signupMetadata?.rewireperform_post_signup_onboarding_intent === "join")
+    ? signupMetadata.rewireperform_post_signup_onboarding_intent
+    : null;
 
   const emailRedirectTo = () => {
     const redirectUrl = new URL("/auth", publicAuthOrigin(window.location));
     redirectUrl.searchParams.set("flow", "signup");
-    if (safeRedirect) redirectUrl.searchParams.set("redirect", safeRedirect);
     if (intent === "join") {
       redirectUrl.searchParams.set("intent", "join");
       const code = normalizedTeamCode();
@@ -176,44 +165,90 @@ const Auth = () => {
     }
   };
 
-  const completeConfirmedTeamJoin = useCallback(async () => {
-    if (!confirmedTeamJoinCode) return;
-    setTeamJoinStatus("joining");
-    const join = await joinTeamByCode(confirmedTeamJoinCode);
-    if (!join.success) {
-      setTeamJoinStatus("error");
-      toast.error(join.message);
+  const confirmTeamJoin = () => {
+    if (!activeTeamJoinCode || !user) return;
+    const requiresOnboarding = Boolean(
+      pendingPostSignupIntent(user.id) || metadataOnboardingIntent,
+    );
+    if (requiresOnboarding && !pendingPostSignupIntent(user.id)) {
+      beginPostSignupOnboarding(user.id, "join");
+    }
+    if (!queuePostAuthorizationTeamJoin(user.id, activeTeamJoinCode, requiresOnboarding)) {
+      toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
       return;
     }
-
-    toast.success("E-Mail bestätigt und Teambeitritt abgeschlossen.");
     navigate("/questionnaire", { replace: true });
-  }, [confirmedTeamJoinCode, navigate]);
+  };
+
+  const cancelConfirmedTeamJoin = () => {
+    if (!user) return;
+    const pendingIntent = pendingPostSignupIntent(user.id);
+    if (!pendingIntent && metadataOnboardingIntent) {
+      beginPostSignupOnboarding(user.id, metadataOnboardingIntent);
+    }
+    navigate(
+      pendingPostSignupIntent(user.id) ? "/questionnaire" : "/dashboard",
+      { replace: true },
+    );
+  };
+
+  const retryRoleVerification = async () => {
+    if (retryingRole) return;
+    setRetryingRole(true);
+    await verifyRole();
+    setRetryingRole(false);
+  };
 
   useEffect(() => {
-    if (authLoading || switching || !user || !isConfirmedTeamJoinReturn || !confirmedTeamJoinCode) return;
-    if (attemptedTeamJoinCodeRef.current === confirmedTeamJoinCode) return;
-    attemptedTeamJoinCodeRef.current = confirmedTeamJoinCode;
-    void completeConfirmedTeamJoin();
-  }, [authLoading, completeConfirmedTeamJoin, confirmedTeamJoinCode, isConfirmedTeamJoinReturn, switching, user]);
+    if (
+      authLoading
+      || switching
+      || !user
+      || !roleVerified
+      || role !== "athlete"
+      || !isConfirmedTeamJoinReturn
+      || !activeTeamJoinCode
+      || teamJoinStatus !== "idle"
+    ) return;
+
+    if (pendingPostAuthorizationTeamCode(user.id) === activeTeamJoinCode) {
+      navigate("/questionnaire", { replace: true });
+      return;
+    }
+    setTeamJoinStatus("confirmation");
+  }, [activeTeamJoinCode, authLoading, isConfirmedTeamJoinReturn, navigate, role, roleVerified, switching, teamJoinStatus, user]);
 
   useEffect(() => {
-    if (authLoading || switching || verifyingCode || !user || isConfirmedTeamJoinReturn) return;
-    if (safeRedirect) navigate(safeRedirect, { replace: true });
-    else if (role === "admin") navigate("/admin", { replace: true });
-    else if (role === "coach") navigate("/coach", { replace: true });
+    if (authLoading || switching || verifyingCode || !user) return;
+    if (authLinkError) return;
+    if (!roleVerified || role === null) return;
+    if (role === "admin") {
+      navigate("/admin", { replace: true });
+      return;
+    }
+    if (role === "coach") {
+      navigate("/coach", { replace: true });
+      return;
+    }
+    if (isConfirmedTeamJoinReturn) return;
+    if (authFlow === "signup") {
+      if (!pendingPostSignupIntent(user.id) && metadataOnboardingIntent) {
+        beginPostSignupOnboarding(user.id, metadataOnboardingIntent);
+      }
+      navigate(pendingPostSignupIntent(user.id) ? "/questionnaire" : "/dashboard", { replace: true });
+    }
+    else if (pendingPostSignupIntent(user.id)) navigate("/questionnaire", { replace: true });
+    else if (safeRedirect) navigate(safeRedirect, { replace: true });
     else if (role === "athlete") navigate("/dashboard", { replace: true });
-    // if role still null but user exists, wait for role to load
-  }, [user, role, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, verifyingCode]);
+  }, [user, role, roleVerified, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, verifyingCode, authFlow, authLinkError, metadataOnboardingIntent]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
-    if (intent === "join" && normalizedTeamCode().length !== 6) {
+    if (intent === "join" && !normalizeTeamInviteCode(teamCode)) {
       toast.error("Bitte gib den 6-stelligen Teamcode ein, um den Teambeitritt abzuschließen.");
       return;
     }
-    if (intent === "join") attemptedTeamJoinCodeRef.current = normalizedTeamCode();
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
@@ -225,20 +260,6 @@ const Auth = () => {
       toast.error(authErrorMessage(error, "Die Anmeldung konnte gerade nicht abgeschlossen werden."));
     } else {
       await backfillProfileSport(data.user.id);
-      if (intent === "join") {
-        const join = await joinTeamByCode(teamCode);
-        if (!join.success) {
-          toast.error(join.message);
-          setLoading(false);
-          return;
-        }
-        toast.success("Teambeitritt abgeschlossen.");
-        navigate("/questionnaire", { replace: true });
-        setLoading(false);
-        return;
-      }
-
-      toast.success("Willkommen zurück!");
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
@@ -249,7 +270,28 @@ const Auth = () => {
         : roleData?.role === "coach"
           ? "/coach"
           : "/dashboard";
-      navigate(safeRedirect ?? nextRoute, { replace: true });
+      if (intent === "join") {
+        if (roleData?.role === "admin" || roleData?.role === "coach") {
+          navigate(nextRoute, { replace: true });
+          setLoading(false);
+          return;
+        }
+        const requiresOnboarding = Boolean(pendingPostSignupIntent(data.user.id));
+        if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, requiresOnboarding)) {
+          toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+          setLoading(false);
+          return;
+        }
+        navigate("/questionnaire", { replace: true });
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Willkommen zurück!");
+      navigate(
+        pendingPostSignupIntent(data.user.id) ? "/questionnaire" : safeRedirect ?? nextRoute,
+        { replace: true },
+      );
     }
     setLoading(false);
   };
@@ -265,19 +307,21 @@ const Auth = () => {
       toast.error("Bitte gib deinen Namen ein.");
       return;
     }
-    if (intent === "join" && teamCode.trim().length !== 6) {
+    if (intent === "join" && !normalizeTeamInviteCode(teamCode)) {
       toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
       return;
     }
-    if (intent === "join") attemptedTeamJoinCodeRef.current = normalizedTeamCode();
-
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName.trim() },
+        data: {
+          full_name: fullName.trim(),
+          rewireperform_post_signup_onboarding_version: "1",
+          rewireperform_post_signup_onboarding_intent: intent,
+        },
         emailRedirectTo: emailRedirectTo(),
       },
     });
@@ -305,21 +349,19 @@ const Auth = () => {
       return;
     }
 
+    beginPostSignupOnboarding(data.user.id, intent);
+    if (intent === "join" && !queuePostAuthorizationTeamJoin(data.user.id, teamCode, true)) {
+      toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+      setLoading(false);
+      return;
+    }
+
     if (!data.session) {
       setPendingEmail(email.trim());
       setPassword("");
       setMode("verify");
       setLoading(false);
       return;
-    }
-
-    if (intent === "join") {
-      const join = await joinTeamByCode(teamCode);
-      if (!join.success) {
-        toast.error(`Konto erstellt, aber Teambeitritt offen: ${join.message}`);
-        setLoading(false);
-        return;
-      }
     }
 
     toast.success("Konto erstellt! Willkommen.");
@@ -386,14 +428,13 @@ const Auth = () => {
     }
 
     await backfillProfileSport(data.user.id);
+    beginPostSignupOnboarding(data.user.id, intent);
     if (intent === "join") {
-      const join = await joinTeamByCode(teamCode);
-      if (!join.success) {
-        toast.error(join.message);
+      if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, true)) {
+        toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
         setVerifyingCode(false);
         return;
       }
-      toast.success("E-Mail bestätigt und Teambeitritt abgeschlossen.");
       navigate("/questionnaire", { replace: true });
       return;
     }
@@ -420,8 +461,7 @@ const Auth = () => {
     navigate("/auth/reset-password?verified=1", { replace: true });
   };
 
-  if (user && isConfirmedTeamJoinReturn && teamJoinStatus === "error") {
-    const accountRoute = role === "admin" ? "/admin" : role === "coach" ? "/coach" : "/dashboard";
+  if (user && role === "athlete" && isConfirmedTeamJoinReturn && teamJoinStatus === "confirmation") {
     return (
       <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
         <motion.div
@@ -432,24 +472,26 @@ const Auth = () => {
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Users className="h-7 w-7" aria-hidden="true" />
           </div>
-          <h1 className="mb-3 font-heading text-3xl font-bold">Teambeitritt noch offen.</h1>
+          <h1 className="mb-3 font-heading text-3xl font-bold">Team beitreten?</h1>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Deine E-Mail ist bestätigt. Der Teamcode konnte gerade nicht abgeschlossen werden. Du kannst es direkt erneut versuchen.
+            Bestätige den Teambeitritt bewusst. Erst danach wird dein Athletenkonto dem Team zugeordnet.
           </p>
           <button
             type="button"
-            onClick={() => void completeConfirmedTeamJoin()}
+            onClick={confirmTeamJoin}
             className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground transition-shadow hover:shadow-glow"
           >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            Erneut versuchen
+            <Users className="h-4 w-4" aria-hidden="true" />
+            Team beitreten
           </button>
           <button
             type="button"
-            onClick={() => navigate(accountRoute, { replace: true })}
+            onClick={cancelConfirmedTeamJoin}
             className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
           >
-            Ohne Team fortfahren
+            {pendingPostSignupIntent(user.id) || metadataOnboardingIntent
+              ? "Ohne Team fortfahren"
+              : "Abbrechen"}
           </button>
           <LegalLinks />
         </motion.div>
@@ -458,7 +500,26 @@ const Auth = () => {
   }
 
   // Don't flash login UI while restoring session or while a logged-in user is being redirected
-  if (authLoading || switching || (user && !forceSwitch)) {
+  if (authLoading || switching) {
+    return (
+      <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
+    );
+  }
+
+  if (user && !roleVerified && mode !== "link-error") {
+    return (
+      <AccessStatusScreen
+        checking={retryingRole}
+        title={retryingRole ? "Zugang wird geprüft" : "Rolle konnte nicht sicher geprüft werden"}
+        message={retryingRole
+          ? "Wir stellen deine sichere Sitzung wieder her."
+          : "Deine Daten bleiben geschützt. Stelle die Verbindung wieder her und prüfe den Zugang erneut."}
+        onRetry={retryingRole ? undefined : () => void retryRoleVerification()}
+      />
+    );
+  }
+
+  if (user && !forceSwitch && mode !== "link-error") {
     return (
       <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
     );
@@ -764,6 +825,12 @@ const Auth = () => {
           <h1 className="font-heading text-3xl font-bold mb-2">{intentTitle}</h1>
           <p className="text-muted-foreground text-sm">{intentSub}</p>
         </div>
+
+        {inviteLinkInvalid && intent === "join" && (
+          <p role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-foreground">
+            Der Einladungslink ist nicht vollständig. Gib den sechsstelligen Teamcode bitte erneut ein.
+          </p>
+        )}
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="relative">

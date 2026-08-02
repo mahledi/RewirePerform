@@ -1,6 +1,7 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { disableNativeReminders, isNativeNotificationsAvailable } from "@/lib/nativeNotifications";
+import { clearPostSignupOnboarding } from "@/lib/postSignupOnboarding";
 
 export interface AccountDeletionCandidate {
   userId: string;
@@ -197,5 +198,6 @@ export const clearDeletedAccountFromDevice = async (
   }
 
   removeLocalAccountKeys(userId, programInstanceIds);
+  clearPostSignupOnboarding(userId);
   await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
 };

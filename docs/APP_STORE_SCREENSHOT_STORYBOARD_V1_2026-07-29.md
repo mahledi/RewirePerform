@@ -212,7 +212,8 @@ Candidate support:
 
 UI source:
 
-- real first-run Solo/Team decision;
+- real Auth Solo/Team decision before account creation, not the explanatory
+  Settings replay or the post-signup introduction;
 - real Team-code requirement may be suggested but no usable code is shown.
 
 ### 9. Coach overview — Coach Dashboard

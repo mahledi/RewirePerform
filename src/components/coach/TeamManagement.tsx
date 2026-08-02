@@ -6,6 +6,7 @@ import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, Clip
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
+import { buildTeamInviteUrl } from "@/lib/teamInvite";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,10 +76,10 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     setCreating(false);
   };
 
-  const INVITE_BASE_URL = "https://rewireperform.com";
-
-  const getPlayerMessage = (team: Team) =>
-    `Hey, ich lade dich als Athletin oder Athlet zu RewirePerform ein.\n\nTeam: ${team.name}\nDein Teamcode: ${team.access_code}\n\nÖffne den Link, wenn du dir Zeit für die Registrierung und den folgenden Fragebogen nehmen kannst:\n${INVITE_BASE_URL}/auth?intent=join&code=${team.access_code}`;
+  const getPlayerMessage = (team: Team) => {
+    const inviteUrl = buildTeamInviteUrl(team.access_code) ?? "https://rewireperform.com/auth?intent=join";
+    return `Hey, ich lade dich als Athletin oder Athlet zu RewirePerform ein.\n\nTeam: ${team.name}\nDein Teamcode: ${team.access_code}\n\nÖffne den Link, um RewirePerform zu öffnen und dich dem Team anzuschließen:\n${inviteUrl}`;
+  };
 
   const shareWhatsApp = (message: string) => {
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");

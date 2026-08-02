@@ -14,7 +14,7 @@ import CTASection from "@/components/CTASection";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import { BrandLockup } from "@/components/brand/BrandLogo";
-import { hasCompletedPublicOnboarding } from "@/lib/publicOnboarding";
+import { pendingPostSignupIntent } from "@/lib/postSignupOnboarding";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,12 +23,13 @@ const Index = () => {
   useEffect(() => {
     if (loading) return;
     if (!user && Capacitor.isNativePlatform()) {
-      navigate(hasCompletedPublicOnboarding() ? "/auth" : "/welcome", { replace: true });
+      navigate("/auth", { replace: true });
       return;
     }
     if (!user || !role) return;
     if (role === "admin") navigate("/admin", { replace: true });
     else if (role === "coach") navigate("/coach", { replace: true });
+    else if (pendingPostSignupIntent(user.id)) navigate("/questionnaire", { replace: true });
     else navigate("/dashboard", { replace: true });
   }, [loading, navigate, role, user]);
 

@@ -129,7 +129,7 @@ Coach: [email] / [password]
 Admin: [email] / [password]
 
 Suggested review path:
-1. On first launch, review the three introductory pages, then sign in with the Athlete account.
+1. On first launch, sign in with the supplied Athlete account. The ten-step athlete introduction appears automatically only after a new athlete registration; the same introduction can be reviewed from Settings > Einführung ansehen without creating another account.
 2. Open Dashboard and inspect the current program day.
 3. Open Daily Check-in and Journal. The questions adapt to training, competition, or rest-day context.
 4. Open Settings. Local notifications and on-device speech input are optional. Typing remains available if microphone or speech permission is denied.
@@ -155,25 +155,25 @@ iPad, so prepare both required sets from the final native build:
 - iPhone 6.9-inch portrait: use an accepted native size, preferably the installed
   simulator's exact output such as 1290 x 2796 or 1320 x 2868 pixels.
 - iPad 13-inch portrait: 2064 x 2752 or 2048 x 2732 pixels.
-- Capture the same six scenes in the same order for both device families.
+- Capture the same ten scenes in the same order for both device families.
 
-The native V1 build and both physical device families are green. Screenshot
-capture remains open because it requires a clean synthetic review state and
-the final Store localization.
+The first ten-image iPhone and iPad sets have been uploaded. Because the
+introduction now starts after athlete signup, slot 8 must be replaced before
+submission with the real Auth Solo/Team choice; the other approved slots stay
+unchanged unless the final device review finds a visible drift.
 
-Planned scenes for the primary athlete listing:
+Approved scene order:
 
-1. `Heute`: current real program day and next action.
-2. `Plan`: weekly strip and daily timeline with real calendar context.
-3. Daily check-in: sport-neutral questions and practical tasks.
-4. Private journal: structured reflection without identifiable content.
-5. `Entwicklung`: real program adherence, phases, streak and applications
-   without psychological scores or unsupported efficacy claims.
-6. `Mehr`: privacy, optional reminders, support and account controls.
-
-If a separate coach-focused scene is used, it may contain only synthetic
-status and privacy-safe aggregate data. It must not replace the coherent
-athlete story in the primary screenshot set.
+1. Athlete Dashboard / `Heute`.
+2. Science Bite and real Daily-Flow tasks.
+3. Calendar context / `Plan`.
+4. Real program progress / `Entwicklung`.
+5. Pre-Training transfer.
+6. Private reflection and gratitude / Journal.
+7. The 56-day measurement network without personal scoring claims.
+8. The real Auth Solo/Team choice before account creation.
+9. Coach Dashboard with synthetic participation information only.
+10. Privacy-safe, thresholded daily team averages from synthetic Check-ins.
 
 Capture rules:
 

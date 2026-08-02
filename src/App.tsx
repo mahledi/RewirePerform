@@ -15,7 +15,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import IosInputPolish from "./components/IosInputPolish";
 import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
-import PublicOnboardingGate from "./components/onboarding/PublicOnboardingGate";
+import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardingGate";
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 
 const queryClient = new QueryClient();
@@ -26,6 +26,7 @@ const Index = lazy(() => import("./pages/Index.tsx"));
 const Demo = lazy(() => import("./demo/DemoPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
+const TeamInvite = lazy(() => import("./pages/TeamInvite.tsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const Questionnaire = lazy(() => import("./pages/Questionnaire.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
@@ -122,29 +123,36 @@ const AppRoutes = () => {
             <Route path="/support" element={<Support />} />
             <Route path="/guardian/decision" element={<GuardianDecision />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/auth" element={<PublicOnboardingGate><Auth /></PublicOnboardingGate>} />
+            <Route path="/join" element={<TeamInvite />} />
+            <Route path="/welcome" element={
+              <ProtectedRoute><MinorAuthorizationGate><Welcome /></MinorAuthorizationGate></ProtectedRoute>
+            } />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/minor-consent" element={
               <ProtectedRoute><MinorConsent /></ProtectedRoute>
             } />
             <Route path="/questionnaire" element={
-              <ProtectedRoute><MinorAuthorizationGate><Questionnaire /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute>
+                <MinorAuthorizationGate>
+                  <PostSignupOnboardingGate><Questionnaire /></PostSignupOnboardingGate>
+                </MinorAuthorizationGate>
+              </ProtectedRoute>
             } />
             <Route path="/dashboard" element={
-              <ProtectedRoute><MinorAuthorizationGate><Dashboard /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><Dashboard /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/assessment" element={
-              <ProtectedRoute><MinorAuthorizationGate><Assessment /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><Assessment /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/coach" element={
               <ProtectedRoute><Coach /></ProtectedRoute>
             } />
             <Route path="/deep-profile" element={
-              <ProtectedRoute><MinorAuthorizationGate><DeepProfile /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><DeepProfile /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/progress" element={
-              <ProtectedRoute><MinorAuthorizationGate><Progress /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><Progress /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/settings" element={
               <ProtectedRoute><Settings /></ProtectedRoute>
@@ -153,13 +161,13 @@ const AppRoutes = () => {
               <ProtectedRoute><AccountSettings /></ProtectedRoute>
             } />
             <Route path="/journal" element={
-              <ProtectedRoute><MinorAuthorizationGate><Journal /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><Journal /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/journal/history" element={
-              <ProtectedRoute><MinorAuthorizationGate><JournalHistory /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><JournalHistory /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/pre-training" element={
-              <ProtectedRoute><MinorAuthorizationGate><PreTraining /></MinorAuthorizationGate></ProtectedRoute>
+              <ProtectedRoute><MinorAuthorizationGate><PostSignupOnboardingGate><PreTraining /></PostSignupOnboardingGate></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/admin" element={
               <ProtectedRoute><Admin /></ProtectedRoute>

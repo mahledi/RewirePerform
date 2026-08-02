@@ -31,21 +31,22 @@ describe("native signup auth return", () => {
     }
   });
 
-  it("preserves a validated team context without placing session secrets in the continuation route", () => {
+  it("preserves a validated team context while continuing through minor authorization", () => {
     const parsed = parseNativeSignupReturn(sessionUrl(
       "https://rewireperform.com",
-      "flow=signup&intent=join&team=abc123&redirect=%2Fquestionnaire",
+      "flow=signup&intent=join&team=abc123&redirect=%2Fadmin",
     ));
     expect(parsed).toMatchObject({
       kind: "session",
       intent: "join",
       teamCode: "ABC123",
-      redirect: "/questionnaire",
+      redirect: "/admin",
     });
     if (parsed.kind !== "session") throw new Error("expected session");
 
     const route = nativeSignupContinuationRoute(parsed);
-    expect(route).toBe("/auth?redirect=%2Fquestionnaire&intent=join&team=ABC123");
+    expect(route).toBe("/minor-consent?next=%2Fquestionnaire");
+    expect(route).not.toContain("ABC123");
     expect(route).not.toContain("access-secret");
     expect(route).not.toContain("refresh-secret");
   });

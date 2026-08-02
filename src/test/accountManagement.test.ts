@@ -30,6 +30,7 @@ import {
   deleteCurrentAccount,
   loadAccountDeletionPreview,
 } from "@/lib/accountManagement";
+import { postSignupOnboardingStorageKey } from "@/lib/postSignupOnboarding";
 
 describe("account management client", () => {
   beforeEach(() => {
@@ -116,6 +117,8 @@ describe("account management client", () => {
     window.localStorage.setItem("rewire:draft:questionnaire:instance-1:onboarding_v2", "own questionnaire");
     window.localStorage.setItem("rewire:draft:questionnaire:instance-2:onboarding_v2", "other questionnaire");
     window.localStorage.setItem("rewire:draft:questionnaire:onboarding_v2", "legacy questionnaire");
+    window.localStorage.setItem(postSignupOnboardingStorageKey("user-1"), "own onboarding state");
+    window.localStorage.setItem(postSignupOnboardingStorageKey("user-2"), "other onboarding state");
 
     await clearDeletedAccountFromDevice("user-1", ["instance-1"]);
 
@@ -124,6 +127,8 @@ describe("account management client", () => {
     expect(window.localStorage.getItem("rewire:draft:questionnaire:onboarding_v2")).toBeNull();
     expect(window.localStorage.getItem("rewire:draft:checkin:user-2:2026-07-14:training")).toBe("other checkin");
     expect(window.localStorage.getItem("rewire:draft:questionnaire:instance-2:onboarding_v2")).toBe("other questionnaire");
+    expect(window.localStorage.getItem(postSignupOnboardingStorageKey("user-1"))).toBeNull();
+    expect(window.localStorage.getItem(postSignupOnboardingStorageKey("user-2"))).toBe("other onboarding state");
     expect(mocks.signOut).toHaveBeenCalledWith({ scope: "local" });
   });
 });

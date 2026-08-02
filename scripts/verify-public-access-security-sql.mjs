@@ -7,6 +7,10 @@ const migration = readFileSync(
   resolve("supabase/migrations/20260723101114_harden_public_coach_access.sql"),
   "utf8",
 );
+const teamJoinAuthorizationMigration = readFileSync(
+  resolve("supabase/migrations/20260801104717_harden_team_join_minor_authorization.sql"),
+  "utf8",
+);
 
 const ids = {
   admin: "00000000-0000-4000-8000-000000000001",
@@ -15,6 +19,8 @@ const ids = {
   coach: "00000000-0000-4000-8000-000000000004",
   unconfirmed: "00000000-0000-4000-8000-000000000005",
   rollbackCandidate: "00000000-0000-4000-8000-000000000006",
+  blockedAthlete: "00000000-0000-4000-8000-000000000007",
+  activePolicy: "20000000-0000-4000-8000-000000000001",
   teamOne: "10000000-0000-4000-8000-000000000001",
   teamTwo: "10000000-0000-4000-8000-000000000002",
   missingTeam: "10000000-0000-4000-8000-000000000099",
@@ -71,6 +77,7 @@ try {
     CREATE ROLE authenticated;
     CREATE ROLE service_role;
     CREATE SCHEMA auth;
+    CREATE SCHEMA minor_auth;
 
     CREATE FUNCTION auth.uid()
     RETURNS uuid
@@ -114,6 +121,26 @@ try {
       team_id uuid NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
       user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
       PRIMARY KEY (team_id, user_id)
+    );
+
+    CREATE TABLE minor_auth.system_settings (
+      singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+      enforcement_enabled boolean NOT NULL DEFAULT false
+    );
+    INSERT INTO minor_auth.system_settings(singleton, enforcement_enabled)
+    VALUES (true, false);
+
+    CREATE TABLE minor_auth.policy_versions (
+      id uuid PRIMARY KEY,
+      status text NOT NULL
+    );
+
+    CREATE TABLE minor_auth.participant_authorizations (
+      user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+      policy_id uuid NOT NULL REFERENCES minor_auth.policy_versions(id),
+      product_status text NOT NULL,
+      revoked_at timestamptz,
+      PRIMARY KEY (user_id, policy_id)
     );
 
     CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
@@ -229,6 +256,7 @@ try {
   `);
 
   await db.exec(migration);
+  await db.exec(teamJoinAuthorizationMigration);
 
   await db.query(
     `INSERT INTO auth.users (id, email, email_confirmed_at, raw_user_meta_data)
@@ -238,7 +266,8 @@ try {
        ($3::uuid, 'candidate@example.test', now(), '{"role":"coach"}'::jsonb),
        ($4::uuid, 'coach@example.test', now(), '{"role":"coach"}'::jsonb),
        ($5::uuid, 'unconfirmed@example.test', null, '{"role":"coach"}'::jsonb),
-       ($6::uuid, 'rollback@example.test', now(), '{"role":"coach"}'::jsonb)`,
+       ($6::uuid, 'rollback@example.test', now(), '{"role":"coach"}'::jsonb),
+       ($7::uuid, 'blocked@example.test', now(), '{}'::jsonb)`,
     [
       ids.admin,
       ids.athlete,
@@ -246,7 +275,19 @@ try {
       ids.coach,
       ids.unconfirmed,
       ids.rollbackCandidate,
+      ids.blockedAthlete,
     ],
+  );
+
+  await db.query(
+    "INSERT INTO minor_auth.policy_versions(id, status) VALUES ($1::uuid, 'active')",
+    [ids.activePolicy],
+  );
+  await db.query(
+    `INSERT INTO minor_auth.participant_authorizations(
+       user_id, policy_id, product_status, revoked_at
+     ) VALUES ($1::uuid, $2::uuid, 'authorized', null)`,
+    [ids.athlete, ids.activePolicy],
   );
 
   assert(
@@ -282,6 +323,46 @@ try {
   await db.query(
     "UPDATE public.teams SET created_by = $1::uuid WHERE id = $2::uuid",
     [ids.coach, ids.teamOne],
+  );
+
+  await setActor(ids.blockedAthlete);
+  const blockedJoin = await db.query(
+    "SELECT public.join_team_by_code('ath456') AS result",
+  );
+  assert(
+    blockedJoin.rows[0].result.error === "minor_product_authorization_required",
+    "An athlete without active product authorization must not join a team",
+  );
+  assert(
+    (await membershipsFor(ids.blockedAthlete)).length === 0,
+    "Blocked athlete must not receive a team membership",
+  );
+
+  await db.query(
+    `INSERT INTO minor_auth.participant_authorizations(
+       user_id, policy_id, product_status, revoked_at
+     ) VALUES ($1::uuid, $2::uuid, 'authorized', now())`,
+    [ids.blockedAthlete, ids.activePolicy],
+  );
+  const revokedJoin = await db.query(
+    "SELECT public.join_team_by_code('ath456') AS result",
+  );
+  assert(
+    revokedJoin.rows[0].result.error === "minor_product_authorization_required",
+    "A revoked product authorization must not create team membership",
+  );
+  await db.query(
+    `UPDATE minor_auth.participant_authorizations
+     SET revoked_at = null
+     WHERE user_id = $1::uuid AND policy_id = $2::uuid`,
+    [ids.blockedAthlete, ids.activePolicy],
+  );
+  const authorizedJoin = await db.query(
+    "SELECT public.join_team_by_code('ath456') AS result",
+  );
+  assert(
+    authorizedJoin.rows[0].result.success === true,
+    "The same athlete should join after product authorization",
   );
 
   await setActor(ids.athlete);

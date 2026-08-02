@@ -220,7 +220,14 @@ describe("minor guardian production contract", () => {
     ];
 
     for (const page of gatedPages) {
-      expect(app).toContain(`<MinorAuthorizationGate><${page} /></MinorAuthorizationGate>`);
+      const pageIndex = app.indexOf(`<${page} />`);
+      const routeStart = app.lastIndexOf("<Route", pageIndex);
+      const route = app.slice(routeStart, pageIndex + `<${page} />`.length);
+      expect(pageIndex).toBeGreaterThan(-1);
+      expect(route.indexOf("<MinorAuthorizationGate>")).toBeGreaterThan(-1);
+      expect(route.indexOf("<PostSignupOnboardingGate>")).toBeGreaterThan(
+        route.indexOf("<MinorAuthorizationGate>"),
+      );
     }
     expect(app).toContain('path="/guardian/decision"');
     expect(app).toContain('path="/imprint"');

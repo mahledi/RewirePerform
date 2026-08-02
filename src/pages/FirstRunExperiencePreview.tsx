@@ -36,6 +36,8 @@ type FirstRunExperiencePreviewProps = {
   onLogin?: () => void;
   onClose?: () => void;
   replay?: boolean;
+  postSignup?: boolean;
+  initialMode?: FirstRunMode;
 };
 
 type Scene = {
@@ -862,7 +864,7 @@ const TeamScreen = () => (
   </AppScreen>
 );
 
-const StartScreen = ({ mode }: { mode: FirstRunMode }) => (
+const StartScreen = ({ mode, postSignup }: { mode: FirstRunMode; postSignup: boolean }) => (
   <AppScreen labelledBy="preview-start-title" chrome="none">
     <div className="flex h-full flex-col items-center px-5 pt-9 text-center">
       <div className="relative">
@@ -877,30 +879,45 @@ const StartScreen = ({ mode }: { mode: FirstRunMode }) => (
         Richte RewirePerform jetzt passend zu dir und deinem Sportalltag ein.
       </p>
 
-      <div className="mt-7 grid w-full grid-cols-2 gap-3">
-        <div className={cn(
-          "rounded-[18px] border p-4 text-left",
-          mode === "solo" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
-        )}>
-          <Target className={cn("h-4 w-4", mode === "solo" ? "text-primary" : "text-white/35")} />
-          <p className="mt-4 text-[11px] font-semibold">Solo</p>
-          <p className="mt-1 text-[8px] text-white/35">Dein eigener Plan</p>
+      {postSignup ? (
+        <div className="mt-7 w-full rounded-[18px] border border-primary/30 bg-primary/[0.08] p-4 text-left">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary">
+              <ClipboardCheck className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-primary">Dein nächster Schritt</p>
+              <p className="mt-1 text-[11px] font-semibold">Fragebogen</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[8px] leading-4 text-white/42">Sport, Alltag und Ausgangslage</p>
         </div>
-        <div className={cn(
-          "rounded-[18px] border p-4 text-left",
-          mode === "team" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
-        )}>
-          <Users className={cn("h-4 w-4", mode === "team" ? "text-primary" : "text-white/35")} />
-          <p className="mt-4 text-[11px] font-semibold">Team</p>
-          <p className="mt-1 text-[8px] text-white/35">Mit Teamcode</p>
+      ) : (
+        <div className="mt-7 grid w-full grid-cols-2 gap-3">
+          <div className={cn(
+            "rounded-[18px] border p-4 text-left",
+            mode === "solo" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
+          )}>
+            <Target className={cn("h-4 w-4", mode === "solo" ? "text-primary" : "text-white/35")} />
+            <p className="mt-4 text-[11px] font-semibold">Solo</p>
+            <p className="mt-1 text-[8px] text-white/35">Dein eigener Plan</p>
+          </div>
+          <div className={cn(
+            "rounded-[18px] border p-4 text-left",
+            mode === "team" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
+          )}>
+            <Users className={cn("h-4 w-4", mode === "team" ? "text-primary" : "text-white/35")} />
+            <p className="mt-4 text-[11px] font-semibold">Team</p>
+            <p className="mt-1 text-[8px] text-white/35">Mit Teamcode</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-5 flex h-12 w-full items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-[#07110E]">
-        Registrierung starten
+        {postSignup ? "Fragebogen starten" : "Registrierung starten"}
         <ArrowRight className="ml-2 h-3.5 w-3.5" />
       </div>
-      <p className="mt-4 text-[8px] font-medium text-primary">Schon registriert? Anmelden</p>
+      {!postSignup && <p className="mt-4 text-[8px] font-medium text-primary">Schon registriert? Anmelden</p>}
     </div>
   </AppScreen>
 );
@@ -910,10 +927,12 @@ const FirstRunExperiencePreview = ({
   onLogin,
   onClose,
   replay = false,
+  postSignup = false,
+  initialMode = "solo",
 }: FirstRunExperiencePreviewProps = {}) => {
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
-  const [mode, setMode] = useState<FirstRunMode>("solo");
+  const [mode, setMode] = useState<FirstRunMode>(initialMode);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const stageRef = useRef<HTMLElement>(null);
   const cameraViewportRef = useRef<HTMLDivElement>(null);
@@ -993,7 +1012,7 @@ const FirstRunExperiencePreview = ({
             </motion.div>
           </AnimatePresence>
 
-          {isLast && !replay && (
+          {isLast && !replay && !postSignup && (
             <div className="mt-4">
               <div className="flex gap-2" role="group" aria-label="Programmweg auswählen">
                 {(["solo", "team"] as const).map((item) => (
@@ -1055,7 +1074,7 @@ const FirstRunExperiencePreview = ({
                 {screen.id === "development" && <DevelopmentScreen />}
                 {screen.id === "measurement" && <MeasurementScreen />}
                 {screen.id === "team" && <TeamScreen />}
-                {screen.id === "start" && <StartScreen mode={mode} />}
+                {screen.id === "start" && <StartScreen mode={mode} postSignup={postSignup} />}
               </motion.div>
             ))}
           </div>
@@ -1108,7 +1127,13 @@ const FirstRunExperiencePreview = ({
           >
             {isLast ? (
               <>
-                {onComplete ? (replay ? "Zurück zu den Einstellungen" : "Registrierung starten") : "Vorschau erneut ansehen"}
+                {onComplete
+                  ? replay
+                    ? "Zurück zu den Einstellungen"
+                    : postSignup
+                      ? "Fragebogen starten"
+                      : "Registrierung starten"
+                  : "Vorschau erneut ansehen"}
                 {onComplete ? <ArrowRight className="ml-2 h-4 w-4" /> : <RotateCcw className="ml-2 h-4 w-4" />}
               </>
             ) : (

@@ -54,8 +54,8 @@ describe("first run experience preview", () => {
     expect(app).toContain('path="/internal/first-run-preview"');
     expect(welcome).toContain("import FirstRunExperiencePreview");
     expect(welcome).toContain("onComplete={finish}");
-    expect(welcome).toContain('"/auth?mode=signup&intent=solo"');
-    expect(welcome).toContain('"/auth?mode=signup&intent=join"');
+    expect(welcome).toContain("completePostSignupOnboarding");
+    expect(welcome).toContain('navigate("/questionnaire"');
   });
 
   it("moves through the real-system story without account or network actions", () => {
@@ -130,4 +130,26 @@ describe("first run experience preview", () => {
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Zurück" })).toBeDisabled();
   }, 15_000);
-});
+  });
+
+  it("uses a truthful questionnaire handoff after registration", () => {
+    const onComplete = vi.fn();
+    render(
+      <FirstRunExperiencePreview
+        onComplete={onComplete}
+        postSignup
+        initialMode="team"
+      />,
+    );
+
+    for (let index = 0; index < 9; index += 1) {
+      fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
+    }
+
+    expect(screen.queryByRole("group", { name: "Programmweg auswählen" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Schon registriert? Anmelden")).not.toBeInTheDocument();
+    expect(screen.getByText("Dein nächster Schritt")).toBeInTheDocument();
+    expect(screen.getAllByText("Fragebogen starten").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Fragebogen starten" }));
+    expect(onComplete).toHaveBeenCalledWith("team");
+  }, 15_000);

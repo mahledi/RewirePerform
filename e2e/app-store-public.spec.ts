@@ -71,11 +71,18 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await capture(page, testInfo, "auth-signup");
 });
 
-test("public introduction completes without collecting personal data", async ({ page }, testInfo) => {
+test("the athlete introduction is no longer exposed before authentication", async ({ page }) => {
+  await page.goto("/welcome");
+  await expect(page).toHaveURL(/\/auth\?redirect=%2Fwelcome$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).not.toBeVisible();
+});
+
+test("internal introduction evidence completes without collecting personal data", async ({ page }, testInfo) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
-  await page.goto("/welcome");
+  await page.goto("/internal/first-run-preview");
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
 
@@ -97,9 +104,8 @@ test("public introduction completes without collecting personal data", async ({ 
   await expect(page.getByRole("button", { name: "Team" })).toHaveAttribute("aria-pressed", "false");
   await capture(page, testInfo, "introduction-start");
 
-  await page.getByRole("button", { name: "Registrierung starten" }).click();
-  await expect(page).toHaveURL(/\/auth\?mode=signup&intent=solo$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
+  await page.getByRole("button", { name: "Vorschau erneut ansehen" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).toBeVisible();
 
   const storedValues = await page.evaluate(() =>
     Object.fromEntries(
@@ -109,13 +115,13 @@ test("public introduction completes without collecting personal data", async ({ 
       }),
     ),
   );
-  expect(storedValues).toEqual({ "rewireperform:public-onboarding": "1" });
+  expect(storedValues).toEqual({});
   expect(pageErrors).toEqual([]);
 });
 
-test("public introduction remains accessible with reduced motion and large text", async ({ page }, testInfo) => {
+test("introduction evidence remains accessible with reduced motion and large text", async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/welcome");
+  await page.goto("/internal/first-run-preview");
   await page.evaluate(() => {
     window.localStorage.clear();
     document.documentElement.style.fontSize = "150%";
@@ -143,7 +149,7 @@ test("public introduction remains accessible with reduced motion and large text"
     ).toBeVisible();
   }
 
-  await expect(page.getByRole("button", { name: "Registrierung starten" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Vorschau erneut ansehen" })).toBeVisible();
   const roleGroup = page.getByRole("group", { name: "Programmweg auswählen" });
   await roleGroup.scrollIntoViewIfNeeded();
   const roleGroupBox = await roleGroup.boundingBox();

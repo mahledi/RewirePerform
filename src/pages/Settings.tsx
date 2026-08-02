@@ -30,7 +30,7 @@ const faqItems = [
   },
   {
     q: "Wie funktioniert das Programm?",
-    a: "Nach der Registrierung füllst du einen ausführlichen Onboarding-Fragebogen aus (Sport, Position, mentale Ausgangslage). Daraus entsteht dein Startprofil. Anschließend führt dich ein festes 56-Tage-System durch vier aufeinander aufbauende Phasen — jeder Tag hat eine klare Linse, einen Wissens-Input und konkrete Übungen.",
+    a: "Nach der Registrierung lernst du den Ablauf in einer kurzen Einführung kennen. Danach füllst du den Onboarding-Fragebogen zu Sport, Position und mentaler Ausgangslage aus. Daraus entsteht dein Startprofil. Anschließend führt dich ein festes 56-Tage-System durch vier aufeinander aufbauende Phasen — jeder Tag hat eine klare Linse, einen Wissens-Input und konkrete Übungen.",
   },
   {
     q: "Wie sehen die täglichen Aufgaben aus?",
