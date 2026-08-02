@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const migration = readFileSync(
   resolve(
     process.cwd(),
-    "supabase/migrations/20260723101114_harden_public_coach_access.sql",
+    "supabase/migrations/20260723151225_harden_public_coach_access.sql",
   ),
   "utf8",
 );

@@ -4,7 +4,7 @@ import { PGlite } from "@electric-sql/pglite";
 
 const db = new PGlite();
 const migration = readFileSync(
-  resolve("supabase/migrations/20260723101114_harden_public_coach_access.sql"),
+  resolve("supabase/migrations/20260723151225_harden_public_coach_access.sql"),
   "utf8",
 );
 const teamJoinAuthorizationMigration = readFileSync(

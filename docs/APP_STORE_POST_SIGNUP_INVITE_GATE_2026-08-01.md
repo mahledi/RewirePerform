@@ -49,19 +49,19 @@ It is versioned locally and has **not** been applied to Production. It replaces
 `public.join_team_by_code(text)` with a fail-closed check for an active,
 non-revoked product authorization before any team lookup or membership write.
 
-Production records the logically equivalent older coach-hardening migration as
-`20260723151225`, while the repository contains it as `20260723101114`. A
-generic `supabase db push` is forbidden until that history alias is explicitly
-reconciled. The new migration must be applied by a controlled, named operation
-with preflight, postflight and rollback capture after separate Production
-approval.
+The repository history is synchronized with the Production versions
+`20260723151225`, `20260723154047` and `20260723165153`. The latter two files
+were recovered byte-identically from their documented supervised Production
+activation commit. The new migration must still be applied by a controlled,
+named operation with preflight, postflight and rollback capture after separate
+Production approval.
 
 ## Remaining release gates
 
 1. Independently approve the candidate diff and create a reviewed PR.
-2. Reconcile the known migration-history alias and apply only the named team
-   join migration to Production after explicit approval; verify definition,
-   grants and authorized/unauthorized behavior.
+2. Confirm exact local/remote migration-history parity and apply only the named
+   team join migration to Production after explicit approval; verify
+   definition, grants and authorized/unauthorized behavior.
 3. Merge the reviewed candidate, verify GitHub CI and the exact Vercel
    Production deployment including the `/join` Universal-Link file.
 4. Install that exact build number on iPhone and iPad and test adult, 16-17,
