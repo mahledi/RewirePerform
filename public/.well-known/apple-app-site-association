@@ -12,6 +12,13 @@
               "flow": "signup"
             },
             "comment": "RewirePerform signup confirmation only"
+          },
+          {
+            "/": "/join",
+            "?": {
+              "team": "??????"
+            },
+            "comment": "RewirePerform athlete team invitation"
           }
         ]
       }

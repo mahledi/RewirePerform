@@ -1,0 +1,41 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { joinTeamByCode } from "@/lib/teamJoin";
+
+const rpc = vi.hoisted(() => vi.fn());
+
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: { rpc },
+}));
+
+describe("team join client", () => {
+  beforeEach(() => {
+    rpc.mockReset();
+  });
+
+  it("rejects malformed codes without contacting Supabase", async () => {
+    expect(await joinTeamByCode("BAD/12")).toEqual({
+      success: false,
+      message: "Bitte gib einen gültigen 6-stelligen Teamcode ein.",
+    });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("returns a safe authorization message when the server blocks membership", async () => {
+    rpc.mockResolvedValue({
+      data: { success: false, error: "minor_product_authorization_required" },
+      error: null,
+    });
+
+    expect(await joinTeamByCode("abc123")).toEqual({
+      success: false,
+      message: "Deine Produktfreigabe konnte nicht sicher bestätigt werden. Bitte prüfe sie erneut.",
+    });
+    expect(rpc).toHaveBeenCalledWith("join_team_by_code", { _code: "ABC123" });
+  });
+
+  it("accepts only an explicit successful athlete join response", async () => {
+    rpc.mockResolvedValue({ data: { success: true, role: "athlete" }, error: null });
+
+    expect(await joinTeamByCode("abc123")).toEqual({ success: true });
+  });
+});

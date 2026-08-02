@@ -8,6 +8,11 @@ import {
   parseNativeSignupReturn,
   type NativeSignupReturn,
 } from "@/lib/nativeAuthReturn";
+import {
+  beginPostSignupOnboarding,
+  queuePostAuthorizationTeamJoin,
+} from "@/lib/postSignupOnboarding";
+import { parseTeamInviteUrl, teamInviteAuthRoute } from "@/lib/teamInvite";
 
 const safeErrorCode = (code: string) =>
   code === "otp_expired" || code === "access_denied" ? code : "invalid_callback";
@@ -27,8 +32,19 @@ const NativeAuthReturnHandler = () => {
     let listener: PluginListenerHandle | null = null;
 
     const handleUrl = async (rawUrl: string) => {
+      if (disposed) return;
+      const invite = parseTeamInviteUrl(rawUrl);
+      if (invite.kind === "invite") {
+        navigate(teamInviteAuthRoute(invite.teamCode), { replace: true });
+        return;
+      }
+      if (invite.kind === "invalid") {
+        navigate("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
+        return;
+      }
+
       const parsed = parseNativeSignupReturn(rawUrl);
-      if (disposed || parsed.kind === "ignore") return;
+      if (parsed.kind === "ignore") return;
       if (parsed.kind === "error") {
         navigate(`/auth?flow=signup&error_code=${encodeURIComponent(safeErrorCode(parsed.errorCode))}`, {
           replace: true,
@@ -63,6 +79,16 @@ const NativeAuthReturnHandler = () => {
         return;
       }
 
+      const userId = result.data.session.user.id;
+      beginPostSignupOnboarding(userId, parsed.intent);
+      if (
+        parsed.intent === "join"
+        && parsed.teamCode
+        && !queuePostAuthorizationTeamJoin(userId, parsed.teamCode, true)
+      ) {
+        navigate("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
+        return;
+      }
       navigate(nativeSignupContinuationRoute(parsed), { replace: true });
     };
 

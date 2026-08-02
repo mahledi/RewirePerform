@@ -87,13 +87,20 @@ const associationDetail = files.association?.applinks?.details?.[0];
 if (
   !associationDetail
   || JSON.stringify(associationDetail.appIDs) !== JSON.stringify(["F7A976G38N.com.rewireperform.app"])
-  || JSON.stringify(associationDetail.components) !== JSON.stringify([{
-    "/": "/auth",
-    "?": { flow: "signup" },
-    comment: "RewirePerform signup confirmation only",
-  }])
+  || JSON.stringify(associationDetail.components) !== JSON.stringify([
+    {
+      "/": "/auth",
+      "?": { flow: "signup" },
+      comment: "RewirePerform signup confirmation only",
+    },
+    {
+      "/": "/join",
+      "?": { team: "??????" },
+      comment: "RewirePerform athlete team invitation",
+    },
+  ])
 ) {
-  failures.push("AASA: expected the exact RewirePerform signup-only universal-link contract");
+  failures.push("AASA: expected the exact RewirePerform signup and team-invite universal-link contract");
 }
 
 for (const dependency of [

@@ -1,12 +1,18 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Auth from "@/pages/Auth";
+import {
+  clearPostSignupOnboarding,
+  pendingPostAuthorizationTeamCode,
+  pendingPostSignupIntent,
+} from "@/lib/postSignupOnboarding";
 
 const mocks = vi.hoisted(() => ({
   authState: {
-    user: null as { id: string } | null,
+    user: null as { id: string; user_metadata?: Record<string, unknown> } | null,
     role: null as "admin" | "coach" | "athlete" | null,
+    roleVerified: true,
     loading: false,
   },
   from: vi.fn(),
@@ -19,10 +25,11 @@ const mocks = vi.hoisted(() => ({
   verifyOtp: vi.fn(),
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
+  verifyRole: vi.fn(),
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => mocks.authState,
+  useAuth: () => ({ ...mocks.authState, verifyRole: mocks.verifyRole }),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -57,6 +64,7 @@ const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
       <Route path="/questionnaire" element={<div>Fragebogen geöffnet</div>} />
       <Route path="/dashboard" element={<div>Dashboard geöffnet</div>} />
       <Route path="/coach" element={<div>Coach-Bereich geöffnet</div>} />
+      <Route path="/admin" element={<div>Admin-Bereich geöffnet</div>} />
       <Route path="/auth/reset-password" element={<div>Passwortseite geöffnet</div>} />
     </Routes>
   </MemoryRouter>,
@@ -70,16 +78,26 @@ const submitSoloSignup = () => {
   fireEvent.click(screen.getByRole("button", { name: "Konto erstellen" }));
 };
 
+const settleOtpTimers = () => act(async () => {
+  await new Promise((resolve) => window.setTimeout(resolve, 60));
+});
+
 describe("auth email confirmation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    clearPostSignupOnboarding("user-1");
+    window.history.replaceState({}, "", "/");
     mocks.authState.user = null;
     mocks.authState.role = null;
+    mocks.authState.roleVerified = true;
     mocks.authState.loading = false;
     mocks.resend.mockResolvedValue({ error: null });
     mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
     mocks.signOut.mockResolvedValue({ error: null });
     mocks.verifyOtp.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+    mocks.verifyRole.mockResolvedValue({ ok: true, value: "athlete" });
     mocks.from.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -114,8 +132,12 @@ describe("auth email confirmation", () => {
     const redirectUrl = new URL(signUpCall.options.emailRedirectTo);
     expect(redirectUrl.pathname).toBe("/auth");
     expect(redirectUrl.searchParams.get("flow")).toBe("signup");
-    expect(redirectUrl.searchParams.get("redirect")).toBe("/admin/qa");
-    expect(signUpCall.options.data).toEqual({ full_name: "Test Person" });
+    expect(redirectUrl.searchParams.has("redirect")).toBe(false);
+    expect(signUpCall.options.data).toEqual({
+      full_name: "Test Person",
+      rewireperform_post_signup_onboarding_version: "1",
+      rewireperform_post_signup_onboarding_intent: "solo",
+    });
     expect(signUpCall.options.data).not.toHaveProperty("role");
   });
 
@@ -126,7 +148,7 @@ describe("auth email confirmation", () => {
     expect(screen.getByText(/Coach-Zugänge werden.*persönlich geprüft/)).toBeInTheDocument();
   });
 
-  it("opens the solo signup selected in the first-run experience without a duplicate intent step", () => {
+  it("opens a direct solo signup without a duplicate intent step", () => {
     renderAuth("/auth?mode=signup&intent=solo");
 
     expect(screen.getByRole("heading", { name: "Du startest allein." })).toBeInTheDocument();
@@ -134,12 +156,19 @@ describe("auth email confirmation", () => {
     expect(screen.queryByLabelText("Teamcode")).not.toBeInTheDocument();
   });
 
-  it("opens the team signup selected in the first-run experience and still requires a real team code", () => {
+  it("opens a team invite signup and still requires a real team code", () => {
     renderAuth("/auth?mode=signup&intent=join");
 
     expect(screen.getByRole("heading", { name: "Du trittst einem Team bei." })).toBeInTheDocument();
     expect(screen.getByLabelText("Teamcode")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Konto erstellen" })).toBeInTheDocument();
+  });
+
+  it("shows a safe recovery message for a malformed invite without prefilling its payload", () => {
+    renderAuth("/auth?mode=signup&intent=join&invite_error=invalid");
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Teamcode bitte erneut ein");
+    expect(screen.getByLabelText("Teamcode")).toHaveValue("");
   });
 
   it("opens the shared login path used by registered athletes and coaches", () => {
@@ -150,7 +179,7 @@ describe("auth email confirmation", () => {
     expect(screen.queryByText(/Coach-Zugänge werden.*persönlich geprüft/)).not.toBeInTheDocument();
   });
 
-  it("can resend the confirmation using the same safe redirect", async () => {
+  it("resends confirmation into the fixed signup continuation instead of an arbitrary pre-auth redirect", async () => {
     mocks.signUp.mockResolvedValue({
       data: { user: { id: "user-1" }, session: null },
       error: null,
@@ -165,7 +194,7 @@ describe("auth email confirmation", () => {
     });
     const resendUrl = new URL(mocks.resend.mock.calls[0]?.[0].options.emailRedirectTo);
     expect(resendUrl.searchParams.get("flow")).toBe("signup");
-    expect(resendUrl.searchParams.get("redirect")).toBe("/admin/qa");
+    expect(resendUrl.searchParams.has("redirect")).toBe(false);
   });
 
   it("removes a backslash-normalized external redirect from confirmation links", async () => {
@@ -202,6 +231,8 @@ describe("auth email confirmation", () => {
       token: "123456",
       type: "email",
     });
+    expect(pendingPostSignupIntent("user-1")).toBe("solo");
+    await settleOtpTimers();
   });
 
   it("requests a password reset without revealing whether an account exists", async () => {
@@ -234,6 +265,7 @@ describe("auth email confirmation", () => {
       });
     });
     expect(await screen.findByText("Passwortseite geöffnet")).toBeInTheDocument();
+    await settleOtpTimers();
   });
 
   it("continues normally when Supabase returns an active session", async () => {
@@ -247,24 +279,65 @@ describe("auth email confirmation", () => {
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Bestätige deine E-Mail." })).not.toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBe("solo");
   });
 
-  it("completes a preserved team-code join after the confirmed session returns", async () => {
+  it("requires an explicit confirmation before an existing athlete joins from a team link", async () => {
     mocks.authState.user = { id: "user-1" };
     mocks.authState.role = "athlete";
-    mocks.rpc.mockResolvedValue({
-      data: { success: true, role: "athlete" },
-      error: null,
-    });
 
     renderAuth("/auth?intent=join&code=abc123");
 
+    expect(await screen.findByRole("heading", { name: "Team beitreten?" })).toBeInTheDocument();
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Team beitreten" }));
+
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
-    expect(mocks.rpc).toHaveBeenCalledTimes(1);
-    expect(mocks.rpc).toHaveBeenCalledWith("join_team_by_code", { _code: "ABC123" });
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
   });
 
-  it("never treats a Supabase PKCE auth code as a team code", async () => {
+  it("never replays onboarding metadata for a returning athlete opening a normal team invite", async () => {
+    mocks.authState.user = {
+      id: "user-1",
+      user_metadata: {
+        rewireperform_post_signup_onboarding_version: "1",
+        rewireperform_post_signup_onboarding_intent: "join",
+      },
+    };
+    mocks.authState.role = "athlete";
+
+    renderAuth("/auth?intent=join&code=abc123");
+
+    fireEvent.click(await screen.findByRole("button", { name: "Team beitreten" }));
+    expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+  });
+
+  it("restores a genuine cross-device team signup from namespaced signup metadata", async () => {
+    mocks.authState.user = {
+      id: "user-1",
+      user_metadata: {
+        rewireperform_post_signup_onboarding_version: "1",
+        rewireperform_post_signup_onboarding_intent: "join",
+      },
+    };
+    mocks.authState.role = "athlete";
+
+    renderAuth("/auth?flow=signup&intent=join&team=ABC123");
+
+    expect(await screen.findByRole("heading", { name: "Team beitreten?" })).toBeInTheDocument();
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Team beitreten" }));
+    expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBe("join");
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("never treats a raw signup query or Supabase PKCE auth code as proof of a new signup", async () => {
     mocks.authState.user = { id: "user-1" };
     mocks.authState.role = "athlete";
 
@@ -272,35 +345,121 @@ describe("auth email confirmation", () => {
 
     expect(await screen.findByText("Dashboard geöffnet")).toBeInTheDocument();
     expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBeNull();
   });
 
-  it("never trusts a role returned by a manipulated team-join response", async () => {
+  it("restores a genuine cross-device solo signup without trusting the URL alone", async () => {
+    mocks.authState.user = {
+      id: "user-1",
+      user_metadata: {
+        rewireperform_post_signup_onboarding_version: "1",
+        rewireperform_post_signup_onboarding_intent: "solo",
+      },
+    };
+    mocks.authState.role = "athlete";
+
+    renderAuth("/auth?flow=signup&code=one-time-auth-code");
+
+    expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBe("solo");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("fails closed with a visible retry when a signed-in role cannot be verified", async () => {
+    mocks.authState.user = { id: "user-1" };
+    mocks.authState.role = null;
+    mocks.authState.roleVerified = false;
+
+    renderAuth("/auth?intent=join&code=ABC123");
+
+    expect(await screen.findByRole("heading", { name: "Rolle konnte nicht sicher geprüft werden" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Erneut prüfen" }));
+    await waitFor(() => expect(mocks.verifyRole).toHaveBeenCalledTimes(1));
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("keeps an expired signup link visible for a signed-in athlete without opening the tour", async () => {
     mocks.authState.user = { id: "user-1" };
     mocks.authState.role = "athlete";
-    mocks.rpc.mockResolvedValue({
-      data: { success: true, role: "coach" },
-      error: null,
+    window.history.replaceState({}, "", "/auth?flow=signup&error_code=otp_expired");
+
+    renderAuth("/auth?flow=signup&error_code=otp_expired");
+
+    expect(await screen.findByRole("heading", { name: "Der Link ist nicht mehr gültig." })).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+  });
+
+  it.each(["coach", "admin"] as const)(
+    "never treats a signed-in %s as an athlete signup continuation",
+    async (role) => {
+      mocks.authState.user = { id: "user-1" };
+      mocks.authState.role = role;
+
+      renderAuth("/auth?flow=signup");
+
+      expect(await screen.findByText(role === "coach" ? "Coach-Bereich geöffnet" : "Admin-Bereich geöffnet")).toBeInTheDocument();
+      expect(pendingPostSignupIntent("user-1")).toBeNull();
+    },
+  );
+
+  it("queues an immediate team signup without joining before minor authorization", async () => {
+    mocks.signUp.mockImplementation(async () => {
+      mocks.authState.user = { id: "user-1" };
+      mocks.authState.role = "athlete";
+      return { data: { user: { id: "user-1" }, session: { access_token: "token" } }, error: null };
     });
 
-    renderAuth("/auth?intent=join&code=ABC123");
+    renderAuth("/auth?mode=signup&intent=join&team=ABC123");
+    fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Test Person" } });
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
+    fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
+    fireEvent.click(screen.getByRole("button", { name: "Konto erstellen" }));
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
-    expect(screen.queryByText("Coach-Bereich geöffnet")).not.toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBe("join");
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
-  it("offers a retry when the confirmed team join cannot be completed immediately", async () => {
-    mocks.authState.user = { id: "user-1" };
-    mocks.authState.role = "athlete";
-    mocks.rpc
-      .mockResolvedValueOnce({ data: { success: false }, error: null })
-      .mockResolvedValueOnce({ data: { success: true, role: "athlete" }, error: null });
-
-    renderAuth("/auth?intent=join&code=ABC123");
-
-    expect(await screen.findByRole("heading", { name: "Teambeitritt noch offen." })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Erneut versuchen" }));
+  it("queues an existing-account team login without joining inside Auth", async () => {
+    mocks.signInWithPassword.mockImplementation(async () => {
+      mocks.authState.user = { id: "user-1" };
+      mocks.authState.role = "athlete";
+      return { data: { user: { id: "user-1" } }, error: null };
+    });
+    renderAuth("/auth?mode=login&intent=join&team=ABC123");
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
+    fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
+    fireEvent.click(screen.getByRole("button", { name: "Anmelden" }));
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
-    expect(mocks.rpc).toHaveBeenCalledTimes(2);
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("queues an OTP-confirmed team signup without joining before minor authorization", async () => {
+    mocks.signUp.mockResolvedValue({ data: { user: { id: "user-1" }, session: null }, error: null });
+    mocks.verifyOtp.mockImplementation(async () => {
+      mocks.authState.user = { id: "user-1" };
+      mocks.authState.role = "athlete";
+      return { data: { user: { id: "user-1" } }, error: null };
+    });
+    renderAuth("/auth?mode=signup&intent=join&team=ABC123");
+    fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Test Person" } });
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
+    fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
+    fireEvent.click(screen.getByRole("button", { name: "Konto erstellen" }));
+    fireEvent.change(await screen.findByLabelText("Sechsstelliger Sicherheitscode"), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail bestätigen" }));
+
+    expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBe("join");
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    await settleOtpTimers();
   });
 });

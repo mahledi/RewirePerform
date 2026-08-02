@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 const read = (path: string) => readFileSync(path, "utf8");
 
 describe("native universal links contract", () => {
-  it("binds only the production signup route to the signed iOS app", () => {
+  it("binds only signup confirmation and validated team invitations to the signed iOS app", () => {
     const association = JSON.parse(
       read("public/.well-known/apple-app-site-association"),
     ) as {
@@ -23,6 +23,11 @@ describe("native universal links contract", () => {
         "/": "/auth",
         "?": { flow: "signup" },
         comment: "RewirePerform signup confirmation only",
+      },
+      {
+        "/": "/join",
+        "?": { team: "??????" },
+        comment: "RewirePerform athlete team invitation",
       },
     ]);
   });

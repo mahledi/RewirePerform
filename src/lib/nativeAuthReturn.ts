@@ -75,17 +75,8 @@ export const parseNativeSignupReturn = (rawUrl: string): NativeSignupReturn => {
 };
 
 export const nativeSignupContinuationRoute = (
-  value: Extract<NativeSignupReturn, { kind: "session" | "code" }>,
+  _value: Extract<NativeSignupReturn, { kind: "session" | "code" }>,
 ) => {
-  const nextRoute = value.redirect ?? "/questionnaire";
-  if (value.intent === "solo") {
-    return `/minor-consent?next=${encodeURIComponent(nextRoute)}`;
-  }
-
-  const params = new URLSearchParams({ redirect: nextRoute });
-  if (value.intent === "join" && value.teamCode) {
-    params.set("intent", "join");
-    params.set("team", value.teamCode);
-  }
-  return `/auth?${params.toString()}`;
+  const nextRoute = "/questionnaire";
+  return `/minor-consent?next=${encodeURIComponent(nextRoute)}`;
 };

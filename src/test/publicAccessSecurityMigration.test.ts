@@ -5,7 +5,14 @@ import { describe, expect, it } from "vitest";
 const migration = readFileSync(
   resolve(
     process.cwd(),
-    "supabase/migrations/20260723101114_harden_public_coach_access.sql",
+    "supabase/migrations/20260723151225_harden_public_coach_access.sql",
+  ),
+  "utf8",
+);
+const teamJoinAuthorizationMigration = readFileSync(
+  resolve(
+    process.cwd(),
+    "supabase/migrations/20260801104717_harden_team_join_minor_authorization.sql",
   ),
   "utf8",
 );
@@ -36,6 +43,27 @@ describe("public access hardening migration", () => {
     expect(joinFunction).not.toMatch(/INSERT INTO public\.user_roles/i);
     expect(joinFunction).toContain("'athlete_account_required'");
     expect(joinFunction).toContain("'role', 'athlete'");
+  });
+
+  it("keeps team membership fail-closed until product authorization is active", () => {
+    const hardenedJoin = teamJoinAuthorizationMigration.slice(
+      teamJoinAuthorizationMigration.indexOf("CREATE OR REPLACE FUNCTION public.join_team_by_code"),
+      teamJoinAuthorizationMigration.indexOf("REVOKE ALL ON FUNCTION public.join_team_by_code"),
+    );
+
+    expect(hardenedJoin).toContain("minor_auth.participant_authorizations pa");
+    expect(hardenedJoin).toContain("minor_auth.policy_versions pv");
+    expect(hardenedJoin).toContain("pa.product_status = 'authorized'");
+    expect(hardenedJoin).toContain("pa.revoked_at IS NULL");
+    expect(hardenedJoin).toContain("pv.status = 'active'");
+    expect(hardenedJoin).toContain("FOR SHARE OF pa");
+    expect(hardenedJoin).toContain("'minor_product_authorization_required'");
+    expect(hardenedJoin.indexOf("minor_auth.participant_authorizations pa")).toBeLessThan(
+      hardenedJoin.indexOf("INSERT INTO public.team_members"),
+    );
+    expect(teamJoinAuthorizationMigration).toMatch(
+      /REVOKE ALL ON FUNCTION public\.join_team_by_code\(text\)[\s\S]*FROM PUBLIC, anon/,
+    );
   });
 
   it("requires an approved coach or admin role for direct team creation", () => {

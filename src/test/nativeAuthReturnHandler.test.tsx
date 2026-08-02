@@ -2,6 +2,11 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import NativeAuthReturnHandler from "@/components/auth/NativeAuthReturnHandler";
+import {
+  clearPostSignupOnboarding,
+  pendingPostAuthorizationTeamCode,
+  pendingPostSignupIntent,
+} from "@/lib/postSignupOnboarding";
 
 const mocks = vi.hoisted(() => ({
   appUrlOpen: null as ((event: { url: string }) => void) | null,
@@ -52,6 +57,9 @@ const nativeSessionUrl = (query = "flow=signup") =>
 describe("native auth return handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    clearPostSignupOnboarding("athlete-1");
     mocks.appUrlOpen = null;
     mocks.getLaunchUrl.mockResolvedValue(undefined);
     mocks.setSession.mockResolvedValue({ data: { session: { user: { id: "athlete-1" } } }, error: null });
@@ -70,9 +78,10 @@ describe("native auth return handler", () => {
       "/minor-consent?next=%2Fquestionnaire",
     );
     expect(screen.getByTestId("location")).not.toHaveTextContent("secret");
+    expect(pendingPostSignupIntent("athlete-1")).toBe("solo");
   });
 
-  it("handles an already-open app, preserves the team code and ignores callback replay", async () => {
+  it("handles an already-open app, queues the team code and ignores callback replay", async () => {
     renderHandler();
     await waitFor(() => expect(mocks.appUrlOpen).toBeTypeOf("function"));
     const url = nativeSessionUrl("flow=signup&intent=join&team=abc123");
@@ -84,8 +93,51 @@ describe("native auth return handler", () => {
 
     await waitFor(() => expect(mocks.setSession).toHaveBeenCalledTimes(1));
     expect(screen.getByTestId("location")).toHaveTextContent(
-      "/auth?redirect=%2Fquestionnaire&intent=join&team=ABC123",
+      "/minor-consent?next=%2Fquestionnaire",
     );
+    expect(pendingPostSignupIntent("athlete-1")).toBe("join");
+    expect(pendingPostAuthorizationTeamCode("athlete-1")).toBe("ABC123");
+  });
+
+  it("opens a cold-start team invite without treating it as an auth callback", async () => {
+    mocks.getLaunchUrl.mockResolvedValue({ url: "https://rewireperform.com/join?team=abc123" });
+    renderHandler();
+
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth?mode=signup&intent=join&team=ABC123",
+    ));
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
+  });
+
+  it("opens a team invite while the app is already running without touching the auth session", async () => {
+    renderHandler();
+    await waitFor(() => expect(mocks.appUrlOpen).toBeTypeOf("function"));
+
+    await act(async () => {
+      mocks.appUrlOpen?.({ url: "https://rewireperform.com/join?team=abc123" });
+    });
+
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth?mode=signup&intent=join&team=ABC123",
+    );
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
+  });
+
+  it("fails closed for a malformed team invite without exposing its payload", async () => {
+    renderHandler();
+    await waitFor(() => expect(mocks.appUrlOpen).toBeTypeOf("function"));
+
+    await act(async () => {
+      mocks.appUrlOpen?.({ url: "https://rewireperform.com/join?team=BAD%2F12" });
+    });
+
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth?mode=signup&intent=join&invite_error=invalid",
+    );
+    expect(screen.getByTestId("location")).not.toHaveTextContent("BAD");
+    expect(mocks.setSession).not.toHaveBeenCalled();
   });
 
   it("fails closed for manipulated callbacks without exposing their payload", async () => {
