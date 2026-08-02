@@ -15,15 +15,24 @@ const ROLE_CONTEXT_TIMEOUT_MS = 2_500;
 const roleCacheKey = (userId: string) => `cached_user_role:${userId}`;
 
 const readCachedRole = (userId: string): AppRole => {
-  const cached = window.localStorage.getItem(roleCacheKey(userId));
-  return cached === "athlete" || cached === "coach" || cached === "admin" ? cached : null;
+  try {
+    const cached = window.localStorage.getItem(roleCacheKey(userId));
+    return cached === "athlete" || cached === "coach" || cached === "admin" ? cached : null;
+  } catch {
+    return null;
+  }
 };
 
 const writeCachedRole = (userId: string, nextRole: AppRole) => {
   if (!nextRole) return;
-  window.localStorage.setItem(roleCacheKey(userId), nextRole);
-  window.localStorage.setItem("cached_user_role", nextRole);
-  window.localStorage.setItem("cached_user_id", userId);
+  try {
+    window.localStorage.setItem(roleCacheKey(userId), nextRole);
+    window.localStorage.setItem("cached_user_role", nextRole);
+    window.localStorage.setItem("cached_user_id", userId);
+  } catch {
+    // WKWebView can temporarily deny storage while resuming from a Universal Link.
+    // Role verification remains authoritative and must not crash the auth route.
+  }
 };
 
 interface AuthContextType {

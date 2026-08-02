@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Auth from "@/pages/Auth";
 import {
@@ -67,6 +67,33 @@ const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
       <Route path="/admin" element={<div>Admin-Bereich geöffnet</div>} />
       <Route path="/auth/reset-password" element={<div>Passwortseite geöffnet</div>} />
     </Routes>
+  </MemoryRouter>,
+);
+
+const WarmAuthNavigation = () => {
+  const navigate = useNavigate();
+  return (
+    <>
+      <button type="button" onClick={() => navigate("/auth?mode=signup&intent=join&team=ABC123", { replace: true })}>
+        Teamlink öffnen
+      </button>
+      <button type="button" onClick={() => navigate("/auth?mode=login", { replace: true })}>
+        Normal anmelden
+      </button>
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/questionnaire" element={<div>Fragebogen geöffnet</div>} />
+      </Routes>
+    </>
+  );
+};
+
+const renderWarmAuthNavigation = () => render(
+  <MemoryRouter
+    initialEntries={["/auth?mode=login"]}
+    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+  >
+    <WarmAuthNavigation />
   </MemoryRouter>,
 );
 
@@ -177,6 +204,43 @@ describe("auth email confirmation", () => {
     expect(screen.getByRole("heading", { name: "Willkommen zurück." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Anmelden" })).toBeInTheDocument();
     expect(screen.queryByText(/Coach-Zugänge werden.*persönlich geprüft/)).not.toBeInTheDocument();
+  });
+
+  it("rebases a warm team link and never carries it into a later normal login", async () => {
+    renderWarmAuthNavigation();
+    expect(screen.getByRole("heading", { name: "Willkommen zurück." })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Teamcode")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Teamlink öffnen" }));
+    expect(await screen.findByRole("heading", { name: "Du trittst einem Team bei." })).toBeInTheDocument();
+    expect(screen.getByLabelText("Teamcode")).toHaveValue("ABC123");
+
+    fireEvent.click(screen.getByRole("button", { name: "Normal anmelden" }));
+    expect(await screen.findByRole("heading", { name: "Willkommen zurück." })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Teamcode")).not.toBeInTheDocument();
+    expect(screen.getByText("Melde dich an, um dein Programm fortzusetzen.")).toBeInTheDocument();
+  });
+
+  it("opens a warm team confirmation for an already signed-in athlete", async () => {
+    mocks.authState.user = { id: "user-1" };
+    mocks.authState.role = "athlete";
+    mocks.authState.loading = true;
+    const view = renderWarmAuthNavigation();
+
+    fireEvent.click(screen.getByRole("button", { name: "Teamlink öffnen" }));
+    mocks.authState.loading = false;
+    view.rerender(
+      <MemoryRouter
+        initialEntries={["/auth?mode=login"]}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <WarmAuthNavigation />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Team beitreten?" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Team beitreten" }));
+    expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
   });
 
   it("resends confirmation into the fixed signup continuation instead of an arbitrary pre-auth redirect", async () => {

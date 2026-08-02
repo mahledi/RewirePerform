@@ -33,6 +33,15 @@ describe("team join client", () => {
     expect(rpc).toHaveBeenCalledWith("join_team_by_code", { _code: "ABC123" });
   });
 
+  it("returns a recoverable result when the native network request throws", async () => {
+    rpc.mockRejectedValue(new TypeError("Load failed"));
+
+    expect(await joinTeamByCode("abc123")).toEqual({
+      success: false,
+      message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",
+    });
+  });
+
   it("accepts only an explicit successful athlete join response", async () => {
     rpc.mockResolvedValue({ data: { success: true, role: "athlete" }, error: null });
 

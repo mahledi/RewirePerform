@@ -67,6 +67,26 @@ describe("post-signup onboarding state", () => {
     setItem.mockRestore();
   });
 
+  it("survives a SecurityError while WKWebView exposes persistent storage", () => {
+    const localStorageDescriptor = Object.getOwnPropertyDescriptor(window, "localStorage");
+    expect(localStorageDescriptor).toBeDefined();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      get: () => {
+        throw new DOMException("Storage access denied", "SecurityError");
+      },
+    });
+
+    try {
+      beginPostSignupOnboarding("user-1", "join");
+      expect(pendingPostSignupIntent("user-1")).toBe("join");
+      expect(queuePostAuthorizationTeamJoin("user-1", "ABC123", true)).toBe(true);
+      expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
+    } finally {
+      Object.defineProperty(window, "localStorage", localStorageDescriptor!);
+    }
+  });
+
   it("keeps completion authoritative when persistent storage still contains an older pending marker", () => {
     beginPostSignupOnboarding("user-1", "solo");
     const originalSetItem = Storage.prototype.setItem;
