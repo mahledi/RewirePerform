@@ -45,30 +45,28 @@ The candidate migration is:
 
 `20260801104717_harden_team_join_minor_authorization.sql`
 
-It is versioned locally and has **not** been applied to Production. It replaces
+It was applied to Production `bqsbxesmybthwtxmowfz` on 2026-08-02. It replaces
 `public.join_team_by_code(text)` with a fail-closed check for an active,
 non-revoked product authorization before any team lookup or membership write.
 
 The repository history is synchronized with the Production versions
 `20260723151225`, `20260723154047` and `20260723165153`. The latter two files
 were recovered byte-identically from their documented supervised Production
-activation commit. The new migration must still be applied by a controlled,
-named operation with preflight, postflight and rollback capture after separate
-Production approval.
+activation commit. Immediately after the controlled apply, local and remote
+migration history matched completely and a second dry-run reported the remote
+database as up to date. The live function was verified with a fixed
+`search_path`, no `anon` execution, authenticated-only execution, active and
+non-revoked product-authorization checks, and a row lock on the authorization.
 
 ## Remaining release gates
 
-1. Independently approve the candidate diff and create a reviewed PR.
-2. Confirm exact local/remote migration-history parity and apply only the named
-   team join migration to Production after explicit approval; verify
-   definition, grants and authorized/unauthorized behavior.
-3. Merge the reviewed candidate, verify GitHub CI and the exact Vercel
+1. Merge the independently reviewed candidate, verify GitHub CI and the exact Vercel
    Production deployment including the `/join` Universal-Link file.
-4. Install that exact build number on iPhone and iPad and test adult, 16-17,
+2. Install that exact build number on iPhone and iPad and test adult, 16-17,
    under-16 guardian accept/decline, returning athlete, coach, invite cold/warm,
    interrupted signup and offline cold start.
-5. Replace App Store screenshot slot 8 for both device families with the real
+3. Replace App Store screenshot slot 8 for both device families with the real
    Auth Solo/Team choice.
-6. Create, validate and upload the signed archive; run internal TestFlight QA.
-7. Bind the final build and reviewer accounts/notes in App Store Connect, then
+4. Create, validate and upload the signed archive; run internal TestFlight QA.
+5. Bind the final build and reviewer accounts/notes in App Store Connect, then
    submit only after the final human freeze decision.
