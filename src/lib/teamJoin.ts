@@ -7,13 +7,18 @@ export const joinTeamByCode = async (rawCode: string) => {
     return { success: false as const, message: "Bitte gib einen gültigen 6-stelligen Teamcode ein." };
   }
 
-  const { data: joinResult, error: joinError } = await supabase.rpc("join_team_by_code", {
-    _code: code,
-  });
+  let joinResult: unknown;
+  let joinError: unknown;
+  try {
+    const response = await supabase.rpc("join_team_by_code", { _code: code });
+    joinResult = response.data;
+    joinError = response.error;
+  } catch (error) {
+    joinError = error;
+  }
   const result = joinResult as { success?: boolean; role?: "athlete"; error?: string } | null;
 
   if (joinError) {
-    console.error("Team join error:", joinError);
     return {
       success: false as const,
       message: "Der Teambeitritt konnte gerade nicht abgeschlossen werden. Bitte versuche es erneut.",

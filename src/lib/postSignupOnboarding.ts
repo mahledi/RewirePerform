@@ -44,9 +44,9 @@ const parseState = (raw: string | null): PostSignupOnboardingState | null => {
   }
 };
 
-const readStorage = (storage: Storage, key: string) => {
+const readStorage = (resolveStorage: () => Storage, key: string) => {
   try {
-    return parseState(storage.getItem(key));
+    return parseState(resolveStorage().getItem(key));
   } catch {
     return null;
   }
@@ -54,8 +54,8 @@ const readStorage = (storage: Storage, key: string) => {
 
 const readCandidates = (key: string) => [
   memoryState.get(key) ?? null,
-  readStorage(window.localStorage, key),
-  readStorage(window.sessionStorage, key),
+  readStorage(() => window.localStorage, key),
+  readStorage(() => window.sessionStorage, key),
 ];
 
 const readState = (userId: string): PostSignupOnboardingState | null => {

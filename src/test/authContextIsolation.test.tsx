@@ -130,4 +130,28 @@ describe("AuthProvider session isolation", () => {
 
     await waitFor(() => expect(screen.getByTestId("auth-state")).toHaveTextContent("none|none|real|ready"));
   });
+
+  it("keeps role verification usable when WKWebView storage throws SecurityError", async () => {
+    const role = Promise.resolve<QueryResult>({ data: { role: "athlete" }, error: null });
+    const profile = Promise.resolve<QueryResult>({ data: { is_test_user: false }, error: null });
+    mocks.contextQueries.set("user_roles:user-a", role);
+    mocks.contextQueries.set("profiles:user-a", profile);
+    const localStorageDescriptor = Object.getOwnPropertyDescriptor(window, "localStorage");
+    expect(localStorageDescriptor).toBeDefined();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      get: () => {
+        throw new DOMException("Storage access denied", "SecurityError");
+      },
+    });
+
+    try {
+      render(<AuthProvider><Probe /></AuthProvider>);
+      emitAuth("INITIAL_SESSION", sessionFor("user-a"));
+      await waitFor(() => expect(screen.getByTestId("auth-state"))
+        .toHaveTextContent("user-a|athlete|real|ready"));
+    } finally {
+      Object.defineProperty(window, "localStorage", localStorageDescriptor!);
+    }
+  });
 });

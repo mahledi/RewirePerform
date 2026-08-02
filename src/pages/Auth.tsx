@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +39,7 @@ type TeamJoinStatus = "idle" | "confirmation";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const forceSwitch = searchParams.get("switch") === "1";
   const redirectTo = searchParams.get("redirect");
@@ -95,6 +96,22 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
+  const authSearchRef = useRef(location.search);
+
+  useEffect(() => {
+    if (authSearchRef.current === location.search) return;
+    authSearchRef.current = location.search;
+
+    // React Router keeps the same Auth component mounted when a Universal Link
+    // changes only its query. Rebase all route-owned state on that new URL so a
+    // warm team invite cannot inherit a previous login/solo state (or leak its
+    // team intent into a later normal login).
+    setMode(initialMode);
+    setIntent(initialIntent);
+    setTeamCode(initialIntent === "join" ? urlCode ?? "" : "");
+    setTeamJoinStatus("idle");
+    setRetryingRole(false);
+  }, [initialIntent, initialMode, location.search, urlCode]);
 
   const normalizedTeamCode = () => teamCode.trim().toUpperCase();
   const activeTeamJoinCode = intent === "join"
