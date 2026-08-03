@@ -156,7 +156,9 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         }
 
         const nextStats: TeamStats = {
-          member_count: mentalState.data?.teamSize ?? athleteIds.length,
+          // The aggregate may exclude athletes who have not completed enough
+          // tracking yet. Team size must still reflect every athlete member.
+          member_count: athleteIds.length,
           checkins_last_week: mentalState.data?.participation?.total ?? 0,
           assessments_completed: assessments?.length ?? 0,
           aggregate_ready: athleteIds.length >= MIN_AGGREGATE_SAMPLE,

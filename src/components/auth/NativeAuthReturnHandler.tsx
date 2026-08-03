@@ -23,7 +23,12 @@ const callbackIdentity = (
 
 const NativeAuthReturnHandler = () => {
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
   const handledCallbacks = useRef(new Set<string>());
+
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -35,18 +40,18 @@ const NativeAuthReturnHandler = () => {
       if (disposed) return;
       const invite = parseTeamInviteUrl(rawUrl);
       if (invite.kind === "invite") {
-        navigate(teamInviteAuthRoute(invite.teamCode), { replace: true });
+        navigateRef.current(teamInviteAuthRoute(invite.teamCode), { replace: true });
         return;
       }
       if (invite.kind === "invalid") {
-        navigate("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
+        navigateRef.current("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
         return;
       }
 
       const parsed = parseNativeSignupReturn(rawUrl);
       if (parsed.kind === "ignore") return;
       if (parsed.kind === "error") {
-        navigate(`/auth?flow=signup&error_code=${encodeURIComponent(safeErrorCode(parsed.errorCode))}`, {
+        navigateRef.current(`/auth?flow=signup&error_code=${encodeURIComponent(safeErrorCode(parsed.errorCode))}`, {
           replace: true,
         });
         return;
@@ -67,7 +72,7 @@ const NativeAuthReturnHandler = () => {
       } catch {
         handledCallbacks.current.delete(identity);
         if (!disposed) {
-          navigate("/auth?flow=signup&error_code=invalid_callback", { replace: true });
+          navigateRef.current("/auth?flow=signup&error_code=invalid_callback", { replace: true });
         }
         return;
       }
@@ -75,7 +80,7 @@ const NativeAuthReturnHandler = () => {
       if (disposed) return;
       if (result.error || !result.data.session) {
         handledCallbacks.current.delete(identity);
-        navigate("/auth?flow=signup&error_code=invalid_callback", { replace: true });
+        navigateRef.current("/auth?flow=signup&error_code=invalid_callback", { replace: true });
         return;
       }
 
@@ -86,10 +91,10 @@ const NativeAuthReturnHandler = () => {
         && parsed.teamCode
         && !queuePostAuthorizationTeamJoin(userId, parsed.teamCode, true)
       ) {
-        navigate("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
+        navigateRef.current("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
         return;
       }
-      navigate(nativeSignupContinuationRoute(parsed), { replace: true });
+      navigateRef.current(nativeSignupContinuationRoute(parsed), { replace: true });
     };
 
     void CapacitorApp.addListener("appUrlOpen", ({ url }) => {
@@ -107,7 +112,7 @@ const NativeAuthReturnHandler = () => {
       disposed = true;
       if (listener) void listener.remove();
     };
-  }, [navigate]);
+  }, []);
 
   return null;
 };

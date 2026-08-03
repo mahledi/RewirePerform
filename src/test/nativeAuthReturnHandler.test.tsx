@@ -108,6 +108,21 @@ describe("native auth return handler", () => {
     ));
     expect(mocks.setSession).not.toHaveBeenCalled();
     expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
+    expect(mocks.getLaunchUrl).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not replay the cold-start invite when its own navigation changes the route", async () => {
+    mocks.getLaunchUrl.mockResolvedValue({ url: "https://rewireperform.com/join?team=abc123" });
+    renderHandler();
+
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth?mode=signup&intent=join&team=ABC123",
+    ));
+    await act(async () => Promise.resolve());
+
+    expect(mocks.getLaunchUrl).toHaveBeenCalledTimes(1);
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
   });
 
   it("opens a team invite while the app is already running without touching the auth session", async () => {
