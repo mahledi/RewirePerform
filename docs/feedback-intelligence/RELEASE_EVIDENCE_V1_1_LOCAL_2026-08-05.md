@@ -37,6 +37,9 @@ Auf dem zusammengeführten Quellstand liefen erfolgreich:
 - Feedback-Semantikkatalog-Byteprüfung;
 - statische App-Store-Readiness-Prüfung;
 - `plutil -lint ios/App/App/PrivacyInfo.xcprivacy`;
+- kombinierter Browser-Smoke-Test beider internen Preview-Routen bei 1280 px
+  und 390 px ohne horizontalen Seitenüberlauf; der Feedback-Flow öffnet von
+  der phasengerechten Tag-10-Einleitung bis zur ersten Frage;
 - `git diff --check` und `git diff --cached --check`;
 - ESLint mit null Fehlern und 16 bereits vorhandenen Warnungen in nicht von
   dieser Integration veränderten Dateien.
