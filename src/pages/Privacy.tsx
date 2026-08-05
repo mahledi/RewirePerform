@@ -274,7 +274,7 @@ const Privacy = () => {
               <li>– interne technische Fehlerereignisse: höchstens 30 Tage</li>
               <li>– Push-Zustellprotokolle: höchstens 90 Tage nach ihrer Erstellung</li>
               <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls; bei Widerruf werden personenbezogene Transferdaten unmittelbar aus der Pilot-Auswertung entfernt</li>
-              <li>– freiwillige Produktfeedback-Kommentare und personenbeziehbare Analyseableitungen: bis zum Widerruf, zur Kontolöschung oder bis der konkrete Produktverbesserungszweck endet; vor Aktivierung wird zusätzlich eine feste Höchstdauer rechtlich geprüft und technisch hinterlegt</li>
+              <li>– freiwillige Produktfeedback-Kommentare und personenbeziehbare Analyseableitungen: höchstens 365 Tage; vorherige Löschung bei Widerruf, Kontolöschung oder Ende des konkreten Produktverbesserungszwecks</li>
               <li>– vollständig anonyme Aggregate: solange sie keinen Personenbezug mehr besitzen</li>
             </ul>
           </section>

@@ -15,8 +15,8 @@ Diese Einordnung muss im finalen Release Candidate gegen die tatsächlich aktivi
 
 | Apple-Datenart | Konkrete Feedback-Daten | Linked to User | Zweck | Tracking |
 | --- | --- | --- | --- | --- |
-| Product Interaction | Programmtag, Fragebogen-/Inhaltsversion, strukturierte Antworten, Abschluss- und Aktivitätszählungen | Ja, solange im Producer über die Programminstanz verbunden | App Functionality; Analytics; Product Improvement | Nein |
-| Other User Content | nur bewusst abgegebene optionale Produktfeedback-Kommentare | Ja, bis Widerruf/Löschung oder echte Anonymisierung | Product Improvement | Nein |
+| Product Interaction | Programmtag, Fragebogen-/Inhaltsversion, strukturierte Antworten, Abschluss- und Aktivitätszählungen | Ja, solange im Producer über die Programminstanz verbunden | App Functionality; Analytics | Nein |
+| Other User Content | nur bewusst abgegebene optionale Produktfeedback-Kommentare | Ja, bis Widerruf/Löschung oder echte Anonymisierung | App Functionality; Analytics | Nein |
 | User ID / Identifiers | interne User-/Programminstanz-Verknüpfung; im Machine-Export nur rotierende bzw. gehashte Referenzen | Ja im Producer; keine direkte Kennung im Consumer-Paket | App Functionality; Security; Analytics | Nein |
 
 Nicht als neue Feedback-Quelle erklären: Journalinhalt, Reflexionsinhalt, Team-/Coach-Daten oder Textlänge/Qualität privater Journale. Journal-Eintragsanzahl ist ausschließlich eine Product-Interaction-Zählung.
@@ -41,9 +41,9 @@ Derzeit erhält kein externer KI-Anbieter echte Feedback-Kommentare. Vor einem e
 4. Production-, Privacy-, App-Store- und Minor-Gates einzeln geöffnet;
 5. Nachweis, dass Consent beim Export erneut geprüft, Widerruf fail-closed berücksichtigt und kein zweiter Rohtextbestand persistiert wird.
 
-## Aufbewahrung – offene Release-Entscheidung
+## Aufbewahrung – technisch festgelegt, rechtlich noch freizugeben
 
-Rohtext und personenbeziehbare Ableitungen werden bei Widerruf oder Kontolöschung sofort aus dem aktiven Feedbacksystem entfernt. Zusätzlich muss vor Aktivierung eine feste maximale Aufbewahrungsdauer für den Produktverbesserungszweck rechtlich freigegeben und technisch als Retention-Job samt Auditnachweis umgesetzt werden. Solange diese Dauer fehlt, bleiben `privacy_notice_ready`, `app_store_declaration_ready` und der Raw-Text-Ländergate geschlossen.
+Rohtext und personenbeziehbare Ableitungen werden bei Widerruf oder Kontolöschung sofort aus dem aktiven Feedbacksystem entfernt. Zusätzlich ist technisch eine maximale Aufbewahrungsdauer von 365 Tagen samt täglichem Retention-Job vorgesehen. Die Dauer und die finalen Texte müssen vor Aktivierung rechtlich freigegeben werden. Bis dahin bleiben `privacy_notice_ready`, `app_store_declaration_ready` und der Raw-Text-Ländergate geschlossen.
 
 ## App-Store-Review-Notiz – Draft
 
@@ -52,7 +52,7 @@ Rohtext und personenbeziehbare Ableitungen werden bei Widerruf oder Kontolöschu
 ## Release-Blocker
 
 - qualifizierte Rechts-/Datenschutzfreigabe der finalen Texte und Rechtsgrundlagen;
-- finale Aufbewahrungsdauer plus automatisierter Löschlauf;
+- rechtliche Freigabe der technisch festgelegten 365-Tage-Höchstdauer und des automatisierten Löschlaufs;
 - konkreter KI-/Machine-Empfänger oder bestätigter Verzicht auf echten Text-Export;
 - finale App Privacy Details im App Store Connect auf Basis des echten RC;
 - aktualisierte User Privacy Choices URL und Review Notes;

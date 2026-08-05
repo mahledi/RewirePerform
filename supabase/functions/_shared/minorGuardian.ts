@@ -122,6 +122,38 @@ export const invokeMinorService = async (
   return (data ?? {}) as JsonRecord;
 };
 
+export const invokeGuardianFeedbackService = async (
+  admin: SupabaseClient,
+  functionName:
+    | "guardian_feedback_text_decision_status"
+    | "guardian_feedback_text_decide"
+    | "guardian_feedback_text_management_status"
+    | "guardian_feedback_text_management_decide",
+  payload: JsonRecord,
+) => {
+  const { data, error } = await admin.rpc(functionName, payload);
+  if (error) {
+    const message = error.message ?? "guardian_feedback_service_failed";
+    if (
+      message.includes("guardian_management_token_invalid")
+      || message.includes("guardian_authorization_not_found")
+    ) {
+      throw new MinorFlowError("link_invalid", 410);
+    }
+    if (message.includes("guardian_feedback_text_policy_not_ready")) {
+      throw new MinorFlowError("feedback_text_not_available", 409);
+    }
+    if (
+      message.includes("invalid_guardian_feedback_decision")
+      || message.includes("guardian_feedback_text_requires_product_access")
+    ) {
+      throw new MinorFlowError("invalid_decision", 400);
+    }
+    throw new MinorFlowError("guardian_feedback_service_failed", 500);
+  }
+  return (data ?? {}) as JsonRecord;
+};
+
 const bytesToHex = (bytes: Uint8Array) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 

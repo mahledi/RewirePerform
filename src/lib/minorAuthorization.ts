@@ -324,6 +324,10 @@ export interface GuardianLinkStatus {
   product_status?: string;
   data_contribution_status?: string;
   data_contribution_guardian?: boolean | null;
+  feedback_text_authorization_available?: boolean;
+  feedback_text_authorization_state?: "unavailable" | "not_asked" | "granted" | "declined" | "withdrawn";
+  feedback_text_retention_days?: number | null;
+  feedback_text_processor_mode?: "no_external_processor" | "approved_processor" | null;
   athlete_first_name?: string | null;
   policy_key?: string;
 }
@@ -345,11 +349,18 @@ export const submitGuardianDecision = async (
   token: string,
   productAuthorized: boolean,
   dataContributionAuthorized: boolean,
-) => invokePublic<{ state: "approved" | "declined"; receiptDelivery: "not_required" | "sent" | "failed"; manageUrl: string | null }>({
+  guardianFeedbackTextAuthorized: boolean,
+) => invokePublic<{
+  state: "approved" | "declined";
+  feedbackTextAuthorizationState: "unavailable" | "granted" | "declined";
+  receiptDelivery: "not_required" | "sent" | "failed";
+  manageUrl: string | null;
+}>({
   action: "decide",
   token,
   productAuthorized,
   dataContributionAuthorized,
+  guardianFeedbackTextAuthorized,
   guardianDeclaration: true,
 });
 
@@ -364,3 +375,10 @@ export const revokeGuardianAuthorization = async (token: string) =>
 
 export const withdrawGuardianDataContribution = async (token: string) =>
   invokePublic<GuardianLinkStatus>({ action: "withdraw-data-contribution", token });
+
+export const setGuardianFeedbackTextAuthorization = async (token: string, authorized: boolean) =>
+  invokePublic<GuardianLinkStatus>({
+    action: "set-feedback-text-authorization",
+    token,
+    authorized,
+  });
