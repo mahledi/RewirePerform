@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AccountDeletionDialog } from "@/components/settings/AccountDeletionDialog";
+import { FeedbackTextConsentSettings } from "@/components/settings/FeedbackTextConsentSettings";
 import { PasswordChangeDialog } from "@/components/settings/PasswordChangeDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -411,6 +412,12 @@ const AccountSettings = () => {
             </p>
           </div>
         </motion.section>
+        )}
+
+        {role === "athlete" && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
+            <FeedbackTextConsentSettings />
+          </motion.div>
         )}
 
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>

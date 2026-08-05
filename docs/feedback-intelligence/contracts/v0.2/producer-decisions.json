@@ -1,0 +1,103 @@
+{
+  "schema_version": "rewire-feedback-intelligence-producer-decisions-v0.2-draft",
+  "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "consumer_proposal_commit": "d41350bceac0dae4d6899ef58e19cfbbcce37458",
+  "accepted_top_level_fields": [
+    "schema_version",
+    "contract_status",
+    "generated_at",
+    "items",
+    "privacy"
+  ],
+  "accepted_item_fields": [
+    "feedback_reference",
+    "campaign_reference",
+    "subject_reference",
+    "questionnaire_version",
+    "language",
+    "product_version",
+    "content_version",
+    "program_day",
+    "question_id",
+    "construct_id",
+    "item_family_id",
+    "item_variant_id",
+    "scale_id",
+    "structured_answer",
+    "comment",
+    "consent",
+    "activity_snapshot"
+  ],
+  "reference_contract": {
+    "export_encoding": "lowercase_sha256_hex",
+    "namespace": "rewire-feedback-intelligence-export-v0.2-draft",
+    "feedback_reference_source": "random_internal_uuid",
+    "campaign_reference_source": "versioned_campaign_reference",
+    "subject_reference_source": "random_internal_uuid_per_program_instance",
+    "subject_reference_stability": "stable_within_one_program_instance_across_days_10_24_39_55",
+    "subject_reference_rotation": "new_random_reference_for_every_new_program_instance",
+    "raw_internal_references_exported": false,
+    "user_id_exported": false,
+    "program_instance_id_exported": false
+  },
+  "comparison_identifiers": {
+    "construct_id": "accepted",
+    "item_family_id": "accepted",
+    "item_variant_id": "accepted",
+    "scale_id": "accepted"
+  },
+  "activity_snapshot": {
+    "source_contract_version": "feedback-activity-counts-v1.0.0",
+    "capture_time": "atomic_feedback_submit",
+    "mutable_after_capture": false,
+    "observation_window": "cumulative_program_day_1_through_feedback_checkpoint",
+    "program_days_available": "calendar_based_days_available_capped_at_checkpoint",
+    "program_days_completed": "distinct_completed_program_days_in_window",
+    "checkins_completed": "distinct_checkin_dates_in_window",
+    "journal_entries_created_count": "distinct_journal_dates_in_window_count_only",
+    "tasks_completed": "task_count_from_latest_completed_record_per_program_day",
+    "transfer_pulse_count": "null_until_separately_approved",
+    "resume_delay_bucket": "gap_before_most_recent_return_to_core_program_activity",
+    "continuation_status_bucket": "gap_from_checkpoint_cutoff_to_most_recent_core_program_activity",
+    "same_day_resume_bucket_emitted": false,
+    "journal_reflection_support_text_read": false,
+    "journal_length_or_quality_read": false,
+    "coach_or_team_data_read": false
+  },
+  "consent_contract": {
+    "scope": "product-improvement-individual-text-ai-analysis-v1",
+    "structured_answers_require_text_consent": false,
+    "comment_requires_valid_consent_at_submit": true,
+    "comment_requires_valid_consent_at_export": true,
+    "comment_max_length_producer": 1200,
+    "guardian_scope_required_when_policy_requires": true
+  },
+  "aggregate_contract": {
+    "minimum_cohort_size_floor": 5,
+    "small_cohorts_suppressed": true,
+    "observational_not_causal": true,
+    "positive_and_negative_answers_equal": true
+  },
+  "release_scope": {
+    "jurisdiction": "DE",
+    "non_de_status": "OUT_OF_SCOPE_FAIL_CLOSED",
+    "scope_expansion_requires_new_legal_privacy_store_and_contract_review": true
+  },
+  "explicitly_not_yet_approved": [
+    "transfer_pulse_source",
+    "real_machine_read",
+    "machine_credential",
+    "network_transport",
+    "production_activation",
+    "privacy_notice",
+    "app_store_declaration",
+    "de_minor_policy",
+    "specific_guardian_text_notice"
+  ],
+  "consumer_delta_requests": [
+    "Treat SAME_DAY as reserved and never emitted by feedback-activity-counts-v1.0.0.",
+    "Producer comment maximum is 1200 characters; consumer maximum 2000 remains an upper acceptance bound only.",
+    "The minimum cohort size of five is a floor and may be increased by a later approved privacy policy.",
+    "Do not interpret contract_status as activation; all real-read gates remain closed."
+  ]
+}

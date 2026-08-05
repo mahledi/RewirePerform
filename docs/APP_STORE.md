@@ -132,7 +132,8 @@ Declare data collection only for actual production behavior.
 Likely linked to user identity:
 
 - Contact info: email address
-- User content: journal entries, questionnaire free text, feedback messages
+- User content: journal entries, private questionnaire text, support feedback,
+  and separately consented product-feedback comments
 - Health/fitness-related app activity: check-ins, training schedule, program completion
 - Identifiers: Supabase user ID, push endpoint
 - Diagnostics: incident-only system events with normalized error codes and restricted technical metadata
@@ -144,6 +145,8 @@ Purposes:
 - App functionality
 - Personalization
 - Analytics of own progress and privacy-safe team aggregates
+- Product improvement for structured checkpoint feedback and separately
+  consented product-feedback comments
 - Notifications, if enabled
 
 Tracking:
@@ -153,8 +156,13 @@ Tracking:
 
 Sensitive handling:
 
-- Coaches must not see private journal text, raw free-text questionnaire answers, individual mood history, or individual Development Index answers.
+- Coaches must not see private journal text, raw free-text questionnaire answers,
+  separately consented product-feedback comments, individual mood history, or
+  individual Development Index answers.
 - Coach views are aggregate/status views only, with privacy thresholds where applicable.
+
+The Feedback Intelligence 1.1 data map, withdrawal path and unresolved activation
+gates are documented in `docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md`.
 
 ## App Store Metadata Draft
 

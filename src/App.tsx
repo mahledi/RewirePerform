@@ -61,6 +61,12 @@ const MinorConsentPreview = evidencePreviewEnabled
 const FirstRunExperiencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/FirstRunExperiencePreview.tsx"))
   : null;
+const FeedbackIntelligencePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/FeedbackIntelligencePreview.tsx"))
+  : null;
+const FeedbackCheckpointGate = lazy(
+  () => import("./components/feedback-intelligence/FeedbackCheckpointGate.tsx"),
+);
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -74,11 +80,14 @@ const AppRoutes = () => {
   const isMinorConsentPreview = MinorConsentPreview !== null && location.pathname === "/internal/minor-consent-preview";
   const isFirstRunExperiencePreview = FirstRunExperiencePreview !== null
     && location.pathname === "/internal/first-run-preview";
+  const isFeedbackIntelligencePreview = FeedbackIntelligencePreview !== null
+    && location.pathname === "/internal/feedback-intelligence-preview";
   const isDemoRoute = location.pathname === "/demo"
     || isEvidencePreview
     || isEmailPreview
     || isMinorConsentPreview
-    || isFirstRunExperiencePreview;
+    || isFirstRunExperiencePreview
+    || isFeedbackIntelligencePreview;
 
   if (isDemoRoute) {
     return (
@@ -93,6 +102,9 @@ const AppRoutes = () => {
             {MinorConsentPreview && <Route path="/internal/minor-consent-preview" element={<MinorConsentPreview />} />}
             {FirstRunExperiencePreview && (
               <Route path="/internal/first-run-preview" element={<FirstRunExperiencePreview />} />
+            )}
+            {FeedbackIntelligencePreview && (
+              <Route path="/internal/feedback-intelligence-preview" element={<FeedbackIntelligencePreview />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -114,6 +126,7 @@ const AppRoutes = () => {
           <IosInputPolish />
           <ConnectionStatus />
           <Suspense fallback={<PageFallback />}>
+            <Suspense fallback={null}><FeedbackCheckpointGate /></Suspense>
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/presentation" element={<Presentation />} />

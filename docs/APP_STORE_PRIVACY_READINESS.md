@@ -7,9 +7,12 @@ cross-app or third-party marketing tracking.
 ## Hard Boundaries
 
 - No IDFA, no advertising SDKs, no data brokers, no marketing pixels.
-- No journal text, free reflections, raw questionnaire answers, individual mood
-  history, or individual psychological scores in coach views, exports, or
-  incident logs.
+- No journal text, free reflections, ordinary raw questionnaire answers,
+  individual mood history, or individual psychological scores in coach views,
+  standard exports, client analytics, or incident logs. The only planned text
+  exception is a separately consented, explicitly marked product-feedback
+  comment through a versioned read-only contract; it remains disabled until all
+  Feedback Intelligence privacy, minor, provider, retention, and Store gates pass.
 - Sentry is not part of the shipped app. The retained external project is
   disconnected unless a new privacy and product review explicitly approves it.
 - `app_event_log` stays incident-only. Normal product activity belongs in domain
@@ -30,6 +33,8 @@ they are tied to the account:
   comprehension completion, notification delivery/open/failure status.
 - User content: journal/reflection/questionnaire answers exist in the product,
   but must remain private to the athlete and excluded from coach/admin exports.
+  Separately consented product-feedback comments are linked `Other User Content`
+  for Product Improvement until withdrawal, deletion, or real anonymization.
 - Customer support content submitted through the support flow.
 - Diagnostics: incident-only system events with normalized error codes and
   allow-listed technical metadata.
