@@ -67,6 +67,9 @@ const FeedbackIntelligencePreview = evidencePreviewEnabled
 const FeedbackCheckpointGate = lazy(
   () => import("./components/feedback-intelligence/FeedbackCheckpointGate.tsx"),
 );
+const GoldenDaysPreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/GoldenDaysPreview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -82,12 +85,15 @@ const AppRoutes = () => {
     && location.pathname === "/internal/first-run-preview";
   const isFeedbackIntelligencePreview = FeedbackIntelligencePreview !== null
     && location.pathname === "/internal/feedback-intelligence-preview";
+  const isGoldenDaysPreview = GoldenDaysPreview !== null
+    && location.pathname === "/internal/golden-days-preview";
   const isDemoRoute = location.pathname === "/demo"
     || isEvidencePreview
     || isEmailPreview
     || isMinorConsentPreview
     || isFirstRunExperiencePreview
-    || isFeedbackIntelligencePreview;
+    || isFeedbackIntelligencePreview
+    || isGoldenDaysPreview;
 
   if (isDemoRoute) {
     return (
@@ -105,6 +111,9 @@ const AppRoutes = () => {
             )}
             {FeedbackIntelligencePreview && (
               <Route path="/internal/feedback-intelligence-preview" element={<FeedbackIntelligencePreview />} />
+            )}
+            {GoldenDaysPreview && (
+              <Route path="/internal/golden-days-preview" element={<GoldenDaysPreview />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -4,10 +4,10 @@
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
   "generated_at": "2026-08-05T15:26:47+02:00",
   "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
-  "producer_base_commit": "c0a80af4e8d6bb5c5092646913bef1283e19083b",
-  "producer_worktree_dirty": true,
+  "producer_base_commit": "5b4c414cbc1a092a57f49a6a999014ace7acfb78",
+  "producer_worktree_dirty": false,
   "package_signed": false,
-  "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "release_scope": {
     "jurisdiction": "DE",
     "language": "de-DE",

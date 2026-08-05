@@ -54,13 +54,13 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | 4. Datenbank-Sicherheit | keine direkten Rechte, Consent- und Minor-Gates, Widerruf, Account-Cascade, Negativtests | fertig |
 | 5. Transaktionaler Submit | servervalidierte Entwürfe, Idempotenz, Retry, Finalisierung, ungültige Optionen fail-closed | fertig |
 | 6. Checkpoint-Integration | kalendertagbasierte Eignung, einmalige Einladung, Wiederaufnahme, Kill-Switch | lokal fertig; Live-Gate, Autosave, Background-Save, Resume und Submit bleiben deaktiviert |
-| 7. Deutschland-/Minor-Pfad | DE-only, 15+, spezifischer Guardian-Text-Scope, Staging-Negativtests | lokale fail-closed Matrix fertig; Deutschland-Freigabe offen, alle Nicht-DE-Länder ausdrücklich `out_of_scope` |
+| 7. Deutschland-/Minor-Pfad | DE-only, 15+, spezifischer Guardian-Text-Scope, Staging-Negativtests | lokale fail-closed Matrix und eigener Guardian-Text-Scope fertig; Deutschland-Fachfreigabe und echte Staging-Negativtests offen, alle Nicht-DE-Länder ausdrücklich `out_of_scope` |
 | 8. Activity-Link | nur Zähl-/Statusdaten; niemals Journalinhalt; pseudonyme Verknüpfung | lokal fertig; per-Programminstanz-Referenz und unveränderlicher Submit-Snapshot gebaut |
 | 9. Admin-Auswertung | Aggregate, Mindestkohorte, Testdatentrennung, keine Individualansicht | lokal fertig; kein Production-Read |
 | 10. Machine-Export | KI-agnostisch, Jarvis-kompatibel, read-only, Consent bei Export erneut geprüft | lokal fertig und schema-valide; ohne Execute-Grant, Credential, Transport oder Production-Gate |
-| 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft und Widerrufs-UI lokal fertig; Rechtsfreigabe, feste Höchstdauer und Retention-Job offen |
-| 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | offen |
-| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | offen |
+| 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft, Widerrufs-UI, technische 365-Tage-Höchstdauer und automatisierter Löschlauf lokal fertig; Rechtsfreigabe der Frist und Zielumgebungsnachweis offen |
+| 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | lokale kombinierte CI mit 102 Testdateien/582 Tests und statischer Store-Prüfung grün; echter Production-Environment-, signierter Native- und Staging-Nachweis offen |
+| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Golden-Days-Parallelstand lokal integriert; einziger `App.tsx`-Konflikt bewusst aufgelöst und kombinierte CI grün; Push/Merge/Release bleiben separat |
 
 ## Bereits implementiert
 
@@ -187,14 +187,13 @@ Das System ist erst 1.1-release-ready, wenn alle folgenden Punkte gleichzeitig e
 
 ## Aktueller Nachweis
 
-- Content-/Invariantentests: 9 grün.
-- UX-/Live-Gate-Interaktionstests: 11 grün.
-- App-Adapter-/Kill-Switch-Vertragstests: 4 grün.
-- Persistence-/Retry-Vertragstests: 6 grün.
-- Fokussierte Feedback-Intelligence-Tests insgesamt: 34 grün.
-- TypeScript-Typecheck: grün.
-- Production-Web-Build: grün.
-- Lokale Desktop- und Mobile-Browserprüfung: grün.
-- Feedback-Intelligence-PGlite-Test inklusive Rollen, Consent, eigenem minimierten Receipt-Read, Self-Service-Widerruf, DE-only-Ländersperre, Minor, Account-Cascade, einmaligem Claim, Draft, ungültiger Option, stale Retry, idempotentem Submit, Admin-Mindestkohorte und schema-validem synthetischem Machine-Export: grün.
+- Kombinierte lokale CI nach Integration des Golden-Days-Parallelstands: 102 Testdateien und 582 Tests grün.
+- TypeScript-Typecheck und Production-Web-Build: grün.
+- Sämtliche SQL-Harnesses einschließlich Rollen, Consent, Guardian, Widerruf, Retention, Account-Cascade, DE-only-Ländersperre, idempotentem Submit, Admin-Mindestkohorte und schema-validem synthetischem Machine-Export: grün.
+- Statische App-Store-Prüfung und `PrivacyInfo.xcprivacy`-Syntax: grün.
+- ESLint: null Fehler; 16 bereits vorhandene Warnungen in von diesem Integrationsblock nicht veränderten Dateien.
+- Der echte Production-Environment- und Embedded-iOS-Nachweis bleibt fail-closed, weil dieser Worktree bewusst keine Production-Werte oder Secrets enthält.
+
+Vollständiger lokaler Nachweis: [`RELEASE_EVIDENCE_V1_1_LOCAL_2026-08-05.md`](./RELEASE_EVIDENCE_V1_1_LOCAL_2026-08-05.md).
 
 Diese Nachweise belegen lokale technische Eigenschaften. Sie belegen keine Production-Aktivierung, rechtliche Freigabe, App-Store-Akzeptanz, Programmwirksamkeit oder kausale Effekte.
