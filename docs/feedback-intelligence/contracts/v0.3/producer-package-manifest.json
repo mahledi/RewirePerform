@@ -1,0 +1,79 @@
+{
+  "schema_version": "rewireperform-feedback-semantics-producer-package-manifest-v1",
+  "contract_version": "0.3.0-draft",
+  "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "generated_at": "2026-08-05T15:26:47+02:00",
+  "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
+  "producer_base_commit": "c0a80af4e8d6bb5c5092646913bef1283e19083b",
+  "producer_worktree_dirty": true,
+  "package_signed": false,
+  "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "release_scope": {
+    "jurisdiction": "DE",
+    "language": "de-DE",
+    "non_de_status": "OUT_OF_SCOPE_FAIL_CLOSED"
+  },
+  "digest_algorithm": "sha256",
+  "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
+  "package_sha256": "351ebd27865743e29bcf955fd47064970ad0ef212df806ef9056065add1ef0d5",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
+      "sha256": "69589ef38c740309be77bb6ff9cdc46b0e0ac9d916d025089bae08f82a8c6477"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.json",
+      "sha256": "abbadba9dffadc5410a168829c8a7bf7fef28319222db1741d81547c3f251c66"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/producer-decisions.json",
+      "sha256": "5ac51184866cc1c1c3422cf40ec61af16684ad74da54d4563e23a70005989931"
+    },
+    {
+      "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
+      "sha256": "7dbfc9bd7c7cad952c05c273d825d23eaa921b350c6c101e8a6b482a467db255"
+    },
+    {
+      "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
+      "sha256": "1dfbaafe2115d009ea16db5567a316e1daa827d0b4aad4040720a89a56822b28"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",
+      "sha256": "50a27fdde4b8f75867243a7918dd6b710908130cd7d913eaf442e9de7c6539da"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
+      "sha256": "2866d118f02fff84d68c1a000fd60150d2becac14f7c3cfe0011206da1ecefa9"
+    }
+  ],
+  "catalog_evidence": {
+    "questions": 47,
+    "constructs": 24,
+    "item_families": 27,
+    "scales": 26,
+    "synthetic_question_ids": 0,
+    "user_or_activity_records": 0
+  },
+  "activation": {
+    "consumer_catalog_accepted": false,
+    "consumer_execute_granted": false,
+    "machine_credential_ready": false,
+    "network_transport_ready": false,
+    "production_export_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false
+  },
+  "open_release_gates": [
+    "CONSUMER_BYTE_REVIEW_AND_ADAPTATION",
+    "QUALIFIED_GERMAN_LEGAL_AND_PRIVACY_APPROVAL",
+    "FIXED_RAW_TEXT_RETENTION_AND_AUTOMATED_DELETION",
+    "DE_UNDER_16_GUARDIAN_NOTICE_AND_AUTHORIZATION_APPROVAL",
+    "NAMED_MACHINE_PROCESSOR_AND_DATA_PROCESSING_SCOPE",
+    "SIGNED_COMMITTED_PRODUCER_AND_CONSUMER_PACKAGES",
+    "DEDICATED_MACHINE_ACTOR_AND_CREDENTIAL",
+    "SYNTHETIC_STAGING_READ",
+    "NATIVE_DEVICE_VALIDATION",
+    "SEPARATE_PUSH_MERGE_DEPLOYMENT_AND_PRODUCTION_APPROVALS"
+  ]
+}

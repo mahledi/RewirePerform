@@ -1,0 +1,92 @@
+{
+  "schema_version": "rewire-feedback-intelligence-semantics-producer-decisions-v0.3-draft",
+  "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "consumer_proposal_commit": "8de8e126cd39ef39645ead338f447141ca655414",
+  "source_questionnaire_content_version": "feedback-intelligence-content-v1.0.0",
+  "coverage": {
+    "jurisdiction": "DE",
+    "language": "de-DE",
+    "checkpoint_days": [10, 24, 39, 55],
+    "question_count": 47,
+    "construct_count": 24,
+    "item_family_count": 27,
+    "scale_count": 26
+  },
+  "producer_confirmed_fields": [
+    "construct_id",
+    "human_label_de",
+    "dimension",
+    "measurement_intention_de",
+    "item_family_id",
+    "longitudinal_comparison",
+    "scale_id",
+    "ordered",
+    "analysis_mode",
+    "interpretation_rule_de",
+    "answer_id",
+    "observed_labels_de",
+    "neutral_semantic_de",
+    "polarity",
+    "question_id",
+    "item_variant_id",
+    "analysis_role",
+    "display_answer_options",
+    "program_day",
+    "program_phase",
+    "stable_evidence_id",
+    "product_test_hypothesis_de"
+  ],
+  "explicit_consumer_deltas": [
+    "answer_id is the exact producer structured_answer identifier and therefore permits numeric and lowercase values instead of synthetic uppercase aliases",
+    "observed_labels_de preserves every real checkpoint-specific visible label that shares one semantic answer identifier",
+    "display_answer_options preserves the exact prompt-local answer labels and flags",
+    "analysis_mode distinguishes ordinal, bipolar, stage and categorical interpretation",
+    "DESCRIPTIVE is a valid polarity for categories that must not be forced into supportive or concern scoring",
+    "a construct or family may legitimately contain no supportive or no concern answer when the instrument is descriptive or magnitude-only",
+    "product_test_hypothesis_de replaces proposed_test",
+    "the producer catalog covers the actual 47 questions rather than the 28 synthetic consumer questions"
+  ],
+  "comparison_identifier_corrections": {
+    "stable_semantic_scale_families": [
+      "content_clarity_v1",
+      "task_clarity_v1",
+      "training_transfer_v1",
+      "automaticity_stage_v1"
+    ],
+    "checkpoint_specific_non_comparable_families": [
+      "helpful_components_d24_v1",
+      "helpful_components_d55_v1",
+      "improvement_priority_d10_v1",
+      "improvement_priority_d24_v1",
+      "improvement_priority_d55_v1"
+    ],
+    "separate_scales_to_prevent_polarity_collision": [
+      "perceived_change_magnitude_5_v1",
+      "retention_gap_frequency_5_v1",
+      "training_transfer_frequency_5_v1"
+    ]
+  },
+  "evidence_policy": {
+    "observational_not_causal": true,
+    "self_report_not_objective_performance": true,
+    "automaticity_not_neurophysiological_proof": true,
+    "categorical_options_not_scores": true,
+    "positive_and_negative_feedback_equal_visibility": true,
+    "minimum_cohort_size_floor": 5,
+    "cohort_size_5_to_9": "LOW_CONFIDENCE",
+    "journal_text_allowed": false,
+    "journal_entry_count_allowed": true
+  },
+  "catalog_data_class": "SEMANTICS_ONLY_NO_USER_FEEDBACK_OR_ACTIVITY_DATA",
+  "runtime_delivery": "BYTE_PINNED_WITH_CONSUMER_RELEASE_NO_RUNTIME_TABLE_READ_REQUIRED",
+  "activation": {
+    "consumer_catalog_accepted": false,
+    "real_machine_read": false,
+    "machine_credential_ready": false,
+    "network_transport_ready": false,
+    "production_export_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false
+  }
+}

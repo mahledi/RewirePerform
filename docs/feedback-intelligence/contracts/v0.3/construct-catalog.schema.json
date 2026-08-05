@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/feedback-intelligence/v0.3/construct-catalog.schema.json",
+  "title": "RewirePerform Feedback Construct Semantics v0.3 Producer Draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_status",
+    "source_questionnaire_content_version",
+    "catalog_scope",
+    "evidence_boundaries",
+    "constructs"
+  ],
+  "properties": {
+    "schema_version": {"const": "rewire-feedback-construct-semantics-v0.3-producer-draft"},
+    "contract_status": {"const": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED"},
+    "source_questionnaire_content_version": {"const": "feedback-intelligence-content-v1.0.0"},
+    "catalog_scope": {"$ref": "#/$defs/catalog_scope"},
+    "evidence_boundaries": {"$ref": "#/$defs/evidence_boundaries"},
+    "constructs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/construct"}
+    }
+  },
+  "$defs": {
+    "catalog_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["language", "jurisdiction", "data_class", "stable_evidence_namespace"],
+      "properties": {
+        "language": {"const": "de-DE"},
+        "jurisdiction": {"const": "DE"},
+        "data_class": {"const": "SEMANTICS_ONLY_NO_USER_FEEDBACK_OR_ACTIVITY_DATA"},
+        "stable_evidence_namespace": {"const": "FICAT-DE-V0.3"}
+      }
+    },
+    "evidence_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observational_not_causal",
+        "self_report_not_objective_performance",
+        "automaticity_not_neurophysiological_proof",
+        "categorical_options_not_scores",
+        "minimum_cohort_size_floor",
+        "low_confidence_cohort_max"
+      ],
+      "properties": {
+        "observational_not_causal": {"const": true},
+        "self_report_not_objective_performance": {"const": true},
+        "automaticity_not_neurophysiological_proof": {"const": true},
+        "categorical_options_not_scores": {"const": true},
+        "minimum_cohort_size_floor": {"const": 5},
+        "low_confidence_cohort_max": {"const": 9}
+      }
+    },
+    "construct": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["construct_id", "human_label_de", "dimension", "measurement_intention_de", "item_families"],
+      "properties": {
+        "construct_id": {"$ref": "#/$defs/identifier"},
+        "human_label_de": {"$ref": "#/$defs/german_text"},
+        "dimension": {"$ref": "#/$defs/identifier"},
+        "measurement_intention_de": {"$ref": "#/$defs/german_text"},
+        "item_families": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/item_family"}}
+      }
+    },
+    "item_family": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_family_id",
+        "human_label_de",
+        "longitudinal_comparison",
+        "scale",
+        "questions",
+        "product_test_hypothesis_de"
+      ],
+      "properties": {
+        "item_family_id": {"$ref": "#/$defs/identifier"},
+        "human_label_de": {"$ref": "#/$defs/german_text"},
+        "longitudinal_comparison": {"type": "boolean"},
+        "scale": {"$ref": "#/$defs/scale"},
+        "questions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/question"}},
+        "product_test_hypothesis_de": {"$ref": "#/$defs/german_text"}
+      }
+    },
+    "scale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale_id",
+        "human_label_de",
+        "ordered",
+        "analysis_mode",
+        "interpretation_rule_de",
+        "answer_options"
+      ],
+      "properties": {
+        "scale_id": {"$ref": "#/$defs/identifier"},
+        "human_label_de": {"$ref": "#/$defs/german_text"},
+        "ordered": {"type": "boolean"},
+        "analysis_mode": {
+          "enum": [
+            "ORDINAL_DIRECTIONAL",
+            "BIPOLAR_OPTIMUM",
+            "ORDINAL_MAGNITUDE",
+            "STAGE_DESCRIPTIVE",
+            "CATEGORICAL_DESCRIPTIVE"
+          ]
+        },
+        "interpretation_rule_de": {"$ref": "#/$defs/german_text"},
+        "answer_options": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/answer_option"}}
+      }
+    },
+    "answer_option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["answer_id", "observed_labels_de", "neutral_semantic_de", "polarity"],
+      "properties": {
+        "answer_id": {"$ref": "#/$defs/answer_identifier"},
+        "observed_labels_de": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/german_text"}
+        },
+        "neutral_semantic_de": {"$ref": "#/$defs/german_text"},
+        "polarity": {"enum": ["SUPPORTIVE", "CONCERN", "NEUTRAL", "NOT_APPLICABLE", "DESCRIPTIVE"]}
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "human_label_de",
+        "item_variant_id",
+        "analysis_role",
+        "display_answer_options",
+        "checkpoint",
+        "stable_evidence_id"
+      ],
+      "properties": {
+        "question_id": {"$ref": "#/$defs/identifier"},
+        "human_label_de": {"$ref": "#/$defs/german_text"},
+        "item_variant_id": {"$ref": "#/$defs/identifier"},
+        "analysis_role": {"enum": ["repeated_core", "checkpoint_module", "quality_context"]},
+        "display_answer_options": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/display_answer_option"}
+        },
+        "checkpoint": {"$ref": "#/$defs/checkpoint"},
+        "stable_evidence_id": {
+          "type": "string",
+          "pattern": "^FICAT-DE-V0\\.3-D(10|24|39|55)-[A-Z0-9-]+$",
+          "maxLength": 128
+        }
+      }
+    },
+    "display_answer_option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["answer_id", "human_label_de", "not_scored", "exclusive"],
+      "properties": {
+        "answer_id": {"$ref": "#/$defs/answer_identifier"},
+        "human_label_de": {"$ref": "#/$defs/german_text"},
+        "not_scored": {"type": "boolean"},
+        "exclusive": {"type": "boolean"}
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["program_day", "program_phase", "measurement_intention_de"],
+      "properties": {
+        "program_day": {"enum": [10, 24, 39, 55]},
+        "program_phase": {"enum": ["ORIENTATION", "APPLICATION", "CONSOLIDATION", "TRANSFER"]},
+        "measurement_intention_de": {"$ref": "#/$defs/german_text"}
+      }
+    },
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,95}$"},
+    "answer_identifier": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_]{0,95}$"},
+    "german_text": {"type": "string", "minLength": 3, "maxLength": 800}
+  }
+}

@@ -144,7 +144,7 @@ const day10Questions: readonly FeedbackQuestionDefinition[] = [
     constructId: "content_clarity",
     itemFamilyId: "content_clarity_v1",
     itemVariantId: "content_clarity_d10_v1",
-    scaleId: "clarity_5_v1",
+    scaleId: "content_clarity_5_v1",
     type: "single",
     prompt: "Wie verständlich sind die täglichen Inhalte bisher für dich?",
     options: clarityOptions,
@@ -156,7 +156,7 @@ const day10Questions: readonly FeedbackQuestionDefinition[] = [
     constructId: "task_clarity",
     itemFamilyId: "task_clarity_v1",
     itemVariantId: "task_clarity_d10_v1",
-    scaleId: "clear_5_v1",
+    scaleId: "task_actionability_5_v1",
     type: "single",
     prompt: "Wenn eine Aufgabe erscheint: Wie klar ist dir, was du konkret tun sollst?",
     options: clearOptions,
@@ -238,7 +238,7 @@ const day10Questions: readonly FeedbackQuestionDefinition[] = [
   {
     id: "d10_improvement_priority",
     constructId: "improvement_priority",
-    itemFamilyId: "improvement_priority_v1",
+    itemFamilyId: "improvement_priority_d10_v1",
     itemVariantId: "improvement_priority_d10_v1",
     scaleId: "improvement_area_d10_v1",
     type: "single",
@@ -255,13 +255,13 @@ const day10Questions: readonly FeedbackQuestionDefinition[] = [
 const day24Questions: readonly FeedbackQuestionDefinition[] = [
   {
     id: "d24_content_clarity", constructId: "content_clarity", itemFamilyId: "content_clarity_v1",
-    itemVariantId: "content_clarity_d24_v1", scaleId: "clear_5_v1", type: "single",
+    itemVariantId: "content_clarity_d24_v1", scaleId: "content_clarity_5_v1", type: "single",
     prompt: "Wenn du die täglichen Inhalte liest: Wie klar ist dir inzwischen, was du daraus mitnehmen sollst?",
     options: clearOptions, ...optionalComment, analysisRole: "repeated_core",
   },
   {
     id: "d24_task_clarity", constructId: "task_clarity", itemFamilyId: "task_clarity_v1",
-    itemVariantId: "task_clarity_d24_v1", scaleId: "understanding_speed_5_v1", type: "single",
+    itemVariantId: "task_clarity_d24_v1", scaleId: "task_actionability_5_v1", type: "single",
     prompt: "Wie schnell verstehst du momentan, wie du eine Aufgabe praktisch umsetzen sollst?",
     options: fivePoint(["Sofort", "Meistens schnell", "Unterschiedlich", "Eher langsam", "Oft gar nicht"]),
     ...optionalComment, analysisRole: "repeated_core",
@@ -286,7 +286,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
   },
   {
     id: "d24_training_transfer", constructId: "training_transfer", itemFamilyId: "training_transfer_v1",
-    itemVariantId: "training_transfer_d24_v1", scaleId: "frequency_5_no_opportunity_v1", type: "single",
+    itemVariantId: "training_transfer_d24_v1", scaleId: "training_transfer_frequency_5_v1", type: "single",
     prompt: "Wie häufig nimmst du einen Gedanken oder eine Aufgabe aus RewirePerform mit ins Training?",
     options: withNotApplicable(frequencyOptions, "no_opportunity", "Noch keine passende Trainingssituation"),
     ...optionalComment, analysisRole: "repeated_core",
@@ -298,7 +298,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
     options: magnitudeOptions, ...optionalComment, analysisRole: "repeated_core",
   },
   {
-    id: "d24_helpful_components", constructId: "helpful_components", itemFamilyId: "helpful_components_v1",
+    id: "d24_helpful_components", constructId: "helpful_components", itemFamilyId: "helpful_components_d24_v1",
     itemVariantId: "helpful_components_d24_v1", scaleId: "components_d24_multi_v1", type: "multi",
     prompt: "Welche Bestandteile helfen dir bisher, Entwicklungen bei dir zu bemerken?",
     options: ["Tägliche Inhalte", "Aufgaben", "Check-ins", "Journal", "Rückblicke", "Keiner davon", "Etwas anderes"]
@@ -310,7 +310,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
   {
     id: "d24_change_magnitude", constructId: "perceived_change_magnitude",
     itemFamilyId: "perceived_change_magnitude_v1", itemVariantId: "change_magnitude_d24_v1",
-    scaleId: "magnitude_5_v1", type: "single",
+    scaleId: "perceived_change_magnitude_5_v1", type: "single",
     prompt: "Wie stark nimmst du seit dem Start eine Veränderung in deinem Umgang mit sportlichen Situationen wahr?",
     options: magnitudeOptions, ...optionalComment, analysisRole: "repeated_core",
   },
@@ -330,7 +330,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
     ...optionalComment, analysisRole: "checkpoint_module",
   },
   {
-    id: "d24_improvement_priority", constructId: "improvement_priority", itemFamilyId: "improvement_priority_v1",
+    id: "d24_improvement_priority", constructId: "improvement_priority", itemFamilyId: "improvement_priority_d24_v1",
     itemVariantId: "improvement_priority_d24_v1", scaleId: "improvement_area_d24_v1", type: "single",
     prompt: "Was würde dir im nächsten Abschnitt am meisten helfen?",
     options: ["Klarere Texte", "Konkretere Aufgaben", "Weniger täglicher Umfang", "Mehr Hilfe bei der Anwendung", "Bessere Rückblicke", "Einfacherer Ablauf", "Etwas anderes"]
@@ -342,7 +342,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
 const day39Questions: readonly FeedbackQuestionDefinition[] = [
   {
     id: "d39_content_clarity", constructId: "content_clarity", itemFamilyId: "content_clarity_v1",
-    itemVariantId: "content_clarity_d39_v1", scaleId: "certainty_5_v1", type: "single",
+    itemVariantId: "content_clarity_d39_v1", scaleId: "content_clarity_5_v1", type: "single",
     prompt: "Wie sicher verstehst du inzwischen, wozu die täglichen Inhalte und Aufgaben gedacht sind?",
     options: fivePoint(["Sehr sicher", "Eher sicher", "Teils/teils", "Eher unsicher", "Sehr unsicher"]),
     ...optionalComment, analysisRole: "repeated_core",
@@ -361,7 +361,7 @@ const day39Questions: readonly FeedbackQuestionDefinition[] = [
   },
   {
     id: "d39_training_transfer", constructId: "training_transfer", itemFamilyId: "training_transfer_v1",
-    itemVariantId: "training_transfer_d39_v1", scaleId: "frequency_5_no_opportunity_v1", type: "single",
+    itemVariantId: "training_transfer_d39_v1", scaleId: "training_transfer_frequency_5_v1", type: "single",
     prompt: "Wie häufig setzt du im Sport bewusst etwas ein, das du bei RewirePerform kennengelernt hast?",
     options: withNotApplicable(frequencyOptions, "no_opportunity", "Noch keine passende Situation"),
     ...optionalComment, analysisRole: "repeated_core",
@@ -374,7 +374,7 @@ const day39Questions: readonly FeedbackQuestionDefinition[] = [
   },
   {
     id: "d39_automaticity_stage", constructId: "automaticity_stage", itemFamilyId: "automaticity_stage_v1",
-    itemVariantId: "automaticity_stage_d39_v1", scaleId: "automaticity_stage_d39_v1", type: "single",
+    itemVariantId: "automaticity_stage_d39_v1", scaleId: "automaticity_stage_5_v1", type: "single",
     prompt: "Wenn du in einer schwierigen Sportsituation etwas aus RewirePerform nutzt: Wie beginnt es meistens?",
     options: [
       "Ich öffne zuerst RewirePerform", "Ich versuche bewusst, mich zu erinnern",
@@ -392,7 +392,7 @@ const day39Questions: readonly FeedbackQuestionDefinition[] = [
   {
     id: "d39_change_magnitude", constructId: "perceived_change_magnitude",
     itemFamilyId: "perceived_change_magnitude_v1", itemVariantId: "change_magnitude_d39_v1",
-    scaleId: "magnitude_5_v1", type: "single",
+    scaleId: "perceived_change_magnitude_5_v1", type: "single",
     prompt: "Wie deutlich bemerkst du inzwischen einen Unterschied in deinem Umgang mit schwierigen sportlichen Situationen?",
     options: magnitudeOptions, ...optionalComment, analysisRole: "repeated_core",
   },
@@ -444,7 +444,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
   },
   {
     id: "d55_retention_gap", constructId: "retention_gap", itemFamilyId: "retention_gap_v1",
-    itemVariantId: "retention_gap_d55_v1", scaleId: "frequency_5_v1", type: "single",
+    itemVariantId: "retention_gap_d55_v1", scaleId: "retention_gap_frequency_5_v1", type: "single",
     prompt: "Wie oft gab es Inhalte, die du beim Lesen verstanden hast, später aber nicht mehr abrufen konntest?",
     options: frequencyOptions, ...optionalComment, analysisRole: "checkpoint_module",
   },
@@ -456,7 +456,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
   },
   {
     id: "d55_automaticity_stage", constructId: "automaticity_stage", itemFamilyId: "automaticity_stage_v1",
-    itemVariantId: "automaticity_stage_d55_v1", scaleId: "automaticity_stage_d55_v1", type: "single",
+    itemVariantId: "automaticity_stage_d55_v1", scaleId: "automaticity_stage_5_v1", type: "single",
     prompt: "Wenn eine passende Situation entsteht: Wie kommt RewirePerform heute meistens ins Spiel?",
     options: [
       "Ich müsste zuerst in der App nachsehen", "Ich suche bewusst nach einem passenden Werkzeug",
@@ -467,7 +467,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
   },
   {
     id: "d55_training_transfer", constructId: "training_transfer", itemFamilyId: "training_transfer_v1",
-    itemVariantId: "training_transfer_d55_v1", scaleId: "frequency_5_v1", type: "single",
+    itemVariantId: "training_transfer_d55_v1", scaleId: "training_transfer_frequency_5_v1", type: "single",
     prompt: "Wie häufig hast du während des Programms bewusst etwas aus RewirePerform eingesetzt?",
     options: frequencyOptions, ...optionalComment, analysisRole: "repeated_core",
   },
@@ -490,7 +490,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
   {
     id: "d55_change_magnitude", constructId: "perceived_change_magnitude",
     itemFamilyId: "perceived_change_magnitude_v1", itemVariantId: "change_magnitude_d55_v1",
-    scaleId: "magnitude_5_v1", type: "single",
+    scaleId: "perceived_change_magnitude_5_v1", type: "single",
     prompt: "Wie deutlich nimmst du im Vergleich zum Programmstart eine Veränderung in deinem Umgang mit sportlichen Situationen wahr?",
     options: magnitudeOptions, ...optionalComment, analysisRole: "repeated_core",
   },
@@ -510,7 +510,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
     ...optionalComment, analysisRole: "checkpoint_module",
   },
   {
-    id: "d55_helpful_components", constructId: "helpful_components", itemFamilyId: "helpful_components_v1",
+    id: "d55_helpful_components", constructId: "helpful_components", itemFamilyId: "helpful_components_d55_v1",
     itemVariantId: "helpful_components_d55_v1", scaleId: "components_d55_multi_v1", type: "multi",
     prompt: "Welche Bestandteile haben dir am meisten gebracht?",
     options: ["Tägliche Inhalte", "Aufgaben", "Check-ins", "Journal", "Rückblicke", "Transfer-Pulse", "Keiner davon", "Etwas anderes"]
@@ -534,7 +534,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
     ...optionalComment, analysisRole: "quality_context",
   },
   {
-    id: "d55_change_priority", constructId: "improvement_priority", itemFamilyId: "improvement_priority_v1",
+    id: "d55_change_priority", constructId: "improvement_priority", itemFamilyId: "improvement_priority_d55_v1",
     itemVariantId: "improvement_priority_d55_v1", scaleId: "improvement_area_d55_v1", type: "single",
     prompt: "Was sollten wir als Erstes verändern?",
     options: ["Texte", "Aufgaben", "Täglicher Umfang", "Wiederholungen", "Anwendung im Sport", "Journal-/Check-in-Ablauf", "Navigation", "Etwas anderes", "Momentan kein klarer Punkt"]
