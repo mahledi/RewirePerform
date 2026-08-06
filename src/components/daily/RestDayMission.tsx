@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Check, Clock3, Play } from "lucide-react";
 import RestDayVisualizationFlow from "@/prototypes/golden-days/RestDayVisualizationFlow";
 import type { GoldenDayDraft } from "@/prototypes/golden-days/goldenDayDrafts";
@@ -13,6 +13,7 @@ export type RestDayPlanMode = "now" | "later" | null;
 type Props = {
   draft: GoldenDayDraft;
   userId: string | null;
+  athleteName?: unknown;
   date: string;
   planMode: RestDayPlanMode;
   reminderTime: string;
@@ -34,6 +35,7 @@ const parseTime = (time: string) => {
 const RestDayMission = ({
   draft,
   userId,
+  athleteName,
   date,
   planMode,
   reminderTime,
@@ -48,6 +50,12 @@ const RestDayMission = ({
   const [scheduling, setScheduling] = useState(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
   const nativeAvailable = useMemo(() => isNativeNotificationsAvailable(), []);
+
+  useEffect(() => {
+    if (planMode !== "now") return;
+    onReminderScheduledChange(false);
+    void cancelRestVisualizationReminder(draft.day);
+  }, [draft.day, onReminderScheduledChange, planMode]);
 
   const scheduleReminder = async () => {
     const parsed = parseTime(reminderTime);
@@ -90,9 +98,9 @@ const RestDayMission = ({
     return (
       <RestDayVisualizationFlow
         draft={draft}
+        athleteName={athleteName}
         onCompletionChange={(complete) => {
           if (complete) {
-            void cancelRestVisualizationReminder(draft.day);
             onComplete();
           }
         }}
@@ -117,6 +125,7 @@ const RestDayMission = ({
             type="time"
             value={reminderTime}
             onChange={(event) => {
+              if (reminderScheduled) void cancelRestVisualizationReminder(draft.day);
               onReminderTimeChange(event.target.value);
               onReminderScheduledChange(false);
               setScheduleError(null);

@@ -15,9 +15,11 @@ import {
   getRestDayVisualization,
   type RestVisualizationPhase,
 } from "@/prototypes/golden-days/restDayVisualizations";
+import { getFirstName } from "@/lib/athleteGreeting";
 
 type RestDayVisualizationFlowProps = {
   draft: GoldenDayDraft;
+  athleteName?: unknown;
   onCompletionChange?: (complete: boolean) => void;
 };
 
@@ -89,8 +91,9 @@ const TimerRing = ({
   );
 };
 
-const RestDayVisualizationFlow = ({ draft, onCompletionChange }: RestDayVisualizationFlowProps) => {
+const RestDayVisualizationFlow = ({ draft, athleteName, onCompletionChange }: RestDayVisualizationFlowProps) => {
   const visualization = useMemo(() => getRestDayVisualization(draft), [draft]);
+  const firstName = getFirstName(athleteName);
   const reduceMotion = useReducedMotion() ?? false;
   const [step, setStep] = useState<SessionStep>("intro");
   const [path, setPath] = useState<SessionPath>("guided");
@@ -176,8 +179,11 @@ const RestDayVisualizationFlow = ({ draft, onCompletionChange }: RestDayVisualiz
       <div data-testid="rest-visualization-flow" data-step="intro" className="relative overflow-hidden rounded-[28px] border border-white/[0.07] bg-[#101216] p-5 sm:p-7">
         <div className="pointer-events-none absolute -top-24 left-1/2 h-52 w-72 -translate-x-1/2 rounded-full bg-primary/[0.12] blur-3xl" />
         <div className="relative">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Bevor du startest</p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Du musst kein perfektes Bild sehen.</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Deine mentale Einheit</p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
+            {firstName ? `${firstName}, deine Einheit ist bereit.` : "Deine Einheit ist bereit."}
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-white/48">Du musst kein perfektes Bild sehen.</p>
           <div className="mt-6 space-y-3">
             {[
               "Es reicht, wenn du dir vorstellst, was passiert.",

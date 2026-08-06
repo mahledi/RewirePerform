@@ -44,6 +44,11 @@ import {
   athleteAppViewport,
 } from "@/components/app/AthleteAppChrome";
 import { getAthleteGreeting } from "@/lib/athleteGreeting";
+import {
+  canOpenRestVisualization,
+  readRestVisualizationIntent,
+  type NativeRestVisualizationIntent,
+} from "@/lib/nativeRestVisualizationIntent";
 
 type EventType = "training" | "rest" | "competition";
 type SetupState = "ready" | "setup" | "waiting";
@@ -634,6 +639,8 @@ const Dashboard = () => {
   const [newEventType, setNewEventType] = useState<EventType>("training");
   const [newEventTitle, setNewEventTitle] = useState("");
   const [showCheckin, setShowCheckin] = useState(false);
+  const [pendingRestVisualization, setPendingRestVisualization] = useState<NativeRestVisualizationIntent | null>(null);
+  const [checkinInitialFocus, setCheckinInitialFocus] = useState<"rest-visualization" | undefined>();
   const [setupMode, setSetupMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
@@ -706,6 +713,13 @@ const Dashboard = () => {
       navigate("/coach");
     }
   }, [role, navigate]);
+
+  useEffect(() => {
+    const intent = readRestVisualizationIntent(location.state);
+    if (!intent) return;
+    setPendingRestVisualization(intent);
+    navigate("/dashboard", { replace: true, state: null });
+  }, [location.state, navigate]);
 
   useEffect(() => {
     if (loading) return;
@@ -1478,6 +1492,34 @@ const Dashboard = () => {
     })
     .slice(0, 3);
   const dailyCompletionCount = Number(todayCheckinDone) + Number(todayJournalDone);
+
+  useEffect(() => {
+    if (!pendingRestVisualization || loading || checkinStatusLoading) return;
+    const currentDate = format(effectiveToday, "yyyy-MM-dd");
+    if (canOpenRestVisualization({
+      intent: pendingRestVisualization,
+      currentDate,
+      eventType: todayEventType,
+      checkinCompleted: todayCheckinDone,
+    })) {
+      setDashboardSection("today");
+      setCheckinInitialFocus("rest-visualization");
+      setShowCheckin(true);
+    } else if (todayCheckinDone && pendingRestVisualization.scheduledDate === currentDate) {
+      toast.success("Deine mentale Einheit ist für heute bereits abgeschlossen.");
+    } else {
+      toast.error("Diese mentale Einheit gehört nicht zu deinem heutigen Ruhetag.");
+    }
+    setPendingRestVisualization(null);
+  }, [
+    checkinStatusLoading,
+    effectiveToday,
+    loading,
+    pendingRestVisualization,
+    todayCheckinDone,
+    todayEventType,
+  ]);
+
   const openPlan = () => {
     setDashboardSection("plan");
     setSelectedDate((current) => current ?? effectiveToday);
@@ -1595,8 +1637,10 @@ const Dashboard = () => {
       <DailyCheckin
         eventType={todayEventType as EventType}
         date={effectiveToday}
+        initialFocus={checkinInitialFocus}
         onClose={async () => {
           setShowCheckin(false);
+          setCheckinInitialFocus(undefined);
           await checkTodayCheckin();
           await upsertTodaySnapshot(user!.id).catch(() => {});
           await loadFlameStats();

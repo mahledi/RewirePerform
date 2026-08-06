@@ -60,4 +60,18 @@ describe("V1.1 production content contract", () => {
     expect(preTraining).toContain("disabled={Boolean(resolved.content.preTraining) && !revealed}");
     expect(preTraining).not.toContain("resolved.content.tasks.map");
   });
+
+  it("opens a rest reminder in the visualization and returns to the dashboard after the short lock-in", () => {
+    const router = readSource("src/components/notifications/NativeNotificationRouter.tsx");
+    const dashboard = readSource("src/pages/Dashboard.tsx");
+    const checkin = readSource("src/components/dashboard/DailyCheckin.tsx");
+
+    expect(router).toContain("createRestVisualizationNavigationState");
+    expect(dashboard).toContain('setCheckinInitialFocus("rest-visualization")');
+    expect(dashboard).toContain("initialFocus={checkinInitialFocus}");
+    expect(checkin).toContain('initialFocus === "rest-visualization" ? 3 : 0');
+    expect(checkin).toContain('if (initialFocus === "rest-visualization") setStep(4)');
+    expect(checkin).toContain('if (initialFocus === "rest-visualization") onClose()');
+    expect(checkin).not.toContain('navigate("/journal")');
+  });
 });

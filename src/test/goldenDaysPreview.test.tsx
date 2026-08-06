@@ -217,7 +217,8 @@ describe("complete 56-day V1.1 internal preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Tag 2" }));
     fireEvent.click(screen.getByRole("button", { name: "Mentale Einheit" }));
-    expect(screen.getByRole("heading", { name: "Du musst kein perfektes Bild sehen." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Deine Einheit ist bereit." })).toBeInTheDocument();
+    expect(screen.getByText("Du musst kein perfektes Bild sehen.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Einheit abschließen" })).toBeDisabled();
 
     fireEvent.click(screen.getByRole("button", { name: /Verstanden/ }));

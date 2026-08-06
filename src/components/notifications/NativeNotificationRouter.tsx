@@ -8,6 +8,7 @@ import {
   listenForNativeReminderActions,
 } from "@/lib/nativeNotifications";
 import { refreshEnabledNativeReminders } from "@/lib/nativeReminderPlan";
+import { createRestVisualizationNavigationState } from "@/lib/nativeRestVisualizationIntent";
 
 const SAFE_NOTIFICATION_ROUTES = new Set([
   "/dashboard",
@@ -35,7 +36,8 @@ export const NativeNotificationRouter = () => {
         toast.error("Diese Erinnerung gehört zu einem anderen Account.");
         return;
       }
-      navigate(route);
+      const restVisualizationState = createRestVisualizationNavigationState(extra);
+      navigate(route, restVisualizationState ? { state: restVisualizationState } : undefined);
     }).then((listenerHandle) => {
       if (disposed) void listenerHandle?.remove();
       else handle = listenerHandle;
