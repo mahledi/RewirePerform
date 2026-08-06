@@ -8,8 +8,8 @@ machine role, expose a Supabase table, or permit real feedback reads.
 
 ## What the catalog contains
 
-- all 47 real questions from program days 10, 24, 39 and 55;
-- 24 constructs, 27 item families and 26 semantic scales;
+- all 55 real questions from program days 10, 24, 39 and 55, including exactly two progressively staged rest-day visualization questions per checkpoint;
+- 29 constructs, 32 item families and 27 semantic scales;
 - exact German prompts and exact prompt-local answer labels;
 - stable construct, family, variant, scale and evidence identifiers;
 - explicit interpretation modes and answer polarity;
@@ -22,8 +22,9 @@ release. Jarvis does not need a direct database read for this catalog.
 
 ## Identifier corrections before activation
 
-The visible questionnaire wording did not change. Internal comparison metadata
-was corrected before any real activation:
+The visible questionnaire wording now includes the eight versioned rest-day
+visualization items. Internal comparison metadata was corrected before any real
+activation:
 
 - content clarity, task actionability, training transfer and perceived
   automaticity now use one stable semantic scale per comparable family;
@@ -32,6 +33,9 @@ was corrected before any real activation:
   families;
 - perceived change magnitude, retention-gap frequency and training-transfer
   frequency no longer share scale meanings that could invert interpretation.
+- rest-day visualization guidance clarity and practical access are compared only
+  where their meaning remains stable; self-direction, retrospective integration
+  and continuation intent remain separate constructs.
 
 These corrections prevent the consumer from treating different categories as
 the same longitudinal measure or reading the same numeric answer with opposite

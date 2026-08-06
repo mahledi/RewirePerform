@@ -2,9 +2,9 @@
   "schema_version": "rewireperform-feedback-semantics-producer-package-manifest-v1",
   "contract_version": "0.3.0-draft",
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
-  "generated_at": "2026-08-05T15:26:47+02:00",
+  "generated_at": "2026-08-06T23:45:00+02:00",
   "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
-  "producer_base_commit": "5b4c414cbc1a092a57f49a6a999014ace7acfb78",
+  "producer_base_commit": "b5219c031e8bf897ed1d05ffb9f944a43352580b",
   "producer_worktree_dirty": false,
   "package_signed": false,
   "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
@@ -15,42 +15,58 @@
   },
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "38ba4e508b0c6e46acc2705fe17deb1fe311c5046316231b5254acd194667e65",
+  "package_sha256": "64757cf922adabc422d9e4e39daae19ad2b68f675229a17da87088981cf719ca",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
-      "sha256": "69589ef38c740309be77bb6ff9cdc46b0e0ac9d916d025089bae08f82a8c6477"
+      "sha256": "d3e541965430c165ddbddd284d6ee462d129b028046a50361a14a9df3844a766"
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.json",
-      "sha256": "abbadba9dffadc5410a168829c8a7bf7fef28319222db1741d81547c3f251c66"
+      "sha256": "01ce3974d74631550369429ca12bb6aaaed6ce8884f4addcdc8ef9230c682e46"
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-decisions.json",
-      "sha256": "5ac51184866cc1c1c3422cf40ec61af16684ad74da54d4563e23a70005989931"
+      "sha256": "ef2036db75dbb70fead5ec4359783ddf914d3577a83c5d5d22d913d285c332ab"
+    },
+    {
+      "path": "src/content/feedbackIntelligenceV1.ts",
+      "sha256": "267b6280551491f45c56d59cc127328d82adcac44c281449e4852b4f867089a1"
     },
     {
       "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
-      "sha256": "1b3260c6c0870101c1d49066aaa344cb0bd558a4686af0e11d4c6eb7b047da5d"
+      "sha256": "815cc47ebb0c99694ee70ea74d817de28c5c967ffeaca954bcb5dbec04c547ba"
     },
     {
       "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
       "sha256": "1dfbaafe2115d009ea16db5567a316e1daa827d0b4aad4040720a89a56822b28"
     },
     {
+      "path": "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
+      "sha256": "43e956bac086c7bf5b99ad559d39c3c405979dbaba85b8ead2086b5f45bf4670"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceContent.test.ts",
+      "sha256": "fd94bb02866f4941294b39a94508f4aed26d70833ad39d57f5eac13ffe494763"
+    },
+    {
       "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",
-      "sha256": "50a27fdde4b8f75867243a7918dd6b710908130cd7d913eaf442e9de7c6539da"
+      "sha256": "38d52712eabf34a8e63e845e8339361156a5293bebd7d58b86049de89d322a16"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
-      "sha256": "486a0120574225edcfd3ea9311ab8f0eb5f7226b7075d48597d23c40b10c61be"
+      "sha256": "75816291bdb067a993aced66af074f514dda26663df615e7153ee93b52815d7c"
+    },
+    {
+      "path": "docs/feedback-intelligence/REST_DAY_VISUALIZATION_FEEDBACK_HANDOFF_V1_1.md",
+      "sha256": "5f70d6cd34b4ed98996d1745a0646f22a740b35760ec2710c0e1396910d3e319"
     }
   ],
   "catalog_evidence": {
-    "questions": 47,
-    "constructs": 24,
-    "item_families": 27,
-    "scales": 26,
+    "questions": 55,
+    "constructs": 29,
+    "item_families": 32,
+    "scales": 27,
     "synthetic_question_ids": 0,
     "user_or_activity_records": 0
   },

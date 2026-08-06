@@ -15,7 +15,7 @@
   "properties": {
     "schema_version": {"const": "rewire-feedback-construct-semantics-v0.3-producer-draft"},
     "contract_status": {"const": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED"},
-    "source_questionnaire_content_version": {"const": "feedback-intelligence-content-v1.0.0"},
+    "source_questionnaire_content_version": {"const": "feedback-intelligence-content-v1.1.0"},
     "catalog_scope": {"$ref": "#/$defs/catalog_scope"},
     "evidence_boundaries": {"$ref": "#/$defs/evidence_boundaries"},
     "constructs": {

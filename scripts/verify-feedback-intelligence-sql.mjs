@@ -16,6 +16,10 @@ const registryMigration = readFileSync(
   resolve("supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql"),
   "utf8",
 );
+const restVisualizationRegistryMigration = readFileSync(
+  resolve("supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql"),
+  "utf8",
+);
 const dachMinorPolicyMigration = readFileSync(
   resolve("supabase/migrations/20260805103650_feedback_intelligence_v1_dach_minor_policy.sql"),
   "utf8",
@@ -185,6 +189,7 @@ try {
   await db.exec(migration);
   await db.exec(securityMigration);
   await db.exec(registryMigration);
+  await db.exec(restVisualizationRegistryMigration);
   await db.exec(dachMinorPolicyMigration);
   await db.exec(transactionMigration);
   await db.exec(activityMigration);
@@ -349,8 +354,8 @@ try {
         content_version, program_day, jurisdiction_at_submit, age_band_at_submit,
         product_authorization_basis, status
       ) VALUES (
-        $1, $2, $3, $4, $5, 'feedback-d10-v1.0.0', 'de', '1.1.0+5',
-        'feedback-intelligence-content-v1.0.0', 10, $6, 'adult',
+        $1, $2, $3, $4, $5, 'feedback-d10-v1.1.0', 'de', '1.1.0+5',
+        'feedback-intelligence-content-v1.1.0', 10, $6, 'adult',
         'adult_or_not_required', 'draft'
       ) RETURNING id
     `, [
@@ -491,8 +496,43 @@ try {
       (SELECT COUNT(*)::integer FROM feedback_core.campaigns WHERE status = 'draft') AS draft_count
   `);
   assert(registry.rows[0].campaign_count === 4, "all four campaigns must be registered");
-  assert(registry.rows[0].question_count === 47, "all 47 question definitions must be registered");
+  assert(registry.rows[0].question_count === 55, "all 55 question definitions must be registered");
   assert(registry.rows[0].draft_count === 4, "registry must not activate any campaign");
+
+  const visualizationRegistry = await db.query(`
+    SELECT campaign.checkpoint_day, question.position, question.question_id,
+      question.option_ids, campaign.questionnaire_version, campaign.content_version,
+      campaign.questionnaire_manifest_hash, campaign.status
+    FROM feedback_core.question_definitions question
+    INNER JOIN feedback_core.campaigns campaign ON campaign.id = question.campaign_id
+    WHERE question.question_id LIKE '%_rest_visualization_%'
+    ORDER BY campaign.checkpoint_day, question.position
+  `);
+  const expectedVisualizationPositions = [
+    [10, 7, "d10_rest_visualization_guidance_clarity"],
+    [10, 8, "d10_rest_visualization_practical_access"],
+    [24, 6, "d24_rest_visualization_guidance_clarity"],
+    [24, 7, "d24_rest_visualization_practical_access"],
+    [39, 4, "d39_rest_visualization_self_direction"],
+    [39, 5, "d39_rest_visualization_practical_access"],
+    [55, 4, "d55_rest_visualization_integration"],
+    [55, 5, "d55_rest_visualization_continuation_intent"],
+  ];
+  assert(
+    JSON.stringify(visualizationRegistry.rows.map((row) => [
+      row.checkpoint_day, row.position, row.question_id,
+    ])) === JSON.stringify(expectedVisualizationPositions),
+    "exactly two rest-day visualization questions must occupy the pinned positions per checkpoint",
+  );
+  assert(
+    visualizationRegistry.rows.every((row) =>
+      row.option_ids.includes("not_used")
+      && row.questionnaire_version === `feedback-d${row.checkpoint_day}-v1.1.0`
+      && row.content_version === "feedback-intelligence-content-v1.1.0"
+      && row.status === "draft"
+      && /^[a-f0-9]{64}$/.test(row.questionnaire_manifest_hash)),
+    "visualization questions must preserve not_used and remain pinned to draft-only v1.1 registries",
+  );
 
   const jurisdictionPolicies = await db.query(`
     SELECT jurisdiction, statutory_information_society_consent_age,
@@ -583,10 +623,10 @@ try {
       $2,
       $3,
       $4,
-      'feedback-d10-v1.0.0',
+      'feedback-d10-v1.1.0',
       'de',
       '1.1.0+5',
-      'feedback-intelligence-content-v1.0.0',
+      'feedback-intelligence-content-v1.1.0',
       10,
       'adult',
       'adult_or_not_required'
@@ -724,8 +764,8 @@ try {
     VALUES (
       '20000000-0000-4000-8000-000000001102',
       $1, $2, $3, $4,
-      'feedback-d10-v1.0.0', 'de', '1.1.0+5',
-      'feedback-intelligence-content-v1.0.0', 10,
+      'feedback-d10-v1.1.0', 'de', '1.1.0+5',
+      'feedback-intelligence-content-v1.1.0', 10,
       'under_16', 'guardian_and_athlete_authorized'
     )
     RETURNING id
@@ -827,8 +867,8 @@ try {
   const started = await db.query(`
     SELECT public.start_my_feedback_submission(
       'feedback-day-10-v1', $1, '1.1.0+5',
-      'feedback-intelligence-content-v1.0.0',
-      '0ead46fa79c388e7baaf31bacc28a727959281d52e50b24538eb3959f3ccb389'
+      'feedback-intelligence-content-v1.1.0',
+      'e19d61dc9600f1fd1c1667d1e9ca2a4e4c2c0dc252f4e18ca5efebce132c4a57'
     ) AS result
   `, [ids.transactionClient]);
   assert(started.rows[0].result.status === "draft", "claimed checkpoint must start a draft");
@@ -992,8 +1032,8 @@ try {
         content_version, program_day, jurisdiction_at_submit, age_band_at_submit,
         product_authorization_basis, status
       ) VALUES (
-        $1, $2, $3, $4, $5, 'feedback-d10-v1.0.0', 'de', '1.1.0+5',
-        'feedback-intelligence-content-v1.0.0', 10, 'DE', 'adult',
+        $1, $2, $3, $4, $5, 'feedback-d10-v1.1.0', 'de', '1.1.0+5',
+        'feedback-intelligence-content-v1.1.0', 10, 'DE', 'adult',
         'adult_or_not_required', 'draft'
       ) RETURNING id
     `, [

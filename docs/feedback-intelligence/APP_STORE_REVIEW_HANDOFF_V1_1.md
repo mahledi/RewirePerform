@@ -1,7 +1,7 @@
 # Feedback Intelligence 1.1 – Handoff an den finalen App-Store-Review
 
 Stand: 6. August 2026
-Status: Feedback-Block lokal grün, kombinierter 1.1-Kandidat wegen noch nicht entschiedener Rest-Day-/Daily-Flow-Integration `NO-GO`; keine Production- oder Machine-Aktivierung
+Status: Rest-Day-/Daily-Flow und Feedback-Inhalt lokal integriert; kombinierter 1.1-Kandidat bis zu den unten genannten Release-Gates weiterhin `NO-GO`; keine Production- oder Machine-Aktivierung
 
 ## Entscheidung, die dieser Review treffen soll
 
@@ -14,17 +14,24 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
 
 - Feedback-Checkpoints erscheinen deterministisch an Tag 10, 24, 39 und 55.
 - Die vier sichtbaren Tageskontexte sind an den finalen 56-Tage-Content-Commit
-  `ead1fa3c7a25e6a0e3640b893f7e22fb5d10031b` und je Tag zusätzlich an einen
+  `d5c4f15cc005ab7ed958a9900cf6b9607f397950` und je Tag zusätzlich an einen
   kanonischen SHA-256-Hash gebunden. Titel, Werkzeug, Cue, Mechanismus und
   Mission werden im Test direkt gegen den finalen Programminhalt geprüft.
+- Jeder Checkpoint enthält exakt zwei organisch eingeordnete Fragen zur mentalen
+  Einheit am Ruhetag. Ihre Tiefe entwickelt sich von früher Führungsklarheit
+  und erster Nutzung über praktische Verbindung und selbstständigen Abruf bis
+  zu rückblickender Integration und Weiternutzungsabsicht.
+- Alle acht Fragen enthalten die neutrale, nicht bewertete Option
+  `Noch nicht genutzt`. Sie erfassen ausschließlich subjektive Nutzungserfahrung
+  und begründen keine Wirkungs-, Gehirn- oder Performanceaussage.
 - Bei geschlossenem Client-Schalter bleiben sowohl die Checkpoints als auch die
   separate Feedback-Einwilligungsverwaltung unsichtbar und führen keinen
   Feedback-RPC aus. Bestehender Alters-/Guardian-Status und vorhandene
   Kontoeinstellungen bleiben davon unberührt.
-- Die Feedbacktexte sind an den finalen 56-Tage-Entwurf gebunden. Aktivierung
-  bleibt jedoch gesperrt, bis derselbe Entwurf nach der offenen Rest-Day-
-  Architekturentscheidung auch den echten `resolveDay`-/Daily-Check-in-Pfad
-  speist. Die App behauptet keine individuelle KI-Personalisierung.
+- Die Feedbacktexte sind an den kanonischen 56-Tage-Produktionsinhalt gebunden.
+  Der spätere Notification-/Routing-Commit `1afd04c` ist ausdrücklich keine
+  Feedback-Abhängigkeit. Die App behauptet keine individuelle
+  KI-Personalisierung.
 - Tag 55 beginnt vor allen inhaltlichen Hinweisen mit freiem Abruf. Titel, Cue,
   Missionsstruktur, Beispielantwort und der Testsatz des Tages sind bis nach
   dieser ersten Antwort technisch und per Negativtest verborgen.
@@ -148,18 +155,16 @@ qualifiziert bestätigt werden.
    Account-Löschung und Policy-Retirement;
 7. vollständiger Dependency-/Security-Gate und grünes CI auf dem integrierten
    1.1-Release-Candidate;
-8. Entscheidung und vollständige Umsetzung der neuen Rest-Day-
-   Visualisierungsarchitektur; danach kontrollierte Anbindung des finalen
-   56-Tage-Contents an den echten `resolveDay`-/Daily-Check-in-Pfad. Aktuell
-   nutzt nur die interne Programmansicht `PROGRAM_DAY_DRAFTS`, während der echte
-   Flow noch `matrixDays.ts` plus `dailyContent.ts`/`playerDays.ts` auflöst;
+8. kombinierter Review der produktiven Rest-Day-Visualisierung und der acht
+   neuen Feedbackfragen im echten 1.1-Release-Candidate, einschließlich
+   Reihenfolge, Dauer, Offline-Verhalten und Tag-55-Free-Recall-Negativtest;
 9. keine echten Machine-Reads, bevor alle separaten Jarvis-Gates geschlossen
    und erneut freigegeben wurden.
 
 ## Aktueller Build- und Dependency-Stand
 
 - `npm run ci`: grün;
-- 104 Vitest-Dateien, 613 Tests: grün;
+- 107 Vitest-Dateien, 631 Tests: grün;
 - alle Feedback-, Guardian-, Access-, Deletion-, Tracking- und Minor-SQL-
   Harnesses: grün;
 - TypeScript, PWA-/Web-Build und statische App-Store-Prüfung: grün;

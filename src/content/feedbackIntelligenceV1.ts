@@ -1,6 +1,6 @@
-export const FEEDBACK_INTELLIGENCE_CONTENT_VERSION = "feedback-intelligence-content-v1.0.0" as const;
+export const FEEDBACK_INTELLIGENCE_CONTENT_VERSION = "feedback-intelligence-content-v1.1.0" as const;
 export const FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT =
-  "ead1fa3c7a25e6a0e3640b893f7e22fb5d10031b" as const;
+  "d5c4f15cc005ab7ed958a9900cf6b9607f397950" as const;
 export const FEEDBACK_TEXT_CONSENT_SCOPE = "product-improvement-individual-text-ai-analysis-v1" as const;
 export const FEEDBACK_TEXT_CONSENT_VERSION = "feedback-text-consent-v1.0.0-draft" as const;
 
@@ -145,6 +145,14 @@ const changeValenceOptions: readonly FeedbackOption[] = [
   { id: "depends", label: "Unterschiedlich je nach Situation", notScored: true },
 ];
 
+const restVisualizationOptions = (
+  labels: readonly [string, string, string, string, string],
+): readonly FeedbackOption[] => withNotApplicable(
+  fivePoint(labels),
+  "not_used",
+  "Noch nicht genutzt",
+);
+
 const optionalComment = { optionalComment: true as const };
 
 const day10Questions: readonly FeedbackQuestionDefinition[] = [
@@ -217,6 +225,34 @@ const day10Questions: readonly FeedbackQuestionDefinition[] = [
     type: "single",
     prompt: "Wie leicht kannst du die Aufgaben bisher in deinem Alltag ausprobieren?",
     options: withNotApplicable(easeOptions, "not_tried", "Noch nicht ausprobiert"),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
+  },
+  {
+    id: "d10_rest_visualization_guidance_clarity",
+    constructId: "rest_visualization_guidance_clarity",
+    itemFamilyId: "rest_visualization_guidance_clarity_v1",
+    itemVariantId: "rest_visualization_guidance_clarity_d10_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie klar war dir bei der mentalen Einheit am Ruhetag, was du dir Schritt für Schritt vorstellen solltest?",
+    options: restVisualizationOptions([
+      "Vollkommen klar", "Eher klar", "Teils/teils", "Eher unklar", "Sehr unklar",
+    ]),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
+  },
+  {
+    id: "d10_rest_visualization_practical_access",
+    constructId: "rest_visualization_practical_access",
+    itemFamilyId: "rest_visualization_practical_access_v1",
+    itemVariantId: "rest_visualization_practical_access_d10_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie leicht konntest du in der mentalen Einheit eine eigene Sportszene aufbauen und darin die nächste Handlung durchgehen?",
+    options: restVisualizationOptions([
+      "Sehr leicht", "Eher leicht", "Teils/teils", "Eher schwer", "Sehr schwer",
+    ]),
     ...optionalComment,
     analysisRole: "checkpoint_module",
   },
@@ -294,6 +330,34 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
     ...optionalComment, analysisRole: "repeated_core",
   },
   {
+    id: "d24_rest_visualization_guidance_clarity",
+    constructId: "rest_visualization_guidance_clarity",
+    itemFamilyId: "rest_visualization_guidance_clarity_v1",
+    itemVariantId: "rest_visualization_guidance_clarity_d24_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie klar führt dich die mentale Einheit am Ruhetag vom jeweiligen Tagesinhalt in eine eigene Sportszene?",
+    options: restVisualizationOptions([
+      "Vollkommen klar", "Eher klar", "Teils/teils", "Eher unklar", "Sehr unklar",
+    ]),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
+  },
+  {
+    id: "d24_rest_visualization_practical_access",
+    constructId: "rest_visualization_practical_access",
+    itemFamilyId: "rest_visualization_practical_access_v1",
+    itemVariantId: "rest_visualization_practical_access_d24_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie klar ist dir nach der mentalen Einheit, welche konkrete Handlung du bei einer späteren realen Gelegenheit ausprobieren willst?",
+    options: restVisualizationOptions([
+      "Vollkommen klar", "Eher klar", "Teils/teils", "Eher unklar", "Sehr unklar",
+    ]),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
+  },
+  {
     id: "d24_training_transfer", constructId: "training_transfer", itemFamilyId: "training_transfer_v1",
     itemVariantId: "training_transfer_d24_v1", scaleId: "training_transfer_frequency_5_v1", type: "single",
     prompt: "Wie häufig nimmst du einen Gedanken oder eine Aufgabe aus RewirePerform mit ins Training?",
@@ -367,6 +431,34 @@ const day39Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "program_affinity_d39_v1", scaleId: "affinity_5_v1", type: "single",
     prompt: "Wie gerne nutzt du RewirePerform in dieser Phase?", options: affinityOptions,
     ...optionalComment, analysisRole: "repeated_core",
+  },
+  {
+    id: "d39_rest_visualization_self_direction",
+    constructId: "rest_visualization_self_direction",
+    itemFamilyId: "rest_visualization_self_direction_v1",
+    itemVariantId: "rest_visualization_self_direction_d39_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und den Tagesanker darin nutzen?",
+    options: restVisualizationOptions([
+      "Ganz selbstständig", "Eher selbstständig", "Teils/teils", "Eher nur mit Führung", "Nur mit vollständiger Führung",
+    ]),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
+  },
+  {
+    id: "d39_rest_visualization_practical_access",
+    constructId: "rest_visualization_practical_access",
+    itemFamilyId: "rest_visualization_practical_access_v1",
+    itemVariantId: "rest_visualization_practical_access_d39_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie klar kannst du am Ende der mentalen Einheit benennen, was du bei der nächsten realen Gelegenheit tun willst?",
+    options: restVisualizationOptions([
+      "Vollkommen klar", "Eher klar", "Teils/teils", "Eher unklar", "Sehr unklar",
+    ]),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
   },
   {
     id: "d39_training_transfer", constructId: "training_transfer", itemFamilyId: "training_transfer_v1",
@@ -462,6 +554,34 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "retrieval_access_d55_v1", scaleId: "ease_5_v1", type: "single",
     prompt: "Wenn du heute im Sport etwas aus RewirePerform brauchst: Wie leicht findest du einen passenden Gedanken oder eine passende Handlung?",
     options: easeOptions, ...optionalComment, analysisRole: "repeated_core",
+  },
+  {
+    id: "d55_rest_visualization_integration",
+    constructId: "rest_visualization_integration",
+    itemFamilyId: "rest_visualization_integration_v1",
+    itemVariantId: "rest_visualization_integration_d55_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um bekannte Werkzeuge in eigenen Sportszenen durchzugehen?",
+    options: restVisualizationOptions([
+      "Sehr gut", "Eher gut", "Teils/teils", "Eher schlecht", "Gar nicht gut",
+    ]),
+    ...optionalComment,
+    analysisRole: "checkpoint_module",
+  },
+  {
+    id: "d55_rest_visualization_continuation_intent",
+    constructId: "rest_visualization_continuation_intent",
+    itemFamilyId: "rest_visualization_continuation_intent_v1",
+    itemVariantId: "rest_visualization_continuation_intent_d55_v1",
+    scaleId: "subjective_experience_5_not_used_v1",
+    type: "single",
+    prompt: "Wie wahrscheinlich ist es, dass du diese Art der mentalen Einheit nach dem Programm selbstständig weiterverwendest?",
+    options: restVisualizationOptions([
+      "Sehr wahrscheinlich", "Eher wahrscheinlich", "Noch unklar", "Eher unwahrscheinlich", "Sehr unwahrscheinlich",
+    ]),
+    ...optionalComment,
+    analysisRole: "quality_context",
   },
   {
     id: "d55_automaticity_stage", constructId: "automaticity_stage", itemFamilyId: "automaticity_stage_v1",
@@ -565,11 +685,11 @@ export const feedbackTextConsentCopy = {
 export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpointDefinition> = {
   10: {
     campaignReference: "feedback-day-10-v1",
-    checkpointDay: 10, phase: 1, week: 2, language: "de", questionnaireVersion: "feedback-d10-v1.0.0",
-    questionnaireManifestHash: "0ead46fa79c388e7baaf31bacc28a727959281d52e50b24538eb3959f3ccb389",
+    checkpointDay: 10, phase: 1, week: 2, language: "de", questionnaireVersion: "feedback-d10-v1.1.0",
+    questionnaireManifestHash: "e19d61dc9600f1fd1c1667d1e9ca2a4e4c2c0dc252f4e18ca5efebce132c4a57",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "66324bcf6c02bffe09b8c0d1180cd1eccb2cb27c5c4e6474fbcd7d932548958c",
+      programDayContentHash: "05766b0e12582a0cd23049afb90abd29b1b0eb2a60d25a336e5c60a874206ff6",
       toolId: "W6",
       tool: "Unsicherheit prüfen",
       cue: "Prüfen. Dann ausprobieren.",
@@ -583,7 +703,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
       "Du hast die ersten Bausteine von RewirePerform kennengelernt. Jetzt wollen wir wissen, wie sich das System für dich wirklich anfühlt: Was ist klar, was macht den Einstieg schwer und was müssen wir einfacher machen?",
       "Wir wollen RewirePerform nicht schönreden. Kritik ist ausdrücklich erwünscht. Deine ehrliche Sicht hilft uns, das Programm für dich und andere Athletinnen und Athleten besser zu machen.",
     ],
-    durationLabel: "Etwa 2 Minuten", questions: day10Questions,
+    durationLabel: "Etwa 3 Minuten", questions: day10Questions,
     closingTextPrompt: "Was möchtest du uns zu deinen ersten Tagen noch mitgeben?",
     completionTitle: "Danke für deinen ersten Eindruck.",
     completionBody: "Deine ehrliche Rückmeldung hilft uns, den Einstieg in RewirePerform klarer und angenehmer zu machen.",
@@ -591,11 +711,11 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   },
   24: {
     campaignReference: "feedback-day-24-v1",
-    checkpointDay: 24, phase: 2, week: 4, language: "de", questionnaireVersion: "feedback-d24-v1.0.0",
-    questionnaireManifestHash: "baf3036f27f0feef9d4c9857a9f91cf583dafb4882c70baea689b876c03b2bcd",
+    checkpointDay: 24, phase: 2, week: 4, language: "de", questionnaireVersion: "feedback-d24-v1.1.0",
+    questionnaireManifestHash: "ebf3f51f8537afed79464099df1f21d857f07930c2f0cdbcb613c74d754102bd",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "e60c78e452a4e2171ddb127e69cd26f1b245c11463fbc310405a2d5621b3ca99",
+      programDayContentHash: "824491ed8701ae4b4db16d56689c8f1a6e629d16b9e7f214e201faee7c7f97de",
       toolId: "W2",
       tool: "Die Aufgabe zählt",
       cue: "Was braucht die Aufgabe?",
@@ -609,7 +729,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
       "Du bist jetzt mitten im Programm und kennst den Ablauf schon besser. Heute hast du eine konkrete gute Handlung und die Qualität dahinter betrachtet – jetzt interessiert uns, wie RewirePerform im echten Sportalltag bei dir ankommt.",
       "Sag uns ehrlich, was du inzwischen verstehst, was du mitnehmen kannst, was dir hilft und was noch nicht funktioniert. Deine Antworten helfen dir, kurz auf deinen eigenen Stand zu schauen – und uns, das Programm für dich und andere Athletinnen und Athleten besser zu machen.",
     ],
-    durationLabel: "Etwa 4 Minuten", questions: day24Questions,
+    durationLabel: "Etwa 5 Minuten", questions: day24Questions,
     closingTextPrompt: "Was sollten wir für den nächsten Abschnitt unbedingt wissen?",
     completionTitle: "Danke für deinen Zwischenstand.",
     completionBody: "Das ist deine aktuelle Einschätzung – keine Bewertung und kein Test.",
@@ -617,11 +737,11 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   },
   39: {
     campaignReference: "feedback-day-39-v1",
-    checkpointDay: 39, phase: 3, week: 6, language: "de", questionnaireVersion: "feedback-d39-v1.0.0",
-    questionnaireManifestHash: "6741a49bb1354d3e3336307e0c357fa3c30b0c669db6826996326da3eb4702ae",
+    checkpointDay: 39, phase: 3, week: 6, language: "de", questionnaireVersion: "feedback-d39-v1.1.0",
+    questionnaireManifestHash: "d6ea814b7277245084fa3b4a56bba7c9bbac9d4660b0d0a219a8582d48f04894",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "7c7c8cf4f37512ae7b571d43c09bd0ef4cbf7c02a6ad9ce6bf74e5934eeec2b6",
+      programDayContentHash: "f58821cc92fb409addd972cb050d4bf325a6b1ac2cdfdd9f606791d750a4c720",
       toolId: "W5",
       tool: "Nicht automatisch folgen",
       cue: "Gedanken und Gefühle sind keine Befehle.",
@@ -635,7 +755,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
       "Du bist inzwischen weit im Programm. Heute ging es darum, nach einem Fehler den ersten inneren Satz von einer brauchbaren Information zu trennen – und insgesamt darum, ob du Inhalte in echten Situationen wiederfindest und nutzen kannst.",
       "Wir wollen wissen, was inzwischen erreichbar ist, was schon von selbst auftaucht und wo RewirePerform noch zu weit vom echten Sport entfernt ist. Positive Erfahrungen und klare Kritik sind gleichermaßen wichtig.",
     ],
-    durationLabel: "Etwa 4–5 Minuten", questions: day39Questions,
+    durationLabel: "Etwa 5 Minuten", questions: day39Questions,
     closingTextPrompt: "Was funktioniert für dich inzwischen wirklich – und was noch nicht?",
     completionTitle: "Danke für deine ehrliche Einschätzung.",
     completionBody: "Das ist dein aktueller Blick. Er kann sich im weiteren Verlauf verändern.",
@@ -643,11 +763,11 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   },
   55: {
     campaignReference: "feedback-day-55-v1",
-    checkpointDay: 55, phase: 4, week: 8, language: "de", questionnaireVersion: "feedback-d55-v1.0.0",
-    questionnaireManifestHash: "eeed99714915cb081d15b1b138c39056a2ee334a82915e45b3941a70734fa71b",
+    checkpointDay: 55, phase: 4, week: 8, language: "de", questionnaireVersion: "feedback-d55-v1.1.0",
+    questionnaireManifestHash: "52ba09ebceff87c8fbff943be03ff9e406a3ed6fa68234a261cf829951cb9ef0",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "abb56c5c707d6af73a4e5016e60da36c6ea4a08b054468b2ff606eb9171f7960",
+      programDayContentHash: "7a4edfd87dac18e7deaeb2272a945c6c5d38fc144214254d3c0af25fe0a9e5fd",
       toolId: "W2",
       tool: "Die Aufgabe zählt",
       cue: "Was braucht die Aufgabe?",
@@ -662,7 +782,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
       "Du bist kurz vor dem Abschluss des Programms. Jetzt wollen wir zuerst wissen, was ohne Hinweise von selbst da ist. Schau dafür nicht noch einmal in frühere Tage oder Aufgaben.",
       "Danach geht es darum, was du wirklich nutzen konntest, was sich verändert hat, was nicht funktioniert hat und was RewirePerform unbedingt verbessern muss.",
     ],
-    durationLabel: "Etwa 6 Minuten", questions: day55Questions,
+    durationLabel: "Etwa 7 Minuten", questions: day55Questions,
     closingTextPrompt: "Was möchtest du uns nach fast 56 Tagen noch ehrlich sagen?",
     completionTitle: "Danke für deine ehrliche Sicht.",
     completionBody: "Deine Antworten helfen uns zu verstehen, was im echten Sportalltag funktioniert, wo es nicht funktioniert und was wir besser machen müssen.",
@@ -686,6 +806,17 @@ export const FEEDBACK_INTELLIGENCE_INVARIANTS = {
 
 export const getFeedbackCheckpoint = (day: FeedbackCheckpointDay): FeedbackCheckpointDefinition =>
   FEEDBACK_CHECKPOINTS[day];
+
+export const getFeedbackQuestionnaireManifestPayload = (
+  checkpoint: FeedbackCheckpointDefinition,
+) => {
+  const { questionnaireManifestHash: _questionnaireManifestHash, ...checkpointPayload } = checkpoint;
+  return {
+    schemaVersion: "feedback-questionnaire-manifest-v1" as const,
+    contentVersion: FEEDBACK_INTELLIGENCE_CONTENT_VERSION,
+    ...checkpointPayload,
+  };
+};
 
 export const isFeedbackQuestionVisible = (
   question: FeedbackQuestionDefinition,

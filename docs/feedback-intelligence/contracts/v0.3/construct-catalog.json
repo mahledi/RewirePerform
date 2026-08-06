@@ -1,7 +1,7 @@
 {
   "schema_version": "rewire-feedback-construct-semantics-v0.3-producer-draft",
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
-  "source_questionnaire_content_version": "feedback-intelligence-content-v1.0.0",
+  "source_questionnaire_content_version": "feedback-intelligence-content-v1.1.0",
   "catalog_scope": {
     "language": "de-DE",
     "jurisdiction": "DE",
@@ -871,6 +871,406 @@
             }
           ],
           "product_test_hypothesis_de": "Eine kleinere Einstiegsaufgabe gegen die bestehende Aufgabe testen."
+        }
+      ]
+    },
+    {
+      "construct_id": "rest_visualization_guidance_clarity",
+      "human_label_de": "Führungsklarheit der Ruhetag-Visualisierung",
+      "dimension": "rest_day_visualization",
+      "measurement_intention_de": "Erfasst subjektiv, wie klar die mentale Einheit vom Tagesinhalt in eine eigene Sportszene führt.",
+      "item_families": [
+        {
+          "item_family_id": "rest_visualization_guidance_clarity_v1",
+          "human_label_de": "Führungsklarheit der Ruhetag-Visualisierung",
+          "longitudinal_comparison": true,
+          "scale": {
+            "scale_id": "subjective_experience_5_not_used_v1",
+            "human_label_de": "Subjektive Nutzungserfahrung mit Nicht-genutzt-Option",
+            "ordered": true,
+            "analysis_mode": "ORDINAL_DIRECTIONAL",
+            "interpretation_rule_de": "Die fünf sichtbaren Stufen laufen von einer unterstützenden zu einer kritischen subjektiven Nutzungserfahrung; noch nicht genutzt wird nie bewertet. Die Antworten sind kein Wirkungs-, Gehirn- oder Performancenachweis.",
+            "answer_options": [
+              {
+                "answer_id": "1",
+                "observed_labels_de": [
+                  "Vollkommen klar"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Vollkommen klar“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "2",
+                "observed_labels_de": [
+                  "Eher klar"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher klar“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "3",
+                "observed_labels_de": [
+                  "Teils/teils"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Teils/teils“.",
+                "polarity": "NEUTRAL"
+              },
+              {
+                "answer_id": "4",
+                "observed_labels_de": [
+                  "Eher unklar"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher unklar“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "5",
+                "observed_labels_de": [
+                  "Sehr unklar"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Sehr unklar“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "not_used",
+                "observed_labels_de": [
+                  "Noch nicht genutzt"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Noch nicht genutzt“.",
+                "polarity": "NOT_APPLICABLE"
+              }
+            ]
+          },
+          "questions": [
+            {
+              "question_id": "d10_rest_visualization_guidance_clarity",
+              "human_label_de": "Wie klar war dir bei der mentalen Einheit am Ruhetag, was du dir Schritt für Schritt vorstellen solltest?",
+              "item_variant_id": "rest_visualization_guidance_clarity_d10_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Vollkommen klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Sehr unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 10,
+                "program_phase": "ORIENTATION",
+                "measurement_intention_de": "Frühes Verständnis, Nutzungsgefühl und Einstiegshürden erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D10-REST-VISUALIZATION-GUIDANCE-CLARITY"
+            },
+            {
+              "question_id": "d24_rest_visualization_guidance_clarity",
+              "human_label_de": "Wie klar führt dich die mentale Einheit am Ruhetag vom jeweiligen Tagesinhalt in eine eigene Sportszene?",
+              "item_variant_id": "rest_visualization_guidance_clarity_d24_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Vollkommen klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Sehr unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 24,
+                "program_phase": "APPLICATION",
+                "measurement_intention_de": "Erste Alltagseinbindung, bewussten Transfer und wahrgenommene Entwicklung erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D24-REST-VISUALIZATION-GUIDANCE-CLARITY"
+            }
+          ],
+          "product_test_hypothesis_de": "Eine klarere Schrittführung gegen die bestehende Führung der mentalen Einheit testen."
+        }
+      ]
+    },
+    {
+      "construct_id": "rest_visualization_practical_access",
+      "human_label_de": "Praktische Zugänglichkeit der Ruhetag-Visualisierung",
+      "dimension": "rest_day_visualization",
+      "measurement_intention_de": "Erfasst subjektiv, wie leicht eine eigene Szene und eine konkrete nächste Handlung in der mentalen Einheit zugänglich werden.",
+      "item_families": [
+        {
+          "item_family_id": "rest_visualization_practical_access_v1",
+          "human_label_de": "Praktische Zugänglichkeit der Ruhetag-Visualisierung",
+          "longitudinal_comparison": true,
+          "scale": {
+            "scale_id": "subjective_experience_5_not_used_v1",
+            "human_label_de": "Subjektive Nutzungserfahrung mit Nicht-genutzt-Option",
+            "ordered": true,
+            "analysis_mode": "ORDINAL_DIRECTIONAL",
+            "interpretation_rule_de": "Die fünf sichtbaren Stufen laufen von einer unterstützenden zu einer kritischen subjektiven Nutzungserfahrung; noch nicht genutzt wird nie bewertet. Die Antworten sind kein Wirkungs-, Gehirn- oder Performancenachweis.",
+            "answer_options": [
+              {
+                "answer_id": "1",
+                "observed_labels_de": [
+                  "Sehr leicht",
+                  "Vollkommen klar"
+                ],
+                "neutral_semantic_de": "Die Person wählt je nach Checkpoint eine gleich codierte Antwortvariante: „Sehr leicht“, „Vollkommen klar“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "2",
+                "observed_labels_de": [
+                  "Eher leicht",
+                  "Eher klar"
+                ],
+                "neutral_semantic_de": "Die Person wählt je nach Checkpoint eine gleich codierte Antwortvariante: „Eher leicht“, „Eher klar“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "3",
+                "observed_labels_de": [
+                  "Teils/teils"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Teils/teils“.",
+                "polarity": "NEUTRAL"
+              },
+              {
+                "answer_id": "4",
+                "observed_labels_de": [
+                  "Eher schwer",
+                  "Eher unklar"
+                ],
+                "neutral_semantic_de": "Die Person wählt je nach Checkpoint eine gleich codierte Antwortvariante: „Eher schwer“, „Eher unklar“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "5",
+                "observed_labels_de": [
+                  "Sehr schwer",
+                  "Sehr unklar"
+                ],
+                "neutral_semantic_de": "Die Person wählt je nach Checkpoint eine gleich codierte Antwortvariante: „Sehr schwer“, „Sehr unklar“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "not_used",
+                "observed_labels_de": [
+                  "Noch nicht genutzt"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Noch nicht genutzt“.",
+                "polarity": "NOT_APPLICABLE"
+              }
+            ]
+          },
+          "questions": [
+            {
+              "question_id": "d10_rest_visualization_practical_access",
+              "human_label_de": "Wie leicht konntest du in der mentalen Einheit eine eigene Sportszene aufbauen und darin die nächste Handlung durchgehen?",
+              "item_variant_id": "rest_visualization_practical_access_d10_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Sehr leicht",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher leicht",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher schwer",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Sehr schwer",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 10,
+                "program_phase": "ORIENTATION",
+                "measurement_intention_de": "Frühes Verständnis, Nutzungsgefühl und Einstiegshürden erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D10-REST-VISUALIZATION-PRACTICAL-ACCESS"
+            },
+            {
+              "question_id": "d24_rest_visualization_practical_access",
+              "human_label_de": "Wie klar ist dir nach der mentalen Einheit, welche konkrete Handlung du bei einer späteren realen Gelegenheit ausprobieren willst?",
+              "item_variant_id": "rest_visualization_practical_access_d24_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Vollkommen klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Sehr unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 24,
+                "program_phase": "APPLICATION",
+                "measurement_intention_de": "Erste Alltagseinbindung, bewussten Transfer und wahrgenommene Entwicklung erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D24-REST-VISUALIZATION-PRACTICAL-ACCESS"
+            },
+            {
+              "question_id": "d39_rest_visualization_practical_access",
+              "human_label_de": "Wie klar kannst du am Ende der mentalen Einheit benennen, was du bei der nächsten realen Gelegenheit tun willst?",
+              "item_variant_id": "rest_visualization_practical_access_d39_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Vollkommen klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher klar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Sehr unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 39,
+                "program_phase": "CONSOLIDATION",
+                "measurement_intention_de": "Abruf, Anwendung, wahrgenommene Automatisierung und Barrieren in der Festigungsphase erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D39-REST-VISUALIZATION-PRACTICAL-ACCESS"
+            }
+          ],
+          "product_test_hypothesis_de": "Eine konkretere Szenen- und Handlungsführung gegen die bestehende Fassung testen."
         }
       ]
     },
@@ -2988,6 +3388,129 @@
       ]
     },
     {
+      "construct_id": "rest_visualization_self_direction",
+      "human_label_de": "Selbstständige Nutzung der Ruhetag-Visualisierung",
+      "dimension": "rest_day_visualization",
+      "measurement_intention_de": "Erfasst subjektiv, wie selbstständig eine eigene Szene aufgebaut und der Tagesanker darin genutzt werden kann.",
+      "item_families": [
+        {
+          "item_family_id": "rest_visualization_self_direction_v1",
+          "human_label_de": "Selbstständige Nutzung der Ruhetag-Visualisierung",
+          "longitudinal_comparison": false,
+          "scale": {
+            "scale_id": "subjective_experience_5_not_used_v1",
+            "human_label_de": "Subjektive Nutzungserfahrung mit Nicht-genutzt-Option",
+            "ordered": true,
+            "analysis_mode": "ORDINAL_DIRECTIONAL",
+            "interpretation_rule_de": "Die fünf sichtbaren Stufen laufen von einer unterstützenden zu einer kritischen subjektiven Nutzungserfahrung; noch nicht genutzt wird nie bewertet. Die Antworten sind kein Wirkungs-, Gehirn- oder Performancenachweis.",
+            "answer_options": [
+              {
+                "answer_id": "1",
+                "observed_labels_de": [
+                  "Ganz selbstständig"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Ganz selbstständig“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "2",
+                "observed_labels_de": [
+                  "Eher selbstständig"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher selbstständig“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "3",
+                "observed_labels_de": [
+                  "Teils/teils"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Teils/teils“.",
+                "polarity": "NEUTRAL"
+              },
+              {
+                "answer_id": "4",
+                "observed_labels_de": [
+                  "Eher nur mit Führung"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher nur mit Führung“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "5",
+                "observed_labels_de": [
+                  "Nur mit vollständiger Führung"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Nur mit vollständiger Führung“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "not_used",
+                "observed_labels_de": [
+                  "Noch nicht genutzt"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Noch nicht genutzt“.",
+                "polarity": "NOT_APPLICABLE"
+              }
+            ]
+          },
+          "questions": [
+            {
+              "question_id": "d39_rest_visualization_self_direction",
+              "human_label_de": "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und den Tagesanker darin nutzen?",
+              "item_variant_id": "rest_visualization_self_direction_d39_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Ganz selbstständig",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher selbstständig",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher nur mit Führung",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Nur mit vollständiger Führung",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 39,
+                "program_phase": "CONSOLIDATION",
+                "measurement_intention_de": "Abruf, Anwendung, wahrgenommene Automatisierung und Barrieren in der Festigungsphase erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D39-REST-VISUALIZATION-SELF-DIRECTION"
+            }
+          ],
+          "product_test_hypothesis_de": "Eine reduzierte Führung gegen die bestehende Führung testen, ohne selbstständige Nutzung vorauszusetzen."
+        }
+      ]
+    },
+    {
       "construct_id": "retrieval_access",
       "human_label_de": "Subjektive Abrufbarkeit",
       "dimension": "retrieval",
@@ -3954,6 +4477,252 @@
             }
           ],
           "product_test_hypothesis_de": "Eine zeitversetzte Wiederholung gegen die bisherige Wiederholungsfolge testen."
+        }
+      ]
+    },
+    {
+      "construct_id": "rest_visualization_integration",
+      "human_label_de": "Rückblickende Integration der Ruhetag-Visualisierung",
+      "dimension": "rest_day_visualization",
+      "measurement_intention_de": "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für bekannte Werkzeuge und eigene Sportszenen.",
+      "item_families": [
+        {
+          "item_family_id": "rest_visualization_integration_v1",
+          "human_label_de": "Rückblickende Integration der Ruhetag-Visualisierung",
+          "longitudinal_comparison": false,
+          "scale": {
+            "scale_id": "subjective_experience_5_not_used_v1",
+            "human_label_de": "Subjektive Nutzungserfahrung mit Nicht-genutzt-Option",
+            "ordered": true,
+            "analysis_mode": "ORDINAL_DIRECTIONAL",
+            "interpretation_rule_de": "Die fünf sichtbaren Stufen laufen von einer unterstützenden zu einer kritischen subjektiven Nutzungserfahrung; noch nicht genutzt wird nie bewertet. Die Antworten sind kein Wirkungs-, Gehirn- oder Performancenachweis.",
+            "answer_options": [
+              {
+                "answer_id": "1",
+                "observed_labels_de": [
+                  "Sehr gut"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Sehr gut“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "2",
+                "observed_labels_de": [
+                  "Eher gut"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher gut“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "3",
+                "observed_labels_de": [
+                  "Teils/teils"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Teils/teils“.",
+                "polarity": "NEUTRAL"
+              },
+              {
+                "answer_id": "4",
+                "observed_labels_de": [
+                  "Eher schlecht"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher schlecht“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "5",
+                "observed_labels_de": [
+                  "Gar nicht gut"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Gar nicht gut“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "not_used",
+                "observed_labels_de": [
+                  "Noch nicht genutzt"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Noch nicht genutzt“.",
+                "polarity": "NOT_APPLICABLE"
+              }
+            ]
+          },
+          "questions": [
+            {
+              "question_id": "d55_rest_visualization_integration",
+              "human_label_de": "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um bekannte Werkzeuge in eigenen Sportszenen durchzugehen?",
+              "item_variant_id": "rest_visualization_integration_d55_v1",
+              "analysis_role": "checkpoint_module",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Sehr gut",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher gut",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Teils/teils",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher schlecht",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Gar nicht gut",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 55,
+                "program_phase": "TRANSFER",
+                "measurement_intention_de": "Freien Abruf, langfristige Nutzbarkeit, Transfer und abschließende Produktkritik erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D55-REST-VISUALIZATION-INTEGRATION"
+            }
+          ],
+          "product_test_hypothesis_de": "Die am schwächsten bewertete Phase der mentalen Einheit gezielt überarbeiten und erneut testen."
+        }
+      ]
+    },
+    {
+      "construct_id": "rest_visualization_continuation_intent",
+      "human_label_de": "Weiternutzungsabsicht der Ruhetag-Visualisierung",
+      "dimension": "rest_day_visualization",
+      "measurement_intention_de": "Erfasst die subjektive Absicht, diese Art der mentalen Einheit nach dem Programm selbstständig weiterzuverwenden.",
+      "item_families": [
+        {
+          "item_family_id": "rest_visualization_continuation_intent_v1",
+          "human_label_de": "Weiternutzungsabsicht der Ruhetag-Visualisierung",
+          "longitudinal_comparison": false,
+          "scale": {
+            "scale_id": "subjective_experience_5_not_used_v1",
+            "human_label_de": "Subjektive Nutzungserfahrung mit Nicht-genutzt-Option",
+            "ordered": true,
+            "analysis_mode": "ORDINAL_DIRECTIONAL",
+            "interpretation_rule_de": "Die fünf sichtbaren Stufen laufen von einer unterstützenden zu einer kritischen subjektiven Nutzungserfahrung; noch nicht genutzt wird nie bewertet. Die Antworten sind kein Wirkungs-, Gehirn- oder Performancenachweis.",
+            "answer_options": [
+              {
+                "answer_id": "1",
+                "observed_labels_de": [
+                  "Sehr wahrscheinlich"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Sehr wahrscheinlich“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "2",
+                "observed_labels_de": [
+                  "Eher wahrscheinlich"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher wahrscheinlich“.",
+                "polarity": "SUPPORTIVE"
+              },
+              {
+                "answer_id": "3",
+                "observed_labels_de": [
+                  "Noch unklar"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Noch unklar“.",
+                "polarity": "NEUTRAL"
+              },
+              {
+                "answer_id": "4",
+                "observed_labels_de": [
+                  "Eher unwahrscheinlich"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Eher unwahrscheinlich“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "5",
+                "observed_labels_de": [
+                  "Sehr unwahrscheinlich"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Sehr unwahrscheinlich“.",
+                "polarity": "CONCERN"
+              },
+              {
+                "answer_id": "not_used",
+                "observed_labels_de": [
+                  "Noch nicht genutzt"
+                ],
+                "neutral_semantic_de": "Die Person wählt die Antwort „Noch nicht genutzt“.",
+                "polarity": "NOT_APPLICABLE"
+              }
+            ]
+          },
+          "questions": [
+            {
+              "question_id": "d55_rest_visualization_continuation_intent",
+              "human_label_de": "Wie wahrscheinlich ist es, dass du diese Art der mentalen Einheit nach dem Programm selbstständig weiterverwendest?",
+              "item_variant_id": "rest_visualization_continuation_intent_d55_v1",
+              "analysis_role": "quality_context",
+              "display_answer_options": [
+                {
+                  "answer_id": "1",
+                  "human_label_de": "Sehr wahrscheinlich",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "2",
+                  "human_label_de": "Eher wahrscheinlich",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "3",
+                  "human_label_de": "Noch unklar",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "4",
+                  "human_label_de": "Eher unwahrscheinlich",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "5",
+                  "human_label_de": "Sehr unwahrscheinlich",
+                  "not_scored": false,
+                  "exclusive": false
+                },
+                {
+                  "answer_id": "not_used",
+                  "human_label_de": "Noch nicht genutzt",
+                  "not_scored": true,
+                  "exclusive": false
+                }
+              ],
+              "checkpoint": {
+                "program_day": 55,
+                "program_phase": "TRANSFER",
+                "measurement_intention_de": "Freien Abruf, langfristige Nutzbarkeit, Transfer und abschließende Produktkritik erfassen."
+              },
+              "stable_evidence_id": "FICAT-DE-V0.3-D55-REST-VISUALIZATION-CONTINUATION-INTENT"
+            }
+          ],
+          "product_test_hypothesis_de": "Eine kompaktere Abschlussfassung gegen die bestehende Einheit hinsichtlich berichteter Weiternutzungsabsicht testen."
         }
       ]
     },

@@ -19,10 +19,10 @@ const packageManifest = readJson(
   activation: Record<string, boolean>;
   files: { path: string; sha256: string }[];
 };
-const registryMigration = readFileSync(resolve(
-  process.cwd(),
+const registryMigration = [
   "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
-), "utf8");
+  "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
+].map((path) => readFileSync(resolve(process.cwd(), path), "utf8")).join("\n");
 
 const catalogFamilies = FEEDBACK_CONSTRUCT_CATALOG_V03.constructs.flatMap(
   ({ item_families }) => item_families,
@@ -40,10 +40,10 @@ describe("feedback intelligence semantic catalog v0.3", () => {
     expect(staticCatalog).toEqual(FEEDBACK_CONSTRUCT_CATALOG_V03);
   });
 
-  it("covers all 47 real questions without synthetic or orphan identifiers", () => {
-    expect(FEEDBACK_CONSTRUCT_CATALOG_V03.constructs).toHaveLength(24);
-    expect(catalogFamilies).toHaveLength(27);
-    expect(catalogQuestions).toHaveLength(47);
+  it("covers all 55 real questions without synthetic or orphan identifiers", () => {
+    expect(FEEDBACK_CONSTRUCT_CATALOG_V03.constructs).toHaveLength(29);
+    expect(catalogFamilies).toHaveLength(32);
+    expect(catalogQuestions).toHaveLength(55);
 
     const sourceIds = sourceQuestions.map(({ question }) => question.id).sort();
     const catalogIds = catalogQuestions.map(({ question_id }) => question_id).sort();
@@ -123,6 +123,15 @@ describe("feedback intelligence semantic catalog v0.3", () => {
       automaticity_not_neurophysiological_proof: true,
       categorical_options_not_scores: true,
     });
+
+    const restVisualizationFamilies = catalogFamilies.filter(({ item_family_id }) =>
+      item_family_id.startsWith("rest_visualization_"));
+    expect(restVisualizationFamilies).toHaveLength(5);
+    for (const family of restVisualizationFamilies) {
+      expect(family.scale.interpretation_rule_de).toContain("kein Wirkungs-");
+      expect(family.scale.answer_options.find(({ answer_id }) => answer_id === "not_used")?.polarity)
+        .toBe("NOT_APPLICABLE");
+    }
   });
 
   it("contains semantics only and no athlete, feedback, activity or private-text records", () => {

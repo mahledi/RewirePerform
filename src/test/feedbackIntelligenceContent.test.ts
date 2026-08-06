@@ -8,9 +8,10 @@ import {
   FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
   feedbackTextConsentCopy,
   getFeedbackCheckpoint,
+  getFeedbackQuestionnaireManifestPayload,
   isFeedbackQuestionVisible,
 } from "@/content/feedbackIntelligenceV1";
-import { PROGRAM_DAY_DRAFTS } from "@/prototypes/golden-days/programDayDrafts";
+import { PROGRAM_V11_DRAFTS } from "@/content/programV11";
 
 describe("feedback intelligence content contract", () => {
   it("defines the four deterministic checkpoints in program order", () => {
@@ -50,6 +51,46 @@ describe("feedback intelligence content contract", () => {
   it("offers the same optional comment affordance for every question", () => {
     const questions = Object.values(FEEDBACK_CHECKPOINTS).flatMap(({ questions }) => questions);
     expect(questions.every(({ optionalComment }) => optionalComment)).toBe(true);
+  });
+
+  it("integrates exactly two progressively deeper rest-day visualization questions per checkpoint", () => {
+    const expectedIds = {
+      10: [
+        "d10_rest_visualization_guidance_clarity",
+        "d10_rest_visualization_practical_access",
+      ],
+      24: [
+        "d24_rest_visualization_guidance_clarity",
+        "d24_rest_visualization_practical_access",
+      ],
+      39: [
+        "d39_rest_visualization_self_direction",
+        "d39_rest_visualization_practical_access",
+      ],
+      55: [
+        "d55_rest_visualization_integration",
+        "d55_rest_visualization_continuation_intent",
+      ],
+    } as const;
+
+    for (const checkpoint of Object.values(FEEDBACK_CHECKPOINTS)) {
+      const visualizationQuestions = checkpoint.questions.filter(({ id }) =>
+        id.includes("rest_visualization"));
+      expect(visualizationQuestions.map(({ id }) => id)).toEqual(expectedIds[checkpoint.checkpointDay]);
+      expect(visualizationQuestions.every(({ options }) => options.some((option) =>
+        option.id === "not_used" && option.label === "Noch nicht genutzt" && option.notScored,
+      ))).toBe(true);
+      expect(visualizationQuestions.every(({ optionalComment }) => optionalComment)).toBe(true);
+    }
+  });
+
+  it("byte-pins the complete questionnaire payloads", () => {
+    for (const checkpoint of Object.values(FEEDBACK_CHECKPOINTS)) {
+      const actualHash = createHash("sha256")
+        .update(JSON.stringify(getFeedbackQuestionnaireManifestPayload(checkpoint)))
+        .digest("hex");
+      expect(checkpoint.questionnaireManifestHash).toBe(actualHash);
+    }
   });
 
   it("does not smuggle derived scores into the versioned questionnaire content", () => {
@@ -95,7 +136,7 @@ describe("feedback intelligence content contract", () => {
 
   it("byte-pins every checkpoint context to the final 56-day content handoff", () => {
     for (const checkpoint of Object.values(FEEDBACK_CHECKPOINTS)) {
-      const draft = PROGRAM_DAY_DRAFTS.find(({ day }) => day === checkpoint.checkpointDay);
+      const draft = PROGRAM_V11_DRAFTS.find(({ day }) => day === checkpoint.checkpointDay);
       const context = checkpoint.contentContext;
 
       expect(draft).toBeDefined();
@@ -145,6 +186,14 @@ describe("feedback intelligence content contract", () => {
     ]) {
       expect(contentBeforeRecall).not.toContain(forbiddenPrime);
     }
+  });
+
+  it("pins only the canonical production content commit and excludes notification-only routing", () => {
+    expect(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT)
+      .toBe("d5c4f15cc005ab7ed958a9900cf6b9607f397950");
+    expect(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT).not.toBe(
+      "1afd04c",
+    );
   });
 
   it("keeps privacy and evidence boundaries explicit", () => {

@@ -84,6 +84,31 @@ const CONSTRUCT_META: Readonly<Record<string, ConstructMeta>> = {
     measurementIntentionDe: "Erfasst, wie leicht Aufgaben im Alltag erstmals ausprobiert werden können.",
     productTestHypothesisDe: "Eine kleinere Einstiegsaufgabe gegen die bestehende Aufgabe testen.",
   },
+  rest_visualization_guidance_clarity: {
+    humanLabelDe: "Führungsklarheit der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
+    measurementIntentionDe: "Erfasst subjektiv, wie klar die mentale Einheit vom Tagesinhalt in eine eigene Sportszene führt.",
+    productTestHypothesisDe: "Eine klarere Schrittführung gegen die bestehende Führung der mentalen Einheit testen.",
+  },
+  rest_visualization_practical_access: {
+    humanLabelDe: "Praktische Zugänglichkeit der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
+    measurementIntentionDe: "Erfasst subjektiv, wie leicht eine eigene Szene und eine konkrete nächste Handlung in der mentalen Einheit zugänglich werden.",
+    productTestHypothesisDe: "Eine konkretere Szenen- und Handlungsführung gegen die bestehende Fassung testen.",
+  },
+  rest_visualization_self_direction: {
+    humanLabelDe: "Selbstständige Nutzung der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
+    measurementIntentionDe: "Erfasst subjektiv, wie selbstständig eine eigene Szene aufgebaut und der Tagesanker darin genutzt werden kann.",
+    productTestHypothesisDe: "Eine reduzierte Führung gegen die bestehende Führung testen, ohne selbstständige Nutzung vorauszusetzen.",
+  },
+  rest_visualization_integration: {
+    humanLabelDe: "Rückblickende Integration der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
+    measurementIntentionDe: "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für bekannte Werkzeuge und eigene Sportszenen.",
+    productTestHypothesisDe: "Die am schwächsten bewertete Phase der mentalen Einheit gezielt überarbeiten und erneut testen.",
+  },
+  rest_visualization_continuation_intent: {
+    humanLabelDe: "Weiternutzungsabsicht der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
+    measurementIntentionDe: "Erfasst die subjektive Absicht, diese Art der mentalen Einheit nach dem Programm selbstständig weiterzuverwenden.",
+    productTestHypothesisDe: "Eine kompaktere Abschlussfassung gegen die bestehende Einheit hinsichtlich berichteter Weiternutzungsabsicht testen.",
+  },
   daily_fit: {
     humanLabelDe: "Passung in Sport und Alltag", dimension: "everyday_usability",
     measurementIntentionDe: "Erfasst die subjektive Vereinbarkeit mit Training, Wettkampf und Alltag.",
@@ -206,6 +231,12 @@ const SCALE_META: Readonly<Record<string, ScaleMeta>> = {
     humanLabelDe: "Leichtigkeit mit Nicht-ausprobiert-Option", ordered: true, analysisMode: "ORDINAL_DIRECTIONAL",
     interpretationRuleDe: "Die fünf Stufen laufen von leicht zu schwer; nicht ausprobiert wird nie bewertet.",
     polarities: { ...positiveToConcern, not_tried: "NOT_APPLICABLE" },
+  },
+  subjective_experience_5_not_used_v1: {
+    humanLabelDe: "Subjektive Nutzungserfahrung mit Nicht-genutzt-Option", ordered: true,
+    analysisMode: "ORDINAL_DIRECTIONAL",
+    interpretationRuleDe: "Die fünf sichtbaren Stufen laufen von einer unterstützenden zu einer kritischen subjektiven Nutzungserfahrung; noch nicht genutzt wird nie bewertet. Die Antworten sind kein Wirkungs-, Gehirn- oder Performancenachweis.",
+    polarities: { ...positiveToConcern, not_used: "NOT_APPLICABLE" },
   },
   fit_5_v1: {
     humanLabelDe: "Passung", ordered: true, analysisMode: "ORDINAL_DIRECTIONAL",
@@ -395,7 +426,7 @@ const constructIds = [...new Set(questions.map(({ question }) => question.constr
 export const FEEDBACK_CONSTRUCT_CATALOG_V03 = {
   schema_version: FEEDBACK_SEMANTICS_SCHEMA_VERSION,
   contract_status: "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
-  source_questionnaire_content_version: "feedback-intelligence-content-v1.0.0",
+  source_questionnaire_content_version: "feedback-intelligence-content-v1.1.0",
   catalog_scope: {
     language: "de-DE",
     jurisdiction: "DE",

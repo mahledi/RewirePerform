@@ -48,7 +48,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | Block | Ergebnis | Status |
 | --- | --- | --- |
 | 0. Source und Gates | sauberer Worktree, aktuelle Main-Basis, Consumer-Draft und Governance geprüft | fertig |
-| 1. Inhaltsvertrag | Tag 10/24/39/55, stabile Vergleichsmarker, Consent-Copy und Invarianten | fertig; sichtbare Tageskontexte zusätzlich bytegenau an finalen Content-Commit `ead1fa3c7a25e6a0e3640b893f7e22fb5d10031b` und vier kanonische Tages-Hashes gebunden |
+| 1. Inhaltsvertrag | Tag 10/24/39/55, stabile Vergleichsmarker, Consent-Copy und Invarianten | fertig; sichtbare Tageskontexte zusätzlich bytegenau an kanonischen Produktions-Content-Commit `d5c4f15cc005ab7ed958a9900cf6b9607f397950` und vier kanonische Tages-Hashes gebunden; acht progressive Ruhetag-Visualisierungsfragen integriert |
 | 2. Synthetischer UX-Flow | Einladung, Intro, Fragen, Multi-/Single-Select, Skip, Consent, Freitext, Abschluss | fertig |
 | 3. Private Datenbasis | getrennte Core-, Consent-, Raw- und Analysis-Schemas | fertig |
 | 4. Datenbank-Sicherheit | keine direkten Rechte, Consent- und Minor-Gates, Widerruf, Account-Cascade, Negativtests | fertig |
@@ -64,7 +64,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 
 ## Bereits implementiert
 
-- Maschinenlesbarer Content-Vertrag mit 47 Fragen und vier draft-only Kampagnen.
+- Maschinenlesbarer Content-Vertrag mit 55 Fragen und vier draft-only Kampagnen; acht Fragen erfassen die subjektive Nutzung der Ruhetag-Visualisierung.
 - Separater Programmtag-Kontextvertrag für Tag 10, 24, 39 und 55 mit finalem
   Content-Commit, SHA-256 pro Tag und direktem Paritätstest gegen Titel,
   Werkzeug, Cue, Mechanismus und Mission des 56-Tage-Programms. Diese Bindung

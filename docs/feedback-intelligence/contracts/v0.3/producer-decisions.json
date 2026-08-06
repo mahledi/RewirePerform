@@ -2,15 +2,15 @@
   "schema_version": "rewire-feedback-intelligence-semantics-producer-decisions-v0.3-draft",
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
   "consumer_proposal_commit": "8de8e126cd39ef39645ead338f447141ca655414",
-  "source_questionnaire_content_version": "feedback-intelligence-content-v1.0.0",
+  "source_questionnaire_content_version": "feedback-intelligence-content-v1.1.0",
   "coverage": {
     "jurisdiction": "DE",
     "language": "de-DE",
     "checkpoint_days": [10, 24, 39, 55],
-    "question_count": 47,
-    "construct_count": 24,
-    "item_family_count": 27,
-    "scale_count": 26
+    "question_count": 55,
+    "construct_count": 29,
+    "item_family_count": 32,
+    "scale_count": 27
   },
   "producer_confirmed_fields": [
     "construct_id",
@@ -44,7 +44,8 @@
     "DESCRIPTIVE is a valid polarity for categories that must not be forced into supportive or concern scoring",
     "a construct or family may legitimately contain no supportive or no concern answer when the instrument is descriptive or magnitude-only",
     "product_test_hypothesis_de replaces proposed_test",
-    "the producer catalog covers the actual 47 questions rather than the 28 synthetic consumer questions"
+    "the producer catalog covers the actual 55 questions rather than the 28 synthetic consumer questions",
+    "the eight rest-day visualization questions measure only subjective usage experience and always preserve not_used as NOT_APPLICABLE"
   ],
   "comparison_identifier_corrections": {
     "stable_semantic_scale_families": [
