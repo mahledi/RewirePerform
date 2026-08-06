@@ -25,4 +25,4 @@
 
 ## Bekannte Quellenkonflikte
 
-Production ist `bqsbxesmybthwtxmowfz`; derzeit existiert kein freigegebenes Staging-Projekt. Alte Lovable-/Staging-Migrationsdoku, historische Pre-Program-Run-Limits und unmittelbare Prioritaet sind nicht still aufloesbar. Sie stehen in `BLOCKING_DECISIONS.md` und `DEFERRED_RULES.md`.
+Production ist `bqsbxesmybthwtxmowfz`; das am 6. August 2026 fuer ausschliesslich synthetische Tests freigegebene getrennte Staging-Projekt ist `zbeswjipayspgvcipzmx`. Der alte Ref `towgvykgezrmkbyudjen` bleibt gesperrt. Historische Pre-Program-Run-Limits und die unmittelbare Prioritaet sind nicht still aufloesbar; sie stehen in `BLOCKING_DECISIONS.md` und `DEFERRED_RULES.md`.

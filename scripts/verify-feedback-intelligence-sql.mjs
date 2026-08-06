@@ -40,6 +40,10 @@ const consentSelfServiceMigration = readFileSync(
   resolve("supabase/migrations/20260805104100_feedback_intelligence_v1_consent_self_service.sql"),
   "utf8",
 );
+const fkIndexesMigration = readFileSync(
+  resolve("supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql"),
+  "utf8",
+);
 const machineExportSchema = JSON.parse(readFileSync(
   resolve("docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json"),
   "utf8",
@@ -187,6 +191,22 @@ try {
   await db.exec(adminAggregateMigration);
   await db.exec(machineExportMigration);
   await db.exec(consentSelfServiceMigration);
+  await db.exec(fkIndexesMigration);
+
+  const feedbackFkIndexes = await db.query(`
+    SELECT indexname
+    FROM pg_indexes
+    WHERE indexname IN (
+      'feedback_consent_audit_submission_idx',
+      'feedback_checkpoint_campaign_idx',
+      'feedback_checkpoint_program_instance_idx',
+      'feedback_subject_links_program_instance_idx'
+    )
+  `);
+  assert(
+    feedbackFkIndexes.rows.length === 4,
+    "all Feedback Intelligence foreign-key indexes must exist",
+  );
 
   const schemas = await db.query(`
     SELECT schema_name

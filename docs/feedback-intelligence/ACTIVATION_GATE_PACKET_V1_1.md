@@ -1,13 +1,15 @@
 # Feedback Intelligence 1.1 – Aktivierungspaket
 
-Stand: 5. August 2026
+Stand: 6. August 2026
 
 ## Aktueller Zustand
 
-Der lokale Integrationskandidat ist technisch grün und absichtlich nicht
-aktiviert. Die App kann ohne offene Server- und Client-Gates weder einen
+Der Integrationskandidat ist lokal und in einem isolierten, ausschließlich
+synthetischen Staging-Projekt technisch grün und absichtlich nicht aktiviert.
+Die App kann ohne offene Server- und Client-Gates weder einen
 Feedback-Checkpoint beanspruchen noch Rohtext sammeln oder an einen
-Machine-Consumer ausgeben.
+Machine-Consumer ausgeben. Der vollständige Staging-Nachweis steht in
+[`STAGING_VERIFICATION_2026-08-06.md`](./STAGING_VERIFICATION_2026-08-06.md).
 
 `npm run feedback:release:check` prüft reproduzierbar:
 
@@ -28,16 +30,20 @@ Machine-Consumer ausgeben.
    und `Analytics` als linked, aber nicht Tracking, gegen den echten RC
    eintragen. Die Altersfrage bewusst beantworten; bei einer EULA-Grenze ab
    15 kann Apples höherer Override erforderlich sein.
-3. **Geschlossen deployen:** Migrationen, Edge Function und App gemeinsam in
-   die autorisierte Zielumgebung bringen, während sämtliche Collection- und
-   Machine-Gates `false` und die Guardian-Policy `draft` bleiben.
-4. **Zielumgebung negativ prüfen:** `anon`, normale Athleten, Coaches, Admins
-   und `service_role` dürfen keine direkten Raw-/Analysis-/Machine-Reads
-   erhalten. Fehlender, falscher, widerrufener oder veralteter Consent muss
-   Rohtext und Export jeweils fail-closed blockieren.
-5. **Lebenszyklus prüfen:** Grant, Ablehnung, Widerruf, Account-Löschung,
-   Retention, Policy-Retirement, Contract-Drift, Offline-Retry und Rollback mit
-   ausschließlich synthetischen Testkonten nachweisen.
+3. **Geschlossen deployen:** Die Datenbankmigrationen sind im autorisierten
+   isolierten Staging bei geschlossenen Collection- und Machine-Gates und
+   Guardian-Policy `draft` verifiziert. Edge Function, signierter nativer Build
+   und Production bleiben getrennt offen.
+4. **Zielumgebung negativ prüfen:** `anon`, normale Athleten und
+   `service_role` sind für direkte Raw-/Analysis-/Machine-Reads in Staging
+   negativ geprüft. Coaches und echte Adminrollen bleiben zusätzlich über den
+   späteren signierten App-/Staging-Pfad zu prüfen.
+   Fehlender Guardian-Scope und Widerruf blockieren beziehungsweise löschen
+   Rohtext und Ableitungen fail-closed.
+5. **Lebenszyklus prüfen:** Grant und Widerruf sowie der echte Tag-10-RPC-Pfad
+   sind mit synthetischen Transaktionen in Staging verifiziert. Ablehnung,
+   Account-Löschung, Retention, Policy-Retirement, Contract-Drift,
+   Offline-Retry und mehrtägiger Lauf bleiben als Zielumgebungsnachweis offen.
 6. **Athleten-Collection getrennt öffnen:** Erst nach bestandenen Punkten 1–5
    die DE-Policy und notwendigen App-/Server-Gates in einem auditierten,
    reversiblen Schritt öffnen. Text-Collection bleibt ein eigener Schalter und

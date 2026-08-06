@@ -57,6 +57,7 @@ const policyPath = "src/content/guardianFeedbackTextPolicy.ts";
 const guardianMigrationPath = "supabase/migrations/20260805145921_guardian_feedback_text_authorization_v1.sql";
 const transactionMigrationPath = "supabase/migrations/20260805103700_feedback_intelligence_v1_transaction_api.sql";
 const machineMigrationPath = "supabase/migrations/20260805104000_feedback_intelligence_v0_2_machine_export.sql";
+const fkIndexesMigrationPath = "supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql";
 
 const expectedPolicy = {
   reference: "guardian-feedback-text-de-v1.0.0-draft",
@@ -69,14 +70,27 @@ const expectedPolicy = {
 };
 
 try {
-  const [v02, v03, policy, guardianMigration, transactionMigration, machineMigration] = await Promise.all([
+  const [v02, v03, policy, guardianMigration, transactionMigration, machineMigration, fkIndexesMigration] = await Promise.all([
     verifyPackage(v02Manifest, v02AcceptedProducerCommit),
     verifyPackage(v03Manifest),
     readText(policyPath),
     readText(guardianMigrationPath),
     readText(transactionMigrationPath),
     readText(machineMigrationPath),
+    readText(fkIndexesMigrationPath),
   ]);
+
+  for (const indexName of [
+    "feedback_consent_audit_submission_idx",
+    "feedback_checkpoint_campaign_idx",
+    "feedback_checkpoint_program_instance_idx",
+    "feedback_subject_links_program_instance_idx",
+  ]) {
+    assert(
+      fkIndexesMigration.includes(indexName),
+      `${fkIndexesMigrationPath}: missing required index ${indexName}`,
+    );
+  }
 
   for (const value of [
     expectedPolicy.reference,

@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const script = resolve(process.cwd(), "scripts/verify-embedded-ios-target.mjs");
 const productionRef = "bqsbxesmybthwtxmowfz";
-const stagingRef = "towgvykgezrmkbyudjen";
+const stagingRef = "zbeswjipayspgvcipzmx";
+const retiredStagingRef = "towgvykgezrmkbyudjen";
 const temporaryRoots: string[] = [];
 
 function fixture(content: string) {
@@ -41,6 +42,15 @@ describe("embedded iOS release target", () => {
   it("rejects a Staging ref even when Production is also present", () => {
     const result = verify(
       fixture(`const refs = ["${productionRef}", "${stagingRef}"];`),
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("forbidden non-Production refs");
+  });
+
+  it("continues to reject retired refs", () => {
+    const result = verify(
+      fixture(`const refs = ["${productionRef}", "${retiredStagingRef}"];`),
     );
 
     expect(result.status).toBe(1);

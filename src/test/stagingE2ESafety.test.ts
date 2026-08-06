@@ -3,7 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const script = resolve(process.cwd(), "scripts/nlz-staging-e2e.mjs");
-const stagingRef = "towgvykgezrmkbyudjen";
+const stagingRef = "zbeswjipayspgvcipzmx";
+const retiredStagingRef = "towgvykgezrmkbyudjen";
 const productionRef = "bqsbxesmybthwtxmowfz";
 const approval = "STAGING_SYNTHETIC_WRITE_APPROVED";
 
@@ -28,8 +29,12 @@ describe("staging E2E write safety", () => {
     const result = run(["--plan"]);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("TARGET: no approved Supabase Staging project");
-    expect(result.stdout).toContain(`RETIRED PROJECT: ${stagingRef} (execution blocked)`);
+    expect(result.stdout).toContain(
+      `TARGET: approved Supabase Staging project ${stagingRef}`,
+    );
+    expect(result.stdout).toContain(
+      `RETIRED PROJECT: ${retiredStagingRef} (execution blocked)`,
+    );
     expect(result.stdout).toContain("NETWORK: disabled");
     expect(result.stdout).toContain("DAY CONTEXTS: training, rest and competition");
   });
@@ -41,7 +46,7 @@ describe("staging E2E write safety", () => {
     expect(result.stderr).toContain("Choose exactly one mode");
   });
 
-  it("permanently rejects the retired project", () => {
+  it("keeps NLZ writes to the approved Staging project separately gated", () => {
     const result = run(["--execute"], {
       NLZ_QA_SUPABASE_URL: `https://${stagingRef}.supabase.co`,
       NLZ_QA_ANON_KEY: "not-a-real-anon-key",
@@ -49,7 +54,20 @@ describe("staging E2E write safety", () => {
     });
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain(`Retired Supabase project ${stagingRef} is permanently blocked`);
+    expect(result.stderr).toContain("Remote NLZ staging E2E execution remains disabled");
+  });
+
+  it("permanently rejects the retired project", () => {
+    const result = run(["--execute"], {
+      NLZ_QA_SUPABASE_URL: `https://${retiredStagingRef}.supabase.co`,
+      NLZ_QA_ANON_KEY: "not-a-real-anon-key",
+      NLZ_QA_SERVICE_ROLE_KEY: "not-a-real-service-key",
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      `Retired Supabase project ${retiredStagingRef} is permanently blocked`,
+    );
   });
 
   it("permanently rejects the Production project", () => {

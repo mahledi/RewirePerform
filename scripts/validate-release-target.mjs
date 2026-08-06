@@ -10,19 +10,13 @@ const readArg = (name, fallback) => {
 const expected = readArg("--expected");
 const mode = readArg("--mode", expected);
 const targets = {
+  staging: "zbeswjipayspgvcipzmx",
   production: "bqsbxesmybthwtxmowfz",
 };
 const retiredStagingRef = "towgvykgezrmkbyudjen";
 
-if (expected === "staging") {
-  console.error(
-    `release target validation failed: no approved Staging project exists; ${retiredStagingRef} is retired`,
-  );
-  process.exit(1);
-}
-
 if (!expected || !(expected in targets)) {
-  console.error("release target validation failed: use --expected production");
+  console.error("release target validation failed: use --expected staging or production");
   process.exit(1);
 }
 
@@ -48,6 +42,9 @@ if (env.VITE_SUPABASE_PROJECT_ID !== expectedRef) {
 }
 if (env.VITE_SUPABASE_URL !== expectedUrl) {
   failures.push(`VITE_SUPABASE_URL must select the confirmed ${expected} project`);
+}
+if (env.VITE_SUPABASE_URL === `https://${retiredStagingRef}.supabase.co`) {
+  failures.push(`retired Staging project ${retiredStagingRef} is permanently blocked`);
 }
 if (
   publishableKey.includes("placeholder") ||

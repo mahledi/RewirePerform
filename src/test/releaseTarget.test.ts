@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 
 const script = resolve(process.cwd(), "scripts/validate-release-target.mjs");
 const productionRef = "bqsbxesmybthwtxmowfz";
+const stagingRef = "zbeswjipayspgvcipzmx";
+const retiredStagingRef = "towgvykgezrmkbyudjen";
 
 const runValidation = (overrides: Record<string, string>) =>
   spawnSync(
@@ -23,12 +25,37 @@ const runValidation = (overrides: Record<string, string>) =>
     },
   );
 
+const runStagingValidation = (overrides: Record<string, string>) =>
+  spawnSync(
+    process.execPath,
+    [script, "--expected", "staging", "--mode", "staging"],
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        VITE_APP_ENV: "staging",
+        VITE_SUPABASE_PROJECT_ID: stagingRef,
+        VITE_SUPABASE_URL: `https://${stagingRef}.supabase.co`,
+        VITE_SUPABASE_PUBLISHABLE_KEY:
+          "sb_publishable_123456789012345678901234567890",
+        ...overrides,
+      },
+    },
+  );
+
 describe("release target validation", () => {
   it("accepts the confirmed production target", () => {
     const result = runValidation({});
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("release target validation passed: production");
+  });
+
+  it("accepts the confirmed isolated Staging target", () => {
+    const result = runStagingValidation({});
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("release target validation passed: staging");
   });
 
   it("rejects a staging label on a production build", () => {
@@ -48,15 +75,14 @@ describe("release target validation", () => {
   });
 
   it("rejects the retired project as a Staging target", () => {
-    const result = spawnSync(
-      process.execPath,
-      [script, "--expected", "staging", "--mode", "staging"],
-      { encoding: "utf8", env: process.env },
-    );
+    const result = runStagingValidation({
+      VITE_SUPABASE_PROJECT_ID: retiredStagingRef,
+      VITE_SUPABASE_URL: `https://${retiredStagingRef}.supabase.co`,
+    });
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("no approved Staging project exists");
-    expect(result.stderr).toContain("towgvykgezrmkbyudjen is retired");
+    expect(result.stderr).toContain("retired Staging project");
+    expect(result.stderr).toContain(retiredStagingRef);
   });
 
   it("rejects an invalid publishable key shape", () => {

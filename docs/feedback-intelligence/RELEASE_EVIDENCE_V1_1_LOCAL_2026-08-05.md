@@ -72,3 +72,14 @@ Vor einem echten Release bleiben damit separat offen:
 
 Push, Merge nach `main`, Supabase- oder Edge-Deployment, App-Store-Änderungen
 und reale Datenzugriffe sind nicht Teil dieses lokalen Nachweises.
+
+## Nachtrag vom 6. August 2026
+
+Das inzwischen ausdrücklich freigegebene, getrennte Free-Staging-Projekt wurde
+mit synthetischen Daten geprüft. Datenbankmigrationen, Rollen-Negativtests,
+Minderjährigen-/Guardian-Scope, Widerruf und der echte Tag-10-RPC-Pfad sind
+grün; das Projekt endete leer und mit vollständig geschlossenen Gates.
+
+Dieser Nachtrag ersetzt keine Rechts-, App-Store-, Native-, Production- oder
+Jarvis-Real-Read-Freigabe. Der vollständige Zielumgebungsnachweis steht in
+[`STAGING_VERIFICATION_2026-08-06.md`](./STAGING_VERIFICATION_2026-08-06.md).

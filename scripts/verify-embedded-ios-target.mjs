@@ -2,7 +2,11 @@ import { readFile, readdir } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 
 const PRODUCTION_REF = "bqsbxesmybthwtxmowfz";
-const FORBIDDEN_REFS = ["towgvykgezrmkbyudjen", "twceqincrbrenyuqukpj"];
+const FORBIDDEN_REFS = [
+  "zbeswjipayspgvcipzmx",
+  "towgvykgezrmkbyudjen",
+  "twceqincrbrenyuqukpj",
+];
 const textExtensions = new Set([".html", ".js", ".json", ".mjs", ".txt"]);
 
 function argumentValue(name) {

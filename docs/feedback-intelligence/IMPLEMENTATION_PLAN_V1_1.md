@@ -3,7 +3,7 @@
 Stand: 2026-08-05  
 Arbeitsbranch: `codex/feedback-intelligence-v1-1-20260805`  
 Basis: `origin/main` bei `2535ade4ee021dffa19eb5c3bacd4144edeb7430`  
-Status: lokale Implementierung läuft; keine Production-, KI-, Jarvis- oder App-Store-Aktivierung
+Status: lokale Implementierung und isolierter synthetischer Staging-Nachweis grün; keine Production-, KI-, Jarvis- oder App-Store-Aktivierung
 
 ## Zielbild
 
@@ -54,12 +54,12 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | 4. Datenbank-Sicherheit | keine direkten Rechte, Consent- und Minor-Gates, Widerruf, Account-Cascade, Negativtests | fertig |
 | 5. Transaktionaler Submit | servervalidierte Entwürfe, Idempotenz, Retry, Finalisierung, ungültige Optionen fail-closed | fertig |
 | 6. Checkpoint-Integration | kalendertagbasierte Eignung, einmalige Einladung, Wiederaufnahme, Kill-Switch | lokal fertig; Live-Gate, Autosave, Background-Save, Resume und Submit bleiben deaktiviert |
-| 7. Deutschland-/Minor-Pfad | DE-only, 15+, spezifischer Guardian-Text-Scope, Staging-Negativtests | lokale fail-closed Matrix und eigener Guardian-Text-Scope fertig; Deutschland-Fachfreigabe und echte Staging-Negativtests offen, alle Nicht-DE-Länder ausdrücklich `out_of_scope` |
+| 7. Deutschland-/Minor-Pfad | DE-only, 15+, spezifischer Guardian-Text-Scope, Staging-Negativtests | fail-closed Matrix, Guardian-Text-Scope sowie fehlender und widerrufener Guardian-Scope in isoliertem Staging technisch verifiziert; Deutschland-Fachfreigabe offen, alle Nicht-DE-Länder ausdrücklich `out_of_scope` |
 | 8. Activity-Link | nur Zähl-/Statusdaten; niemals Journalinhalt; pseudonyme Verknüpfung | lokal fertig; per-Programminstanz-Referenz und unveränderlicher Submit-Snapshot gebaut |
 | 9. Admin-Auswertung | Aggregate, Mindestkohorte, Testdatentrennung, keine Individualansicht | lokal fertig; kein Production-Read |
 | 10. Machine-Export | KI-agnostisch, Jarvis-kompatibel, read-only, Consent bei Export erneut geprüft | lokal fertig und schema-valide; ohne Execute-Grant, Credential, Transport oder Production-Gate |
 | 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft, Widerrufs-UI, technische 365-Tage-Höchstdauer und automatisierter Löschlauf lokal fertig; Rechtsfreigabe der Frist und Zielumgebungsnachweis offen |
-| 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | lokale kombinierte CI mit 102 Testdateien/582 Tests und statischer Store-Prüfung grün; echter Production-Environment-, signierter Native- und Staging-Nachweis offen |
+| 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | Staging-Build mit 102 Testdateien/585 Tests, echte Datenbank-Rollen-/Minor-/Widerrufs-/Tag-10-Prüfungen und statische Store-Prüfung grün; Production-Environment und signierter Native-Nachweis offen |
 | 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Golden-Days-Parallelstand lokal integriert; einziger `App.tsx`-Konflikt bewusst aufgelöst und kombinierte CI grün; Push/Merge/Release bleiben separat |
 
 ## Bereits implementiert
@@ -97,7 +97,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 
 ### 1. Deutschland und Minderjährige
 
-Update 1.1 wird ausschließlich für Deutschland vorbereitet. Dafür müssen Alters-, Guardian-, Informations- und Widerrufsregeln für den deutschen Pfad rechtlich festgelegt, technisch versioniert und in Staging negativ getestet werden. Österreich, die Schweiz und alle weiteren Länder gehören nicht zu diesem Release, bleiben technisch fail-closed und lösen erst bei einer späteren internationalen Einführung einen neuen Länder-/Store-/Privacy-Block aus. Details: [`DACH_MINOR_POLICY_DRAFT.md`](./DACH_MINOR_POLICY_DRAFT.md).
+Update 1.1 wird ausschließlich für Deutschland vorbereitet. Die technischen Alters-, Guardian- und Widerrufssperren sind versioniert und in isoliertem Staging negativ getestet; die deutsche fachrechtliche Freigabe der Regeln und Texte bleibt offen. Österreich, die Schweiz und alle weiteren Länder gehören nicht zu diesem Release, bleiben technisch fail-closed und lösen erst bei einer späteren internationalen Einführung einen neuen Länder-/Store-/Privacy-Block aus. Details: [`DACH_MINOR_POLICY_DRAFT.md`](./DACH_MINOR_POLICY_DRAFT.md).
 
 ### 2. Neuer Freitext-/KI-Zweck
 
@@ -163,9 +163,9 @@ Verboten sind:
 
 Korrelationen bleiben beobachtend: zum Beispiel „In dieser Stichprobe berichten aktivere Nutzer häufiger X“. Sie beweisen keine Wirksamkeit oder Ursache.
 
-## Supabase Pro
+## Supabase-Projekt und Plan
 
-Für die aktuelle lokale Implementierung und PGlite-Negativtests ist Supabase Pro nicht erforderlich. Vor einem echten Staging-/Production-Rollout werden getrennt entschieden: autorisiertes Staging-Projekt, Backup-/Recovery-Anforderungen, Aufbewahrung, Monitoring und gegebenenfalls Plan-Upgrade. Ein Upgrade allein aktiviert oder validiert dieses System nicht.
+Für die lokale Implementierung, PGlite-Negativtests und den aktuellen isolierten Staging-Nachweis ist Supabase Pro nicht erforderlich. Das freigegebene Projekt `zbeswjipayspgvcipzmx` läuft getrennt von Production im Free-Plan und wurde von Supabase bei Erstellung mit 0 USD pro Monat ausgewiesen. Preview Branches, Production-Backup-/Recovery-Anforderungen, Aufbewahrung, Monitoring und ein möglicher Plan-Upgrade werden separat entschieden. Ein Upgrade allein aktiviert oder validiert dieses System nicht.
 
 ## Definition of Done für Update 1.1
 
@@ -187,13 +187,15 @@ Das System ist erst 1.1-release-ready, wenn alle folgenden Punkte gleichzeitig e
 
 ## Aktueller Nachweis
 
-- Kombinierte lokale CI nach Integration des Golden-Days-Parallelstands: 102 Testdateien und 582 Tests grün.
+- Kombinierte Staging-CI nach Integration des Golden-Days-Parallelstands: 102 Testdateien und 585 Tests grün.
 - TypeScript-Typecheck und Production-Web-Build: grün.
 - Sämtliche SQL-Harnesses einschließlich Rollen, Consent, Guardian, Widerruf, Retention, Account-Cascade, DE-only-Ländersperre, idempotentem Submit, Admin-Mindestkohorte und schema-validem synthetischem Machine-Export: grün.
 - Statische App-Store-Prüfung und `PrivacyInfo.xcprivacy`-Syntax: grün.
 - ESLint: null Fehler; 16 bereits vorhandene Warnungen in von diesem Integrationsblock nicht veränderten Dateien.
+- Isolierter Staging-Datenbanknachweis: 90 Migrationen, Rollen-Negativtests, Unter-16-Guardian-Sperre, Widerrufslöschung und Tag-10-RPC-Pfad grün; danach null synthetische Nutzer- oder Feedbackdaten und alle Gates geschlossen.
 - Der echte Production-Environment- und Embedded-iOS-Nachweis bleibt fail-closed, weil dieser Worktree bewusst keine Production-Werte oder Secrets enthält.
 
 Vollständiger lokaler Nachweis: [`RELEASE_EVIDENCE_V1_1_LOCAL_2026-08-05.md`](./RELEASE_EVIDENCE_V1_1_LOCAL_2026-08-05.md).
+Vollständiger Staging-Nachweis: [`STAGING_VERIFICATION_2026-08-06.md`](./STAGING_VERIFICATION_2026-08-06.md).
 
 Diese Nachweise belegen lokale technische Eigenschaften. Sie belegen keine Production-Aktivierung, rechtliche Freigabe, App-Store-Akzeptanz, Programmwirksamkeit oder kausale Effekte.
