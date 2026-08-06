@@ -32,8 +32,10 @@ Machine-Consumer ausgeben. Der vollständige Staging-Nachweis steht in
    15 kann Apples höherer Override erforderlich sein.
 3. **Geschlossen deployen:** Die Datenbankmigrationen sind im autorisierten
    isolierten Staging bei geschlossenen Collection- und Machine-Gates und
-   Guardian-Policy `draft` verifiziert. Edge Function, signierter nativer Build
-   und Production bleiben getrennt offen.
+   Guardian-Policy `draft` verifiziert. Beide Guardian-Edge-Funktionen sind in
+   Staging aktiv und bestehen sichere Auth-/Token-/Origin-Negativtests. Der
+   positive E-Mail-Zustellpfad, signierter nativer Build und Production bleiben
+   getrennt offen.
 4. **Zielumgebung negativ prüfen:** `anon`, normale Athleten und
    `service_role` sind für direkte Raw-/Analysis-/Machine-Reads in Staging
    negativ geprüft. Coaches und echte Adminrollen bleiben zusätzlich über den

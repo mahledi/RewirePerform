@@ -113,16 +113,50 @@ Nach allen Prüfungen galt:
 - Guardian-Policy weiterhin `draft`;
 - Machine-RPC weiterhin ohne Runtime-Execute-Grant.
 
+## Guardian-Edge-Nachweis
+
+Nach dem Datenbanknachweis wurden ausschließlich im getrennten Staging die
+beiden bereits versionierten Guardian-Funktionen deployt:
+
+- `minor-guardian-user`, Version 1, Status `ACTIVE`, `verify_jwt = true`;
+- `minor-guardian-public`, Version 1, Status `ACTIVE`,
+  `verify_jwt = false` mit eigener gehashter Einmal-/Verwaltungstoken-Prüfung.
+
+Die vier deployten Dateien jeder Funktion – Entry Point sowie die drei
+gemeinsamen Module – wurden anschließend aus Staging zurückgelesen und stimmen
+bytegenau mit dem Repository-Stand überein.
+
+Die sicheren Remote-Negativprüfungen ergaben:
+
+- Athleten-Endpunkt ohne Authorization-Header: HTTP 401;
+- öffentlicher Endpunkt mit formal zu kurzem Token: HTTP 410
+  `link_invalid`;
+- öffentlicher Endpunkt mit unbekanntem, formal gültigem Token: Zustand
+  `invalid`, ohne Datenoffenlegung;
+- öffentlicher Endpunkt von einer nicht erlaubten Origin: HTTP 403
+  `origin_not_allowed`.
+
+Es wurden keine E-Mail, keine echte Guardian-Adresse und keine eigenen
+Provider-Secrets verwendet. Der positive Einladungs-/Zustellpfad benötigt vor
+seinem Staging-Nachweis weiterhin isolierte Staging-Werte für
+`APP_PUBLIC_URL`, Guardian-Verschlüsselung/Hashing, Absender und E-Mail-Provider.
+Production-Funktionen und Production-Secrets blieben unangetastet.
+
 ## Lokaler Release-Nachweis gegen Staging
 
 Der vollständige Staging-Build lief gegen den exakten Projekt-Ref, die exakte
 Staging-URL und einen nur im Prozess übergebenen Publishable Key:
 
 - `npm run web:build:staging`: grün;
-- 102 Vitest-Dateien mit 585 Tests: grün;
+- 103 Vitest-Dateien mit 590 Tests: grün einschließlich der fünf ergänzten
+  Edge-Vertragstests.
 - alle Feedback-, Guardian-, Access-, Deletion- und Store-SQL-Harnesses: grün;
 - TypeScript, App-Store-Static-Checks, Release-Target-Validierung und
   Vite/PWA-Build: grün.
+
+Der anschließend erneut gegen den modernen Publishable Key des exakten
+Staging-Refs ausgeführte Target-Validator und `vite build --mode staging`
+bestanden ebenfalls. Der Key wurde nur im Prozess übergeben.
 
 Der Publishable Key wurde weder dokumentiert noch in Dateien oder Git
 geschrieben.
@@ -133,7 +167,8 @@ Vor einer echten Athleten- oder Rohtextaktivierung fehlen weiterhin:
 
 1. qualifizierte deutsche Rechts-, Datenschutz- und Minderjährigenfreigabe;
 2. finale Privacy- und App-Store-Datenerklärungen;
-3. Guardian-Kommunikation über die echte Edge-/E-Mail-Strecke;
+3. positiver Guardian-E-Mail-Zustellpfad mit ausschließlich synthetischer
+   Staging-Adresse und isolierten Staging-Secrets;
 4. signierter nativer Build und Gerätetest;
 5. vollständige Lösch-/Retention- und mehrtägige Laufzeitprüfung;
 6. separat genehmigter synthetischer Machine-Read mit dediziertem Read-only

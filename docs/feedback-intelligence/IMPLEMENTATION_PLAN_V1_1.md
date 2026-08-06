@@ -59,7 +59,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | 9. Admin-Auswertung | Aggregate, Mindestkohorte, Testdatentrennung, keine Individualansicht | lokal fertig; kein Production-Read |
 | 10. Machine-Export | KI-agnostisch, Jarvis-kompatibel, read-only, Consent bei Export erneut geprüft | lokal fertig und schema-valide; ohne Execute-Grant, Credential, Transport oder Production-Gate |
 | 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft, Widerrufs-UI, technische 365-Tage-Höchstdauer und automatisierter Löschlauf lokal fertig; Rechtsfreigabe der Frist und Zielumgebungsnachweis offen |
-| 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | Staging-Build mit 102 Testdateien/585 Tests, echte Datenbank-Rollen-/Minor-/Widerrufs-/Tag-10-Prüfungen und statische Store-Prüfung grün; Production-Environment und signierter Native-Nachweis offen |
+| 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | Staging-Build, echte Datenbank-Rollen-/Minor-/Widerrufs-/Tag-10-Prüfungen sowie Guardian-Edge-Auth-/Token-/Origin-Negativtests grün; positiver E-Mail-Zustellpfad, Production-Environment und signierter Native-Nachweis offen |
 | 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Golden-Days-Parallelstand lokal integriert; einziger `App.tsx`-Konflikt bewusst aufgelöst und kombinierte CI grün; Push/Merge/Release bleiben separat |
 
 ## Bereits implementiert
@@ -193,6 +193,7 @@ Das System ist erst 1.1-release-ready, wenn alle folgenden Punkte gleichzeitig e
 - Statische App-Store-Prüfung und `PrivacyInfo.xcprivacy`-Syntax: grün.
 - ESLint: null Fehler; 16 bereits vorhandene Warnungen in von diesem Integrationsblock nicht veränderten Dateien.
 - Isolierter Staging-Datenbanknachweis: 90 Migrationen, Rollen-Negativtests, Unter-16-Guardian-Sperre, Widerrufslöschung und Tag-10-RPC-Pfad grün; danach null synthetische Nutzer- oder Feedbackdaten und alle Gates geschlossen.
+- Beide Guardian-Edge-Funktionen sind ausschließlich im getrennten Staging aktiv; fehlende Authentifizierung, unbekannte Tokens und fremde Origins scheitern fail-closed. Kein Provider-Secret und keine echte E-Mail wurden verwendet.
 - Der echte Production-Environment- und Embedded-iOS-Nachweis bleibt fail-closed, weil dieser Worktree bewusst keine Production-Werte oder Secrets enthält.
 
 Vollständiger lokaler Nachweis: [`RELEASE_EVIDENCE_V1_1_LOCAL_2026-08-05.md`](./RELEASE_EVIDENCE_V1_1_LOCAL_2026-08-05.md).
