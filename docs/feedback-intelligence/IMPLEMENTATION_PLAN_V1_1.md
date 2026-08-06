@@ -1,8 +1,8 @@
 # Feedback Intelligence 1.1 – Implementierungs- und Integrationsplan
 
-Stand: 2026-08-05  
-Arbeitsbranch: `codex/feedback-intelligence-v1-1-20260805`  
-Basis: `origin/main` bei `2535ade4ee021dffa19eb5c3bacd4144edeb7430`  
+Stand: 2026-08-05
+Arbeitsbranch: `codex/feedback-intelligence-v1-1-20260805`
+Basis: `origin/main` bei `2535ade4ee021dffa19eb5c3bacd4144edeb7430`
 Status: lokale Implementierung und isolierter synthetischer Staging-Nachweis grün; keine Production-, KI-, Jarvis- oder App-Store-Aktivierung
 
 ## Zielbild

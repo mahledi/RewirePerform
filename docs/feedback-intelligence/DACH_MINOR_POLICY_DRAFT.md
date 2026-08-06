@@ -1,7 +1,7 @@
 # Feedback Intelligence – Deutschland-Release und künftige Ländergrenze
 
-Stand: 2026-08-05  
-Status: `LEGAL_PRIVACY_REVIEW_REQUIRED`  
+Stand: 2026-08-05
+Status: `LEGAL_PRIVACY_REVIEW_REQUIRED`
 Technikstatus: lokal fail-closed; keine echte Datenerhebung oder KI-Weitergabe
 
 ## Ergebnis

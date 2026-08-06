@@ -428,4 +428,3 @@ export const FEEDBACK_CONSTRUCT_CATALOG_V03 = {
     };
   }),
 } as const;
-

@@ -15,7 +15,7 @@
   },
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "351ebd27865743e29bcf955fd47064970ad0ef212df806ef9056065add1ef0d5",
+  "package_sha256": "38ba4e508b0c6e46acc2705fe17deb1fe311c5046316231b5254acd194667e65",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
@@ -31,7 +31,7 @@
     },
     {
       "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
-      "sha256": "7dbfc9bd7c7cad952c05c273d825d23eaa921b350c6c101e8a6b482a467db255"
+      "sha256": "1b3260c6c0870101c1d49066aaa344cb0bd558a4686af0e11d4c6eb7b047da5d"
     },
     {
       "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
@@ -43,7 +43,7 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
-      "sha256": "2866d118f02fff84d68c1a000fd60150d2becac14f7c3cfe0011206da1ecefa9"
+      "sha256": "486a0120574225edcfd3ea9311ab8f0eb5f7226b7075d48597d23c40b10c61be"
     }
   ],
   "catalog_evidence": {

@@ -1,6 +1,6 @@
 # Feedback Intelligence – Machine Export 0.2 Draft
 
-Stand: 2026-08-05  
+Stand: 2026-08-05
 Status: `PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED`
 
 ## Gebauter Vertrag

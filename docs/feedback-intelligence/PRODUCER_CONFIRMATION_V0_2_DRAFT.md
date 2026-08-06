@@ -1,7 +1,7 @@
 # Feedback Intelligence 0.2 – Producer-Bestätigung
 
-Stand: 2026-08-05  
-Status: `PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED`  
+Stand: 2026-08-05
+Status: `PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED`
 Consumer-Vorschlag: Jarvis-Commit `d41350bceac0dae4d6899ef58e19cfbbcce37458`
 
 ## Ergebnis

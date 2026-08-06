@@ -1,7 +1,7 @@
 # Jarvis Consumer Acceptance – Feedback Intelligence 0.2 Draft
 
-Stand: 2026-08-05  
-Consumer-Ergebnis: `ACCEPTED_LOCAL_UNSIGNED_DE_ONLY_NOT_ACTIVATED`  
+Stand: 2026-08-05
+Consumer-Ergebnis: `ACCEPTED_LOCAL_UNSIGNED_DE_ONLY_NOT_ACTIVATED`
 Aktivierung: `AWAITING_PRODUCER_PACKAGE`
 
 ## Deutschland-only Scope-Amendment

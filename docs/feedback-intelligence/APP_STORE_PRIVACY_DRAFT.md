@@ -1,6 +1,6 @@
 # Feedback Intelligence 1.1 – App-Store- und Privacy-Draft
 
-Stand: 2026-08-05  
+Stand: 2026-08-05
 Status: lokaler Implementierungsentwurf; keine Rechts-, App-Store-, KI- oder Production-Freigabe
 
 ## Produktwahrheit
