@@ -255,7 +255,6 @@ const PreTrainingStage = ({ draft }: { draft: GoldenDayDraft }) => {
         aria-label="Eigene Erinnerung"
         className="min-h-28 w-full resize-none rounded-2xl border border-white/[0.075] bg-white/[0.025] px-4 py-4 text-base text-white outline-none placeholder:text-white/25 focus:border-primary/45 focus:ring-2 focus:ring-primary/15"
       />
-      <p className="text-xs leading-5 text-white/38">{pre.hint}</p>
       <button
         type="button"
         onClick={() => setRevealed(true)}

@@ -35,7 +35,6 @@ export type GoldenDayDraft = {
   preTraining: null | {
     label: "Pre-Training" | "Pre-Wettkampf";
     recallPrompt: string;
-    hint: string;
     reveal: string;
     application: string;
   };
@@ -113,7 +112,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Wenn dein Kopf heute weggeht: Was tust du zuerst?",
-      hint: "Denk an den Rückweg, nicht an perfekten Fokus.",
       reveal: "Ich merke es und finde meine nächste Aktion.",
       application: "Nimm den Cue mit in die Einheit: Nächste Aktion.",
     },
@@ -216,7 +214,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Wie lautet deine kurze Fehlerkette für heute?",
-      hint: "Drei kurze Teile: anerkennen, lernen, weiter.",
       reveal: "Passiert. Eine Information. Nächste Handlung.",
       application: "Im Training reicht eine klare Korrektur. Die große Analyse gehört nicht mitten in die nächste Aktion.",
     },
@@ -276,7 +273,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Welche Frage holt dich heute aus dem Kampf gegen Unveränderbares?",
-      hint: "Suche deinen verbleibenden Spielraum.",
       reveal: "Was kann ich jetzt beeinflussen?",
       application: "Nutze die Frage, sobald Bedingungen, Entscheidungen oder Verhalten anderer deinen Fokus binden.",
     },
@@ -347,7 +343,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Was tust du, wenn sich ein Gedanke heute wie ein Befehl anfühlt?",
-      hint: "Der Gedanke darf da sein. Wer entscheidet über die Handlung?",
       reveal: "Ich bemerke ihn. Dann entscheide ich meine Handlung.",
       application: "Dein Cue: Gedanken sind keine Befehle.",
     },
@@ -401,7 +396,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Wettkampf",
       recallPrompt: "Welche zwei Schritte brauchst du heute bei einer unsicheren Aktion?",
-      hint: "Erst ein kurzer Check. Dann eine passende Entscheidung.",
       reveal: "Prüfen. Dann ausprobieren.",
       application: "Im Wettkampf bleibt es kurz: sicher und passend? Dann entscheide und geh in die Aktion.",
     },
@@ -504,7 +498,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Welcher Hauptanker öffnet heute zuerst dein Werkzeugbild?",
-      hint: "Bevor du auswählst, vervollständigst du deinen Blick.",
       reveal: "Was ist außerdem da?",
       application: "Wenn du heute festhängst: Blick öffnen, Problemart erkennen, ein Werkzeug wählen.",
     },
@@ -573,7 +566,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Welche drei Dinge willst du heute auseinanderhalten?",
-      hint: "Was taucht auf, wohin drängt es dich, was entscheidest du?",
       reveal: "Gedanke oder Gefühl. Impuls. Bewusste Handlung.",
       application: "Der Cue bleibt derselbe: Gedanken sind keine Befehle.",
     },
@@ -632,7 +624,6 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Wettkampf",
       recallPrompt: "Was bleibt nach einem Fehler dein einziger sichtbarer Hauptanker?",
-      hint: "Der Gedanke wird erkannt. Dann führt wieder die Fehlerkette.",
       reveal: "Passiert. Lernen. Weiter.",
       application: "Ein Gedanke im Hintergrund. Eine Information. Eine nächste Handlung.",
     },

@@ -117,6 +117,7 @@ describe("Golden Days V1.1 internal preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Erst erinnern. Dann den Cue sehen." })).toBeInTheDocument();
+    expect(screen.queryByText("Denk an den Rückweg, nicht an perfekten Fokus.")).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Eigene Erinnerung"), { target: { value: "Ich merke es und kehre zurück." } });
     fireEvent.click(screen.getByRole("button", { name: /Erinnerung prüfen/ }));
     expect(screen.getByText("Ich merke es und finde meine nächste Aktion.")).toBeInTheDocument();
