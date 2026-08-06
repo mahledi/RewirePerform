@@ -994,7 +994,7 @@
             },
             {
               "question_id": "d24_rest_visualization_guidance_clarity",
-              "human_label_de": "Wie klar führt dich die mentale Einheit am Ruhetag vom jeweiligen Tagesinhalt in eine eigene Sportszene?",
+              "human_label_de": "Wie klar führt dich die mentale Einheit am Ruhetag von deinem Satz in eine eigene Sportszene?",
               "item_variant_id": "rest_visualization_guidance_clarity_d24_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -3457,7 +3457,7 @@
           "questions": [
             {
               "question_id": "d39_rest_visualization_self_direction",
-              "human_label_de": "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und den Tagesanker darin nutzen?",
+              "human_label_de": "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und deinen Satz darin nutzen?",
               "item_variant_id": "rest_visualization_self_direction_d39_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -4673,7 +4673,7 @@
           "questions": [
             {
               "question_id": "d55_rest_visualization_continuation_intent",
-              "human_label_de": "Wie wahrscheinlich ist es, dass du diese Art der mentalen Einheit nach dem Programm selbstständig weiterverwendest?",
+              "human_label_de": "Wie wahrscheinlich ist es, dass du solche mentalen Einheiten nach dem Programm selbstständig weiter nutzt?",
               "item_variant_id": "rest_visualization_continuation_intent_d55_v1",
               "analysis_role": "quality_context",
               "display_answer_options": [

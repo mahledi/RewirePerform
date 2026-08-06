@@ -84,6 +84,22 @@ describe("feedback intelligence content contract", () => {
     }
   });
 
+  it("uses the visible rest-day product language in the reviewed checkpoint copy", () => {
+    const prompts = new Map(Object.values(FEEDBACK_CHECKPOINTS)
+      .flatMap(({ questions }) => questions)
+      .map(({ id, prompt }) => [id, prompt]));
+
+    expect(prompts.get("d24_rest_visualization_guidance_clarity")).toBe(
+      "Wie klar führt dich die mentale Einheit am Ruhetag von deinem Satz in eine eigene Sportszene?",
+    );
+    expect(prompts.get("d39_rest_visualization_self_direction")).toBe(
+      "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und deinen Satz darin nutzen?",
+    );
+    expect(prompts.get("d55_rest_visualization_continuation_intent")).toBe(
+      "Wie wahrscheinlich ist es, dass du solche mentalen Einheiten nach dem Programm selbstständig weiter nutzt?",
+    );
+  });
+
   it("byte-pins the complete questionnaire payloads", () => {
     for (const checkpoint of Object.values(FEEDBACK_CHECKPOINTS)) {
       const actualHash = createHash("sha256")

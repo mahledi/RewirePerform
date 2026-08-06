@@ -15,7 +15,7 @@
   },
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "64757cf922adabc422d9e4e39daae19ad2b68f675229a17da87088981cf719ca",
+  "package_sha256": "81247edb1c42c25884505b4af3a2e25d5521a4bad3e838d0e783e87e17017c12",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.json",
-      "sha256": "01ce3974d74631550369429ca12bb6aaaed6ce8884f4addcdc8ef9230c682e46"
+      "sha256": "d0343c14ef9f17239ac7d01545b146acc8290c1abe451e28218a5f134d563b2d"
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-decisions.json",
@@ -31,7 +31,7 @@
     },
     {
       "path": "src/content/feedbackIntelligenceV1.ts",
-      "sha256": "267b6280551491f45c56d59cc127328d82adcac44c281449e4852b4f867089a1"
+      "sha256": "8b67da525f5f1ad876c97bae85e614a33e933114469b11bba1d4e5612b5abc86"
     },
     {
       "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
@@ -43,11 +43,11 @@
     },
     {
       "path": "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
-      "sha256": "43e956bac086c7bf5b99ad559d39c3c405979dbaba85b8ead2086b5f45bf4670"
+      "sha256": "beec9958d25032b5eac6247ff4660cc6fa501d13987f499f97cf03a51f5cabd0"
     },
     {
       "path": "src/test/feedbackIntelligenceContent.test.ts",
-      "sha256": "fd94bb02866f4941294b39a94508f4aed26d70833ad39d57f5eac13ffe494763"
+      "sha256": "18f1e2dfc3072d66a4c62d8fd0d6995630b20697a7af26e208986ce7d19d9683"
     },
     {
       "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",

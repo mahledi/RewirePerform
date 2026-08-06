@@ -336,7 +336,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_guidance_clarity_d24_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Wie klar führt dich die mentale Einheit am Ruhetag vom jeweiligen Tagesinhalt in eine eigene Sportszene?",
+    prompt: "Wie klar führt dich die mentale Einheit am Ruhetag von deinem Satz in eine eigene Sportszene?",
     options: restVisualizationOptions([
       "Vollkommen klar", "Eher klar", "Teils/teils", "Eher unklar", "Sehr unklar",
     ]),
@@ -439,7 +439,7 @@ const day39Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_self_direction_d39_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und den Tagesanker darin nutzen?",
+    prompt: "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und deinen Satz darin nutzen?",
     options: restVisualizationOptions([
       "Ganz selbstständig", "Eher selbstständig", "Teils/teils", "Eher nur mit Führung", "Nur mit vollständiger Führung",
     ]),
@@ -576,7 +576,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_continuation_intent_d55_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Wie wahrscheinlich ist es, dass du diese Art der mentalen Einheit nach dem Programm selbstständig weiterverwendest?",
+    prompt: "Wie wahrscheinlich ist es, dass du solche mentalen Einheiten nach dem Programm selbstständig weiter nutzt?",
     options: restVisualizationOptions([
       "Sehr wahrscheinlich", "Eher wahrscheinlich", "Noch unklar", "Eher unwahrscheinlich", "Sehr unwahrscheinlich",
     ]),
@@ -712,7 +712,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   24: {
     campaignReference: "feedback-day-24-v1",
     checkpointDay: 24, phase: 2, week: 4, language: "de", questionnaireVersion: "feedback-d24-v1.1.0",
-    questionnaireManifestHash: "ebf3f51f8537afed79464099df1f21d857f07930c2f0cdbcb613c74d754102bd",
+    questionnaireManifestHash: "815a738d6d45bd0dad49ffcd75bd82a2587de063d32c971d21c5925148d484b5",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
       programDayContentHash: "824491ed8701ae4b4db16d56689c8f1a6e629d16b9e7f214e201faee7c7f97de",
@@ -738,7 +738,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   39: {
     campaignReference: "feedback-day-39-v1",
     checkpointDay: 39, phase: 3, week: 6, language: "de", questionnaireVersion: "feedback-d39-v1.1.0",
-    questionnaireManifestHash: "d6ea814b7277245084fa3b4a56bba7c9bbac9d4660b0d0a219a8582d48f04894",
+    questionnaireManifestHash: "2a4c017ec8f0c788bff64ce39d3977a900d0db556ab76267a60b836629735cc3",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
       programDayContentHash: "f58821cc92fb409addd972cb050d4bf325a6b1ac2cdfdd9f606791d750a4c720",
@@ -764,7 +764,7 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   55: {
     campaignReference: "feedback-day-55-v1",
     checkpointDay: 55, phase: 4, week: 8, language: "de", questionnaireVersion: "feedback-d55-v1.1.0",
-    questionnaireManifestHash: "52ba09ebceff87c8fbff943be03ff9e406a3ed6fa68234a261cf829951cb9ef0",
+    questionnaireManifestHash: "3dcec826b4f45c0fc8f3a0fa48185dfb2bca8663dae5db81736e24d5fa9d9b9e",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
       programDayContentHash: "7a4edfd87dac18e7deaeb2272a945c6c5d38fc144214254d3c0af25fe0a9e5fd",

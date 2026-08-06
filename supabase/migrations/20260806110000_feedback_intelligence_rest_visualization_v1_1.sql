@@ -132,9 +132,9 @@ WITH versions(
 ) AS (
   VALUES
     ('feedback-day-10-v1', 'feedback-d10-v1.1.0', 'e19d61dc9600f1fd1c1667d1e9ca2a4e4c2c0dc252f4e18ca5efebce132c4a57'),
-    ('feedback-day-24-v1', 'feedback-d24-v1.1.0', 'ebf3f51f8537afed79464099df1f21d857f07930c2f0cdbcb613c74d754102bd'),
-    ('feedback-day-39-v1', 'feedback-d39-v1.1.0', 'd6ea814b7277245084fa3b4a56bba7c9bbac9d4660b0d0a219a8582d48f04894'),
-    ('feedback-day-55-v1', 'feedback-d55-v1.1.0', '52ba09ebceff87c8fbff943be03ff9e406a3ed6fa68234a261cf829951cb9ef0')
+    ('feedback-day-24-v1', 'feedback-d24-v1.1.0', '815a738d6d45bd0dad49ffcd75bd82a2587de063d32c971d21c5925148d484b5'),
+    ('feedback-day-39-v1', 'feedback-d39-v1.1.0', '2a4c017ec8f0c788bff64ce39d3977a900d0db556ab76267a60b836629735cc3'),
+    ('feedback-day-55-v1', 'feedback-d55-v1.1.0', '3dcec826b4f45c0fc8f3a0fa48185dfb2bca8663dae5db81736e24d5fa9d9b9e')
 )
 UPDATE feedback_core.campaigns campaign
 SET questionnaire_version = versions.questionnaire_version,
