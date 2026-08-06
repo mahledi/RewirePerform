@@ -84,7 +84,7 @@ Noch nicht belegt ist, dass diese Loesung bei realen Athleten gleich gut wirkt w
 
 Diese Punkte wurden ohne Production-Mutation umgesetzt:
 
-1. Item-genauer Quellen-Crosswalk aller strukturierten Bestandselemente mit Zieltag, Behandlung und Begruendung.
+1. Vollstaendige technische Inventarerfassung aller strukturierten Bestandselemente mit schema-basiertem Zieltag, Behandlung und Begruendung. Die semantische Einzelpruefung ist noch offen.
 2. Vollstaendige Copy und Flow der zehn Golden Days.
 3. Vollredaktion aller 56 Tage nach demselben Vertrag.
 4. Automatische Pruefung der Werkzeugkarte, Stufen, Textlast, Abruffreiheit, internen Codes, gesperrten Sprache und Evidence-Grenzen.

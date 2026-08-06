@@ -1,6 +1,6 @@
 # RewirePerform V1.1 — Crosswalk des bestehenden 56-Tage-Contents
 
-Status: **Vollstaendiger Quellen-Crosswalk fuer den isolierten V1.1-Redaktionsentwurf, keine Production-Mutation**
+Status: **Vollstaendige Quellen-Inventarerfassung fuer den isolierten V1.1-Redaktionsentwurf; semantische Einzelpruefung ausstehend; keine Production-Mutation**
 Bezug: `REWIREPERFORM_56_DAY_CONTENT_MAP_V1_1_DRAFT.md`
 ## 1. Was dieser Crosswalk absichert
 
@@ -92,6 +92,8 @@ Globale Behandlung:
 - Alle 56 neuen Tageskopien liegen isoliert als pruefbarer Entwurf vor; noch keine davon ist Production-Content.
 - Der maschinenpruefbare Crosswalk unter `src/prototypes/golden-days/currentContentCrosswalk.ts` erfasst 1.302 strukturierte Quellelemente: Tageslinsen, Mechanismen, Trigger, Core Shifts, Science Bites, 168 Tasks, 225 Journalfragen, Dankbarkeits- und Freitextbloecke, 168 Self-Talk-Anker, 168 Kontextvarianten und 181 Verstaendnisfragen.
 - Jedes Element hat Zieltag, Behandlung und Begruendung. `verbinden` bedeutet Erhalt des inhaltlichen Zwecks, nicht wortgleiche sichtbare Uebernahme.
+- Zieltag und Begruendung werden dabei schema-basiert aus Ursprungstag und Inhaltsart abgeleitet. Das belegt, dass kein strukturiertes Element vergessen wurde. Es belegt noch nicht, dass jede einzelne alte Aufgabe oder Frage semantisch sinnvoll in der neuen Copy weiterlebt.
+- Vor Production ist deshalb eine echte semantische Einzelpruefung gegen die 1.302 Quellenelemente ein eigenes Content-Gate.
 - Keine wissenschaftliche Endbedeutung wurde freigegeben.
 - Keine Daten-, Tracking-, Assessment-, Coach-, Minor-, Consent- oder App-Store-Logik wurde veraendert.
 - Eine Production-Integration braucht weiterhin einen getrennten Inhalts-, Privacy-, Logik-, Mobile- und App-Store-Review.

@@ -37,7 +37,7 @@ Der Crosswalk erfasst 1.302 strukturierte Bestandselemente einzeln:
 | Kontextvarianten | 168 |
 | Verständnisfragen | 181 |
 
-Jedes Element hat einen oder mehrere Zielprogrammtage sowie eine explizite Behandlung. Die sichtbare Fassung übernimmt nicht 1.302 Texte. Sie erhält deren beabsichtigte Funktion durch Verbindung, gezielte Neuformulierung oder optionale Tiefe, damit die inhaltliche Breite weniger belastend wirkt.
+Jedes Element hat einen oder mehrere Zielprogrammtage sowie eine explizite schema-basierte Behandlung. Die sichtbare Fassung übernimmt nicht 1.302 Texte. Die Architektur ist darauf ausgelegt, deren beabsichtigte Funktionen durch Verbindung, gezielte Neuformulierung oder optionale Tiefe weniger belastend zu erhalten. Ob dies für jedes einzelne Quellenelement semantisch gelungen ist, bleibt ein eigenes Content-Gate vor Production.
 
 ## Qualitätsgrenzen
 
@@ -63,6 +63,8 @@ Verifikationsstand dieser Redaktion:
 - 96 Testdateien mit 550 Tests sowie alle SQL-, Privacy-, Minderjährigen-, Tracking-, Lösch- und App-Store-Gates grün;
 - vollständiger `app:build` mit synthetischer, netzwerkfreier Production-Zielkonfiguration grün;
 - keine Preview-Route und kein neuer V1.1-Inhalt in Production-`dist` oder eingebettetem iOS-Public-Ordner.
+
+Noch nicht durch diese Runde belegt: die semantisch sinnvolle Weiterfuehrung jedes einzelnen der 1.302 Quellelemente. Die Inventarerfassung verhindert Vergessen; sie ersetzt keine Einzelpruefung von Aussage, Funktion und Zieltag.
 
 ## Bewusste Evidence-Grenze
 

@@ -216,7 +216,7 @@ Diese Studien beweisen weder die konkrete Reihenfolge noch reale Anwendung, Perf
 
 ## 11. Aktueller Redaktionsstand
 
-1. Der Bestands-Crosswalk erfasst jedes strukturierte Quellelement und weist Zieltag, Behandlung und Begruendung aus.
+1. Das Bestandsinventar erfasst jedes strukturierte Quellelement und weist schema-basiert Zieltag, Behandlung und Begruendung aus. Die semantische Einzelpruefung bleibt ein separates Gate vor Production.
 2. Die zehn Golden Days sind als freigegebener Redaktionsstandard erhalten.
 3. Alle 56 Tage liegen als isolierter V1.1-Entwurf mit Science Bite, einer Mission, einer kurzen Unterscheidung, aktivem Pre-Training-Abruf und gestuftem Journal vor.
 4. Der interne 56-Tage-Pruefstand erlaubt die ehrliche Kontrolle als Training, Wettkampf oder Ruhetag. Der Programminhalt bleibt dabei deterministisch; nur die Ausfuehrungsform folgt dem realen Kontext.

@@ -798,8 +798,8 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
     title: "Registriere, wie du wirklich gehandelt hast",
     purpose: "Du nutzt eine konkrete Handlung als Lerninformation über deinen Standard, nicht als Beweis deines Wertes.",
     science: [
-      "Selbstbilder verändern sich nicht nur durch Gedanken über sich selbst.",
-      "Konkrete Handlungen liefern deinem Gedächtnis Erfahrungen: Ich bin zurückgekommen, habe klar kommuniziert oder trotz Zweifel sauber gearbeitet.",
+      "Wie du über dich denkst, kann sich auch an konkrete Erfahrungen knüpfen.",
+      "Konkrete Handlungen geben dir beobachtbare Beispiele: Ich bin zurückgekommen, habe klar kommuniziert oder trotz Zweifel sauber gearbeitet.",
       "Eine Handlung ist dabei kein endgültiger Identitätsbeweis. Sie ist ein ehrlicher Baustein, den du wiederholen kannst.",
     ],
     mission: {
@@ -1516,7 +1516,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
         "Ruf deinen Cue selbst ab.",
         "Benenne und beginne die nächste Aktion.",
       ],
-      why: "Die Rückkehr wird schneller, wenn zwischen Erkennen und Handeln weniger Erklärung nötig ist.",
+      why: "Weniger Erklärung hält den Weg zwischen Erkennen und Handeln kurz.",
     },
     check: {
       prompt: "Woran erkennst du heute einen stärkeren Abruf?",
@@ -1750,7 +1750,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
     title: "Öffne deinen Blick ohne besonderen Anlass",
     purpose: "Du nutzt das Werkzeug auch bei einem normalen Tag, bevor ein Problem deinen Blick vollständig verengt.",
     science: [
-      "Ein Werkzeug wird stabiler, wenn du es nicht nur im Notfall kennst.",
+      "Du kannst ein Werkzeug auch außerhalb eines Notfalls bewusst abrufen.",
       "Auch an einem normalen Tag filtert Aufmerksamkeit: Manche Dinge fallen auf, andere verschwinden im Hintergrund.",
       "Heute öffnest du den Blick ohne erzwungene Positivität und erkennst, was außerdem real vorhanden ist.",
     ],
