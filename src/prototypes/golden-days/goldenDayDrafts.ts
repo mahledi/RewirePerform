@@ -112,12 +112,12 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Wenn dein Kopf heute weggeht: Was tust du zuerst?",
-      reveal: "Ich merke es und finde meine nächste Aktion.",
-      application: "Nimm den Cue mit in die Einheit: Nächste Aktion.",
+      reveal: "Nächste Aktion.",
+      application: "Merk das Wegdriften und finde danach deine nächste konkrete Aktion.",
     },
     journal: {
       title: "Wo kam ich heute zurück?",
-      intro: "Geh eine echte Szene aus deinem Training noch einmal durch.",
+      intro: "Geh eine echte sportliche Szene durch, in der dein Kopf nicht mehr bei der aktuellen Aufgabe war.",
       questions: [
         { id: "d1-j1", prompt: "Wann war dein Kopf heute nicht mehr bei der Aufgabe?", placeholder: "Beschreibe eine konkrete Szene." },
         { id: "d1-j2", prompt: "Woran hast du das Abschweifen zuerst gemerkt?", placeholder: "Zum Beispiel an einem Gedanken, deinem Blick oder deinem Verhalten." },
@@ -144,19 +144,19 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
       ],
     },
     mission: {
-      title: "Eine frühere Szene neu ansehen",
+      title: "Eine Szene neu ansehen",
       trigger: "Denk an eine Sportszene, in der dir dein Eindruck wichtiger wurde als die Aufgabe.",
       steps: [
         "Hol die Szene kurz zurück.",
         "Frag: Was hätte die Aufgabe in diesem Moment gebraucht?",
         "Formuliere eine klare Handlung für eine ähnliche nächste Szene.",
       ],
-      why: "Heute ist Ruhetag. Du erfindest keine Anwendung, sondern bereitest einen besseren Zugriff auf die nächste echte Situation vor.",
+      why: "Wenn die Situation heute nicht vorkommt, gehst du eine echte frühere Szene durch. Du erfindest keine Anwendung.",
     },
     comprehension: {
-      prompt: "Was unterscheidet dieses Werkzeug von ‚Nächste Aktion‘?",
+      prompt: "Du bist wieder bei der Aufgabe, weißt aber nicht, wie du handeln willst. Was hilft?",
       options: [
-        { id: "a", label: "Es fragt nach der Qualität, die die Aufgabe braucht." },
+        { id: "a", label: "Ich frage, welche Qualität die Aufgabe braucht." },
         { id: "b", label: "Es soll jeden Gedanken sofort stoppen." },
         { id: "c", label: "Es bewertet, ob meine letzte Aktion gut genug war." },
       ],
@@ -166,7 +166,7 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: null,
     journal: {
       title: "Aufgabe statt Außenwirkung",
-      intro: "Bleib bei derselben früheren Szene. Du musst heute keine Sportanwendung behaupten.",
+      intro: "Bleib bei derselben echten Szene. Du musst keine Anwendung behaupten, die nicht stattgefunden hat.",
       questions: [
         { id: "d2-j1", prompt: "Womit warst du in der Szene mehr beschäftigt: mit der Aufgabe oder mit deinem Eindruck?", placeholder: "Was ging dir durch den Kopf?" },
         { id: "d2-j2", prompt: "Welche eine Qualität hätte die Aufgabe gebraucht?", placeholder: "Zum Beispiel Klarheit, Geduld, Tempo oder Kommunikation." },
@@ -214,8 +214,8 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Wie lautet deine kurze Fehlerkette für heute?",
-      reveal: "Passiert. Eine Information. Nächste Handlung.",
-      application: "Im Training reicht eine klare Korrektur. Die große Analyse gehört nicht mitten in die nächste Aktion.",
+      reveal: "Passiert. Lernen. Weiter.",
+      application: "Hol danach genau eine brauchbare Information und nutze sie in der nächsten Handlung.",
     },
     contextChange: {
       before: "training",
@@ -261,7 +261,7 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
       why: "Du redest nichts schön. Du holst deine Energie zurück zu dem Teil, bei dem dein Handeln noch zählt.",
     },
     comprehension: {
-      prompt: "Was bedeutet Akzeptieren in diesem Werkzeug?",
+      prompt: "Eine Entscheidung ist gefallen und du ärgerst dich weiter. Was hilft jetzt?",
       options: [
         { id: "a", label: "Alles gut finden und keinen Ärger spüren." },
         { id: "b", label: "Die Realität sehen und den eigenen Spielraum nutzen." },
@@ -310,8 +310,8 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     tool: "Nicht automatisch folgen",
     stage: "Aufbau",
     context: "training",
-    title: "Gedanken sind keine Befehle",
-    cue: "Gedanken sind keine Befehle.",
+    title: "Gedanken und Gefühle sind keine Befehle",
+    cue: "Gedanken und Gefühle sind keine Befehle.",
     purpose: "Du bemerkst einen Gedanken oder ein Gefühl und entscheidest bewusst, wie du handelst.",
     scienceBite: {
       title: "Ein Gedanke kann laut sein, ohne recht zu haben.",
@@ -343,8 +343,8 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Was tust du, wenn sich ein Gedanke heute wie ein Befehl anfühlt?",
-      reveal: "Ich bemerke ihn. Dann entscheide ich meine Handlung.",
-      application: "Dein Cue: Gedanken sind keine Befehle.",
+      reveal: "Gedanken und Gefühle sind keine Befehle.",
+      application: "Bemerke, was da ist, und entscheide danach bewusst deine Handlung.",
     },
     journal: {
       title: "Wo lag heute meine Entscheidung?",
@@ -401,7 +401,7 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     },
     journal: {
       title: "Wie habe ich Unsicherheit geprüft?",
-      intro: "Nutze eine konkrete Szene aus dem Wettkampf oder eine frühere Wettkampfszene.",
+      intro: "Nutze eine konkrete heutige oder frühere Sportszene.",
       questions: [
         { id: "d10-j1", prompt: "Welche unsichere Handlung stand in der Szene zur Wahl?", placeholder: "Beschreibe die Situation ohne Bewertung." },
         { id: "d10-j2", prompt: "War sie sicher, erlaubt und passend zur Aufgabe?", placeholder: "Woran konntest du das erkennen?" },
@@ -438,7 +438,7 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
       why: "Mehr Überblick gibt dir mehr Möglichkeiten für deine nächste Entscheidung.",
     },
     comprehension: {
-      prompt: "Was bedeutet ‚Blick öffnen‘ heute?",
+      prompt: "Ein Problem verdeckt gerade alles andere. Was tust du?",
       options: [
         { id: "a", label: "Das Problem positiv umdeuten." },
         { id: "b", label: "Das Problem und weitere reale Teile der Situation sehen." },
@@ -517,7 +517,7 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
       { id: "W2", cue: "Was braucht die Aufgabe?", use: "Wenn die benötigte Qualität unklar ist." },
       { id: "W3", cue: "Passiert. Lernen. Weiter.", use: "Wenn du einen Fehler nutzen willst." },
       { id: "W4", cue: "Was kann ich jetzt beeinflussen?", use: "Wenn du an Unveränderbarem festhängst." },
-      { id: "W5", cue: "Gedanken sind keine Befehle.", use: "Wenn ein Gedanke oder Gefühl deine Handlung übernehmen will." },
+      { id: "W5", cue: "Gedanken und Gefühle sind keine Befehle.", use: "Wenn ein Gedanke oder Gefühl deine Handlung übernehmen will." },
       { id: "W6", cue: "Prüfen. Dann ausprobieren.", use: "Wenn eine passende Handlung unsicher wirkt." },
       { id: "W7", cue: "Was ist außerdem da?", use: "Wenn dein Blick enger ist als die Situation." },
     ],
@@ -534,7 +534,7 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     stage: "Vertiefung",
     context: "training",
     title: "Finde den Moment, in dem du entscheidest",
-    cue: "Gedanken sind keine Befehle.",
+    cue: "Gedanken und Gefühle sind keine Befehle.",
     purpose: "Du erkennst genauer, wie aus einer Situation ein Impuls wird und wo du bewusst eingreifen kannst.",
     scienceBite: {
       title: "Automatische Reaktionen entstehen in einer Kette.",
@@ -566,8 +566,8 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     preTraining: {
       label: "Pre-Training",
       recallPrompt: "Welche drei Dinge willst du heute auseinanderhalten?",
-      reveal: "Gedanke oder Gefühl. Impuls. Bewusste Handlung.",
-      application: "Der Cue bleibt derselbe: Gedanken sind keine Befehle.",
+      reveal: "Gedanken und Gefühle sind keine Befehle.",
+      application: "Erkenne den Impuls und wähle danach bewusst die passende Handlung.",
     },
     journal: {
       title: "Wo begann heute deine Entscheidung?",
@@ -612,9 +612,9 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
       why: "Das bekannte Gedanken-Werkzeug hilft kurz im Hintergrund. Dein sichtbarer Hauptanker bleibt: Passiert. Lernen. Weiter.",
     },
     comprehension: {
-      prompt: "Was führt heute, wenn nach einem Fehler sofort Selbstkritik auftaucht?",
+      prompt: "Nach einem Fehler kommt sofort Selbstkritik. Was ist jetzt dein Ziel?",
       options: [
-        { id: "a", label: "Fehler nutzen führt: Information holen und weiterhandeln." },
+        { id: "a", label: "Eine Information holen und in der nächsten Handlung nutzen." },
         { id: "b", label: "Der Gedanke wird vollständig durch positives Denken ersetzt." },
         { id: "c", label: "Beide Werkzeuge werden zu zwei getrennten Aufgaben." },
       ],
@@ -623,13 +623,13 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     },
     preTraining: {
       label: "Pre-Wettkampf",
-      recallPrompt: "Was bleibt nach einem Fehler dein einziger sichtbarer Hauptanker?",
+      recallPrompt: "Welcher kurze Satz hilft dir direkt nach einem Fehler weiterzuarbeiten?",
       reveal: "Passiert. Lernen. Weiter.",
       application: "Ein Gedanke im Hintergrund. Eine Information. Eine nächste Handlung.",
     },
     journal: {
       title: "Wie lief deine Fehlerkette?",
-      intro: "Geh eine konkrete Fehlerszene aus dem Wettkampf oder einer früheren Einheit noch einmal durch.",
+      intro: "Geh eine konkrete heutige oder frühere Fehlerszene noch einmal durch.",
       questions: [
         { id: "d51-j1", prompt: "Welcher innere Satz tauchte direkt nach dem Fehler auf?", placeholder: "Schreib ihn möglichst so auf, wie er kam." },
         { id: "d51-j2", prompt: "Welche eine Information war im Fehler wirklich brauchbar?", placeholder: "Trenne Information und Urteil." },

@@ -578,7 +578,7 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
 
   return (
     <main className="flex h-screen h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] text-[#EEF0F2]" data-testid="golden-days-preview">
-      <header className="shrink-0 border-b border-white/[0.055] bg-[#0D0E12]/94 px-4 pt-[max(12px,env(safe-area-inset-top))] backdrop-blur-2xl [@media(max-height:500px)]:pt-0">
+      <header className="shrink-0 bg-[#0D0E12]/94 px-4 pt-[max(12px,env(safe-area-inset-top))] backdrop-blur-2xl [@media(max-height:500px)]:pt-0">
         <div className="mx-auto flex min-h-11 max-w-4xl items-center justify-between gap-4 pb-3 [@media(max-height:500px)]:hidden">
           <BrandLockup symbolSize={22} textClassName="text-[11px]" />
           <div className="text-right">
@@ -606,7 +606,7 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
         </div>
       </header>
 
-      <div className="shrink-0 border-b border-white/[0.045] px-4 py-3 [@media(max-height:500px)]:py-1.5">
+      <div className="shrink-0 px-4 py-3 [@media(max-height:500px)]:py-1.5" data-testid="golden-day-progress">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-white/38">Tag {draft.day}/56</p>

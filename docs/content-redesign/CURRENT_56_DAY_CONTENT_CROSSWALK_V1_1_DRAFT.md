@@ -1,6 +1,6 @@
 # RewirePerform V1.1 — Crosswalk des bestehenden 56-Tage-Contents
 
-Status: **Vollstaendige Quellen-Inventarerfassung fuer den isolierten V1.1-Redaktionsentwurf; semantische Einzelpruefung ausstehend; keine Production-Mutation**
+Status: **Vollstaendige Quellen-Inventarerfassung plus manueller semantischer Quellen-Tagesaudit fuer den isolierten V1.1-Redaktionsentwurf; keine Production-Mutation**
 Bezug: `REWIREPERFORM_56_DAY_CONTENT_MAP_V1_1_DRAFT.md`
 ## 1. Was dieser Crosswalk absichert
 
@@ -52,12 +52,12 @@ Globale Behandlung:
 | 31 | Fehler springt ins Ich | 9, 17, 31, 39, 51 | W3-Hauptlinie mit W5-Verbindung; Identitaetsurteil wird nicht an jedem Kontakt neu erklaert |
 | 32 | unter Bewertung weiterlernen | 27, 37 | W2/W6-Vertiefung anhand gewaehlt erinnerter Szene; keine angenommene heutige Bewertung |
 | 33 | alten Reflex stoppen / ersetzen | 20, 33 | Querschnittliche Lernmethode innerhalb W5; kein achtes Werkzeug |
-| 34 | Blick unter Belastung oeffnen | 35, 41, 52 | W7-Vertiefung/Integration; keine neue Atem- oder Recovery-Werkzeuglinie |
+| 34 | Blick unter Belastung oeffnen | 35, 41, 52 | W7-Vertiefung/Integration; aufgestapelte Belastung wird an Tag 41 ausdruecklich aufgegriffen; keine neue Atem- oder Recovery-Werkzeuglinie |
 | 35 | Verantwortung sichtbar machen | 21, 27, 55 | W2-Beitrag und Standard; Leadership bleibt moegliches Beispiel, keine Teamrollenpflicht |
-| 36 | Fokus bei vielen Reizen | 29, 36 | W1-Metakognition und W1/W5-Verbindung; `Chaos` wird nicht als heutiger Umstand vorausgesetzt |
+| 36 | Fokus bei vielen Reizen | 29, 36 | W1-Metakognition und W1/W5-Verbindung; Tag 36 behandelt viele gleichzeitige Reize ausdruecklich, ohne sie als heutigen Umstand vorauszusetzen |
 | 37 | Frust nicht weiter fuettern | 19, 32, 38, 52 | W4-Vertiefungen; Formulierung `funktional flach` wird vollstaendig entfernt |
 | 38 | vorwaerts statt nur schuetzen | 34 | W6-Sicherheitsunterscheidung; Schutz wird nicht pauschal negativ bewertet |
-| 39 | Standard groesser als Verlauf | 55 | Entwicklungsschicht Standard; Momentum bleibt Beispiel, nicht Tagesvoraussetzung |
+| 39 | Standard groesser als Verlauf | 50, 55 | Tag 50 entkoppelt die naechste Handlung ausdruecklich vom guten oder schlechten Verlauf; Tag 55 fuehrt in den persoenlichen Standard |
 | 40 | unter Konsequenz lernoffen | 23, 37, 40, 53 | W6/W2-Vertiefungen; Neuheit liegt in der Entscheidung, nicht in angenommenem Ergebnisdruck |
 | 41 | Unperfektion ist kein Selbsturteil | 31, 45, 51 | W3-Konsolidierung und W3/W5-Integration; Selbstwertsprache wird vorsichtig begrenzt |
 | 42 | pruefen, was schon traegt | 28, 42, 56 | Drei Integrationspunkte; Reflexion ist Lernstand, keine objektive Persoenlichkeitsmessung |
@@ -65,7 +65,7 @@ Globale Behandlung:
 | 44 | Staerke ohne Selbstbeweis | 30, 44, 55 | W2-Vertiefung, Rueckkehr und Standard; kein moralisches Ego-Urteil |
 | 45 | Blick oeffnen ohne Anlass | 49 | W7-Konsolidierung; `Grundweite` und reife/unreife Wertung werden ersetzt |
 | 46 | Urteil weniger kleben lassen | 20, 33, 39, 47, 54 | W5-Quellmaterial; `flacher landen` wird alltagssprachlich konkretisiert |
-| 47 | ruhige Sicherheit | 47, 54 | Confidence bleibt Entwicklungsschicht; keine neue Sicherheitstechnik |
+| 47 | ruhige Sicherheit | 44, 54 | Ruhige Qualitaet ohne Selbstbeweis an Tag 44 und Handeln ohne neue Bestaetigung an Tag 54; keine neue Sicherheitstechnik |
 | 48 | Akzeptanz gibt Energie zurueck | 32, 41, 46, 52 | W4-Kernmaterial fuer Vertiefung, Rueckkehr und W4/W7-Integration |
 | 49 | Praesenz als Teil des Selbstbilds | 43 | W1-Konsolidierung plus Entwicklungsschicht; keine behauptete Identitaetsveraenderung aus App-Nutzung |
 | 50 | Prozess als innerer Ort | 50 | W1/W2-Integration; Wohnort-/Zuhause-Metapher wird durch konkrete Aufmerksamkeitsarbeit ersetzt |
@@ -92,8 +92,9 @@ Globale Behandlung:
 - Alle 56 neuen Tageskopien liegen isoliert als pruefbarer Entwurf vor; noch keine davon ist Production-Content.
 - Der maschinenpruefbare Crosswalk unter `src/prototypes/golden-days/currentContentCrosswalk.ts` erfasst 1.302 strukturierte Quellelemente: Tageslinsen, Mechanismen, Trigger, Core Shifts, Science Bites, 168 Tasks, 225 Journalfragen, Dankbarkeits- und Freitextbloecke, 168 Self-Talk-Anker, 168 Kontextvarianten und 181 Verstaendnisfragen.
 - Jedes Element hat Zieltag, Behandlung und Begruendung. `verbinden` bedeutet Erhalt des inhaltlichen Zwecks, nicht wortgleiche sichtbare Uebernahme.
-- Zieltag und Begruendung werden dabei schema-basiert aus Ursprungstag und Inhaltsart abgeleitet. Das belegt, dass kein strukturiertes Element vergessen wurde. Es belegt noch nicht, dass jede einzelne alte Aufgabe oder Frage semantisch sinnvoll in der neuen Copy weiterlebt.
-- Vor Production ist deshalb eine echte semantische Einzelpruefung gegen die 1.302 Quellenelemente ein eigenes Content-Gate.
+- Zieltag und Begruendung der 1.302 Inventarelemente werden schema-basiert aus Ursprungstag und Inhaltsart abgeleitet. Das belegt, dass kein strukturiertes Element vergessen wurde.
+- Zusaetzlich dokumentiert `SOURCE_DAY_SEMANTIC_AUDIT` fuer alle 56 bisherigen Quelltage eine manuelle Entscheidung, wo deren beabsichtigte Funktion direkt, verteilt oder gezielt verstaerkt weiterlebt. Das ist ein semantischer Funktionsaudit auf Quellen-Tagesebene, keine Behauptung, jeder alte Satz muesse sichtbar erhalten bleiben.
+- Vor Production bleiben unabhaengiger Content-Review und echte Athletentests erforderlich. Weder Inventar noch Quellen-Tagesaudit belegen Verstaendlichkeit, Behalten, Transfer oder Wirkung.
 - Keine wissenschaftliche Endbedeutung wurde freigegeben.
 - Keine Daten-, Tracking-, Assessment-, Coach-, Minor-, Consent- oder App-Store-Logik wurde veraendert.
 - Eine Production-Integration braucht weiterhin einen getrennten Inhalts-, Privacy-, Logik-, Mobile- und App-Store-Review.

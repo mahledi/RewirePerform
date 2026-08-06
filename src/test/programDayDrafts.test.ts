@@ -4,10 +4,14 @@ import { PLAYER_DAYS } from "@/content/playerDays";
 import {
   CURRENT_CONTENT_CROSSWALK,
   OLD_DAY_TARGETS,
+  SOURCE_DAY_SEMANTIC_AUDIT,
   type SourceContentKind,
 } from "@/prototypes/golden-days/currentContentCrosswalk";
 import { GOLDEN_DAY_DRAFTS } from "@/prototypes/golden-days/goldenDayDrafts";
-import { PROGRAM_DAY_DRAFTS } from "@/prototypes/golden-days/programDayDrafts";
+import {
+  PROGRAM_DAY_DRAFTS,
+  PROGRAM_DAY_MISSED_SUMMARIES,
+} from "@/prototypes/golden-days/programDayDrafts";
 
 const words = (value: string): number => value.trim().split(/\s+/u).filter(Boolean).length;
 
@@ -27,6 +31,17 @@ const expectedStages = [
   "Rückkehr", "Rückkehr", "Rückkehr", "Rückkehr", "Rückkehr", "Rückkehr", "Rückkehr",
   "Integration", "Integration", "Integration", "Integration", "Integration", "Integration", "Abschluss",
 ] as const;
+
+const expectedCueByTool = {
+  W1: "Nächste Aktion.",
+  W2: "Was braucht die Aufgabe?",
+  W3: "Passiert. Lernen. Weiter.",
+  W4: "Was kann ich jetzt beeinflussen?",
+  W5: "Gedanken und Gefühle sind keine Befehle.",
+  W6: "Prüfen. Dann ausprobieren.",
+  W7: "Was ist außerdem da?",
+  SYSTEM: "Erkennen. Wählen. Anwenden.",
+} as const;
 
 const athleteCopy = (draft: (typeof PROGRAM_DAY_DRAFTS)[number]): string => JSON.stringify({
   tool: draft.tool,
@@ -61,7 +76,7 @@ describe("complete 56-day V1.1 editorial draft", () => {
 
   it("keeps one bounded daily flow with active recall and reflection", () => {
     for (const draft of PROGRAM_DAY_DRAFTS) {
-      expect(draft.cue.trim().length).toBeGreaterThan(0);
+      expect(draft.cue).toBe(expectedCueByTool[draft.toolId]);
       expect(draft.mission.steps.length).toBeGreaterThanOrEqual(2);
       expect(draft.mission.steps.length).toBeLessThanOrEqual(3);
       expect(draft.comprehension.options).toHaveLength(3);
@@ -69,7 +84,7 @@ describe("complete 56-day V1.1 editorial draft", () => {
       expect(draft.comprehension.options.some((option) => option.id === draft.comprehension.correctOptionId)).toBe(true);
       expect(draft.preTraining).not.toBeNull();
       expect(draft.preTraining?.recallPrompt.trim().length).toBeGreaterThan(0);
-      expect(draft.preTraining?.reveal.trim().length).toBeGreaterThan(0);
+      expect(draft.preTraining?.reveal).toBe(draft.cue);
       expect(draft.journal.questions.filter(Boolean).length).toBeGreaterThanOrEqual(2);
       expect(draft.journal.questions.filter(Boolean).length).toBeLessThanOrEqual(3);
       expect(draft.journal.gratitudeMinWords).toBeGreaterThanOrEqual(6);
@@ -122,6 +137,15 @@ describe("complete 56-day V1.1 editorial draft", () => {
       "Ego-Zusatz",
       "Selbstprojekt",
       "automatische Enge",
+      "Identitätsbeweis",
+      "qualitätsgerechte",
+      "Aufmerksamkeitsfokus",
+      "Komfortsicherheit",
+      "Eingriffspunkt",
+      "Lernherausforderung",
+      "plausibel stärken",
+      "wiederholbare Aufgabenqualität",
+      "richtungsgebend",
       "neuroplast",
       "Rechtsverteidiger",
       "Stürmer",
@@ -136,6 +160,25 @@ describe("complete 56-day V1.1 editorial draft", () => {
       }
       expect(copy, `Tag ${draft.day} leaks an internal tool code`).not.toMatch(/\bW[1-7]\b/u);
       expect(copy, `Tag ${draft.day} promises a guaranteed product effect`).not.toMatch(/(?:programm|system|werkzeug)[^.!?]{0,80}garantiert/u);
+      expect(draft.comprehension.prompt, `Tag ${draft.day} tests editorial architecture instead of application`).not.toMatch(
+        /(?:welches Werkzeug führt|führende Werkzeug|stärkeren Abruf|unterstützende Schritt|plausibel stärken)/iu,
+      );
+    }
+  });
+
+  it("keeps fixed calendar claims out of the deterministic day copy", () => {
+    const fixedContextClaims = [
+      "Heute ist Ruhetag",
+      "aus deinem Training",
+      "Szene aus dem Wettkampf",
+      "frühere Wettkampfszene",
+    ];
+
+    for (const draft of PROGRAM_DAY_DRAFTS) {
+      const contextSensitiveCopy = JSON.stringify({ mission: draft.mission, journal: draft.journal });
+      for (const phrase of fixedContextClaims) {
+        expect(contextSensitiveCopy, `Tag ${draft.day} hard-codes calendar context: ${phrase}`).not.toContain(phrase);
+      }
     }
   });
 
@@ -170,6 +213,22 @@ describe("complete 56-day V1.1 editorial draft", () => {
       expect(draft.measurementBoundary?.privacy).toContain("Journaltexte");
     }
   });
+
+  it("authors a compact informational review for every missed program day", () => {
+    expect(PROGRAM_DAY_MISSED_SUMMARIES).toHaveLength(56);
+    expect(PROGRAM_DAY_MISSED_SUMMARIES.map((summary) => summary.day)).toEqual(
+      Array.from({ length: 56 }, (_, index) => index + 1),
+    );
+
+    for (const summary of PROGRAM_DAY_MISSED_SUMMARIES) {
+      expect(summary.tool.trim()).not.toBe("");
+      expect(summary.cue).toBe(PROGRAM_DAY_DRAFTS[summary.day - 1].cue);
+      expect(words(summary.purpose)).toBeLessThanOrEqual(32);
+      expect(words(summary.mechanism)).toBeLessThanOrEqual(18);
+      expect(words(summary.formerMission)).toBeLessThanOrEqual(12);
+      expect(words(summary.systemConnection)).toBeLessThanOrEqual(14);
+    }
+  });
 });
 
 describe("current-to-V1.1 content inventory", () => {
@@ -180,6 +239,17 @@ describe("current-to-V1.1 content inventory", () => {
     for (const [sourceDay, targetDays] of Object.entries(OLD_DAY_TARGETS)) {
       expect(targetDays.length, `old day ${sourceDay} has no target`).toBeGreaterThan(0);
       expect(targetDays.every((day) => PROGRAM_DAY_DRAFTS.some((draft) => draft.day === day))).toBe(true);
+    }
+  });
+
+  it("contains a manual semantic coverage decision for every current source day", () => {
+    expect(Object.keys(SOURCE_DAY_SEMANTIC_AUDIT).map(Number).sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 56 }, (_, index) => index + 1),
+    );
+
+    for (const [sourceDay, audit] of Object.entries(SOURCE_DAY_SEMANTIC_AUDIT)) {
+      expect(["direkt", "verteilt", "gezielt-verstärkt"]).toContain(audit.status);
+      expect(audit.note.trim(), `old day ${sourceDay} has no semantic rationale`).not.toBe("");
     }
   });
 

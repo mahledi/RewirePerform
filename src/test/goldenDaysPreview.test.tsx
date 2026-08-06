@@ -103,6 +103,7 @@ describe("Golden Days V1.1 internal preview", () => {
   it("moves through a Golden Day without account, persistence, or network state", () => {
     render(<GoldenDaysPreview />);
 
+    expect(screen.getByTestId("golden-day-progress")).not.toHaveClass("border-b");
     expect(screen.getByRole("heading", { name: "Zurück zur nächsten Aktion" })).toBeInTheDocument();
     expect(screen.getByText("Nächste Aktion.")).toBeInTheDocument();
     expect(screen.queryByText(/W1/u)).not.toBeInTheDocument();
@@ -122,7 +123,7 @@ describe("Golden Days V1.1 internal preview", () => {
     expect(screen.queryByText("Denk an den Rückweg, nicht an perfekten Fokus.")).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Eigene Erinnerung"), { target: { value: "Ich merke es und kehre zurück." } });
     fireEvent.click(screen.getByRole("button", { name: /Erinnerung prüfen/ }));
-    expect(screen.getByText("Ich merke es und finde meine nächste Aktion.")).toBeInTheDocument();
+    expect(screen.getByText("Nächste Aktion.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Wo kam ich heute zurück?" })).toBeInTheDocument();
