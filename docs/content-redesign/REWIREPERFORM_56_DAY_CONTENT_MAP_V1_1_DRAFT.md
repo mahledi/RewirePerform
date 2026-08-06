@@ -183,9 +183,9 @@ Maximal die letzten drei verpassten Tage erscheinen als reine Zusammenfassungen.
 
 Es gibt keinen Science-Bite-Volltext, keine Aufgabe, keine Reflexion, keinen Verstaendnischeck und keine nachtraegliche Erledigung. Danach verfolgt der Athlet ausschliesslich den aktuellen Tagesanker.
 
-## 9. Golden-Day-Set
+## 9. Golden-Day-Set — redaktionell abgeschlossen
 
-Vor dem Rewrite aller 56 Tage werden diese zehn representative Faelle vollstaendig geschrieben und als realer Flow geprueft:
+Diese zehn repraesentativen Faelle wurden vor der Vollredaktion geschrieben und als interner Flow geprueft:
 
 | Golden Day | Primaerer Pruefzweck |
 |---:|---|
@@ -214,9 +214,12 @@ Die Architektur nutzt gut belegte Lernprinzipien als Designgrundlage:
 
 Diese Studien beweisen weder die konkrete Reihenfolge noch reale Anwendung, Performancewirkung oder Neuroplastizitaet durch RewirePerform. AI-Rollenpruefungen erzeugen Fehlerrisiken und Hypothesen. Farin ist ein wertvoller Tiefentest, aber kein Durchschnittsmodell. Erst echte Pilotdaten koennen zeigen, was verstanden, erinnert und genutzt wird.
 
-## 11. Vor der Content-Implementierung noch zu liefern
+## 11. Aktueller Redaktionsstand
 
-1. Vollstaendiger Bestands-Crosswalk: jede heutige Aufgabe, Journalfrage, Verstaendnisfrage und jeder Science Bite bekommt `behalten`, `verbinden`, `optional`, `neu formulieren` oder `echte Redundanz`.
-2. Golden-Day-Copy fuer die zehn Faelle, noch isoliert und ohne Production-Leakage.
+1. Der Bestands-Crosswalk erfasst jedes strukturierte Quellelement und weist Zieltag, Behandlung und Begruendung aus.
+2. Die zehn Golden Days sind als freigegebener Redaktionsstandard erhalten.
+3. Alle 56 Tage liegen als isolierter V1.1-Entwurf mit Science Bite, einer Mission, einer kurzen Unterscheidung, aktivem Pre-Training-Abruf und gestuftem Journal vor.
+4. Der interne 56-Tage-Pruefstand erlaubt die ehrliche Kontrolle als Training, Wettkampf oder Ruhetag. Der Programminhalt bleibt dabei deterministisch; nur die Ausfuehrungsform folgt dem realen Kontext.
+5. Noch ausstehend sind Production-Integration, echte Athletentests und empirischer Wirkungsnachweis. Keine lokale Rollenpruefung ersetzt diese Grenzen.
 3. User-Freigabe des Golden-Day-Flows.
 4. Erst danach Uebertragung auf alle 56 Tage und technische Integration unter separaten App-Store-Readiness-Gates.

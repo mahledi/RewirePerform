@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import GoldenDaysPreview from "@/pages/GoldenDaysPreview";
+import ProgramContentPreview from "@/pages/ProgramContentPreview";
 import { GOLDEN_DAY_DRAFTS } from "@/prototypes/golden-days/goldenDayDrafts";
+import { PROGRAM_DAY_DRAFTS } from "@/prototypes/golden-days/programDayDrafts";
 
 vi.mock("framer-motion", async () => {
   const React = await import("react");
@@ -145,5 +147,50 @@ describe("Golden Days V1.1 internal preview", () => {
     expect(screen.getByText("Werkzeugbild · erkennen, nicht siebenmal bearbeiten")).toBeInTheDocument();
     expect(screen.getByText("Dein Zwischenstand ist ein Messpunkt, kein Urteil.")).toBeInTheDocument();
     expect(screen.queryByText(/^W[1-7]$/u)).not.toBeInTheDocument();
+  });
+});
+
+describe("complete 56-day V1.1 internal preview", () => {
+  it("is isolated behind the same internal evidence gate", () => {
+    const app = readFileSync(resolve(process.cwd(), "src/App.tsx"), "utf8");
+    expect(app).toContain("ProgramContentPreview = evidencePreviewEnabled");
+    expect(app).toContain('path="/internal/program-content-preview"');
+  });
+
+  it("exposes all 56 authored days in the redaction lab", () => {
+    render(<ProgramContentPreview />);
+
+    expect(PROGRAM_DAY_DRAFTS).toHaveLength(56);
+    expect(screen.getByRole("button", { name: "Tag 56" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Tag 56" }));
+    expect(screen.getByRole("heading", { name: "Erkenne, wähle und nutze dein passendes Werkzeug" })).toBeInTheDocument();
+    expect(screen.getByText("Erkennen. Wählen. Anwenden.")).toBeInTheDocument();
+  });
+
+  it("keeps the program content stable while the real context changes its execution", () => {
+    render(<ProgramContentPreview />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Tag 2" }));
+    expect(screen.getAllByText("Ruhetag").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: "Vor der Einheit" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Mission" }));
+    expect(screen.getByText(/keine Sportanwendung erfinden/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Überblick" }));
+    fireEvent.click(screen.getByRole("button", { name: "Training" }));
+    expect(screen.getByRole("button", { name: "Vor der Einheit" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Was braucht die Aufgabe?" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Vor der Einheit" }));
+    expect(screen.getByText("Pre-Training")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Überblick" }));
+    fireEvent.click(screen.getByRole("button", { name: "Wettkampf" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vor der Einheit" }));
+    expect(screen.getByText("Pre-Wettkampf")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Überblick" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ruhetag" }));
+    expect(screen.queryByRole("button", { name: "Vor der Einheit" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Was braucht die Aufgabe?" })).toBeInTheDocument();
   });
 });

@@ -80,15 +80,17 @@ Die sportliche Anwendung wird nicht vorgetaeuscht. Sie entsteht bei einem spaete
 
 Noch nicht belegt ist, dass diese Loesung bei realen Athleten gleich gut wirkt wie eine Anwendung im Training. Genau diese Frage gehoert in Pilot und Feedback-System.
 
-## 6. Noch offene Arbeit vor dem Bauen
+## 6. In der isolierten Redaktionsrunde abgeschlossen
 
-Diese Punkte sind keine neue Foundation-Entscheidung, sondern die naechsten Qualitaetsgates:
+Diese Punkte wurden ohne Production-Mutation umgesetzt:
 
-1. Item-genauer Crosswalk aller 56 Science Bites, 168 Tasks, 225 Journalfragen und 181 Verstaendnisfragen mit `behalten`, `verbinden`, `optional`, `neu formulieren` oder `echte Redundanz`.
+1. Item-genauer Quellen-Crosswalk aller strukturierten Bestandselemente mit Zieltag, Behandlung und Begruendung.
 2. Vollstaendige Copy und Flow der zehn Golden Days.
-3. Rollen- und Schnellklicktest der Golden Days sowie Verstaendlichkeitspruefung der sieben Werkzeuggrenzen.
-4. User-Freigabe, erst danach Ausrollen auf alle 56 Tage.
-5. Vollstaendiger Inhalts-, Logik-, Privacy-, Mobile-, Accessibility- und App-Store-Readiness-Review vor jeder Integration.
+3. Vollredaktion aller 56 Tage nach demselben Vertrag.
+4. Automatische Pruefung der Werkzeugkarte, Stufen, Textlast, Abruffreiheit, internen Codes, gesperrten Sprache und Evidence-Grenzen.
+5. Interne 56-Tage-Vorschau mit Kontextwechsel sowie Browserpruefung auf kleinen und grossen Viewports.
+
+Vor einer Production-Integration bleiben ein unabhaengiger Review, reale Geraetepruefung, vollstaendiger Build und bewusstes Release-Gate erforderlich. Echte Verstaendlichkeit, Behalten und Transfer bleiben empirisch offen.
 
 ## 7. Empirisch offene Kernfragen
 

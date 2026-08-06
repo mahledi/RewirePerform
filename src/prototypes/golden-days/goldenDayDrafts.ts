@@ -1,5 +1,5 @@
 export type GoldenDayContext = "training" | "rest" | "competition";
-export type GoldenDayStage = "Aufbau" | "Vertiefung" | "Integration";
+export type GoldenDayStage = "Aufbau" | "Rückkehr" | "Vertiefung" | "Integration" | "Abschluss";
 
 export type GoldenDayQuestion = {
   id: string;
@@ -9,7 +9,7 @@ export type GoldenDayQuestion = {
 
 export type GoldenDayDraft = {
   day: number;
-  toolId: "W1" | "W2" | "W3" | "W4" | "W5" | "W6" | "W7";
+  toolId: "W1" | "W2" | "W3" | "W4" | "W5" | "W6" | "W7" | "SYSTEM";
   tool: string;
   stage: GoldenDayStage;
   context: GoldenDayContext;

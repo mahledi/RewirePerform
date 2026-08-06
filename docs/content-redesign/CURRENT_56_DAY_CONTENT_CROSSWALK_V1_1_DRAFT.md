@@ -1,6 +1,6 @@
 # RewirePerform V1.1 — Crosswalk des bestehenden 56-Tage-Contents
 
-Status: **Planungsentwurf, keine Content-Mutation**
+Status: **Vollstaendiger Quellen-Crosswalk fuer den isolierten V1.1-Redaktionsentwurf, keine Production-Mutation**
 Bezug: `REWIREPERFORM_56_DAY_CONTENT_MAP_V1_1_DRAFT.md`
 ## 1. Was dieser Crosswalk absichert
 
@@ -86,10 +86,12 @@ Globale Behandlung:
 6. Aktuelle Kontextvarianten formulieren haeufig konkrete Sport-, Druck- oder Teamereignisse, die am realen Tag nicht eintreten muessen.
 7. Journal und Verstaendnischeck wiederholen oft mehrere Aspekte desselben Tages, statt gezielt Aufbau, Abruf oder Vertiefung zu bedienen.
 
-## 4. Bewusst noch nicht vorgenommen
+## 4. Aktueller Redaktionsnachweis
 
 - Kein heutiger Text wurde geloescht oder umgeschrieben.
-- Keine neue Tageskopie ist final.
+- Alle 56 neuen Tageskopien liegen isoliert als pruefbarer Entwurf vor; noch keine davon ist Production-Content.
+- Der maschinenpruefbare Crosswalk unter `src/prototypes/golden-days/currentContentCrosswalk.ts` erfasst 1.302 strukturierte Quellelemente: Tageslinsen, Mechanismen, Trigger, Core Shifts, Science Bites, 168 Tasks, 225 Journalfragen, Dankbarkeits- und Freitextbloecke, 168 Self-Talk-Anker, 168 Kontextvarianten und 181 Verstaendnisfragen.
+- Jedes Element hat Zieltag, Behandlung und Begruendung. `verbinden` bedeutet Erhalt des inhaltlichen Zwecks, nicht wortgleiche sichtbare Uebernahme.
 - Keine wissenschaftliche Endbedeutung wurde freigegeben.
 - Keine Daten-, Tracking-, Assessment-, Coach-, Minor-, Consent- oder App-Store-Logik wurde veraendert.
-- Dieser Crosswalk autorisiert erst die Golden-Day-Redaktion nach User-Freigabe der Karte.
+- Eine Production-Integration braucht weiterhin einen getrennten Inhalts-, Privacy-, Logik-, Mobile- und App-Store-Review.
