@@ -1,7 +1,7 @@
 # Feedback Intelligence 1.1 – Handoff an den finalen App-Store-Review
 
 Stand: 6. August 2026
-Status: lokaler Release-Kandidat plus isolierter synthetischer Staging-Nachweis; keine Production- oder Machine-Aktivierung
+Status: Feedback-Block lokal grün, kombinierter 1.1-Kandidat wegen noch nicht entschiedener Rest-Day-/Daily-Flow-Integration `NO-GO`; keine Production- oder Machine-Aktivierung
 
 ## Entscheidung, die dieser Review treffen soll
 
@@ -21,8 +21,10 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
   separate Feedback-Einwilligungsverwaltung unsichtbar und führen keinen
   Feedback-RPC aus. Bestehender Alters-/Guardian-Status und vorhandene
   Kontoeinstellungen bleiben davon unberührt.
-- Texte und Fragen passen zum jeweiligen Stand im 56-Tage-Programm; die App
-  behauptet keine individuelle KI-Personalisierung.
+- Die Feedbacktexte sind an den finalen 56-Tage-Entwurf gebunden. Aktivierung
+  bleibt jedoch gesperrt, bis derselbe Entwurf nach der offenen Rest-Day-
+  Architekturentscheidung auch den echten `resolveDay`-/Daily-Check-in-Pfad
+  speist. Die App behauptet keine individuelle KI-Personalisierung.
 - Tag 55 beginnt vor allen inhaltlichen Hinweisen mit freiem Abruf. Titel, Cue,
   Missionsstruktur, Beispielantwort und der Testsatz des Tages sind bis nach
   dieser ersten Antwort technisch und per Negativtest verborgen.
@@ -146,13 +148,18 @@ qualifiziert bestätigt werden.
    Account-Löschung und Policy-Retirement;
 7. vollständiger Dependency-/Security-Gate und grünes CI auf dem integrierten
    1.1-Release-Candidate;
-8. keine echten Machine-Reads, bevor alle separaten Jarvis-Gates geschlossen
+8. Entscheidung und vollständige Umsetzung der neuen Rest-Day-
+   Visualisierungsarchitektur; danach kontrollierte Anbindung des finalen
+   56-Tage-Contents an den echten `resolveDay`-/Daily-Check-in-Pfad. Aktuell
+   nutzt nur die interne Programmansicht `PROGRAM_DAY_DRAFTS`, während der echte
+   Flow noch `matrixDays.ts` plus `dailyContent.ts`/`playerDays.ts` auflöst;
+9. keine echten Machine-Reads, bevor alle separaten Jarvis-Gates geschlossen
    und erneut freigegeben wurden.
 
 ## Aktueller Build- und Dependency-Stand
 
 - `npm run ci`: grün;
-- 104 Vitest-Dateien, 611 Tests: grün;
+- 104 Vitest-Dateien, 613 Tests: grün;
 - alle Feedback-, Guardian-, Access-, Deletion-, Tracking- und Minor-SQL-
   Harnesses: grün;
 - TypeScript, PWA-/Web-Build und statische App-Store-Prüfung: grün;
@@ -170,7 +177,7 @@ Feedbacktest, soll aber im finalen RC-Budget sichtbar bleiben.
 ## Reviewer-Checkliste
 
 - [ ] Die vier Checkpoints und ihre Tagesformulierungen entsprechen dem finalen
-      Content-Build.
+      Content-Build, nachdem dieser tatsächlich den echten Daily Flow speist.
 - [ ] Tag 55 bleibt bis nach dem freien Abruf frei von Cue, Mission,
       Musterantworten und Testsatz des Tages.
 - [ ] Strukturierte Antworten bleiben ohne Freitext und bei Ablehnung nutzbar.

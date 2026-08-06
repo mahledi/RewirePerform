@@ -60,7 +60,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | 10. Machine-Export | KI-agnostisch, Jarvis-kompatibel, read-only, Consent bei Export erneut geprüft | lokal fertig und schema-valide; ohne Execute-Grant, Credential, Transport oder Production-Gate |
 | 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft, Widerrufs-UI, technische 365-Tage-Höchstdauer und automatisierter Löschlauf lokal fertig; Rechtsfreigabe der Frist und Zielumgebungsnachweis offen |
 | 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | Staging-Build, echte Datenbank-Rollen-/Minor-/Widerrufs-/Tag-10-Prüfungen sowie Guardian-Edge-Auth-/Token-/Origin-Negativtests grün; positiver E-Mail-Zustellpfad, Production-Environment und signierter Native-Nachweis offen |
-| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Finaler 56-Tage-Content lokal integriert; einziger `App.tsx`-Konflikt bewusst aufgelöst; Checkpoint-Kontexte und Tag-55-Abrufgrenze synchronisiert; kombinierte CI mit 104 Testdateien und 611 Tests grün; Push/Merge/Release bleiben separat |
+| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Finaler 56-Tage-Entwurf und Feedback-Kontexte lokal zusammengeführt; einziger `App.tsx`-Konflikt bewusst aufgelöst; Checkpoint-Kontexte und Tag-55-Abrufgrenze synchronisiert; kombinierte CI mit 104 Testdateien und 613 Tests grün. P1 offen: Der echte `resolveDay`-/Daily-Check-in-Pfad verwendet weiterhin die alten kanonischen Content-Dateien. Produktive Anbindung ist bis zur vom Nutzer verlangten Rest-Day-Visualisierungsentscheidung ausdrücklich angehalten. Push/Merge/Release bleiben separat. |
 
 ## Bereits implementiert
 
@@ -93,6 +93,11 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 - Globale technische Gates für Athlete Collection, Text Collection, Privacy Notice, App-Store-Deklaration und Minor Policy bleiben alle `false`.
 - Der App-Adapter besitzt zusätzlich `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED`; ohne den exakten Wert `true` führt er keinen Supabase-Aufruf aus.
 - Das Dashboard lädt das Live-Gate separat und nur für verifizierte Athleten. Bei geschlossenem Client-Gate erfolgt kein Claim; React-StrictMode-Doppelaufrufe werden pro Session dedupliziert.
+- Die Claim-Deduplizierung gilt nur für einen laufenden Request, nicht für den
+  gesamten App-Prozess. Nach Dashboard-Remount wird die tagabhängige
+  Berechtigung erneut geprüft. Nach einem vorübergehenden Netzwerkfehler erfolgt
+  bei Online-, Fokus-, PageShow-, Visibility- oder nativem Active-Ereignis ein
+  neuer Versuch; ein Fehler schließt den Flow nicht bis zum App-Neustart.
 - Start erzeugt zuerst den exakten versionierten Draft. Änderungen werden verzögert automatisch und beim App-Hintergrund gespeichert; verlorene Antworten werden mit derselben Revision und Mutations-ID wiederholt.
 - Ein Server-Draft öffnet direkt auf dem gespeicherten Screen und der gespeicherten Frage. Finaler Submit wartet auf die atomare Serverfinalisierung, bevor die Bestätigung erscheint.
 - `subject_reference` ist pro Programminstanz stabil und rotiert bei jedem neuen Programmdurchlauf.
