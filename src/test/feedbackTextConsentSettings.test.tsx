@@ -1,14 +1,18 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
   withdraw: vi.fn(),
+  enabled: vi.fn(() => true),
   success: vi.fn(),
   error: vi.fn(),
 }));
 
 vi.mock("@/lib/feedbackIntelligenceApi", () => ({
+  isFeedbackIntelligenceClientEnabled: mocks.enabled,
   listMyFeedbackTextConsents: mocks.list,
   withdrawMyFeedbackText: mocks.withdraw,
 }));
@@ -33,6 +37,27 @@ const receipt = {
 describe("feedback text consent settings", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    mocks.enabled.mockReturnValue(true);
+  });
+
+  it("stays hidden and makes no RPC call while the release switch is closed", () => {
+    mocks.enabled.mockReturnValue(false);
+
+    const { container } = render(<FeedbackTextConsentSettings />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
+
+  it("gates only feedback consent settings and keeps the existing minor status visible", () => {
+    const accountSettings = readFileSync(resolve(process.cwd(), "src/pages/AccountSettings.tsx"), "utf8");
+
+    expect(accountSettings).toMatch(
+      /\{role === "athlete" && \(\s*<motion\.section[\s\S]*?Alters- und Freigabestatus/u,
+    );
+    expect(accountSettings).toMatch(
+      /\{role === "athlete" && isFeedbackIntelligenceClientEnabled\(\) && \(\s*<motion\.div[\s\S]*?<FeedbackTextConsentSettings \/>/u,
+    );
   });
 
   it("keeps structured answers separate and shows an empty self-service state", async () => {

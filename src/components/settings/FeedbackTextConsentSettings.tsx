@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { FileText, Loader2, RotateCcw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
+  isFeedbackIntelligenceClientEnabled,
   listMyFeedbackTextConsents,
   withdrawMyFeedbackText,
   type FeedbackTextConsentReceiptSummary,
@@ -25,6 +26,7 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("de-DE", {
 }).format(new Date(value));
 
 export const FeedbackTextConsentSettings = () => {
+  const enabled = isFeedbackIntelligenceClientEnabled();
   const [receipts, setReceipts] = useState<FeedbackTextConsentReceiptSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -32,6 +34,7 @@ export const FeedbackTextConsentSettings = () => {
   const [withdrawing, setWithdrawing] = useState(false);
 
   const loadReceipts = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     setLoadFailed(false);
     try {
@@ -41,11 +44,14 @@ export const FeedbackTextConsentSettings = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     void loadReceipts();
-  }, [loadReceipts]);
+  }, [enabled, loadReceipts]);
+
+  if (!enabled) return null;
 
   const confirmWithdrawal = async () => {
     if (!withdrawTarget) return;

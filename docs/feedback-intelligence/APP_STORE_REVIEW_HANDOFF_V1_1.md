@@ -13,6 +13,10 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
 ## Produktwahrheit im Release Candidate
 
 - Feedback-Checkpoints erscheinen deterministisch an Tag 10, 24, 39 und 55.
+- Bei geschlossenem Client-Schalter bleiben sowohl die Checkpoints als auch die
+  separate Feedback-Einwilligungsverwaltung unsichtbar und führen keinen
+  Feedback-RPC aus. Bestehender Alters-/Guardian-Status und vorhandene
+  Kontoeinstellungen bleiben davon unberührt.
 - Texte und Fragen passen zum jeweiligen Stand im 56-Tage-Programm; die App
   behauptet keine individuelle KI-Personalisierung.
 - Strukturierte Antworten funktionieren ohne Freitext-Einwilligung und werden
@@ -142,7 +146,7 @@ qualifiziert bestätigt werden.
 ## Aktueller Build- und Dependency-Stand
 
 - `npm run ci`: grün;
-- 103 Vitest-Dateien, 590 Tests: grün;
+- 103 Vitest-Dateien, 592 Tests: grün;
 - alle Feedback-, Guardian-, Access-, Deletion-, Tracking- und Minor-SQL-
   Harnesses: grün;
 - TypeScript, PWA-/Web-Build und statische App-Store-Prüfung: grün;

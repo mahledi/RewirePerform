@@ -35,6 +35,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMinorAuthorization } from "@/hooks/useMinorAuthorization";
 import { supabase } from "@/integrations/supabase/client";
 import type { DataContributionConsentState } from "@/lib/dataContributionConsent";
+import { isFeedbackIntelligenceClientEnabled } from "@/lib/feedbackIntelligenceApi";
 import {
   revokeMinorAuthorization,
   saveAuthorizedDataContribution,
@@ -414,7 +415,7 @@ const AccountSettings = () => {
         </motion.section>
         )}
 
-        {role === "athlete" && (
+        {role === "athlete" && isFeedbackIntelligenceClientEnabled() && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
             <FeedbackTextConsentSettings />
           </motion.div>
