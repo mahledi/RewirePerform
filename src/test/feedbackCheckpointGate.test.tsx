@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -101,6 +101,22 @@ describe("feedback checkpoint live gate", () => {
     firstRender.unmount();
 
     renderGate();
+    expect(await screen.findByTestId("feedback-checkpoint-gate")).toBeInTheDocument();
+    expect(mocks.claim).toHaveBeenCalledTimes(2);
+  });
+
+  it("recovers a transient claim failure when the app regains focus", async () => {
+    mocks.enabled = true;
+    mocks.claim
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(claim);
+
+    renderGate();
+    await waitFor(() => expect(mocks.claim).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId("feedback-checkpoint-gate")).not.toBeInTheDocument();
+
+    act(() => window.dispatchEvent(new Event("focus")));
+
     expect(await screen.findByTestId("feedback-checkpoint-gate")).toBeInTheDocument();
     expect(mocks.claim).toHaveBeenCalledTimes(2);
   });

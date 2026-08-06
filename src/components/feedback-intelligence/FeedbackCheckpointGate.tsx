@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { App as CapacitorApp } from "@capacitor/app";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
 import { useLocation } from "react-router-dom";
 
 import {
@@ -56,6 +56,7 @@ const FeedbackCheckpointGate = () => {
   const [persistence, setPersistence] = useState<FeedbackPersistenceState | null>(null);
   const [latestSnapshot, setLatestSnapshot] = useState<FeedbackExperienceSnapshot | null>(null);
   const [closed, setClosed] = useState(false);
+  const [claimRefresh, setClaimRefresh] = useState(0);
   const initialization = useRef<Promise<FeedbackPersistenceState> | null>(null);
 
   const canCheck = isFeedbackIntelligenceClientEnabled()
@@ -72,12 +73,50 @@ const FeedbackCheckpointGate = () => {
         if (active) setClaim(result);
       })
       .catch(() => {
-        if (active) setClosed(true);
+        if (active) setClaim(null);
       });
     return () => {
       active = false;
     };
-  }, [canCheck, closed, user?.id]);
+  }, [canCheck, claimRefresh, closed, user?.id]);
+
+  useEffect(() => {
+    if (!canCheck || closed || claim?.eligible) return;
+
+    const recheck = () => setClaimRefresh((cycle) => cycle + 1);
+    const recheckWhenVisible = () => {
+      if (document.visibilityState === "visible") recheck();
+    };
+
+    window.addEventListener("online", recheck);
+    window.addEventListener("focus", recheck);
+    window.addEventListener("pageshow", recheck);
+    document.addEventListener("visibilitychange", recheckWhenVisible);
+    return () => {
+      window.removeEventListener("online", recheck);
+      window.removeEventListener("focus", recheck);
+      window.removeEventListener("pageshow", recheck);
+      document.removeEventListener("visibilitychange", recheckWhenVisible);
+    };
+  }, [canCheck, claim?.eligible, closed]);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform() || !canCheck || closed || claim?.eligible) return;
+
+    let disposed = false;
+    let listener: PluginListenerHandle | null = null;
+    void CapacitorApp.addListener("appStateChange", ({ isActive }) => {
+      if (isActive) setClaimRefresh((cycle) => cycle + 1);
+    }).then((handle) => {
+      if (disposed) void handle.remove();
+      else listener = handle;
+    });
+
+    return () => {
+      disposed = true;
+      if (listener) void listener.remove();
+    };
+  }, [canCheck, claim?.eligible, closed]);
 
   const initializePersistence = useCallback(async () => {
     if (persistence) return persistence;
