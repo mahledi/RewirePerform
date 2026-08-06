@@ -13,12 +13,19 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
 ## Produktwahrheit im Release Candidate
 
 - Feedback-Checkpoints erscheinen deterministisch an Tag 10, 24, 39 und 55.
+- Die vier sichtbaren Tageskontexte sind an den finalen 56-Tage-Content-Commit
+  `ead1fa3c7a25e6a0e3640b893f7e22fb5d10031b` und je Tag zusätzlich an einen
+  kanonischen SHA-256-Hash gebunden. Titel, Werkzeug, Cue, Mechanismus und
+  Mission werden im Test direkt gegen den finalen Programminhalt geprüft.
 - Bei geschlossenem Client-Schalter bleiben sowohl die Checkpoints als auch die
   separate Feedback-Einwilligungsverwaltung unsichtbar und führen keinen
   Feedback-RPC aus. Bestehender Alters-/Guardian-Status und vorhandene
   Kontoeinstellungen bleiben davon unberührt.
 - Texte und Fragen passen zum jeweiligen Stand im 56-Tage-Programm; die App
   behauptet keine individuelle KI-Personalisierung.
+- Tag 55 beginnt vor allen inhaltlichen Hinweisen mit freiem Abruf. Titel, Cue,
+  Missionsstruktur, Beispielantwort und der Testsatz des Tages sind bis nach
+  dieser ersten Antwort technisch und per Negativtest verborgen.
 - Strukturierte Antworten funktionieren ohne Freitext-Einwilligung und werden
   unabhängig davon privacy-minimiert gespeichert.
 - Relevante Fragen bieten optional `+ Kurz etwas dazu sagen`.
@@ -139,14 +146,13 @@ qualifiziert bestätigt werden.
    Account-Löschung und Policy-Retirement;
 7. vollständiger Dependency-/Security-Gate und grünes CI auf dem integrierten
    1.1-Release-Candidate;
-8. kontrollierte Integration mit den parallel geprüften Inhaltsänderungen;
-9. keine echten Machine-Reads, bevor alle separaten Jarvis-Gates geschlossen
+8. keine echten Machine-Reads, bevor alle separaten Jarvis-Gates geschlossen
    und erneut freigegeben wurden.
 
 ## Aktueller Build- und Dependency-Stand
 
 - `npm run ci`: grün;
-- 103 Vitest-Dateien, 592 Tests: grün;
+- 104 Vitest-Dateien, 611 Tests: grün;
 - alle Feedback-, Guardian-, Access-, Deletion-, Tracking- und Minor-SQL-
   Harnesses: grün;
 - TypeScript, PWA-/Web-Build und statische App-Store-Prüfung: grün;
@@ -165,6 +171,8 @@ Feedbacktest, soll aber im finalen RC-Budget sichtbar bleiben.
 
 - [ ] Die vier Checkpoints und ihre Tagesformulierungen entsprechen dem finalen
       Content-Build.
+- [ ] Tag 55 bleibt bis nach dem freien Abruf frei von Cue, Mission,
+      Musterantworten und Testsatz des Tages.
 - [ ] Strukturierte Antworten bleiben ohne Freitext und bei Ablehnung nutzbar.
 - [ ] Unter 16 ist Text ohne beide versionierten Freigaben technisch unmöglich.
 - [ ] Widerruf, Löschung und Retention erfassen Rohtext und personenbeziehbare

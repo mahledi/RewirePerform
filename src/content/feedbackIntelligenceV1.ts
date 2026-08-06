@@ -1,4 +1,6 @@
 export const FEEDBACK_INTELLIGENCE_CONTENT_VERSION = "feedback-intelligence-content-v1.0.0" as const;
+export const FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT =
+  "ead1fa3c7a25e6a0e3640b893f7e22fb5d10031b" as const;
 export const FEEDBACK_TEXT_CONSENT_SCOPE = "product-improvement-individual-text-ai-analysis-v1" as const;
 export const FEEDBACK_TEXT_CONSENT_VERSION = "feedback-text-consent-v1.0.0-draft" as const;
 
@@ -41,7 +43,14 @@ export interface FeedbackCheckpointDefinition {
   questionnaireVersion: string;
   questionnaireManifestHash: string;
   contentContext: {
-    lens: string;
+    sourceContentCommit: typeof FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT;
+    programDayContentHash: string;
+    toolId: "W2" | "W5" | "W6";
+    tool: string;
+    cue: string;
+    mechanism: string;
+    missionTitle: string;
+    allowedFeedbackContext: string;
     title: string;
     revealAfterQuestionId?: string;
   };
@@ -558,7 +567,17 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
     campaignReference: "feedback-day-10-v1",
     checkpointDay: 10, phase: 1, week: 2, language: "de", questionnaireVersion: "feedback-d10-v1.0.0",
     questionnaireManifestHash: "0ead46fa79c388e7baaf31bacc28a727959281d52e50b24538eb3959f3ccb389",
-    contentContext: { lens: "Confidence ist keine Stimmung", title: "Vertrauen entsteht auch durch Handeln" },
+    contentContext: {
+      sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
+      programDayContentHash: "66324bcf6c02bffe09b8c0d1180cd1eccb2cb27c5c4e6474fbcd7d932548958c",
+      toolId: "W6",
+      tool: "Unsicherheit prüfen",
+      cue: "Prüfen. Dann ausprobieren.",
+      mechanism: "Unsicherheit sagt noch nicht, was richtig ist.",
+      missionTitle: "Eine passende Herausforderung wählen",
+      allowedFeedbackContext: "Entscheidung unter Unsicherheit, Sicherheits- und Aufgabenprüfung sowie kontrollierter Versuch. Keine Behauptung, Unsicherheit müsse überwunden werden.",
+      title: "Prüfen, dann ausprobieren",
+    },
     heading: "Tag 10 – dein erster echter Eindruck",
     intro: [
       "Du hast die ersten Bausteine von RewirePerform kennengelernt. Jetzt wollen wir wissen, wie sich das System für dich wirklich anfühlt: Was ist klar, was macht den Einstieg schwer und was müssen wir einfacher machen?",
@@ -574,10 +593,20 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
     campaignReference: "feedback-day-24-v1",
     checkpointDay: 24, phase: 2, week: 4, language: "de", questionnaireVersion: "feedback-d24-v1.0.0",
     questionnaireManifestHash: "baf3036f27f0feef9d4c9857a9f91cf583dafb4882c70baea689b876c03b2bcd",
-    contentContext: { lens: "Präsenz trotz Müdigkeit oder Unlust", title: "Sauber handeln, auch ohne Antrieb" },
+    contentContext: {
+      sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
+      programDayContentHash: "e60c78e452a4e2171ddb127e69cd26f1b245c11463fbc310405a2d5621b3ca99",
+      toolId: "W2",
+      tool: "Die Aufgabe zählt",
+      cue: "Was braucht die Aufgabe?",
+      mechanism: "Konkrete Handlungen zeigen dir, was du bereits umgesetzt hast.",
+      missionTitle: "Eine Handlung genau ansehen",
+      allowedFeedbackContext: "Erinnerbarkeit einer konkreten guten Handlung und ihrer erneut nutzbaren Qualität, ohne Selbstwert- oder Identitätsbewertung.",
+      title: "Halte eine gute Handlung fest",
+    },
     heading: "Tag 24 – jetzt trifft das Programm auf den echten Alltag",
     intro: [
-      "RewirePerform geht in dieser Phase über das reine Kennenlernen hinaus. Die Inhalte sollen auch an Tagen funktionieren, an denen Training, Alltag, Müdigkeit oder fehlende Motivation dazwischenkommen.",
+      "Du bist jetzt mitten im Programm und kennst den Ablauf schon besser. Heute hast du eine konkrete gute Handlung und die Qualität dahinter betrachtet – jetzt interessiert uns, wie RewirePerform im echten Sportalltag bei dir ankommt.",
       "Sag uns ehrlich, was du inzwischen verstehst, was du mitnehmen kannst, was dir hilft und was noch nicht funktioniert. Deine Antworten helfen dir, kurz auf deinen eigenen Stand zu schauen – und uns, das Programm für dich und andere Athletinnen und Athleten besser zu machen.",
     ],
     durationLabel: "Etwa 4 Minuten", questions: day24Questions,
@@ -590,10 +619,20 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
     campaignReference: "feedback-day-39-v1",
     checkpointDay: 39, phase: 3, week: 6, language: "de", questionnaireVersion: "feedback-d39-v1.0.0",
     questionnaireManifestHash: "6741a49bb1354d3e3336307e0c357fa3c30b0c669db6826996326da3eb4702ae",
-    contentContext: { lens: "Stabil trotz Spielverlauf", title: "Dein Standard bleibt größer als der Verlauf" },
+    contentContext: {
+      sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
+      programDayContentHash: "7c7c8cf4f37512ae7b571d43c09bd0ef4cbf7c02a6ad9ce6bf74e5934eeec2b6",
+      toolId: "W5",
+      tool: "Nicht automatisch folgen",
+      cue: "Gedanken und Gefühle sind keine Befehle.",
+      mechanism: "Der erste Gedanke nach einem Fehler ist oft ein Urteil, keine Korrektur.",
+      missionTitle: "Gedanke erkennen, Information wählen",
+      allowedFeedbackContext: "Trennung von Urteil und nutzbarer Fehlerinformation. Keine Aufforderung, Gedanken zu unterdrücken.",
+      title: "Lass den ersten Satz nicht die Korrektur bestimmen",
+    },
     heading: "Tag 39 – vom Verstehen zum Anwenden",
     intro: [
-      "In diesem Abschnitt geht es immer stärker darum, ob du Inhalte nicht nur liest, sondern in echten Situationen wiederfindest und nutzen kannst – besonders dann, wenn Druck, Fehler oder der Verlauf dich mitziehen.",
+      "Du bist inzwischen weit im Programm. Heute ging es darum, nach einem Fehler den ersten inneren Satz von einer brauchbaren Information zu trennen – und insgesamt darum, ob du Inhalte in echten Situationen wiederfindest und nutzen kannst.",
       "Wir wollen wissen, was inzwischen erreichbar ist, was schon von selbst auftaucht und wo RewirePerform noch zu weit vom echten Sport entfernt ist. Positive Erfahrungen und klare Kritik sind gleichermaßen wichtig.",
     ],
     durationLabel: "Etwa 4–5 Minuten", questions: day39Questions,
@@ -607,7 +646,15 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
     checkpointDay: 55, phase: 4, week: 8, language: "de", questionnaireVersion: "feedback-d55-v1.0.0",
     questionnaireManifestHash: "eeed99714915cb081d15b1b138c39056a2ee334a82915e45b3941a70734fa71b",
     contentContext: {
-      lens: "Exzellenz ohne Ego", title: "Volle Qualität ohne Selbstbeweis",
+      sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
+      programDayContentHash: "abb56c5c707d6af73a4e5016e60da36c6ea4a08b054468b2ff606eb9171f7960",
+      toolId: "W2",
+      tool: "Die Aufgabe zählt",
+      cue: "Was braucht die Aufgabe?",
+      mechanism: "Ein persönlicher Standard wird durch wiederholbares Verhalten klarer.",
+      missionTitle: "Standard als Verhalten formulieren",
+      allowedFeedbackContext: "Nach freiem Abruf: ob eigene konkrete Handlungen, ihre gemeinsame Qualität und eine beobachtbare Zukunftsformulierung gebildet werden konnten. Keine Wertung oder perfekte Veränderungsbehauptung.",
+      title: "Zeig deinen Standard durch Handlungen",
       revealAfterQuestionId: "d55_free_recall_level",
     },
     heading: "Tag 55 – fast am Ende",

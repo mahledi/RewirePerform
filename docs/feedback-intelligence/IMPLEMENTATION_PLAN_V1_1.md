@@ -48,7 +48,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | Block | Ergebnis | Status |
 | --- | --- | --- |
 | 0. Source und Gates | sauberer Worktree, aktuelle Main-Basis, Consumer-Draft und Governance geprüft | fertig |
-| 1. Inhaltsvertrag | Tag 10/24/39/55, stabile Vergleichsmarker, Consent-Copy und Invarianten | fertig |
+| 1. Inhaltsvertrag | Tag 10/24/39/55, stabile Vergleichsmarker, Consent-Copy und Invarianten | fertig; sichtbare Tageskontexte zusätzlich bytegenau an finalen Content-Commit `ead1fa3c7a25e6a0e3640b893f7e22fb5d10031b` und vier kanonische Tages-Hashes gebunden |
 | 2. Synthetischer UX-Flow | Einladung, Intro, Fragen, Multi-/Single-Select, Skip, Consent, Freitext, Abschluss | fertig |
 | 3. Private Datenbasis | getrennte Core-, Consent-, Raw- und Analysis-Schemas | fertig |
 | 4. Datenbank-Sicherheit | keine direkten Rechte, Consent- und Minor-Gates, Widerruf, Account-Cascade, Negativtests | fertig |
@@ -60,11 +60,18 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | 10. Machine-Export | KI-agnostisch, Jarvis-kompatibel, read-only, Consent bei Export erneut geprüft | lokal fertig und schema-valide; ohne Execute-Grant, Credential, Transport oder Production-Gate |
 | 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft, Widerrufs-UI, technische 365-Tage-Höchstdauer und automatisierter Löschlauf lokal fertig; Rechtsfreigabe der Frist und Zielumgebungsnachweis offen |
 | 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | Staging-Build, echte Datenbank-Rollen-/Minor-/Widerrufs-/Tag-10-Prüfungen sowie Guardian-Edge-Auth-/Token-/Origin-Negativtests grün; positiver E-Mail-Zustellpfad, Production-Environment und signierter Native-Nachweis offen |
-| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Golden-Days-Parallelstand lokal integriert; einziger `App.tsx`-Konflikt bewusst aufgelöst und kombinierte CI grün; Push/Merge/Release bleiben separat |
+| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Finaler 56-Tage-Content lokal integriert; einziger `App.tsx`-Konflikt bewusst aufgelöst; Checkpoint-Kontexte und Tag-55-Abrufgrenze synchronisiert; kombinierte CI mit 104 Testdateien und 611 Tests grün; Push/Merge/Release bleiben separat |
 
 ## Bereits implementiert
 
 - Maschinenlesbarer Content-Vertrag mit 47 Fragen und vier draft-only Kampagnen.
+- Separater Programmtag-Kontextvertrag für Tag 10, 24, 39 und 55 mit finalem
+  Content-Commit, SHA-256 pro Tag und direktem Paritätstest gegen Titel,
+  Werkzeug, Cue, Mechanismus und Mission des 56-Tage-Programms. Diese Bindung
+  verändert weder Messfragen noch die stabile Jarvis-Exportsemantik.
+- Tag 55 gibt vor der ersten freien Abrufantwort weder Cue, Missionsstruktur,
+  konkrete Handlungsanzahl, gemeinsame Qualität, Musterantwort noch den
+  kanonischen Testsatz preis.
 - Serverseitige Registry für erlaubte Fragen, Optionen, Mehrfachauswahl, Exklusivoptionen und bedingte Folgefragen.
 - Keine pauschalen 0–100-Werte: Skalenrichtung und Auswertungssemantik werden separat versioniert, damit negative und bipolare Skalen nicht falsch normalisiert werden.
 - Interne Route `/internal/feedback-intelligence-preview`, nur im vorhandenen Preview-Gate.

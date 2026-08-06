@@ -54,11 +54,14 @@ describe("feedback intelligence synthetic preview", () => {
     expect(screen.getByRole("heading", {
       name: "Ohne noch einmal in der App nachzusehen: Wie viel aus RewirePerform kannst du gerade frei abrufen?",
     })).toBeInTheDocument();
-    expect(screen.queryByText("Volle Qualität ohne Selbstbeweis")).not.toBeInTheDocument();
+    expect(screen.queryByText("Zeig deinen Standard durch Handlungen")).not.toBeInTheDocument();
+    expect(screen.queryByText("Was braucht die Aufgabe?")).not.toBeInTheDocument();
+    expect(screen.queryByText("Standard als Verhalten formulieren")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nach einem Fehler hole ich eine Information und gehe in die nächste Handlung.")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Überspringen" }));
     await waitFor(() => {
-      expect(screen.getByText("Volle Qualität ohne Selbstbeweis")).toBeInTheDocument();
+      expect(screen.getByText("Zeig deinen Standard durch Handlungen")).toBeInTheDocument();
       expect(screen.getByRole("heading", {
         name: "Wie oft gab es Inhalte, die du beim Lesen verstanden hast, später aber nicht mehr abrufen konntest?",
       })).toBeInTheDocument();

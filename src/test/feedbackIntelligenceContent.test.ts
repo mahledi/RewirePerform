@@ -1,12 +1,16 @@
+import { createHash } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
 
 import {
   FEEDBACK_CHECKPOINTS,
   FEEDBACK_INTELLIGENCE_INVARIANTS,
+  FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
   feedbackTextConsentCopy,
   getFeedbackCheckpoint,
   isFeedbackQuestionVisible,
 } from "@/content/feedbackIntelligenceV1";
+import { PROGRAM_DAY_DRAFTS } from "@/prototypes/golden-days/programDayDrafts";
 
 describe("feedback intelligence content contract", () => {
   it("defines the four deterministic checkpoints in program order", () => {
@@ -87,6 +91,60 @@ describe("feedback intelligence content contract", () => {
     expect(checkpoint.questions[0].id).toBe("d55_free_recall_level");
     expect(checkpoint.contentContext.revealAfterQuestionId).toBe("d55_free_recall_level");
     expect(checkpoint.intro.join(" ")).toContain("nicht noch einmal");
+  });
+
+  it("byte-pins every checkpoint context to the final 56-day content handoff", () => {
+    for (const checkpoint of Object.values(FEEDBACK_CHECKPOINTS)) {
+      const draft = PROGRAM_DAY_DRAFTS.find(({ day }) => day === checkpoint.checkpointDay);
+      const context = checkpoint.contentContext;
+
+      expect(draft).toBeDefined();
+      expect(context.sourceContentCommit).toBe(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT);
+      expect(context).toMatchObject({
+        title: draft?.title,
+        toolId: draft?.toolId,
+        tool: draft?.tool,
+        cue: draft?.cue,
+        mechanism: draft?.scienceBite.title,
+        missionTitle: draft?.mission.title,
+      });
+
+      const canonicalContext = {
+        sourceContentCommit: context.sourceContentCommit,
+        day: checkpoint.checkpointDay,
+        title: context.title,
+        toolId: context.toolId,
+        tool: context.tool,
+        cue: context.cue,
+        mechanism: context.mechanism,
+        missionTitle: context.missionTitle,
+        allowedFeedbackContext: context.allowedFeedbackContext,
+      };
+      const actualHash = createHash("sha256")
+        .update(JSON.stringify(canonicalContext))
+        .digest("hex");
+      expect(context.programDayContentHash).toBe(actualHash);
+    }
+  });
+
+  it("keeps the day 55 content answer hidden until free recall has passed", () => {
+    const checkpoint = getFeedbackCheckpoint(55);
+    const contentBeforeRecall = [
+      ...checkpoint.intro,
+      checkpoint.questions[0].prompt,
+      ...checkpoint.questions[0].options.map(({ label }) => label),
+    ].join(" ");
+
+    for (const forbiddenPrime of [
+      checkpoint.contentContext.title,
+      checkpoint.contentContext.cue,
+      checkpoint.contentContext.missionTitle,
+      "zwei konkrete wiederholbare Handlungen",
+      "gemeinsame Qualität",
+      "Nach einem Fehler hole ich eine Information und gehe in die nächste Handlung.",
+    ]) {
+      expect(contentBeforeRecall).not.toContain(forbiddenPrime);
+    }
   });
 
   it("keeps privacy and evidence boundaries explicit", () => {
