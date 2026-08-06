@@ -24,11 +24,14 @@ const claimRequests = new Map<string, Promise<FeedbackCheckpointClaim>>();
 const claimCheckpointOnce = (userId: string) => {
   const existing = claimRequests.get(userId);
   if (existing) return existing;
-  const request = claimMyFeedbackCheckpoint().catch((error) => {
-    claimRequests.delete(userId);
-    throw error;
-  });
+  const request = claimMyFeedbackCheckpoint();
   claimRequests.set(userId, request);
+  const release = () => {
+    if (claimRequests.get(userId) === request) claimRequests.delete(userId);
+  };
+  // Deduplicate only the in-flight StrictMode request. A resolved claim must
+  // never become a process-lifetime cache because eligibility changes by day.
+  void request.then(release, release);
   return request;
 };
 

@@ -89,6 +89,22 @@ describe("feedback checkpoint live gate", () => {
     expect(mocks.claim).toHaveBeenCalledTimes(1);
   });
 
+  it("rechecks eligibility after a dashboard remount in the same app process", async () => {
+    mocks.enabled = true;
+    mocks.claim
+      .mockResolvedValueOnce({ eligible: false })
+      .mockResolvedValueOnce(claim);
+
+    const firstRender = renderGate();
+    await waitFor(() => expect(mocks.claim).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId("feedback-checkpoint-gate")).not.toBeInTheDocument();
+    firstRender.unmount();
+
+    renderGate();
+    expect(await screen.findByTestId("feedback-checkpoint-gate")).toBeInTheDocument();
+    expect(mocks.claim).toHaveBeenCalledTimes(2);
+  });
+
   it("starts the exact persistence session before entering the questionnaire", async () => {
     mocks.enabled = true;
     mocks.claim.mockResolvedValue(claim);
