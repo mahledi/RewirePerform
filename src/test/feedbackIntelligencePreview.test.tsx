@@ -94,6 +94,8 @@ describe("feedback intelligence synthetic preview", () => {
       resumeScreen: "closing",
     })));
     expect(await screen.findByText("Danke für deinen Zwischenstand.")).toBeInTheDocument();
+    expect(screen.getByTestId("feedback-completion-mark")).toBeInTheDocument();
+    expect(document.querySelector(".rounded-full.border-primary\\/35")).not.toBeInTheDocument();
   });
 
   it("autosaves a changed live answer without waiting for final submit", async () => {

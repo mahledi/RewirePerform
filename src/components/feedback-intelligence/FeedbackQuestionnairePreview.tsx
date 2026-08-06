@@ -634,17 +634,11 @@ export const FeedbackQuestionnairePreview = ({
             className="relative flex flex-1 flex-col justify-center"
           >
             <motion.div
-              aria-hidden="true"
-              initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.7 }}
-              animate={{ opacity: [0, 0.3, 0], scale: [0.7, 1.35, 1.65] }}
-              transition={{ duration: shouldReduceMotion ? 0 : 1.1, ease: "easeOut" }}
-              className="pointer-events-none absolute left-7 top-[24%] h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/35"
-            />
-            <motion.div
-              initial={shouldReduceMotion ? false : { scale: 0, rotate: -8 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 310, damping: 22, delay: 0.08 }}
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-primary/25 bg-primary/[0.12] text-primary shadow-[0_0_42px_-15px_rgba(46,173,137,0.85)]"
+              data-testid="feedback-completion-mark"
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.24, ease: "easeOut" }}
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.1] text-primary shadow-[0_0_36px_-17px_rgba(46,173,137,0.72)]"
             >
               <CheckCircle2 className="h-7 w-7" />
             </motion.div>
