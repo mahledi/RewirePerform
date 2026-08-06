@@ -80,15 +80,22 @@ Die sportliche Anwendung wird nicht vorgetaeuscht. Sie entsteht bei einem spaete
 
 Noch nicht belegt ist, dass diese Loesung bei realen Athleten gleich gut wirkt wie eine Anwendung im Training. Genau diese Frage gehoert in Pilot und Feedback-System.
 
-## 6. Noch offene Arbeit vor dem Bauen
+## 6. In der isolierten Redaktionsrunde abgeschlossen
 
-Diese Punkte sind keine neue Foundation-Entscheidung, sondern die naechsten Qualitaetsgates:
+Diese Punkte wurden ohne Production-Mutation umgesetzt:
 
-1. Item-genauer Crosswalk aller 56 Science Bites, 168 Tasks, 225 Journalfragen und 181 Verstaendnisfragen mit `behalten`, `verbinden`, `optional`, `neu formulieren` oder `echte Redundanz`.
+1. Vollstaendige technische Inventarerfassung aller strukturierten Bestandselemente mit schema-basiertem Zieltag, Behandlung und Begruendung.
 2. Vollstaendige Copy und Flow der zehn Golden Days.
-3. Rollen- und Schnellklicktest der Golden Days sowie Verstaendlichkeitspruefung der sieben Werkzeuggrenzen.
-4. User-Freigabe, erst danach Ausrollen auf alle 56 Tage.
-5. Vollstaendiger Inhalts-, Logik-, Privacy-, Mobile-, Accessibility- und App-Store-Readiness-Review vor jeder Integration.
+3. Vollredaktion aller 56 Tage nach demselben Vertrag.
+4. Automatische Pruefung der Werkzeugkarte, Stufen, Textlast, Abruffreiheit, internen Codes, gesperrten Sprache und Evidence-Grenzen.
+5. Interne 56-Tage-Vorschau mit Kontextwechsel sowie Browserpruefung auf kleinen und grossen Viewports.
+6. Manueller semantischer Quellen-Tagesaudit fuer alle 56 bisherigen Tage. Dabei wurden besonders die Funktionen `aufgestapelte Belastung`, `Fokus bei vielen Reizen`, `Verlauf/Momentum` und `ruhige Sicherheit ohne neue Bestaetigung` im neuen System gezielt verstaerkt.
+7. Kanonische Cues wurden fuer alle 56 Tage vereinheitlicht; der Pre-Training-Reveal zeigt exakt den jeweiligen Cue und keine konkurrierende Paraphrase.
+8. Kompakte Informationszusammenfassungen fuer jeden der 56 verpassbaren Tage wurden erstellt. Sie enthalten keine nachzuholende Aufgabe.
+
+Der semantische Quellen-Tagesaudit prueft die beabsichtigte Funktion jedes bisherigen Tages. Die 1.302 Elemente bleiben zusaetzlich vollstaendig inventarisiert und wurden beim Copy-Review als Quellenmaterial genutzt. Daraus folgt nicht, dass jeder alte Satz wortgleich erhalten werden muss oder dass die neue Fassung bereits empirisch besser wirkt.
+
+Vor einer Production-Integration bleiben ein unabhaengiger Review, reale Geraetepruefung, vollstaendiger Build und bewusstes Release-Gate erforderlich. Echte Verstaendlichkeit, Behalten und Transfer bleiben empirisch offen.
 
 ## 7. Empirisch offene Kernfragen
 

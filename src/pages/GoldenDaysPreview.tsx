@@ -42,6 +42,21 @@ const contextMeta: Record<GoldenDayContext, { label: string; icon: typeof Dumbbe
   competition: { label: "Wettkampf", icon: Trophy, tone: "text-amber-300 bg-amber-400/10 border-amber-400/20" },
 };
 
+const contextExecutionCopy: Record<GoldenDayContext, { mission: string; journal: string }> = {
+  training: {
+    mission: "Nutze die Mission, wenn der passende Moment auftaucht. Wenn nicht, erfindest du keine Anwendung.",
+    journal: "Wenn der Trigger heute nicht vorkam, ist „nicht angewendet“ eine ehrliche Antwort.",
+  },
+  rest: {
+    mission: "Heute musst du keine Sportanwendung erfinden. Geh die Mission an einer konkreten früheren Szene durch.",
+    journal: "Nutze eine konkrete frühere Szene, wenn heute keine passende Anwendung möglich war.",
+  },
+  competition: {
+    mission: "Im Wettkampf reicht der Cue mit der nächsten Handlung. Die ausführliche Reflexion folgt danach.",
+    journal: "Geh die Szene erst nach dem Wettkampf in Ruhe durch, nicht mitten in der nächsten Aktion.",
+  },
+};
+
 const hasSpecialStage = (draft: GoldenDayDraft) => Boolean(
   draft.contextChange
   || draft.missedReviews?.length
@@ -49,12 +64,12 @@ const hasSpecialStage = (draft: GoldenDayDraft) => Boolean(
   || draft.integrationTools?.length,
 );
 
-const getStages = (draft: GoldenDayDraft): PreviewStage[] => [
+const getStages = (draft: GoldenDayDraft, context: GoldenDayContext = draft.context): PreviewStage[] => [
   "overview",
   "science",
   "mission",
   "comprehension",
-  ...(draft.preTraining ? ["pre-training" as const] : []),
+  ...(draft.preTraining && context !== "rest" ? ["pre-training" as const] : []),
   "journal",
   ...(hasSpecialStage(draft) ? ["special" as const] : []),
 ];
@@ -79,13 +94,23 @@ const StageEyebrow = ({ children }: { children: React.ReactNode }) => (
   <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{children}</p>
 );
 
-const OverviewStage = ({ draft }: { draft: GoldenDayDraft }) => {
-  const meta = contextMeta[draft.context];
+const OverviewStage = ({
+  draft,
+  context = draft.context,
+  dayKind = "Golden Day",
+  onContextChange,
+}: {
+  draft: GoldenDayDraft;
+  context?: GoldenDayContext;
+  dayKind?: string;
+  onContextChange?: (context: GoldenDayContext) => void;
+}) => {
+  const meta = contextMeta[context];
   const Icon = meta.icon;
   return (
     <div className="space-y-5">
       <div>
-        <StageEyebrow>Golden Day · {draft.stage}</StageEyebrow>
+        <StageEyebrow>{dayKind} · {draft.stage}</StageEyebrow>
         <h2 className="max-w-xl text-3xl font-semibold leading-[1.08] tracking-[-0.035em] sm:text-4xl">
           {draft.title}
         </h2>
@@ -110,6 +135,36 @@ const OverviewStage = ({ draft }: { draft: GoldenDayDraft }) => {
         <Icon className="h-4 w-4" />
         {meta.label}
       </div>
+
+      {onContextChange && (
+        <div>
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-white/38">Ausführung prüfen als</p>
+          <div className="grid grid-cols-3 gap-2" aria-label="Tageskontext auswählen">
+            {(Object.keys(contextMeta) as GoldenDayContext[]).map((item) => {
+              const itemMeta = contextMeta[item];
+              const ItemIcon = itemMeta.icon;
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => onContextChange(item)}
+                  aria-pressed={context === item}
+                  className={cn(
+                    "flex min-h-12 items-center justify-center gap-2 rounded-2xl border px-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    context === item ? itemMeta.tone : "border-white/[0.065] bg-white/[0.025] text-white/46",
+                  )}
+                >
+                  <ItemIcon className="h-3.5 w-3.5" />
+                  {itemMeta.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-xs leading-5 text-white/38">
+            Werkzeug und Tagesinhalt bleiben gleich. Nur die ehrliche Ausführungsform folgt dem realen Tag.
+          </p>
+        </div>
+      )}
 
       <p className="text-xs leading-5 text-white/38">
         Interner V1.1-Redaktionsstand. Keine Speicherung, keine echten Nutzerdaten und keine Wirkungsaussage.
@@ -139,12 +194,23 @@ const ScienceStage = ({ draft }: { draft: GoldenDayDraft }) => (
   </div>
 );
 
-const MissionStage = ({ draft }: { draft: GoldenDayDraft }) => (
+const MissionStage = ({
+  draft,
+  context,
+  showContextGuidance = false,
+}: {
+  draft: GoldenDayDraft;
+  context: GoldenDayContext;
+  showContextGuidance?: boolean;
+}) => (
   <div className="space-y-5">
     <div>
       <StageEyebrow>Deine Mission</StageEyebrow>
       <h2 className="text-2xl font-semibold tracking-[-0.025em]">{draft.mission.title}</h2>
       <p className="mt-3 text-sm leading-6 text-white/52">{draft.mission.trigger}</p>
+      {showContextGuidance && (
+        <p className="mt-2 text-xs leading-5 text-primary/75">{contextExecutionCopy[context].mission}</p>
+      )}
     </div>
     <Panel className="p-0">
       <ol>
@@ -229,7 +295,7 @@ const ComprehensionStage = ({ draft }: { draft: GoldenDayDraft }) => {
   );
 };
 
-const PreTrainingStage = ({ draft }: { draft: GoldenDayDraft }) => {
+const PreTrainingStage = ({ draft, context }: { draft: GoldenDayDraft; context: GoldenDayContext }) => {
   const [answer, setAnswer] = useState("");
   const [revealed, setRevealed] = useState(false);
   const pre = draft.preTraining;
@@ -244,7 +310,7 @@ const PreTrainingStage = ({ draft }: { draft: GoldenDayDraft }) => {
   return (
     <div className="space-y-5">
       <div>
-        <StageEyebrow>{pre.label}</StageEyebrow>
+        <StageEyebrow>{context === "competition" ? "Pre-Wettkampf" : "Pre-Training"}</StageEyebrow>
         <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Erst erinnern. Dann den Cue sehen.</h2>
         <p className="mt-3 text-sm leading-6 text-white/52">{pre.recallPrompt}</p>
       </div>
@@ -255,7 +321,6 @@ const PreTrainingStage = ({ draft }: { draft: GoldenDayDraft }) => {
         aria-label="Eigene Erinnerung"
         className="min-h-28 w-full resize-none rounded-2xl border border-white/[0.075] bg-white/[0.025] px-4 py-4 text-base text-white outline-none placeholder:text-white/25 focus:border-primary/45 focus:ring-2 focus:ring-primary/15"
       />
-      <p className="text-xs leading-5 text-white/38">{pre.hint}</p>
       <button
         type="button"
         onClick={() => setRevealed(true)}
@@ -274,7 +339,15 @@ const PreTrainingStage = ({ draft }: { draft: GoldenDayDraft }) => {
   );
 };
 
-const JournalStage = ({ draft }: { draft: GoldenDayDraft }) => {
+const JournalStage = ({
+  draft,
+  context,
+  showContextGuidance = false,
+}: {
+  draft: GoldenDayDraft;
+  context: GoldenDayContext;
+  showContextGuidance?: boolean;
+}) => {
   const questions = draft.journal.questions.filter(Boolean);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -296,6 +369,9 @@ const JournalStage = ({ draft }: { draft: GoldenDayDraft }) => {
         <StageEyebrow>Journal · {questionIndex + 1} von {total}</StageEyebrow>
         <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">{draft.journal.title}</h2>
         <p className="mt-3 text-sm leading-6 text-white/52">{draft.journal.intro}</p>
+        {showContextGuidance && (
+          <p className="mt-2 text-xs leading-5 text-primary/75">{contextExecutionCopy[context].journal}</p>
+        )}
       </div>
 
       <Panel>
@@ -452,29 +528,44 @@ const SpecialStage = ({ draft }: { draft: GoldenDayDraft }) => {
   );
 };
 
-const stageContent = (stage: PreviewStage, draft: GoldenDayDraft) => {
-  if (stage === "overview") return <OverviewStage draft={draft} />;
+const stageContent = (
+  stage: PreviewStage,
+  draft: GoldenDayDraft,
+  context: GoldenDayContext,
+  dayKind: string,
+  onContextChange?: (context: GoldenDayContext) => void,
+  showContextGuidance = false,
+) => {
+  if (stage === "overview") return <OverviewStage draft={draft} context={context} dayKind={dayKind} onContextChange={onContextChange} />;
   if (stage === "science") return <ScienceStage draft={draft} />;
-  if (stage === "mission") return <MissionStage draft={draft} />;
+  if (stage === "mission") return <MissionStage draft={draft} context={context} showContextGuidance={showContextGuidance} />;
   if (stage === "comprehension") return <ComprehensionStage draft={draft} />;
-  if (stage === "pre-training") return <PreTrainingStage draft={draft} />;
-  if (stage === "journal") return <JournalStage draft={draft} />;
+  if (stage === "pre-training") return <PreTrainingStage draft={draft} context={context} />;
+  if (stage === "journal") return <JournalStage draft={draft} context={context} showContextGuidance={showContextGuidance} />;
   return <SpecialStage draft={draft} />;
 };
 
-const GoldenDaysPreview = () => {
+type GoldenDaysPreviewProps = {
+  drafts?: GoldenDayDraft[];
+  mode?: "golden" | "program";
+};
+
+const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: GoldenDaysPreviewProps) => {
   const [dayIndex, setDayIndex] = useState(0);
   const [stageIndex, setStageIndex] = useState(0);
+  const [context, setContext] = useState<GoldenDayContext>(drafts[0]?.context ?? "training");
   const reduceMotion = useReducedMotion();
   const contentRef = useRef<HTMLDivElement>(null);
-  const draft = GOLDEN_DAY_DRAFTS[dayIndex];
-  const stages = useMemo(() => getStages(draft), [draft]);
+  const draft = drafts[dayIndex];
+  const stages = useMemo(() => getStages(draft, context), [context, draft]);
   const stage = stages[stageIndex] ?? stages[0];
-  const ContextIcon = contextMeta[draft.context].icon;
+  const ContextIcon = contextMeta[context].icon;
+  const isProgram = mode === "program";
 
   const selectDay = (index: number) => {
     setDayIndex(index);
     setStageIndex(0);
+    setContext(drafts[index].context);
   };
 
   const moveStage = (next: number) => {
@@ -487,16 +578,16 @@ const GoldenDaysPreview = () => {
 
   return (
     <main className="flex h-screen h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] text-[#EEF0F2]" data-testid="golden-days-preview">
-      <header className="shrink-0 border-b border-white/[0.055] bg-[#0D0E12]/94 px-4 pt-[max(12px,env(safe-area-inset-top))] backdrop-blur-2xl [@media(max-height:500px)]:pt-0">
+      <header className="shrink-0 bg-[#0D0E12]/94 px-4 pt-[max(12px,env(safe-area-inset-top))] backdrop-blur-2xl [@media(max-height:500px)]:pt-0">
         <div className="mx-auto flex min-h-11 max-w-4xl items-center justify-between gap-4 pb-3 [@media(max-height:500px)]:hidden">
           <BrandLockup symbolSize={22} textClassName="text-[11px]" />
           <div className="text-right">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">V1.1 Content Lab</p>
-            <p className="mt-0.5 text-xs text-white/42">Golden Days · intern</p>
+            <p className="mt-0.5 text-xs text-white/42">{isProgram ? "56 Tage · intern" : "Golden Days · intern"}</p>
           </div>
         </div>
-        <div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto pb-3 [scrollbar-width:none] [@media(max-height:500px)]:py-1.5 [&::-webkit-scrollbar]:hidden" aria-label="Golden Day auswählen">
-          {GOLDEN_DAY_DRAFTS.map((item, index) => (
+        <div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto pb-3 [scrollbar-width:none] [@media(max-height:500px)]:py-1.5 [&::-webkit-scrollbar]:hidden" aria-label={isProgram ? "Programmtag auswählen" : "Golden Day auswählen"}>
+          {drafts.map((item, index) => (
             <button
               key={item.day}
               type="button"
@@ -515,15 +606,15 @@ const GoldenDaysPreview = () => {
         </div>
       </header>
 
-      <div className="shrink-0 border-b border-white/[0.045] px-4 py-3 [@media(max-height:500px)]:py-1.5">
+      <div className="shrink-0 px-4 py-3 [@media(max-height:500px)]:py-1.5" data-testid="golden-day-progress">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-white/38">Tag {draft.day}/56</p>
             <p className="mt-1 truncate text-sm font-semibold">{stageLabels[stage]}</p>
           </div>
-          <div className={cn("flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-semibold", contextMeta[draft.context].tone)}>
+          <div className={cn("flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-semibold", contextMeta[context].tone)}>
             <ContextIcon className="h-3.5 w-3.5" />
-            {contextMeta[draft.context].label}
+            {contextMeta[context].label}
           </div>
         </div>
         <div className="mx-auto mt-1 flex max-w-2xl items-center gap-1.5 [@media(max-height:500px)]:hidden" aria-label={`Abschnitt ${stageIndex + 1} von ${stages.length}`}>
@@ -554,7 +645,17 @@ const GoldenDaysPreview = () => {
               aria-labelledby="golden-day-stage-title"
             >
               <span id="golden-day-stage-title" className="sr-only">{stageLabels[stage]}</span>
-              {stageContent(stage, draft)}
+              {stageContent(
+                stage,
+                draft,
+                context,
+                isProgram ? "Programmtag" : "Golden Day",
+                isProgram ? (nextContext) => {
+                  setContext(nextContext);
+                  setStageIndex(0);
+                } : undefined,
+                isProgram,
+              )}
             </motion.section>
           </AnimatePresence>
         </div>
@@ -577,7 +678,7 @@ const GoldenDaysPreview = () => {
             disabled={stageIndex === stages.length - 1}
             className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:bg-white/[0.06] disabled:text-white/28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0C10]"
           >
-            {stageIndex === stages.length - 1 ? "Golden Day vollständig" : "Weiter"}
+            {stageIndex === stages.length - 1 ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig") : "Weiter"}
             {stageIndex < stages.length - 1 && <ChevronRight className="h-4 w-4" />}
           </button>
         </div>

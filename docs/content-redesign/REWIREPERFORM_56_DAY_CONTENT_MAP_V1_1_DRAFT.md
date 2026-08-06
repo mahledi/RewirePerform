@@ -26,6 +26,7 @@ Confidence, Identitaet, Gewohnheit, Purpose und persoenlicher Standard sind kein
 - Die Lernlinien sind unterschiedlich lang und unterschiedlich dicht. Ihre Kontaktpunkte werden aber vorab fuer das System festgelegt und nicht spontan an einzelne Athleten angepasst.
 - Der Programmtag bestimmt den Inhalt. Es gibt vorerst keine sichtbare Sportarten-, Rollen-, Leistungsniveau- oder psychologische Content-Personalisierung. So kann jede Verbindung zwischen zwei Tagen bewusst geplant und sprachlich wahr gehalten werden.
 - Training, Wettkampf, Ruhetag und eine reale Planaenderung veraendern nur die Form der heutigen Anwendung, nicht Werkzeug, Lernziel oder Reihenfolge.
+- Die bestehende Wohlbefinden-/Bereitschaftsabfrage im Team-Daily-Check-in bleibt als eigener vorgelagerter Teamzustand erhalten. Sie wird weder als Tagesanker gezaehlt noch durch den neuen Inhaltsflow ersetzt.
 - Die sichtbare Sprache wird am Verstaendnisniveau eines 15- bis 16-jaehrigen Athleten ausgerichtet, ohne Profis kindlich anzusprechen. Eine spaetere Altersvariation bleibt ein eigener Produktentscheid und ist nicht Teil dieses Entwurfs.
 
 ## 2. Lernlogik der Karte
@@ -60,7 +61,7 @@ Confidence, Identitaet, Gewohnheit, Purpose und persoenlicher Standard sind kein
 | 13 | W5 | Rueckkehr | Ersten inneren Impuls erkennen und bewusst entscheiden, bevor Verhalten folgt | Abruf Tag 8 | 10, 25 |
 | 14 | W1 | Vertiefung | Ergebnisinteresse stehen lassen und den Arbeitsort der Aufmerksamkeit zurueckholen | Abruf Tag 3/7 | 14, 30 |
 | 15 | W7 | Aufbau | Tunnelblick erkennen und das vollstaendige Bild wieder aufnehmen, ohne das Problem kleinzureden | Startpunkt | 6 |
-| 16 | W6 | Rueckkehr | Sicherheitsschleife von einer geeigneten Lernherausforderung unterscheiden | Abruf Tag 10 | 18 |
+| 16 | W6 | Rueckkehr | Abwarten aus Unsicherheit von einem geeigneten sicheren Versuch unterscheiden | Abruf Tag 10 | 18 |
 | 17 | W3 | Vertiefung | Sofort eine kleine Korrektur nutzen; tiefere Analyse bewusst auf spaeter verschieben | Abruf Tag 4/9 | 20, 31 |
 | 18 | W1 | Vertiefung | Auch ohne ideale Stimmung den Rueckweg zur naechsten Aufgabe kurz halten | Abruf Tag 7/14 | 24, 43 |
 | 19 | W4 | Vertiefung | Nach einem unveraenderbaren Ereignis die zusaetzliche innere Aufladung nicht weiter fuettern | Abruf Tag 6/11 | 28, 37 |
@@ -68,7 +69,7 @@ Confidence, Identitaet, Gewohnheit, Purpose und persoenlicher Standard sind kein
 | 21 | W2 | Vertiefung | Von Selbstbeweis zu Aufgabe, Beitrag und dienlicher Qualitaet wechseln | Abruf Tag 5/12 | 21, 35, 52 |
 | 22 | W7 | Rueckkehr | Problem, Funktionierendes, Unterstuetzung und Moeglichkeiten gleichzeitig sehen | Abruf Tag 15 | 23 |
 | 23 | W6 | Vertiefung | Eine passende Herausforderung waehlen, ohne sichtbares Scheitern oder Lernoffenheit mit Selbstwert zu verwechseln | Abruf Tag 10/16 | 27, 40 |
-| 24 | W2 | Integration | Eine kleine qualitaetsgerechte Handlung als Verhaltensbeleg registrieren, nicht als Wertbeweis | Identitaet als Entwicklungsschicht | 8, 17 |
+| 24 | W2 | Integration | Eine konkrete gute Handlung festhalten und erkennen, welche Qualitaet wiederholt werden soll | Identitaet als Entwicklungsschicht | 8, 17 |
 | 25 | W5 | Vertiefung | Zweifel oder fehlende Bereitschaft bemerken, ohne auf innere Freigabe zu warten | Abruf Tag 13/20 | 10, 25 |
 | 26 | W6 | Vertiefung | Erste Bedrohungslesart pruefen, bevor sie als Wahrheit oder Handlungsbefehl gilt | W5 unterstuetzt | 3, 9 |
 | 27 | W2 | Vertiefung | Bei unsicherem Ausgang die dienliche Qualitaet statt Bildschutz waehlen | W6 unterstuetzt | 27, 32, 35 |
@@ -85,12 +86,12 @@ Confidence, Identitaet, Gewohnheit, Purpose und persoenlicher Standard sind kein
 | 33 | W5 | Vertiefung | Gedanke, Gefuehl und Impuls unterscheiden und den Entscheidungspunkt lokalisieren | Abruf Tag 25 | 33, 46 |
 | 34 | W6 | Vertiefung | Reale Gefahr, ungeeignete Ueberforderung und tolerierbare Unsicherheit unterscheiden; nur den sicheren naechsten Versuch planen | Abruf Tag 26 | 11, 18, 38 |
 | 35 | W7 | Vertiefung | In einer selbst gewaehlten realen Szene den verengten Blick rekonstruieren und vervollstaendigen | Abruf Tag 22 | 34, 51 |
-| 36 | W1 | Vertiefung + Verbindung | Den Moment erkennen, in dem ein innerer Kommentar Aufmerksamkeit uebernimmt, und frueher zur Aufgabe zurueckkehren | W5 unterstuetzt | 1, 13, 36 |
+| 36 | W1 | Vertiefung + Verbindung | Bei vielen gleichzeitigen Reizen den eigenen Fokusverlust erkennen und die naechste Aktion wiederfinden | W5 unterstuetzt | 1, 13, 36 |
 | 37 | W2 | Vertiefung + Verbindung | Unter Unsicherheit die Aufgabe statt die sichere Aussenwirkung priorisieren | W6 unterstuetzt | 27, 32, 40 |
 | 38 | W3 | Vertiefung + Verbindung | Nach einem Fehler Korrektur von Protest gegen Unveraenderbares trennen | W4 unterstuetzt | 20, 28, 37 |
 | 39 | W5 | Vertiefung + Verbindung | Den ersten Gedanken nach einem Fehler als Gedanken erkennen, bevor eine Korrektur gewaehlt wird | W3 unterstuetzt | 2, 13, 31 |
 | 40 | W6 | Vertiefung + Verbindung | Eine Herausforderung nach Lern- und Aufgabenwert waehlen, nicht nach Show, Sicherheit oder Beweis | W2 unterstuetzt | 18, 26, 27, 40 |
-| 41 | W7 | Vertiefung + Verbindung | Die Realitaet vollstaendig sehen, ohne sie positiv umzudeuten, und danach das Beeinflussbare nutzen | W4 unterstuetzt | 23, 34, 48, 51 |
+| 41 | W7 | Vertiefung + Verbindung | Aufgestapelte Belastung erkennen, das Bild ohne Positivdenken erweitern und eine beeinflussbare kleine Handlung finden | W4 unterstuetzt | 23, 34, 48, 51 |
 | 42 | W4 fuehrt Integration | Integration | Eine Reaktionskette lesen und begruenden, an welcher Stelle welches Werkzeug passt | Gesamtabruf unter reduzierten Hilfen | 42 |
 
 ### Tage 43–49 — Konsolidierung und selbstaendiges Erkennen
@@ -109,11 +110,11 @@ Confidence, Identitaet, Gewohnheit, Purpose und persoenlicher Standard sind kein
 
 | Tag | Fuehrender Anker | Stufe | Eine sichtbare Lernbewegung | Gezielte Verbindung | Starke Bestandsquellen |
 |---:|---|---|---|---|---|
-| 50 | W1 | Integration | Aufmerksamkeit auf die Qualitaet der naechsten Handlung zurueckholen | W2 unterstuetzt | 14, 22, 50 |
+| 50 | W1 | Integration | Sich weder von guten noch schlechten letzten Aktionen mitziehen lassen und die Qualitaet der naechsten Handlung waehlen | W2 unterstuetzt | 14, 22, 39, 50 |
 | 51 | W3 | Integration | Fehler → erster innerer Satz → nuetzliche Information → naechste Handlung als eine Kette durchlaufen | W5 unterstuetzt | 2, 20, 31, 41 |
 | 52 | W4 | Integration | Realitaet anerkennen, das ganze Bild sehen und das verbleibende Beeinflussbare nutzen | W7 unterstuetzt | 4, 19, 23, 34, 37, 48, 51 |
 | 53 | W6 | Integration | Eine geeignete Herausforderung im Dienst von Aufgabe, Lernen und privatem Purpose waehlen | W2 unterstuetzt | 11, 16, 18, 27, 40, 52, 53 |
-| 54 | W5 | Integration | Gedanken und Gefuehle bemerken, bewusst entscheiden und zur naechsten Handlung zurueckkehren | W1 unterstuetzt; Confidence als Entwicklungsschicht | 10, 13, 25, 46, 47, 54 |
+| 54 | W5 | Integration | Den Wunsch nach neuer Bestaetigung bemerken und trotzdem ruhig nach der Aufgabe handeln | W1 unterstuetzt; Confidence als Entwicklungsschicht | 10, 13, 25, 46, 47, 54 |
 | 55 | W2 | Integration | Persoenlichen Standard als wiederholte qualitaets- und beitragsgerechte Handlung beschreiben | alle Werkzeuge liefern Verhaltensbelege | 8, 17, 21, 29, 35, 39, 44, 55 |
 | 56 | Gesamtsystem | Abschluss | Alle sieben Werkzeuge unterscheiden, eigene wichtigste Rueckwege benennen und die weitere Nutzung planen | keine neue Faehigkeit; Messung getrennt von privater Reflexion | 7, 42, 56 |
 
@@ -183,9 +184,9 @@ Maximal die letzten drei verpassten Tage erscheinen als reine Zusammenfassungen.
 
 Es gibt keinen Science-Bite-Volltext, keine Aufgabe, keine Reflexion, keinen Verstaendnischeck und keine nachtraegliche Erledigung. Danach verfolgt der Athlet ausschliesslich den aktuellen Tagesanker.
 
-## 9. Golden-Day-Set
+## 9. Golden-Day-Set — redaktionell abgeschlossen
 
-Vor dem Rewrite aller 56 Tage werden diese zehn representative Faelle vollstaendig geschrieben und als realer Flow geprueft:
+Diese zehn repraesentativen Faelle wurden vor der Vollredaktion geschrieben und als interner Flow geprueft:
 
 | Golden Day | Primaerer Pruefzweck |
 |---:|---|
@@ -214,9 +215,12 @@ Die Architektur nutzt gut belegte Lernprinzipien als Designgrundlage:
 
 Diese Studien beweisen weder die konkrete Reihenfolge noch reale Anwendung, Performancewirkung oder Neuroplastizitaet durch RewirePerform. AI-Rollenpruefungen erzeugen Fehlerrisiken und Hypothesen. Farin ist ein wertvoller Tiefentest, aber kein Durchschnittsmodell. Erst echte Pilotdaten koennen zeigen, was verstanden, erinnert und genutzt wird.
 
-## 11. Vor der Content-Implementierung noch zu liefern
+## 11. Aktueller Redaktionsstand
 
-1. Vollstaendiger Bestands-Crosswalk: jede heutige Aufgabe, Journalfrage, Verstaendnisfrage und jeder Science Bite bekommt `behalten`, `verbinden`, `optional`, `neu formulieren` oder `echte Redundanz`.
-2. Golden-Day-Copy fuer die zehn Faelle, noch isoliert und ohne Production-Leakage.
-3. User-Freigabe des Golden-Day-Flows.
-4. Erst danach Uebertragung auf alle 56 Tage und technische Integration unter separaten App-Store-Readiness-Gates.
+1. Das Bestandsinventar erfasst jedes strukturierte Quellelement und weist schema-basiert Zieltag, Behandlung und Begruendung aus.
+2. Fuer alle 56 bisherigen Quelltage liegt zusaetzlich eine manuelle semantische Funktionsentscheidung vor: direkt erhalten, ueber mehrere Kontakte verteilt oder gezielt verstaerkt.
+3. Die Golden Days und alle weiteren Tage wurden im abschliessenden Gesamtprogramm-Audit gemeinsam nachgeschaerft.
+4. Alle 56 Tage liegen als isolierter V1.1-Entwurf mit Science Bite, einer Mission, einer kurzen Unterscheidung, aktivem Pre-Training-Abruf und gestuftem Journal vor.
+5. Fuer jeden Tag liegt eine kurze verpasste-Tage-Zusammenfassung ohne Nachholauftrag vor.
+6. Der interne 56-Tage-Pruefstand erlaubt die ehrliche Kontrolle als Training, Wettkampf oder Ruhetag. Der Programminhalt bleibt dabei deterministisch; nur die Ausfuehrungsform folgt dem realen Kontext.
+7. Noch ausstehend sind Production-Integration, echte Athletentests und empirischer Wirkungsnachweis. Keine lokale Rollenpruefung ersetzt diese Grenzen.
