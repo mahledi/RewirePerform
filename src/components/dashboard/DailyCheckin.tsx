@@ -50,6 +50,7 @@ interface DailyCheckinProps {
   eventType: EventType;
   date: Date;
   onClose: () => void;
+  initialFocus?: "rest-visualization";
   /** Preview/Admin mode: no DB writes, force a specific day, no navigation on completion. */
   previewMode?: boolean;
   /** Force a specific day number instead of computing from program start (preview only). */
@@ -101,10 +102,17 @@ const normalizeDraftStep = (draftStep: number | null | undefined) => {
   return Math.max(0, safeStep);
 };
 
-const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
+const DailyCheckin = ({
+  eventType,
+  date,
+  onClose,
+  initialFocus,
+  previewMode = false,
+  previewDayNumber,
+}: DailyCheckinProps) => {
   const { user, role, isTestUser } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialFocus === "rest-visualization" ? 3 : 0);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
@@ -131,7 +139,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
-  const [restPlanMode, setRestPlanMode] = useState<RestDayPlanMode>(null);
+  const [restPlanMode, setRestPlanMode] = useState<RestDayPlanMode>(
+    initialFocus === "rest-visualization" ? "now" : null,
+  );
   const [restReminderTime, setRestReminderTime] = useState("15:00");
   const [restReminderScheduled, setRestReminderScheduled] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
@@ -285,6 +295,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         setRestReminderScheduled(local.restReminderScheduled ?? false);
       } else if (persistedTaskIds.length > 0) {
         setCompletedTasks(persistedTaskIds);
+      }
+
+      if (initialFocus === "rest-visualization") {
+        setStep(3);
+        setRestPlanMode("now");
+        setRestReminderScheduled(false);
       }
 
       const scheduledPulse = getTransferPulseForDay(result.resolved.matrix.dayNumber, eventType);
@@ -540,7 +556,15 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       return;
     }
     const saved = await saveCheckin(results);
-    if (saved) setComprehensionDone(true);
+    if (saved) {
+      setComprehensionDone(true);
+      if (initialFocus === "rest-visualization") onClose();
+    }
+  };
+
+  const handleEmptyComprehensionComplete = async () => {
+    const saved = await saveCheckin();
+    if (saved && initialFocus === "rest-visualization") onClose();
   };
 
   const ScienceBiteIntro = () => {
@@ -628,6 +652,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         <RestDayMission
           draft={draft}
           userId={user?.id ?? null}
+          athleteName={user?.user_metadata?.full_name}
           date={dateKey}
           planMode={restPlanMode}
           reminderTime={restReminderTime}
@@ -639,7 +664,10 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           }}
           onReminderTimeChange={setRestReminderTime}
           onReminderScheduledChange={setRestReminderScheduled}
-          onComplete={() => markTaskComplete(missionTask.id)}
+          onComplete={() => {
+            markTaskComplete(missionTask.id);
+            if (initialFocus === "rest-visualization") setStep(4);
+          }}
           onCloseForLater={onClose}
         />
       );
@@ -882,7 +910,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     ) : (
                       <motion.button
                         data-testid="comprehension-empty-finish"
-                        onClick={() => saveCheckin()}
+                        onClick={handleEmptyComprehensionComplete}
                         disabled={saving}
                         whileTap={!saving ? { scale: 0.98 } : undefined}
                         className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold transition-all active:scale-[0.98] disabled:opacity-60"
