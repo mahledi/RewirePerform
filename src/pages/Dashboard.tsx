@@ -1824,8 +1824,10 @@ const Dashboard = () => {
                     <span className="block text-sm font-semibold">Daily Flow starten</span>
                     <span className="mt-0.5 block text-xs text-black/65">
                       {todayResolved
-                        ? `10 Tages-Puls-Fragen · ${todayResolved.content.tasks.length} Aufgaben`
-                        : "Tages-Puls, Aufgaben und Verständnis-Check"}
+                        ? todayEventType === "rest"
+                          ? "10 Tages-Puls-Fragen · mentale Einheit"
+                          : "10 Tages-Puls-Fragen · eine Mission"
+                        : "Tages-Puls, Mission und Verständnis-Check"}
                     </span>
                   </span>
                 </span>
@@ -2019,18 +2021,24 @@ const Dashboard = () => {
             <DashboardActionRow
               icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
               eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
-              title={todayEventType === "rest" ? "Heute kein Pre-Training" : "Pre-Training"}
+              title={todayEventType === "rest" ? "Mentale Einheit" : "Pre-Training"}
               detail={
                 todayEventType === "rest"
-                  ? "Für Ruhetage ist keine Vorbereitung vorgesehen."
+                  ? todayCheckinDone
+                    ? "Deine Visualisierung für heute ist abgeschlossen."
+                    : "Geführte Visualisierung · passend zum heutigen Werkzeug"
                   : todayEventType
                     ? todayResolved
-                      ? `${eventConfig[todayEventType].label} · heutige Linse und ${todayResolved.content.tasks.length} Aufgaben`
+                      ? `${eventConfig[todayEventType].label} · aktives Erinnern und dein Satz`
                       : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
                     : "Sobald dein heutiger Termin feststeht."
               }
-              disabled={!todayEventType || todayEventType === "rest"}
-              onClick={() => navigate("/pre-training")}
+              disabled={!todayEventType || (todayEventType === "rest" && todayCheckinDone)}
+              done={todayEventType === "rest" && todayCheckinDone}
+              onClick={() => {
+                if (todayEventType === "rest") setShowCheckin(true);
+                else navigate("/pre-training");
+              }}
             />
             <DashboardActionRow
               icon={BookOpen}
@@ -2194,7 +2202,7 @@ const Dashboard = () => {
                     time="Heute"
                     icon={Brain}
                     title="Daily Flow"
-                    detail={todayCheckinDone ? "Tages-Puls und Aufgaben gespeichert" : "10 Tages-Puls-Fragen, Aufgaben und Verständnis-Check"}
+                    detail={todayCheckinDone ? "Tages-Puls und Mission gespeichert" : "10 Tages-Puls-Fragen, eine Mission und Verständnis-Check"}
                     active={!todayCheckinDone}
                     done={todayCheckinDone}
                     onClick={() => setShowCheckin(true)}

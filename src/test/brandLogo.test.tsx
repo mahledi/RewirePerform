@@ -8,7 +8,9 @@ describe("RewirePerform brand components", () => {
     const { container } = render(<BrandLockup symbolSize={30} />);
     const symbol = container.querySelector("img");
 
-    expect(screen.getByText("RewirePerform")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "RewirePerform" })).toBeInTheDocument();
+    expect(screen.getByText("Rewire")).toHaveClass("text-[#EEF0F2]");
+    expect(screen.getByText("Perform")).toHaveClass("text-[#2EAD89]");
     expect(symbol).toHaveAttribute("src", "/brand/rewireperform-symbol-dark.svg");
     expect(symbol).toHaveAttribute("width", "30");
     expect(symbol).toHaveAttribute("height", "30");
@@ -29,5 +31,12 @@ describe("RewirePerform brand components", () => {
     expect(symbol).toHaveAttribute("src", "/brand/rewireperform-symbol-light.svg");
     expect(symbol).toHaveAttribute("width", "48");
     expect(symbol).toHaveAttribute("height", "48");
+  });
+
+  it("keeps the wordmark readable on light surfaces while preserving the green Perform", () => {
+    render(<BrandLockup surface="light" />);
+
+    expect(screen.getByText("Rewire")).toHaveClass("text-[#0D0E12]");
+    expect(screen.getByText("Perform")).toHaveClass("text-[#2EAD89]");
   });
 });

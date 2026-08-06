@@ -63,25 +63,25 @@ describe("first run experience preview", () => {
 
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();
     expect(screen.getByText("Hallo Noah.")).toBeInTheDocument();
-    expect(screen.getAllByText("Dein Prozess ist dein Arbeitsfokus").length).toBeGreaterThan(0);
-    expect(screen.getByText("10 Tages-Puls-Fragen · 3 Aufgaben")).toBeInTheDocument();
+    expect(screen.getAllByText("Nimm das vollständige Bild wieder auf").length).toBeGreaterThan(0);
+    expect(screen.getByText("10 Tages-Puls-Fragen · eine Mission")).toBeInTheDocument();
     expect(screen.getAllByText("Pre-Training").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tagesjournal").length).toBeGreaterThan(0);
     expect(screen.getByText("Wochenplan")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Zuerst verstehst du den Fokus des Tages." })).toBeInTheDocument();
-    expect(screen.getByText("Ein System bleibt stabiler, wenn es weiß, wohin es zurückkehrt")).toBeInTheDocument();
+    expect(screen.getAllByText("Nimm das vollständige Bild wieder auf").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Drei konkrete Aufgaben bringen ihn in deinen Alltag." })).toBeInTheDocument();
-    expect(screen.getAllByText("Lege deinen Prozessanker fest").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Kehre an den Arbeitsort zurück").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Arbeite von dort aus weiter").length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Eine klare Mission bringt ihn in deinen Alltag." })).toBeInTheDocument();
+    expect(screen.getByText("Drei Teile ins Bild holen")).toBeInTheDocument();
+    expect(screen.getByText("Benenne das reale Problem.")).toBeInTheDocument();
+    expect(screen.getByText("Wähle aus dem ganzen Bild deine nächste Handlung.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Ein kurzer Check festigt, was du heute brauchst." })).toBeInTheDocument();
-    expect(screen.getByText("Was heißt „Prozess als Heimat“?")).toBeInTheDocument();
+    expect(screen.getByText("Was ist heute ausdrücklich nicht das Ziel?")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Vor dem Training siehst du denselben Fokus wieder." })).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe("first run experience preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Am Abend reflektierst du den echten Tag." })).toBeInTheDocument();
-    expect(screen.getByText("Was war heute mein klarer Prozessanker?")).toBeInTheDocument();
+    expect(screen.getByText("Welches Problem hat deinen Blick eng gemacht?")).toBeInTheDocument();
     expect(screen.getByText("Deine Journalantworten bleiben privat.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));

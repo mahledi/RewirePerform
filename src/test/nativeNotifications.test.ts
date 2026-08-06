@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildNativeReminderNotifications } from "@/lib/nativeNotifications";
+import {
+  buildNativeReminderNotifications,
+  buildRestVisualizationNotification,
+} from "@/lib/nativeNotifications";
 import { buildNativeTrainingMoments } from "@/lib/nativeReminderPlan";
 
 const basePreferences = {
@@ -139,5 +142,38 @@ describe("native training plan", () => {
         contextType: "competition",
       },
     ]);
+  });
+});
+
+describe("rest-day visualization reminder", () => {
+  it("builds one local reminder that returns to the protected dashboard", () => {
+    const notification = buildRestVisualizationNotification({
+      userId: "athlete-1",
+      date: "2026-08-06",
+      dayNumber: 18,
+      hour: 16,
+      minute: 30,
+      now: new Date(2026, 7, 6, 12, 0),
+    });
+
+    expect(notification.id).toBe(57_018);
+    expect(notification.schedule?.at).toEqual(new Date(2026, 7, 6, 16, 30));
+    expect(notification.extra).toMatchObject({
+      userId: "athlete-1",
+      route: "/dashboard",
+      kind: "rest_visualization",
+      scheduledDate: "2026-08-06",
+    });
+  });
+
+  it("rejects past times instead of pretending a reminder was scheduled", () => {
+    expect(() => buildRestVisualizationNotification({
+      userId: "athlete-1",
+      date: "2026-08-06",
+      dayNumber: 18,
+      hour: 11,
+      minute: 0,
+      now: new Date(2026, 7, 6, 12, 0),
+    })).toThrow("Wähle eine Uhrzeit");
   });
 });

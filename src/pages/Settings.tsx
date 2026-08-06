@@ -30,19 +30,19 @@ const faqItems = [
   },
   {
     q: "Wie funktioniert das Programm?",
-    a: "Nach der Registrierung lernst du den Ablauf in einer kurzen Einführung kennen. Danach füllst du den Onboarding-Fragebogen zu Sport, Position und mentaler Ausgangslage aus. Daraus entsteht dein Startprofil. Anschließend führt dich ein festes 56-Tage-System durch vier aufeinander aufbauende Phasen — jeder Tag hat eine klare Linse, einen Wissens-Input und konkrete Übungen.",
+    a: "Nach der Registrierung lernst du den Ablauf in einer kurzen Einführung kennen. Danach füllst du den Onboarding-Fragebogen zu Sport und mentaler Ausgangslage aus. Daraus entsteht dein Startprofil. Anschließend führt dich ein festes 56-Tage-System durch aufeinander aufbauende Lernphasen. Jeder Tag hat ein klares Werkzeug, einen kurzen Wissens-Input und eine Mission.",
   },
   {
     q: "Wie sehen die täglichen Aufgaben aus?",
-    a: "Jeder Tag besteht aus drei Bausteinen: kurzer Check-in (Stimmung, Energie, Fokus), Wissens-Input zur heutigen Linse und max. 3 konkrete Aufgaben. Dazu kommt ein Journal mit Reflexion und Dankbarkeit. Zusammen ca. 10–15 Minuten.",
+    a: "Du startest mit deinem Tages-Puls und einem kurzen Wissens-Input. Danach folgt genau eine Mission mit wenigen zusammengehörenden Schritten. Vor Training oder Wettkampf erinnerst du deinen Satz aktiv. An Ruhetagen führt dich die App stattdessen durch eine kurze mentale Einheit. Im Journal gehst du später eine Frage nach der anderen durch.",
   },
   {
     q: "Warum wird das Journal eingesprochen?",
     a: "Sprechen ist eine freiwillige Möglichkeit, Gedanken direkt festzuhalten. Aktives Formulieren und das Benennen eigener Reaktionen können Reflexion und innere Distanz unterstützen. In der iPhone- und iPad-App wird Sprache nur lokal auf dem Gerät in Text umgewandelt. Du kannst den Text anschließend bearbeiten oder stattdessen vollständig tippen.",
   },
   {
-    q: "Was ist aMCC-Training?",
-    a: "Der anterior midcingulate cortex (aMCC) ist eine Hirnregion, die unter anderem mit Anstrengung, Konfliktverarbeitung und zielgerichtetem Handeln in Verbindung gebracht wird. Kurze, machbare Challenges übersetzen das Prinzip des freiwilligen Handelns trotz Unkomfort in die Praxis. RewirePerform misst dabei keine Gehirnaktivität und verspricht kein gezieltes Wachstum einer Hirnregion.",
+    q: "Was ist die mentale Einheit am Ruhetag?",
+    a: "An einem Ruhetag musst du keine Trainingssituation erfinden. Die App führt dich Schritt für Schritt durch eine Vorstellung aus deinem eigenen Sport. Dabei bleiben das Werkzeug und der Satz deines Programmtags gleich. Gespeichert wird nur, ob du die Einheit abgeschlossen hast — nicht, welche Szene du dir vorgestellt hast.",
   },
   {
     q: "Wie verändert mich das?",

@@ -130,6 +130,7 @@ export interface DailyJournal {
   journalTitle: string;
   questions: JournalQuestion[];
   gratitudeInstruction: string;
+  gratitudeMinWords?: number;
   freeReflectionPrompt?: string;
 }
 
@@ -166,8 +167,8 @@ export interface DailyContent {
   };
   todayTrigger: string;
   coreShift: string;
-  /** Genau 3 Tasks pro Tag */
-  tasks: [DailyTask, DailyTask, DailyTask];
+  /** Eine sichtbare Mission; ihre Schritte gehören zusammen. */
+  tasks: [DailyTask, ...DailyTask[]];
   journal: DailyJournal;
   gratitudePrompt: string;
   selfTalkAnchors: SelfTalkAnchor[];
@@ -180,6 +181,13 @@ export interface DailyContent {
     training: string;
     rest: string;
     match: string;
+  };
+  /** Aktiver Abruf vor Training oder Wettkampf. */
+  preTraining?: {
+    label: "Pre-Training" | "Pre-Wettkampf";
+    recallPrompt: string;
+    reveal: string;
+    application: string;
   };
 }
 

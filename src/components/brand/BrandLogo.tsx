@@ -52,8 +52,15 @@ export const BrandLockup = ({
 }: BrandLockupProps) => (
   <span className={cn("inline-flex min-w-0 items-center gap-2.5", className)}>
     <BrandSymbol className={symbolClassName} size={symbolSize} surface={surface} />
-    <span className={cn("truncate font-heading font-bold tracking-normal", textClassName)}>
-      RewirePerform
+    <span
+      aria-label="RewirePerform"
+      role="img"
+      className={cn("truncate font-heading font-bold tracking-normal", textClassName)}
+    >
+      <span aria-hidden="true">
+        <span className={surface === "dark" ? "text-[#EEF0F2]" : "text-[#0D0E12]"}>Rewire</span>
+        <span className="text-[#2EAD89]">Perform</span>
+      </span>
     </span>
   </span>
 );

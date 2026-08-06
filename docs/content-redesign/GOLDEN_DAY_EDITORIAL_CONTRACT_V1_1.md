@@ -16,10 +16,10 @@ Die heutige Aufgabe ist ein zusammenhängender Vorgang. Zwei oder drei logisch n
 2. **Science Bite:** ein Mechanismus in Alltagssprache.
 3. **Mission:** eine zusammenhängende Handlung mit höchstens drei Schritten.
 4. **Kurz prüfen:** ein typisches Missverständnis unterscheiden.
-5. **Pre-Training oder Pre-Wettkampf:** zuerst frei erinnern, danach den Cue aufdecken.
+5. **Pre-Training oder Pre-Wettkampf:** zuerst frei erinnern, danach den Satz des Tages aufdecken.
 6. **Journal:** eine Frage pro Ansicht; danach ein gemeinsamer Dankbarkeitsblock.
 
-An Ruhetagen wird kein Pre-Training angezeigt. Das Werkzeug bleibt jedoch dasselbe, falls derselbe Programmtag bei einem anderen Athleten auf Training oder Wettkampf fällt.
+An Ruhetagen ersetzt eine geführte mentale Einheit das Pre-Training. Sie führt in sieben einfachen Schritten durch eine eigene oder angeleitete Sportszene: ankommen, Szene aufbauen, den entscheidenden Moment erkennen, den Satz erinnern, die Handlung sehen, die Szene wiederholen und den Transfer festhalten. Das Werkzeug und das Lernziel bleiben identisch, falls derselbe Programmtag bei einem anderen Athleten auf Training oder Wettkampf fällt.
 
 ## 3. Science-Bite-Standard
 
@@ -54,6 +54,8 @@ Nichtwissen wird nicht bestraft und erzeugt keinen Score. Der Abruf dient Lernen
 - Aufbau und Rückkehr: zwei bis drei kurze Fragen;
 - Vertiefung und Integration: höchstens drei Fragen;
 - immer nur eine Frage gleichzeitig sichtbar;
+- jeder Ruhetag besitzt zwei manuell geschriebene Fragen zur eigenen mentalen Einheit;
+- jeder Wettkampftag nutzt die tagesgenauen Fragen in klarer Wettkampfsprache;
 - eine konkrete Szene erneut durchgehen, nicht allgemein über die eigene Persönlichkeit urteilen;
 - Nicht-Anwendung darf ehrlich angegeben werden;
 - Dankbarkeit ist ein einzelner Abschlussblock mit einem konkreten Satz und kein zweiter Tagesanker;
@@ -64,7 +66,7 @@ Nichtwissen wird nicht bestraft und erzeugt keinen Score. Der Abruf dient Lernen
 
 - **Training:** reale Anwendung, wenn die passende Situation auftritt; sonst ehrliche Nicht-Anwendung oder eine konkrete frühere Szene.
 - **Wettkampf:** sehr kurze, sichere Version mit demselben Cue; kein neuer komplexer Mechanismus mitten im Wettkampf.
-- **Ruhetag:** verstehen, erinnern oder eine frühere reale Szene durchgehen; keine heutige Sportanwendung erfinden.
+- **Ruhetag:** eine eigene oder angeleitete Sportszene mental durchgehen; keine heutige Sportanwendung erfinden und keinen Szeneninhalt speichern.
 - **Planänderung:** Werkzeug und Programmlogik bleiben stabil; sichtbarer Flow und Journal folgen dem tatsächlichen Kontext.
 - **Verpasster Tag:** nur kurze Zusammenfassung, niemals Nachholmission; maximal die letzten drei.
 

@@ -62,6 +62,13 @@ const athleteCopy = (draft: (typeof PROGRAM_DAY_DRAFTS)[number]): string => JSON
   integrationTools: draft.integrationTools?.map(({ cue, use }) => ({ cue, use })),
 });
 
+const athleteStrings = (value: unknown): string[] => {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(athleteStrings);
+  if (value && typeof value === "object") return Object.values(value).flatMap(athleteStrings);
+  return [];
+};
+
 describe("complete 56-day V1.1 editorial draft", () => {
   it("contains every program day exactly once and follows the approved tool and stage map", () => {
     expect(PROGRAM_DAY_DRAFTS).toHaveLength(56);
@@ -155,9 +162,20 @@ describe("complete 56-day V1.1 editorial draft", () => {
 
     for (const draft of PROGRAM_DAY_DRAFTS) {
       const copy = athleteCopy(draft).toLocaleLowerCase("de");
+      const visibleStrings = athleteStrings({
+        title: draft.title,
+        purpose: draft.purpose,
+        scienceBite: draft.scienceBite,
+        mission: draft.mission,
+        comprehension: draft.comprehension,
+        preTraining: draft.preTraining,
+        journal: draft.journal,
+        optionalDepth: draft.optionalDepth,
+      });
       for (const phrase of blocked) {
         expect(copy, `Tag ${draft.day} contains blocked phrase: ${phrase}`).not.toContain(phrase.toLocaleLowerCase("de"));
       }
+      expect(visibleStrings.join(" "), `Tag ${draft.day} contains athlete-facing Cue jargon`).not.toMatch(/\bcue\b/iu);
       expect(copy, `Tag ${draft.day} leaks an internal tool code`).not.toMatch(/\bW[1-7]\b/u);
       expect(copy, `Tag ${draft.day} promises a guaranteed product effect`).not.toMatch(/(?:programm|system|werkzeug)[^.!?]{0,80}garantiert/u);
       expect(draft.comprehension.prompt, `Tag ${draft.day} tests editorial architecture instead of application`).not.toMatch(

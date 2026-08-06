@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
 import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
-import TodayForYou from "@/components/daily/TodayForYou";
+import RestDayMission, { type RestDayPlanMode } from "@/components/daily/RestDayMission";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +28,6 @@ import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, drawComprehensionQuestions } from "@/lib/dayAssignment";
 import { saveDailyTracking, type DailyTrackingComprehensionResult } from "@/lib/dailyTracking";
-import {
-  buildMicroAdjustmentContext,
-  type MicroAdjustmentOutput,
-} from "@/lib/microAdjustment";
 import { pulseQuestionsByContext } from "@/lib/dayContext";
 import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
@@ -46,6 +42,7 @@ import {
   type TransferPulseResponse,
 } from "@/lib/performanceEvidence";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
+import { getProgramDayDraft } from "@/content/programV11";
 
 type EventType = CalendarEventType;
 
@@ -75,6 +72,9 @@ interface CheckinDraft {
   teamConnection: number | null;
   transferPulseResponse?: TransferPulseResponse | null;
   transferPulseResponseDurationMs?: number | null;
+  restPlanMode?: RestDayPlanMode;
+  restReminderTime?: string;
+  restReminderScheduled?: boolean;
   savedAt: string;
 }
 
@@ -87,68 +87,6 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
   training: { label: "Trainingstag", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
   rest: { label: "Ruhetag", icon: Moon, color: "text-blue-400", bg: "bg-blue-400/20" },
   competition: { label: "Wettkampftag", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
-};
-
-const numberOrUndefined = (value: unknown): number | undefined => (
-  typeof value === "number" && Number.isFinite(value) ? value : undefined
-);
-
-const asRecord = (value: unknown): Record<string, unknown> | null => (
-  value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null
-);
-
-const score100ToSignal = (score: unknown): number | undefined => {
-  const n = numberOrUndefined(score);
-  if (typeof n !== "number") return undefined;
-  return Math.max(0, Math.min(1, (100 - n) / 100));
-};
-
-const score100ToStrength = (score: unknown): number | undefined => {
-  const n = numberOrUndefined(score);
-  if (typeof n !== "number") return undefined;
-  return Math.max(0, Math.min(1, n / 100));
-};
-
-const maxSignal = (...values: Array<number | undefined>) => {
-  const valid = values.filter((value): value is number => typeof value === "number");
-  return valid.length ? Math.max(...valid) : undefined;
-};
-
-const buildQuestionnaireSignals = (analysis: Record<string, unknown> | null) => {
-  if (!analysis) return undefined;
-  const scores = asRecord(analysis.scores);
-  const categoryScores = asRecord(analysis.category_scores) ?? asRecord(scores?.category_scores);
-  const itemScores = asRecord(scores?.item_scores);
-  const inner = asRecord(analysis.inner_excellence_profile);
-
-  return {
-    resultFocus: maxSignal(
-      score100ToSignal(categoryScores?.focus_presence),
-      score100ToSignal(categoryScores?.motivation_purpose),
-      score100ToSignal(itemScores?.["mot-05"])
-    ),
-    selfCriticism: maxSignal(
-      score100ToSignal(categoryScores?.identity_selfworth),
-      score100ToSignal(categoryScores?.mistakes_evaluation),
-      score100ToSignal(itemScores?.["id-01"]),
-      score100ToSignal(itemScores?.["id-02"])
-    ),
-    judgementFear: maxSignal(
-      score100ToSignal(itemScores?.["err-04"]),
-      score100ToSignal(itemScores?.["id-04"]),
-      score100ToSignal(categoryScores?.environment_team)
-    ),
-    egoVisibility: maxSignal(
-      score100ToSignal(itemScores?.["id-04"]),
-      score100ToSignal(itemScores?.["id-05"]),
-      score100ToSignal(inner?.ego_freedom_score)
-    ),
-    confidence: maxSignal(
-      score100ToStrength(analysis.start_profile_score),
-      score100ToStrength(scores?.start_profile_score),
-      score100ToStrength(inner?.presence_level)
-    ),
-  };
 };
 
 const normalizeDraftStep = (draftStep: number | null | undefined) => {
@@ -176,7 +114,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [assignmentId, setAssignmentId] = useState<string | null>(null);
   const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
   const [comprehensionDone, setComprehensionDone] = useState(false);
-  const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
   // Team Pulse — erweiterte Wohlbefindens-Metriken (1-10)
@@ -194,6 +131,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
+  const [restPlanMode, setRestPlanMode] = useState<RestDayPlanMode>(null);
+  const [restReminderTime, setRestReminderTime] = useState("15:00");
+  const [restReminderScheduled, setRestReminderScheduled] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const transferPulseStartedAtRef = useRef<number | null>(null);
 
@@ -276,7 +216,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       setResolved(r);
       setAssignmentId(null);
       setComprehensionQuestions(drawComprehensionQuestions(r.matrix.dayNumber, 3));
-      setMicroAdjustment(null);
     }
     setLoadingTasks(false);
   };
@@ -290,19 +229,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     transferPulseStartedAtRef.current = null;
     const dateStr = format(date, "yyyy-MM-dd");
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("sport, position, team")
-      .eq("id", user.id)
-      .maybeSingle();
-
     const result = await ensureAssignment({
       userId: user.id,
       date,
       contextType: eventType,
-      sport: profile?.sport ?? null,
-      // Bevorzuge das neue, semantisch korrekte Feld; Fallback auf Legacy-Feld für ältere Profile.
-      position: profile?.position ?? profile?.team ?? null,
+      sport: null,
+      position: null,
     });
 
     if (result) {
@@ -348,6 +280,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         setTransferPulseResponseDurationMs(
           normalizeEvidenceDurationMs(local.transferPulseResponseDurationMs),
         );
+        setRestPlanMode(local.restPlanMode ?? null);
+        setRestReminderTime(local.restReminderTime ?? "15:00");
+        setRestReminderScheduled(local.restReminderScheduled ?? false);
       } else if (persistedTaskIds.length > 0) {
         setCompletedTasks(persistedTaskIds);
       }
@@ -396,72 +331,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         }
       }
 
-      // ─── Micro-Adjustment Layer ─────────────────────────
-      // Lädt nur bestehende Daten, kein KI-Call, undefined-safe.
-      let todayCheckinQuery = supabase
-        .from("daily_checkins")
-        .select("mood_before, energy_level, focus_rating, wellbeing_metrics")
-        .eq("user_id", user.id)
-        .eq("date", dateStr)
-        .limit(1);
-      todayCheckinQuery = instance?.id
-        ? todayCheckinQuery.eq("program_instance_id", instance.id)
-        : todayCheckinQuery.is("program_instance_id", null);
-
-      let questionnaireQuery = supabase
-        .from("questionnaire_responses")
-        .select("analysis")
-        .eq("user_id", user.id)
-        .not("analysis", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(1);
-      if (instance?.id) questionnaireQuery = questionnaireQuery.eq("program_instance_id", instance.id);
-
-      const [{ data: todayCheckins }, { data: questionnaireRows }] = await Promise.all([
-        todayCheckinQuery,
-        questionnaireQuery,
-      ]);
-      const todayCheckin = todayCheckins?.[0] ?? null;
-      const questionnaire = questionnaireRows?.[0] ?? null;
-      const wellbeingMetrics = asRecord(todayCheckin?.wellbeing_metrics);
-
-      // Robuste, optionale Signal-Extraktion aus der bestehenden Analyse.
-      // Keine Diagnosen, keine privaten Rohantworten im UI — nur grobe Musterlinien.
-      const analysis = (questionnaire?.analysis ?? null) as Record<string, unknown> | null;
-      const questionnaireSignals = buildQuestionnaireSignals(analysis);
-      const localCheckin = local
-        ? {
-            mood: local.moodBefore,
-            energy: local.energyLevel,
-            focus: local.focusClarity,
-            stress: local.stress ?? local.pressure,
-          }
-        : undefined;
-
-      const micro = buildMicroAdjustmentContext({
-        day: {
-          dayNumber: result.resolved.matrix.dayNumber,
-          lens: result.resolved.content.title ?? result.resolved.content.lens ?? result.resolved.matrix.lens,
-          primaryMechanism: result.resolved.matrix.primaryMechanism,
-          recurrenceType: result.resolved.matrix.recurrenceType,
-          phase: result.resolved.matrix.phase,
-        },
-        contextType: eventType,
-        profile: {
-          sport: profile?.sport ?? null,
-          position: profile?.position ?? profile?.team ?? null,
-        },
-        questionnaireSignals,
-        checkin: todayCheckin
-          ? {
-              mood: todayCheckin.mood_before ?? null,
-              energy: todayCheckin.energy_level ?? null,
-              focus: todayCheckin.focus_rating ?? null,
-              stress: numberOrUndefined(wellbeingMetrics?.stress) ?? numberOrUndefined(wellbeingMetrics?.pressure) ?? null,
-            }
-          : localCheckin,
-      });
-      setMicroAdjustment(micro);
     }
     setLoadingTasks(false);
   };
@@ -472,6 +341,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       completedTasks.length > 0 ||
       reflection.trim().length > 0 ||
       transferPulseResponse !== null ||
+      restPlanMode !== null ||
+      restReminderScheduled ||
       [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection]
         .some((value) => value !== null);
     if (!hasDraft) return;
@@ -491,6 +362,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       teamConnection,
       transferPulseResponse,
       transferPulseResponseDurationMs,
+      restPlanMode,
+      restReminderTime,
+      restReminderScheduled,
       savedAt: new Date().toISOString(),
     });
   }, [
@@ -511,6 +385,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     teamConnection,
     transferPulseResponse,
     transferPulseResponseDurationMs,
+    restPlanMode,
+    restReminderTime,
+    restReminderScheduled,
   ]);
 
   const persistTaskProgress = async (taskIds: string[]) => {
@@ -719,8 +596,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               </div>
             )}
 
-            {microAdjustment && <TodayForYou data={microAdjustment} />}
-
             <motion.button
               data-testid="daily-science-ack"
               whileHover={{ scale: 1.02 }}
@@ -738,6 +613,38 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
   // ─── Task Dashboard ─────────────────────────────
   const TaskDashboard = () => {
+    if (eventType === "rest" && resolved) {
+      const draft = getProgramDayDraft(resolved.matrix.dayNumber);
+      const missionTask = tasks[0];
+      if (!draft || !missionTask) {
+        return (
+          <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-5 text-sm text-muted-foreground">
+            Die mentale Einheit für diesen Tag konnte nicht geladen werden.
+          </div>
+        );
+      }
+
+      return (
+        <RestDayMission
+          draft={draft}
+          userId={user?.id ?? null}
+          date={dateKey}
+          planMode={restPlanMode}
+          reminderTime={restReminderTime}
+          reminderScheduled={restReminderScheduled}
+          completed={completedTasks.includes(missionTask.id)}
+          onPlanModeChange={(mode) => {
+            setRestPlanMode(mode);
+            if (mode === "now") setRestReminderScheduled(false);
+          }}
+          onReminderTimeChange={setRestReminderTime}
+          onReminderScheduledChange={setRestReminderScheduled}
+          onComplete={() => markTaskComplete(missionTask.id)}
+          onCloseForLater={onClose}
+        />
+      );
+    }
+
     return (
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
         <div className="flex items-center justify-between mb-2">
@@ -800,7 +707,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     "Science Bite",
     "Dein Tages-Puls",
     activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
-    "Deine Aufgaben",
+    eventType === "rest" ? "Mentale Einheit" : "Deine Mission",
     "Verständnis-Check",
     "Abgeschlossen",
   ] as const;
@@ -964,7 +871,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
                     <p className="text-muted-foreground mb-6 text-sm">
                       {comprehensionQuestions.length > 0
-                        ? "Drei Fragen zur heutigen Linse. Kein Test — nur Festigung."
+                        ? "Eine kurze Frage zur heutigen Linie. Kein Test — nur Festigung."
                         : "Heute kein Check verfügbar. Du kannst direkt abschließen."}
                     </p>
                     {comprehensionQuestions.length > 0 ? (
@@ -1034,7 +941,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
-              const remainingTasks = tasks.filter((task) => !completedTasks.includes(task.id)).length;
               const transferPulseIncomplete = step === 2
                 && Boolean(activeTransferPulse)
                 && transferPulseResponse === null;
@@ -1061,7 +967,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                   }`}
                 >
                   {step === 3 && !tasksComplete
-                    ? `${remainingTasks} ${remainingTasks === 1 ? "Aufgabe" : "Aufgaben"} offen`
+                    ? eventType === "rest"
+                      ? "Mentale Einheit offen"
+                      : "Mission offen"
                     : "Weiter"}
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
