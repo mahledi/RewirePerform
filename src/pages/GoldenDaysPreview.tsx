@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Bell,
   BookOpen,
   Brain,
   CalendarClock,
@@ -12,6 +13,7 @@ import {
   Eye,
   Layers3,
   Moon,
+  Play,
   RotateCcw,
   ShieldCheck,
   Sparkles,
@@ -26,6 +28,9 @@ import {
   type GoldenDayContext,
   type GoldenDayDraft,
 } from "@/prototypes/golden-days/goldenDayDrafts";
+import RestDayVisualizationFlow from "@/prototypes/golden-days/RestDayVisualizationFlow";
+import { getContextDayJournal } from "@/prototypes/golden-days/contextDayJournals";
+import { getRestDayVisualization } from "@/prototypes/golden-days/restDayVisualizations";
 
 type PreviewStage =
   | "overview"
@@ -33,6 +38,8 @@ type PreviewStage =
   | "mission"
   | "comprehension"
   | "pre-training"
+  | "rest-plan"
+  | "visualization"
   | "journal"
   | "special";
 
@@ -45,14 +52,14 @@ const contextMeta: Record<GoldenDayContext, { label: string; icon: typeof Dumbbe
 const contextExecutionCopy: Record<GoldenDayContext, { mission: string; journal: string }> = {
   training: {
     mission: "Nutze die Mission, wenn der passende Moment auftaucht. Wenn nicht, erfindest du keine Anwendung.",
-    journal: "Wenn der Trigger heute nicht vorkam, ist „nicht angewendet“ eine ehrliche Antwort.",
+    journal: "Wenn der passende Moment heute nicht vorkam, ist „nicht angewendet“ eine ehrliche Antwort.",
   },
   rest: {
     mission: "Heute musst du keine Sportanwendung erfinden. Geh die Mission an einer konkreten früheren Szene durch.",
     journal: "Nutze eine konkrete frühere Szene, wenn heute keine passende Anwendung möglich war.",
   },
   competition: {
-    mission: "Im Wettkampf reicht der Cue mit der nächsten Handlung. Die ausführliche Reflexion folgt danach.",
+    mission: "Im Wettkampf reicht dein Satz mit der nächsten Handlung. Die ausführliche Reflexion folgt danach.",
     journal: "Geh die Szene erst nach dem Wettkampf in Ruhe durch, nicht mitten in der nächsten Aktion.",
   },
 };
@@ -64,15 +71,29 @@ const hasSpecialStage = (draft: GoldenDayDraft) => Boolean(
   || draft.integrationTools?.length,
 );
 
-const getStages = (draft: GoldenDayDraft, context: GoldenDayContext = draft.context): PreviewStage[] => [
-  "overview",
-  "science",
-  "mission",
-  "comprehension",
-  ...(draft.preTraining && context !== "rest" ? ["pre-training" as const] : []),
-  "journal",
-  ...(hasSpecialStage(draft) ? ["special" as const] : []),
-];
+const getStages = (draft: GoldenDayDraft, context: GoldenDayContext = draft.context): PreviewStage[] => {
+  if (context === "rest") {
+    return [
+      "overview",
+      "science",
+      "comprehension",
+      "rest-plan",
+      "visualization",
+      "journal",
+      ...(hasSpecialStage(draft) ? ["special" as const] : []),
+    ];
+  }
+
+  return [
+    "overview",
+    "science",
+    "mission",
+    "comprehension",
+    ...(draft.preTraining ? ["pre-training" as const] : []),
+    "journal",
+    ...(hasSpecialStage(draft) ? ["special" as const] : []),
+  ];
+};
 
 const stageLabels: Record<PreviewStage, string> = {
   overview: "Überblick",
@@ -80,6 +101,8 @@ const stageLabels: Record<PreviewStage, string> = {
   mission: "Mission",
   comprehension: "Kurz prüfen",
   "pre-training": "Vor der Einheit",
+  "rest-plan": "Zeit wählen",
+  visualization: "Mentale Einheit",
   journal: "Journal",
   special: "Sonderfall",
 };
@@ -295,7 +318,15 @@ const ComprehensionStage = ({ draft }: { draft: GoldenDayDraft }) => {
   );
 };
 
-const PreTrainingStage = ({ draft, context }: { draft: GoldenDayDraft; context: GoldenDayContext }) => {
+const PreTrainingStage = ({
+  draft,
+  context,
+  onRevealChange,
+}: {
+  draft: GoldenDayDraft;
+  context: GoldenDayContext;
+  onRevealChange: (revealed: boolean) => void;
+}) => {
   const [answer, setAnswer] = useState("");
   const [revealed, setRevealed] = useState(false);
   const pre = draft.preTraining;
@@ -303,7 +334,8 @@ const PreTrainingStage = ({ draft, context }: { draft: GoldenDayDraft; context: 
   useEffect(() => {
     setAnswer("");
     setRevealed(false);
-  }, [draft.day]);
+    onRevealChange(false);
+  }, [context, draft.day, onRevealChange]);
 
   if (!pre) return null;
 
@@ -311,7 +343,7 @@ const PreTrainingStage = ({ draft, context }: { draft: GoldenDayDraft; context: 
     <div className="space-y-5">
       <div>
         <StageEyebrow>{context === "competition" ? "Pre-Wettkampf" : "Pre-Training"}</StageEyebrow>
-        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Erst erinnern. Dann den Cue sehen.</h2>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Erst erinnern. Dann deinen Satz sehen.</h2>
         <p className="mt-3 text-sm leading-6 text-white/52">{pre.recallPrompt}</p>
       </div>
       <textarea
@@ -323,7 +355,10 @@ const PreTrainingStage = ({ draft, context }: { draft: GoldenDayDraft; context: 
       />
       <button
         type="button"
-        onClick={() => setRevealed(true)}
+        onClick={() => {
+          setRevealed(true);
+          onRevealChange(true);
+        }}
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm font-semibold text-white/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         Erinnerung prüfen <ChevronDown className="h-4 w-4" />
@@ -339,6 +374,99 @@ const PreTrainingStage = ({ draft, context }: { draft: GoldenDayDraft; context: 
   );
 };
 
+const RestPlanStage = ({
+  draft,
+  onReadyChange,
+}: {
+  draft: GoldenDayDraft;
+  onReadyChange: (ready: boolean) => void;
+}) => {
+  const visualization = useMemo(() => getRestDayVisualization(draft), [draft]);
+  const [choice, setChoice] = useState<"now" | "later" | null>(null);
+  const [reminderTime, setReminderTime] = useState("18:00");
+
+  useEffect(() => {
+    setChoice(null);
+    setReminderTime("18:00");
+    onReadyChange(false);
+  }, [draft.day, onReadyChange]);
+
+  useEffect(() => {
+    onReadyChange(choice === "now" || (choice === "later" && Boolean(reminderTime)));
+  }, [choice, onReadyChange, reminderTime]);
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <StageEyebrow>Dein Ruhetag</StageEyebrow>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Wann passt deine mentale Einheit?</h2>
+        <p className="mt-3 text-sm leading-6 text-white/52">
+          Etwa {visualization.estimatedMinutes} Minuten. Dein heutiger Satz und dein Lernziel bleiben gleich.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => setChoice("now")}
+          aria-pressed={choice === "now"}
+          className={cn(
+            "group relative min-h-28 overflow-hidden rounded-[22px] border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            choice === "now"
+              ? "border-primary/40 bg-primary/[0.08] shadow-[0_0_28px_hsl(var(--primary)/0.08)]"
+              : "border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.04]",
+          )}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+            <Play className="h-4 w-4 fill-current" />
+          </div>
+          <p className="mt-4 font-semibold">Jetzt starten</p>
+          <p className="mt-1 text-xs leading-5 text-white/40">Direkt in die geführte Einheit.</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setChoice("later")}
+          aria-pressed={choice === "later"}
+          className={cn(
+            "group relative min-h-28 overflow-hidden rounded-[22px] border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+            choice === "later"
+              ? "border-primary/40 bg-primary/[0.08] shadow-[0_0_28px_hsl(var(--primary)/0.08)]"
+              : "border-white/[0.07] bg-white/[0.025] hover:bg-white/[0.04]",
+          )}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/12 text-primary">
+            <Bell className="h-4 w-4" />
+          </div>
+          <p className="mt-4 font-semibold">Später erinnern</p>
+          <p className="mt-1 text-xs leading-5 text-white/40">Eine Erinnerung nur auf deinem Gerät.</p>
+        </button>
+      </div>
+
+      {choice === "later" && (
+        <Panel className="border-primary/15 bg-primary/[0.045]">
+          <label htmlFor={`rest-reminder-${draft.day}`} className="text-sm font-semibold">Uhrzeit wählen</label>
+          <input
+            id={`rest-reminder-${draft.day}`}
+            type="time"
+            value={reminderTime}
+            onChange={(event) => setReminderTime(event.target.value)}
+            className="mt-4 min-h-12 w-full rounded-2xl border border-white/[0.08] bg-black/10 px-4 text-base text-white outline-none focus:border-primary/45 focus:ring-2 focus:ring-primary/15"
+          />
+          <p className="mt-3 text-xs leading-5 text-white/38">
+            Im echten Produkt wird diese Uhrzeit lokal gespeichert. Die Vorschau plant keine echte Nachricht.
+          </p>
+        </Panel>
+      )}
+
+      <div className="flex items-start gap-3 rounded-2xl border border-white/[0.055] px-4 py-3 text-xs leading-5 text-white/42">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        Deine vorgestellte Szene wird weder abgefragt noch gespeichert. Nur ein späterer Abschluss kann als Aktivität zählen.
+      </div>
+    </div>
+  );
+};
+
 const JournalStage = ({
   draft,
   context,
@@ -348,7 +476,8 @@ const JournalStage = ({
   context: GoldenDayContext;
   showContextGuidance?: boolean;
 }) => {
-  const questions = draft.journal.questions.filter(Boolean);
+  const journal = useMemo(() => getContextDayJournal(draft, context), [context, draft]);
+  const questions = journal.questions;
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const isGratitude = questionIndex === questions.length;
@@ -356,7 +485,7 @@ const JournalStage = ({
   useEffect(() => {
     setQuestionIndex(0);
     setAnswers({});
-  }, [draft.day]);
+  }, [context, draft.day]);
 
   const question = questions[questionIndex];
   const activeId = isGratitude ? `${draft.day}-gratitude` : question.id;
@@ -367,16 +496,16 @@ const JournalStage = ({
     <div className="space-y-5">
       <div>
         <StageEyebrow>Journal · {questionIndex + 1} von {total}</StageEyebrow>
-        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">{draft.journal.title}</h2>
-        <p className="mt-3 text-sm leading-6 text-white/52">{draft.journal.intro}</p>
-        {showContextGuidance && (
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">{journal.title}</h2>
+        <p className="mt-3 text-sm leading-6 text-white/52">{journal.intro}</p>
+        {showContextGuidance && context !== "rest" && (
           <p className="mt-2 text-xs leading-5 text-primary/75">{contextExecutionCopy[context].journal}</p>
         )}
       </div>
 
       <Panel>
         <p className="text-base font-semibold leading-6">
-          {isGratitude ? draft.journal.gratitudePrompt : question.prompt}
+          {isGratitude ? journal.gratitudePrompt : question.prompt}
         </p>
         <textarea
           value={value}
@@ -387,7 +516,7 @@ const JournalStage = ({
         />
         {isGratitude && (
           <p className="mt-3 text-xs leading-5 text-white/38">
-            Redaktionstest: mindestens {draft.journal.gratitudeMinWords} Wörter. Kein Qualitäts- oder Wirkungsscore.
+            Redaktionstest: mindestens {journal.gratitudeMinWords} Wörter. Kein Qualitäts- oder Wirkungsscore.
           </p>
         )}
       </Panel>
@@ -535,12 +664,25 @@ const stageContent = (
   dayKind: string,
   onContextChange?: (context: GoldenDayContext) => void,
   showContextGuidance = false,
+  onRestPlanReadyChange?: (ready: boolean) => void,
+  onVisualizationCompletionChange?: (complete: boolean) => void,
+  onPreTrainingRevealChange?: (revealed: boolean) => void,
 ) => {
   if (stage === "overview") return <OverviewStage draft={draft} context={context} dayKind={dayKind} onContextChange={onContextChange} />;
   if (stage === "science") return <ScienceStage draft={draft} />;
   if (stage === "mission") return <MissionStage draft={draft} context={context} showContextGuidance={showContextGuidance} />;
   if (stage === "comprehension") return <ComprehensionStage draft={draft} />;
-  if (stage === "pre-training") return <PreTrainingStage draft={draft} context={context} />;
+  if (stage === "pre-training") {
+    return (
+      <PreTrainingStage
+        draft={draft}
+        context={context}
+        onRevealChange={onPreTrainingRevealChange ?? (() => undefined)}
+      />
+    );
+  }
+  if (stage === "rest-plan") return <RestPlanStage draft={draft} onReadyChange={onRestPlanReadyChange ?? (() => undefined)} />;
+  if (stage === "visualization") return <RestDayVisualizationFlow draft={draft} onCompletionChange={onVisualizationCompletionChange} />;
   if (stage === "journal") return <JournalStage draft={draft} context={context} showContextGuidance={showContextGuidance} />;
   return <SpecialStage draft={draft} />;
 };
@@ -554,6 +696,9 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
   const [dayIndex, setDayIndex] = useState(0);
   const [stageIndex, setStageIndex] = useState(0);
   const [context, setContext] = useState<GoldenDayContext>(drafts[0]?.context ?? "training");
+  const [restPlanReady, setRestPlanReady] = useState(false);
+  const [visualizationComplete, setVisualizationComplete] = useState(false);
+  const [preTrainingRevealed, setPreTrainingRevealed] = useState(false);
   const reduceMotion = useReducedMotion();
   const contentRef = useRef<HTMLDivElement>(null);
   const draft = drafts[dayIndex];
@@ -561,14 +706,21 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
   const stage = stages[stageIndex] ?? stages[0];
   const ContextIcon = contextMeta[context].icon;
   const isProgram = mode === "program";
+  const stageLocked = (stage === "rest-plan" && !restPlanReady)
+    || (stage === "visualization" && !visualizationComplete)
+    || (stage === "pre-training" && !preTrainingRevealed);
 
   const selectDay = (index: number) => {
     setDayIndex(index);
     setStageIndex(0);
     setContext(drafts[index].context);
+    setRestPlanReady(false);
+    setVisualizationComplete(false);
+    setPreTrainingRevealed(false);
   };
 
   const moveStage = (next: number) => {
+    if (next > stageIndex && stageLocked) return;
     setStageIndex(Math.max(0, Math.min(stages.length - 1, next)));
   };
 
@@ -624,9 +776,12 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
               type="button"
               aria-label={stageLabels[item]}
               onClick={() => moveStage(index)}
-              className="flex min-h-11 min-w-3 flex-1 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="group flex min-h-11 min-w-3 flex-1 items-center focus-visible:outline-none"
             >
-              <span className={cn("h-1.5 w-full rounded-full transition-colors", index <= stageIndex ? "bg-primary" : "bg-white/[0.08]")} />
+              <span className={cn(
+                "h-1.5 w-full rounded-full transition-colors group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-[#0D0E12]",
+                index <= stageIndex ? "bg-primary" : "bg-white/[0.08]",
+              )} />
             </button>
           ))}
           <span className="ml-2 text-[10px] tabular-nums text-white/38">{stageIndex + 1}/{stages.length}</span>
@@ -653,8 +808,14 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
                 isProgram ? (nextContext) => {
                   setContext(nextContext);
                   setStageIndex(0);
+                  setRestPlanReady(false);
+                  setVisualizationComplete(false);
+                  setPreTrainingRevealed(false);
                 } : undefined,
                 isProgram,
+                setRestPlanReady,
+                setVisualizationComplete,
+                setPreTrainingRevealed,
               )}
             </motion.section>
           </AnimatePresence>
@@ -675,10 +836,16 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
           <button
             type="button"
             onClick={() => moveStage(stageIndex + 1)}
-            disabled={stageIndex === stages.length - 1}
+            disabled={stageIndex === stages.length - 1 || stageLocked}
             className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:bg-white/[0.06] disabled:text-white/28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0C10]"
           >
-            {stageIndex === stages.length - 1 ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig") : "Weiter"}
+            {stageIndex === stages.length - 1
+              ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig")
+              : stage === "rest-plan" && !restPlanReady
+                ? "Zeit auswählen"
+                : stage === "visualization" && !visualizationComplete
+                  ? "Einheit abschließen"
+                  : "Weiter"}
             {stageIndex < stages.length - 1 && <ChevronRight className="h-4 w-4" />}
           </button>
         </div>

@@ -160,7 +160,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
     },
     recall: {
       prompt: "Welcher kurze Satz bringt dich wieder zur aktuellen Aufgabe?",
-      application: "Sag den Cue nur dann, wenn du ihn brauchst, und verbinde ihn sofort mit einer Handlung.",
+      application: "Sag deinen Satz nur dann, wenn du ihn brauchst, und verbinde ihn sofort mit einer Handlung.",
     },
     journal: {
       title: "Wie schnell kam ich heute zurück?",
@@ -409,7 +409,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Der Gedanke darf da sein; die Handlung bleibt deine Entscheidung.",
     },
     recall: {
-      prompt: "Welcher Cue erinnert dich daran, nicht automatisch zu folgen?",
+      prompt: "Welcher Satz erinnert dich daran, nicht automatisch zu folgen?",
       application: "Benenne kurz, was auftaucht, und entscheide dann nach der Aufgabe.",
     },
     journal: {
@@ -491,7 +491,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Erst real prüfen, dann einen passenden Versuch wählen.",
     },
     recall: {
-      prompt: "Welche zwei Teile hat dein Cue für Unsicherheit?",
+      prompt: "Welche zwei Teile hat dein Satz für Unsicherheit?",
       application: "Mach den Check kurz. Wenn die Handlung passt, entscheide und geh hinein.",
     },
     journal: {
@@ -860,7 +860,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Richtig. Der Zweifel ist Information, aber nicht automatisch die Entscheidung.",
     },
     recall: {
-      prompt: "Welcher Cue erinnert dich daran, dass dein innerer Satz nicht entscheiden muss?",
+      prompt: "Welcher Satz erinnert dich daran, dass dein innerer Gedanke nicht entscheiden muss?",
       application: "Benenne den Zweifel kurz und richte deine Entscheidung danach an der Aufgabe aus.",
     },
     journal: {
@@ -901,7 +901,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Prüfen heißt: ernst nehmen, genauer hinsehen und dann passend entscheiden.",
     },
     recall: {
-      prompt: "Welcher Cue erinnert dich daran, eine unsichere Situation erst zu prüfen?",
+      prompt: "Welcher Satz erinnert dich daran, eine unsichere Situation erst zu prüfen?",
       application: "Prüfe Sicherheit und Aufgabe. Dann entscheide über den nächsten angemessenen Versuch.",
     },
     journal: {
@@ -983,7 +983,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Das frühe Signal verkürzt den bekannten Rückweg.",
     },
     recall: {
-      prompt: "Welcher Cue folgt sofort auf dein erstes Drift-Signal?",
+      prompt: "Welcher Satz folgt sofort auf dein erstes Zeichen des Wegdriftens?",
       application: "Achte auf Blick, Gedanken oder Verhalten und komm beim ersten Signal zurück.",
     },
     journal: {
@@ -1065,7 +1065,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Information hilft bei der Korrektur; das persönliche Urteil ist ein zusätzlicher Schritt.",
     },
     recall: {
-      prompt: "Welcher Cue hält den Fehlerablauf heute kurz?",
+      prompt: "Welcher Satz hält den Fehlerablauf heute kurz?",
       application: "Trenne Information und Urteil, bevor du die nächste Handlung wählst.",
     },
     journal: {
@@ -1147,7 +1147,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Die Schwierigkeit wird passend gemacht, nicht maximal.",
     },
     recall: {
-      prompt: "Welcher Cue erinnert dich an Prüfung und passenden Versuch?",
+      prompt: "Welcher Satz erinnert dich an Prüfung und passenden Versuch?",
       application: "Verkleinere oder verändere die Handlung, wenn der ursprüngliche Versuch nicht passend ist.",
     },
     journal: {
@@ -1229,7 +1229,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Du brauchst nicht sofort Ruhe, sondern eine klare nächste Aktion.",
     },
     recall: {
-      prompt: "Welcher eine Cue bleibt sichtbar, nachdem du den Kommentar erkannt hast?",
+      prompt: "Welcher eine Satz bleibt, nachdem du den Kommentar erkannt hast?",
       application: "Diskutiere nicht lange mit dem Gedanken. Richte Wahrnehmung und Handlung wieder nach vorn.",
     },
     journal: {
@@ -1311,7 +1311,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Nutze deinen Anteil und lass Unveränderbares dort, wo es ist.",
     },
     recall: {
-      prompt: "Welcher Cue führt deine nächste Reaktion nach dem Fehler?",
+      prompt: "Welcher Satz führt deine nächste Reaktion nach dem Fehler?",
       application: "Eine Information bleibt. Der unveränderbare Rest bekommt keine weitere Aufgabe.",
     },
     journal: {
@@ -1352,7 +1352,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Richtig. Urteil macht Bedeutung; Information hilft bei der Handlung.",
     },
     recall: {
-      prompt: "Welcher Cue erinnert dich daran, dem ersten Satz nicht automatisch zu folgen?",
+      prompt: "Welcher Satz erinnert dich daran, dem ersten Gedanken nicht automatisch zu folgen?",
       application: "Erkenne den Satz. Danach holst du genau eine sachliche Information aus dem Fehler.",
     },
     journal: {
@@ -1393,7 +1393,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Schwierigkeit bekommt ihren Wert durch Aufgabe, Sicherheit und Lernen.",
     },
     recall: {
-      prompt: "Welcher Cue verhindert, dass du Schwierigkeit blind suchst oder meidest?",
+      prompt: "Welcher Satz erinnert dich daran, Schwierigkeit nicht blind zu suchen oder zu meiden?",
       application: "Prüfe Nutzen und Sicherheit, dann wähle ohne Show- oder Schutzreflex.",
     },
     journal: {
@@ -1434,7 +1434,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Richtig. Du redest nichts schön, sondern machst dein Bild wieder vollständiger.",
     },
     recall: {
-      prompt: "Welcher Cue führt, bevor du deinen Einfluss prüfst?",
+      prompt: "Welcher Satz hilft dir, bevor du deinen Einfluss prüfst?",
       application: "Öffne zuerst den Blick. Nutze danach die Einflussfrage für genau eine Handlung.",
     },
     journal: {
@@ -1483,7 +1483,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       intro: "Geh eine Szene als kurzen Ablauf durch und wähle nur ein Werkzeug.",
       questions: [
         { prompt: "An welcher Stelle bist du festgehangen?", placeholder: "Aufmerksamkeit, Urteil, Widerstand, enger Blick oder Unsicherheit." },
-        { prompt: "Welches eine Werkzeug passte dort am besten?", placeholder: "Nenne Cue und kurze Begründung." },
+        { prompt: "Welches eine Werkzeug passte dort am besten?", placeholder: "Nenne deinen Satz und eine kurze Begründung." },
         { prompt: "Welche Handlung folgt aus dieser Wahl?", placeholder: "Formuliere den nächsten konkreten Schritt." },
       ],
     },
@@ -1502,25 +1502,25 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
     toolId: "W1",
     stage: "Rückkehr",
     title: "Ruf den Anker ohne Erklärung ab",
-    purpose: "Du erkennst kleines Wegdriften und holst den bekannten Cue mit möglichst wenig Hilfe zurück.",
+    purpose: "Du erkennst kleines Wegdriften und holst deinen bekannten Satz mit möglichst wenig Hilfe zurück.",
     science: [
       "Ein Werkzeug wird nützlich, wenn es vor der Erklärung verfügbar ist.",
-      "Du brauchst nicht jedes Mal die ganze Erklärung. Entscheidend ist, ob du das Wegdriften erkennst, den Cue erinnerst und eine nächste Aktion findest.",
+      "Du brauchst nicht jedes Mal die ganze Erklärung. Entscheidend ist, ob du das Wegdriften erkennst, deinen Satz erinnerst und eine nächste Aktion findest.",
       "Heute wird deshalb weniger erklärt und mehr selbst abgerufen.",
     ],
     mission: {
-      title: "Wegdriften, Cue, Aktion",
+      title: "Wegdriften, Satz, Aktion",
       trigger: "Beim ersten kleinen Zeichen, dass deine Aufmerksamkeit nicht mehr vollständig bei der Aufgabe ist.",
       steps: [
         "Erkenne das erste Zeichen des Wegdriftens.",
-        "Ruf deinen Cue selbst ab.",
+        "Hol deinen Satz selbst zurück.",
         "Benenne und beginne die nächste Aktion.",
       ],
       why: "Weniger Erklärung hält den Weg zwischen Erkennen und Handeln kurz.",
     },
     check: {
       prompt: "Du merkst ein kleines Wegdriften. Was tust du heute?",
-      correct: "Ich erinnere meinen Cue selbst und beginne die nächste Aktion.",
+      correct: "Ich erinnere meinen Satz selbst und beginne die nächste Aktion.",
       wrong: ["Ich kann den Science Bite Wort für Wort wiederholen.", "Ich schweife nie mehr ab."],
       feedback: "Genau. Entscheidend ist, dass du den bekannten Rückweg selbst findest und nutzt.",
     },
@@ -1533,7 +1533,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       intro: "Bewerte nicht deine Person, sondern den heutigen Zugriff auf das Werkzeug.",
       questions: [
         { prompt: "Welches erste Zeichen des Wegdriftens hast du erkannt?", placeholder: "Blick, Gedanke, Körper oder Verhalten." },
-        { prompt: "Wie leicht kam der Cue zurück?", placeholder: "Sofort, mit Nachdenken oder erst nach dem Anzeigen." },
+        { prompt: "Wie leicht kam dein Satz zurück?", placeholder: "Sofort, mit Nachdenken oder erst nach dem Anzeigen." },
         { prompt: "Welche nächste Aktion hast du daraus gemacht?", placeholder: "Beschreibe die Handlung." },
       ],
     },
@@ -1689,7 +1689,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Lautstärke ist kein Befehl und keine automatische Wahrheit.",
     },
     recall: {
-      prompt: "Schreib den bekannten Cue für Gedanken und Gefühle auf.",
+      prompt: "Schreib deinen bekannten Satz für Gedanken und Gefühle auf.",
       application: "Nutze ihn kurz. Danach entscheidet die Aufgabe über deine Handlung.",
     },
     journal: {
@@ -1730,7 +1730,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Richtig. Schwierigkeit wird geprüft, nicht pauschal umgedeutet.",
     },
     recall: {
-      prompt: "Welcher Cue hilft dir, Schwierigkeit erst zu prüfen?",
+      prompt: "Welcher Satz hilft dir, Schwierigkeit erst zu prüfen?",
       application: "Nutze die Information, um den nächsten Versuch passend zu wählen.",
     },
     journal: {
@@ -1800,7 +1800,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       trigger: "Wenn mehrere gute oder schlechte Aktionen deine nächste Handlung beeinflussen wollen.",
       steps: [
         "Merk, wie der bisherige Verlauf an dir zieht.",
-        "Komm mit deinem Cue zur nächsten Aktion zurück.",
+        "Komm mit deinem Satz zur nächsten Aktion zurück.",
         "Bestimme eine Qualität für diese Aktion und führe sie aus.",
       ],
       why: "Der Verlauf darf etwas mit dir machen. Deine nächste Handlung bekommt ihre Richtung trotzdem aus der aktuellen Aufgabe.",
@@ -1812,7 +1812,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Richtig. Erst zum aktuellen Moment zurückkommen, dann die eine passende Qualität wählen.",
     },
     recall: {
-      prompt: "Welcher Cue bleibt heute sichtbar, wenn Aufmerksamkeit und Qualität verbunden werden?",
+      prompt: "Welcher Satz bleibt heute, wenn Aufmerksamkeit und Qualität verbunden werden?",
       application: "Komm zurück und bestimme nur für diese Aktion die wichtigste Qualität.",
     },
     journal: {
@@ -1894,7 +1894,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Richtig. Der Grund bleibt persönlich; die sachlichen Kriterien bleiben Pflicht.",
     },
     recall: {
-      prompt: "Welcher Cue führt die Prüfung einer schwierigen Handlung?",
+      prompt: "Welcher Satz führt die Prüfung einer schwierigen Handlung?",
       application: "Prüfe Sicherheit, Aufgabe und Lernen. Dein privater Grund darf unterstützen.",
     },
     journal: {
@@ -1935,7 +1935,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       feedback: "Genau. Du musst das Gefühl nicht erzwingen und brauchst keinen neuen Beweis für die nächste saubere Handlung.",
     },
     recall: {
-      prompt: "Welcher Cue führt, bevor du zur nächsten Aktion zurückkommst?",
+      prompt: "Welcher Satz hilft dir, bevor du zur nächsten Aktion zurückkommst?",
       application: "Erkenne den inneren Impuls, entscheide und geh dann direkt in die passende Handlung.",
     },
     journal: {
@@ -2024,7 +2024,7 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
       title: "Was will ich nach Tag 56 weiter nutzen?",
       intro: "Fasse deinen persönlichen Zugriff zusammen, ohne dich oder die Wirkung des Programms zu bewerten.",
       questions: [
-        { prompt: "Welche zwei Werkzeuge fallen dir heute ohne Hilfe zuerst ein?", placeholder: "Nenne Cue und typische Situation." },
+        { prompt: "Welche zwei Werkzeuge fallen dir heute ohne Hilfe zuerst ein?", placeholder: "Nenne deinen Satz und eine typische Situation." },
         { prompt: "Welches Werkzeug willst du nach dem Programm besonders weiter nutzen?", placeholder: "Warum passt es zu deinen häufigen Situationen?" },
         { prompt: "Wie willst du es in den nächsten Wochen konkret erinnern?", placeholder: "Nenne einen einfachen persönlichen Plan." },
       ],

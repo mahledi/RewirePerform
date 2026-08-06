@@ -39,7 +39,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
         <div className="flex-1 min-w-0">
           <h2 className="font-heading text-2xl font-bold leading-tight">{task.title}</h2>
           <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
-            Mentale Trainingsaufgabe
+            Deine Mission
           </p>
         </div>
       </div>
@@ -57,7 +57,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
 
         <div className="p-5">
           <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Was du konkret machst</p>
-          <p className="text-sm text-foreground leading-relaxed">{task.concreteAction}</p>
+          <p className="whitespace-pre-line text-sm text-foreground leading-relaxed">{task.concreteAction}</p>
         </div>
       </div>
 

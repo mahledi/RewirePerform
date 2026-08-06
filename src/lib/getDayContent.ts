@@ -12,8 +12,7 @@
  */
 import { format } from "date-fns";
 import { getMatrixDay } from "@/content/matrixDays";
-import { getDailyContent } from "@/content/dailyContent";
-import { adaptDayToContext } from "@/lib/dayContext";
+import { getProgramV11ResolvedContent } from "@/content/programV11";
 import type {
   ResolvedDay,
   DailyContent,
@@ -54,15 +53,15 @@ export const resolveDay = (
   adjust?: MicroAdjustmentInput
 ): ResolvedDay | null => {
   const matrix = getMatrixDay(dayNumber);
-  const baseContent = getDailyContent(dayNumber);
-  if (!matrix || !baseContent) return null;
-  const adjustedContent = applyMicroAdjustments(baseContent, adjust);
-  const { content, context } = adaptDayToContext(adjustedContent, matrix, calendarEventType);
+  if (!matrix) return null;
+  const resolved = getProgramV11ResolvedContent(dayNumber, matrix, calendarEventType);
+  if (!resolved) return null;
+  const content = applyMicroAdjustments(resolved.content, adjust);
   return {
     matrix,
     content,
     calendarEventType,
-    context,
+    context: resolved.context,
     date: format(date, "yyyy-MM-dd"),
   };
 };

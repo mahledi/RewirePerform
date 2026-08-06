@@ -19,10 +19,19 @@ vi.mock("framer-motion", async () => {
     ({ children, initial: _initial, animate: _animate, exit: _exit, transition: _transition, ...props }, ref) =>
       React.createElement(tag, { ...props, ref }, children),
   );
+  const motionCache = new Map<string | symbol, ReturnType<typeof createMotion>>();
 
   return {
     AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-    motion: new Proxy({}, { get: (_target, property) => createMotion(String(property)) }),
+    motion: new Proxy({}, {
+      get: (_target, property) => {
+        const cached = motionCache.get(property);
+        if (cached) return cached;
+        const component = createMotion(String(property));
+        motionCache.set(property, component);
+        return component;
+      },
+    }),
     useReducedMotion: () => false,
   };
 });
@@ -119,11 +128,13 @@ describe("Golden Days V1.1 internal preview", () => {
     expect(screen.getByText(/Erst merken, dann zur nächsten konkreten Aktion/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Erst erinnern. Dann den Cue sehen." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Erst erinnern. Dann deinen Satz sehen." })).toBeInTheDocument();
     expect(screen.queryByText("Denk an den Rückweg, nicht an perfekten Fokus.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Weiter" })).toBeDisabled();
     fireEvent.change(screen.getByLabelText("Eigene Erinnerung"), { target: { value: "Ich merke es und kehre zurück." } });
     fireEvent.click(screen.getByRole("button", { name: /Erinnerung prüfen/ }));
     expect(screen.getByText("Nächste Aktion.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Weiter" })).toBeEnabled();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Wo kam ich heute zurück?" })).toBeInTheDocument();
@@ -168,14 +179,20 @@ describe("complete 56-day V1.1 internal preview", () => {
     expect(screen.getByText("Erkennen. Wählen. Anwenden.")).toBeInTheDocument();
   });
 
-  it("keeps the program content stable while the real context changes its execution", () => {
+  it("keeps one day anchor while the real context changes its execution", () => {
     render(<ProgramContentPreview />);
 
     fireEvent.click(screen.getByRole("button", { name: "Tag 2" }));
     expect(screen.getAllByText("Ruhetag").length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: "Vor der Einheit" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Mission" }));
-    expect(screen.getByText(/keine Sportanwendung erfinden/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Mission" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zeit wählen" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Mentale Einheit" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Zeit wählen" }));
+    expect(screen.getByRole("heading", { name: "Wann passt deine mentale Einheit?" })).toBeInTheDocument();
+    expect(screen.getByText(/Dein heutiger Satz und dein Lernziel bleiben gleich/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^Jetzt starten/ }));
+    expect(screen.getByRole("button", { name: /^Jetzt starten/ })).toHaveAttribute("aria-pressed", "true");
 
     fireEvent.click(screen.getByRole("button", { name: "Überblick" }));
     fireEvent.click(screen.getByRole("button", { name: "Training" }));
@@ -193,5 +210,33 @@ describe("complete 56-day V1.1 internal preview", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ruhetag" }));
     expect(screen.queryByRole("button", { name: "Vor der Einheit" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Was braucht die Aufgabe?" })).toBeInTheDocument();
+  });
+
+  it("guides a rest-day session through every phase before the journal", () => {
+    render(<ProgramContentPreview />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Tag 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mentale Einheit" }));
+    expect(screen.getByRole("heading", { name: "Du musst kein perfektes Bild sehen." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Einheit abschließen" })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: /Verstanden/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Geführt starten/ }));
+    expect(screen.getByText("Schritt 1 von 7")).toBeInTheDocument();
+
+    for (let phase = 1; phase < 7; phase += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /^Weiter$/ }));
+      expect(screen.getByText(`Schritt ${phase + 1} von 7`)).toBeInTheDocument();
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Abschließen" }));
+    expect(screen.getByTestId("rest-visualization-flow")).toHaveAttribute("data-step", "complete");
+    expect(screen.getByText("Mentale Einheit abgeschlossen")).toBeInTheDocument();
+    expect(screen.getByText("Was braucht die Aufgabe?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Weiter" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
+    expect(screen.getByRole("heading", { name: "Was brauchte die Aufgabe?" })).toBeInTheDocument();
+    expect(screen.getByText("Journal · 1 von 3")).toBeInTheDocument();
   });
 });
