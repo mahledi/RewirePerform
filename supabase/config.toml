@@ -19,3 +19,9 @@ verify_jwt = false
 
 [functions.mahleos-read]
 verify_jwt = false
+
+# Dedicated synthetic-Staging Feedback Intelligence endpoint. It accepts no
+# Supabase JWT and performs its own separate 64-hex machine authentication.
+# Runtime host, machine and database gates remain fail-closed in source.
+[functions.mahleos-feedback-intelligence-read]
+verify_jwt = false

@@ -48,6 +48,10 @@ const fkIndexesMigration = readFileSync(
   resolve("supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql"),
   "utf8",
 );
+const machineGatewayMigration = readFileSync(
+  resolve("supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql"),
+  "utf8",
+);
 const machineExportSchema = JSON.parse(readFileSync(
   resolve("docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json"),
   "utf8",
@@ -96,6 +100,16 @@ const expectFailure = async (task, expectedMessage) => {
 
 const setActor = async (userId) => {
   await db.query("SELECT set_config('request.jwt.claim.sub', $1, false)", [userId]);
+};
+
+const setGatewayContext = async (requestId, nonce, issuedAt = new Date().toISOString()) => {
+  await db.query(
+    `SELECT
+      set_config('request.mahleos_feedback_request_id', $1, false),
+      set_config('request.mahleos_feedback_nonce', $2, false),
+      set_config('request.mahleos_feedback_issued_at', $3, false)`,
+    [requestId, nonce, issuedAt],
+  );
 };
 
 try {
@@ -1126,6 +1140,277 @@ try {
     "a new program instance must rotate the pseudonymous subject reference",
   );
 
+  // The additive gateway migration is intentionally applied only after the
+  // base-package tests proved the original no-runtime-actor state.
+  await db.exec(machineGatewayMigration);
+
+  const gatewayPrivileges = await db.query(`
+    SELECT
+      has_function_privilege(
+        'mahleos_feedback_reader',
+        'public.read_feedback_intelligence_v0_2_draft(text,text,text,text)',
+        'EXECUTE'
+      ) AS reader_execute,
+      has_function_privilege(
+        'anon',
+        'public.read_feedback_intelligence_v0_2_draft(text,text,text,text)',
+        'EXECUTE'
+      ) AS anon_execute,
+      has_function_privilege(
+        'authenticated',
+        'public.read_feedback_intelligence_v0_2_draft(text,text,text,text)',
+        'EXECUTE'
+      ) AS authenticated_execute,
+      has_function_privilege(
+        'service_role',
+        'public.read_feedback_intelligence_v0_2_draft(text,text,text,text)',
+        'EXECUTE'
+      ) AS service_execute,
+      has_table_privilege(
+        'mahleos_feedback_reader',
+        'feedback_core.structured_answers',
+        'SELECT'
+      ) AS reader_structured_select,
+      has_table_privilege(
+        'mahleos_feedback_reader',
+        'feedback_raw.comments',
+        'SELECT'
+      ) AS reader_raw_select,
+      has_table_privilege(
+        'mahleos_feedback_reader',
+        'feedback_analysis.machine_gateway_nonces',
+        'SELECT'
+      ) AS reader_nonce_select,
+      has_function_privilege(
+        'mahleos_feedback_reader',
+        'feedback_analysis.export_feedback_intelligence_v0_2_internal(text,text,text,text)',
+        'EXECUTE'
+      ) AS reader_internal_execute,
+      has_function_privilege(
+        'mahleos_feedback_reader',
+        'public.get_admin_feedback_intelligence_insights(text)',
+        'EXECUTE'
+      ) AS reader_admin_execute,
+      has_function_privilege(
+        'mahleos_feedback_reader',
+        'public.list_my_feedback_text_consents()',
+        'EXECUTE'
+      ) AS reader_consent_execute,
+      (
+        SELECT rolpassword IS NULL
+          AND NOT rolsuper
+          AND NOT rolcreatedb
+          AND NOT rolcreaterole
+          AND NOT rolinherit
+          AND NOT rolreplication
+          AND NOT rolbypassrls
+        FROM pg_authid
+        WHERE rolname = 'mahleos_feedback_reader'
+      ) AS reader_role_hardened
+  `);
+  assert(gatewayPrivileges.rows[0].reader_execute === true, "reader must execute only the gateway RPC");
+  assert(gatewayPrivileges.rows[0].anon_execute === false, "anon must not execute the gateway RPC");
+  assert(gatewayPrivileges.rows[0].authenticated_execute === false, "authenticated must not execute the gateway RPC");
+  assert(gatewayPrivileges.rows[0].service_execute === false, "service_role must not execute the gateway RPC");
+  assert(gatewayPrivileges.rows[0].reader_structured_select === false, "reader must not read structured tables");
+  assert(gatewayPrivileges.rows[0].reader_raw_select === false, "reader must not read raw text tables");
+  assert(gatewayPrivileges.rows[0].reader_nonce_select === false, "reader must not read replay tables");
+  assert(gatewayPrivileges.rows[0].reader_internal_execute === false, "reader must not bypass the public wrapper");
+  assert(gatewayPrivileges.rows[0].reader_admin_execute === false, "reader must not execute admin aggregates");
+  assert(gatewayPrivileges.rows[0].reader_consent_execute === false, "reader must not list consent receipts");
+  assert(gatewayPrivileges.rows[0].reader_role_hardened === true, "reader role must be passwordless and non-privileged");
+
+  if (process.env.DEBUG_FEEDBACK_READER_FUNCTIONS === "1") {
+    const effectiveFunctions = await db.query(`
+      SELECT namespace.nspname AS schema_name,
+        procedure.proname AS function_name,
+        pg_get_function_identity_arguments(procedure.oid) AS arguments
+      FROM pg_proc procedure
+      INNER JOIN pg_namespace namespace ON namespace.oid = procedure.pronamespace
+      WHERE namespace.nspname IN ('public', 'feedback_core', 'feedback_consent', 'feedback_raw', 'feedback_analysis')
+        AND has_function_privilege('mahleos_feedback_reader', procedure.oid, 'EXECUTE')
+      ORDER BY namespace.nspname, procedure.proname, arguments
+    `);
+    console.error(JSON.stringify(effectiveFunctions.rows, null, 2));
+  }
+
+  for (const deniedRole of ["anon", "authenticated", "service_role"]) {
+    await db.exec(`SET ROLE ${deniedRole}`);
+    await expectFailure(
+      () => db.query(`
+        SELECT public.read_feedback_intelligence_v0_2_draft(
+          'mahles-jarvis-feedback-intelligence', '0.2.0-draft',
+          'fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9',
+          'synthetic'
+        )
+      `),
+      "permission denied",
+    );
+    await db.exec("RESET ROLE");
+  }
+
+  await db.exec("SET ROLE mahleos_feedback_reader");
+  await expectFailure(
+    () => db.exec("SELECT * FROM feedback_raw.comments"),
+    "permission denied",
+  );
+
+  const gatewayCall = async (sequence, overrides = {}) => {
+    const requestId = overrides.requestId
+      ?? `70000000-0000-4000-8000-${String(sequence).padStart(12, "0")}`;
+    const nonce = overrides.nonce ?? sequence.toString(16).padStart(64, "0");
+    await setGatewayContext(requestId, nonce, overrides.issuedAt);
+    return db.query(`
+      SELECT public.read_feedback_intelligence_v0_2_draft(
+        'mahles-jarvis-feedback-intelligence',
+        '0.2.0-draft',
+        $1,
+        $2
+      ) AS result
+    `, [
+      overrides.schema ?? "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+      overrides.scope ?? "synthetic",
+    ]);
+  };
+
+  const gatewaySuccess = await gatewayCall(1);
+  assert(
+    gatewaySuccess.rows[0].result.items.length === 5,
+    "gateway must export only the five DE synthetic subjects and exclude the AT fixture",
+  );
+  assert(
+    validateMachineExport(gatewaySuccess.rows[0].result),
+    "gateway success must remain byte-shape-compatible with the v0.2 export schema",
+  );
+
+  const replay = await gatewayCall(1);
+  assert(
+    replay.rows[0].result._gateway_error === "replay_detected",
+    "reused request ID and nonce must fail closed",
+  );
+
+  const contractDrift = await gatewayCall(90, { schema: "a".repeat(64) });
+  assert(
+    contractDrift.rows[0].result._gateway_error === "contract_drift",
+    "gateway contract drift must fail closed",
+  );
+  const productionScope = await gatewayCall(91, { scope: "production" });
+  assert(
+    productionScope.rows[0].result._gateway_error === "production_scope_blocked",
+    "gateway Production scope must remain unconditionally blocked",
+  );
+
+  await db.exec("RESET ROLE");
+  for (const machineUser of machineUsers.slice(2, 5)) {
+    await db.query("UPDATE public.profiles SET is_test_user = false WHERE id = $1", [machineUser.user]);
+  }
+  await db.exec("SET ROLE mahleos_feedback_reader");
+  const smallCohort = await gatewayCall(2);
+  assert(
+    smallCohort.rows[0].result.items.length === 0,
+    "fewer than five DE synthetic subjects must return no item rows",
+  );
+  await db.exec("RESET ROLE");
+  for (const machineUser of machineUsers.slice(2, 5)) {
+    await db.query("UPDATE public.profiles SET is_test_user = true WHERE id = $1", [machineUser.user]);
+  }
+
+  const gatewayMinor = {
+    user: "00000000-0000-4000-8000-000000001307",
+    instance: "10000000-0000-4000-8000-000000001307",
+    client: "20000000-0000-4000-8000-000000001307",
+  };
+  await db.query("INSERT INTO auth.users(id) VALUES ($1)", [gatewayMinor.user]);
+  await db.query("INSERT INTO public.profiles(id, is_test_user) VALUES ($1, true)", [gatewayMinor.user]);
+  await db.query(`
+    INSERT INTO public.program_instances(id, user_id, status, started_at, is_test_instance)
+    VALUES ($1, $2, 'completed', current_date - 9, true)
+  `, [gatewayMinor.instance, gatewayMinor.user]);
+  const gatewayMinorSubject = await db.query(`
+    INSERT INTO feedback_core.subject_links(user_id, program_instance_id)
+    VALUES ($1, $2) RETURNING subject_reference
+  `, [gatewayMinor.user, gatewayMinor.instance]);
+  const gatewayMinorSubmission = await db.query(`
+    INSERT INTO feedback_core.submissions(
+      client_submission_id, campaign_id, user_id, subject_reference,
+      program_instance_id, questionnaire_version, language, product_version,
+      content_version, program_day, jurisdiction_at_submit, age_band_at_submit,
+      product_authorization_basis, status
+    ) VALUES (
+      $1, $2, $3, $4, $5, 'feedback-d10-v1.1.0', 'de', '1.1.0+5',
+      'feedback-intelligence-content-v1.1.0', 10, 'DE', 'under_16',
+      'guardian_and_athlete_authorized', 'draft'
+    ) RETURNING id
+  `, [
+    gatewayMinor.client,
+    machineCampaignId,
+    gatewayMinor.user,
+    gatewayMinorSubject.rows[0].subject_reference,
+    gatewayMinor.instance,
+  ]);
+  await db.query(`
+    INSERT INTO feedback_core.structured_answers(
+      submission_id, question_definition_id, selected_option_ids
+    ) VALUES ($1, $2, '["2"]'::jsonb)
+  `, [gatewayMinorSubmission.rows[0].id, machineQuestionDefinition.rows[0].id]);
+  await db.query(`
+    INSERT INTO feedback_core.activity_snapshots(
+      submission_id, observation_end_program_day, program_days_available,
+      program_days_completed, checkins_completed, journal_entries_created_count,
+      tasks_completed, transfer_pulse_count, resume_delay_bucket,
+      continuation_status_bucket
+    ) VALUES ($1, 10, 10, 10, 10, 2, 10, NULL,
+      'NO_RESUME_NEEDED', 'ACTIVE_OR_COMPLETED')
+  `, [gatewayMinorSubmission.rows[0].id]);
+  await expectFailure(
+    () => db.query(`
+      INSERT INTO feedback_consent.text_consent_receipts(
+        submission_id, user_id, state, scope, consent_version, notice_hash, granted_at
+      ) VALUES (
+        $1, $2, 'granted', 'product-improvement-individual-text-ai-analysis-v1',
+        'feedback-text-consent-v1.0.0-draft',
+        '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4',
+        now()
+      )
+    `, [gatewayMinorSubmission.rows[0].id, gatewayMinor.user]),
+    "guardian_feedback_text_scope_required",
+  );
+  await db.query(`
+    UPDATE feedback_core.submissions
+    SET status = 'submitted', submitted_at = now()
+    WHERE id = $1
+  `, [gatewayMinorSubmission.rows[0].id]);
+
+  await db.exec("SET ROLE mahleos_feedback_reader");
+  const guardianBlocked = await gatewayCall(3);
+  assert(
+    guardianBlocked.rows[0].result.items.length === 6
+      && guardianBlocked.rows[0].result.items.filter((item) => item.comment !== null).length === 1,
+    "under-16 raw text without matching Guardian authorization must remain absent",
+  );
+
+  for (let sequence = 4; sequence <= 11; sequence += 1) {
+    const allowed = await gatewayCall(sequence);
+    assert(!allowed.rows[0].result._gateway_error, `request ${sequence} must stay within the 12/minute limit`);
+  }
+  const rateLimited = await gatewayCall(12);
+  assert(
+    rateLimited.rows[0].result._gateway_error === "rate_limited",
+    "the thirteenth authenticated attempt within one minute must be rate limited",
+  );
+  await db.exec("RESET ROLE");
+
+  const gatewayAudit = await db.query(`
+    SELECT outcome, COUNT(*)::integer AS count
+    FROM feedback_analysis.machine_gateway_access_log
+    GROUP BY outcome
+  `);
+  assert(
+    gatewayAudit.rows.some((row) => row.outcome === "replay_blocked" && row.count === 1)
+      && gatewayAudit.rows.some((row) => row.outcome === "rate_limited" && row.count === 1),
+    "gateway audit must record replay and rate-limit outcomes without response bodies",
+  );
+
   await db.query("DELETE FROM auth.users WHERE id = $1", [ids.user]);
   await db.query("DELETE FROM auth.users WHERE id = $1", [ids.minor]);
   await db.query("DELETE FROM auth.users WHERE id = $1", [ids.transactionUser]);
@@ -1135,6 +1420,7 @@ try {
   for (const machineUser of machineUsers) {
     await db.query("DELETE FROM auth.users WHERE id = $1", [machineUser.user]);
   }
+  await db.query("DELETE FROM auth.users WHERE id = $1", [gatewayMinor.user]);
 
   for (const table of [
     "feedback_core.subject_links",

@@ -1,0 +1,97 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-machine-gateway-package-manifest-v1",
+  "contract_version": "0.1.0-draft",
+  "contract_status": "PRODUCER_PREPARED_UNSIGNED_NOT_ACTIVATED",
+  "generated_at": "2026-08-07T11:30:00+02:00",
+  "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
+  "producer_base_commit": "088aea294edbbfeaf76638cd21bb6b48fc95a653",
+  "package_signed": false,
+  "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "digest_algorithm": "sha256",
+  "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
+  "package_sha256": "183b2185ef72831f2700ed0753ce8dd52430a717013497c243e5aeeb481e9517",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
+      "sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
+      "sha256": "6e54438f5bddadd7e31423d76414d8e8cbde005e8cf552ee5708e328397db12e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
+      "sha256": "fa7429f94c6acc29d8a4dca2f68422597307d56bf28b0bf9613337afa06d28a8"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/error.schema.json",
+      "sha256": "c352041d4352019aee71a137741a10693f75063b585dc1a9825aa7004cd7095f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
+      "sha256": "5a7cf377dc1f4baa90f6f0f09ca47a941f56005b90a627adf690eec56084f260"
+    },
+    {
+      "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
+      "sha256": "9b570f125ebf43d39ed413e7d88d01fb1dee47b1f5c81e780ed0dba48819e3bd"
+    },
+    {
+      "path": "supabase/functions/_shared/boundedRequestBody.ts",
+      "sha256": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
+      "sha256": "78a3685d1b18e1fb5e70faf9fbc66dd6a419a5dc22a9cde18b78c9df6dda1ea1"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceMachineAuth.ts",
+      "sha256": "03dc6c5ba920be84957ff36bd9544188ff7a759b78b5a7c8e21e8859ee8cbc3c"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceDatabase.ts",
+      "sha256": "13b39c3b60f1abc973d0126a653185ec9506673b7ee428e358596e9719d8a2d5"
+    },
+    {
+      "path": "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
+      "sha256": "7dbba6a1d66cd5d09640a87d4c339515bc58a4efc835263ef5021887dcbec3ca"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceMachineAuth.test.ts",
+      "sha256": "4f16ba1fd75a2e3ea569094070b0e1b049fec561ae5713db552fa4ca6ee925e4"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceMachineGateway.test.ts",
+      "sha256": "e240c11f0f2a6457ad461ba8f09aca19ae5be5f8e0c1a615e235fc70f164aad6"
+    },
+    {
+      "path": "scripts/verify-feedback-intelligence-sql.mjs",
+      "sha256": "e4758e43005df74e0af44fa2aad0ab72af43c5121d152c63ac1a090ffbfef7ae"
+    },
+    {
+      "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",
+      "sha256": "dde736c4872a137de8a7a31f40238b8ad18a5940ec36802c0e9c528f96944ed8"
+    }
+  ],
+  "upstream_pins": {
+    "endpoint": "/functions/v1/mahleos-feedback-intelligence-read",
+    "role": "mahleos_feedback_reader",
+    "rpc": "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
+    "export_schema_sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+    "semantics_manifest_sha256": "6e54438f5bddadd7e31423d76414d8e8cbde005e8cf552ee5708e328397db12e",
+    "semantics_package_sha256": "81247edb1c42c25884505b4af3a2e25d5521a4bad3e838d0e783e87e17017c12",
+    "semantics_catalog_sha256": "d0343c14ef9f17239ac7d01545b146acc8290c1abe451e28218a5f134d563b2d",
+    "question_count": 55
+  },
+  "activation": {
+    "collection_enabled": false,
+    "machine_gateway_deployed": false,
+    "reader_password_provisioned": false,
+    "machine_key_provisioned": false,
+    "edge_runtime_gate_open": false,
+    "database_consumer_pin_ready": false,
+    "database_synthetic_export_enabled": false,
+    "synthetic_network_read_approved": false,
+    "production_export_enabled": false,
+    "real_data_read_enabled": false
+  }
+}

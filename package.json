@@ -24,7 +24,7 @@
     "release:verify:staging": "node scripts/validate-release-target.mjs --expected staging --mode staging",
     "typecheck": "tsc -p tsconfig.app.json --noEmit --pretty false && tsc -p tsconfig.node.json --noEmit --pretty false",
     "validate:env": "node scripts/validate-env.mjs",
-    "ci": "npm run validate:env -- --example-only && npm run brand:verify && npm run email:templates:check && npm run mahleos:contract:check && npm run feedback:catalog:check && npm run feedback:release:check && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run test:comprehension:sql && npm run test:minor:sql && npm run test:tracking-runtime:sql && npm run test:mahleos:sql && npm run test:access:sql && npm run test:deletion:sql && npm run test:feedback-intelligence:sql && npm run test:guardian-feedback:sql && npm run app:verify",
+    "ci": "npm run validate:env -- --example-only && npm run brand:verify && npm run email:templates:check && npm run mahleos:contract:check && npm run feedback:catalog:check && npm run feedback:release:check && npm run feedback:gateway:check && npm run typecheck && npm run build && npm test && npm run test:evidence:sql && npm run test:comprehension:sql && npm run test:minor:sql && npm run test:tracking-runtime:sql && npm run test:mahleos:sql && npm run test:access:sql && npm run test:deletion:sql && npm run test:feedback-intelligence:sql && npm run test:guardian-feedback:sql && npm run app:verify",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
@@ -49,7 +49,9 @@
     "mahleos:contract:check": "node scripts/generate-mahleos-contract.mjs --check",
     "feedback:catalog:build": "vite-node scripts/generate-feedback-construct-catalog.ts",
     "feedback:catalog:check": "vite-node scripts/generate-feedback-construct-catalog.ts --check",
-    "feedback:release:check": "node scripts/verify-feedback-intelligence-release-gates.mjs"
+    "feedback:release:check": "node scripts/verify-feedback-intelligence-release-gates.mjs",
+    "feedback:gateway:build": "node scripts/generate-feedback-machine-gateway-package.mjs",
+    "feedback:gateway:check": "node scripts/generate-feedback-machine-gateway-package.mjs --check"
   },
   "dependencies": {
     "@capacitor/app": "8.1.1",
