@@ -9,7 +9,7 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "15abc090f2fb5bffa2e34ccc46ea931fb6a13ab104040658546206e398fa1b06",
+  "package_sha256": "5f89b849bb148f0d02b4bdafbb0b072bcec5087a02614856f011133b6f13a8d3",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
@@ -40,6 +40,10 @@
       "sha256": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e"
     },
     {
+      "path": "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts",
+      "sha256": "61690142b2ff292a2bc82d60327332a5e93479da529f5462504a5a344792f0d8"
+    },
+    {
       "path": "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
       "sha256": "78a3685d1b18e1fb5e70faf9fbc66dd6a419a5dc22a9cde18b78c9df6dda1ea1"
     },
@@ -53,7 +57,7 @@
     },
     {
       "path": "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
-      "sha256": "7dbba6a1d66cd5d09640a87d4c339515bc58a4efc835263ef5021887dcbec3ca"
+      "sha256": "905622344608afef5f49908885cee961c5ddf84cd9178e4df380f5223a9e26f7"
     },
     {
       "path": "src/test/feedbackIntelligenceMachineAuth.test.ts",
@@ -61,7 +65,7 @@
     },
     {
       "path": "src/test/feedbackIntelligenceMachineGateway.test.ts",
-      "sha256": "e240c11f0f2a6457ad461ba8f09aca19ae5be5f8e0c1a615e235fc70f164aad6"
+      "sha256": "a51d2a171f9aea2bfda3e667cc45f85a74f19cdbe922c8cc98f448c261d4f304"
     },
     {
       "path": "scripts/verify-feedback-intelligence-sql.mjs",
@@ -69,7 +73,7 @@
     },
     {
       "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",
-      "sha256": "f94eb35cfdebf88249df0e7a15bec291265bd9c38f396b9321a9ff4b346fd0c8"
+      "sha256": "e3bded03e9ed923a5ee1339582374b3833eb74f82fed9a09a4a38a3ee21cfd25"
     }
   ],
   "upstream_pins": {

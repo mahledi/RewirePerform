@@ -9,6 +9,11 @@ import { readBoundedRequestText, RequestBodyTooLargeError } from
   "../_shared/boundedRequestBody.ts";
 import { feedbackIntelligenceSql } from
   "../_shared/feedbackIntelligenceDatabase.ts";
+import {
+  feedbackIntelligenceJsonResponse as jsonResponse,
+  feedbackIntelligenceResponseHeaders as responseHeaders,
+  parseFeedbackIntelligenceReplayHeaders,
+} from "../_shared/feedbackIntelligenceGatewayHttp.ts";
 import { authenticateFeedbackIntelligenceMachine } from
   "../_shared/feedbackIntelligenceMachineAuth.ts";
 
@@ -17,8 +22,6 @@ const CLIENT_ID = "mahles-jarvis-feedback-intelligence";
 const CONTRACT_VERSION = "0.2.0-draft";
 const SCHEMA_SHA256 = "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9";
 const SYNTHETIC_GATE = "SYNTHETIC_STAGING_APPROVED";
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
-const NONCE_PATTERN = /^[a-f0-9]{64}$/u;
 const ALLOWED_BODY_KEYS = new Set([
   "client_id",
   "contract_version",
@@ -32,21 +35,6 @@ type RequestBody = {
   schema_sha256?: unknown;
   data_scope?: unknown;
 };
-
-const responseHeaders = {
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store",
-  "Referrer-Policy": "no-referrer",
-  "X-Content-Type-Options": "nosniff",
-};
-
-const jsonResponse = (status: number, body: Record<string, unknown>, requestId?: string) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: requestId
-      ? { ...responseHeaders, "X-MahleOS-Request-Id": requestId }
-      : responseHeaders,
-  });
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -85,18 +73,11 @@ Deno.serve(async (request) => {
     return jsonResponse(415, { error: "unsupported_media_type" });
   }
 
-  const requestId = request.headers.get("X-MahleOS-Request-Id")?.trim().toLowerCase() ?? "";
-  const nonce = request.headers.get("X-MahleOS-Nonce")?.trim() ?? "";
-  const issuedAt = request.headers.get("X-MahleOS-Request-Timestamp")?.trim() ?? "";
-  const parsedIssuedAt = Date.parse(issuedAt);
-  if (
-    !UUID_PATTERN.test(requestId)
-    || !NONCE_PATTERN.test(nonce)
-    || !Number.isFinite(parsedIssuedAt)
-    || Math.abs(Date.now() - parsedIssuedAt) > 5 * 60 * 1000
-  ) {
-    return jsonResponse(400, { error: "invalid_replay_headers" }, requestId || undefined);
+  const replayHeaders = parseFeedbackIntelligenceReplayHeaders(request);
+  if (!replayHeaders.valid) {
+    return jsonResponse(400, replayHeaders.body, replayHeaders.requestId);
   }
+  const { requestId, nonce, parsedIssuedAt } = replayHeaders;
 
   let rawBody: string;
   try {

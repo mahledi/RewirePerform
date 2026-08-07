@@ -39,6 +39,21 @@ Antwortwerte und Exportform bleiben unverändert.
 Die kanonische maschinenlesbare Fassung einschließlich Statuscodes liegt in
 `contracts/machine-gateway-v0.1/gateway-contract.json`.
 
+### R4-Korrektur: Request-ID bei Replay-Header-Fehlern
+
+Der Error-Vertrag ist nun auch im ausgeführten Edge-Zweig exakt umgesetzt:
+
+- ist `X-MahleOS-Request-Id` eine gültige normalisierte UUID, während Nonce
+  oder Timestamp ungültig sind, enthalten Response-Header und JSON-Body
+  dieselbe ID;
+- ist die Request-ID selbst fehlend oder ungültig, fehlt sie sowohl im Header
+  als auch im JSON-Body;
+- die ID wird niemals allein deshalb gespiegelt, weil der Header nichtleer ist.
+
+Zwei verhaltensnahe Tests führen dafür dieselben Parser- und Response-Funktionen
+aus wie die Edge Function und prüfen Status, Body und Header. Der HTTP-Vertrag
+selbst wurde nicht erweitert oder umbenannt.
+
 ## Datenbankrolle und Grants
 
 Die additive Migration erzeugt `mahleos_feedback_reader` als `LOGIN` mit
@@ -103,6 +118,9 @@ mit dem Jarvis-Handoff überein.
 Geprüft sind:
 
 - fehlender, falscher, zu kurzer und falsch formatierter Machine-Key;
+- gültige Request-ID plus ungültige Nonce mit identischer ID in Error-Body und
+  Response-Header;
+- ungültige Request-ID ohne ID in Error-Body und Response-Header;
 - malformed Rotation-Key fail-closed;
 - Replay von Request-ID/Nonce;
 - dreizehnter authentifizierter Versuch innerhalb einer Minute;

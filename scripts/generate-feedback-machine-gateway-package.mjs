@@ -15,6 +15,7 @@ const packageFiles = [
   "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
   "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
   "supabase/functions/_shared/boundedRequestBody.ts",
+  "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts",
   "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
   "supabase/functions/_shared/feedbackIntelligenceMachineAuth.ts",
   "supabase/functions/_shared/feedbackIntelligenceDatabase.ts",

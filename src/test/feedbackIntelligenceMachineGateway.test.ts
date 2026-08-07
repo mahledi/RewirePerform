@@ -3,9 +3,17 @@ import { resolve } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 import { describe, expect, it } from "vitest";
 
+import {
+  feedbackIntelligenceJsonResponse,
+  parseFeedbackIntelligenceReplayHeaders,
+} from "../../supabase/functions/_shared/feedbackIntelligenceGatewayHttp";
+
 const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 const edge = () => readRepoFile(
   "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
+);
+const gatewayHttp = () => readRepoFile(
+  "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts",
 );
 const database = () => readRepoFile(
   "supabase/functions/_shared/feedbackIntelligenceDatabase.ts",
@@ -15,6 +23,58 @@ const migration = () => readRepoFile(
 );
 
 describe("Feedback Intelligence machine gateway draft", () => {
+  it("mirrors a valid request ID in body and header when another replay header is invalid", async () => {
+    const requestId = "70000000-0000-4000-8000-000000000013";
+    const now = Date.parse("2026-08-07T10:00:00.000Z");
+    const request = new Request("https://example.invalid", {
+      headers: {
+        "X-MahleOS-Request-Id": requestId,
+        "X-MahleOS-Nonce": "invalid",
+        "X-MahleOS-Request-Timestamp": new Date(now).toISOString(),
+      },
+    });
+
+    const replayHeaders = parseFeedbackIntelligenceReplayHeaders(request, now);
+    expect(replayHeaders.valid).toBe(false);
+    if (replayHeaders.valid !== false) throw new Error("Expected invalid replay headers");
+
+    const response = feedbackIntelligenceJsonResponse(
+      400,
+      replayHeaders.body,
+      replayHeaders.requestId,
+    );
+    expect(response.status).toBe(400);
+    expect(response.headers.get("X-MahleOS-Request-Id")).toBe(requestId);
+    await expect(response.json()).resolves.toEqual({
+      error: "invalid_replay_headers",
+      request_id: requestId,
+    });
+  });
+
+  it("omits request ID from body and header when the request ID itself is invalid", async () => {
+    const now = Date.parse("2026-08-07T10:00:00.000Z");
+    const request = new Request("https://example.invalid", {
+      headers: {
+        "X-MahleOS-Request-Id": "not-a-valid-uuid",
+        "X-MahleOS-Nonce": "a".repeat(64),
+        "X-MahleOS-Request-Timestamp": new Date(now).toISOString(),
+      },
+    });
+
+    const replayHeaders = parseFeedbackIntelligenceReplayHeaders(request, now);
+    expect(replayHeaders.valid).toBe(false);
+    if (replayHeaders.valid !== false) throw new Error("Expected invalid replay headers");
+
+    const response = feedbackIntelligenceJsonResponse(
+      400,
+      replayHeaders.body,
+      replayHeaders.requestId,
+    );
+    expect(response.status).toBe(400);
+    expect(response.headers.has("X-MahleOS-Request-Id")).toBe(false);
+    await expect(response.json()).resolves.toEqual({ error: "invalid_replay_headers" });
+  });
+
   it("validates the exact request and allow-listed error envelopes", () => {
     const ajv = new Ajv2020({ strict: false, validateFormats: false });
     const requestSchema = JSON.parse(readRepoFile(
@@ -75,15 +135,16 @@ describe("Feedback Intelligence machine gateway draft", () => {
 
   it("requires bounded POST JSON, exact replay headers and has no browser CORS", () => {
     const source = edge();
+    const replaySource = gatewayHttp();
 
     expect(source).toContain('request.method !== "POST"');
     expect(source).toContain('contentType !== "application/json"');
     expect(source).toContain("readBoundedRequestText(request, 1024)");
-    expect(source).toContain('request.headers.get("X-MahleOS-Request-Id")');
-    expect(source).toContain('request.headers.get("X-MahleOS-Nonce")');
-    expect(source).toContain('request.headers.get("X-MahleOS-Request-Timestamp")');
-    expect(source).toContain("NONCE_PATTERN");
-    expect(source).toContain("5 * 60 * 1000");
+    expect(replaySource).toContain('request.headers.get("X-MahleOS-Request-Id")');
+    expect(replaySource).toContain('request.headers.get("X-MahleOS-Nonce")');
+    expect(replaySource).toContain('request.headers.get("X-MahleOS-Request-Timestamp")');
+    expect(replaySource).toContain("NONCE_PATTERN");
+    expect(replaySource).toContain("5 * 60 * 1000");
     expect(source).toContain("8 * 1024 * 1024");
     expect(source).not.toContain("Access-Control-Allow-Origin");
   });
