@@ -1,4 +1,4 @@
-# Feedback Intelligence Producer Semantics Handoff v0.3 Draft
+# Feedback Intelligence Producer Semantics Handoff v0.3.1 Draft
 
 Status: `PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED`
 
@@ -19,6 +19,14 @@ The catalog is semantics-only. It contains no athlete reference, feedback,
 comment, activity snapshot, journal text, coach data, team data, name or email.
 It is intended to be bundled and byte-pinned with the reviewed Jarvis consumer
 release. Jarvis does not need a direct database read for this catalog.
+
+Revision `0.3.1-draft` pins the questionnaire context to final content commit
+`bd647c1b4e709cc0285c6438639e1e9b42ef6128`. The final Rest-Day flow supplies a
+concrete Sportsituation; it does not ask athletes to create a freely chosen own
+scene. Four visible prompts and their measurement intentions were therefore
+corrected without changing question IDs, family IDs, scales, answer IDs or the
+55-question total. A consumer must treat the previous catalog bytes as stale
+and fail closed until this revision is explicitly accepted.
 
 ## Identifier corrections before activation
 

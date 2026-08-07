@@ -1,6 +1,6 @@
 # Feedback Intelligence 1.1 – Handoff an den finalen App-Store-Review
 
-Stand: 6. August 2026
+Stand: 7. August 2026
 Status: Rest-Day-/Daily-Flow und Feedback-Inhalt lokal integriert; kombinierter 1.1-Kandidat bis zu den unten genannten Release-Gates weiterhin `NO-GO`; keine Production- oder Machine-Aktivierung
 
 ## Entscheidung, die dieser Review treffen soll
@@ -13,8 +13,8 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
 ## Produktwahrheit im Release Candidate
 
 - Feedback-Checkpoints erscheinen deterministisch an Tag 10, 24, 39 und 55.
-- Die vier sichtbaren Tageskontexte sind an den finalen 56-Tage-Content-Commit
-  `d5c4f15cc005ab7ed958a9900cf6b9607f397950` und je Tag zusätzlich an einen
+- Die vier sichtbaren Tageskontexte sind an den finalen 56-Tage-/Rest-Day-Content-Commit
+  `bd647c1b4e709cc0285c6438639e1e9b42ef6128` und je Tag zusätzlich an einen
   kanonischen SHA-256-Hash gebunden. Titel, Werkzeug, Cue, Mechanismus und
   Mission werden im Test direkt gegen den finalen Programminhalt geprüft.
 - Jeder Checkpoint enthält exakt zwei organisch eingeordnete Fragen zur mentalen
@@ -29,7 +29,8 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
   Feedback-RPC aus. Bestehender Alters-/Guardian-Status und vorhandene
   Kontoeinstellungen bleiben davon unberührt.
 - Die Feedbacktexte sind an den kanonischen 56-Tage-Produktionsinhalt gebunden.
-  Der spätere Notification-/Routing-Commit `1afd04c` ist ausdrücklich keine
+  Preview und echter Tagespfad beziehen ihn über `PROGRAM_DAY_DRAFTS` in
+  `src/content/programV11.ts`; ältere Zwischenpins sind keine gültige
   Feedback-Abhängigkeit. Die App behauptet keine individuelle
   KI-Personalisierung.
 - Tag 55 beginnt vor allen inhaltlichen Hinweisen mit freiem Abruf. Titel, Cue,

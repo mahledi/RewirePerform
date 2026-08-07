@@ -48,7 +48,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | Block | Ergebnis | Status |
 | --- | --- | --- |
 | 0. Source und Gates | sauberer Worktree, aktuelle Main-Basis, Consumer-Draft und Governance geprüft | fertig |
-| 1. Inhaltsvertrag | Tag 10/24/39/55, stabile Vergleichsmarker, Consent-Copy und Invarianten | fertig; sichtbare Tageskontexte zusätzlich bytegenau an kanonischen Produktions-Content-Commit `d5c4f15cc005ab7ed958a9900cf6b9607f397950` und vier kanonische Tages-Hashes gebunden; acht progressive Ruhetag-Visualisierungsfragen integriert |
+| 1. Inhaltsvertrag | Tag 10/24/39/55, stabile Vergleichsmarker, Consent-Copy und Invarianten | fertig; sichtbare Tageskontexte zusätzlich bytegenau an finalen Produktions-/Rest-Day-Content-Commit `bd647c1b4e709cc0285c6438639e1e9b42ef6128` und vier kanonische Tages-Hashes gebunden; acht progressive Ruhetag-Visualisierungsfragen gegen den vorgegebenen Sportsituations-Flow synchronisiert |
 | 2. Synthetischer UX-Flow | Einladung, Intro, Fragen, Multi-/Single-Select, Skip, Consent, Freitext, Abschluss | fertig |
 | 3. Private Datenbasis | getrennte Core-, Consent-, Raw- und Analysis-Schemas | fertig |
 | 4. Datenbank-Sicherheit | keine direkten Rechte, Consent- und Minor-Gates, Widerruf, Account-Cascade, Negativtests | fertig |
@@ -60,7 +60,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 | 10. Machine-Export | KI-agnostisch, Jarvis-kompatibel, read-only, Consent bei Export erneut geprüft | lokal fertig und schema-valide; ohne Execute-Grant, Credential, Transport oder Production-Gate |
 | 11. Store/Privacy/Retention | Datenschutzerklärung, App-Store-Datenerklärung, Widerrufs-UI, Lösch- und Aufbewahrungsplan | Privacy-/Store-Draft, Widerrufs-UI, technische 365-Tage-Höchstdauer und automatisierter Löschlauf lokal fertig; Rechtsfreigabe der Frist und Zielumgebungsnachweis offen |
 | 12. Release-Nachweis | komplette lokale CI, SQL-Negativtests, Native-/Store-Prüfung, Staging-Test | Staging-Build, echte Datenbank-Rollen-/Minor-/Widerrufs-/Tag-10-Prüfungen sowie Guardian-Edge-Auth-/Token-/Origin-Negativtests grün; positiver E-Mail-Zustellpfad, Production-Environment und signierter Native-Nachweis offen |
-| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Finaler 56-Tage-Entwurf und Feedback-Kontexte lokal zusammengeführt; einziger `App.tsx`-Konflikt bewusst aufgelöst; Checkpoint-Kontexte und Tag-55-Abrufgrenze synchronisiert; kombinierte CI mit 104 Testdateien und 613 Tests grün. P1 offen: Der echte `resolveDay`-/Daily-Check-in-Pfad verwendet weiterhin die alten kanonischen Content-Dateien. Produktive Anbindung ist bis zur vom Nutzer verlangten Rest-Day-Visualisierungsentscheidung ausdrücklich angehalten. Push/Merge/Release bleiben separat. |
+| 13. 1.1-Integration | Rebase gegen Parallelstand, Konfliktbericht, Review; danach separate Push-/Merge-/Release-Freigaben | Finaler Content-Handoff `bd647c1b` bestätigt `PROGRAM_DAY_DRAFTS` über `src/content/programV11.ts` als gemeinsame Quelle für Preview und echten `resolveDay`-/`DailyCheckin`-Pfad. Feedback-Pins und Rest-Day-Fragecopy sind lokal darauf synchronisiert; Integration in den kombinierten RC, Push/Merge/Release bleiben separat. |
 
 ## Bereits implementiert
 

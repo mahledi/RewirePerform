@@ -89,15 +89,27 @@ describe("feedback intelligence content contract", () => {
       .flatMap(({ questions }) => questions)
       .map(({ id, prompt }) => [id, prompt]));
 
+    expect(prompts.get("d10_rest_visualization_practical_access")).toBe(
+      "Wie leicht konntest du dir die vorgegebene Sportsituation vorstellen und darin die nächste Handlung durchgehen?",
+    );
     expect(prompts.get("d24_rest_visualization_guidance_clarity")).toBe(
-      "Wie klar führt dich die mentale Einheit am Ruhetag von deinem Satz in eine eigene Sportszene?",
+      "Wie klar führt dich die mentale Einheit am Ruhetag durch die Sportsituation bis zu deinem Satz und deiner nächsten Handlung?",
     );
     expect(prompts.get("d39_rest_visualization_self_direction")).toBe(
-      "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und deinen Satz darin nutzen?",
+      "Wie selbstständig kannst du inzwischen in der mentalen Einheit deinen heutigen Satz zurückholen und in der Sportsituation nutzen?",
+    );
+    expect(prompts.get("d55_rest_visualization_integration")).toBe(
+      "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um deine RewirePerform-Sätze in konkreten Sportsituationen durchzugehen?",
     );
     expect(prompts.get("d55_rest_visualization_continuation_intent")).toBe(
       "Wie wahrscheinlich ist es, dass du solche mentalen Einheiten nach dem Programm selbstständig weiter nutzt?",
     );
+
+    for (const prompt of prompts.values()) {
+      expect(prompt).not.toContain("eigene Sportszene");
+      expect(prompt).not.toContain("eigenen Sportszenen");
+      expect(prompt).not.toContain("Tagesanker");
+    }
   });
 
   it("byte-pins the complete questionnaire payloads", () => {
@@ -204,12 +216,11 @@ describe("feedback intelligence content contract", () => {
     }
   });
 
-  it("pins only the canonical production content commit and excludes notification-only routing", () => {
+  it("pins only the final canonical rest-day content commit and excludes superseded routing/content pins", () => {
     expect(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT)
-      .toBe("d5c4f15cc005ab7ed958a9900cf6b9607f397950");
-    expect(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT).not.toBe(
-      "1afd04c",
-    );
+      .toBe("bd647c1b4e709cc0285c6438639e1e9b42ef6128");
+    expect(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT).not.toBe("d5c4f15");
+    expect(FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT).not.toBe("1afd04c");
   });
 
   it("keeps privacy and evidence boundaries explicit", () => {
