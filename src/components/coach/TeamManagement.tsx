@@ -6,6 +6,7 @@ import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, Clip
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
+import TeamStaffInvitation from "@/components/coach/TeamStaffInvitation";
 import { buildTeamInviteUrl } from "@/lib/teamInvite";
 import {
   AlertDialog,
@@ -279,6 +280,8 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
               </button>
             </div>
           </div>
+
+          <TeamStaffInvitation teamId={team.id} />
 
           <TeamTrainingSchedule teamId={team.id} />
 

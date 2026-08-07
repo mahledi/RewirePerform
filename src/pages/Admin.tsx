@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
+import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -17,6 +17,8 @@ import AdminComprehensionInsights from "@/components/admin/AdminComprehensionIns
 import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
 import CoachAccessApprovalPanel from "@/components/admin/CoachAccessApprovalPanel";
+import AdminCommandCenter from "@/components/admin/AdminCommandCenter";
+import OrganizationRequestManager from "@/components/admin/OrganizationRequestManager";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
@@ -320,22 +322,22 @@ const Admin = () => {
   const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState<string>("overview");
+  const [tab, setTab] = useState<string>("command");
   const [evidenceView, setEvidenceView] = useState<"overview" | "portfolio" | "team" | "solo" | "comprehension">("overview");
   const [didInitDevice, setDidInitDevice] = useState(false);
   useEffect(() => {
     if (didInitDevice) return;
-    setTab(isMobile ? "home" : "overview");
+    setTab(isMobile ? "home" : "command");
     setDidInitDevice(true);
   }, [isMobile, didInitDevice]);
 
   const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
-    { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
-    { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
-    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
-    { id: "access", title: "Coach-Zugänge", description: "Bestehende Konten persönlich prüfen, freigeben und einem Team zuordnen.", icon: Shield },
+    { id: "command", title: "Zentrale", description: "Entscheidungen, Partneranfragen und nächste operative Schritte.", icon: LayoutGrid },
+    { id: "access", title: "Partneranfragen", description: "Organisationen prüfen, vorbereiten und persönlich freigeben.", icon: Building2 },
+    { id: "teams", title: "Teams", description: "Teams, Coaches und Programmstart verwalten.", icon: UsersIcon },
     { id: "pilot", title: "Pilotsteuerung", description: "Programmläufe, Zuordnung und operative Startbereitschaft.", icon: ShieldCheck },
-    { id: "evidence", title: "Daten & Exporte", description: "Ergebnisse, Exporte und internes Programmverständnis.", icon: BarChart3 },
+    { id: "evidence", title: "Datenarchiv", description: "Ergebnisse, Exporte und internes Programmverständnis.", icon: BarChart3 },
+    { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
     { id: "health", title: "Datenqualität & System", description: "Operative Vollständigkeit, Systemgesundheit und Launch-Ops.", icon: HeartPulse },
   ];
@@ -380,10 +382,20 @@ const Admin = () => {
     setLoading(false);
   }, [studyIncludeTest]);
 
+  const loadTeamsOnly = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc("get_admin_teams_summary", { include_test: false });
+    if (!error && data) setTeams(data as TeamRow[]);
+  }, []);
+
   useEffect(() => {
-    if (!authLoading && isAdmin) loadAll();
+    if (!authLoading && isAdmin && !["command", "home", "days", "pilot", "access"].includes(tab)) loadAll();
     else if (!authLoading) setLoading(false);
-  }, [authLoading, isAdmin, loadAll]);
+  }, [authLoading, isAdmin, loadAll, tab]);
+
+  useEffect(() => {
+    if (!authLoading && isAdmin && tab === "access") void loadTeamsOnly();
+  }, [authLoading, isAdmin, loadTeamsOnly, tab]);
 
   if (authLoading) {
     return (
@@ -440,12 +452,12 @@ const Admin = () => {
             <div className="min-w-0">
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-primary">RewirePerform</p>
               <h1 className="text-2xl md:text-3xl font-bold leading-tight">
-                {isMobile ? "Admin" : "Admin Control Center"}
+                {isMobile ? "Admin" : "Founder Command Center"}
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                 {isMobile
-                  ? "Control Center · aggregierte Daten."
-                  : "Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe."}
+                  ? "Entscheidungen und Organisation."
+                  : "Organisation steuern, Entscheidungen treffen und Daten gezielt öffnen."}
               </p>
             </div>
           </div>
@@ -544,16 +556,17 @@ const Admin = () => {
           </div>
         ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 w-full gap-1`}>
-            <TabsTrigger value="overview">Übersicht</TabsTrigger>
-            <TabsTrigger value="days">Tage</TabsTrigger>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-5 w-full gap-1`}>
+            <TabsTrigger value="command">Zentrale</TabsTrigger>
+            <TabsTrigger value="access">Partner</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
-            <TabsTrigger value="access">Coach-Zugänge</TabsTrigger>
-            <TabsTrigger value="pilot">Pilotsteuerung</TabsTrigger>
-            <TabsTrigger value="evidence">Daten & Exporte</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="health">Datenqualität</TabsTrigger>
+            <TabsTrigger value="pilot">Pilot</TabsTrigger>
+            <TabsTrigger value="evidence">Datenarchiv</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="command" className="mt-4">
+            <AdminCommandCenter onNavigate={setTab} />
+          </TabsContent>
 
 
           {/* OVERVIEW */}
@@ -809,12 +822,20 @@ const Admin = () => {
 
           {/* COACH ACCESS */}
           <TabsContent value="access" className="mt-4">
-            <CoachAccessApprovalPanel
-              teams={teams.map((team) => ({ id: team.id, name: team.name }))}
-              onApproved={() => {
-                void loadAll();
-              }}
-            />
+            <div className="space-y-6">
+              <OrganizationRequestManager />
+              <details className="rounded-2xl border border-border/70 bg-card">
+                <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-muted-foreground">
+                  Bestehenden bestätigten Account manuell freigeben
+                </summary>
+                <div className="border-t border-border/60 p-4 sm:p-5">
+                  <CoachAccessApprovalPanel
+                    teams={teams.map((team) => ({ id: team.id, name: team.name }))}
+                    onApproved={() => { void loadTeamsOnly(); }}
+                  />
+                </div>
+              </details>
+            </div>
           </TabsContent>
 
           {/* PILOT CONTROL */}

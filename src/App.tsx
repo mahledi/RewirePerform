@@ -47,6 +47,8 @@ const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Imprint = lazy(() => import("./pages/Imprint.tsx"));
 const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
+const OrganizationAccess = lazy(() => import("./pages/OrganizationAccess.tsx"));
+const OrganizationInvite = lazy(() => import("./pages/OrganizationInvite.tsx"));
 const MinorConsent = lazy(() => import("./pages/MinorConsent.tsx"));
 const GuardianDecision = lazy(() => import("./pages/GuardianDecision.tsx"));
 const EvidencePreview = evidencePreviewEnabled
@@ -152,6 +154,8 @@ const AppRoutes = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/imprint" element={<Imprint />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/team-access" element={<OrganizationAccess />} />
+            <Route path="/organization/invite" element={<OrganizationInvite />} />
             <Route path="/guardian/decision" element={<GuardianDecision />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
             <Route path="/join" element={<TeamInvite />} />

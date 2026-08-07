@@ -19,3 +19,8 @@ verify_jwt = false
 
 [functions.mahleos-read]
 verify_jwt = false
+
+# Public business inquiry intake. The handler remains fail-closed unless the
+# explicit feature flag and Turnstile secret are configured.
+[functions.submit-organization-access-request]
+verify_jwt = false
