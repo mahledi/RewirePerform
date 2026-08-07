@@ -11,9 +11,12 @@ weiterhin kein Machine-Key, kein Reader-Passwort, kein Deployment und kein
 Netzwerk-Read. Sämtliche Collection-, Machine-, Staging-Read-, Production- und
 Real-Data-Gates bleiben geschlossen.
 
-Die bestehenden 55 Fragen, das v0.2-Exportformat, die v0.3-Semantik, Consent,
-Guardian-Prüfung, DE-Filter, Kohortenunterdrückung und Privacy-Grenzen wurden
-nicht umbenannt oder semantisch verändert.
+Die bestehenden 55 Fragen, das v0.2-Exportformat, Consent, Guardian-Prüfung,
+DE-Filter, Kohortenunterdrückung und Privacy-Grenzen wurden nicht umbenannt.
+Der Gateway-Pin wurde auf Semantikpaket `0.3.1-draft` aktualisiert: Vier
+Rest-Day-Fragen bilden nun die im finalen Content-Commit vorgegebene
+Sportsituation statt einer frei gewählten eigenen Szene ab. IDs, Skalen,
+Antwortwerte und Exportform bleiben unverändert.
 
 ## Exakter HTTP-Vertrag
 
@@ -92,7 +95,7 @@ Feedbacktext.
    Staging-Audit aller effektiven `PUBLIC`-Function-Rechte verbindlich.
 
 Es wurde nichts still umbenannt. Endpoint, Rolle, Upstream-Signatur,
-Client-ID, v0.2-Schema-Pin, v0.3-Paket, 55-Fragen-Katalog und DE-Scope stimmen
+Client-ID, v0.2-Schema-Pin, v0.3.1-Paket, 55-Fragen-Katalog und DE-Scope stimmen
 mit dem Jarvis-Handoff überein.
 
 ## Lokale Negativ- und Vertragstests

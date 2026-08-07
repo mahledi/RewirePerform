@@ -103,10 +103,10 @@
     "upstream_scope": "synthetic_only"
   },
   "producer_pins": {
-    "semantics_producer_commit": "088aea294edbbfeaf76638cd21bb6b48fc95a653",
-    "semantics_manifest_sha256": "6e54438f5bddadd7e31423d76414d8e8cbde005e8cf552ee5708e328397db12e",
-    "semantics_package_sha256": "81247edb1c42c25884505b4af3a2e25d5521a4bad3e838d0e783e87e17017c12",
-    "semantics_catalog_sha256": "d0343c14ef9f17239ac7d01545b146acc8290c1abe451e28218a5f134d563b2d",
+    "semantics_producer_commit": "731db19c407f1849556bff8e8ae1b3aadf905a50",
+    "semantics_manifest_sha256": "1981a5142e1c4f654fb12104be922ed99477cb36dc3c80b70fabc1aded9dc5ee",
+    "semantics_package_sha256": "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
+    "semantics_catalog_sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
     "question_count": 55
   },
   "privacy": {

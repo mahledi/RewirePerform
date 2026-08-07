@@ -4,12 +4,12 @@
   "contract_status": "PRODUCER_PREPARED_UNSIGNED_NOT_ACTIVATED",
   "generated_at": "2026-08-07T11:30:00+02:00",
   "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
-  "producer_base_commit": "088aea294edbbfeaf76638cd21bb6b48fc95a653",
+  "producer_base_commit": "731db19c407f1849556bff8e8ae1b3aadf905a50",
   "package_signed": false,
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "183b2185ef72831f2700ed0753ce8dd52430a717013497c243e5aeeb481e9517",
+  "package_sha256": "15abc090f2fb5bffa2e34ccc46ea931fb6a13ab104040658546206e398fa1b06",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
@@ -17,7 +17,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
-      "sha256": "6e54438f5bddadd7e31423d76414d8e8cbde005e8cf552ee5708e328397db12e"
+      "sha256": "1981a5142e1c4f654fb12104be922ed99477cb36dc3c80b70fabc1aded9dc5ee"
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
@@ -29,7 +29,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
-      "sha256": "5a7cf377dc1f4baa90f6f0f09ca47a941f56005b90a627adf690eec56084f260"
+      "sha256": "0649f9a892d771da2ac2fb512b477d894dd24012149ca178b8236d1310b4dad4"
     },
     {
       "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
@@ -69,7 +69,7 @@
     },
     {
       "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",
-      "sha256": "dde736c4872a137de8a7a31f40238b8ad18a5940ec36802c0e9c528f96944ed8"
+      "sha256": "f94eb35cfdebf88249df0e7a15bec291265bd9c38f396b9321a9ff4b346fd0c8"
     }
   ],
   "upstream_pins": {
@@ -77,9 +77,9 @@
     "role": "mahleos_feedback_reader",
     "rpc": "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
     "export_schema_sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
-    "semantics_manifest_sha256": "6e54438f5bddadd7e31423d76414d8e8cbde005e8cf552ee5708e328397db12e",
-    "semantics_package_sha256": "81247edb1c42c25884505b4af3a2e25d5521a4bad3e838d0e783e87e17017c12",
-    "semantics_catalog_sha256": "d0343c14ef9f17239ac7d01545b146acc8290c1abe451e28218a5f134d563b2d",
+    "semantics_manifest_sha256": "1981a5142e1c4f654fb12104be922ed99477cb36dc3c80b70fabc1aded9dc5ee",
+    "semantics_package_sha256": "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
+    "semantics_catalog_sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
     "question_count": 55
   },
   "activation": {
