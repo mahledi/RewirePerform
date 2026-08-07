@@ -682,7 +682,15 @@ const stageContent = (
     );
   }
   if (stage === "rest-plan") return <RestPlanStage draft={draft} onReadyChange={onRestPlanReadyChange ?? (() => undefined)} />;
-  if (stage === "visualization") return <RestDayVisualizationFlow draft={draft} onCompletionChange={onVisualizationCompletionChange} />;
+  if (stage === "visualization") {
+    return (
+      <RestDayVisualizationFlow
+        draft={draft}
+        onCompletionChange={onVisualizationCompletionChange}
+        showSoundLab={showContextGuidance}
+      />
+    );
+  }
   if (stage === "journal") return <JournalStage draft={draft} context={context} showContextGuidance={showContextGuidance} />;
   return <SpecialStage draft={draft} />;
 };

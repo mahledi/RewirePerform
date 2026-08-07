@@ -84,11 +84,11 @@ const RestDayMission = ({
 
   if (completed) {
     return (
-      <div className="rounded-[26px] border border-primary/20 bg-primary/[0.055] p-6 text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/12 text-primary">
-          <Check className="h-5 w-5" />
-        </span>
-        <h2 className="mt-4 text-xl font-semibold">Mentale Einheit abgeschlossen</h2>
+      <div className="rounded-[30px] bg-primary/[0.055] p-7 text-center">
+        <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          <Check className="h-4 w-4" /> Visualisierung abgeschlossen
+        </p>
+        <h2 className="mt-5 text-xl font-semibold">Dein Satz für heute</h2>
         <p className="mt-2 text-sm leading-6 text-white/48">{draft.cue}</p>
       </div>
     );
@@ -110,12 +110,12 @@ const RestDayMission = ({
 
   if (planMode === "later") {
     return (
-      <div className="relative overflow-hidden rounded-[28px] border border-white/[0.07] bg-[#101216] p-5 sm:p-7">
+      <div className="relative overflow-hidden rounded-[30px] bg-[#101216] p-5 sm:p-7">
         <div className="pointer-events-none absolute -top-24 left-1/2 h-52 w-72 -translate-x-1/2 rounded-full bg-primary/[0.11] blur-3xl" />
         <div className="relative">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Später erinnern</p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Wann passt deine mentale Einheit?</h2>
-          <p className="mt-3 text-sm leading-6 text-white/48">Plane etwa 4 bis 8 ruhige Minuten ein.</p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Wann passt deine Visualisierung?</h2>
+          <p className="mt-3 text-sm leading-6 text-white/48">Plane ungefähr fünf ruhige Minuten ein.</p>
 
           <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-white/45" htmlFor="rest-visualization-time">
             Uhrzeit
@@ -181,13 +181,13 @@ const RestDayMission = ({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-white/[0.07] bg-[#101216] p-5 sm:p-7">
+    <div className="relative overflow-hidden rounded-[30px] bg-[#101216] p-5 sm:p-7">
       <div className="pointer-events-none absolute -top-24 left-1/2 h-52 w-72 -translate-x-1/2 rounded-full bg-primary/[0.11] blur-3xl" />
       <div className="relative">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Mentale Einheit</p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Heute trainierst du im Kopf.</h2>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Ruhetag · Visualisierung</p>
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Deine Visualisierung für heute.</h2>
         <p className="mt-3 text-sm leading-6 text-white/48">
-          Die App führt dich durch eine Szene aus deinem Sport. Du musst vorher nicht wissen, wie Visualisierung funktioniert.
+          Erst atmest du zwei Minuten ruhig. Danach führt dich die App durch eine Sportszene zum heutigen RewirePerform-Satz.
         </p>
         <button
           type="button"

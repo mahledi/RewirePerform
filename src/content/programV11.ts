@@ -93,9 +93,9 @@ const buildContext = (
         reflectionDescription:
           "Halte nur fest, was deinen heutigen Zustand deutlich beeinflusst. Deine Antwort bleibt privat.",
         journalReminder:
-          "Im Journal gehst du die heutige Vorstellung noch einmal kurz durch.",
+          "Im Journal gehst du die heutige Visualisierung noch einmal kurz durch.",
         taskIntro:
-          "Die App führt dich durch eine eigene Sportszene. Du musst nicht wissen, wie Visualisierung funktioniert.",
+          "Die App führt dich durch eine kurze Visualisierung zum heutigen RewirePerform-Satz.",
         completionMessage:
           "Deine mentale Einheit ist abgeschlossen. Nimm nur deinen Satz mit in den restlichen Tag.",
       },

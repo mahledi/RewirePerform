@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -212,32 +212,50 @@ describe("complete 56-day V1.1 internal preview", () => {
     expect(screen.getByRole("heading", { name: "Was braucht die Aufgabe?" })).toBeInTheDocument();
   });
 
-  it("guides a rest-day session through every phase before the journal", () => {
+  it("guides a rest-day session through every timed phase before the journal", async () => {
+    vi.useFakeTimers();
     render(<ProgramContentPreview />);
 
     fireEvent.click(screen.getByRole("button", { name: "Tag 2" }));
     fireEvent.click(screen.getByRole("button", { name: "Mentale Einheit" }));
-    expect(screen.getByRole("heading", { name: "Deine Einheit ist bereit." })).toBeInTheDocument();
-    expect(screen.getByText("Du musst kein perfektes Bild sehen.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Deine Visualisierung ist bereit." })).toBeInTheDocument();
+    expect(screen.getByText(/zwei Minuten ruhiger Atmung/)).toBeInTheDocument();
+    expect(screen.getByTestId("visualization-sound-lab")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Einheit abschließen" })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole("button", { name: /Verstanden/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Geführt starten/ }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Visualisierung starten" }));
+      await Promise.resolve();
+    });
     expect(screen.getByText("Schritt 1 von 7")).toBeInTheDocument();
 
-    for (let phase = 1; phase < 7; phase += 1) {
-      fireEvent.click(screen.getByRole("button", { name: /^Weiter$/ }));
-      expect(screen.getByText(`Schritt ${phase + 1} von 7`)).toBeInTheDocument();
+    const durations = [120, 25, 20, 20, 30, 35, 10];
+    for (let phase = 0; phase < durations.length; phase += 1) {
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: phase === 0 ? "Atmung starten" : "Timer starten" }));
+        await Promise.resolve();
+      });
+      expect(screen.queryByRole("button", { name: "Nächster Schritt" })).not.toBeInTheDocument();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(durations[phase] * 1000);
+      });
+      expect(screen.getByText("Der Abschnitt ist beendet. Öffne jetzt deine Augen.")).toBeInTheDocument();
+
+      if (phase < durations.length - 1) {
+        fireEvent.click(screen.getByRole("button", { name: "Nächster Schritt" }));
+        expect(screen.getByText(`Schritt ${phase + 2} von 7`)).toBeInTheDocument();
+      }
     }
 
-    fireEvent.click(screen.getByRole("button", { name: "Abschließen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Visualisierung abschließen" }));
     expect(screen.getByTestId("rest-visualization-flow")).toHaveAttribute("data-step", "complete");
-    expect(screen.getByText("Mentale Einheit abgeschlossen")).toBeInTheDocument();
+    expect(screen.getByText("Visualisierung abgeschlossen")).toBeInTheDocument();
     expect(screen.getByText("Was braucht die Aufgabe?")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Weiter" })).toBeEnabled();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Was brauchte die Aufgabe?" })).toBeInTheDocument();
     expect(screen.getByText("Journal · 1 von 3")).toBeInTheDocument();
+    vi.useRealTimers();
   });
 });

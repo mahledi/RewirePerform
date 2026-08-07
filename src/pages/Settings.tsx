@@ -42,7 +42,7 @@ const faqItems = [
   },
   {
     q: "Was ist die mentale Einheit am Ruhetag?",
-    a: "An einem Ruhetag musst du keine Trainingssituation erfinden. Die App führt dich Schritt für Schritt durch eine Vorstellung aus deinem eigenen Sport. Dabei bleiben das Werkzeug und der Satz deines Programmtags gleich. Gespeichert wird nur, ob du die Einheit abgeschlossen hast — nicht, welche Szene du dir vorgestellt hast.",
+    a: "An einem Ruhetag führt dich die App durch eine kurze Visualisierung aus deinem Sport. Die Situation passt zum Werkzeug und Satz deines Programmtags. Du füllst sie mit deiner eigenen Sportszene. Gespeichert wird nur, ob du die Einheit abgeschlossen hast — nicht, welche Szene du visualisiert hast.",
   },
   {
     q: "Wie verändert mich das?",

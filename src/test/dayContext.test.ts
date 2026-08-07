@@ -63,8 +63,10 @@ describe("day context resolution", () => {
     for (let dayNumber = 1; dayNumber <= 56; dayNumber += 1) {
       const rest = resolveDay(dayNumber, testDate, "rest");
       expect(rest?.context.label).toBe("Ruhetag");
-      expect(rest?.context.checkin.taskIntro).toContain("eigene Sportszene");
-      expect(rest?.context.journal.intro).toContain("mentale Einheit");
+      expect(rest?.context.checkin.taskIntro).toContain("kurze Visualisierung");
+      expect(rest?.context.checkin.taskIntro).toContain("RewirePerform-Satz");
+      expect(rest?.context.checkin.taskIntro).not.toContain("eigene Sportszene");
+      expect(rest?.context.journal.intro).toContain("Visualisierung");
       expect(
         rest?.content.journal.questions.every((question) => !/\bheute\b/i.test(question.question)),
       ).toBe(true);

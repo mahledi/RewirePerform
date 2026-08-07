@@ -338,7 +338,7 @@ export const buildRestVisualizationNotification = (
   return {
     id: REST_VISUALIZATION_NOTIFICATION_ID_START + input.dayNumber,
     title: "Deine mentale Einheit ist bereit",
-    body: "Die App führt dich jetzt Schritt für Schritt durch deine Vorstellung.",
+    body: "Die App führt dich jetzt Schritt für Schritt durch deine Visualisierung.",
     schedule: { at },
     threadIdentifier: "rewireperform-rest-visualization",
     interruptionLevel: "active",
