@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/staging-privilege-audit-v0.1/result.schema.json",
+  "title": "Feedback Intelligence metadata-only Staging privilege audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_status",
+    "project_ref",
+    "executed_at",
+    "database_name_redacted",
+    "audit_phase",
+    "data_access",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": { "const": "rewireperform-feedback-intelligence-staging-privilege-audit-result-v1" },
+    "contract_status": { "const": "METADATA_ONLY_UNSIGNED_NOT_ACTIVATED" },
+    "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+    "executed_at": { "type": "string", "minLength": 20 },
+    "database_name_redacted": { "const": true },
+    "audit_phase": { "enum": ["PREDEPLOY_BASELINE", "POSTDEPLOY_ASSURANCE"] },
+    "data_access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["catalog_metadata_only", "application_rows_read", "application_functions_called", "database_mutated"],
+      "properties": {
+        "catalog_metadata_only": { "const": true },
+        "application_rows_read": { "const": false },
+        "application_functions_called": { "const": false },
+        "database_mutated": { "const": false }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reader_role",
+        "reader_memberships",
+        "gateway_function",
+        "gateway_execute_matrix",
+        "reader_callable_functions",
+        "reader_relation_privileges",
+        "reader_sequence_privileges",
+        "reader_schema_usage",
+        "public_execute_defaults"
+      ],
+      "properties": {
+        "reader_role": { "type": "object" },
+        "reader_memberships": { "type": "array", "items": { "type": "object" } },
+        "gateway_function": { "type": "object" },
+        "gateway_execute_matrix": { "type": "object", "additionalProperties": { "type": "boolean" } },
+        "reader_callable_functions": { "type": "array", "items": { "type": "object" } },
+        "reader_relation_privileges": { "type": "array", "items": { "type": "object" } },
+        "reader_sequence_privileges": { "type": "array", "items": { "type": "object" } },
+        "reader_schema_usage": { "type": "array", "items": { "type": "string" } },
+        "public_execute_defaults": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-staging-privilege-audit-result-v1",
+  "contract_status": "METADATA_ONLY_UNSIGNED_NOT_ACTIVATED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "executed_at": "2026-08-08T10:00:00.000+00:00",
+  "database_name_redacted": true,
+  "audit_phase": "POSTDEPLOY_ASSURANCE",
+  "data_access": {
+    "catalog_metadata_only": true,
+    "application_rows_read": false,
+    "application_functions_called": false,
+    "database_mutated": false
+  },
+  "evidence": {
+    "reader_role": {
+      "present": true,
+      "superuser": false,
+      "inherit": false,
+      "create_role": false,
+      "create_db": false,
+      "can_login": true,
+      "replication": false,
+      "bypass_rls": false,
+      "database_connect": true
+    },
+    "reader_memberships": [],
+    "gateway_function": {
+      "present": true,
+      "signature": "public.read_feedback_intelligence_v0_2_draft(text, text, text, text)",
+      "security_definer": true,
+      "function_settings": ["search_path=\"\""],
+      "owner_name": "postgres",
+      "owner_superuser": true,
+      "owner_bypass_rls": true
+    },
+    "gateway_execute_matrix": {
+      "anon": false,
+      "authenticated": false,
+      "mahleos_feedback_reader": true,
+      "service_role": false
+    },
+    "reader_callable_functions": [
+      {
+        "schema_name": "public",
+        "function_name": "read_feedback_intelligence_v0_2_draft",
+        "identity_arguments": "text, text, text, text",
+        "security_definer": true,
+        "owner_name": "postgres"
+      }
+    ],
+    "reader_relation_privileges": [],
+    "reader_sequence_privileges": [],
+    "reader_schema_usage": ["public"],
+    "public_execute_defaults": []
+  }
+}
