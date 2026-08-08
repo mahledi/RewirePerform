@@ -23,7 +23,8 @@ Bestätigt:
   Runtime-Pfad außerhalb des Gateway-RPC: den byteidentischen, intern
   admin-gegateden Aggregatvertrag
   `authenticated -> get_admin_feedback_intelligence_insights(text)`. Sein
-  Source-Pin stimmt exakt mit der geprüften Migration überein; jeder normale
+  vollständiger Definitions-SHA-256 und alle Sicherheitsmetadaten stimmen
+  exakt mit der geprüften Migration überein; jeder normale
   authentifizierte Athlet scheitert vor der Auswertung mit
   `admin_role_required`. Er ist kein Jarvis-/Machine-Lesepfad.
 

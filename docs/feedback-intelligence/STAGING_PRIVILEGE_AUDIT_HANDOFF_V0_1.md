@@ -30,13 +30,15 @@ consentierten Vertrags bleiben ausgeschlossen.
 Die einzige zulässige Runtime-Ausnahme in dieser Inventur ist der bestehende
 Admin-Aggregatvertrag
 `authenticated -> public.get_admin_feedback_intelligence_insights(text)` mit
-exaktem Source-Pin `md5:f0b5736525a0c79a0b773d6bf66ad711`. Diese Funktion
+SHA-256 über die vollständige `pg_get_functiondef`-Definition
+`9beef5048a25069c5fe381232dc81414ab3d62e300629a5fbf1a986e4c8d38ca`.
+Zusätzlich werden Owner `postgres`, `SECURITY DEFINER`, exakt der leere feste
+`search_path`, Return Type `jsonb` und Volatilität `STABLE` separat gebunden.
+Diese Funktion
 prüft `auth.uid()` und `public.has_role(..., 'admin')` vor jeder Auswertung,
 wirft sonst `admin_role_required`, liefert ausschließlich vorgegebene
 Aggregate und unterdrückt Metriken unter `n < 5`. Jede andere Rolle, Signatur
-oder jedes andere Source-Bytebild bleibt NO-GO. Der MD5-Pin ist hier ein
-Drift-Identifier über bereits kontrollierte lokale Bytes, kein allgemeiner
-kryptografischer Vertrauensanker; das Gesamtpaket bleibt SHA-256-gepinnt.
+oder jedes andere Definitions-/Metadaten-Bytebild bleibt NO-GO.
 
 Es liest keine Anwendungszeile, ruft keine Anwendungsfunktion auf und führt
 keinen DDL-/DML-/Rollenwechsel aus. Das Ergebnis enthält nur technische

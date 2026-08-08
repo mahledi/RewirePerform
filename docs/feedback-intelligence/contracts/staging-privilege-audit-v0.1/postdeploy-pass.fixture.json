@@ -44,9 +44,12 @@
         "schema_name": "public",
         "function_name": "read_feedback_intelligence_v0_2_draft",
         "identity_arguments": "text, text, text, text",
-        "security_definer": true,
         "owner_name": "postgres",
-        "source_md5": "00000000000000000000000000000000"
+        "security_definer": true,
+        "function_settings": ["search_path=\"\""],
+        "return_type": "jsonb",
+        "volatility": "VOLATILE",
+        "definition_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
       }
     ],
     "denied_role_machine_paths": [],
@@ -56,8 +59,7 @@
         "function_name": "read_feedback_intelligence_v0_2_draft",
         "identity_arguments": "text, text, text, text",
         "security_definer": true,
-        "owner_name": "postgres",
-        "source_md5": "00000000000000000000000000000000"
+        "owner_name": "postgres"
       }
     ],
     "reader_relation_privileges": [],

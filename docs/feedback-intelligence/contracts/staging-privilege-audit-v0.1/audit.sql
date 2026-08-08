@@ -53,6 +53,13 @@ audited_functions AS (
     procedure.prosecdef AS security_definer,
     pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name,
     procedure.prosrc AS function_source,
+    COALESCE(procedure.proconfig, ARRAY[]::text[]) AS function_settings,
+    pg_catalog.pg_get_function_result(procedure.oid) AS return_type,
+    CASE procedure.provolatile
+      WHEN 'i' THEN 'IMMUTABLE'
+      WHEN 's' THEN 'STABLE'
+      ELSE 'VOLATILE'
+    END AS volatility,
     COALESCE(procedure.proacl, pg_catalog.acldefault('f', procedure.proowner)) AS function_acl
   FROM pg_catalog.pg_proc procedure
   JOIN audited_namespaces namespace ON namespace.oid = procedure.pronamespace
@@ -61,7 +68,11 @@ machine_export_functions AS (
   SELECT function.oid, function.namespace_oid, function.schema_name,
     function.function_name, function.identity_arguments,
     function.security_definer, function.owner_name,
-    pg_catalog.md5(function.function_source) AS source_md5,
+    function.function_settings, function.return_type, function.volatility,
+    pg_catalog.encode(extensions.digest(
+      pg_catalog.convert_to(pg_catalog.pg_get_functiondef(function.oid), 'UTF8'),
+      'sha256'
+    ), 'hex') AS definition_sha256,
     function.function_acl
   FROM audited_functions function
   WHERE function.schema_name = 'feedback_analysis'
@@ -87,7 +98,9 @@ gateway_execute_matrix AS (
 ),
 denied_named_role_machine_paths AS (
   SELECT role.rolname AS subject_role, function.schema_name,
-    function.function_name, function.identity_arguments, function.source_md5
+    function.function_name, function.identity_arguments,
+    function.owner_name, function.security_definer, function.function_settings,
+    function.return_type, function.volatility, function.definition_sha256
   FROM known_roles role
   JOIN machine_export_functions function
     ON role.rolname <> (SELECT reader_role FROM constants)
@@ -96,7 +109,9 @@ denied_named_role_machine_paths AS (
 ),
 public_machine_paths AS (
   SELECT 'PUBLIC'::text AS subject_role, function.schema_name,
-    function.function_name, function.identity_arguments, function.source_md5
+    function.function_name, function.identity_arguments,
+    function.owner_name, function.security_definer, function.function_settings,
+    function.return_type, function.volatility, function.definition_sha256
   FROM machine_export_functions function
   -- A PUBLIC function EXECUTE grant is treated as a side path even if schema
   -- USAGE is currently closed. This is deliberately stricter than callability
@@ -233,7 +248,10 @@ evidence AS (
         'identity_arguments', function.identity_arguments,
         'security_definer', function.security_definer,
         'owner_name', function.owner_name,
-        'source_md5', function.source_md5
+        'function_settings', to_jsonb(function.function_settings),
+        'return_type', function.return_type,
+        'volatility', function.volatility,
+        'definition_sha256', function.definition_sha256
       ) ORDER BY function.schema_name, function.function_name, function.identity_arguments)
       FROM machine_export_functions function
     ), '[]'::jsonb),

@@ -24,6 +24,18 @@ const validateFixture = (value: unknown) => {
     rmSync(directory, { recursive: true, force: true });
   }
 };
+const guardedAdminPath = () => ({
+  subject_role: "authenticated",
+  schema_name: "public",
+  function_name: "get_admin_feedback_intelligence_insights",
+  identity_arguments: "text",
+  owner_name: "postgres",
+  security_definer: true,
+  function_settings: ["search_path=\"\""],
+  return_type: "jsonb",
+  volatility: "STABLE",
+  definition_sha256: "9beef5048a25069c5fe381232dc81414ab3d62e300629a5fbf1a986e4c8d38ca",
+});
 
 describe("Feedback Intelligence Staging privilege audit", () => {
   it("is catalog-only and contains no mutation or application-row statement", () => {
@@ -63,7 +75,14 @@ describe("Feedback Intelligence Staging privilege audit", () => {
   it("executes as a read-only predeploy query against an empty PostgreSQL catalog", async () => {
     const db = new PGlite();
     try {
-      await db.exec("CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;");
+      await db.exec(`
+        CREATE ROLE anon;
+        CREATE ROLE authenticated;
+        CREATE ROLE service_role;
+        CREATE SCHEMA extensions;
+        CREATE FUNCTION extensions.digest(bytea, text) RETURNS bytea LANGUAGE sql IMMUTABLE
+          AS 'SELECT decode(repeat(''00'', 32), ''hex'')';
+      `);
       const response = await db.query(read(`${base}/audit.sql`));
       const result = response.rows[0].audit_result;
       expect(result.audit_phase).toBe("PREDEPLOY_BASELINE");
@@ -87,6 +106,9 @@ describe("Feedback Intelligence Staging privilege audit", () => {
         CREATE ROLE anon;
         CREATE ROLE authenticated;
         CREATE ROLE service_role;
+        CREATE SCHEMA extensions;
+        CREATE FUNCTION extensions.digest(bytea, text) RETURNS bytea LANGUAGE sql IMMUTABLE
+          AS 'SELECT decode(repeat(''00'', 32), ''hex'')';
         CREATE ROLE mahleos_feedback_reader LOGIN NOINHERIT NOSUPERUSER NOCREATEDB
           NOCREATEROLE NOREPLICATION NOBYPASSRLS;
         CREATE FUNCTION public.read_feedback_intelligence_v0_2_draft(text, text, text, text)
@@ -113,16 +135,39 @@ describe("Feedback Intelligence Staging privilege audit", () => {
 
   it("fails closed for extra function settings", () => {
     const fixture = JSON.parse(read(`${base}/postdeploy-pass.fixture.json`));
-    fixture.evidence.gateway_function.function_settings.push("statement_timeout=12000");
+    const path = guardedAdminPath();
+    path.function_settings.push("statement_timeout=12000");
+    fixture.evidence.denied_role_machine_paths.push(path);
     const result = validateFixture(fixture);
-    expect(result.status).toBe(1);
+    expect(result.status).toBe(2);
+    expect(result.stdout).toContain("MACHINE_EXPORT_SIDE_PATH");
   });
 
-  it("fails closed for Hosted-Staging owner drift", () => {
+  it("fails closed for guarded Admin owner drift", () => {
     const fixture = JSON.parse(read(`${base}/postdeploy-pass.fixture.json`));
-    fixture.evidence.gateway_function.owner_superuser = true;
+    const path = guardedAdminPath();
+    path.owner_name = "other_owner";
+    fixture.evidence.denied_role_machine_paths.push(path);
     const result = validateFixture(fixture);
-    expect(result.status).toBe(1);
+    expect(result.status).toBe(2);
+  });
+
+  it("fails closed when the guarded Admin function becomes SECURITY INVOKER", () => {
+    const fixture = JSON.parse(read(`${base}/postdeploy-pass.fixture.json`));
+    const path = guardedAdminPath();
+    path.security_definer = false;
+    fixture.evidence.denied_role_machine_paths.push(path);
+    const result = validateFixture(fixture);
+    expect(result.status).toBe(2);
+  });
+
+  it("fails closed for guarded Admin definition drift", () => {
+    const fixture = JSON.parse(read(`${base}/postdeploy-pass.fixture.json`));
+    const path = guardedAdminPath();
+    path.definition_sha256 = "2".repeat(64);
+    fixture.evidence.denied_role_machine_paths.push(path);
+    const result = validateFixture(fixture);
+    expect(result.status).toBe(2);
   });
 
   it("fails closed for unknown nested evidence fields", () => {
@@ -139,7 +184,12 @@ describe("Feedback Intelligence Staging privilege audit", () => {
       schema_name: "public",
       function_name: "export_feedback_shadow",
       identity_arguments: "",
-      source_md5: "11111111111111111111111111111111",
+      owner_name: "postgres",
+      security_definer: true,
+      function_settings: ["search_path=\"\""],
+      return_type: "jsonb",
+      volatility: "STABLE",
+      definition_sha256: "1".repeat(64),
     });
     const result = validateFixture(fixture);
     expect(result.status).toBe(2);

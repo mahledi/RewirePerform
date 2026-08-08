@@ -143,9 +143,9 @@
             }
           ]
         },
-        "machine_export_functions": { "type": "array", "items": { "$ref": "#/$defs/functionEvidence" } },
+        "machine_export_functions": { "type": "array", "items": { "$ref": "#/$defs/machineFunctionEvidence" } },
         "denied_role_machine_paths": { "type": "array", "items": { "$ref": "#/$defs/deniedPath" } },
-        "reader_callable_functions": { "type": "array", "items": { "$ref": "#/$defs/functionEvidence" } },
+        "reader_callable_functions": { "type": "array", "items": { "$ref": "#/$defs/readerFunctionEvidence" } },
         "reader_relation_privileges": { "type": "array", "items": { "$ref": "#/$defs/relationPrivilege" } },
         "reader_sequence_privileges": { "type": "array", "items": { "$ref": "#/$defs/sequencePrivilege" } },
         "reader_schema_usage": { "type": "array", "items": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] }, "uniqueItems": true },
@@ -165,29 +165,49 @@
     }
   },
   "$defs": {
-    "functionEvidence": {
+    "readerFunctionEvidence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_name", "function_name", "identity_arguments", "security_definer", "owner_name", "source_md5"],
+      "required": ["schema_name", "function_name", "identity_arguments", "security_definer", "owner_name"],
       "properties": {
         "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
         "function_name": { "type": "string" },
         "identity_arguments": { "type": "string" },
         "security_definer": { "type": "boolean" },
+        "owner_name": { "type": "string" }
+      }
+    },
+    "machineFunctionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_name", "function_name", "identity_arguments", "owner_name", "security_definer", "function_settings", "return_type", "volatility", "definition_sha256"],
+      "properties": {
+        "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
+        "function_name": { "type": "string" },
+        "identity_arguments": { "type": "string" },
         "owner_name": { "type": "string" },
-        "source_md5": { "type": "string", "pattern": "^[a-f0-9]{32}$" }
+        "security_definer": { "type": "boolean" },
+        "function_settings": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "return_type": { "type": "string" },
+        "volatility": { "enum": ["IMMUTABLE", "STABLE", "VOLATILE"] },
+        "definition_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
     "deniedPath": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["subject_role", "schema_name", "function_name", "identity_arguments", "source_md5"],
+      "required": ["subject_role", "schema_name", "function_name", "identity_arguments", "owner_name", "security_definer", "function_settings", "return_type", "volatility", "definition_sha256"],
       "properties": {
         "subject_role": { "enum": ["PUBLIC", "anon", "authenticated", "service_role"] },
         "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
         "function_name": { "type": "string" },
         "identity_arguments": { "type": "string" },
-        "source_md5": { "type": "string", "pattern": "^[a-f0-9]{32}$" }
+        "owner_name": { "type": "string" },
+        "security_definer": { "type": "boolean" },
+        "function_settings": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "return_type": { "type": "string" },
+        "volatility": { "enum": ["IMMUTABLE", "STABLE", "VOLATILE"] },
+        "definition_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
     "relationPrivilege": {

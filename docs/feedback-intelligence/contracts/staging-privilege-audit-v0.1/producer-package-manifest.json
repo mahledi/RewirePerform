@@ -7,15 +7,15 @@
   "producer_base_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
   "target_project_ref": "zbeswjipayspgvcipzmx",
   "package_signed": false,
-  "package_sha256": "0322e86185a04cd856041f80964dec8c5ec3b99ecaa99e866b70c688977a642d",
+  "package_sha256": "f2a9157387afaaf6bbd47a6f58fd250346340c870fa0fae70d5982d947cbcc2c",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/audit.sql",
-      "sha256": "f32000bd8981beb055b456d8f8ef7d83ba46e9754bdb8e4cf33751daa2b9ed6f"
+      "sha256": "0f155228882726242bd305a9676abf9eed86c29dc89d9ce9b87e1c1cde297434"
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/result.schema.json",
-      "sha256": "c27bbe46052e9004e453ae443811552a01d2c9888138c05516d0ec0cadfc34f3"
+      "sha256": "203c3420cb8dfa828764f863ac725b976d17e291c833cc2854d09d3281424dc4"
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/predeploy.fixture.json",
@@ -23,19 +23,19 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/postdeploy-pass.fixture.json",
-      "sha256": "dfc4ecdc68e8ffdfbd6b3b0eb0025f12b65fe75426bca875a92763152cfb6803"
+      "sha256": "0924043cecca9225ef8de787ee48a50229dcd68644b1f7a66e16d039d7a072d1"
     },
     {
       "path": "scripts/validate-feedback-staging-privilege-audit.mjs",
-      "sha256": "80290c1b2e8d70eb4d636af0373bff8e07bb05401e75a8ccc1d72e8251797d52"
+      "sha256": "e474d2ae487e6e87f9e7581753025c249c9840aba5fa6287bf89e8f956290322"
     },
     {
       "path": "src/test/feedbackIntelligenceStagingPrivilegeAudit.test.ts",
-      "sha256": "66fcf2a54238bb2213d12a999ed4a0b02af8b2b216705505a03ef4a5e7507816"
+      "sha256": "d28246b9673371682166db3ce0b5b538e9fb4f28fac40b714f184544d57cd38d"
     },
     {
       "path": "docs/feedback-intelligence/STAGING_PRIVILEGE_AUDIT_HANDOFF_V0_1.md",
-      "sha256": "7191d26a1dbcb8c0f99519fc8fbc2675361b9c78a8946aa5a96040660da2954b"
+      "sha256": "c799c38816a4ea1689251392a240327fc1ae75a744181d2fd7ad4e44d5ac22fa"
     }
   ],
   "upstream_gateway_pins": {

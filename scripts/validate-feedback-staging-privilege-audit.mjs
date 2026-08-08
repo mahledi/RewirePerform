@@ -23,10 +23,17 @@ const guardedAdminAggregate = {
   schema_name: "public",
   function_name: "get_admin_feedback_intelligence_insights",
   identity_arguments: "text",
-  source_md5: "f0b5736525a0c79a0b773d6bf66ad711",
+  owner_name: "postgres",
+  security_definer: true,
+  function_settings: ["search_path=\"\""],
+  return_type: "jsonb",
+  volatility: "STABLE",
+  definition_sha256: "9beef5048a25069c5fe381232dc81414ab3d62e300629a5fbf1a986e4c8d38ca",
 };
 const isGuardedAdminAggregate = (path) => Object.entries(guardedAdminAggregate)
-  .every(([key, value]) => path[key] === value);
+  .every(([key, value]) => Array.isArray(value)
+    ? JSON.stringify(path[key]) === JSON.stringify(value)
+    : path[key] === value);
 const evidence = result.evidence;
 const findings = [];
 const add = (id, severity, message) => findings.push({ id, severity, message });
