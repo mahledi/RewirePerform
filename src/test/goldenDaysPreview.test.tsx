@@ -209,10 +209,11 @@ describe("complete 56-day V1.1 internal preview", () => {
     fireEvent.click(screen.getByRole("button", { name: "Überblick" }));
     fireEvent.click(screen.getByRole("button", { name: "Ruhetag" }));
     expect(screen.queryByRole("button", { name: "Vor der Einheit" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Kurz prüfen" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Was braucht die Aufgabe?" })).toBeInTheDocument();
   });
 
-  it("guides a rest-day session through every timed phase before the journal", async () => {
+  it("ends a rest-day session after every timed phase without a comprehension or journal detour", async () => {
     vi.useFakeTimers();
     render(<ProgramContentPreview />);
 
@@ -253,10 +254,14 @@ describe("complete 56-day V1.1 internal preview", () => {
     expect(screen.getByTestId("rest-visualization-flow")).toHaveAttribute("data-step", "complete");
     expect(screen.getByText("Visualisierung abgeschlossen")).toBeInTheDocument();
     expect(screen.getByText("Was braucht die Aufgabe?")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Weiter" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Kurz prüfen" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Flow beendet · zur Übersicht" })).toBeEnabled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Was brauchte die Aufgabe?" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Flow beendet · zur Übersicht" }));
+    expect(screen.getByRole("heading", { name: "Was braucht die Aufgabe?" })).toBeInTheDocument();
+    expect(screen.queryByText("Journal · 1 von 3")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Journal" }));
     expect(screen.getByText("Journal · 1 von 3")).toBeInTheDocument();
     vi.useRealTimers();
   });

@@ -61,7 +61,7 @@ describe("V1.1 production content contract", () => {
     expect(preTraining).not.toContain("resolved.content.tasks.map");
   });
 
-  it("opens a rest reminder in the visualization and returns to the dashboard after the short lock-in", () => {
+  it("opens a rest reminder in the visualization and closes directly without a comprehension check", () => {
     const router = readSource("src/components/notifications/NativeNotificationRouter.tsx");
     const dashboard = readSource("src/pages/Dashboard.tsx");
     const checkin = readSource("src/components/dashboard/DailyCheckin.tsx");
@@ -70,8 +70,11 @@ describe("V1.1 production content contract", () => {
     expect(dashboard).toContain('setCheckinInitialFocus("rest-visualization")');
     expect(dashboard).toContain("initialFocus={checkinInitialFocus}");
     expect(checkin).toContain('initialFocus === "rest-visualization" ? 3 : 0');
-    expect(checkin).toContain('if (initialFocus === "rest-visualization") setStep(4)');
-    expect(checkin).toContain('if (initialFocus === "rest-visualization") onClose()');
+    expect(checkin).toContain("handleRestVisualizationComplete");
+    expect(checkin).toContain("saveCheckin(undefined, completedTaskIds)");
+    expect(checkin).toContain('const flowStageCount = eventType === "rest" ? 4 : 5');
+    expect(checkin).not.toContain('if (initialFocus === "rest-visualization") setStep(4)');
+    expect(checkin).not.toContain('if (initialFocus === "rest-visualization") onClose()');
     expect(checkin).not.toContain('navigate("/journal")');
   });
 });

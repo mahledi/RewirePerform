@@ -15,11 +15,11 @@ Die heutige Aufgabe ist ein zusammenhängender Vorgang. Zwei oder drei logisch n
 1. **Überblick:** Zweck und ein großer, klarer Cue.
 2. **Science Bite:** ein Mechanismus in Alltagssprache.
 3. **Mission:** eine zusammenhängende Handlung mit höchstens drei Schritten.
-4. **Kurz prüfen:** ein typisches Missverständnis unterscheiden.
+4. **Kurz prüfen:** an Training und Wettkampf ein typisches Missverständnis unterscheiden.
 5. **Pre-Training oder Pre-Wettkampf:** zuerst frei erinnern, danach den Satz des Tages aufdecken.
 6. **Journal:** eine Frage pro Ansicht; danach ein gemeinsamer Dankbarkeitsblock.
 
-An Ruhetagen ersetzt eine geführte mentale Einheit das Pre-Training. Sie führt in sieben einfachen Schritten durch eine eigene oder angeleitete Sportszene: ankommen, Szene aufbauen, den entscheidenden Moment erkennen, den Satz erinnern, die Handlung sehen, die Szene wiederholen und den Transfer festhalten. Das Werkzeug und das Lernziel bleiben identisch, falls derselbe Programmtag bei einem anderen Athleten auf Training oder Wettkampf fällt.
+An Ruhetagen ersetzt eine geführte Visualisierung das Pre-Training. Sie beginnt mit zwei Minuten ruhiger Atmung und führt danach in drei klaren Schritten durch dieselbe sportneutrale Sportszene: Situation konkret vorstellen, den sichtbaren Satz mit einer passenden Handlung verbinden und die Szene genau mit dieser Handlung erneut durchgehen. Jeder Timer muss beendet sein, bevor es weitergeht. Danach wird ohne zusätzliche Verständnisfrage gespeichert und direkt ins Dashboard zurückgekehrt. Das Journal bleibt der getrennte Abendweg. Werkzeug und Lernziel bleiben identisch, falls derselbe Programmtag bei einem anderen Athleten auf Training oder Wettkampf fällt.
 
 ## 3. Science-Bite-Standard
 
@@ -54,7 +54,7 @@ Nichtwissen wird nicht bestraft und erzeugt keinen Score. Der Abruf dient Lernen
 - Aufbau und Rückkehr: zwei bis drei kurze Fragen;
 - Vertiefung und Integration: höchstens drei Fragen;
 - immer nur eine Frage gleichzeitig sichtbar;
-- jeder Ruhetag besitzt zwei manuell geschriebene Fragen zur eigenen mentalen Einheit;
+- jeder Ruhetag besitzt zwei manuell geschriebene Fragen zur eigenen Visualisierung;
 - jeder Wettkampftag nutzt die tagesgenauen Fragen in klarer Wettkampfsprache;
 - eine konkrete Szene erneut durchgehen, nicht allgemein über die eigene Persönlichkeit urteilen;
 - Nicht-Anwendung darf ehrlich angegeben werden;
@@ -82,7 +82,7 @@ Ein Tag ist erst redaktionell fertig, wenn:
 
 - ein Athlet nach einmaligem Lesen sagen kann, was er tun soll;
 - nur ein Cue als heutige Linie wahrnehmbar ist;
-- Science Bite, Mission, Verständnischeck, Pre-Training und Journal dieselbe Bewegung behandeln;
+- Science Bite, Mission, der kontextabhängige Verständnischeck, Pre-Training beziehungsweise Ruhetag-Visualisierung und Journal dieselbe Bewegung behandeln;
 - keine Antwort vor dem aktiven Abruf verraten wird;
 - die Mission nicht wie mehrere Aufgaben wirkt;
 - Ruhetag und fehlender Trigger ehrlich funktionieren;

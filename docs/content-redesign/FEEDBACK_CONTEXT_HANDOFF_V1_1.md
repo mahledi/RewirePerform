@@ -10,12 +10,13 @@ Feedback darf Tageskontext ausschließlich über `src/content/programV11.ts` und
 
 Journal, Dankbarkeit, private Reflexionen, vorgestellte Szenen, freie Check-in-Antworten und individuelle Coach-Beobachtungen bleiben ausgeschlossen. Strukturierte Antworten funktionieren ohne Freitextfreigabe. Ein freiwilliges Feld `+ Kurz etwas dazu sagen` bleibt standardmäßig leer; bei unter 16-Jährigen gelten zusätzlich die bestehenden Athlete-/Guardian-Freigaben.
 
-## Aktivitätsgrenze der mentalen Einheit
+## Aktivitätsgrenze der Ruhetag-Visualisierung
 
 - Verwendet wird ausschließlich der bestehende Tages-/Missionsabschluss in `user_day_completion`; es entsteht keine neue Tracking-Tabelle und kein psychologischer Score.
-- Als abgeschlossen gilt die mentale Einheit erst, nachdem der Athlet alle sieben sichtbaren Schritte aktiv geöffnet und am Ende `Abschließen` gewählt hat. Der Timer muss nicht vollständig ablaufen.
+- Als abgeschlossen gilt die Visualisierung erst nach zwei Minuten ruhiger Atmung und drei Visualisierungsschritten. Jeder Timer muss vollständig beendet sein, bevor der nächste Schritt freigeschaltet wird.
+- Nach dem erfolgreichen atomaren Speichern endet der Ruhetag-Flow direkt im Dashboard. Es folgt weder eine Verständnisfrage noch automatisch das Journal.
 - Coaches und spätere Jarvis-Aggregate dürfen daraus höchstens vorhandene Aktivität beziehungsweise Abschluss ableiten.
-- Nicht gespeichert oder weitergegeben werden: geführte/eigene Variante, einzelne Schritte, Zeitdauer, Pausen, Zusatzzeit, vorgestellte Szene, Journaltext oder die Qualität der Visualisierung.
+- Nicht gespeichert oder weitergegeben werden: einzelne Schritte, Zeitdauer, Pausen, vorgestellte Szene, Journaltext oder die Qualität der Visualisierung.
 
 ## Tag 10
 
@@ -67,4 +68,4 @@ Vor der ersten offenen Erinnerungsfrage dürfen weder Werkzeugname noch Satz des
 2. Strukturiert: `Wie passend war die mentale Einheit, um den Satz des Tages an einem Ruhetag zu üben?` – Skala von `gar nicht passend` bis `sehr passend`.
 3. Optionaler Freitext: `Was war unklar, zu lang oder unnötig?` – nur nach der bestehenden freiwilligen Freitext- und Minderjährigenfreigabe.
 
-Diese Antworten erfassen subjektive Nutzungserfahrung. Sie sind kein Beleg für Behalten, Transfer, Performance- oder Gehirnveränderung.
+Diese Feedback-Fragen gehören ausschließlich in die separat versionierten Messfenster des Feedback-Systems. Sie erscheinen nicht direkt nach der Visualisierung. Die Antworten erfassen subjektive Nutzungserfahrung. Sie sind kein Beleg für Behalten, Transfer, Performance- oder Gehirnveränderung.

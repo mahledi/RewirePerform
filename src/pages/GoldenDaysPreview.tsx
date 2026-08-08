@@ -76,7 +76,6 @@ const getStages = (draft: GoldenDayDraft, context: GoldenDayContext = draft.cont
     return [
       "overview",
       "science",
-      "comprehension",
       "rest-plan",
       "visualization",
       "journal",
@@ -717,6 +716,9 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
   const stageLocked = (stage === "rest-plan" && !restPlanReady)
     || (stage === "visualization" && !visualizationComplete)
     || (stage === "pre-training" && !preTrainingRevealed);
+  const restVisualizationFinished = context === "rest"
+    && stage === "visualization"
+    && visualizationComplete;
 
   const selectDay = (index: number) => {
     setDayIndex(index);
@@ -843,12 +845,20 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
           </button>
           <button
             type="button"
-            onClick={() => moveStage(stageIndex + 1)}
+            onClick={() => {
+              if (restVisualizationFinished) {
+                setStageIndex(0);
+                return;
+              }
+              moveStage(stageIndex + 1);
+            }}
             disabled={stageIndex === stages.length - 1 || stageLocked}
             className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:bg-white/[0.06] disabled:text-white/28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0C10]"
           >
-            {stageIndex === stages.length - 1
-              ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig")
+            {restVisualizationFinished
+              ? "Flow beendet · zur Übersicht"
+              : stageIndex === stages.length - 1
+                ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig")
               : stage === "rest-plan" && !restPlanReady
                 ? "Zeit auswählen"
                 : stage === "visualization" && !visualizationComplete

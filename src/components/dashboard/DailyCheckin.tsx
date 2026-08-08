@@ -116,6 +116,7 @@ const DailyCheckin = ({
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DailyTask | null>(null);
@@ -449,30 +450,33 @@ const DailyCheckin = ({
 
   const saveCheckin = async (
     comprehensionResults?: DailyTrackingComprehensionResult[],
+    completedTaskIds: string[] = completedTasks,
   ): Promise<boolean> => {
     if (previewMode) {
       setStep(5);
       return true;
     }
     if (!user?.id || !assignmentId || !resolved) return false;
-    if (saving) return false; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
+    if (savingRef.current) return false; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
+    savingRef.current = true;
     setSaveError(null);
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = focusClarity
-      ?? (tasks.length > 0 ? Math.max(1, Math.round((completedTasks.length / tasks.length) * 10)) : null);
-    const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
-
-    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
-    const instance = await getOrCreateActiveInstance(user.id);
-
-    if (!instance?.id) {
-      setSaving(false);
-      setSaveError("Dein Programmlauf ist noch nicht vollständig eingerichtet. Bitte wende dich an den Coach oder Support.");
-      return false;
-    }
+      ?? (tasks.length > 0 ? Math.max(1, Math.round((completedTaskIds.length / tasks.length) * 10)) : null);
+    const completedTitles = completedTaskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     try {
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+
+      if (!instance?.id) {
+        savingRef.current = false;
+        setSaving(false);
+        setSaveError("Dein Programmlauf ist noch nicht vollständig eingerichtet. Bitte wende dich an den Coach oder Support.");
+        return false;
+      }
+
       await saveDailyTracking({
         assignmentId,
         userId: user.id,
@@ -519,6 +523,7 @@ const DailyCheckin = ({
         },
       });
     } catch (error) {
+      savingRef.current = false;
       setSaving(false);
       console.error("Atomic daily tracking save error:", error);
       void captureAppError({
@@ -533,12 +538,17 @@ const DailyCheckin = ({
           stage: "atomic_tracking",
         },
       });
-      const { toast } = await import("sonner");
       setSaveError("Dein Check-in ist lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
-      toast.error("Check-in lokal gesichert. Speichern bitte erneut versuchen.");
+      try {
+        const { toast } = await import("sonner");
+        toast.error("Check-in lokal gesichert. Speichern bitte erneut versuchen.");
+      } catch {
+        // The inline retry state remains available if the optional toast cannot load.
+      }
       return false;
     }
 
+    savingRef.current = false;
     setSaving(false);
 
     if (draftKey) clearLocalDraft(draftKey);
@@ -558,13 +568,26 @@ const DailyCheckin = ({
     const saved = await saveCheckin(results);
     if (saved) {
       setComprehensionDone(true);
-      if (initialFocus === "rest-visualization") onClose();
     }
   };
 
   const handleEmptyComprehensionComplete = async () => {
     const saved = await saveCheckin();
-    if (saved && initialFocus === "rest-visualization") onClose();
+    if (saved) setComprehensionDone(true);
+  };
+
+  const finishRestDay = async (completedTaskIds: string[] = completedTasks) => {
+    const saved = await saveCheckin(undefined, completedTaskIds);
+    if (saved) onClose();
+  };
+
+  const handleRestVisualizationComplete = (taskId: string) => {
+    const nextCompletedTasks = completedTasks.includes(taskId)
+      ? completedTasks
+      : [...completedTasks, taskId];
+    setCompletedTasks(nextCompletedTasks);
+    setSelectedTask(null);
+    void finishRestDay(nextCompletedTasks);
   };
 
   const ScienceBiteIntro = () => {
@@ -658,16 +681,16 @@ const DailyCheckin = ({
           reminderTime={restReminderTime}
           reminderScheduled={restReminderScheduled}
           completed={completedTasks.includes(missionTask.id)}
+          saving={saving}
+          saveError={saveError}
           onPlanModeChange={(mode) => {
             setRestPlanMode(mode);
             if (mode === "now") setRestReminderScheduled(false);
           }}
           onReminderTimeChange={setRestReminderTime}
           onReminderScheduledChange={setRestReminderScheduled}
-          onComplete={() => {
-            markTaskComplete(missionTask.id);
-            if (initialFocus === "rest-visualization") setStep(4);
-          }}
+          onComplete={() => handleRestVisualizationComplete(missionTask.id)}
+          onRetrySave={() => void finishRestDay()}
           onCloseForLater={onClose}
         />
       );
@@ -731,14 +754,22 @@ const DailyCheckin = ({
     );
   };
 
-  const flowStepTitles = [
-    "Science Bite",
-    "Dein Tages-Puls",
-    activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
-    eventType === "rest" ? "Visualisierung" : "Deine Mission",
-    "Verständnis-Check",
-    "Abgeschlossen",
-  ] as const;
+  const flowStepTitles = eventType === "rest"
+    ? [
+        "Science Bite",
+        "Dein Tages-Puls",
+        activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
+        "Visualisierung",
+      ]
+    : [
+        "Science Bite",
+        "Dein Tages-Puls",
+        activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
+        "Deine Mission",
+        "Verständnis-Check",
+        "Abgeschlossen",
+      ];
+  const flowStageCount = eventType === "rest" ? 4 : 5;
 
   return (
     <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[#0D0E12] text-[#EEF0F2]">
@@ -756,7 +787,7 @@ const DailyCheckin = ({
       />
       <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
         <div className="mx-auto flex max-w-lg items-center gap-2">
-          {Array.from({ length: 5 }, (_, index) => (
+          {Array.from({ length: flowStageCount }, (_, index) => (
             <div
               key={index}
               className={`h-1 flex-1 rounded-full ${
@@ -765,14 +796,16 @@ const DailyCheckin = ({
             />
           ))}
           <span className="ml-1 text-[10px] tabular-nums text-white/42">
-            {step === 5 ? "5/5" : `${Math.min(step + 1, 5)}/5`}
+            {step === 5
+              ? `${flowStageCount}/${flowStageCount}`
+              : `${Math.min(step + 1, flowStageCount)}/${flowStageCount}`}
           </span>
         </div>
       </div>
 
       <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-5 py-7">
         <div className="mx-auto w-full max-w-lg">
-          {saveError && (
+          {saveError && !(eventType === "rest" && step === 3) && (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
               {saveError}
             </div>
@@ -959,7 +992,7 @@ const DailyCheckin = ({
         </div>
       </div>
 
-      {(step === 1 || step === 2 || step === 3) && !selectedTask && (
+      {(step === 1 || step === 2 || (step === 3 && eventType !== "rest")) && !selectedTask && (
         <div className="sticky bottom-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={handleBack} className="flex min-h-12 items-center gap-2 rounded-xl px-4 py-3 text-white/52 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">

@@ -8,8 +8,8 @@ Status: **isolierter vollständiger Inhaltsentwurf, nicht in Production und kein
 
 - Alle 56 Programmtage sind geschrieben.
 - Jeder Tag zeigt genau einen führenden Cue.
-- Jeder Tag enthält einen kurzen Science Bite, eine zusammenhängende Mission, eine kurze Verständnisunterscheidung, einen freien Abruf vor Training oder Wettkampf und ein Frage-für-Frage-Journal.
-- Ruhetage ersetzen Pre-Training durch eine geführte, tagesgenaue mentale Einheit und verlangen keine erfundene heutige Sportanwendung.
+- Jeder Tag enthält einen kurzen Science Bite, eine zusammenhängende Mission und ein Frage-für-Frage-Journal. Training und Wettkampf behalten die kurze Verständnisunterscheidung sowie den freien Abruf vor der Einheit.
+- Ruhetage ersetzen Pre-Training durch eine geführte, tagesgenaue Visualisierung und verlangen keine erfundene heutige Sportanwendung.
 - Training, Wettkampf und Ruhetag verändern nur die Ausführungsform, niemals Werkzeug, Cue oder Programmlogik.
 - Training, Wettkampf und Ruhetag besitzen für jeden der 56 Tage ein passendes Journal. Ruhetage erhalten zwei manuell geschriebene Fragen zur mentalen Einheit; Wettkampffragen werden auf den echten Wettkampfkontext formuliert.
 - Die zehn Golden Days und alle weiteren Tage wurden im abschliessenden 56-Tage-Audit gemeinsam nachgeschärft. Kanonische Cues, kontextneutrale Formulierungen und praktische statt redaktioneller Verständnisfragen gelten dadurch programmweit einheitlich.
@@ -19,10 +19,10 @@ Status: **isolierter vollständiger Inhaltsentwurf, nicht in Production und kein
 
 - Science Bites: 37 bis 54 Wörter einschließlich Überschrift, Mittelwert 45,2 Wörter.
 - Mission: zwei bis drei logisch notwendige Schritte in einem sichtbaren Block.
-- Verständnis: genau eine Frage mit drei Optionen.
+- Verständnis: an Training und Wettkampf genau eine Frage mit drei Optionen; nach der fordernden Ruhetag-Visualisierung keine zusätzliche Verständnisfrage.
 - Journal: zwei bis drei tages- und kontextgenaue Fragen, einzeln sichtbar, danach ein gemeinsamer Dankbarkeitsblock mit mindestens acht Wörtern.
 - Pre-Training: offene Erinnerung ohne sichtbaren Lösungshinweis; Cue und Anwendung erst nach `Erinnerung prüfen`.
-- Ruhetag: sieben aktiv zu durchlaufende Visualisierungsschritte mit Timer, Pause und optionalen 30 Zusatzsekunden; kein vollständiger Timerzwang und keine Speicherung der vorgestellten Szene.
+- Ruhetag: zwei Minuten ruhige Atmung und danach drei aktiv zu durchlaufende Visualisierungsschritte. Jeder Timer muss beendet sein, bevor es weitergeht; Pause bleibt möglich. Die vorgestellte Szene wird nicht gespeichert. Nach erfolgreichem Speichern endet der Flow direkt im Dashboard; das Journal bleibt der getrennte Abendweg.
 
 ## Kanonischer Datenfluss
 
@@ -60,7 +60,7 @@ Jedes Element hat einen oder mehrere Zielprogrammtage sowie eine explizite schem
 - Identität und Confidence werden als mögliche Entwicklung aus wiederholbarem Verhalten beschrieben, nicht als bereits bewiesene Veränderung.
 - Messungen sind Messpunkte, keine Personenbewertung und kein kausaler Wirksamkeitsbeweis.
 - Private Journal- und Freitexte bleiben außerhalb von Coach-, Team- und Wirkungszusammenfassungen.
-- Die mentale Einheit speichert nur den bestehenden Abschlussstatus. Szene, gewählter Pfad, Dauer und einzelne Schritte werden weder an Coaches noch an Evidence weitergegeben.
+- Die Visualisierung speichert nur den bestehenden Abschlussstatus. Szene, Dauer und einzelne Schritte werden weder an Coaches noch an Evidence weitergegeben.
 
 ## Interne Prüfung
 
@@ -72,12 +72,12 @@ Jedes Element hat einen oder mehrere Zielprogrammtage sowie eine explizite schem
 Verifikationsstand dieser Korrekturrunde:
 
 - fokussierte Inhalts-, Kontext-, Erinnerungs- und Preview-Regression: 52/52 Tests gruen;
-- vollstaendige lokale CI: 99/99 Testdateien und 568/568 Tests sowie alle SQL-, Privacy-, Minderjährigen-, Tracking-, Lösch- und App-Store-Gates gruen;
+- vollstaendige lokale CI: 105/105 Testdateien und 583/583 Tests sowie alle SQL-, Privacy-, Minderjährigen-, Tracking-, Lösch- und App-Store-Gates gruen;
 - zentrale App-Wortmarke verifiziert: `Rewire` bleibt auf dunklen Flächen Off-White und auf hellen Flächen Midnight; `Perform` nutzt das gesperrte Rewire-Grün. Fließtext, Metadaten und Auth-/Guardian-Mailtemplates wurden in diesem Content-Scope nicht verändert;
 - alle 56 Tage werden maschinell in Training, Ruhetag und Wettkampf aus derselben kanonischen Quelle aufgeloest;
-- alle 56 Ruhetage besitzen sieben aktive Visualisierungsschritte, genau einen festen Tagesanker und zwei eigene Journalfragen;
+- alle 56 Ruhetage besitzen zwei Minuten ruhige Atmung, drei aktive Visualisierungsschritte, genau einen festen Tagesanker und zwei eigene Journalfragen;
 - Pre-Training und interne Vorschau bleiben bis `Erinnerung prüfen` gesperrt;
-- realer Browser-Gegencheck auf 375 × 667, 390 × 844, 1024 × 1366 und 1366 × 1024 ohne horizontalen Seitenüberlauf; Ruhetag-Timer, sieben Phasen, Tag-10-Wettkampfjournal und aktiver Abruf wurden sichtbar geprüft;
+- realer Browser-Gegencheck auf 375 × 667, 390 × 844, 1024 × 1366 und 1366 × 1024 ohne horizontalen Seitenüberlauf; Ruhetag-Timer, Atmung plus drei Visualisierungsphasen, Tag-10-Wettkampfjournal und aktiver Abruf wurden sichtbar geprüft;
 - der Fortschrittsstreifen der internen Vorschau steht nicht mehr in einem sichtbaren rechteckigen Rahmen;
 - `npm run app:build` hat die vollständige CI erneut grün durchlaufen und anschließend erwartungsgemäß am Production-Target-Gate gestoppt, weil dieser isolierte Worktree keine bestätigten Production-Umgebungswerte enthält. Es fand kein Capacitor-Sync statt. Der native Release-Build bleibt Aufgabe des unabhängigen Readiness-Gates mit bestätigter Umgebung.
 

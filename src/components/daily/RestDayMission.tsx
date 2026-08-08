@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Check, Clock3, Play } from "lucide-react";
+import { Bell, Check, Clock3, Loader2, Play } from "lucide-react";
 import RestDayVisualizationFlow from "@/prototypes/golden-days/RestDayVisualizationFlow";
 import type { GoldenDayDraft } from "@/prototypes/golden-days/goldenDayDrafts";
 import {
@@ -19,10 +19,13 @@ type Props = {
   reminderTime: string;
   reminderScheduled: boolean;
   completed: boolean;
+  saving: boolean;
+  saveError: string | null;
   onPlanModeChange: (mode: Exclude<RestDayPlanMode, null>) => void;
   onReminderTimeChange: (time: string) => void;
   onReminderScheduledChange: (scheduled: boolean) => void;
   onComplete: () => void;
+  onRetrySave: () => void;
   onCloseForLater: () => void;
 };
 
@@ -41,10 +44,13 @@ const RestDayMission = ({
   reminderTime,
   reminderScheduled,
   completed,
+  saving,
+  saveError,
   onPlanModeChange,
   onReminderTimeChange,
   onReminderScheduledChange,
   onComplete,
+  onRetrySave,
   onCloseForLater,
 }: Props) => {
   const [scheduling, setScheduling] = useState(false);
@@ -90,6 +96,33 @@ const RestDayMission = ({
         </p>
         <h2 className="mt-5 text-xl font-semibold">Dein Satz für heute</h2>
         <p className="mt-2 text-sm leading-6 text-white/48">{draft.cue}</p>
+        {saveError ? (
+          <div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-left">
+            <p className="text-xs leading-5 text-amber-100/75">{saveError}</p>
+            <button
+              type="button"
+              onClick={onRetrySave}
+              disabled={saving}
+              className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {saving ? "Wird gespeichert …" : "Erneut speichern"}
+            </button>
+          </div>
+        ) : saving ? (
+          <div className="mt-6 flex min-h-12 items-center justify-center gap-2 text-sm font-semibold text-white/52" role="status">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            Abschluss wird gespeichert …
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onRetrySave}
+            className="mt-6 flex min-h-12 w-full items-center justify-center rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Zurück zum Dashboard
+          </button>
+        )}
       </div>
     );
   }
