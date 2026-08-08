@@ -7,11 +7,11 @@
   "producer_base_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
   "target_project_ref": "zbeswjipayspgvcipzmx",
   "package_signed": false,
-  "package_sha256": "352b2cfcb20a5f3dca0c401b2b662509b623f0eac1a29e750db86257b6cda8ba",
+  "package_sha256": "1beae2e4d162c57107fa1d890d108e766e5691364900d42cdd15c0b057885ee9",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/audit.sql",
-      "sha256": "1c6f081d1f15a934bffa7549bd50161b962acc5cb3143ff68e034c9dd4d5e885"
+      "sha256": "c23f0597d11d0c2fdf23a44e2467a6c656550040b9cb6e38f2b74a724de8b009"
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/result.schema.json",

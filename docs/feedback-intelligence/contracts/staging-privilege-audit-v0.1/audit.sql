@@ -33,7 +33,7 @@ reader_role AS (
 gateway_function AS (
   SELECT procedure.oid, namespace.nspname AS schema_name,
     procedure.proname AS function_name,
-    pg_catalog.pg_get_function_identity_arguments(procedure.oid) AS identity_arguments,
+    pg_catalog.oidvectortypes(procedure.proargtypes) AS identity_arguments,
     pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name,
     owner.rolsuper AS owner_superuser,
     owner.rolbypassrls AS owner_bypassrls,
@@ -49,7 +49,7 @@ gateway_function AS (
 audited_functions AS (
   SELECT procedure.oid, namespace.oid AS namespace_oid,
     namespace.nspname AS schema_name, procedure.proname AS function_name,
-    pg_catalog.pg_get_function_identity_arguments(procedure.oid) AS identity_arguments,
+    pg_catalog.oidvectortypes(procedure.proargtypes) AS identity_arguments,
     procedure.prosecdef AS security_definer,
     pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name
   FROM pg_catalog.pg_proc procedure
