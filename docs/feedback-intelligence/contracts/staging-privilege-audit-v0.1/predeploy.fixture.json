@@ -20,6 +20,8 @@
       "authenticated": false,
       "service_role": false
     },
+    "machine_export_functions": [],
+    "denied_role_machine_paths": [],
     "reader_callable_functions": [],
     "reader_relation_privileges": [],
     "reader_sequence_privileges": [],

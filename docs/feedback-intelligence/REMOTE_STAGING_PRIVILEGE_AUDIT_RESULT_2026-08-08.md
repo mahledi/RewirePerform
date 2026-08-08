@@ -19,6 +19,13 @@ Bestätigt:
 - Es wurden keine relevanten `PUBLIC`-Default-EXECUTE-Pfade gefunden.
 - Es existieren noch keine Reader-Mitgliedschaften, Reader-Schema-Rechte,
   direkten Relation-/Sequence-Rechte oder weiteren Reader-Function-Pfade.
+- Die vollständige Machine-/Export-Inventur enthält genau einen bekannten
+  Runtime-Pfad außerhalb des Gateway-RPC: den byteidentischen, intern
+  admin-gegateden Aggregatvertrag
+  `authenticated -> get_admin_feedback_intelligence_insights(text)`. Sein
+  Source-Pin stimmt exakt mit der geprüften Migration überein; jeder normale
+  authentifizierte Athlet scheitert vor der Auswertung mit
+  `admin_role_required`. Er ist kein Jarvis-/Machine-Lesepfad.
 
 ## Bedeutung
 

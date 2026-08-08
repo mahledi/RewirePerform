@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-feedback-intelligence-staging-privilege-audit-result-v1",
   "contract_status": "METADATA_ONLY_UNSIGNED_NOT_ACTIVATED",
   "project_ref": "zbeswjipayspgvcipzmx",
-  "executed_at": "2026-08-08T06:52:21.411489+00:00",
+  "executed_at": "2026-08-08T07:04:54.719041+00:00",
   "database_name_redacted": true,
   "audit_phase": "PREDEPLOY_BASELINE",
   "data_access": {
@@ -32,6 +32,41 @@
       "authenticated": false,
       "service_role": false
     },
+    "machine_export_functions": [
+      {
+        "schema_name": "feedback_analysis",
+        "function_name": "reject_access_log_mutation",
+        "identity_arguments": "",
+        "security_definer": true,
+        "owner_name": "postgres",
+        "source_md5": "7db4859e963b6bfc244e5da4247577c6"
+      },
+      {
+        "schema_name": "public",
+        "function_name": "get_admin_feedback_intelligence_insights",
+        "identity_arguments": "text",
+        "security_definer": true,
+        "owner_name": "postgres",
+        "source_md5": "f0b5736525a0c79a0b773d6bf66ad711"
+      },
+      {
+        "schema_name": "public",
+        "function_name": "read_feedback_intelligence_v0_2_draft",
+        "identity_arguments": "text, text, text, text",
+        "security_definer": true,
+        "owner_name": "postgres",
+        "source_md5": "ba41be23ba3d33a986f30d1958e7616e"
+      }
+    ],
+    "denied_role_machine_paths": [
+      {
+        "subject_role": "authenticated",
+        "schema_name": "public",
+        "function_name": "get_admin_feedback_intelligence_insights",
+        "identity_arguments": "text",
+        "source_md5": "f0b5736525a0c79a0b773d6bf66ad711"
+      }
+    ],
     "reader_callable_functions": [],
     "reader_relation_privileges": [],
     "reader_sequence_privileges": [],

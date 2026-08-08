@@ -51,9 +51,22 @@ audited_functions AS (
     namespace.nspname AS schema_name, procedure.proname AS function_name,
     pg_catalog.oidvectortypes(procedure.proargtypes) AS identity_arguments,
     procedure.prosecdef AS security_definer,
-    pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name
+    pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name,
+    procedure.prosrc AS function_source,
+    COALESCE(procedure.proacl, pg_catalog.acldefault('f', procedure.proowner)) AS function_acl
   FROM pg_catalog.pg_proc procedure
   JOIN audited_namespaces namespace ON namespace.oid = procedure.pronamespace
+),
+machine_export_functions AS (
+  SELECT function.oid, function.namespace_oid, function.schema_name,
+    function.function_name, function.identity_arguments,
+    function.security_definer, function.owner_name,
+    pg_catalog.md5(function.function_source) AS source_md5,
+    function.function_acl
+  FROM audited_functions function
+  WHERE function.schema_name = 'feedback_analysis'
+     OR function.function_name ~* '(feedback_intelligence|machine|export_feedback)'
+     OR function.function_source ~* 'feedback_analysis[.](export_feedback_intelligence|machine_)'
 ),
 reader_callable_functions AS (
   SELECT function.schema_name, function.function_name,
@@ -72,6 +85,33 @@ gateway_execute_matrix AS (
   FROM known_roles role
   LEFT JOIN gateway_function gateway ON true
 ),
+denied_named_role_machine_paths AS (
+  SELECT role.rolname AS subject_role, function.schema_name,
+    function.function_name, function.identity_arguments, function.source_md5
+  FROM known_roles role
+  JOIN machine_export_functions function
+    ON role.rolname <> (SELECT reader_role FROM constants)
+   AND pg_catalog.has_schema_privilege(role.oid, function.namespace_oid, 'USAGE')
+   AND pg_catalog.has_function_privilege(role.oid, function.oid, 'EXECUTE')
+),
+public_machine_paths AS (
+  SELECT 'PUBLIC'::text AS subject_role, function.schema_name,
+    function.function_name, function.identity_arguments, function.source_md5
+  FROM machine_export_functions function
+  -- A PUBLIC function EXECUTE grant is treated as a side path even if schema
+  -- USAGE is currently closed. This is deliberately stricter than callability
+  -- so a later schema grant cannot silently activate the function.
+  WHERE EXISTS (
+      SELECT 1
+      FROM pg_catalog.aclexplode(function.function_acl) privilege
+      WHERE privilege.grantee = 0 AND privilege.privilege_type = 'EXECUTE'
+  )
+),
+denied_role_machine_paths AS (
+  SELECT * FROM public_machine_paths
+  UNION ALL
+  SELECT * FROM denied_named_role_machine_paths
+),
 reader_memberships AS (
   SELECT member.rolname AS member_name, granted.rolname AS granted_role,
     membership.admin_option
@@ -80,23 +120,19 @@ reader_memberships AS (
   JOIN pg_catalog.pg_roles granted ON granted.oid = membership.roleid
   JOIN reader_role reader ON reader.oid = member.oid OR reader.oid = granted.oid
 ),
-sensitive_relations AS (
+audited_relations AS (
   SELECT relation.oid, namespace.oid AS namespace_oid,
     namespace.nspname AS schema_name, relation.relname AS relation_name,
     relation.relkind
   FROM pg_catalog.pg_class relation
   JOIN audited_namespaces namespace ON namespace.oid = relation.relnamespace
   WHERE relation.relkind IN ('r', 'p', 'v', 'm', 'S')
-    AND (
-      namespace.nspname <> 'public'
-      OR relation.relname ~* '(feedback|consent|comment|journal|activity|analysis|guardian|minor|machine)'
-    )
 ),
 reader_relation_privileges AS (
   SELECT relation.schema_name, relation.relation_name, relation.relkind,
     privilege.privilege_type
   FROM reader_role reader
-  JOIN sensitive_relations relation ON true
+  JOIN audited_relations relation ON true
   CROSS JOIN LATERAL (
     VALUES
       ('SELECT', pg_catalog.has_table_privilege(reader.oid, relation.oid, 'SELECT')),
@@ -113,7 +149,7 @@ reader_sequence_privileges AS (
   SELECT relation.schema_name, relation.relation_name,
     privilege.privilege_type
   FROM reader_role reader
-  JOIN sensitive_relations relation ON relation.relkind = 'S'
+  JOIN audited_relations relation ON relation.relkind = 'S'
   CROSS JOIN LATERAL (
     VALUES
       ('USAGE', pg_catalog.has_sequence_privilege(reader.oid, relation.oid, 'USAGE')),
@@ -190,6 +226,21 @@ evidence AS (
       SELECT jsonb_object_agg(matrix.rolname, matrix.callable ORDER BY matrix.rolname)
       FROM gateway_execute_matrix matrix
     ), '{}'::jsonb),
+    'machine_export_functions', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'schema_name', function.schema_name,
+        'function_name', function.function_name,
+        'identity_arguments', function.identity_arguments,
+        'security_definer', function.security_definer,
+        'owner_name', function.owner_name,
+        'source_md5', function.source_md5
+      ) ORDER BY function.schema_name, function.function_name, function.identity_arguments)
+      FROM machine_export_functions function
+    ), '[]'::jsonb),
+    'denied_role_machine_paths', COALESCE((
+      SELECT jsonb_agg(to_jsonb(path) ORDER BY path.subject_role, path.schema_name, path.function_name, path.identity_arguments)
+      FROM denied_role_machine_paths path
+    ), '[]'::jsonb),
     'reader_callable_functions', COALESCE((
       SELECT jsonb_agg(to_jsonb(function) ORDER BY function.schema_name, function.function_name, function.identity_arguments)
       FROM reader_callable_functions function

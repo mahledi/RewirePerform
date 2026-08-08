@@ -30,7 +30,7 @@
       "security_definer": true,
       "function_settings": ["search_path=\"\""],
       "owner_name": "postgres",
-      "owner_superuser": true,
+      "owner_superuser": false,
       "owner_bypass_rls": true
     },
     "gateway_execute_matrix": {
@@ -39,13 +39,25 @@
       "mahleos_feedback_reader": true,
       "service_role": false
     },
+    "machine_export_functions": [
+      {
+        "schema_name": "public",
+        "function_name": "read_feedback_intelligence_v0_2_draft",
+        "identity_arguments": "text, text, text, text",
+        "security_definer": true,
+        "owner_name": "postgres",
+        "source_md5": "00000000000000000000000000000000"
+      }
+    ],
+    "denied_role_machine_paths": [],
     "reader_callable_functions": [
       {
         "schema_name": "public",
         "function_name": "read_feedback_intelligence_v0_2_draft",
         "identity_arguments": "text, text, text, text",
         "security_definer": true,
-        "owner_name": "postgres"
+        "owner_name": "postgres",
+        "source_md5": "00000000000000000000000000000000"
       }
     ],
     "reader_relation_privileges": [],

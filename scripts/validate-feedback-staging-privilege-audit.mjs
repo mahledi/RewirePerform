@@ -17,6 +17,16 @@ if (!validate(result)) {
 }
 
 const expectedSignature = "public.read_feedback_intelligence_v0_2_draft(text, text, text, text)";
+const expectedSettings = ["search_path=\"\""];
+const guardedAdminAggregate = {
+  subject_role: "authenticated",
+  schema_name: "public",
+  function_name: "get_admin_feedback_intelligence_insights",
+  identity_arguments: "text",
+  source_md5: "f0b5736525a0c79a0b773d6bf66ad711",
+};
+const isGuardedAdminAggregate = (path) => Object.entries(guardedAdminAggregate)
+  .every(([key, value]) => path[key] === value);
 const evidence = result.evidence;
 const findings = [];
 const add = (id, severity, message) => findings.push({ id, severity, message });
@@ -27,12 +37,20 @@ if (result.audit_phase === "PREDEPLOY_BASELINE") {
   }
   const gateway = evidence.gateway_function;
   if (gateway.present && (gateway.signature !== expectedSignature || !gateway.security_definer
-      || !gateway.function_settings.some((setting) => /^search_path=(?:"")?$/u.test(setting)))) {
-    add("PREDEPLOY_GATEWAY_FUNCTION_DRIFT", "NO_GO", "Existing predeploy export RPC has unsafe metadata or a different signature.");
+      || JSON.stringify(gateway.function_settings) !== JSON.stringify(expectedSettings)
+      || gateway.owner_name !== "postgres" || gateway.owner_superuser !== false
+      || gateway.owner_bypass_rls !== true)) {
+    add("PREDEPLOY_GATEWAY_FUNCTION_DRIFT", "NO_GO", "Existing predeploy export RPC has different signature, settings, or Hosted-Staging owner attributes.");
   }
   const matrix = evidence.gateway_execute_matrix;
   if (matrix.anon !== false || matrix.authenticated !== false || matrix.service_role !== false) {
     add("PREDEPLOY_RUNTIME_EXECUTE_PATH", "NO_GO", "A standard runtime role can call the existing export RPC.");
+  }
+  const unapprovedMachinePaths = evidence.denied_role_machine_paths.filter(
+    (path) => !isGuardedAdminAggregate(path),
+  );
+  if (unapprovedMachinePaths.length > 0) {
+    add("PREDEPLOY_MACHINE_EXPORT_SIDE_PATH", "NO_GO", "PUBLIC or a standard runtime role can call an unallowlisted Machine/Export-path function.");
   }
   if (evidence.reader_callable_functions.length > 0
       || evidence.reader_relation_privileges.length > 0
@@ -56,13 +74,21 @@ if (result.audit_phase === "PREDEPLOY_BASELINE") {
   }
   const gateway = evidence.gateway_function;
   if (!gateway.present || gateway.signature !== expectedSignature || !gateway.security_definer
-      || !gateway.function_settings.some((setting) => /^search_path=(?:"")?$/u.test(setting))) {
-    add("GATEWAY_FUNCTION_DRIFT", "NO_GO", "Gateway signature, SECURITY DEFINER, or empty search_path differs.");
+      || JSON.stringify(gateway.function_settings) !== JSON.stringify(expectedSettings)
+      || gateway.owner_name !== "postgres" || gateway.owner_superuser !== false
+      || gateway.owner_bypass_rls !== true) {
+    add("GATEWAY_FUNCTION_DRIFT", "NO_GO", "Gateway signature, settings, or Hosted-Staging owner attributes differ.");
   }
   const matrix = evidence.gateway_execute_matrix;
   if (matrix.mahleos_feedback_reader !== true || matrix.anon !== false
       || matrix.authenticated !== false || matrix.service_role !== false) {
     add("GATEWAY_EXECUTE_ALLOWLIST_DRIFT", "NO_GO", "Gateway callability is not limited to the reader role.");
+  }
+  const unapprovedMachinePaths = evidence.denied_role_machine_paths.filter(
+    (path) => !isGuardedAdminAggregate(path),
+  );
+  if (unapprovedMachinePaths.length > 0) {
+    add("MACHINE_EXPORT_SIDE_PATH", "NO_GO", "PUBLIC or a standard runtime role can call an unallowlisted Machine/Export-path function.");
   }
   const callable = evidence.reader_callable_functions.map(
     (fn) => `${fn.schema_name}.${fn.function_name}(${fn.identity_arguments})`,

@@ -40,6 +40,8 @@
         "reader_memberships",
         "gateway_function",
         "gateway_execute_matrix",
+        "machine_export_functions",
+        "denied_role_machine_paths",
         "reader_callable_functions",
         "reader_relation_privileges",
         "reader_sequence_privileges",
@@ -47,15 +49,166 @@
         "public_execute_defaults"
       ],
       "properties": {
-        "reader_role": { "type": "object" },
-        "reader_memberships": { "type": "array", "items": { "type": "object" } },
-        "gateway_function": { "type": "object" },
-        "gateway_execute_matrix": { "type": "object", "additionalProperties": { "type": "boolean" } },
-        "reader_callable_functions": { "type": "array", "items": { "type": "object" } },
-        "reader_relation_privileges": { "type": "array", "items": { "type": "object" } },
-        "reader_sequence_privileges": { "type": "array", "items": { "type": "object" } },
-        "reader_schema_usage": { "type": "array", "items": { "type": "string" } },
-        "public_execute_defaults": { "type": "array", "items": { "type": "object" } }
+        "reader_role": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["present"],
+              "properties": { "present": { "const": false } }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["present", "superuser", "inherit", "create_role", "create_db", "can_login", "replication", "bypass_rls", "database_connect"],
+              "properties": {
+                "present": { "const": true },
+                "superuser": { "type": "boolean" },
+                "inherit": { "type": "boolean" },
+                "create_role": { "type": "boolean" },
+                "create_db": { "type": "boolean" },
+                "can_login": { "type": "boolean" },
+                "replication": { "type": "boolean" },
+                "bypass_rls": { "type": "boolean" },
+                "database_connect": { "type": "boolean" }
+              }
+            }
+          ]
+        },
+        "reader_memberships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["member_name", "granted_role", "admin_option"],
+            "properties": {
+              "member_name": { "type": "string" },
+              "granted_role": { "type": "string" },
+              "admin_option": { "type": "boolean" }
+            }
+          }
+        },
+        "gateway_function": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["present"],
+              "properties": { "present": { "const": false } }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["present", "signature", "security_definer", "function_settings", "owner_name", "owner_superuser", "owner_bypass_rls"],
+              "properties": {
+                "present": { "const": true },
+                "signature": { "const": "public.read_feedback_intelligence_v0_2_draft(text, text, text, text)" },
+                "security_definer": { "const": true },
+                "function_settings": {
+                  "type": "array",
+                  "prefixItems": [{ "const": "search_path=\"\"" }],
+                  "items": false,
+                  "minItems": 1,
+                  "maxItems": 1
+                },
+                "owner_name": { "const": "postgres" },
+                "owner_superuser": { "const": false },
+                "owner_bypass_rls": { "const": true }
+              }
+            }
+          ]
+        },
+        "gateway_execute_matrix": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["anon", "authenticated", "service_role"],
+              "properties": {
+                "anon": { "type": "boolean" },
+                "authenticated": { "type": "boolean" },
+                "service_role": { "type": "boolean" }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["anon", "authenticated", "mahleos_feedback_reader", "service_role"],
+              "properties": {
+                "anon": { "type": "boolean" },
+                "authenticated": { "type": "boolean" },
+                "mahleos_feedback_reader": { "type": "boolean" },
+                "service_role": { "type": "boolean" }
+              }
+            }
+          ]
+        },
+        "machine_export_functions": { "type": "array", "items": { "$ref": "#/$defs/functionEvidence" } },
+        "denied_role_machine_paths": { "type": "array", "items": { "$ref": "#/$defs/deniedPath" } },
+        "reader_callable_functions": { "type": "array", "items": { "$ref": "#/$defs/functionEvidence" } },
+        "reader_relation_privileges": { "type": "array", "items": { "$ref": "#/$defs/relationPrivilege" } },
+        "reader_sequence_privileges": { "type": "array", "items": { "$ref": "#/$defs/sequencePrivilege" } },
+        "reader_schema_usage": { "type": "array", "items": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] }, "uniqueItems": true },
+        "public_execute_defaults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["owner_name", "source"],
+            "properties": {
+              "owner_name": { "type": "string" },
+              "source": { "enum": ["BUILT_IN_DEFAULT", "ALTERED_DEFAULT"] }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "functionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_name", "function_name", "identity_arguments", "security_definer", "owner_name", "source_md5"],
+      "properties": {
+        "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
+        "function_name": { "type": "string" },
+        "identity_arguments": { "type": "string" },
+        "security_definer": { "type": "boolean" },
+        "owner_name": { "type": "string" },
+        "source_md5": { "type": "string", "pattern": "^[a-f0-9]{32}$" }
+      }
+    },
+    "deniedPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_role", "schema_name", "function_name", "identity_arguments", "source_md5"],
+      "properties": {
+        "subject_role": { "enum": ["PUBLIC", "anon", "authenticated", "service_role"] },
+        "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
+        "function_name": { "type": "string" },
+        "identity_arguments": { "type": "string" },
+        "source_md5": { "type": "string", "pattern": "^[a-f0-9]{32}$" }
+      }
+    },
+    "relationPrivilege": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_name", "relation_name", "relkind", "privilege_type"],
+      "properties": {
+        "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
+        "relation_name": { "type": "string" },
+        "relkind": { "enum": ["r", "p", "v", "m"] },
+        "privilege_type": { "enum": ["SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER"] }
+      }
+    },
+    "sequencePrivilege": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_name", "relation_name", "privilege_type"],
+      "properties": {
+        "schema_name": { "enum": ["public", "feedback_core", "feedback_consent", "feedback_raw", "feedback_analysis"] },
+        "relation_name": { "type": "string" },
+        "privilege_type": { "enum": ["USAGE", "SELECT", "UPDATE"] }
       }
     }
   }

@@ -7,35 +7,35 @@
   "producer_base_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
   "target_project_ref": "zbeswjipayspgvcipzmx",
   "package_signed": false,
-  "package_sha256": "5cbb719020c65c2211613689b83cd80a0a4455836a892ec6f0d0323dce2f2e4a",
+  "package_sha256": "0322e86185a04cd856041f80964dec8c5ec3b99ecaa99e866b70c688977a642d",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/audit.sql",
-      "sha256": "c23f0597d11d0c2fdf23a44e2467a6c656550040b9cb6e38f2b74a724de8b009"
+      "sha256": "f32000bd8981beb055b456d8f8ef7d83ba46e9754bdb8e4cf33751daa2b9ed6f"
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/result.schema.json",
-      "sha256": "7a707fb75dcf87df322570a9b805fcd6d49a6c4ccd205ebcef6fa0f6d242d75a"
+      "sha256": "c27bbe46052e9004e453ae443811552a01d2c9888138c05516d0ec0cadfc34f3"
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/predeploy.fixture.json",
-      "sha256": "a8e418f19eb779654ff8dd6372e8dd010ed1dcc63bdb4e22cee3845eed53564f"
+      "sha256": "77e34fd6a5029f38cca86352303c96813a028d9f784da9daaec30f08e793f8f5"
     },
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/postdeploy-pass.fixture.json",
-      "sha256": "278f688f98612a0c6806f5da9bb491c362d7da635bd3cabe4d414ccd572413c3"
+      "sha256": "dfc4ecdc68e8ffdfbd6b3b0eb0025f12b65fe75426bca875a92763152cfb6803"
     },
     {
       "path": "scripts/validate-feedback-staging-privilege-audit.mjs",
-      "sha256": "b15673479260597ff3cc1c4104e0f1044f7dea121b7a651c74f55ddb1c02d275"
+      "sha256": "80290c1b2e8d70eb4d636af0373bff8e07bb05401e75a8ccc1d72e8251797d52"
     },
     {
       "path": "src/test/feedbackIntelligenceStagingPrivilegeAudit.test.ts",
-      "sha256": "eca17a1727eaa76bd7fb53b7be8a0457fbffc34f4d11e525c4dd9f55c86a2e7a"
+      "sha256": "66fcf2a54238bb2213d12a999ed4a0b02af8b2b216705505a03ef4a5e7507816"
     },
     {
       "path": "docs/feedback-intelligence/STAGING_PRIVILEGE_AUDIT_HANDOFF_V0_1.md",
-      "sha256": "03dbb1fbbcdf0f81700013ef1ac9ae667aa36a15051c9a373eafbf479c47a13a"
+      "sha256": "7191d26a1dbcb8c0f99519fc8fbc2675361b9c78a8946aa5a96040660da2954b"
     }
   ],
   "upstream_gateway_pins": {

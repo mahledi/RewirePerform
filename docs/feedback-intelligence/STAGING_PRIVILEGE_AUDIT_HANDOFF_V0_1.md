@@ -19,10 +19,24 @@ consentierten Vertrags bleiben ausgeschlossen.
 ## Dieses Paket liest ausschließlich
 
 - Rollenattribute und direkte Rollenmitgliedschaften aus `pg_catalog`;
-- effektive Schema-, Function-, Relation- und Sequence-Privileges;
+- effektive Schema-, Function-, Relation- und Sequence-Privileges über alle
+  Relationen in `public` und den vier Feedback-Schemas, unabhängig vom Namen;
 - die exakte RPC-Signatur, `SECURITY DEFINER`, Owner-Metadaten und
   Function-Settings;
-- Function-Default-ACLs für relevante Owner im Schema `public`.
+- Function-Default-ACLs für relevante Owner im Schema `public`;
+- eine separate effektive Nebenpfad-Inventur für alle Machine-/Export-
+  Kandidaten gegen `PUBLIC`, `anon`, `authenticated` und `service_role`.
+
+Die einzige zulässige Runtime-Ausnahme in dieser Inventur ist der bestehende
+Admin-Aggregatvertrag
+`authenticated -> public.get_admin_feedback_intelligence_insights(text)` mit
+exaktem Source-Pin `md5:f0b5736525a0c79a0b773d6bf66ad711`. Diese Funktion
+prüft `auth.uid()` und `public.has_role(..., 'admin')` vor jeder Auswertung,
+wirft sonst `admin_role_required`, liefert ausschließlich vorgegebene
+Aggregate und unterdrückt Metriken unter `n < 5`. Jede andere Rolle, Signatur
+oder jedes andere Source-Bytebild bleibt NO-GO. Der MD5-Pin ist hier ein
+Drift-Identifier über bereits kontrollierte lokale Bytes, kein allgemeiner
+kryptografischer Vertrauensanker; das Gesamtpaket bleibt SHA-256-gepinnt.
 
 Es liest keine Anwendungszeile, ruft keine Anwendungsfunktion auf und führt
 keinen DDL-/DML-/Rollenwechsel aus. Das Ergebnis enthält nur technische
@@ -43,7 +57,9 @@ finale Reader-Allowlist bestätigen. `POSTDEPLOY_ASSURANCE` verlangt dagegen:
 - kein aufrufbares Gateway für `anon`, `authenticated` oder `service_role`;
 - keinerlei direkte Tabellen-, View-, Sequence-, Raw-, Consent-, Activity-
   oder Analysis-Rechte;
-- `SECURITY DEFINER` mit leerem, festem `search_path`;
+- `SECURITY DEFINER` mit exakt einem Setting, dem leeren festen `search_path`;
+- Hosted-Staging-Owner exakt `postgres`, `NOSUPERUSER`, `BYPASSRLS`; jede
+  Attributabweichung ist Contract-Drift;
 - keinen effektiven `PUBLIC`-Default-EXECUTE-Pfad relevanter Function-Owner.
 
 ## Bewusster Stop
