@@ -90,7 +90,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
 
       {task.visualizationCue && (
         <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
-          <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Kurze Vorstellung</p>
+          <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Kurze Visualisierung</p>
           <p className="text-sm text-foreground leading-relaxed">{task.visualizationCue.scene}</p>
           <p className="text-xs text-muted-foreground mt-1">{task.visualizationCue.durationSec}s</p>
         </div>

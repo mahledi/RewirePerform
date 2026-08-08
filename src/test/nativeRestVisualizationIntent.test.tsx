@@ -75,7 +75,9 @@ describe("native rest visualization return", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Noah, deine Einheit ist bereit." })).toBeInTheDocument();
-    expect(screen.getByText("Du musst kein perfektes Bild sehen.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Noah, deine Visualisierung ist bereit." })).toBeInTheDocument();
+    expect(screen.getByText(/zwei Minuten ruhiger Atmung/)).toBeInTheDocument();
+    expect(screen.getByText(/Kein klares Bild/)).toBeInTheDocument();
+    expect(screen.getByText(/schwindelig/)).toBeInTheDocument();
   });
 });

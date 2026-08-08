@@ -6,7 +6,7 @@ export interface DashboardScienceBite {
 
 export const dashboardScienceBites: DashboardScienceBite[] = [
   {
-    fact: "Beim Vorstellen und Beobachten von Handlungen werden Teile des motorischen Systems aktiviert. Mentale Vorstellung ist damit handlungsnah, aber nicht mit echter Bewegungsausführung gleichzusetzen.",
+    fact: "Beim Visualisieren und Beobachten von Handlungen werden Teile des motorischen Systems aktiviert. Mentale Visualisierung ist damit handlungsnah, aber nicht mit echter Bewegungsausführung gleichzusetzen.",
     source: "Jeannerod – NeuroImage",
     year: 2001,
   },

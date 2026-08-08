@@ -76,7 +76,6 @@ const getStages = (draft: GoldenDayDraft, context: GoldenDayContext = draft.cont
     return [
       "overview",
       "science",
-      "comprehension",
       "rest-plan",
       "visualization",
       "journal",
@@ -102,7 +101,7 @@ const stageLabels: Record<PreviewStage, string> = {
   comprehension: "Kurz prüfen",
   "pre-training": "Vor der Einheit",
   "rest-plan": "Zeit wählen",
-  visualization: "Mentale Einheit",
+  visualization: "Visualisierung",
   journal: "Journal",
   special: "Sonderfall",
 };
@@ -399,7 +398,7 @@ const RestPlanStage = ({
     <div className="space-y-5">
       <div>
         <StageEyebrow>Dein Ruhetag</StageEyebrow>
-        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Wann passt deine mentale Einheit?</h2>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Wann passt deine Visualisierung?</h2>
         <p className="mt-3 text-sm leading-6 text-white/52">
           Etwa {visualization.estimatedMinutes} Minuten. Dein heutiger Satz und dein Lernziel bleiben gleich.
         </p>
@@ -682,7 +681,15 @@ const stageContent = (
     );
   }
   if (stage === "rest-plan") return <RestPlanStage draft={draft} onReadyChange={onRestPlanReadyChange ?? (() => undefined)} />;
-  if (stage === "visualization") return <RestDayVisualizationFlow draft={draft} onCompletionChange={onVisualizationCompletionChange} />;
+  if (stage === "visualization") {
+    return (
+      <RestDayVisualizationFlow
+        draft={draft}
+        onCompletionChange={onVisualizationCompletionChange}
+        showSoundLab={showContextGuidance}
+      />
+    );
+  }
   if (stage === "journal") return <JournalStage draft={draft} context={context} showContextGuidance={showContextGuidance} />;
   return <SpecialStage draft={draft} />;
 };
@@ -709,6 +716,9 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
   const stageLocked = (stage === "rest-plan" && !restPlanReady)
     || (stage === "visualization" && !visualizationComplete)
     || (stage === "pre-training" && !preTrainingRevealed);
+  const restVisualizationFinished = context === "rest"
+    && stage === "visualization"
+    && visualizationComplete;
 
   const selectDay = (index: number) => {
     setDayIndex(index);
@@ -835,12 +845,20 @@ const GoldenDaysPreview = ({ drafts = GOLDEN_DAY_DRAFTS, mode = "golden" }: Gold
           </button>
           <button
             type="button"
-            onClick={() => moveStage(stageIndex + 1)}
+            onClick={() => {
+              if (restVisualizationFinished) {
+                setStageIndex(0);
+                return;
+              }
+              moveStage(stageIndex + 1);
+            }}
             disabled={stageIndex === stages.length - 1 || stageLocked}
             className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:bg-white/[0.06] disabled:text-white/28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0C10]"
           >
-            {stageIndex === stages.length - 1
-              ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig")
+            {restVisualizationFinished
+              ? "Flow beendet · zur Übersicht"
+              : stageIndex === stages.length - 1
+                ? (isProgram ? "Programmtag vollständig" : "Golden Day vollständig")
               : stage === "rest-plan" && !restPlanReady
                 ? "Zeit auswählen"
                 : stage === "visualization" && !visualizationComplete

@@ -1506,9 +1506,9 @@ const Dashboard = () => {
       setCheckinInitialFocus("rest-visualization");
       setShowCheckin(true);
     } else if (todayCheckinDone && pendingRestVisualization.scheduledDate === currentDate) {
-      toast.success("Deine mentale Einheit ist für heute bereits abgeschlossen.");
+      toast.success("Deine Visualisierung ist für heute bereits abgeschlossen.");
     } else {
-      toast.error("Diese mentale Einheit gehört nicht zu deinem heutigen Ruhetag.");
+      toast.error("Diese Visualisierung gehört nicht zu deinem heutigen Ruhetag.");
     }
     setPendingRestVisualization(null);
   }, [
@@ -1869,7 +1869,7 @@ const Dashboard = () => {
                     <span className="mt-0.5 block text-xs text-black/65">
                       {todayResolved
                         ? todayEventType === "rest"
-                          ? "10 Tages-Puls-Fragen · mentale Einheit"
+                          ? "10 Tages-Puls-Fragen · Visualisierung"
                           : "10 Tages-Puls-Fragen · eine Mission"
                         : "Tages-Puls, Mission und Verständnis-Check"}
                     </span>
@@ -2065,7 +2065,7 @@ const Dashboard = () => {
             <DashboardActionRow
               icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
               eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
-              title={todayEventType === "rest" ? "Mentale Einheit" : "Pre-Training"}
+              title={todayEventType === "rest" ? "Visualisierung" : "Pre-Training"}
               detail={
                 todayEventType === "rest"
                   ? todayCheckinDone
