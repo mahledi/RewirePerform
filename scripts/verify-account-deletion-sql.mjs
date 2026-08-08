@@ -7,6 +7,17 @@ const migration = readFileSync(
   resolve("supabase/migrations/20260714084351_account_deletion_self_service.sql"),
   "utf8",
 );
+const coachEnterpriseMigration = readFileSync(
+  resolve("supabase/migrations/20260807092005_coach_enterprise_onboarding_v1_1.sql"),
+  "utf8",
+);
+const organizationSuccessorStart = coachEnterpriseMigration.indexOf(
+  "-- Account deletion must never leave an active organization without an owner.",
+);
+const organizationSuccessorEnd = coachEnterpriseMigration.indexOf(
+  "-- Closed Jarvis source contract.",
+  organizationSuccessorStart,
+);
 
 const ids = {
   athlete: "00000000-0000-4000-8000-000000000701",
@@ -19,6 +30,21 @@ const ids = {
   team: "10000000-0000-4000-8000-000000000701",
   teamWithoutPlan: "10000000-0000-4000-8000-000000000702",
   teamWithStalePlan: "10000000-0000-4000-8000-000000000703",
+  organizationOwnerWithMembers: "00000000-0000-4000-8000-000000000711",
+  organizationAdmin: "00000000-0000-4000-8000-000000000712",
+  organizationCoach: "00000000-0000-4000-8000-000000000713",
+  organizationOwnerWithStaff: "00000000-0000-4000-8000-000000000714",
+  leadCoach: "00000000-0000-4000-8000-000000000715",
+  coCoach: "00000000-0000-4000-8000-000000000716",
+  organizationOwnerWithAdminFallback: "00000000-0000-4000-8000-000000000717",
+  platformAdmin: "00000000-0000-4000-8000-000000000718",
+  organizationOwnerWithSecondOwner: "00000000-0000-4000-8000-000000000719",
+  existingOrganizationOwner: "00000000-0000-4000-8000-000000000720",
+  organizationWithMembers: "20000000-0000-4000-8000-000000000711",
+  organizationWithStaff: "20000000-0000-4000-8000-000000000712",
+  organizationWithAdminFallback: "20000000-0000-4000-8000-000000000713",
+  organizationWithSecondOwner: "20000000-0000-4000-8000-000000000714",
+  organizationTeam: "10000000-0000-4000-8000-000000000711",
 };
 
 const assert = (condition, message) => {
@@ -101,11 +127,17 @@ const assertNoPersonalRows = async (userId) => {
 };
 
 try {
+  assert(
+    organizationSuccessorStart >= 0 && organizationSuccessorEnd > organizationSuccessorStart,
+    "Organization successor migration block could not be located",
+  );
+
   await db.exec(`
     CREATE ROLE anon;
     CREATE ROLE authenticated;
     CREATE ROLE service_role;
     CREATE SCHEMA auth;
+    CREATE SCHEMA app_private;
 
     CREATE TYPE public.app_role AS ENUM ('athlete', 'coach', 'admin');
     CREATE TABLE auth.users(id uuid PRIMARY KEY);
@@ -171,20 +203,61 @@ try {
     CREATE TABLE public.program_settings(id bigserial PRIMARY KEY, user_id uuid, session_id text);
     CREATE TABLE public.calendar_events(id bigserial PRIMARY KEY, user_id uuid, session_id text);
     CREATE TABLE public.program_instances(id bigserial PRIMARY KEY, user_id uuid);
+
+    CREATE TABLE public.organizations(
+      id uuid PRIMARY KEY,
+      status text NOT NULL DEFAULT 'active',
+      created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL
+    );
+    ALTER TABLE public.teams
+      ADD COLUMN organization_id uuid REFERENCES public.organizations(id) ON DELETE SET NULL;
+    CREATE TABLE public.organization_memberships(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+      role text NOT NULL,
+      status text NOT NULL DEFAULT 'active',
+      created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (organization_id, user_id)
+    );
+    CREATE TABLE public.team_staff_memberships(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      team_id uuid NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
+      user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+      role text NOT NULL,
+      status text NOT NULL DEFAULT 'active',
+      created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      UNIQUE (team_id, user_id)
+    );
   `);
 
   await db.exec(migration);
+  await db.exec(`
+    BEGIN;
+    ${coachEnterpriseMigration.slice(organizationSuccessorStart, organizationSuccessorEnd)}
+    COMMIT;
+  `);
 
   const functionPrivileges = await db.query(`
     SELECT
       has_function_privilege('anon', 'public.cleanup_deleted_account()', 'EXECUTE') AS anon_execute,
       has_function_privilege('authenticated', 'public.cleanup_deleted_account()', 'EXECUTE') AS authenticated_execute,
-      has_table_privilege('authenticated', 'public.account_deletion_requests', 'SELECT') AS authenticated_read
+      has_table_privilege('authenticated', 'public.account_deletion_requests', 'SELECT') AS authenticated_read,
+      has_function_privilege(
+        'authenticated',
+        'app_private.assign_organization_successor_on_user_delete()',
+        'EXECUTE'
+      ) AS authenticated_successor_execute
   `);
   assert(
     functionPrivileges.rows[0].anon_execute === false
       && functionPrivileges.rows[0].authenticated_execute === false
-      && functionPrivileges.rows[0].authenticated_read === false,
+      && functionPrivileges.rows[0].authenticated_read === false
+      && functionPrivileges.rows[0].authenticated_successor_execute === false,
     "Account deletion internals must remain unavailable to app roles",
   );
 
@@ -413,8 +486,146 @@ try {
     "An athlete successor was accepted as a coach",
   );
 
+  await db.query(
+    `INSERT INTO auth.users(id) VALUES
+      ($1), ($2), ($3), ($4), ($5), ($6), ($7), ($8), ($9), ($10)`,
+    [
+      ids.organizationOwnerWithMembers,
+      ids.organizationAdmin,
+      ids.organizationCoach,
+      ids.organizationOwnerWithStaff,
+      ids.leadCoach,
+      ids.coCoach,
+      ids.organizationOwnerWithAdminFallback,
+      ids.platformAdmin,
+      ids.organizationOwnerWithSecondOwner,
+      ids.existingOrganizationOwner,
+    ],
+  );
+  await db.query(
+    `INSERT INTO public.user_roles(user_id, role) VALUES
+      ($1, 'coach'), ($2, 'coach'), ($3, 'coach'), ($4, 'coach'),
+      ($5, 'coach'), ($6, 'coach'), ($7, 'coach'), ($8, 'admin'),
+      ($9, 'coach'), ($10, 'coach')`,
+    [
+      ids.organizationOwnerWithMembers,
+      ids.organizationAdmin,
+      ids.organizationCoach,
+      ids.organizationOwnerWithStaff,
+      ids.leadCoach,
+      ids.coCoach,
+      ids.organizationOwnerWithAdminFallback,
+      ids.platformAdmin,
+      ids.organizationOwnerWithSecondOwner,
+      ids.existingOrganizationOwner,
+    ],
+  );
+  await db.query(
+    `INSERT INTO public.organizations(id, created_by) VALUES
+      ($1, $5), ($2, $6), ($3, $7), ($4, $8)`,
+    [
+      ids.organizationWithMembers,
+      ids.organizationWithStaff,
+      ids.organizationWithAdminFallback,
+      ids.organizationWithSecondOwner,
+      ids.organizationOwnerWithMembers,
+      ids.organizationOwnerWithStaff,
+      ids.organizationOwnerWithAdminFallback,
+      ids.organizationOwnerWithSecondOwner,
+    ],
+  );
+  await db.query(
+    `INSERT INTO public.organization_memberships(
+       organization_id, user_id, role, created_by, created_at
+     ) VALUES
+      ($1, $5, 'owner', $5, now() - interval '30 days'),
+      ($1, $6, 'admin', $5, now() - interval '1 day'),
+      ($1, $7, 'coach', $5, now() - interval '10 days'),
+      ($2, $8, 'owner', $8, now() - interval '30 days'),
+      ($3, $9, 'owner', $9, now() - interval '30 days'),
+      ($4, $10, 'owner', $10, now() - interval '30 days'),
+      ($4, $11, 'owner', $10, now() - interval '20 days')`,
+    [
+      ids.organizationWithMembers,
+      ids.organizationWithStaff,
+      ids.organizationWithAdminFallback,
+      ids.organizationWithSecondOwner,
+      ids.organizationOwnerWithMembers,
+      ids.organizationAdmin,
+      ids.organizationCoach,
+      ids.organizationOwnerWithStaff,
+      ids.organizationOwnerWithAdminFallback,
+      ids.organizationOwnerWithSecondOwner,
+      ids.existingOrganizationOwner,
+    ],
+  );
+  await db.query(
+    `INSERT INTO public.teams(id, name, created_by, organization_id)
+     VALUES ($1, 'Organization Team', $2, $3)`,
+    [ids.organizationTeam, ids.leadCoach, ids.organizationWithStaff],
+  );
+  await db.query(
+    `INSERT INTO public.team_staff_memberships(
+       team_id, user_id, role, created_by, created_at
+     ) VALUES
+      ($1, $2, 'lead_coach', $2, now() - interval '1 day'),
+      ($1, $3, 'co_coach', $2, now() - interval '10 days')`,
+    [ids.organizationTeam, ids.leadCoach, ids.coCoach],
+  );
+
+  await db.query("DELETE FROM auth.users WHERE id = $1", [ids.organizationOwnerWithMembers]);
+  assert(
+    await count(
+      "public.organization_memberships",
+      "organization_id = $1 AND user_id = $2 AND role = 'owner' AND status = 'active'",
+      [ids.organizationWithMembers, ids.organizationAdmin],
+    ) === 1,
+    "Organization admin was not preferred over the older organization coach",
+  );
+
+  await db.query("DELETE FROM auth.users WHERE id = $1", [ids.organizationOwnerWithStaff]);
+  assert(
+    await count(
+      "public.organization_memberships",
+      "organization_id = $1 AND user_id = $2 AND role = 'owner' AND status = 'active'",
+      [ids.organizationWithStaff, ids.leadCoach],
+    ) === 1,
+    "Lead coach was not preferred over the older co-coach",
+  );
+
+  await db.query(
+    "DELETE FROM auth.users WHERE id = $1",
+    [ids.organizationOwnerWithAdminFallback],
+  );
+  assert(
+    await count(
+      "public.organization_memberships",
+      "organization_id = $1 AND user_id = $2 AND role = 'owner' AND status = 'active'",
+      [ids.organizationWithAdminFallback, ids.platformAdmin],
+    ) === 1,
+    "Platform admin fallback did not keep the organization owned",
+  );
+
+  await db.query(
+    "DELETE FROM auth.users WHERE id = $1",
+    [ids.organizationOwnerWithSecondOwner],
+  );
+  assert(
+    await count(
+      "public.organization_memberships",
+      "organization_id = $1 AND role = 'owner' AND status = 'active'",
+      [ids.organizationWithSecondOwner],
+    ) === 1
+      && await count(
+        "public.organization_memberships",
+        "organization_id = $1 AND user_id = $2 AND role = 'owner' AND status = 'active'",
+        [ids.organizationWithSecondOwner, ids.existingOrganizationOwner],
+      ) === 1,
+    "Existing active organization owner was not preserved",
+  );
+
   process.stdout.write(
-    "Account deletion SQL verified: athlete cleanup, legacy references, coach transfer, rollback, retention and privileges.\n",
+    "Account deletion SQL verified: athlete cleanup, team transfer, deterministic organization succession, rollback, retention and privileges.\n",
   );
 } finally {
   await db.close();

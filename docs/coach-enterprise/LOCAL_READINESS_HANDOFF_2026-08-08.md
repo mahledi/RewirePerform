@@ -39,11 +39,11 @@ Status: **LOKAL GRÜN — EXTERNE GATES GESCHLOSSEN**
 
 ## Bewusst offene Gates
 
-### Produktentscheidung vor Integration
+### Produktentscheidung zur Owner-Nachfolge
 
-Wenn der einzige Organisations-Owner sein Konto löscht, muss das Account-Deletion-Recht erhalten bleiben, ohne eine aktive Organisation herrenlos weiterlaufen zu lassen.
+Mahle hat am 8. August 2026 entschieden, dass die Organisation bei der Löschung des letzten Owner-Kontos nicht pausiert wird. Der Nachfolger wird atomar und deterministisch bestimmt: aktiver Organisations-Admin, Organisations-Coach, Team-Lead-Coach, Team-Co-Coach, zuletzt Plattform-Admin; innerhalb einer Stufe entscheiden Beitrittszeitpunkt und Nutzer-ID. Existiert bereits ein anderer aktiver Owner, bleibt dieser unverändert.
 
-Empfehlung: persönliches Konto vollständig löschen, Organisation automatisch pausieren und eine neue Owner-Zuweisung ausschließlich durch Admin-Freigabe erlauben. Alternative: vor Löschung verpflichtende Übergabe an einen anderen Coach. Bis zur Mahle-Entscheidung keine Production-Integration.
+Der lokale Trigger `app_private.assign_organization_successor_on_user_delete()` setzt diese Reihenfolge innerhalb derselben Auth-Löschtransaktion um. Kein UI-Auswahlschritt und keine personenbezogene Organisationskopie werden ergänzt. Ein strukturell beschädigter Zustand ohne irgendeinen berechtigten Nachfolger scheitert vollständig, statt eine herrenlose Organisation oder eine teilweise Kontolöschung zu erzeugen. Production-Integration und destruktiver Staging-/Live-Test bleiben getrennt freigabepflichtig.
 
 ### Technische externe Gates
 

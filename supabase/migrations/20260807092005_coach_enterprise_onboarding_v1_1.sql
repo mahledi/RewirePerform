@@ -864,6 +864,145 @@ $$;
 REVOKE ALL ON FUNCTION public.accept_organization_invitation(text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.accept_organization_invitation(text) TO authenticated;
 
+-- Account deletion must never leave an active organization without an owner.
+-- The successor is selected inside the same Auth deletion transaction and is
+-- therefore independent of a manual UI choice:
+--   1. active organization admin
+--   2. active organization coach
+--   3. active lead coach in one of the organization's teams
+--   4. active co-coach in one of the organization's teams
+--   5. platform admin
+-- Within each level, the oldest membership wins; UUID is the stable tie-break.
+CREATE OR REPLACE FUNCTION app_private.assign_organization_successor_on_user_delete()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+DECLARE
+  owned_organization record;
+  successor_id uuid;
+BEGIN
+  FOR owned_organization IN
+    SELECT o.id AS organization_id
+    FROM public.organization_memberships deleting_membership
+    JOIN public.organizations o
+      ON o.id = deleting_membership.organization_id
+    WHERE deleting_membership.user_id = OLD.id
+      AND deleting_membership.role = 'owner'
+      AND deleting_membership.status = 'active'
+    ORDER BY o.id
+    FOR UPDATE OF o, deleting_membership
+  LOOP
+    -- A concurrent owner deletion is serialized by the organization lock. If
+    -- another owner still exists after that lock is acquired, no promotion is
+    -- necessary.
+    PERFORM 1
+    FROM public.organization_memberships existing_owner
+    WHERE existing_owner.organization_id = owned_organization.organization_id
+      AND existing_owner.user_id <> OLD.id
+      AND existing_owner.role = 'owner'
+      AND existing_owner.status = 'active'
+    ORDER BY existing_owner.created_at, existing_owner.user_id
+    LIMIT 1
+    FOR KEY SHARE;
+
+    IF FOUND THEN
+      CONTINUE;
+    END IF;
+
+    successor_id := NULL;
+
+    SELECT candidate.user_id
+    INTO successor_id
+    FROM (
+      SELECT
+        membership.user_id,
+        CASE membership.role
+          WHEN 'admin' THEN 1
+          WHEN 'coach' THEN 2
+          ELSE 99
+        END AS priority,
+        membership.created_at AS joined_at
+      FROM public.organization_memberships membership
+      WHERE membership.organization_id = owned_organization.organization_id
+        AND membership.user_id <> OLD.id
+        AND membership.status = 'active'
+        AND membership.role IN ('admin', 'coach')
+
+      UNION ALL
+
+      SELECT
+        staff.user_id,
+        CASE staff.role
+          WHEN 'lead_coach' THEN 3
+          WHEN 'co_coach' THEN 4
+          ELSE 99
+        END AS priority,
+        staff.created_at AS joined_at
+      FROM public.team_staff_memberships staff
+      JOIN public.teams team ON team.id = staff.team_id
+      WHERE team.organization_id = owned_organization.organization_id
+        AND staff.user_id <> OLD.id
+        AND staff.status = 'active'
+        AND staff.role IN ('lead_coach', 'co_coach')
+
+      UNION ALL
+
+      SELECT
+        platform_admin.user_id,
+        5 AS priority,
+        NULL::timestamptz AS joined_at
+      FROM public.user_roles platform_admin
+      WHERE platform_admin.user_id <> OLD.id
+        AND platform_admin.role = 'admin'::public.app_role
+    ) candidate
+    JOIN auth.users successor_user ON successor_user.id = candidate.user_id
+    ORDER BY
+      candidate.priority,
+      candidate.joined_at NULLS LAST,
+      candidate.user_id
+    LIMIT 1;
+
+    IF successor_id IS NULL THEN
+      RAISE EXCEPTION 'organization_owner_successor_unavailable';
+    END IF;
+
+    PERFORM 1
+    FROM auth.users successor_user
+    WHERE successor_user.id = successor_id
+    FOR KEY SHARE;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'organization_owner_successor_unavailable';
+    END IF;
+
+    INSERT INTO public.organization_memberships(
+      organization_id, user_id, role, status, created_by
+    ) VALUES (
+      owned_organization.organization_id,
+      successor_id,
+      'owner',
+      'active',
+      successor_id
+    )
+    ON CONFLICT (organization_id, user_id) DO UPDATE
+      SET role = 'owner', status = 'active', updated_at = now();
+  END LOOP;
+
+  RETURN OLD;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION app_private.assign_organization_successor_on_user_delete()
+  FROM PUBLIC, anon, authenticated, service_role;
+
+DROP TRIGGER IF EXISTS on_auth_user_delete_organization_successor ON auth.users;
+CREATE TRIGGER on_auth_user_delete_organization_successor
+  BEFORE DELETE ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION app_private.assign_organization_successor_on_user_delete();
+
 -- Closed Jarvis source contract. The private view contains only business
 -- inquiry fields and deliberately excludes internal notes and athlete data.
 CREATE OR REPLACE VIEW app_private.organization_inquiry_machine_read_v1

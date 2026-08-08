@@ -127,4 +127,25 @@ describe("coach and enterprise onboarding V1.1 migration", () => {
     );
     expect(migration).not.toMatch(/GRANT SELECT ON app_private\.organization_inquiry_machine_read_v1/i);
   });
+
+  it("selects a sole owner's successor deterministically inside account deletion", () => {
+    const successor = functionBlock(
+      "app_private.assign_organization_successor_on_user_delete",
+      "REVOKE ALL ON FUNCTION app_private.assign_organization_successor_on_user_delete",
+    );
+
+    expect(successor).toContain("FOR UPDATE OF o, deleting_membership");
+    expect(successor).toContain("membership.role IN ('admin', 'coach')");
+    expect(successor).toContain("staff.role IN ('lead_coach', 'co_coach')");
+    expect(successor).toContain("platform_admin.role = 'admin'::public.app_role");
+    expect(successor).toContain("candidate.joined_at NULLS LAST");
+    expect(successor).toContain("candidate.user_id");
+    expect(successor).toContain("ON CONFLICT (organization_id, user_id) DO UPDATE");
+    expect(successor).toContain("SET role = 'owner', status = 'active'");
+    expect(successor).toContain("organization_owner_successor_unavailable");
+    expect(migration).toContain("BEFORE DELETE ON auth.users");
+    expect(migration).toMatch(
+      /REVOKE ALL ON FUNCTION app_private\.assign_organization_successor_on_user_delete\(\)[\s\S]*FROM PUBLIC, anon, authenticated, service_role/,
+    );
+  });
 });

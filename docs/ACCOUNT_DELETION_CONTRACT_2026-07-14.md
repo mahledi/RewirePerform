@@ -9,6 +9,7 @@ Status: von Mahle am 14. Juli 2026 fuer `bqsbxesmybthwtxmowfz` (`RewirePerform r
 - Persoenliche Account-, Profil-, Programm-, Tracking-, Journal-, Assessment-, Kalender- und Benachrichtigungsdaten werden aus dem aktiven System geloescht.
 - Andere Teammitglieder und deren Daten werden niemals durch die Loeschung eines Accounts entfernt.
 - Ein Teamverantwortlicher muss jedes eigene Team vor der Loeschung an einen vorhandenen Co-Coach uebertragen.
+- Ist der Nutzer der letzte aktive Owner einer Organisation, wird der neue Owner innerhalb derselben Loeschtransaktion deterministisch bestimmt: aktiver Organisations-Admin, Organisations-Coach, Team-Lead-Coach, Team-Co-Coach und zuletzt Plattform-Admin; innerhalb einer Stufe entscheiden Beitrittszeitpunkt und Nutzer-ID. Ein bereits vorhandener weiterer aktiver Owner bleibt unveraendert.
 - Bereits erzeugte, consent-basierte Aggregate duerfen nur bestehen bleiben, wenn sie keinen Nutzerbezug, keine Rohtexte und keine individuellen Verlaeufe enthalten und die aktive Mindestgruppengroesse von `n >= 5` eingehalten wurde.
 - Personenbezogene Quellzeilen werden nicht lediglich pseudonymisiert, um sie fuer spaetere Analysen zu behalten.
 - Personenbezogene technische Event- und Fehlerzeilen im aktiven Produktdatenmodell werden ebenfalls entfernt; sie sind keine Studien-Aggregate.
@@ -23,8 +24,9 @@ Status: von Mahle am 14. Juli 2026 fuer `bqsbxesmybthwtxmowfz` (`RewirePerform r
 4. Die Edge Function verifiziert den Nutzer serverseitig und akzeptiert die Loeschung nur mit einem hoechstens fuenf Minuten alten Access Token.
 5. Die Edge Function speichert den geprueften Transferplan und widerruft Refresh Tokens auf allen Geraeten.
 6. `auth.admin.deleteUser` entfernt den Auth-Nutzer. Ein `BEFORE DELETE`-Trigger uebertraegt Teamverantwortung und entfernt die personenbezogenen Domain-Zeilen innerhalb derselben Datenbanktransaktion.
-7. Consent-basierte Aggregate bleiben unveraendert; direkte Erstellerreferenzen werden auf `NULL` gesetzt.
-8. Die App entfernt lokale Entwuerfe, Rollen-Caches, Reminder und die lokale Sitzung und zeigt eine dauerhafte Abschlussbestaetigung.
+7. Falls der Nutzer letzter aktiver Organisations-Owner ist, bestimmt ein separater `BEFORE DELETE`-Trigger atomar den Nachfolger nach der dokumentierten festen Reihenfolge.
+8. Consent-basierte Aggregate bleiben unveraendert; direkte Erstellerreferenzen werden auf `NULL` gesetzt.
+9. Die App entfernt lokale Entwuerfe, Rollen-Caches, Reminder und die lokale Sitzung und zeigt eine dauerhafte Abschlussbestaetigung.
 
 ## Weiterhin nicht freigegeben
 
