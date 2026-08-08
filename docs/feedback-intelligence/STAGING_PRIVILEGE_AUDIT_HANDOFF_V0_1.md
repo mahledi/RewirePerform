@@ -51,7 +51,10 @@ Aktivitätsdaten.
 freigabepflichtige Gateway-Migration existiert. Diese Phase kann niemals die
 finale Reader-Allowlist bestätigen. `POSTDEPLOY_ASSURANCE` verlangt dagegen:
 
-- gehärtete Rolle `mahleos_feedback_reader`, ohne Mitgliedschaften;
+- gehärtete Rolle `mahleos_feedback_reader`; die einzige zulässige Hosted-
+  Management-Mitgliedschaft ist exakt `postgres -> mahleos_feedback_reader`,
+  gewährt durch `supabase_admin`, mit `ADMIN=true`, aber zwingend
+  `INHERIT=false` und `SET=false`; sie vermittelt damit keine Reader-Rechte;
 - `CONNECT`, `USAGE` und tatsächlich aufrufbares `EXECUTE` nur im vorgesehenen
   Pfad;
 - exakt den RPC

@@ -7,10 +7,10 @@ import { resolve } from "node:path";
 const root = process.cwd();
 const checkOnly = process.argv.includes("--check");
 const base = "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1";
-const resultPath = `${base}/remote-staging-result-2026-08-08.json`;
+const resultPath = `${base}/remote-staging-postdeploy-result-2026-08-08.json`;
 const auditPath = `${base}/audit.sql`;
 const auditManifestPath = `${base}/producer-package-manifest.json`;
-const resultManifestPath = `${base}/remote-result-manifest.json`;
+const resultManifestPath = `${base}/postdeploy-result-manifest.json`;
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 const resultBytes = await readFile(resolve(root, resultPath));
@@ -21,7 +21,7 @@ const result = JSON.parse(resultBytes.toString("utf8"));
 
 const manifest = {
   schema_version: "rewireperform-feedback-intelligence-staging-privilege-audit-remote-result-manifest-v1",
-  contract_status: "REMOTE_METADATA_ONLY_PREDEPLOY_BASELINE_UNSIGNED",
+  contract_status: "REMOTE_METADATA_ONLY_POSTDEPLOY_ASSURANCE_UNSIGNED",
   target_project_ref: "zbeswjipayspgvcipzmx",
   executed_at: result.executed_at,
   audit_phase: result.audit_phase,
@@ -36,7 +36,7 @@ const manifest = {
   sanitized_evidence: true,
   application_rows_read: false,
   database_mutated: false,
-  postdeploy_assurance_complete: false,
+  postdeploy_assurance_complete: true,
   signed_release_pair_complete: false,
   production_approved: false
 };
@@ -49,11 +49,11 @@ if (checkOnly) {
     process.exit(1);
   }
   console.log(JSON.stringify({
-    status: "REMOTE_STAGING_PREDEPLOY_BASELINE_RESULT_VERIFIED_UNSIGNED",
+    status: "REMOTE_STAGING_POSTDEPLOY_ASSURANCE_RESULT_VERIFIED_UNSIGNED",
     result_manifest_sha256: sha256(current),
     result_sha256: manifest.result_sha256,
     audit_sql_sha256: manifest.audit_sql_sha256,
-    postdeploy_assurance_complete: false
+    postdeploy_assurance_complete: true
   }, null, 2));
 } else {
   await writeFile(resolve(root, resultManifestPath), serialized, "utf8");

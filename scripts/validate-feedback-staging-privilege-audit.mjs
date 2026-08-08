@@ -34,6 +34,16 @@ const isGuardedAdminAggregate = (path) => Object.entries(guardedAdminAggregate)
   .every(([key, value]) => Array.isArray(value)
     ? JSON.stringify(path[key]) === JSON.stringify(value)
     : path[key] === value);
+const hostedManagementMembership = {
+  member_name: "postgres",
+  granted_role: "mahleos_feedback_reader",
+  grantor_name: "supabase_admin",
+  admin_option: true,
+  inherit_option: false,
+  set_option: false,
+};
+const isHostedManagementMembership = (membership) => Object.entries(hostedManagementMembership)
+  .every(([key, value]) => membership[key] === value);
 const evidence = result.evidence;
 const findings = [];
 const add = (id, severity, message) => findings.push({ id, severity, message });
@@ -76,8 +86,11 @@ if (result.audit_phase === "PREDEPLOY_BASELINE") {
       || !role.can_login || role.replication || role.bypass_rls || !role.database_connect) {
     add("READER_ROLE_NOT_HARDENED", "NO_GO", "Reader role attributes differ from the fail-closed contract.");
   }
-  if (evidence.reader_memberships.length > 0) {
-    add("READER_ROLE_MEMBERSHIP_PATH", "NO_GO", "Reader participates in a role membership path.");
+  const unapprovedMemberships = evidence.reader_memberships.filter(
+    (membership) => !isHostedManagementMembership(membership),
+  );
+  if (unapprovedMemberships.length > 0) {
+    add("READER_ROLE_MEMBERSHIP_PATH", "NO_GO", "Reader participates in an inherited, settable, or otherwise unallowlisted role membership path.");
   }
   const gateway = evidence.gateway_function;
   if (!gateway.present || gateway.signature !== expectedSignature || !gateway.security_definer

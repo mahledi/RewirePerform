@@ -177,6 +177,14 @@ describe("Feedback Intelligence Staging privilege audit", () => {
     expect(result.status).toBe(1);
   });
 
+  it("fails closed if the Hosted management membership can inherit or set the reader role", () => {
+    const fixture = JSON.parse(read(`${base}/postdeploy-pass.fixture.json`));
+    fixture.evidence.reader_memberships[0].inherit_option = true;
+    const result = validateFixture(fixture);
+    expect(result.status).toBe(2);
+    expect(result.stdout).toContain("READER_ROLE_MEMBERSHIP_PATH");
+  });
+
   it("fails closed for a denied-role Machine/Export side path", () => {
     const fixture = JSON.parse(read(`${base}/postdeploy-pass.fixture.json`));
     fixture.evidence.denied_role_machine_paths.push({

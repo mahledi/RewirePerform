@@ -21,6 +21,9 @@ const database = () => readRepoFile(
 const migration = () => readRepoFile(
   "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
 );
+const privilegeRemediation = () => readRepoFile(
+  "supabase/migrations/20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
+);
 
 describe("Feedback Intelligence machine gateway draft", () => {
   it("mirrors a valid request ID in body and header when another replay header is invalid", async () => {
@@ -189,5 +192,22 @@ describe("Feedback Intelligence machine gateway draft", () => {
     expect(sql).toContain("FROM PUBLIC, anon, authenticated, service_role");
     expect(sql).toContain("NOBYPASSRLS");
     expect(sql).not.toContain("TO service_role;");
+  });
+
+  it("closes postdeploy role-membership and historical PUBLIC trigger-function paths", () => {
+    const sql = privilegeRemediation();
+
+    expect(sql).toContain("REVOKE mahleos_feedback_reader FROM postgres");
+    for (const functionName of [
+      "touch_daily_journals_updated_at",
+      "touch_program_instances_updated_at",
+      "touch_progress_snapshots_updated_at",
+      "touch_updated_at",
+    ]) {
+      expect(sql).toContain(`REVOKE ALL ON FUNCTION public.${functionName}()`);
+      expect(sql).toContain("FROM PUBLIC, mahleos_feedback_reader");
+    }
+    expect(sql).toContain("ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public");
+    expect(sql).not.toMatch(/GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE|EXECUTE)/u);
   });
 });

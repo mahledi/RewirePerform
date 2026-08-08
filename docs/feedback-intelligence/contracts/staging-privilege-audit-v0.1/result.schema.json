@@ -80,11 +80,14 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["member_name", "granted_role", "admin_option"],
+            "required": ["member_name", "granted_role", "grantor_name", "admin_option", "inherit_option", "set_option"],
             "properties": {
               "member_name": { "type": "string" },
               "granted_role": { "type": "string" },
-              "admin_option": { "type": "boolean" }
+              "grantor_name": { "type": "string" },
+              "admin_option": { "type": "boolean" },
+              "inherit_option": { "type": "boolean" },
+              "set_option": { "type": "boolean" }
             }
           }
         },

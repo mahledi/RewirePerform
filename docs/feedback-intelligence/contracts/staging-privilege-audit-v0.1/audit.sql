@@ -129,10 +129,20 @@ denied_role_machine_paths AS (
 ),
 reader_memberships AS (
   SELECT member.rolname AS member_name, granted.rolname AS granted_role,
-    membership.admin_option
+    grantor.rolname AS grantor_name,
+    membership.admin_option,
+    COALESCE(
+      (to_jsonb(membership) ->> 'inherit_option')::boolean,
+      member.rolinherit
+    ) AS inherit_option,
+    COALESCE(
+      (to_jsonb(membership) ->> 'set_option')::boolean,
+      true
+    ) AS set_option
   FROM pg_catalog.pg_auth_members membership
   JOIN pg_catalog.pg_roles member ON member.oid = membership.member
   JOIN pg_catalog.pg_roles granted ON granted.oid = membership.roleid
+  JOIN pg_catalog.pg_roles grantor ON grantor.oid = membership.grantor
   JOIN reader_role reader ON reader.oid = member.oid OR reader.oid = granted.oid
 ),
 audited_relations AS (
