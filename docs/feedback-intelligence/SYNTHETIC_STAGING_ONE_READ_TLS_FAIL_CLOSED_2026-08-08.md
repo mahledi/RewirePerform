@@ -20,6 +20,9 @@ vorgesehen trotzdem verbraucht; ein Retry war technisch gesperrt.
 - Production-, Privacy-, App-Store- und Minor-Gates durchgehend `false`;
 - lokaler Machine-Key aus dem macOS-Schlüsselbund entfernt;
 - Postread-Metadaten-/Privilege-Audit grün;
+- die konkrete Request-ID und der Gateway-Slug kommen im anschließend
+  abgefragten 24-Stunden-Edge-Logfenster nicht vor; Rohlogs wurden nicht
+  persistiert;
 - Jarvis-Zustand `COMPLETE_POSTREAD_ASSURED` vor der Vorbereitung des neuen
   lokalen Operators.
 
