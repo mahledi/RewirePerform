@@ -106,11 +106,11 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           setDetailsLoading(true);
         }
 
-        const [assessmentsResult, mentalState, activityStatus] = await Promise.all([
-          supabase
-            .from("assessments")
-            .select("user_id")
-            .in("user_id", athleteIds),
+        const [outcomesResult, mentalState, activityStatus] = await Promise.all([
+          supabase.rpc("compute_team_outcomes", {
+            team_id_param: teamId,
+            min_n: MIN_AGGREGATE_SAMPLE,
+          }),
           supabase.functions.invoke("team-mental-state", {
             body: { team_id: teamId },
           }),
@@ -120,16 +120,20 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         ]);
 
         const warnings: string[] = [];
-        const assessments = assessmentsResult.error ? [] : assessmentsResult.data;
+        const assessmentCompletion = !outcomesResult.error && outcomesResult.data
+          ? ((outcomesResult.data as unknown as {
+              assessment_completion?: { pre_n?: number; mid_n?: number; post_n?: number };
+            }).assessment_completion ?? {})
+          : {};
 
-        if (assessmentsResult.error) {
+        if (outcomesResult.error) {
           warnings.push("Assessment-Zähler konnten gerade nicht geladen werden.");
           void captureAppError({
             eventName: "coach_dashboard_loaded",
-            error: assessmentsResult.error,
+            error: outcomesResult.error,
             role: "coach",
             route: "/coach",
-            metadata: { stage: "team_overview_assessments" },
+            metadata: { stage: "team_overview_assessment_aggregate" },
           });
         }
 
@@ -160,7 +164,10 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
           // tracking yet. Team size must still reflect every athlete member.
           member_count: athleteIds.length,
           checkins_last_week: mentalState.data?.participation?.total ?? 0,
-          assessments_completed: assessments?.length ?? 0,
+          assessments_completed:
+            Number(assessmentCompletion.pre_n ?? 0)
+            + Number(assessmentCompletion.mid_n ?? 0)
+            + Number(assessmentCompletion.post_n ?? 0),
           aggregate_ready: athleteIds.length >= MIN_AGGREGATE_SAMPLE,
           min_n: mentalState.data?.min_n ?? MIN_AGGREGATE_SAMPLE,
         };

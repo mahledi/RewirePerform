@@ -145,10 +145,14 @@ Deno.serve(async (request) => {
 
     const workEmail = text(parsed, "work_email", 5, 254).toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(workEmail)) throw new Error("invalid_request");
-    const website = nullableText(parsed, "website", 500);
-    if (website) {
-      const url = new URL(website);
+    const websiteInput = nullableText(parsed, "website", 500);
+    let website: string | null = null;
+    if (websiteInput) {
+      const url = new URL(websiteInput);
       if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("invalid_request");
+      if (url.username || url.password) throw new Error("invalid_request");
+      url.hash = "";
+      website = url.toString();
     }
     if (parsed.public_research_notice_acknowledged !== true) throw new Error("invalid_request");
 
@@ -184,23 +188,20 @@ Deno.serve(async (request) => {
     }
 
     const admin = serviceClient();
-    const { data, error } = await admin
-      .from("organization_access_requests")
-      .insert(row)
-      .select("id, reference_code")
-      .single();
+    const { data, error } = await admin.rpc("submit_organization_access_request_service", {
+      _payload: row,
+    });
     if (error) {
       if (error.code === "23505") return jsonResponse(409, { error: "open_request_exists" }, origin);
       console.error("organization inquiry insert failed", { code: error.code });
       return jsonResponse(503, { error: "service_unavailable" }, origin);
     }
 
-    await admin.from("organization_access_request_events").insert({
-      request_id: data.id,
-      event_type: "submitted",
-      metadata: { source: row.source },
-    });
-    return jsonResponse(201, { ok: true, reference_code: data.reference_code }, origin);
+    const result = data as { reference_code?: unknown } | null;
+    if (typeof result?.reference_code !== "string") {
+      return jsonResponse(503, { error: "service_unavailable" }, origin);
+    }
+    return jsonResponse(201, { ok: true, reference_code: result.reference_code }, origin);
   } catch (error) {
     const code = error instanceof Error ? error.message : "invalid_request";
     return jsonResponse(code === "service_not_configured" ? 503 : 400, {

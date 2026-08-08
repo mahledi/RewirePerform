@@ -9,6 +9,8 @@ import {
   Loader2,
   ShieldCheck,
   Sparkles,
+  Target,
+  Route,
   Users,
 } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
@@ -92,6 +94,9 @@ const supportOptions = [
   ["integration", "Technische Integration"],
 ] as const;
 
+const goalLabels = Object.fromEntries(goalOptions) as Record<string, string>;
+const supportLabels = Object.fromEntries(supportOptions) as Record<string, string>;
+
 const splitList = (value: string) => value
   .split(",")
   .map((item) => item.trim())
@@ -171,10 +176,10 @@ const ChoiceButton = ({
     type="button"
     aria-pressed={active}
     onClick={onClick}
-    className={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${
+    className={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-sm transition-all duration-200 active:scale-[0.99] ${
       active
-        ? "border-primary bg-primary/10 text-foreground"
-        : "border-border/70 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
+        ? "border-primary/70 bg-primary/10 text-foreground shadow-[0_0_0_1px_hsl(var(--primary)/0.08)]"
+        : "border-border/70 bg-background/40 text-muted-foreground hover:border-primary/40 hover:bg-primary/[0.04] hover:text-foreground"
     }`}
   >
     <span className="flex items-center justify-between gap-2">
@@ -199,6 +204,7 @@ const OrganizationAccess = () => {
     if (step === 0) {
       return form.contactName.trim().length >= 2
         && form.workEmail.includes("@")
+        && (form.preferredContact !== "phone" || form.phone.trim().length >= 5)
         && form.jobTitle.trim().length >= 2
         && form.organizationName.trim().length >= 2
         && Boolean(form.organizationType)
@@ -276,14 +282,15 @@ const OrganizationAccess = () => {
     return (
       <main className="min-h-screen bg-background px-5 py-8 text-foreground sm:px-8">
         <div className="mx-auto flex min-h-[80vh] max-w-2xl items-center">
-          <section className="w-full rounded-3xl border border-primary/20 bg-card p-6 shadow-2xl shadow-black/20 sm:p-10">
+          <section className="relative w-full overflow-hidden rounded-[2rem] border border-primary/20 bg-card p-6 shadow-2xl shadow-black/20 sm:p-10">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
             <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Check className="h-7 w-7" />
             </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Anfrage eingegangen</p>
-            <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">Wir bereiten das Gespräch vor.</h1>
+            <p className="relative text-xs font-semibold uppercase tracking-[0.22em] text-primary">Sicher eingegangen</p>
+            <h1 className="relative mt-3 font-heading text-3xl font-bold sm:text-4xl">Der erste Schritt ist gesetzt.</h1>
             <p className="mt-4 leading-relaxed text-muted-foreground">
-              Deine Angaben werden persönlich geprüft. Es wurde noch kein Coach-Zugang und kein Vertrag angelegt.
+              Wir prüfen eure Struktur und euer Ziel persönlich und melden uns mit einem klaren nächsten Schritt. Es wurde noch kein Coach-Zugang und kein Vertrag angelegt.
             </p>
             <div className="mt-6 rounded-2xl border border-border/70 bg-secondary/30 p-4">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Referenz</p>
@@ -300,7 +307,7 @@ const OrganizationAccess = () => {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="border-b border-border/60 bg-card/60 backdrop-blur-xl">
+      <div className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 sm:px-8">
           <Link to="/support" className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Zurück
@@ -309,39 +316,40 @@ const OrganizationAccess = () => {
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-5xl gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:py-14">
+      <div className="relative mx-auto grid max-w-6xl gap-8 overflow-hidden px-5 py-8 sm:px-8 lg:grid-cols-[0.86fr_1.14fr] lg:gap-12 lg:py-16">
+        <div className="pointer-events-none absolute -left-36 top-12 h-80 w-80 rounded-full bg-primary/[0.08] blur-3xl" />
         <aside className="lg:sticky lg:top-8 lg:self-start">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-            <Sparkles className="h-3.5 w-3.5" /> Für Teams und Organisationen
+          <div className="relative inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+            <Sparkles className="h-3.5 w-3.5" /> Organization Access
           </div>
-          <h1 className="mt-5 font-heading text-4xl font-bold leading-tight sm:text-5xl">
-            Ein professioneller Einstieg. Ohne Umwege.
+          <h1 className="relative mt-6 font-heading text-4xl font-bold leading-[1.04] sm:text-5xl lg:text-[3.5rem]">
+            Mentales Training wird Teil eures Systems.
           </h1>
-          <p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">
-            Wir prüfen jede Organisation persönlich und bereiten den passenden Einsatz von RewirePerform gemeinsam vor.
+          <p className="relative mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Nicht als weitere Content-Bibliothek, sondern als klarer Ablauf für Athleten, Coaches und den sportlichen Alltag. Wir bereiten jeden Organisationsstart persönlich vor.
           </p>
-          <div className="mt-8 space-y-4 text-sm text-muted-foreground">
+          <div className="relative mt-9 overflow-hidden rounded-2xl border border-border/70 bg-card/70 backdrop-blur-sm">
             {[
-              [ShieldCheck, "Kein automatischer Coach-Zugang"],
-              [Users, "Für jede Sportart und Organisationsgröße"],
-              [Building2, "Persönliche Freigabe und klarer nächster Schritt"],
-            ].map(([Icon, label]) => (
-              <div key={String(label)} className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-primary">
-                  <Icon className="h-4 w-4" />
-                </span>
-                {label as string}
+              ["01", Target, "Einordnen", "Wir verstehen Struktur, Ziel und geplanten Umfang."],
+              ["02", Route, "Vorbereiten", "Wir klären den sinnvollsten Start und offene Fragen."],
+              ["03", ShieldCheck, "Freigeben", "Rollen und Datenräume werden bewusst eingerichtet."],
+            ].map(([number, Icon, title, text], index) => (
+              <div key={String(number)} className={`flex gap-4 p-4 ${index < 2 ? "border-b border-border/60" : ""}`}>
+                <span className="pt-0.5 font-mono text-[11px] font-semibold text-primary">{number as string}</span>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="h-4 w-4" /></span>
+                <div><p className="text-sm font-semibold text-foreground">{title as string}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{text as string}</p></div>
               </div>
             ))}
           </div>
+          <p className="relative mt-5 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Jede Freigabe wird persönlich geprüft. Keine automatische Team-Erstellung, keine pauschale Preisentscheidung.</p>
         </aside>
 
-        <form onSubmit={submit} className="rounded-3xl border border-border/70 bg-card p-5 shadow-2xl shadow-black/15 sm:p-8">
+        <form onSubmit={submit} className="relative rounded-[2rem] border border-border/70 bg-card/95 p-5 shadow-2xl shadow-black/15 backdrop-blur-sm sm:p-8">
           <div className="mb-7 flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Schritt {step + 1} von 3</p>
-              <h2 className="mt-2 font-heading text-2xl font-semibold">
-                {step === 0 ? "Wer fragt an?" : step === 1 ? "Was soll entstehen?" : "Anfrage prüfen"}
+              <h2 className="mt-2 font-heading text-2xl font-semibold sm:text-3xl">
+                {step === 0 ? "Wir möchten euch verstehen." : step === 1 ? "Welcher Start passt zu euch?" : "Bereit für den nächsten Schritt."}
               </h2>
             </div>
             <div className="flex gap-1.5" aria-hidden="true">
@@ -353,6 +361,7 @@ const OrganizationAccess = () => {
 
           {step === 0 && (
             <div className="space-y-5">
+              <p className="text-sm leading-relaxed text-muted-foreground">Nur die Informationen, die wir für ein fokussiertes Erstgespräch und eine saubere Einordnung benötigen.</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="inquiry-name">Name</Label>
@@ -369,8 +378,20 @@ const OrganizationAccess = () => {
                   <Input id="inquiry-email" type="email" autoComplete="email" value={form.workEmail} onChange={(e) => setField("workEmail", e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="inquiry-phone">Telefon, optional</Label>
+                  <Label htmlFor="inquiry-phone">Telefon{form.preferredContact === "phone" ? "" : ", optional"}</Label>
                   <Input id="inquiry-phone" type="tel" autoComplete="tel" value={form.phone} onChange={(e) => setField("phone", e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Wie dürfen wir uns am besten melden?</Label>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {[
+                    ["email", "E-Mail"],
+                    ["phone", "Telefon"],
+                    ["video_call", "Videogespräch"],
+                  ].map(([value, label]) => (
+                    <ChoiceButton key={value} active={form.preferredContact === value} onClick={() => setField("preferredContact", value as InquiryForm["preferredContact"])}>{label}</ChoiceButton>
+                  ))}
                 </div>
               </div>
               <div className="space-y-2">
@@ -400,6 +421,7 @@ const OrganizationAccess = () => {
 
           {step === 1 && (
             <div className="space-y-6">
+              <p className="text-sm leading-relaxed text-muted-foreground">Es geht nicht um ein Budgetformular. Wir wollen verstehen, was im Alltag funktionieren muss und welche Begleitung sinnvoll ist.</p>
               <div className="space-y-2">
                 <Label>Was soll RewirePerform unterstützen?</Label>
                 <div className="grid gap-2">
@@ -426,6 +448,16 @@ const OrganizationAccess = () => {
                     </select>
                   </div>
                 ))}
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="inquiry-age-groups">Altersbereiche, optional</Label>
+                  <Input id="inquiry-age-groups" value={form.ageGroups} onChange={(e) => setField("ageGroups", e.target.value)} placeholder="z. B. U15, U17, Erwachsene" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inquiry-levels">Leistungsbereiche, optional</Label>
+                  <Input id="inquiry-levels" value={form.performanceLevels} onChange={(e) => setField("performanceLevels", e.target.value)} placeholder="z. B. Breitensport, Nachwuchsleistung" />
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -476,6 +508,13 @@ const OrganizationAccess = () => {
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">Organisation</p>
                 <p className="mt-2 font-semibold">{form.organizationName}</p>
                 <p className="text-sm text-muted-foreground">{form.sports}</p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-secondary/25 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">Worum es geht</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {form.goals.map((goal) => <span key={goal} className="rounded-full border border-border/70 bg-background/60 px-3 py-1.5 text-xs text-foreground">{goalLabels[goal] ?? goal}</span>)}
+                  {form.supportNeeds.map((need) => <span key={need} className="rounded-full border border-primary/20 bg-primary/[0.06] px-3 py-1.5 text-xs text-primary">{supportLabels[need] ?? need}</span>)}
+                </div>
               </div>
               <div className="rounded-2xl border border-border/70 bg-primary/5 p-5 text-sm leading-relaxed text-muted-foreground">
                 <div className="flex items-start gap-3">

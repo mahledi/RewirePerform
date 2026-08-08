@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Clipboard, Loader2, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,18 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [canInvite, setCanInvite] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Draft RPC is unavailable until the reviewed migration is activated.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    void (supabase as any).rpc("can_administer_team", { _team_id: teamId })
+      .then(({ data, error }: { data: unknown; error: unknown }) => {
+        if (!cancelled) setCanInvite(!error && data === true);
+      });
+    return () => { cancelled = true; };
+  }, [teamId]);
 
   const createInvite = async () => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -39,7 +51,13 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Users className="h-5 w-5" /></span>
           <div><p className="font-heading font-semibold">Coach-Team</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">Weitere Coaches erhalten nur Zugriff auf dieses Team und werden ausdrücklich eingeladen.</p></div>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => setOpen((current) => !current)}><UserPlus className="h-4 w-4" />Co-Coach einladen</Button>
+        {canInvite === null ? (
+          <span className="inline-flex min-h-9 items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin text-primary" />Rolle wird geprüft.</span>
+        ) : canInvite ? (
+          <Button type="button" variant="outline" size="sm" onClick={() => setOpen((current) => !current)}><UserPlus className="h-4 w-4" />Co-Coach einladen</Button>
+        ) : (
+          <span className="rounded-full border border-border/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">Co-Coach-Zugang</span>
+        )}
       </div>
 
       {open && (

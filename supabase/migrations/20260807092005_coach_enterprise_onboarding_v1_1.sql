@@ -213,13 +213,40 @@ AS $$
   );
 $$;
 
+CREATE OR REPLACE FUNCTION app_private.can_administer_team(_team_id uuid, _user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+  SELECT app_private.is_admin(_user_id) OR EXISTS (
+    SELECT 1
+    FROM public.teams t
+    WHERE t.id = _team_id
+      AND (
+        t.created_by = _user_id
+        OR EXISTS (
+          SELECT 1
+          FROM public.team_staff_memberships tsm
+          WHERE tsm.team_id = t.id
+            AND tsm.user_id = _user_id
+            AND tsm.role = 'lead_coach'
+            AND tsm.status = 'active'
+        )
+      )
+  );
+$$;
+
 REVOKE ALL ON FUNCTION app_private.is_admin(uuid) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION app_private.has_organization_access(uuid, uuid) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION app_private.has_team_staff_access(uuid, uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION app_private.can_administer_team(uuid, uuid) FROM PUBLIC, anon;
 GRANT USAGE ON SCHEMA app_private TO authenticated;
 GRANT EXECUTE ON FUNCTION app_private.is_admin(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION app_private.has_organization_access(uuid, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION app_private.has_team_staff_access(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION app_private.can_administer_team(uuid, uuid) TO authenticated;
 
 CREATE POLICY "Organization members read organization"
   ON public.organizations FOR SELECT TO authenticated
@@ -240,7 +267,7 @@ DROP POLICY IF EXISTS "Coaches can view team members" ON public.team_members;
 CREATE POLICY "Team staff can view team members"
   ON public.team_members FOR SELECT TO authenticated
   USING (
-    public.is_member_of_team(team_id)
+    user_id = (select auth.uid())
     OR app_private.has_team_staff_access(team_id, (select auth.uid()))
   );
 
@@ -265,52 +292,148 @@ $$;
 REVOKE ALL ON FUNCTION public.is_coach_of_user(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_coach_of_user(uuid) TO authenticated;
 
-CREATE POLICY "Team staff read athlete assessments"
-  ON public.assessments FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.team_members athlete_tm
-      JOIN public.team_staff_memberships staff
-        ON staff.team_id = athlete_tm.team_id
-       AND staff.user_id = auth.uid()
-       AND staff.status = 'active'
-      WHERE athlete_tm.user_id = assessments.user_id
-    )
-  );
-
-CREATE POLICY "Team staff read athlete checkins"
-  ON public.daily_checkins FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.team_members athlete_tm
-      JOIN public.team_staff_memberships staff
-        ON staff.team_id = athlete_tm.team_id
-       AND staff.user_id = auth.uid()
-       AND staff.status = 'active'
-      WHERE athlete_tm.user_id = daily_checkins.user_id
-    )
-  );
-
-CREATE POLICY "Team staff read athlete profiles"
-  ON public.profiles FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.team_members athlete_tm
-      JOIN public.team_staff_memberships staff
-        ON staff.team_id = athlete_tm.team_id
-       AND staff.user_id = auth.uid()
-       AND staff.status = 'active'
-      WHERE athlete_tm.user_id = profiles.id
-    )
-  );
-
-CREATE POLICY "Team staff update assigned team"
+-- Deliberately do not add team-staff policies to assessments, daily_checkins,
+-- profiles or journals. Coaches consume purpose-limited aggregate RPCs only.
+CREATE POLICY "Lead coach updates assigned team"
   ON public.teams FOR UPDATE TO authenticated
-  USING (app_private.has_team_staff_access(id, (select auth.uid())))
-  WITH CHECK (app_private.has_team_staff_access(id, (select auth.uid())));
+  USING (app_private.can_administer_team(id, (select auth.uid())))
+  WITH CHECK (app_private.can_administer_team(id, (select auth.uid())));
+
+CREATE OR REPLACE FUNCTION public.can_administer_team(_team_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+  SELECT auth.uid() IS NOT NULL
+    AND app_private.can_administer_team(_team_id, auth.uid());
+$$;
+REVOKE ALL ON FUNCTION public.can_administer_team(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.can_administer_team(uuid) TO authenticated;
+
+-- Team creation is no longer a public coach self-service action. It happens
+-- only inside a founder-approved active organization through the RPC below.
+DROP POLICY IF EXISTS "Authenticated users can create teams" ON public.teams;
+DROP POLICY IF EXISTS "Approved coaches can create teams" ON public.teams;
+
+CREATE OR REPLACE FUNCTION public.create_organization_team(
+  _organization_id uuid,
+  _name text,
+  _sport text DEFAULT NULL
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+DECLARE
+  actor_id uuid := auth.uid();
+  created_team public.teams;
+BEGIN
+  IF actor_id IS NULL THEN
+    RAISE EXCEPTION 'authentication_required' USING ERRCODE = '42501';
+  END IF;
+  IF char_length(btrim(COALESCE(_name, ''))) NOT BETWEEN 2 AND 120 THEN
+    RAISE EXCEPTION 'valid_team_name_required' USING ERRCODE = '22023';
+  END IF;
+  IF _sport IS NOT NULL AND char_length(btrim(_sport)) > 120 THEN
+    RAISE EXCEPTION 'invalid_sport' USING ERRCODE = '22023';
+  END IF;
+  IF NOT app_private.is_admin(actor_id) AND NOT EXISTS (
+    SELECT 1
+    FROM public.organization_memberships om
+    JOIN public.organizations o ON o.id = om.organization_id
+    WHERE om.organization_id = _organization_id
+      AND om.user_id = actor_id
+      AND om.status = 'active'
+      AND om.role IN ('owner', 'admin')
+      AND o.status = 'active'
+  ) THEN
+    RAISE EXCEPTION 'organization_admin_required' USING ERRCODE = '42501';
+  END IF;
+
+  INSERT INTO public.teams(name, sport, created_by, organization_id)
+  VALUES (
+    btrim(_name), NULLIF(btrim(COALESCE(_sport, '')), ''),
+    actor_id, _organization_id
+  ) RETURNING * INTO created_team;
+
+  INSERT INTO public.team_staff_memberships(team_id, user_id, role, created_by)
+  VALUES (created_team.id, actor_id, 'lead_coach', actor_id);
+  INSERT INTO public.team_members(team_id, user_id)
+  VALUES (created_team.id, actor_id)
+  ON CONFLICT (team_id, user_id) DO NOTHING;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'team_id', created_team.id,
+    'organization_id', _organization_id
+  );
+END;
+$$;
+REVOKE ALL ON FUNCTION public.create_organization_team(uuid, text, text)
+  FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.create_organization_team(uuid, text, text)
+  TO authenticated;
+
+-- Service-only atomic boundary for the public Edge Function. The request and
+-- its immutable submitted event can never drift apart.
+CREATE OR REPLACE FUNCTION public.submit_organization_access_request_service(_payload jsonb)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+DECLARE
+  inserted_request public.organization_access_requests;
+BEGIN
+  IF _payload IS NULL OR jsonb_typeof(_payload) <> 'object' THEN
+    RAISE EXCEPTION 'invalid_request_payload' USING ERRCODE = '22023';
+  END IF;
+
+  INSERT INTO public.organization_access_requests(
+    contact_name, work_email, phone, job_title, preferred_contact,
+    organization_name, organization_type, country_code, website, sports,
+    athlete_age_groups, performance_levels, team_count_band,
+    athlete_count_band, coach_count_band, rollout_scope, desired_start,
+    goals, support_needs, context_note, source, locale, privacy_version,
+    public_research_notice_acknowledged
+  ) VALUES (
+    _payload->>'contact_name', _payload->>'work_email', NULLIF(_payload->>'phone', ''),
+    _payload->>'job_title', _payload->>'preferred_contact',
+    _payload->>'organization_name', _payload->>'organization_type',
+    _payload->>'country_code', NULLIF(_payload->>'website', ''),
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_payload->'sports', '[]'::jsonb))),
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_payload->'athlete_age_groups', '[]'::jsonb))),
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_payload->'performance_levels', '[]'::jsonb))),
+    _payload->>'team_count_band', _payload->>'athlete_count_band',
+    _payload->>'coach_count_band', _payload->>'rollout_scope',
+    _payload->>'desired_start',
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_payload->'goals', '[]'::jsonb))),
+    ARRAY(SELECT jsonb_array_elements_text(COALESCE(_payload->'support_needs', '[]'::jsonb))),
+    NULLIF(_payload->>'context_note', ''), _payload->>'source',
+    _payload->>'locale', _payload->>'privacy_version',
+    COALESCE((_payload->>'public_research_notice_acknowledged')::boolean, false)
+  ) RETURNING * INTO inserted_request;
+
+  INSERT INTO public.organization_access_request_events(
+    request_id, event_type, metadata
+  ) VALUES (
+    inserted_request.id, 'submitted',
+    jsonb_build_object('source', inserted_request.source)
+  );
+
+  RETURN jsonb_build_object(
+    'id', inserted_request.id,
+    'reference_code', inserted_request.reference_code
+  );
+END;
+$$;
+REVOKE ALL ON FUNCTION public.submit_organization_access_request_service(jsonb)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_organization_access_request_service(jsonb)
+  TO service_role;
 
 CREATE OR REPLACE FUNCTION public.get_admin_organization_access_requests(_status text DEFAULT NULL)
 RETURNS SETOF public.organization_access_requests
@@ -378,6 +501,18 @@ BEGIN
   IF previous_status IS NULL THEN
     RAISE EXCEPTION 'request_not_found' USING ERRCODE = 'P0002';
   END IF;
+  IF previous_status IN (
+    'approved_community', 'approved_partner', 'approved_enterprise',
+    'activated', 'declined', 'withdrawn'
+  ) THEN
+    RAISE EXCEPTION 'request_status_is_final' USING ERRCODE = '22023';
+  END IF;
+  IF _status NOT IN (
+    'submitted', 'needs_information', 'review_ready',
+    'call_requested', 'declined', 'withdrawn'
+  ) THEN
+    RAISE EXCEPTION 'invalid_manual_transition' USING ERRCODE = '22023';
+  END IF;
 
   UPDATE public.organization_access_requests
   SET status = _status, updated_at = now()
@@ -432,7 +567,9 @@ BEGIN
   IF target_request.id IS NULL THEN
     RAISE EXCEPTION 'request_not_found' USING ERRCODE = 'P0002';
   END IF;
-  IF target_request.status IN ('declined', 'withdrawn', 'activated') THEN
+  IF target_request.status NOT IN (
+    'submitted', 'needs_information', 'review_ready', 'call_requested'
+  ) THEN
     RAISE EXCEPTION 'request_not_approvable' USING ERRCODE = '22023';
   END IF;
 
@@ -548,7 +685,7 @@ BEGIN
     INSERT INTO public.organizations(
       name, organization_type, country_code, status, access_tier, created_by
     ) VALUES (
-      target_team.name, 'local_club', 'DE', 'active', 'community', actor_id
+      target_team.name, 'other', 'DE', 'active', 'community', actor_id
     ) RETURNING id INTO resolved_organization_id;
 
     UPDATE public.teams
@@ -621,12 +758,24 @@ BEGIN
   IF lower(target_invite.email) <> actor_email THEN
     RAISE EXCEPTION 'invitation_email_mismatch' USING ERRCODE = '42501';
   END IF;
+  IF app_private.is_admin(actor_id) THEN
+    RAISE EXCEPTION 'admin_account_invitation_requires_review' USING ERRCODE = '42501';
+  END IF;
 
-  IF EXISTS (
-    SELECT 1 FROM public.user_roles ur
-    WHERE ur.user_id = actor_id AND ur.role = 'athlete'::public.app_role
-  ) AND EXISTS (
-    SELECT 1 FROM public.team_members tm WHERE tm.user_id = actor_id
+  -- A brand-new invited signup receives the app's default athlete role before
+  -- accepting. Conversion is safe only while the account has no athlete data
+  -- and no minor-authorization record. Existing athlete accounts require a
+  -- deliberate admin-led migration instead of silent role conversion.
+  IF NOT public.has_role(actor_id, 'coach'::public.app_role) AND (
+    EXISTS (SELECT 1 FROM public.team_members tm WHERE tm.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.questionnaire_responses qr WHERE qr.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.program_instances pi WHERE pi.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.daily_checkins dc WHERE dc.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.daily_journals dj WHERE dj.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.assessments a WHERE a.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.deep_profile_assessments dpa WHERE dpa.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM public.user_day_completion udc WHERE udc.user_id = actor_id)
+    OR EXISTS (SELECT 1 FROM minor_auth.participant_authorizations pa WHERE pa.user_id = actor_id)
   ) THEN
     RAISE EXCEPTION 'existing_athlete_account_requires_admin_review' USING ERRCODE = '42501';
   END IF;
@@ -672,6 +821,34 @@ BEGIN
     UPDATE public.organizations
     SET status = 'active', updated_at = now()
     WHERE id = target_invite.organization_id AND status = 'pending_activation';
+
+    UPDATE public.organization_access_requests r
+    SET status = 'activated', updated_at = now()
+    FROM public.organizations o
+    WHERE o.id = target_invite.organization_id
+      AND o.source_request_id = r.id
+      AND r.status IN ('approved_community', 'approved_partner', 'approved_enterprise');
+
+    INSERT INTO public.organization_access_request_events(
+      request_id, event_type, actor_user_id, from_status, to_status,
+      metadata
+    )
+    SELECT
+      o.source_request_id, 'invitation_accepted', actor_id,
+      CASE o.access_tier
+        WHEN 'community' THEN 'approved_community'
+        WHEN 'partner' THEN 'approved_partner'
+        ELSE 'approved_enterprise'
+      END,
+      'activated',
+      jsonb_build_object(
+        'organization_id', target_invite.organization_id,
+        'team_id', target_invite.team_id,
+        'invitation_id', target_invite.id
+      )
+    FROM public.organizations o
+    WHERE o.id = target_invite.organization_id
+      AND o.source_request_id IS NOT NULL;
   END IF;
 
   RETURN jsonb_build_object(

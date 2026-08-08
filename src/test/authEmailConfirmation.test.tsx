@@ -65,6 +65,7 @@ const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
       <Route path="/dashboard" element={<div>Dashboard geöffnet</div>} />
       <Route path="/coach" element={<div>Coach-Bereich geöffnet</div>} />
       <Route path="/admin" element={<div>Admin-Bereich geöffnet</div>} />
+      <Route path="/organization/invite" element={<div>Organisationseinladung geöffnet</div>} />
       <Route path="/auth/reset-password" element={<div>Passwortseite geöffnet</div>} />
     </Routes>
   </MemoryRouter>,
@@ -166,6 +167,53 @@ describe("auth email confirmation", () => {
       rewireperform_post_signup_onboarding_intent: "solo",
     });
     expect(signUpCall.options.data).not.toHaveProperty("role");
+  });
+
+  it("keeps an invited coach out of athlete onboarding and returns to the invitation after email confirmation", async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { user: { id: "user-1" }, session: null },
+      error: null,
+    });
+    const redirect = encodeURIComponent(`/organization/invite?token=${"a".repeat(64)}`);
+    renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}`);
+
+    expect(screen.getByRole("heading", { name: "Dein Organisationszugang." })).toBeInTheDocument();
+    expect(screen.queryByText(/athletin oder athlet/i)).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Coach Beispiel" } });
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "coach@verein.de" } });
+    fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
+    fireEvent.click(screen.getByRole("button", { name: "Konto erstellen" }));
+
+    await screen.findByRole("heading", { name: "Bestätige deine E-Mail." });
+    expect(mocks.signUp).toHaveBeenCalledWith(expect.objectContaining({
+      options: expect.objectContaining({
+        data: {
+          full_name: "Coach Beispiel",
+          rewireperform_account_purpose: "organization_invite",
+        },
+        emailRedirectTo: expect.stringContaining("intent=organization"),
+      }),
+    }));
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+
+    fireEvent.change(screen.getByLabelText("Sechsstelliger Sicherheitscode"), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail bestätigen" }));
+
+    expect(await screen.findByText("Organisationseinladung geöffnet")).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+  });
+
+  it("returns a signed-in invited coach to the invitation instead of the generic coach home", async () => {
+    mocks.authState.user = { id: "user-1" };
+    mocks.authState.role = "coach";
+    const redirect = encodeURIComponent(`/organization/invite?token=${"b".repeat(64)}`);
+
+    renderAuth(`/auth?mode=login&intent=organization&redirect=${redirect}`);
+
+    expect(await screen.findByText("Organisationseinladung geöffnet")).toBeInTheDocument();
+    expect(screen.queryByText("Coach-Bereich geöffnet")).not.toBeInTheDocument();
   });
 
   it("does not offer public coach registration", () => {

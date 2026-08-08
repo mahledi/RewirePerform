@@ -9,12 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 type InviteState = "idle" | "accepting" | "accepted" | "error";
 
 const OrganizationInvite = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, verifyRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const token = new URLSearchParams(location.search).get("token")?.trim() ?? "";
   const [state, setState] = useState<InviteState>("idle");
   const [error, setError] = useState("");
+  const [roleRefreshPending, setRoleRefreshPending] = useState(false);
 
   useEffect(() => {
     if (!loading && user && state === "accepted") {
@@ -27,18 +28,28 @@ const OrganizationInvite = () => {
     if (!user || token.length < 32 || state === "accepting") return;
     setState("accepting");
     setError("");
-    const { error: rpcError } = await (supabase as any).rpc("accept_organization_invitation", { _token: token });
-    if (rpcError) {
+    if (!roleRefreshPending) {
+      const { error: rpcError } = await (supabase as any).rpc("accept_organization_invitation", { _token: token });
+      if (rpcError) {
+        setState("error");
+        setError(
+          rpcError.message?.includes("email_mismatch")
+            ? "Diese Einladung gehört zu einer anderen bestätigten E-Mail-Adresse."
+            : rpcError.message?.includes("existing_athlete")
+              ? "Dieser bestehende Athletenaccount kann nicht automatisch in einen Coach-Zugang umgewandelt werden. Bitte nutze den Support."
+              : "Die Einladung ist ungültig, abgelaufen oder bereits verwendet.",
+        );
+        return;
+      }
+      setRoleRefreshPending(true);
+    }
+    const verifiedRole = await verifyRole(undefined, 5_000);
+    if (!verifiedRole.ok || (verifiedRole.value !== "coach" && verifiedRole.value !== "admin")) {
       setState("error");
-      setError(
-        rpcError.message?.includes("email_mismatch")
-          ? "Diese Einladung gehört zu einer anderen bestätigten E-Mail-Adresse."
-          : rpcError.message?.includes("existing_athlete")
-            ? "Dieser bestehende Athletenaccount kann nicht automatisch in einen Coach-Zugang umgewandelt werden. Bitte nutze den Support."
-            : "Die Einladung ist ungültig, abgelaufen oder bereits verwendet.",
-      );
+      setError("Der Zugang wurde aktiviert, konnte auf diesem Gerät aber noch nicht bestätigt werden. Bitte prüfe deine Verbindung und versuche es erneut.");
       return;
     }
+    setRoleRefreshPending(false);
     setState("accepted");
   };
 
@@ -68,10 +79,10 @@ const OrganizationInvite = () => {
             <div className="mt-7 flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin text-primary" />Account wird geprüft.</div>
           ) : !user ? (
             <div className="mt-7 space-y-3">
-              <Link to={`/auth?mode=signup&redirect=${encodeURIComponent(redirect)}`} className="block">
+              <Link to={`/auth?mode=signup&intent=organization&redirect=${encodeURIComponent(redirect)}`} className="block">
                 <Button className="min-h-11 w-full">Mit eingeladener E-Mail registrieren</Button>
               </Link>
-              <Link to={`/auth?mode=login&redirect=${encodeURIComponent(redirect)}`} className="block">
+              <Link to={`/auth?mode=login&intent=organization&redirect=${encodeURIComponent(redirect)}`} className="block">
                 <Button variant="outline" className="min-h-11 w-full">Bereits registriert? Anmelden</Button>
               </Link>
             </div>
@@ -84,7 +95,7 @@ const OrganizationInvite = () => {
               {error && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</p>}
               <Button onClick={accept} disabled={state === "accepting"} className="min-h-11 w-full">
                 {state === "accepting" && <Loader2 className="h-4 w-4 animate-spin" />}
-                Einladung verbindlich annehmen
+                {roleRefreshPending ? "Zugang auf diesem Gerät bestätigen" : "Einladung verbindlich annehmen"}
               </Button>
             </div>
           ) : null}

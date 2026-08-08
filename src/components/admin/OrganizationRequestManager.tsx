@@ -19,6 +19,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 export type OrganizationRequest = {
@@ -83,6 +94,52 @@ const scopeLabels: Record<string, string> = {
   exploring: "Orientierung",
 };
 
+const goalLabels: Record<string, string> = {
+  mental_routines: "Mentale Routinen im Alltag",
+  coach_transfer: "Transfer zwischen Coaches und Athleten",
+  reflection: "Reflexion und Selbststeuerung",
+  team_overview: "Aggregierter Teamzustand",
+  pilot: "Kontrollierter Pilot",
+};
+
+const supportLabels: Record<string, string> = {
+  standard: "Standardzugang",
+  onboarding: "Persönliche Einführung",
+  customization: "Organisationsanpassung",
+  reporting: "Reporting und Auswertung",
+  integration: "Technische Integration",
+};
+
+const bandLabels: Record<string, string> = {
+  "1": "1",
+  "2_5": "2–5",
+  "6_15": "6–15",
+  "16_plus": "16+",
+  under_25: "unter 25",
+  "25_99": "25–99",
+  "100_499": "100–499",
+  "500_plus": "500+",
+  "6_20": "6–20",
+  "21_plus": "21+",
+  unknown: "noch offen",
+};
+
+const startLabels: Record<string, string> = {
+  asap: "so bald wie möglich",
+  next_4_weeks: "in den nächsten 4 Wochen",
+  next_3_months: "in den nächsten 3 Monaten",
+  later: "später",
+  unknown: "noch offen",
+};
+
+const tierLabels = {
+  community: "Community",
+  partner: "Partner",
+  enterprise: "Enterprise",
+} as const;
+
+const approvableStatuses = new Set(["submitted", "needs_information", "review_ready", "call_requested"]);
+
 const RequestMetric = ({ label, value }: { label: string; value: string }) => (
   <div className="rounded-xl border border-border/60 bg-secondary/25 p-3">
     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -131,7 +188,7 @@ const OrganizationRequestManager = () => {
     setTeamSport(selected.sports[0] ?? "");
     setNote("");
     setInviteUrl(null);
-  }, [selected]);
+  }, [selected?.id]);
 
   const updateStatus = async (status: string) => {
     if (!selected || saving) return;
@@ -167,9 +224,9 @@ const OrganizationRequestManager = () => {
       return;
     }
     const url = `${window.location.origin}/organization/invite?token=${encodeURIComponent(String(data.invitation_token))}`;
-    setInviteUrl(url);
     toast.success("Freigabe vorbereitet. Die Einladung wurde noch nicht automatisch versendet.");
     await load();
+    setInviteUrl(url);
   };
 
   if (loading) {
@@ -245,10 +302,15 @@ const OrganizationRequestManager = () => {
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <RequestMetric label="Sport" value={selected.sports.join(", ") || "Offen"} />
                     <RequestMetric label="Umfang" value={scopeLabels[selected.rollout_scope] ?? selected.rollout_scope} />
-                    <RequestMetric label="Teams" value={selected.team_count_band.replace("_", "–")} />
-                    <RequestMetric label="Athleten" value={selected.athlete_count_band.replace("_", "–")} />
+                    <RequestMetric label="Teams" value={bandLabels[selected.team_count_band] ?? selected.team_count_band} />
+                    <RequestMetric label="Athleten" value={bandLabels[selected.athlete_count_band] ?? selected.athlete_count_band} />
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2">{selected.goals.map((goal) => <Badge key={goal} variant="secondary">{goal.replaceAll("_", " ")}</Badge>)}</div>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <RequestMetric label="Gewünschter Start" value={startLabels[selected.desired_start] ?? selected.desired_start} />
+                    <RequestMetric label="Coaches" value={bandLabels[selected.coach_count_band] ?? selected.coach_count_band} />
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">{selected.goals.map((goal) => <Badge key={goal} variant="secondary">{goalLabels[goal] ?? goal}</Badge>)}</div>
+                  <div className="mt-2 flex flex-wrap gap-2">{selected.support_needs.map((need) => <Badge key={need} variant="outline">{supportLabels[need] ?? need}</Badge>)}</div>
                   {selected.context_note && <p className="mt-4 rounded-xl border border-border/60 bg-secondary/20 p-4 text-sm leading-relaxed text-muted-foreground">{selected.context_note}</p>}
                 </section>
 
@@ -259,7 +321,7 @@ const OrganizationRequestManager = () => {
                   </div>
                 </section>
 
-                <section className="space-y-4 border-t border-border/60 pt-5">
+                {approvableStatuses.has(selected.status) && <section className="space-y-4 border-t border-border/60 pt-5">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2"><Label htmlFor="partner-note">Interne Notiz</Label><Textarea id="partner-note" value={note} onChange={(e) => setNote(e.target.value)} maxLength={2400} className="min-h-24" /></div>
                     <div className="space-y-3">
@@ -272,18 +334,41 @@ const OrganizationRequestManager = () => {
                       </div>
                     </div>
                   </div>
-                </section>
+                </section>}
 
-                <section className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+                {approvableStatuses.has(selected.status) ? <section className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
                   <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" /><div><p className="font-semibold">Zugang vorbereiten</p><p className="mt-1 text-sm text-muted-foreground">Erstellt Organisation, erstes Team und eine einmalige Einladung. Kein Versand und keine Zahlung erfolgen automatisch.</p></div></div>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="space-y-2"><Label htmlFor="partner-tier">Klasse</Label><select id="partner-tier" value={tier} onChange={(e) => setTier(e.target.value as typeof tier)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="community">Community</option><option value="partner">Partner</option><option value="enterprise">Enterprise</option></select></div>
                     <div className="space-y-2"><Label htmlFor="partner-team">Erstes Team</Label><Input id="partner-team" value={teamName} onChange={(e) => setTeamName(e.target.value)} /></div>
                     <div className="space-y-2"><Label htmlFor="partner-sport">Sport</Label><Input id="partner-sport" value={teamSport} onChange={(e) => setTeamSport(e.target.value)} /></div>
                   </div>
-                  <Button disabled={saving || teamName.trim().length < 2} onClick={() => void approve()}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />}Persönlich freigeben</Button>
+                  <p className="text-xs leading-relaxed text-muted-foreground">Die Klasse beschreibt Umfang, Begleitung, Anpassung und Integrationsbedarf – nicht die vermutete Zahlungsfähigkeit der Organisation.</p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button disabled={saving || teamName.trim().length < 2}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />}Persönlich freigeben</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{selected.organization_name} verbindlich vorbereiten?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Es werden die Organisation, das Team „{teamName.trim()}“ und eine einmalige Einladung für {selected.work_email} als {tierLabels[tier]} angelegt. Es wird noch keine E-Mail versendet und keine Zahlung ausgelöst.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Zurück zur Prüfung</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => void approve()}>Organisation freigeben</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   {inviteUrl && <div className="rounded-xl border border-border bg-background p-3"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Einmalige Einladung</p><div className="mt-2 flex gap-2"><Input readOnly value={inviteUrl} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label="Einladungslink kopieren" onClick={() => { void navigator.clipboard.writeText(inviteUrl); toast.success("Einladungslink kopiert."); }}><Clipboard className="h-4 w-4" /></Button></div></div>}
-                </section>
+                </section> : (
+                  <section className="rounded-2xl border border-border/70 bg-secondary/20 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Vorgang dokumentiert</p>
+                    <p className="mt-2 font-semibold">{statusLabels[selected.status] ?? selected.status}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Diese Anfrage ist nicht mehr im Entscheidungsmodus. Bestehende Organisationen und Rollen werden separat verwaltet.</p>
+                  </section>
+                )}
               </CardContent>
             </Card>
           )}

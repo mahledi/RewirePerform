@@ -1,0 +1,130 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const migration = readFileSync(
+  resolve(
+    process.cwd(),
+    "supabase/migrations/20260807092005_coach_enterprise_onboarding_v1_1.sql",
+  ),
+  "utf8",
+);
+
+const functionBlock = (name: string, nextMarker: string) => migration.slice(
+  migration.indexOf(`CREATE OR REPLACE FUNCTION ${name}`),
+  migration.indexOf(nextMarker, migration.indexOf(`CREATE OR REPLACE FUNCTION ${name}`)),
+);
+
+describe("coach and enterprise onboarding V1.1 migration", () => {
+  it("keeps every business table behind RLS and removes direct public grants", () => {
+    for (const table of [
+      "organization_access_requests",
+      "organization_access_request_events",
+      "organizations",
+      "organization_memberships",
+      "team_staff_memberships",
+      "organization_invitations",
+    ]) {
+      expect(migration).toContain(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`);
+      expect(migration).toMatch(
+        new RegExp(`REVOKE ALL ON TABLE public\\.${table} FROM PUBLIC, anon, authenticated`),
+      );
+    }
+  });
+
+  it("never grants staff direct access to athlete raw data", () => {
+    expect(migration).not.toContain('CREATE POLICY "Team staff read athlete assessments"');
+    expect(migration).not.toContain('CREATE POLICY "Team staff read athlete checkins"');
+    expect(migration).not.toContain('CREATE POLICY "Team staff read athlete profiles"');
+    expect(migration).toContain("Coaches consume purpose-limited aggregate RPCs only");
+  });
+
+  it("lets athletes see only their own membership while staff see their assigned roster", () => {
+    const policy = migration.slice(
+      migration.indexOf('CREATE POLICY "Team staff can view team members"'),
+      migration.indexOf("CREATE OR REPLACE FUNCTION public.is_coach_of_user"),
+    );
+    expect(policy).toContain("user_id = (select auth.uid())");
+    expect(policy).toContain("app_private.has_team_staff_access");
+    expect(policy).not.toContain("public.is_member_of_team(team_id)");
+  });
+
+  it("closes direct team self-service and requires an approved organization owner or admin", () => {
+    expect(migration).toContain('DROP POLICY IF EXISTS "Approved coaches can create teams"');
+    const createTeam = functionBlock(
+      "public.create_organization_team",
+      "REVOKE ALL ON FUNCTION public.create_organization_team",
+    );
+    expect(createTeam).toContain("om.role IN ('owner', 'admin')");
+    expect(createTeam).toContain("o.status = 'active'");
+    expect(createTeam).toContain("'lead_coach'");
+    expect(createTeam).toContain("INSERT INTO public.team_members");
+    expect(migration).toMatch(
+      /REVOKE ALL ON FUNCTION public\.create_organization_team\(uuid, text, text\)[\s\S]*FROM PUBLIC, anon/,
+    );
+  });
+
+  it("reserves team administration and co-coach invitations for lead coaches", () => {
+    const helper = functionBlock(
+      "app_private.can_administer_team",
+      "REVOKE ALL ON FUNCTION app_private.is_admin",
+    );
+    expect(helper).toContain("tsm.role = 'lead_coach'");
+    expect(migration).toContain('CREATE POLICY "Lead coach updates assigned team"');
+    const invitation = functionBlock(
+      "public.create_team_staff_invitation",
+      "REVOKE ALL ON FUNCTION public.create_team_staff_invitation",
+    );
+    expect(invitation).toContain("tsm.role = 'lead_coach'");
+    expect(invitation).toContain("now() + interval '7 days'");
+    expect(invitation).toContain("extensions.digest(raw_token, 'sha256')");
+  });
+
+  it("accepts invitations only for the confirmed email and never converts active athletes", () => {
+    const accept = functionBlock(
+      "public.accept_organization_invitation",
+      "REVOKE ALL ON FUNCTION public.accept_organization_invitation",
+    );
+    expect(accept).toContain("u.email_confirmed_at IS NOT NULL");
+    expect(accept).toContain("lower(target_invite.email) <> actor_email");
+    expect(accept).toContain("admin_account_invitation_requires_review");
+    for (const source of [
+      "team_members",
+      "questionnaire_responses",
+      "program_instances",
+      "daily_checkins",
+      "daily_journals",
+      "assessments",
+      "deep_profile_assessments",
+      "user_day_completion",
+      "minor_auth.participant_authorizations",
+    ]) {
+      expect(accept).toContain(source);
+    }
+    expect(accept).toContain("NOT public.has_role(actor_id, 'coach'::public.app_role)");
+    expect(accept).toContain("existing_athlete_account_requires_admin_review");
+  });
+
+  it("creates the request and immutable submit event atomically through service role only", () => {
+    const submission = functionBlock(
+      "public.submit_organization_access_request_service",
+      "REVOKE ALL ON FUNCTION public.submit_organization_access_request_service",
+    );
+    expect(submission).toContain("INSERT INTO public.organization_access_requests");
+    expect(submission).toContain("INSERT INTO public.organization_access_request_events");
+    expect(migration).toMatch(
+      /REVOKE ALL ON FUNCTION public\.submit_organization_access_request_service\(jsonb\)[\s\S]*FROM PUBLIC, anon, authenticated/,
+    );
+    expect(migration).toMatch(
+      /GRANT EXECUTE ON FUNCTION public\.submit_organization_access_request_service\(jsonb\)[\s\S]*TO service_role/,
+    );
+  });
+
+  it("keeps the machine-readable business view private and activation closed", () => {
+    expect(migration).toContain("app_private.organization_inquiry_machine_read_v1");
+    expect(migration).toMatch(
+      /REVOKE ALL ON app_private\.organization_inquiry_machine_read_v1[\s\S]*FROM PUBLIC, anon, authenticated, service_role/,
+    );
+    expect(migration).not.toMatch(/GRANT SELECT ON app_private\.organization_inquiry_machine_read_v1/i);
+  });
+});

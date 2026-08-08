@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle } from "lucide-react";
+import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle, Building2, ShieldCheck } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
@@ -34,40 +35,77 @@ interface TeamManagementProps {
   onTeamCreated: () => void;
 }
 
+interface OrganizationOption {
+  id: string;
+  name: string;
+}
+
 const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
   const { user } = useAuth();
   const [creating, setCreating] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [teamSport, setTeamSport] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [organizationOptions, setOrganizationOptions] = useState<OrganizationOption[]>([]);
+  const [organizationOptionsLoading, setOrganizationOptionsLoading] = useState(true);
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadOrganizationOptions = async () => {
+      if (!user) {
+        setOrganizationOptions([]);
+        setOrganizationOptionsLoading(false);
+        return;
+      }
+      setOrganizationOptionsLoading(true);
+      // The V1.1 tables remain draft-only until the reviewed migration is activated.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("organization_memberships")
+        .select("organization_id, role, status, organizations(id, name, status)")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .in("role", ["owner", "admin"]);
+      if (cancelled) return;
+      const options = error
+        ? []
+        : ((data ?? []) as Array<{
+            organizations?: { id?: unknown; name?: unknown; status?: unknown } | null;
+          }>)
+            .map((row) => row.organizations)
+            .filter((organization): organization is { id: string; name: string; status: string } =>
+              Boolean(
+                organization
+                && typeof organization.id === "string"
+                && typeof organization.name === "string"
+                && organization.status === "active",
+              ),
+            )
+            .map(({ id, name }) => ({ id, name }));
+      setOrganizationOptions(options);
+      setSelectedOrganizationId((current) => current || options[0]?.id || "");
+      setOrganizationOptionsLoading(false);
+    };
+    void loadOrganizationOptions();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const handleCreate = async () => {
-    if (!teamName.trim() || !user) return;
+    if (!teamName.trim() || !user || !selectedOrganizationId) return;
     setCreating(true);
 
-    const { error } = await supabase.from("teams").insert({
-      name: teamName.trim(),
-      sport: teamSport.trim() || null,
-      created_by: user.id,
+    // Draft RPC is unavailable until the reviewed migration is activated.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).rpc("create_organization_team", {
+      _organization_id: selectedOrganizationId,
+      _name: teamName.trim(),
+      _sport: teamSport.trim() || null,
     });
 
     if (error) {
       toast.error("Fehler beim Erstellen: " + error.message);
     } else {
-      const { data: newTeam } = await supabase
-        .from("teams")
-        .select("id")
-        .eq("created_by", user.id)
-        .eq("name", teamName.trim())
-        .maybeSingle();
-
-      if (newTeam) {
-        await supabase.from("team_members").insert({
-          team_id: newTeam.id,
-          user_id: user.id,
-        });
-      }
-
       toast.success("Team erstellt!");
       setTeamName("");
       setTeamSport("");
@@ -423,6 +461,20 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
 
       {showForm ? (
         <div className="min-w-0 space-y-3 rounded-2xl border border-border/50 bg-card p-4 sm:p-5">
+          {organizationOptions.length > 1 && (
+            <label className="block space-y-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Organisation
+              <select
+                value={selectedOrganizationId}
+                onChange={(event) => setSelectedOrganizationId(event.target.value)}
+                className="min-h-11 w-full rounded-xl border border-border/50 bg-secondary/50 px-4 text-sm font-normal normal-case tracking-normal text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {organizationOptions.map((organization) => (
+                  <option key={organization.id} value={organization.id}>{organization.name}</option>
+                ))}
+              </select>
+            </label>
+          )}
           <input
             type="text"
             placeholder="Teamname"
@@ -446,14 +498,18 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
             </button>
             <button
               onClick={handleCreate}
-              disabled={creating || !teamName.trim()}
+              disabled={creating || !teamName.trim() || !selectedOrganizationId}
               className="flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
               {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Erstellen"}
             </button>
           </div>
         </div>
-      ) : (
+      ) : organizationOptionsLoading ? (
+        <div className="flex min-h-20 items-center justify-center gap-2 rounded-2xl border border-border/50 bg-card text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" /> Organisationszugang wird geprüft.
+        </div>
+      ) : organizationOptions.length > 0 ? (
         <button
           onClick={() => setShowForm(true)}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border-2 border-dashed border-border/50 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
@@ -461,6 +517,20 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
           <Plus className="w-5 h-5" />
           Neues Team erstellen
         </button>
+      ) : (
+        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
+          <div className="flex items-start gap-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary"><Building2 className="h-5 w-5" /></span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary"><ShieldCheck className="h-4 w-4" /> Kontrollierter Zugang</div>
+              <h3 className="mt-2 font-heading text-lg font-semibold">Weitere Teams werden persönlich freigegeben.</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">So bleiben Rollen, Datenräume und Betreuung vom ersten Tag an sauber auf deine Organisation zugeschnitten.</p>
+              <Link to="/team-access" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]">
+                Organisationszugang anfragen
+              </Link>
+            </div>
+          </div>
+        </section>
       )}
     </div>
   );
