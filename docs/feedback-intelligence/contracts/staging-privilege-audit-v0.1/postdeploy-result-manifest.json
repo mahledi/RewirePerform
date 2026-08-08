@@ -6,8 +6,8 @@
   "audit_phase": "POSTDEPLOY_ASSURANCE",
   "result_sha256": "d1cf21875db316274a8d6b4636193eb33544bcb3adbd1e32845e9768ad645c0a",
   "audit_sql_sha256": "6ea57399169c907dc0ea9a2c77ef03bbcb5fe427037be44d10ce4e48e67a985d",
-  "audit_package_manifest_sha256": "bca512f10b212acf5e760b35898b7d931f6d0aa4fc01cdd45d3944076c90f534",
-  "audit_package_sha256": "77f45c16cfedb31ac59996bffe4f9b6b5fd76b43566d729dad72b206357e3f78",
+  "audit_package_manifest_sha256": "c8314829f992a1edbdbdf0741b51f247f7154b3b851db398c3644c30141a93a1",
+  "audit_package_sha256": "e0519e04cb0a2cb5433a53f5013c61fc063161348cb9c903ccb819622ad05e43",
   "upstream_gateway": {
     "producer_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
     "consumer_commit": "75b0cbc7ef2179b26cfff7db9817770f9ed2a3ea"

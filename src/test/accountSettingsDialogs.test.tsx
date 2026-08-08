@@ -40,7 +40,6 @@ describe("account settings dialogs", () => {
     render(
       <MemoryRouter
         initialEntries={["/account"]}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <Routes>
           <Route
@@ -82,7 +81,6 @@ describe("account settings dialogs", () => {
     render(
       <MemoryRouter
         initialEntries={["/account-deleted"]}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <Routes>
           <Route path="/" element={<div>Startseite</div>} />
@@ -109,7 +107,7 @@ describe("account settings dialogs", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <AccountDeletionDialog
           open
           onOpenChange={vi.fn()}

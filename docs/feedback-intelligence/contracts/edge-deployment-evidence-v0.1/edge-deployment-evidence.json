@@ -61,7 +61,7 @@
   "source_manifest_sha256": "97d6714a8871f510996cfd39fc23505fde0f5b82a02e1acfd4627f201eecbf91",
   "config": {
     "path": "supabase/config.toml",
-    "sha256": "7ea95c3c1ea6a08730222cfae4ce64556edec31bb4b54340e112d622311ddfc4",
+    "sha256": "197a95483a19755aab1bf0e44bb2b5af71961c30bf08ead46af3d7b2213dd65e",
     "verify_jwt": false
   },
   "runtime_configuration": [

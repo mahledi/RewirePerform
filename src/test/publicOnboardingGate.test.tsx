@@ -23,7 +23,7 @@ const auth = vi.hoisted(() => ({
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => auth }));
 
 const gateTree = () => (
-  <MemoryRouter initialEntries={["/questionnaire"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+  <MemoryRouter initialEntries={["/questionnaire"]}>
     <Routes>
       <Route
         path="/questionnaire"

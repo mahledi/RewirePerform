@@ -37,6 +37,18 @@ const guardedAdminPath = () => ({
   definition_sha256: "9beef5048a25069c5fe381232dc81414ab3d62e300629a5fbf1a986e4c8d38ca",
 });
 
+type AuditResultRow = {
+  audit_result: {
+    audit_phase: string;
+    data_access: Record<string, boolean>;
+    evidence: {
+      reader_role: Record<string, unknown>;
+      gateway_function: Record<string, unknown>;
+      reader_relation_privileges: Array<Record<string, unknown>>;
+    };
+  };
+};
+
 describe("Feedback Intelligence Staging privilege audit", () => {
   it("is catalog-only and contains no mutation or application-row statement", () => {
     const sql = read(`${base}/audit.sql`);
@@ -83,7 +95,7 @@ describe("Feedback Intelligence Staging privilege audit", () => {
         CREATE FUNCTION extensions.digest(bytea, text) RETURNS bytea LANGUAGE sql IMMUTABLE
           AS 'SELECT decode(repeat(''00'', 32), ''hex'')';
       `);
-      const response = await db.query(read(`${base}/audit.sql`));
+      const response = await db.query<AuditResultRow>(read(`${base}/audit.sql`));
       const result = response.rows[0].audit_result;
       expect(result.audit_phase).toBe("PREDEPLOY_BASELINE");
       expect(result.data_access).toEqual({
@@ -121,7 +133,7 @@ describe("Feedback Intelligence Staging privilege audit", () => {
         CREATE TABLE public.profiles_neutral(id integer);
         GRANT SELECT ON TABLE public.profiles_neutral TO PUBLIC;
       `);
-      const response = await db.query(read(`${base}/audit.sql`));
+      const response = await db.query<AuditResultRow>(read(`${base}/audit.sql`));
       expect(response.rows[0].audit_result.evidence.reader_relation_privileges).toContainEqual({
         schema_name: "public",
         relation_name: "profiles_neutral",

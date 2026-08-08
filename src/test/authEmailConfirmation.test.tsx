@@ -57,7 +57,6 @@ vi.mock("sonner", () => ({
 const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
   <MemoryRouter
     initialEntries={[initialEntry]}
-    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
   >
     <Routes>
       <Route path="/auth" element={<Auth />} />
@@ -92,7 +91,6 @@ const WarmAuthNavigation = () => {
 const renderWarmAuthNavigation = () => render(
   <MemoryRouter
     initialEntries={["/auth?mode=login"]}
-    future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
   >
     <WarmAuthNavigation />
   </MemoryRouter>,
@@ -280,7 +278,6 @@ describe("auth email confirmation", () => {
     view.rerender(
       <MemoryRouter
         initialEntries={["/auth?mode=login"]}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <WarmAuthNavigation />
       </MemoryRouter>,

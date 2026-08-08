@@ -6,7 +6,7 @@ import Support from "@/pages/Support";
 describe("public support surface", () => {
   it("shows user-facing support without internal App Store review language", () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <Support />
       </MemoryRouter>,
     );

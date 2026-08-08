@@ -9,7 +9,7 @@ const LocationProbe = () => {
 };
 
 const renderInvite = (entry: string) => render(
-  <MemoryRouter initialEntries={[entry]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+  <MemoryRouter initialEntries={[entry]}>
     <Routes>
       <Route path="/join" element={<TeamInvite />} />
       <Route path="/auth" element={<LocationProbe />} />
