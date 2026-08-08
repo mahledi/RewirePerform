@@ -102,7 +102,7 @@ const stageLabels: Record<PreviewStage, string> = {
   comprehension: "Kurz prüfen",
   "pre-training": "Vor der Einheit",
   "rest-plan": "Zeit wählen",
-  visualization: "Mentale Einheit",
+  visualization: "Visualisierung",
   journal: "Journal",
   special: "Sonderfall",
 };
@@ -399,7 +399,7 @@ const RestPlanStage = ({
     <div className="space-y-5">
       <div>
         <StageEyebrow>Dein Ruhetag</StageEyebrow>
-        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Wann passt deine mentale Einheit?</h2>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.025em]">Wann passt deine Visualisierung?</h2>
         <p className="mt-3 text-sm leading-6 text-white/52">
           Etwa {visualization.estimatedMinutes} Minuten. Dein heutiger Satz und dein Lernziel bleiben gleich.
         </p>

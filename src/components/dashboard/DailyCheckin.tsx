@@ -643,7 +643,7 @@ const DailyCheckin = ({
       if (!draft || !missionTask) {
         return (
           <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-5 text-sm text-muted-foreground">
-            Die mentale Einheit für diesen Tag konnte nicht geladen werden.
+            Die Visualisierung für diesen Tag konnte nicht geladen werden.
           </div>
         );
       }
@@ -735,7 +735,7 @@ const DailyCheckin = ({
     "Science Bite",
     "Dein Tages-Puls",
     activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
-    eventType === "rest" ? "Mentale Einheit" : "Deine Mission",
+    eventType === "rest" ? "Visualisierung" : "Deine Mission",
     "Verständnis-Check",
     "Abgeschlossen",
   ] as const;
@@ -996,7 +996,7 @@ const DailyCheckin = ({
                 >
                   {step === 3 && !tasksComplete
                     ? eventType === "rest"
-                      ? "Mentale Einheit offen"
+                      ? "Visualisierung offen"
                       : "Mission offen"
                     : "Weiter"}
                   <ArrowRight className="w-4 h-4" />

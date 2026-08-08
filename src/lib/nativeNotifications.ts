@@ -327,7 +327,7 @@ export const buildRestVisualizationNotification = (
     || !isIntegerInRange(input.hour, 0, 23)
     || !isIntegerInRange(input.minute, 0, 59)
   ) {
-    throw new Error("Ungültige Erinnerung für die mentale Einheit");
+    throw new Error("Ungültige Erinnerung für die Visualisierung");
   }
   const at = dateAtLocalTime(input.date, input.hour, input.minute);
   const now = input.now ?? new Date();
@@ -337,7 +337,7 @@ export const buildRestVisualizationNotification = (
 
   return {
     id: REST_VISUALIZATION_NOTIFICATION_ID_START + input.dayNumber,
-    title: "Deine mentale Einheit ist bereit",
+    title: "Deine Visualisierung ist bereit",
     body: "Die App führt dich jetzt Schritt für Schritt durch deine Visualisierung.",
     schedule: { at },
     threadIdentifier: "rewireperform-rest-visualization",

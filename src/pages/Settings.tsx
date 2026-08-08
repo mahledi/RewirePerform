@@ -34,14 +34,14 @@ const faqItems = [
   },
   {
     q: "Wie sehen die täglichen Aufgaben aus?",
-    a: "Du startest mit deinem Tages-Puls und einem kurzen Wissens-Input. Danach folgt genau eine Mission mit wenigen zusammengehörenden Schritten. Vor Training oder Wettkampf erinnerst du deinen Satz aktiv. An Ruhetagen führt dich die App stattdessen durch eine kurze mentale Einheit. Im Journal gehst du später eine Frage nach der anderen durch.",
+    a: "Du startest mit deinem Tages-Puls und einem kurzen Wissens-Input. Danach folgt genau eine Mission mit wenigen zusammengehörenden Schritten. Vor Training oder Wettkampf erinnerst du deinen Satz aktiv. An Ruhetagen führt dich die App stattdessen durch eine kurze Visualisierung. Im Journal gehst du später eine Frage nach der anderen durch.",
   },
   {
     q: "Warum wird das Journal eingesprochen?",
     a: "Sprechen ist eine freiwillige Möglichkeit, Gedanken direkt festzuhalten. Aktives Formulieren und das Benennen eigener Reaktionen können Reflexion und innere Distanz unterstützen. In der iPhone- und iPad-App wird Sprache nur lokal auf dem Gerät in Text umgewandelt. Du kannst den Text anschließend bearbeiten oder stattdessen vollständig tippen.",
   },
   {
-    q: "Was ist die mentale Einheit am Ruhetag?",
+    q: "Was ist die Visualisierung am Ruhetag?",
     a: "An einem Ruhetag führt dich die App durch eine kurze Visualisierung aus deinem Sport. Die Situation passt zum Werkzeug und Satz deines Programmtags. Du füllst sie mit deiner eigenen Sportszene. Gespeichert wird nur, ob du die Einheit abgeschlossen hast — nicht, welche Szene du visualisiert hast.",
   },
   {

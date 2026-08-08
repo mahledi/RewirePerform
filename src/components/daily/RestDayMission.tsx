@@ -115,7 +115,7 @@ const RestDayMission = ({
         <div className="relative">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Später erinnern</p>
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Wann passt deine Visualisierung?</h2>
-          <p className="mt-3 text-sm leading-6 text-white/48">Plane ungefähr fünf ruhige Minuten ein.</p>
+          <p className="mt-3 text-sm leading-6 text-white/48">Plane ungefähr vier ruhige Minuten ein.</p>
 
           <label className="mt-6 block text-xs font-semibold uppercase tracking-[0.14em] text-white/45" htmlFor="rest-visualization-time">
             Uhrzeit

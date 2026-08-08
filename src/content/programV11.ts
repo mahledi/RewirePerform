@@ -22,8 +22,7 @@ const PROGRAM_DAY_BY_NUMBER = new Map(
 const contextToGolden = (context: CalendarEventType): GoldenDayContext => context;
 
 const getRestTransfer = (draft: GoldenDayDraft): string =>
-  getRestDayVisualization(draft).phases.find((phase) => phase.id === "transfer")?.prompt
-    ?? draft.mission.why;
+  getRestDayVisualization(draft).transfer;
 
 const buildTask = (draft: GoldenDayDraft, matrix: MatrixDay): DailyTask => ({
   id: `v11-day-${draft.day}-mission`,
@@ -88,7 +87,7 @@ const buildContext = (
       checkin: {
         pulseTitle: "Wie geht es dir an diesem Ruhetag?",
         pulseDescription:
-          "Dein Tages-Puls bleibt derselbe. Danach planst du deine kurze mentale Einheit.",
+          "Dein Tages-Puls bleibt derselbe. Danach planst du deine kurze Visualisierung.",
         reflectionTitle: "Was wirkt heute auf deinen Zustand?",
         reflectionDescription:
           "Halte nur fest, was deinen heutigen Zustand deutlich beeinflusst. Deine Antwort bleibt privat.",
@@ -97,7 +96,7 @@ const buildContext = (
         taskIntro:
           "Die App führt dich durch eine kurze Visualisierung zum heutigen RewirePerform-Satz.",
         completionMessage:
-          "Deine mentale Einheit ist abgeschlossen. Nimm nur deinen Satz mit in den restlichen Tag.",
+          "Deine Visualisierung ist abgeschlossen. Nimm nur deinen Satz mit in den restlichen Tag.",
       },
       journal: {
         intro: visualization.journal.intro,
@@ -180,8 +179,7 @@ export const getProgramV11Content = (
     comprehensionPool: [buildComprehension(draft)],
     variants: {
       training: draft.preTraining?.application ?? draft.mission.why,
-      rest: restVisualization.phases.find((phase) => phase.id === "transfer")?.prompt
-        ?? draft.mission.why,
+      rest: restVisualization.transfer,
       match: draft.preTraining?.application ?? draft.mission.why,
     },
     preTraining: draft.preTraining

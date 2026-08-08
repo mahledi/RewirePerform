@@ -1,23 +1,18 @@
 import type {
   GoldenDayDraft,
   GoldenDayQuestion,
-  GoldenDayStage,
 } from "./goldenDayDrafts";
 
 export type RestVisualizationPhaseId =
   | "breathing"
-  | "scene"
-  | "moment"
-  | "anchor"
-  | "action"
-  | "replay"
-  | "transfer";
+  | "situation"
+  | "sentence"
+  | "action";
 
 export type RestVisualizationPhase = {
   id: RestVisualizationPhaseId;
   prompt: string;
   durationSec: number;
-  reveal?: string;
 };
 
 export type RestDayVisualization = {
@@ -25,6 +20,7 @@ export type RestDayVisualization = {
   title: string;
   estimatedMinutes: number;
   phases: RestVisualizationPhase[];
+  transfer: string;
   journal: {
     title: string;
     intro: string;
@@ -43,9 +39,9 @@ type RestEditorial = {
 
 const EDITORIAL: Record<number, RestEditorial> = {
   1: {
-    scene: "Du bist mitten in deinem Sport. Eine Aktion klappt nicht so, wie du wolltest.",
-    moment: "Dein Kopf bleibt bei der letzten Aktion hängen. Das, was jetzt kommt, wird kurz unscharf.",
-    action: "Sieh, wie dein Blick und dein Körper wieder bei der nächsten Aktion ankommen.",
+    scene: "Du machst in deinem Sport einen wichtigen Fehler und bist sehr frustriert.",
+    moment: "Du denkst noch an den Fehler, obwohl die nächste Aktion bereits weitergeht.",
+    action: "Lass den Fehler kurz stehen. Richte deinen Blick auf die nächste Aktion und führe sie ruhig aus.",
     transfer: "Beim nächsten echten Wegdriften suchst du nur die nächste Aktion.",
     journalTitle: "Wie kam ich im Kopf zurück?",
     journalQuestions: [
@@ -197,8 +193,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   15: {
-    scene: "Ein Problem in deinem Sport nimmt fast dein ganzes inneres Bild ein.",
-    moment: "Andere reale Dinge, die funktionieren oder helfen könnten, verschwinden aus deinem Blick.",
+    scene: "Du denkst in deinem Sport fast nur noch über ein Problem nach.",
+    moment: "Dadurch übersiehst du andere Dinge, die gerade funktionieren oder dir helfen könnten.",
     action: "Lass das Problem stehen und nimm zwei weitere reale Dinge in das Bild auf.",
     transfer: "Beim nächsten Tunnelblick fragst du, was außerdem da ist.",
     journalTitle: "Was war außerdem da?",
@@ -230,9 +226,9 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   18: {
-    scene: "Du gehst in eine sportliche Situation, obwohl Motivation, Energie oder Präsenz nicht ideal sind.",
-    moment: "Du nimmst deinen Zustand ehrlich wahr, ohne ihn zum vollständigen Stopp zu machen.",
-    action: "Prüfe, was sicher und sinnvoll möglich ist, und richte dich auf genau diese nächste Aktion.",
+    scene: "Du gehst in eine sportliche Situation, obwohl du wenig Motivation oder Energie hast und nicht richtig konzentriert bist.",
+    moment: "Du merkst ehrlich, wie es dir geht. Trotzdem prüfst du, was sicher und sinnvoll möglich ist.",
+    action: "Wähle genau eine sichere und sinnvolle nächste Aktion und richte deinen Blick darauf.",
     transfer: "Beim nächsten schwierigen Zustand suchst du das, was trotzdem passend möglich ist.",
     journalTitle: "Was war trotzdem möglich?",
     journalQuestions: [
@@ -243,7 +239,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   19: {
     scene: "Ein unveränderbarer Moment aus deinem Sport läuft zum zweiten oder dritten Mal in deinem Kopf.",
     moment: "Du merkst, wie dieselben Gedanken den Ärger erneut verstärken.",
-    action: "Unterbrich die Wiederholung und gib deine Aufmerksamkeit einer Handlung, die noch bei dir liegt.",
+    action: "Unterbrich die Wiederholung. Richte deine Aufmerksamkeit auf eine Handlung, die du noch selbst bestimmen kannst.",
     transfer: "Beim nächsten wiederholten Ärger suchst du früher deinen Einfluss.",
     journalTitle: "Was verstärkte den Ärger?",
     journalQuestions: [
@@ -264,8 +260,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
   21: {
     scene: "Du beschäftigst dich in deinem Sport stark mit deiner Wirkung, Bewertung oder Position.",
-    moment: "Während dein Bild im Mittelpunkt steht, wird dein konkreter Beitrag zur Aufgabe leiser.",
-    action: "Wähle einen Beitrag und stell dir vor, wie du ihn in der nächsten Handlung sichtbar machst.",
+    moment: "Während du über deine Wirkung nachdenkst, achtest du weniger darauf, was die Aufgabe von dir braucht.",
+    action: "Wähle einen konkreten Beitrag und stell dir vor, wie du ihn in deiner nächsten Handlung zeigst.",
     transfer: "Beim nächsten Selbstbeobachten suchst du deinen Beitrag zur Aufgabe.",
     journalTitle: "Welchen Beitrag zeigte ich?",
     journalQuestions: [
@@ -274,8 +270,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   22: {
-    scene: "Ein Problem oder Mangel bestimmt fast deine ganze sportliche Situation.",
-    moment: "Du erkennst das Problem und suchst gleichzeitig nach dem, was funktioniert, trägt oder möglich bleibt.",
+    scene: "In deinem Sport läuft etwas schlecht und du denkst fast nur noch an dieses Problem.",
+    moment: "Du suchst jetzt auch nach Dingen, die funktionieren, dir helfen oder weiterhin möglich sind.",
     action: "Nimm das Problem und die anderen realen Dinge gleichzeitig wahr. Wähle daraus deine nächste Handlung.",
     transfer: "Beim nächsten engen Blick öffnest du erst das Bild und handelst dann.",
     journalTitle: "Was wurde wieder sichtbar?",
@@ -285,8 +281,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   23: {
-    scene: "Eine sinnvolle sportliche Handlung fühlt sich so an, als würde ihr Ausgang etwas über dich als Person sagen.",
-    moment: "Du trennst den Ausgang des Versuchs von deinem Wert als Person.",
+    scene: "Du willst eine sinnvolle sportliche Handlung ausprobieren. Gleichzeitig hast du Angst, dass ein Fehler dich schlecht aussehen lässt.",
+    moment: "Ein misslungener Versuch entscheidet nicht, was du als Person wert bist.",
     action: "Prüfe Sicherheit, Nutzen und Lernchance. Stell dir danach einen machbaren Versuch vor.",
     transfer: "Beim nächsten Lernversuch prüfst du die Handlung statt deinen Wert.",
     journalTitle: "Versuch statt Wertprüfung",
@@ -318,8 +314,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   26: {
-    scene: "Eine unsichere sportliche Situation wirkt im ersten Moment gefährlich oder wie ein Test deiner Person.",
-    moment: "Du verlangsamst deine erste Einschätzung und prüfst reale Gefahr, Vorbereitung und Aufgabe.",
+    scene: "Eine unsichere sportliche Situation fühlt sich sofort gefährlich an oder wie ein Test, ob du gut genug bist.",
+    moment: "Bevor du entscheidest, prüfst du: Ist es wirklich gefährlich? Bin ich vorbereitet? Was braucht die Aufgabe?",
     action: "Wähle danach einen sicheren und passenden nächsten Schritt.",
     transfer: "Beim nächsten starken ersten Eindruck prüfst du die Fakten, bevor du entscheidest.",
     journalTitle: "Was zeigte die Prüfung?",
@@ -374,7 +370,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
   31: {
     scene: "Ein sportlicher Fehler beeinflusst in deinem Kopf bereits mehrere weitere Handlungen.",
-    moment: "Du trennst den Fehler, dein erstes Urteil und die Verengung danach voneinander.",
+    moment: "Du trennst, was wirklich passiert ist, von deinem ersten Urteil über dich.",
     action: "Nimm eine brauchbare Information und stell dir die nächste Handlung ohne das Urteil vor.",
     transfer: "Beim nächsten Fehler willst du Urteil und Information schneller trennen.",
     journalTitle: "Was blieb ohne das Urteil?",
@@ -384,9 +380,9 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   32: {
-    scene: "In deinem Sport passiert etwas, das dich frustriert und das du nicht mehr ändern kannst.",
-    moment: "Du hältst kurz fest, was wirklich passiert ist. Danach merkst du, welche Gedanken dich weiter darin festhalten.",
-    action: "Frag dich: Was kann ich jetzt beeinflussen? Stell dir vor, wie du genau eine Antwort darauf ausführst.",
+    scene: "Jemand trifft in deinem Sport eine Entscheidung, die du unfair findest. Du bist wütend oder frustriert.",
+    moment: "Die Entscheidung ist gefallen. Du merkst, dass du trotzdem weiter darüber nachdenkst.",
+    action: "Wähle eine Sache, die du jetzt beeinflussen kannst, und stell dir vor, wie du sie ruhig umsetzt.",
     transfer: "Beim nächsten Frust trennst du, was feststeht, von dem, was du noch tun kannst.",
     journalTitle: "Was stand fest, was blieb möglich?",
     journalQuestions: [
@@ -406,8 +402,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   34: {
-    scene: "Eine neue oder schwierige sportliche Handlung wirkt entweder zu groß oder leicht vermeidbar.",
-    moment: "Du prüfst Sicherheit und Vorbereitung, ohne Schwierigkeit blind zu suchen.",
+    scene: "Eine neue oder schwierige sportliche Handlung fühlt sich zu groß an. Du willst sie lieber vermeiden.",
+    moment: "Du prüfst, ob sie sicher ist und wie du sie kleiner oder einfacher machen kannst.",
     action: "Passe Größe, Tempo oder Schwierigkeit an und stell dir den passenden Versuch vor.",
     transfer: "Bei der nächsten Herausforderung suchst du die passende Größe.",
     journalTitle: "Welche Größe passte?",
@@ -417,8 +413,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   35: {
-    scene: "Ein Problem nimmt in einer sportlichen Situation fast dein gesamtes inneres Bild ein.",
-    moment: "Du hältst die Szene an und suchst zwei reale Informationen, die damals ebenfalls da waren.",
+    scene: "In einer sportlichen Situation denkst du fast nur noch an ein Problem.",
+    moment: "Du hältst die Szene an und suchst zwei weitere Dinge, die ebenfalls wirklich da sind.",
     action: "Nimm die fehlenden Informationen auf und stell dir die dadurch mögliche Handlung vor.",
     transfer: "Beim nächsten engen Blick suchst du bewusst nach fehlenden Informationen.",
     journalTitle: "Welche Informationen fehlten?",
@@ -439,9 +435,9 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   37: {
-    scene: "Die nötige sportliche Handlung ist klar, aber ihre Ausführung fühlt sich unsicher an.",
-    moment: "Du bestimmst zuerst die Qualität der Aufgabe und prüfst danach die passende Größe des Versuchs.",
-    action: "Stell dir vor, wie du die Handlung mit genau dieser Qualität in einer machbaren Größe ausführst.",
+    scene: "Du weißt, was die sportliche Aufgabe braucht. Trotzdem fühlt sich die Handlung unsicher an.",
+    moment: "Du wählst eine wichtige Qualität wie Ruhe, Tempo oder Klarheit. Danach machst du den Versuch so klein, dass er machbar ist.",
+    action: "Stell dir vor, wie du den machbaren Versuch mit genau dieser Qualität ausführst.",
     transfer: "Beim nächsten unsicheren Versuch klärst du zuerst, was die Aufgabe braucht.",
     journalTitle: "Welche Qualität führte?",
     journalQuestions: [
@@ -450,8 +446,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   38: {
-    scene: "Nach einem sportlichen Fehler kämpfst du zugleich gegen Bedingungen, Entscheidungen oder den vergangenen Moment.",
-    moment: "Du trennst deinen veränderbaren Anteil vom Teil, der bereits feststeht.",
+    scene: "Nach einem sportlichen Fehler ärgerst du dich auch über Dinge, die du nicht mehr ändern kannst.",
+    moment: "Du trennst deinen eigenen Anteil von dem, was bereits feststeht.",
     action: "Hol eine brauchbare Information aus deinem Anteil und nutze sie in der nächsten Handlung.",
     transfer: "Beim nächsten Fehler trennst du deine Korrektur von dem, was du nicht mehr ändern kannst.",
     journalTitle: "Was war wirklich korrigierbar?",
@@ -485,7 +481,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   41: {
     scene: "Mehrere Belastungen stapeln sich und machen deinen Blick in einer sportlichen Situation immer enger.",
     moment: "Du nimmst das Problem und weitere reale Informationen gleichzeitig wahr.",
-    action: "Finde eine kleine Handlung in deinem Einfluss und stell dir vor, wie du sie beginnst.",
+    action: "Finde eine kleine Handlung, die du selbst beeinflussen kannst, und stell dir vor, wie du sie beginnst.",
     transfer: "Wenn sich Belastung wieder stapelt, öffnest du den Blick und suchst eine kleine Handlung.",
     journalTitle: "Was blieb trotz Belastung möglich?",
     journalQuestions: [
@@ -494,8 +490,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   42: {
-    scene: "Mehrere innere Reaktionen laufen in einer sportlichen Situation nacheinander ab.",
-    moment: "Du hältst die Szene genau dort an, wo du festhängst.",
+    scene: "Nach einer schwierigen Sportszene folgen mehrere Gedanken und Gefühle schnell hintereinander.",
+    moment: "Du hältst die Szene an dem Punkt an, an dem du nicht weiter weißt.",
     action: "Wähle genau dort ein bekanntes Werkzeug. Lass die Sportszene mit deiner nächsten Handlung weiterlaufen.",
     transfer: "Beim nächsten Festhängen suchst du zuerst die genaue Stelle und dann ein Werkzeug.",
     journalTitle: "Wo hing ich fest?",
@@ -540,7 +536,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   46: {
     scene: "Du denkst immer wieder an etwas aus deinem Sport, das bereits passiert ist und nicht mehr geändert werden kann.",
     moment: "Du merkst, dass diese Gedanken dich weiter von deiner nächsten Handlung wegziehen.",
-    action: "Hol deine Einflussfrage selbst zurück. Stell dir vor, wie du eine Sache ausführst, die noch bei dir liegt.",
+    action: "Hol deine Einflussfrage selbst zurück. Stell dir eine Handlung vor, die du noch selbst bestimmen kannst.",
     transfer: "Beim nächsten Festhängen bringst du deine Aufmerksamkeit zu dem zurück, was du tun kannst.",
     journalTitle: "Wohin ging meine Energie?",
     journalQuestions: [
@@ -561,8 +557,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
   48: {
     scene: "Eine sportliche Handlung läuft schwerer als erwartet.",
-    moment: "Du behandelst die Schwierigkeit als Information über Vorbereitung oder Größe des Versuchs.",
-    action: "Passe den Versuch an und stell dir den nächsten sicheren und sinnvollen Schritt vor.",
+    moment: "Du fragst dich, ob du besser vorbereitet sein oder den Versuch kleiner machen musst.",
+    action: "Passe den Versuch an. Stell dir danach den nächsten sicheren und sinnvollen Schritt vor.",
     transfer: "Beim nächsten schwierigen Moment fragst du, was die Schwierigkeit konkret zeigt.",
     journalTitle: "Was zeigte die Schwierigkeit?",
     journalQuestions: [
@@ -583,7 +579,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
   50: {
     scene: "Mehrere gute oder schlechte sportliche Aktionen liegen direkt hinter dir.",
-    moment: "Du merkst, wie der bisherige Verlauf deine nächste Handlung mitziehen will.",
+    moment: "Du merkst, dass du wegen der letzten Aktionen auch die nächste Aktion anders angehen willst.",
     action: "Komm zu deiner nächsten Aktion zurück, wähle eine Qualität und führe sie aus.",
     transfer: "Beim nächsten starken Verlauf lässt du die aktuelle Aufgabe neu beginnen.",
     journalTitle: "Was bestimmte die nächste Aktion?",
@@ -604,8 +600,8 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   52: {
-    scene: "Ein unveränderbarer Teil einer sportlichen Situation bestimmt fast dein gesamtes Bild.",
-    moment: "Du benennst den Fakt und nimmst weitere reale Informationen dazu.",
+    scene: "Du denkst fast nur noch an einen Teil einer sportlichen Situation, den du nicht mehr ändern kannst.",
+    moment: "Du benennst, was feststeht, und nimmst weitere echte Informationen dazu.",
     action: "Nimm die weiteren Informationen dazu. Finde eine Sache, die du beeinflussen kannst, und stell dir diese Handlung vor.",
     transfer: "Beim nächsten unveränderbaren Moment nimmst du weitere reale Dinge wahr und handelst dann.",
     journalTitle: "Was gehörte noch zur Realität?",
@@ -648,7 +644,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
     ],
   },
   56: {
-    scene: "Du bist in einer sportlichen Situation, in der du mental festhängst.",
+    scene: "Du bist in einer sportlichen Situation und weißt nicht, wie du reagieren sollst.",
     moment: "Du erkennst zuerst die Art des Problems und gehst deine bekannten Werkzeuge ruhig durch.",
     action: "Wähle genau ein Werkzeug und stell dir die daraus folgende Handlung vollständig vor.",
     transfer: "Nach dem Programm nutzt du weiter: erkennen, ein Werkzeug wählen und handeln.",
@@ -660,35 +656,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
 };
 
-const PHASE_DURATIONS = [120, 25, 20, 20, 30, 35, 10] as const;
-
-const replayPrompt = (stage: GoldenDayStage): string => {
-  if (stage === "Aufbau") return "Lass die Visualisierung noch einmal laufen: schwieriger Moment, heutiger Satz, deine Handlung.";
-  if (stage === "Rückkehr") return "Lass die Visualisierung noch einmal laufen. Hol den heutigen Satz diesmal selbst zurück.";
-  if (stage === "Vertiefung") return "Lass die Visualisierung noch einmal laufen. Bemerke den schwierigen Moment diesmal etwas früher.";
-  if (stage === "Integration") return "Lass die ganze Visualisierung ruhig und ohne Unterbrechung laufen.";
-  return "Lass die ganze Visualisierung mit möglichst wenig Hilfe durchlaufen.";
-};
-
-const anchorPhase = (
-  draft: GoldenDayDraft,
-  durationSec: number,
-): RestVisualizationPhase => {
-  if (draft.stage === "Aufbau") {
-    return {
-      id: "anchor",
-      prompt: `Dein RewirePerform-Satz für heute: ${draft.cue} Sag ihn dir einmal im Kopf.`,
-      durationSec,
-    };
-  }
-
-  return {
-    id: "anchor",
-    prompt: "Welcher RewirePerform-Satz gehört heute zu diesem Moment? Hol ihn kurz aus deinem Kopf.",
-    durationSec,
-    reveal: draft.cue,
-  };
-};
+const PHASE_DURATIONS = [120, 35, 35, 50] as const;
 
 const buildPhases = (
   draft: GoldenDayDraft,
@@ -701,30 +669,19 @@ const buildPhases = (
       durationSec: PHASE_DURATIONS[0],
     },
     {
-      id: "scene",
-      prompt: `Stell dir diese Sportsituation vor: ${editorial.scene}`,
+      id: "situation",
+      prompt: `Stell dir vor: ${editorial.scene} ${editorial.moment}`,
       durationSec: PHASE_DURATIONS[1],
     },
     {
-      id: "moment",
-      prompt: editorial.moment,
+      id: "sentence",
+      prompt: `Dein Satz für diese Situation ist: „${draft.cue}“ ${editorial.action}`,
       durationSec: PHASE_DURATIONS[2],
     },
-    anchorPhase(draft, PHASE_DURATIONS[3]),
     {
       id: "action",
-      prompt: editorial.action,
-      durationSec: PHASE_DURATIONS[4],
-    },
-    {
-      id: "replay",
-      prompt: replayPrompt(draft.stage),
-      durationSec: PHASE_DURATIONS[5],
-    },
-    {
-      id: "transfer",
-      prompt: editorial.transfer,
-      durationSec: PHASE_DURATIONS[6],
+      prompt: "Lass dieselbe Situation noch einmal ablaufen. Nutze deinen heutigen Satz und stell dir genau vor, wie du so handelst, wie du wirklich handeln möchtest.",
+      durationSec: PHASE_DURATIONS[3],
     },
   ];
 };
@@ -740,6 +697,7 @@ export const getRestDayVisualization = (draft: GoldenDayDraft): RestDayVisualiza
     title: draft.title,
     estimatedMinutes: Math.ceil(totalSeconds / 60),
     phases,
+    transfer: editorial.transfer,
     journal: {
       title: editorial.journalTitle,
       intro: "Denk an deine Visualisierung von heute. Du musst keine echte Anwendung behaupten.",

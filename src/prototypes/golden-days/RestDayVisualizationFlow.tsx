@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import {
   Check,
   ChevronRight,
-  Eye,
   Pause,
   Play,
   RotateCcw,
@@ -40,12 +39,9 @@ type SessionStep = "intro" | "active" | "complete";
 
 const PHASE_LABELS: Record<RestVisualizationPhase["id"], string> = {
   breathing: "Ruhig atmen",
-  scene: "Deine Sportszene",
-  moment: "Der wichtige Moment",
-  anchor: "Dein Satz",
-  action: "So willst du handeln",
-  replay: "Noch einmal",
-  transfer: "Mitnehmen",
+  situation: "Die Situation",
+  sentence: "Dein Satz",
+  action: "Deine Handlung",
 };
 
 const SOUND_LABELS: Record<VisualizationChimeStyle, string> = {
@@ -134,7 +130,6 @@ const RestDayVisualizationFlow = ({
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [remaining, setRemaining] = useState(visualization.phases[0].durationSec);
   const [running, setRunning] = useState(false);
-  const [revealed, setRevealed] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [soundStyle, setSoundStyle] = useState<VisualizationChimeStyle>("deep");
   const [soundError, setSoundError] = useState<string | null>(null);
@@ -149,7 +144,6 @@ const RestDayVisualizationFlow = ({
   const phases = visualization.phases;
   const phase = phases[phaseIndex];
   const phaseFinished = remaining === 0;
-  const recallChecked = !phase.reveal || revealed;
 
   useEffect(() => {
     onCompletionChangeRef.current = onCompletionChange;
@@ -203,7 +197,6 @@ const RestDayVisualizationFlow = ({
     setPhaseIndex(0);
     setRemaining(visualization.phases[0].durationSec);
     setRunning(false);
-    setRevealed(false);
     setSoundError(null);
     didNotifyRef.current = false;
     timerDeadlineRef.current = null;
@@ -243,7 +236,6 @@ const RestDayVisualizationFlow = ({
     setPhaseIndex(0);
     setRemaining(phases[0].durationSec);
     setRunning(false);
-    setRevealed(false);
     didNotifyRef.current = false;
     timerDeadlineRef.current = null;
     setStep("active");
@@ -267,7 +259,7 @@ const RestDayVisualizationFlow = ({
   };
 
   const moveToNextPhase = () => {
-    if (!phaseFinished || !recallChecked) return;
+    if (!phaseFinished) return;
     if (phaseIndex === phases.length - 1) {
       setRunning(false);
       timerDeadlineRef.current = null;
@@ -280,7 +272,6 @@ const RestDayVisualizationFlow = ({
     const nextIndex = phaseIndex + 1;
     setPhaseIndex(nextIndex);
     setRemaining(phases[nextIndex].durationSec);
-    setRevealed(false);
     didNotifyRef.current = false;
     timerDeadlineRef.current = null;
     setRunning(false);
@@ -296,14 +287,14 @@ const RestDayVisualizationFlow = ({
             {firstName ? `${firstName}, deine Visualisierung ist bereit.` : "Deine Visualisierung ist bereit."}
           </h2>
           <p className="mt-3 max-w-lg text-sm leading-6 text-white/52">
-            Du startest mit zwei Minuten ruhiger Atmung. Danach führt dich die App durch eine Sportszene zum heutigen RewirePerform-Satz.
+            Du startest mit zwei Minuten ruhiger Atmung. Danach bleibst du für drei einfache Schritte in derselben Sportsituation.
           </p>
 
           <div className="mt-6 divide-y divide-white/[0.055] border-y border-white/[0.055]">
             {[
-              "Lies jeden Schritt. Starte den Timer und schließe dann die Augen.",
-              "Der leise Ton sagt dir, wann du wieder auf den Bildschirm schaust.",
-              "Kein klares Bild? Geh die Sportszene einfach Schritt für Schritt im Kopf durch.",
+              "Mach die Situation so echt wie möglich: Was siehst du, hörst du und spürst du in deinem Körper?",
+              "Je mehr passende Details du wahrnimmst, desto besser kannst du die Handlung im Kopf durchgehen.",
+              "Kein klares Bild? Kein Problem. Geh die Situation einfach Schritt für Schritt im Kopf durch.",
             ].map((line, index) => (
               <div key={line} className="flex items-start gap-3 py-3.5">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">{index + 1}</span>
@@ -311,6 +302,10 @@ const RestDayVisualizationFlow = ({
               </div>
             ))}
           </div>
+
+          <p className="mt-5 text-sm leading-6 text-white/48">
+            Lies jeden Schritt. Starte den Timer und schließe dann die Augen. Der leise Ton sagt dir, wann du wieder auf den Bildschirm schaust.
+          </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <button
@@ -412,11 +407,22 @@ const RestDayVisualizationFlow = ({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">{PHASE_LABELS[phase.id]}</p>
-            <p className="mt-1 text-xs text-white/35">Schritt {phaseIndex + 1} von {phases.length}</p>
+            <p className="mt-1 text-xs text-white/35">
+              {phase.id === "breathing" ? "2 Minuten ankommen" : `Visualisierung ${phaseIndex} von 3`}
+            </p>
           </div>
-          <div className="flex gap-1.5" aria-label={`Schritt ${phaseIndex + 1} von ${phases.length}`}>
-            {phases.map((item, index) => (
-              <span key={item.id} className={cn("h-1.5 rounded-full", index <= phaseIndex ? "w-5 bg-primary" : "w-1.5 bg-white/10")} />
+          <div
+            className="flex gap-1.5"
+            aria-label={phase.id === "breathing" ? "Atmung" : `Visualisierung ${phaseIndex} von 3`}
+          >
+            {phases.slice(1).map((item, index) => (
+              <span
+                key={item.id}
+                className={cn(
+                  "h-1.5 rounded-full",
+                  phaseIndex > index ? "w-5 bg-primary" : "w-1.5 bg-white/10",
+                )}
+              />
             ))}
           </div>
         </div>
@@ -430,18 +436,6 @@ const RestDayVisualizationFlow = ({
 
         <div className="min-h-32 text-center">
           <p className="text-xl font-semibold leading-8 tracking-[-0.02em] sm:text-2xl">{phase.prompt}</p>
-          {phase.reveal && phaseFinished && !revealed && (
-            <button
-              type="button"
-              onClick={() => setRevealed(true)}
-              className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 text-sm font-semibold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <Eye className="h-4 w-4" /> Heutigen Satz prüfen
-            </button>
-          )}
-          {phase.reveal && revealed && (
-            <p className="mt-4 rounded-2xl border border-primary/20 bg-primary/[0.06] px-4 py-3 text-base font-semibold text-primary">{phase.reveal}</p>
-          )}
         </div>
 
         <p className="mt-3 text-center text-xs leading-5 text-white/38" aria-live="polite">
@@ -473,7 +467,6 @@ const RestDayVisualizationFlow = ({
             <button
               type="button"
               onClick={moveToNextPhase}
-              disabled={!recallChecked}
               className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] shadow-[0_0_26px_hsl(var(--primary)/0.12)] disabled:bg-white/[0.06] disabled:text-white/28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {phaseIndex === phases.length - 1 ? "Visualisierung abschließen" : "Nächster Schritt"}
