@@ -86,22 +86,22 @@ const CONSTRUCT_META: Readonly<Record<string, ConstructMeta>> = {
   },
   rest_visualization_guidance_clarity: {
     humanLabelDe: "Führungsklarheit der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst subjektiv, wie klar die mentale Einheit vom Tagesinhalt in eine eigene Sportszene führt.",
+    measurementIntentionDe: "Erfasst subjektiv, wie klar die mentale Einheit durch die vorgegebene Sportsituation zum heutigen Satz und zur nächsten Handlung führt.",
     productTestHypothesisDe: "Eine klarere Schrittführung gegen die bestehende Führung der mentalen Einheit testen.",
   },
   rest_visualization_practical_access: {
     humanLabelDe: "Praktische Zugänglichkeit der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst subjektiv, wie leicht eine eigene Szene und eine konkrete nächste Handlung in der mentalen Einheit zugänglich werden.",
+    measurementIntentionDe: "Erfasst subjektiv, wie leicht die vorgegebene Sportsituation vorgestellt und eine konkrete nächste Handlung zugänglich wird.",
     productTestHypothesisDe: "Eine konkretere Szenen- und Handlungsführung gegen die bestehende Fassung testen.",
   },
   rest_visualization_self_direction: {
     humanLabelDe: "Selbstständige Nutzung der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst subjektiv, wie selbstständig eine eigene Szene aufgebaut und der Tagesanker darin genutzt werden kann.",
+    measurementIntentionDe: "Erfasst subjektiv, wie selbstständig der heutige Satz zurückgeholt und in der vorgegebenen Sportsituation genutzt werden kann.",
     productTestHypothesisDe: "Eine reduzierte Führung gegen die bestehende Führung testen, ohne selbstständige Nutzung vorauszusetzen.",
   },
   rest_visualization_integration: {
     humanLabelDe: "Rückblickende Integration der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für bekannte Werkzeuge und eigene Sportszenen.",
+    measurementIntentionDe: "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für RewirePerform-Sätze in konkreten Sportsituationen.",
     productTestHypothesisDe: "Die am schwächsten bewertete Phase der mentalen Einheit gezielt überarbeiten und erneut testen.",
   },
   rest_visualization_continuation_intent: {

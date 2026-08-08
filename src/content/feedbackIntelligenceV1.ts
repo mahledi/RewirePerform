@@ -1,6 +1,6 @@
-export const FEEDBACK_INTELLIGENCE_CONTENT_VERSION = "feedback-intelligence-content-v1.1.0" as const;
+export const FEEDBACK_INTELLIGENCE_CONTENT_VERSION = "feedback-intelligence-content-v1.1.1" as const;
 export const FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT =
-  "d5c4f15cc005ab7ed958a9900cf6b9607f397950" as const;
+  "bd647c1b4e709cc0285c6438639e1e9b42ef6128" as const;
 export const FEEDBACK_TEXT_CONSENT_SCOPE = "product-improvement-individual-text-ai-analysis-v1" as const;
 export const FEEDBACK_TEXT_CONSENT_VERSION = "feedback-text-consent-v1.0.0-draft" as const;
 
@@ -249,7 +249,7 @@ const day10Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_practical_access_d10_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Wie leicht konntest du in der mentalen Einheit eine eigene Sportszene aufbauen und darin die nächste Handlung durchgehen?",
+    prompt: "Wie leicht konntest du dir die vorgegebene Sportsituation vorstellen und darin die nächste Handlung durchgehen?",
     options: restVisualizationOptions([
       "Sehr leicht", "Eher leicht", "Teils/teils", "Eher schwer", "Sehr schwer",
     ]),
@@ -336,7 +336,7 @@ const day24Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_guidance_clarity_d24_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Wie klar führt dich die mentale Einheit am Ruhetag von deinem Satz in eine eigene Sportszene?",
+    prompt: "Wie klar führt dich die mentale Einheit am Ruhetag durch die Sportsituation bis zu deinem Satz und deiner nächsten Handlung?",
     options: restVisualizationOptions([
       "Vollkommen klar", "Eher klar", "Teils/teils", "Eher unklar", "Sehr unklar",
     ]),
@@ -439,7 +439,7 @@ const day39Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_self_direction_d39_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und deinen Satz darin nutzen?",
+    prompt: "Wie selbstständig kannst du inzwischen in der mentalen Einheit deinen heutigen Satz zurückholen und in der Sportsituation nutzen?",
     options: restVisualizationOptions([
       "Ganz selbstständig", "Eher selbstständig", "Teils/teils", "Eher nur mit Führung", "Nur mit vollständiger Führung",
     ]),
@@ -562,7 +562,7 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
     itemVariantId: "rest_visualization_integration_d55_v1",
     scaleId: "subjective_experience_5_not_used_v1",
     type: "single",
-    prompt: "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um bekannte Werkzeuge in eigenen Sportszenen durchzugehen?",
+    prompt: "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um deine RewirePerform-Sätze in konkreten Sportsituationen durchzugehen?",
     options: restVisualizationOptions([
       "Sehr gut", "Eher gut", "Teils/teils", "Eher schlecht", "Gar nicht gut",
     ]),
@@ -685,11 +685,11 @@ export const feedbackTextConsentCopy = {
 export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpointDefinition> = {
   10: {
     campaignReference: "feedback-day-10-v1",
-    checkpointDay: 10, phase: 1, week: 2, language: "de", questionnaireVersion: "feedback-d10-v1.1.0",
-    questionnaireManifestHash: "e19d61dc9600f1fd1c1667d1e9ca2a4e4c2c0dc252f4e18ca5efebce132c4a57",
+    checkpointDay: 10, phase: 1, week: 2, language: "de", questionnaireVersion: "feedback-d10-v1.1.1",
+    questionnaireManifestHash: "0b60fed7e7ec9a36e691489deb02b819056ecad277bd307f0ddb7769dc03d1b9",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "05766b0e12582a0cd23049afb90abd29b1b0eb2a60d25a336e5c60a874206ff6",
+      programDayContentHash: "a2bb0ced9a073577b668f2ab6838d8e452b91cde6792976355b3d15032070141",
       toolId: "W6",
       tool: "Unsicherheit prüfen",
       cue: "Prüfen. Dann ausprobieren.",
@@ -711,11 +711,11 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   },
   24: {
     campaignReference: "feedback-day-24-v1",
-    checkpointDay: 24, phase: 2, week: 4, language: "de", questionnaireVersion: "feedback-d24-v1.1.0",
-    questionnaireManifestHash: "815a738d6d45bd0dad49ffcd75bd82a2587de063d32c971d21c5925148d484b5",
+    checkpointDay: 24, phase: 2, week: 4, language: "de", questionnaireVersion: "feedback-d24-v1.1.1",
+    questionnaireManifestHash: "1b2ed1fadafaa77064247048bd8cb5bd4c298d0482c30ca3ce43f45539a47720",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "824491ed8701ae4b4db16d56689c8f1a6e629d16b9e7f214e201faee7c7f97de",
+      programDayContentHash: "9c3a58fbc189c37dc28498290ab3c7efe78d6e45731843587e0fcd01a7c9c3e7",
       toolId: "W2",
       tool: "Die Aufgabe zählt",
       cue: "Was braucht die Aufgabe?",
@@ -737,11 +737,11 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   },
   39: {
     campaignReference: "feedback-day-39-v1",
-    checkpointDay: 39, phase: 3, week: 6, language: "de", questionnaireVersion: "feedback-d39-v1.1.0",
-    questionnaireManifestHash: "2a4c017ec8f0c788bff64ce39d3977a900d0db556ab76267a60b836629735cc3",
+    checkpointDay: 39, phase: 3, week: 6, language: "de", questionnaireVersion: "feedback-d39-v1.1.1",
+    questionnaireManifestHash: "3ec2f50796de4f491491128941aeac903135d66aa83b80e97492cda2b78cfdb9",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "f58821cc92fb409addd972cb050d4bf325a6b1ac2cdfdd9f606791d750a4c720",
+      programDayContentHash: "cb712086f410d7a6e6c3435b1d13dbf0c7054867b733ddfac3a6e1acda1050c1",
       toolId: "W5",
       tool: "Nicht automatisch folgen",
       cue: "Gedanken und Gefühle sind keine Befehle.",
@@ -763,11 +763,11 @@ export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpo
   },
   55: {
     campaignReference: "feedback-day-55-v1",
-    checkpointDay: 55, phase: 4, week: 8, language: "de", questionnaireVersion: "feedback-d55-v1.1.0",
-    questionnaireManifestHash: "3dcec826b4f45c0fc8f3a0fa48185dfb2bca8663dae5db81736e24d5fa9d9b9e",
+    checkpointDay: 55, phase: 4, week: 8, language: "de", questionnaireVersion: "feedback-d55-v1.1.1",
+    questionnaireManifestHash: "ba78c6e58c4e65fe09c3182f5c830783e9d9ed10e314f78ec9c00a77dd726c6d",
     contentContext: {
       sourceContentCommit: FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
-      programDayContentHash: "7a4edfd87dac18e7deaeb2272a945c6c5d38fc144214254d3c0af25fe0a9e5fd",
+      programDayContentHash: "e515f1de1a189af32145748a1070bc0d9b50372bfdf78bdf842b2fcccdf92486",
       toolId: "W2",
       tool: "Die Aufgabe zählt",
       cue: "Was braucht die Aufgabe?",

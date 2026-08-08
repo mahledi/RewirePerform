@@ -1,0 +1,141 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-machine-gateway-v0.1-draft",
+  "contract_status": "PRODUCER_PREPARED_UNSIGNED_NOT_ACTIVATED",
+  "release_scope": {
+    "environment": "synthetic_staging_only",
+    "jurisdiction": "DE",
+    "language": "de-DE",
+    "staging_host": "zbeswjipayspgvcipzmx.supabase.co",
+    "production_scope": "HARD_BLOCKED",
+    "non_de_scope": "HARD_FILTERED_BY_UPSTREAM_RPC"
+  },
+  "http": {
+    "method": "POST",
+    "path": "/functions/v1/mahleos-feedback-intelligence-read",
+    "redirects_allowed": false,
+    "cors_allowed": false,
+    "content_type": "application/json",
+    "max_request_bytes": 1024,
+    "max_response_bytes": 8388608,
+    "cache_control": "no-store"
+  },
+  "authentication": {
+    "scheme": "Bearer",
+    "machine_key_pattern": "^[a-f0-9]{64}$",
+    "machine_key_environment_name": "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY",
+    "previous_key_environment_name": "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY_PREVIOUS",
+    "comparison": "SHA256_CONSTANT_TIME",
+    "key_created": false,
+    "key_stored": false
+  },
+  "replay": {
+    "request_id_header": "X-MahleOS-Request-Id",
+    "request_id_format": "UUID_V1_TO_V5_LOWERCASE",
+    "nonce_header": "X-MahleOS-Nonce",
+    "nonce_pattern": "^[a-f0-9]{64}$",
+    "timestamp_header": "X-MahleOS-Request-Timestamp",
+    "timestamp_format": "RFC3339_UTC",
+    "maximum_past_skew_seconds": 300,
+    "maximum_future_skew_seconds": 60,
+    "nonce_storage": "SHA256_ONLY",
+    "persistent_atomic_guard": true
+  },
+  "rate_limit": {
+    "requests_per_client_per_minute": 12,
+    "serialized_by_advisory_transaction_lock": true,
+    "replay_attempts_count": true
+  },
+  "request": {
+    "schema_path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
+    "client_id": "mahles-jarvis-feedback-intelligence",
+    "contract_version": "0.2.0-draft",
+    "schema_sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+    "data_scope": "synthetic"
+  },
+  "success_response": {
+    "status": 200,
+    "body": "EXACT_UPSTREAM_EXPORT_WITHOUT_TRANSPORT_ENVELOPE",
+    "schema_path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
+    "schema_sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+    "request_id_response_header": "X-MahleOS-Request-Id"
+  },
+  "error_response": {
+    "schema_path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/error.schema.json",
+    "body_shape": {
+      "error": "ALLOWLISTED_MACHINE_ERROR_CODE",
+      "request_id": "PRESENT_AFTER_VALID_REQUEST_ID"
+    },
+    "status_mapping": {
+      "400": ["invalid_replay_headers", "invalid_request", "invalid_json"],
+      "401": ["unauthorized"],
+      "403": ["production_scope_blocked"],
+      "405": ["method_not_allowed"],
+      "409": ["contract_drift", "replay_detected"],
+      "413": ["request_too_large"],
+      "415": ["unsupported_media_type"],
+      "429": ["rate_limited"],
+      "503": [
+        "service_not_configured",
+        "machine_gate_closed",
+        "stale_request",
+        "feedback_read_unavailable",
+        "response_too_large"
+      ]
+    }
+  },
+  "database": {
+    "role": "mahleos_feedback_reader",
+    "login_enabled": true,
+    "password_provisioned": false,
+    "bypass_rls": false,
+    "superuser": false,
+    "inherit": false,
+    "explicit_grants": [
+      "CONNECT_ON_CURRENT_DATABASE",
+      "USAGE_ON_SCHEMA_PUBLIC",
+      "EXECUTE_ON_public.read_feedback_intelligence_v0_2_draft(text,text,text,text)"
+    ],
+    "table_grants": [],
+    "sequence_grants": [],
+    "service_role_used": false,
+    "edge_database_url_environment_name": "MAHLEOS_FEEDBACK_READER_DATABASE_URL",
+    "upstream_rpc": "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
+    "upstream_scope": "synthetic_only"
+  },
+  "producer_pins": {
+    "semantics_producer_commit": "731db19c407f1849556bff8e8ae1b3aadf905a50",
+    "semantics_manifest_sha256": "1981a5142e1c4f654fb12104be922ed99477cb36dc3c80b70fabc1aded9dc5ee",
+    "semantics_package_sha256": "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
+    "semantics_catalog_sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
+    "question_count": 55
+  },
+  "privacy": {
+    "second_raw_text_store": false,
+    "response_body_logged": false,
+    "machine_key_logged": false,
+    "nonce_stored_raw": false,
+    "direct_table_reads": false,
+    "upstream_consent_and_guardian_checks_unchanged": true,
+    "minimum_cohort_size": 5,
+    "observational_not_causal": true
+  },
+  "activation": {
+    "collection_enabled": false,
+    "machine_gateway_deployed": false,
+    "reader_password_provisioned": false,
+    "machine_key_provisioned": false,
+    "edge_runtime_gate_open": false,
+    "database_consumer_pin_ready": false,
+    "database_synthetic_export_enabled": false,
+    "synthetic_network_read_approved": false,
+    "production_export_enabled": false,
+    "real_data_read_enabled": false
+  },
+  "remaining_assurance_gates": {
+    "database_wide_public_execute_audit": false,
+    "exact_staging_role_negative_tests": false,
+    "edge_runtime_deployment_diff_check": false,
+    "consumer_replay_header_adaptation": false,
+    "signed_producer_consumer_release_pair": false
+  }
+}

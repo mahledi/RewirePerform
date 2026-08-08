@@ -1,0 +1,58 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-staging-privilege-audit-package-manifest-v1",
+  "contract_version": "0.1.0-draft",
+  "contract_status": "LOCAL_UNSIGNED_METADATA_ONLY_NOT_ACTIVATED",
+  "generated_at": "2026-08-08T10:00:00+02:00",
+  "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
+  "producer_base_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
+  "target_project_ref": "zbeswjipayspgvcipzmx",
+  "package_signed": false,
+  "package_sha256": "77f45c16cfedb31ac59996bffe4f9b6b5fd76b43566d729dad72b206357e3f78",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/audit.sql",
+      "sha256": "6ea57399169c907dc0ea9a2c77ef03bbcb5fe427037be44d10ce4e48e67a985d"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/result.schema.json",
+      "sha256": "d6ddccee4ff09065ffe6950ed2ae18aba8104ff1334ebf5de963c541440b0e4a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/predeploy.fixture.json",
+      "sha256": "77e34fd6a5029f38cca86352303c96813a028d9f784da9daaec30f08e793f8f5"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/postdeploy-pass.fixture.json",
+      "sha256": "2c879101d1c34954c0b2690c2169157ca9977408868830fb204a196d704a1a76"
+    },
+    {
+      "path": "scripts/validate-feedback-staging-privilege-audit.mjs",
+      "sha256": "ac70fdfae2f4483a9740e49c395a75a0cda238ec70e62778b00ad36088237954"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceStagingPrivilegeAudit.test.ts",
+      "sha256": "dad12c89786b9dcbabecff6bb8d9a028a1ecb3c6a0f2a7a4951710791c05dc18"
+    },
+    {
+      "path": "docs/feedback-intelligence/STAGING_PRIVILEGE_AUDIT_HANDOFF_V0_1.md",
+      "sha256": "cf129a99f873be9676058a474e0065e2bfe000fb252ad51aa3804b76394e0d5f"
+    }
+  ],
+  "upstream_gateway_pins": {
+    "producer_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
+    "manifest_sha256": "4c53990d8f1c751a2d2d9d5820abf0c418cf38c47cd59ecdbc90501d75e28d07",
+    "package_sha256": "5f89b849bb148f0d02b4bdafbb0b072bcec5087a02614856f011133b6f13a8d3",
+    "consumer_commit": "75b0cbc7ef2179b26cfff7db9817770f9ed2a3ea"
+  },
+  "scope": {
+    "catalog_metadata_only": true,
+    "application_rows": false,
+    "application_function_calls": false,
+    "mutations": false,
+    "credentials": false,
+    "signing": false,
+    "migration": false,
+    "edge_deployment": false,
+    "production": false
+  }
+}

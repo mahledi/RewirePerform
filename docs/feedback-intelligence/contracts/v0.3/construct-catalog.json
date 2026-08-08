@@ -878,7 +878,7 @@
       "construct_id": "rest_visualization_guidance_clarity",
       "human_label_de": "Führungsklarheit der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst subjektiv, wie klar die mentale Einheit vom Tagesinhalt in eine eigene Sportszene führt.",
+      "measurement_intention_de": "Erfasst subjektiv, wie klar die mentale Einheit durch die vorgegebene Sportsituation zum heutigen Satz und zur nächsten Handlung führt.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_guidance_clarity_v1",
@@ -994,7 +994,7 @@
             },
             {
               "question_id": "d24_rest_visualization_guidance_clarity",
-              "human_label_de": "Wie klar führt dich die mentale Einheit am Ruhetag von deinem Satz in eine eigene Sportszene?",
+              "human_label_de": "Wie klar führt dich die mentale Einheit am Ruhetag durch die Sportsituation bis zu deinem Satz und deiner nächsten Handlung?",
               "item_variant_id": "rest_visualization_guidance_clarity_d24_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -1051,7 +1051,7 @@
       "construct_id": "rest_visualization_practical_access",
       "human_label_de": "Praktische Zugänglichkeit der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst subjektiv, wie leicht eine eigene Szene und eine konkrete nächste Handlung in der mentalen Einheit zugänglich werden.",
+      "measurement_intention_de": "Erfasst subjektiv, wie leicht die vorgegebene Sportsituation vorgestellt und eine konkrete nächste Handlung zugänglich wird.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_practical_access_v1",
@@ -1121,7 +1121,7 @@
           "questions": [
             {
               "question_id": "d10_rest_visualization_practical_access",
-              "human_label_de": "Wie leicht konntest du in der mentalen Einheit eine eigene Sportszene aufbauen und darin die nächste Handlung durchgehen?",
+              "human_label_de": "Wie leicht konntest du dir die vorgegebene Sportsituation vorstellen und darin die nächste Handlung durchgehen?",
               "item_variant_id": "rest_visualization_practical_access_d10_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -3391,7 +3391,7 @@
       "construct_id": "rest_visualization_self_direction",
       "human_label_de": "Selbstständige Nutzung der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst subjektiv, wie selbstständig eine eigene Szene aufgebaut und der Tagesanker darin genutzt werden kann.",
+      "measurement_intention_de": "Erfasst subjektiv, wie selbstständig der heutige Satz zurückgeholt und in der vorgegebenen Sportsituation genutzt werden kann.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_self_direction_v1",
@@ -3457,7 +3457,7 @@
           "questions": [
             {
               "question_id": "d39_rest_visualization_self_direction",
-              "human_label_de": "Wie selbstständig kannst du inzwischen in der mentalen Einheit eine passende eigene Sportszene aufbauen und deinen Satz darin nutzen?",
+              "human_label_de": "Wie selbstständig kannst du inzwischen in der mentalen Einheit deinen heutigen Satz zurückholen und in der Sportsituation nutzen?",
               "item_variant_id": "rest_visualization_self_direction_d39_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -4484,7 +4484,7 @@
       "construct_id": "rest_visualization_integration",
       "human_label_de": "Rückblickende Integration der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für bekannte Werkzeuge und eigene Sportszenen.",
+      "measurement_intention_de": "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für RewirePerform-Sätze in konkreten Sportsituationen.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_integration_v1",
@@ -4550,7 +4550,7 @@
           "questions": [
             {
               "question_id": "d55_rest_visualization_integration",
-              "human_label_de": "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um bekannte Werkzeuge in eigenen Sportszenen durchzugehen?",
+              "human_label_de": "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um deine RewirePerform-Sätze in konkreten Sportsituationen durchzugehen?",
               "item_variant_id": "rest_visualization_integration_d55_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [

@@ -1,10 +1,10 @@
 {
   "schema_version": "rewireperform-feedback-semantics-producer-package-manifest-v1",
-  "contract_version": "0.3.0-draft",
+  "contract_version": "0.3.1-draft",
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
-  "generated_at": "2026-08-06T23:45:00+02:00",
+  "generated_at": "2026-08-07T11:40:00+02:00",
   "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
-  "producer_base_commit": "b5219c031e8bf897ed1d05ffb9f944a43352580b",
+  "producer_base_commit": "4fc5363931dd0ec0301f9fca40cf2f4c2ffc48f7",
   "producer_worktree_dirty": false,
   "package_signed": false,
   "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
@@ -15,7 +15,7 @@
   },
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "81247edb1c42c25884505b4af3a2e25d5521a4bad3e838d0e783e87e17017c12",
+  "package_sha256": "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.json",
-      "sha256": "d0343c14ef9f17239ac7d01545b146acc8290c1abe451e28218a5f134d563b2d"
+      "sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20"
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-decisions.json",
@@ -31,11 +31,11 @@
     },
     {
       "path": "src/content/feedbackIntelligenceV1.ts",
-      "sha256": "8b67da525f5f1ad876c97bae85e614a33e933114469b11bba1d4e5612b5abc86"
+      "sha256": "c90f6c8df59b3ebedba3b5eb0af782f853920e6f651d1262cfaeba93176da911"
     },
     {
       "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
-      "sha256": "815cc47ebb0c99694ee70ea74d817de28c5c967ffeaca954bcb5dbec04c547ba"
+      "sha256": "b6a587457621f25f7a748d4cd150b5ac8c383e3209a3e3a0328d9a019869e50d"
     },
     {
       "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
@@ -43,11 +43,11 @@
     },
     {
       "path": "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
-      "sha256": "beec9958d25032b5eac6247ff4660cc6fa501d13987f499f97cf03a51f5cabd0"
+      "sha256": "f724676847e4fd8c915248cba55c150646c89110ef6ecd243e958e6800f39ced"
     },
     {
       "path": "src/test/feedbackIntelligenceContent.test.ts",
-      "sha256": "18f1e2dfc3072d66a4c62d8fd0d6995630b20697a7af26e208986ce7d19d9683"
+      "sha256": "57921c839c0a55084a23ede633d0f2af0e91416330fa4bcbf282d8f7bdbfcb94"
     },
     {
       "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",
@@ -55,11 +55,11 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
-      "sha256": "75816291bdb067a993aced66af074f514dda26663df615e7153ee93b52815d7c"
+      "sha256": "3c901b3393436945f5d53212832e02760f985f50a761ddf4c9cf1512eb88ebff"
     },
     {
       "path": "docs/feedback-intelligence/REST_DAY_VISUALIZATION_FEEDBACK_HANDOFF_V1_1.md",
-      "sha256": "5f70d6cd34b4ed98996d1745a0646f22a740b35760ec2710c0e1396910d3e319"
+      "sha256": "003fc6503d642ee34a6389dd0dc5cabb6c9d7d3542e7de0ceca11bd7a81a547e"
     }
   ],
   "catalog_evidence": {

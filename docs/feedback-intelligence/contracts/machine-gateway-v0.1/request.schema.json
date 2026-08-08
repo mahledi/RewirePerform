@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rewireperform:feedback-intelligence-machine-gateway-request:0.1.0-draft",
+  "title": "Feedback Intelligence synthetic machine gateway request v0.1 draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "client_id",
+    "contract_version",
+    "schema_sha256",
+    "data_scope"
+  ],
+  "properties": {
+    "client_id": {
+      "const": "mahles-jarvis-feedback-intelligence"
+    },
+    "contract_version": {
+      "const": "0.2.0-draft"
+    },
+    "schema_sha256": {
+      "const": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9"
+    },
+    "data_scope": {
+      "const": "synthetic"
+    }
+  }
+}

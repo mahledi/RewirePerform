@@ -131,15 +131,15 @@ WITH versions(
   campaign_reference, questionnaire_version, questionnaire_manifest_hash
 ) AS (
   VALUES
-    ('feedback-day-10-v1', 'feedback-d10-v1.1.0', 'e19d61dc9600f1fd1c1667d1e9ca2a4e4c2c0dc252f4e18ca5efebce132c4a57'),
-    ('feedback-day-24-v1', 'feedback-d24-v1.1.0', '815a738d6d45bd0dad49ffcd75bd82a2587de063d32c971d21c5925148d484b5'),
-    ('feedback-day-39-v1', 'feedback-d39-v1.1.0', '2a4c017ec8f0c788bff64ce39d3977a900d0db556ab76267a60b836629735cc3'),
-    ('feedback-day-55-v1', 'feedback-d55-v1.1.0', '3dcec826b4f45c0fc8f3a0fa48185dfb2bca8663dae5db81736e24d5fa9d9b9e')
+    ('feedback-day-10-v1', 'feedback-d10-v1.1.1', '0b60fed7e7ec9a36e691489deb02b819056ecad277bd307f0ddb7769dc03d1b9'),
+    ('feedback-day-24-v1', 'feedback-d24-v1.1.1', '1b2ed1fadafaa77064247048bd8cb5bd4c298d0482c30ca3ce43f45539a47720'),
+    ('feedback-day-39-v1', 'feedback-d39-v1.1.1', '3ec2f50796de4f491491128941aeac903135d66aa83b80e97492cda2b78cfdb9'),
+    ('feedback-day-55-v1', 'feedback-d55-v1.1.1', 'ba78c6e58c4e65fe09c3182f5c830783e9d9ed10e314f78ec9c00a77dd726c6d')
 )
 UPDATE feedback_core.campaigns campaign
 SET questionnaire_version = versions.questionnaire_version,
     questionnaire_manifest_hash = versions.questionnaire_manifest_hash,
-    content_version = 'feedback-intelligence-content-v1.1.0',
+    content_version = 'feedback-intelligence-content-v1.1.1',
     updated_at = now()
 FROM versions
 WHERE campaign.campaign_reference = versions.campaign_reference;
