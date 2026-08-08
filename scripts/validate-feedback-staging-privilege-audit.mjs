@@ -22,8 +22,24 @@ const findings = [];
 const add = (id, severity, message) => findings.push({ id, severity, message });
 
 if (result.audit_phase === "PREDEPLOY_BASELINE") {
-  if (evidence.reader_role.present || evidence.gateway_function.present) {
-    add("PREDEPLOY_OBJECT_DRIFT", "NO_GO", "Predeploy baseline unexpectedly contains a reader role or gateway function.");
+  if (evidence.reader_role.present) {
+    add("PREDEPLOY_READER_ROLE_DRIFT", "NO_GO", "Predeploy baseline unexpectedly contains the dedicated reader role.");
+  }
+  const gateway = evidence.gateway_function;
+  if (gateway.present && (gateway.signature !== expectedSignature || !gateway.security_definer
+      || !gateway.function_settings.some((setting) => /^search_path=(?:"")?$/u.test(setting)))) {
+    add("PREDEPLOY_GATEWAY_FUNCTION_DRIFT", "NO_GO", "Existing predeploy export RPC has unsafe metadata or a different signature.");
+  }
+  const matrix = evidence.gateway_execute_matrix;
+  if (matrix.anon !== false || matrix.authenticated !== false || matrix.service_role !== false) {
+    add("PREDEPLOY_RUNTIME_EXECUTE_PATH", "NO_GO", "A standard runtime role can call the existing export RPC.");
+  }
+  if (evidence.reader_callable_functions.length > 0
+      || evidence.reader_relation_privileges.length > 0
+      || evidence.reader_sequence_privileges.length > 0
+      || evidence.reader_schema_usage.length > 0
+      || evidence.reader_memberships.length > 0) {
+    add("PREDEPLOY_READER_EVIDENCE_DRIFT", "NO_GO", "Reader-specific privileges exist before the reader role is provisioned.");
   }
   if (evidence.public_execute_defaults.length > 0) {
     add("PUBLIC_EXECUTE_DEFAULT_PATH", "NO_GO", "At least one audited function owner still gives PUBLIC default EXECUTE in schema public.");
