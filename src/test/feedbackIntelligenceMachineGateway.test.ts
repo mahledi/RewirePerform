@@ -24,6 +24,12 @@ const migration = () => readRepoFile(
 const privilegeRemediation = () => readRepoFile(
   "supabase/migrations/20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
 );
+const syntheticGateOpen = () => readRepoFile(
+  "supabase/migrations/20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql",
+);
+const syntheticGateClose = () => readRepoFile(
+  "supabase/migrations/20260808074742_feedback_intelligence_synthetic_staging_read_gate_close_v0_1.sql",
+);
 
 describe("Feedback Intelligence machine gateway draft", () => {
   it("mirrors a valid request ID in body and header when another replay header is invalid", async () => {
@@ -209,5 +215,48 @@ describe("Feedback Intelligence machine gateway draft", () => {
     }
     expect(sql).toContain("ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public");
     expect(sql).not.toMatch(/GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE|EXECUTE)/u);
+  });
+
+  it("opens only the synthetic Staging database gate against exact contract pins", () => {
+    const sql = syntheticGateOpen();
+
+    expect(sql).toContain("consumer_pin_ready = true");
+    expect(sql).toContain("synthetic_export_enabled = true");
+    expect(sql).toContain("machine_credential_ready = true");
+    expect(sql).toContain("contract_version = '0.2.0-draft'");
+    expect(sql).toContain(
+      "schema_sha256 = 'fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9'",
+    );
+    for (const productionGate of [
+      "production_export_enabled",
+      "privacy_notice_ready",
+      "app_store_declaration_ready",
+      "minor_policy_ready",
+    ]) {
+      expect(sql).toContain(`${productionGate} = false`);
+      expect(sql).not.toContain(`${productionGate} = true`);
+    }
+    expect(sql).not.toMatch(/PASSWORD\s+'[^']+'/u);
+    expect(sql).not.toMatch(/MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY\s*=/u);
+  });
+
+  it("provides a pinned post-read closure that cannot open Production", () => {
+    const sql = syntheticGateClose();
+
+    expect(sql).toContain("consumer_pin_ready = false");
+    expect(sql).toContain("synthetic_export_enabled = false");
+    expect(sql).toContain("machine_credential_ready = false");
+    expect(sql).toContain("feedback_machine_synthetic_gate_close_contract_drift");
+    for (const productionGate of [
+      "production_export_enabled",
+      "privacy_notice_ready",
+      "app_store_declaration_ready",
+      "minor_policy_ready",
+    ]) {
+      expect(sql).toContain(`${productionGate} = false`);
+      expect(sql).not.toContain(`${productionGate} = true`);
+    }
+    expect(sql).not.toContain("synthetic_export_enabled = true");
+    expect(sql).not.toContain("machine_credential_ready = true");
   });
 });
