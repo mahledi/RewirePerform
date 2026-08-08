@@ -7,7 +7,7 @@
   "producer_base_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
   "target_project_ref": "zbeswjipayspgvcipzmx",
   "package_signed": false,
-  "package_sha256": "77f45c16cfedb31ac59996bffe4f9b6b5fd76b43566d729dad72b206357e3f78",
+  "package_sha256": "3f79df361c0586fce30dc3c90fe9f1b4569a483ba7d60f1b7f9fdaac6f4314b9",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1/audit.sql",
@@ -31,7 +31,7 @@
     },
     {
       "path": "src/test/feedbackIntelligenceStagingPrivilegeAudit.test.ts",
-      "sha256": "dad12c89786b9dcbabecff6bb8d9a028a1ecb3c6a0f2a7a4951710791c05dc18"
+      "sha256": "c6357c30dce63346f265cacdc9fcfdb84074cba1aec16791fa28f9fd1ee59877"
     },
     {
       "path": "docs/feedback-intelligence/STAGING_PRIVILEGE_AUDIT_HANDOFF_V0_1.md",

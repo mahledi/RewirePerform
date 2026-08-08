@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -54,6 +55,18 @@ const machineGatewayMigration = readFileSync(
 );
 const machineExportSchema = JSON.parse(readFileSync(
   resolve("docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json"),
+  "utf8",
+));
+const longitudinalFixture = readFileSync(
+  resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/prepare-longitudinal-fixture.sql"),
+  "utf8",
+);
+const longitudinalFixtureCleanup = readFileSync(
+  resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/cleanup-longitudinal-fixture.sql"),
+  "utf8",
+);
+const longitudinalFixtureManifest = JSON.parse(readFileSync(
+  resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/longitudinal-fixture-manifest.json"),
   "utf8",
 ));
 
@@ -113,6 +126,18 @@ const setGatewayContext = async (requestId, nonce, issuedAt = new Date().toISOSt
 };
 
 try {
+  const fixtureDigestLines = longitudinalFixtureManifest.files.map((file) => {
+    const bytes = readFileSync(resolve(file.path));
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    assert(digest === file.sha256, `${file.path} must match its synthetic fixture pin`);
+    return `${digest}  ${file.path}\n`;
+  }).join("");
+  assert(
+    createHash("sha256").update(fixtureDigestLines, "utf8").digest("hex")
+      === longitudinalFixtureManifest.package_sha256,
+    "synthetic longitudinal fixture package must remain byte-pinned",
+  );
+
   await db.exec(`
     CREATE ROLE anon;
     CREATE ROLE authenticated;
@@ -541,8 +566,8 @@ try {
   assert(
     visualizationRegistry.rows.every((row) =>
       row.option_ids.includes("not_used")
-      && row.questionnaire_version === `feedback-d${row.checkpoint_day}-v1.1.0`
-      && row.content_version === "feedback-intelligence-content-v1.1.0"
+      && row.questionnaire_version === `feedback-d${row.checkpoint_day}-v1.1.1`
+      && row.content_version === "feedback-intelligence-content-v1.1.1"
       && row.status === "draft"
       && /^[a-f0-9]{64}$/.test(row.questionnaire_manifest_hash)),
     "visualization questions must preserve not_used and remain pinned to draft-only v1.1 registries",
@@ -881,8 +906,8 @@ try {
   const started = await db.query(`
     SELECT public.start_my_feedback_submission(
       'feedback-day-10-v1', $1, '1.1.0+5',
-      'feedback-intelligence-content-v1.1.0',
-      'e19d61dc9600f1fd1c1667d1e9ca2a4e4c2c0dc252f4e18ca5efebce132c4a57'
+      'feedback-intelligence-content-v1.1.1',
+      '0b60fed7e7ec9a36e691489deb02b819056ecad277bd307f0ddb7769dc03d1b9'
     ) AS result
   `, [ids.transactionClient]);
   assert(started.rows[0].result.status === "draft", "claimed checkpoint must start a draft");
@@ -1439,6 +1464,46 @@ try {
     "SELECT COUNT(*)::integer AS count FROM feedback_core.campaigns",
   );
   assert(campaignCount.rows[0].count === 4, "versioned campaign definitions must survive account deletion");
+
+  await db.exec(`
+    UPDATE feedback_core.campaigns
+    SET status = 'draft', available_from = NULL
+  `);
+  await db.exec(longitudinalFixture);
+  await db.query(
+    "SELECT set_config('request.mahleos_feedback_request_id', '78000000-0000-4000-8000-000000000001', false)",
+  );
+  const longitudinalExport = await db.query(`
+    SELECT feedback_analysis.export_feedback_intelligence_v0_2_internal(
+      'mahles-jarvis-feedback-intelligence',
+      '0.2.0-draft',
+      'fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9',
+      'synthetic'
+    ) AS result
+  `);
+  const longitudinalPayload = longitudinalExport.rows[0].result;
+  assert(
+    validateMachineExport(longitudinalPayload),
+    "the full longitudinal fixture must match the byte-pinned export schema",
+  );
+  assert(
+    longitudinalPayload.items.length === 825,
+    "15 synthetic subjects across all 55 questions must export 825 items",
+  );
+  assert(
+    new Set(longitudinalPayload.items.map((item) => item.subject_reference)).size === 15,
+    "the longitudinal fixture must contain exactly 15 pseudonymous subjects",
+  );
+  assert(
+    longitudinalPayload.items.filter((item) => item.comment !== null).length === 20,
+    "the longitudinal fixture must export exactly 20 consent-valid synthetic comments",
+  );
+  assert(
+    JSON.stringify([...new Set(longitudinalPayload.items.map((item) => item.program_day))])
+      === JSON.stringify([10, 24, 39, 55]),
+    "the longitudinal fixture must cover all four checkpoint days",
+  );
+  await db.exec(longitudinalFixtureCleanup);
 
   console.log("Feedback Intelligence SQL foundation checks passed.");
 } finally {

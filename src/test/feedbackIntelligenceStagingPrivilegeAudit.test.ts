@@ -11,6 +11,27 @@ import { describe, expect, it } from "vitest";
 
 const base = "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.1";
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
+type AuditQueryRow = {
+  audit_result: {
+    audit_phase: string;
+    data_access: {
+      catalog_metadata_only: boolean;
+      application_rows_read: boolean;
+      application_functions_called: boolean;
+      database_mutated: boolean;
+    };
+    evidence: {
+      reader_role: Record<string, unknown>;
+      gateway_function: Record<string, unknown>;
+      reader_relation_privileges: Array<{
+        schema_name: string;
+        relation_name: string;
+        relkind: string;
+        privilege_type: string;
+      }>;
+    };
+  };
+};
 const validateFixture = (value: unknown) => {
   const directory = mkdtempSync(resolve(tmpdir(), "feedback-privilege-audit-"));
   const path = resolve(directory, "fixture.json");
@@ -83,7 +104,7 @@ describe("Feedback Intelligence Staging privilege audit", () => {
         CREATE FUNCTION extensions.digest(bytea, text) RETURNS bytea LANGUAGE sql IMMUTABLE
           AS 'SELECT decode(repeat(''00'', 32), ''hex'')';
       `);
-      const response = await db.query(read(`${base}/audit.sql`));
+      const response = await db.query<AuditQueryRow>(read(`${base}/audit.sql`));
       const result = response.rows[0].audit_result;
       expect(result.audit_phase).toBe("PREDEPLOY_BASELINE");
       expect(result.data_access).toEqual({
@@ -121,7 +142,7 @@ describe("Feedback Intelligence Staging privilege audit", () => {
         CREATE TABLE public.profiles_neutral(id integer);
         GRANT SELECT ON TABLE public.profiles_neutral TO PUBLIC;
       `);
-      const response = await db.query(read(`${base}/audit.sql`));
+      const response = await db.query<AuditQueryRow>(read(`${base}/audit.sql`));
       expect(response.rows[0].audit_result.evidence.reader_relation_privileges).toContainEqual({
         schema_name: "public",
         relation_name: "profiles_neutral",
