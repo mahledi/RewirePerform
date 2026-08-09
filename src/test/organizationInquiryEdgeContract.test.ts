@@ -38,6 +38,12 @@ describe("organization inquiry edge boundary", () => {
     expect(source).toContain('throw new Error("service_not_configured")');
   });
 
+  it("pins the public request to the approved DE scope and privacy notice", () => {
+    expect(source).toContain('const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-07"');
+    expect(source).toContain('row.country_code !== "DE"');
+    expect(source).toContain("row.privacy_version !== ORGANIZATION_INQUIRY_PRIVACY_VERSION");
+  });
+
   it("normalizes websites and rejects active credentials or non-web protocols", () => {
     expect(source).toContain("const url = new URL(websiteInput)");
     expect(source).toContain('url.protocol !== "https:" && url.protocol !== "http:"');

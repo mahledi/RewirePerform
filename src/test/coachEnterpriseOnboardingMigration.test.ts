@@ -32,6 +32,23 @@ describe("coach and enterprise onboarding V1.1 migration", () => {
     }
   });
 
+  it("pins public organization requests to the approved DE privacy scope", () => {
+    const requestTable = migration.slice(
+      migration.indexOf("CREATE TABLE public.organization_access_requests"),
+      migration.indexOf("CREATE UNIQUE INDEX organization_access_requests_work_email_open_idx"),
+    );
+    const organizationTable = migration.slice(
+      migration.indexOf("CREATE TABLE public.organizations"),
+      migration.indexOf("CREATE TABLE public.organization_memberships"),
+    );
+
+    expect(requestTable).toContain("CHECK (country_code = 'DE')");
+    expect(requestTable).toContain(
+      "privacy_version = 'organization-inquiry-v1.1-2026-08-07'",
+    );
+    expect(organizationTable).toContain("CHECK (country_code = 'DE')");
+  });
+
   it("never grants staff direct access to athlete raw data", () => {
     expect(migration).not.toContain('CREATE POLICY "Team staff read athlete assessments"');
     expect(migration).not.toContain('CREATE POLICY "Team staff read athlete checkins"');

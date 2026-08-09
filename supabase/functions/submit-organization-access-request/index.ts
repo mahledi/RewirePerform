@@ -3,6 +3,7 @@ import { serviceClient } from "../_shared/supabaseService.ts";
 
 const MAXIMUM_BODY_BYTES = 24_000;
 const TURNSTILE_ACTION = "organization_access_request";
+const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-07";
 const ALLOWED_KEYS = new Set([
   "contact_name", "work_email", "phone", "job_title", "preferred_contact",
   "organization_name", "organization_type", "country_code", "website", "sports",
@@ -197,7 +198,13 @@ Deno.serve(async (request) => {
       public_research_notice_acknowledged: true,
     };
 
-    if (row.sports.length === 0 || row.goals.length === 0 || row.support_needs.length === 0) {
+    if (
+      row.country_code !== "DE"
+      || row.privacy_version !== ORGANIZATION_INQUIRY_PRIVACY_VERSION
+      || row.sports.length === 0
+      || row.goals.length === 0
+      || row.support_needs.length === 0
+    ) {
       throw new Error("invalid_request");
     }
 

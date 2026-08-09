@@ -26,7 +26,7 @@ CREATE TABLE public.organization_access_requests (
     'local_club', 'academy', 'performance_center', 'school', 'university',
     'association', 'federation', 'private_provider', 'other'
   )),
-  country_code text NOT NULL DEFAULT 'DE' CHECK (country_code ~ '^[A-Z]{2}$'),
+  country_code text NOT NULL DEFAULT 'DE' CHECK (country_code = 'DE'),
   website text CHECK (website IS NULL OR char_length(website) <= 500),
   sports text[] NOT NULL DEFAULT '{}',
   athlete_age_groups text[] NOT NULL DEFAULT '{}',
@@ -41,7 +41,9 @@ CREATE TABLE public.organization_access_requests (
   context_note text CHECK (context_note IS NULL OR char_length(context_note) <= 1600),
   source text NOT NULL DEFAULT 'web' CHECK (source IN ('web', 'ios', 'admin', 'referral')),
   locale text NOT NULL DEFAULT 'de-DE' CHECK (char_length(locale) <= 16),
-  privacy_version text NOT NULL,
+  privacy_version text NOT NULL CHECK (
+    privacy_version = 'organization-inquiry-v1.1-2026-08-07'
+  ),
   public_research_notice_acknowledged boolean NOT NULL DEFAULT false,
   email_verified_at timestamptz,
   submitted_at timestamptz NOT NULL DEFAULT now(),
@@ -81,7 +83,7 @@ CREATE TABLE public.organizations (
     'local_club', 'academy', 'performance_center', 'school', 'university',
     'association', 'federation', 'private_provider', 'other'
   )),
-  country_code text NOT NULL DEFAULT 'DE' CHECK (country_code ~ '^[A-Z]{2}$'),
+  country_code text NOT NULL DEFAULT 'DE' CHECK (country_code = 'DE'),
   website text CHECK (website IS NULL OR char_length(website) <= 500),
   status text NOT NULL DEFAULT 'pending_activation' CHECK (status IN ('pending_activation', 'active', 'paused', 'archived')),
   access_tier text NOT NULL DEFAULT 'community' CHECK (access_tier IN ('community', 'partner', 'enterprise')),
