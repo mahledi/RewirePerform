@@ -37,6 +37,16 @@ describe("organization access inquiry", () => {
     expect(screen.getByText("Sportverein Beispiel")).toBeInTheDocument();
     expect(screen.getByText("Mentale Routinen im Alltag verankern")).toBeInTheDocument();
     expect(screen.getByText("Persönliche Einführung")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Datenschutz zur Anfrage ansehen" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Datenschutz bei eurer Anfrage" })).toBeInTheDocument();
+    expect(screen.getByText(/bitte trage keine namen oder persönlichen daten von athleten ein/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Verstanden" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    expect(screen.getByText(/teststand: die sichere übermittlung ist noch nicht aktiviert/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
   });
 
   it("requires a phone number only when telephone is selected", () => {

@@ -71,6 +71,36 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await capture(page, testInfo, "auth-signup");
 });
 
+test("organization inquiry review stays aligned and explains privacy in-app", async ({ page }) => {
+  await page.goto("/team-access");
+  await page.getByLabel("Name").fill("Alexandra Beispielperson mit langem Namen");
+  await page.getByLabel("Funktion / Position").fill("Sportliche Leitung und Organisationsentwicklung");
+  await page.getByLabel("Geschäftliche E-Mail").fill("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de");
+  await page.getByLabel("Organisation").fill("Sportverein mit einem außergewöhnlich langen Organisationsnamen");
+  await page.getByRole("button", { name: "Verein", exact: true }).click();
+  await page.getByLabel("Sportart(en)").fill("Volleyball, Fußball, Leichtathletik");
+  await page.getByRole("button", { name: "Weiter", exact: true }).click();
+
+  await page.getByRole("button", { name: /Mentale Routinen im Alltag verankern/ }).click();
+  await page.getByRole("button", { name: "Persönliche Einführung" }).click();
+  await page.getByRole("button", { name: "Anpassung an die Organisation" }).click();
+  await page.getByRole("button", { name: "Reporting und Auswertung" }).click();
+  await page.getByRole("button", { name: "Weiter", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Bereit für den nächsten Schritt." })).toBeVisible();
+  await expect(page.getByText("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("button", { name: "Datenschutz zur Anfrage ansehen" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Datenschutz bei eurer Anfrage" })).toBeVisible();
+  await expect(page.getByText(/keine Namen oder persönlichen Daten von Athleten/i)).toBeVisible();
+  await page.getByRole("button", { name: "Verstanden" }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
+
 test("the athlete introduction is no longer exposed before authentication", async ({ page }) => {
   await page.goto("/welcome");
   await expect(page).toHaveURL(/\/auth\?redirect=%2Fwelcome$/);
