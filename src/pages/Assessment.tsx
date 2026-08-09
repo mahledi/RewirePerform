@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Check, ClipboardCheck, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/validatedAssessments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -225,12 +225,9 @@ const Assessment = () => {
               <div className="space-y-4">
                 {allAssessments.map((test) => (
                   <div key={test.id} className="p-6 rounded-2xl bg-gradient-card border-glow">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-heading font-semibold mb-1">{test.titleShort}</h3>
-                        <p className="text-xs text-muted-foreground">{test.title}</p>
-                      </div>
-                      <ClipboardCheck className="w-5 h-5 text-primary shrink-0" />
+                    <div className="mb-3">
+                      <h3 className="font-heading font-semibold mb-1">{test.titleShort}</h3>
+                      <p className="text-xs text-muted-foreground">{test.title}</p>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">{test.description}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -254,9 +251,7 @@ const Assessment = () => {
           {/* ─── Instructions ─── */}
           {phase === "instructions" && selectedTest && (
             <motion.div key="instructions" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center py-12">
-              <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-6">
-                <ClipboardCheck className="w-8 h-8 text-primary" />
-              </div>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary">Messung vorbereiten</p>
               <h2 className="font-heading text-2xl font-bold mb-2">{selectedTest.titleShort}</h2>
               <p className="text-xs text-primary font-medium mb-4">{timingTitle(timing)} · {selectedTest.items.length} Aussagen</p>
               <p className="text-muted-foreground text-sm max-w-md mx-auto mb-8 leading-relaxed">{selectedTest.instructions}</p>

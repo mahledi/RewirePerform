@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Loader2, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QuestionCard from "@/components/questionnaire/QuestionCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -172,10 +172,7 @@ const DeepProfile = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold text-sm">RewirePerform Deep-Dive</span>
-          </div>
+          <span className="font-heading font-bold text-sm">RewirePerform Deep-Dive</span>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-secondary">
               {timing === "pre" ? "Start" : timing === "mid" ? "Zwischen" : "Abschluss"}

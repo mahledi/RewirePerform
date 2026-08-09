@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowLeft, ArrowRight, BookOpen, Check, Dumbbell, Heart, Loader2, Mic, Moon, Sparkles, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Dumbbell, Loader2, Mic, Moon, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
@@ -432,10 +432,7 @@ const Journal = () => {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4 rounded-[24px] border border-primary/15 bg-primary/[0.045] p-5"
           >
-            <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-primary" />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Blick öffnen</p>
-            </div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Blick öffnen</p>
             <label className="block text-xl font-semibold leading-7">Was war heute gut, hilfreich oder tragend?</label>
             <p className="text-sm leading-6 text-white/48">{j.gratitudeInstruction}</p>
             <Textarea
@@ -486,7 +483,7 @@ const Journal = () => {
               disabled={saving || !allQuestionsReady || gratitudeWords < gratitudeMinWords}
               className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 font-heading text-sm font-semibold text-primary-foreground transition-all disabled:bg-white/[0.06] disabled:text-white/30"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               {saving ? "Speichert …" : saveError ? "Erneut speichern" : "Tag abschließen"}
             </motion.button>
           ) : (

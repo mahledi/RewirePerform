@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Clock, Brain, Shield, Sparkles, FastForward, Loader2, Save, ChevronDown, HeartHandshake } from "lucide-react";
+import { ArrowRight, FastForward, Loader2, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -137,8 +137,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
         >
           {/* Badge */}
           <div className="flex items-center gap-2 mb-8">
-            <div className="px-4 py-2 rounded-full bg-primary/10 border-glow flex items-center gap-2">
-              <Brain className="w-4 h-4 text-primary" />
+            <div className="px-4 py-2 rounded-full bg-primary/10 border-glow">
               <span className="text-sm font-medium text-primary">Startprofil</span>
             </div>
           </div>
@@ -157,7 +156,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           {/* Preparation cards */}
           <div className="space-y-4 mb-12">
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Save className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">01</span>
               <div>
                 <h3 className="font-heading font-semibold mb-1">Jederzeit speichern und pausieren</h3>
                 <p className="text-sm text-muted-foreground">
@@ -167,7 +166,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             </div>
 
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Clock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">02</span>
               <div>
                 <h3 className="font-heading font-semibold mb-1">Nimm dir 20-30 Minuten Zeit</h3>
                 <p className="text-sm text-muted-foreground">
@@ -177,7 +176,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             </div>
 
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">03</span>
               <div>
                 <h3 className="font-heading font-semibold mb-1">Warum wir dich fragen</h3>
                 <p className="text-sm text-muted-foreground">
@@ -210,7 +209,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             </div>
 
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Sparkles className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">04</span>
               <div>
                 <h3 className="font-heading font-semibold mb-1">Messbarer Startpunkt</h3>
                 <p className="text-sm text-muted-foreground">
@@ -231,7 +230,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                   key={cat.id}
                   className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-sm"
                 >
-                  {cat.icon} {cat.title}
+                  {cat.title}
                 </span>
               ))}
             </div>
@@ -248,31 +247,27 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             </button>
           ) : consent === null ? (
             <div className="mb-6 rounded-2xl border border-primary/25 bg-primary/5 p-5 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="mt-1 rounded-2xl bg-primary/15 p-3">
-                  <HeartHandshake className="h-6 w-6 text-primary" />
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-heading text-xl font-semibold">
-                      Nimm an der RewirePerform-Pilot-Auswertung teil
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Deine Nutzung kann uns helfen zu verstehen, welche Aufgaben abgeschlossen werden, wo beobachtete
-                      Veränderungen sichtbar sind und wie wir das 56-Tage-System für Athletinnen und Athleten verbessern können.
-                    </p>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    Wenn du zustimmst, dürfen strukturierte Nutzungs-, Fortschritts-, Check-in-, Assessment- und kurze
-                    Transferdaten für interne Pilot-Analysen sowie nicht identifizierende Pilotberichte und Präsentationen
-                    ausgewertet werden. Solche Daten dokumentieren Beobachtungen; sie beweisen allein weder Ursache noch sportliche Leistungssteigerung.
-                  </p>
-                  <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
-                    Private Journaltexte und freie Antworten werden dafür nie verwendet. Bei Minderjährigen wird die
-                    Pilot-Auswertung nur nach der aktuellen altersgerechten Freigabe aktiviert. Du kannst ablehnen und
-                    RewirePerform trotzdem vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
+              <div className="space-y-3">
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">Freiwillige Pilot-Auswertung</p>
+                  <h3 className="font-heading text-xl font-semibold">
+                    Nimm an der RewirePerform-Pilot-Auswertung teil
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Deine Nutzung kann uns helfen zu verstehen, welche Aufgaben abgeschlossen werden, wo beobachtete
+                    Veränderungen sichtbar sind und wie wir das 56-Tage-System für Athletinnen und Athleten verbessern können.
                   </p>
                 </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Wenn du zustimmst, dürfen strukturierte Nutzungs-, Fortschritts-, Check-in-, Assessment- und kurze
+                  Transferdaten für interne Pilot-Analysen sowie nicht identifizierende Pilotberichte und Präsentationen
+                  ausgewertet werden. Solche Daten dokumentieren Beobachtungen; sie beweisen allein weder Ursache noch sportliche Leistungssteigerung.
+                </p>
+                <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
+                  Private Journaltexte und freie Antworten werden dafür nie verwendet. Bei Minderjährigen wird die
+                  Pilot-Auswertung nur nach der aktuellen altersgerechten Freigabe aktiviert. Du kannst ablehnen und
+                  RewirePerform trotzdem vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
+                </p>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
