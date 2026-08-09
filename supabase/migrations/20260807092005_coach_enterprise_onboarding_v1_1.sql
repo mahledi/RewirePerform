@@ -122,6 +122,28 @@ CREATE TABLE public.team_staff_memberships (
 CREATE INDEX team_staff_memberships_user_idx
   ON public.team_staff_memberships(user_id, status);
 
+-- Preserve the exact access that existed before team_staff_memberships became
+-- authoritative. Legacy coach ownership was defined by teams.created_by, so
+-- every existing coach creator must become the lead coach before the old
+-- roster policy and is_coach_of_user implementation are replaced below.
+INSERT INTO public.team_staff_memberships(
+  team_id, user_id, role, status, created_by
+)
+SELECT
+  team.id,
+  team.created_by,
+  'lead_coach',
+  'active',
+  team.created_by
+FROM public.teams team
+WHERE team.created_by IS NOT NULL
+  AND public.has_role(team.created_by, 'coach'::public.app_role)
+ON CONFLICT (team_id, user_id) DO UPDATE
+SET
+  role = 'lead_coach',
+  status = 'active',
+  updated_at = now();
+
 CREATE TABLE public.organization_invitations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id uuid REFERENCES public.organizations(id) ON DELETE CASCADE,

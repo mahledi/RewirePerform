@@ -49,6 +49,30 @@ describe("coach and enterprise onboarding V1.1 migration", () => {
     expect(policy).not.toContain("public.is_member_of_team(team_id)");
   });
 
+  it("backfills every legacy coach creator before replacing existing coach access", () => {
+    const backfillStart = migration.indexOf(
+      "INSERT INTO public.team_staff_memberships(\n  team_id, user_id, role, status, created_by",
+    );
+    const oldPolicyDrop = migration.indexOf(
+      'DROP POLICY IF EXISTS "Coaches can view team members"',
+    );
+    const coachFunctionReplacement = migration.indexOf(
+      "CREATE OR REPLACE FUNCTION public.is_coach_of_user",
+    );
+    const backfill = migration.slice(backfillStart, oldPolicyDrop);
+
+    expect(backfillStart).toBeGreaterThan(-1);
+    expect(backfillStart).toBeLessThan(oldPolicyDrop);
+    expect(backfillStart).toBeLessThan(coachFunctionReplacement);
+    expect(backfill).toContain("FROM public.teams team");
+    expect(backfill).toContain("team.created_by IS NOT NULL");
+    expect(backfill).toContain(
+      "public.has_role(team.created_by, 'coach'::public.app_role)",
+    );
+    expect(backfill).toContain("role = 'lead_coach'");
+    expect(backfill).toContain("status = 'active'");
+  });
+
   it("closes direct team self-service and requires an approved organization owner or admin", () => {
     expect(migration).toContain('DROP POLICY IF EXISTS "Approved coaches can create teams"');
     const createTeam = functionBlock(
