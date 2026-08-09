@@ -1,7 +1,7 @@
 # RewirePerform V1.1 – Release Operations Preflight
 
 Stand: 9. August 2026
-Status: lokal vorbereitet; kein Merge, kein Production-Apply, kein TestFlight-Upload und keine App-Store-Aktion
+Status: Staging negativ verifiziert; kein Merge, kein Production-Apply, kein TestFlight-Upload und keine App-Store-Aktion
 
 ## Praktische Bedeutung
 
@@ -34,10 +34,12 @@ und Feedback-Production bleiben zusätzlich serverseitig geschlossen.
 
 ## Offener Backend-Schnittpunkt
 
-Die öffentliche Organisationsanfrage benötigt:
+Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
 
-1. Migration `20260807092005_coach_enterprise_onboarding_v1_1.sql`;
-2. Edge Function `submit-organization-access-request`;
+1. die in Staging einzeln verifizierte Migration
+   `20260807092005_coach_enterprise_onboarding_v1_1.sql`;
+2. die in Staging negativ verifizierte Edge Function
+   `submit-organization-access-request`;
 3. Cloudflare-Turnstile-Site-Key im Web-/iOS-Build;
 4. Turnstile-Secret und `ORGANIZATION_INQUIRY_PUBLIC_ENABLED=true` nur in der
    Zielumgebung;
@@ -64,6 +66,11 @@ aktiviert werden.
 
 Keiner dieser Wege wird ohne informierte Freigabe produktiv ausgeführt.
 
+Der getrennte Staging-Nachweis ist in
+`docs/V1_1_ORGANIZATION_STAGING_ASSURANCE_2026-08-09.md` festgehalten. Der
+Endpunkt bleibt dort ohne echten Turnstile-Schlüssel und Aktivierungsflag
+fail-closed.
+
 ## Geordnete Reststrecke
 
 ### Vor physischem Test
@@ -73,7 +80,10 @@ Keiner dieser Wege wird ohne informierte Freigabe produktiv ausgeführt.
 - [x] Version 1.1 / Build 5 lokal vorbereitet und statisch geschützt;
 - [x] Feedback-Clientgate explizit geschlossen dokumentiert;
 - [x] Icon-Qualitätsblock unabhängig geprüft und integriert;
-- [ ] Backend-Trennung für die Organisationsanfrage festlegen;
+- [x] Organisationsmigration und Edge Function isoliert in Staging anwenden;
+- [x] Rollen-, RLS-, DE-/Notice- und HTTP-Negativpfade in Staging prüfen;
+- [ ] echten Turnstile-Site-Key/Secret nach Nutzeranmeldung ausschließlich in
+      Staging setzen und einen positiven synthetischen E2E-Smoke durchführen;
 - [ ] App-Store-Privacy-/Review-Text gegen den tatsächlich aktivierten Umfang
       aktualisieren.
 
