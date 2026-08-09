@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -52,8 +53,24 @@ const machineGatewayMigration = readFileSync(
   resolve("supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql"),
   "utf8",
 );
+const declinedConsentExportRemediationMigration = readFileSync(
+  resolve("supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql"),
+  "utf8",
+);
 const machineExportSchema = JSON.parse(readFileSync(
   resolve("docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json"),
+  "utf8",
+));
+const longitudinalFixture = readFileSync(
+  resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/prepare-longitudinal-fixture.sql"),
+  "utf8",
+);
+const longitudinalFixtureCleanup = readFileSync(
+  resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/cleanup-longitudinal-fixture.sql"),
+  "utf8",
+);
+const longitudinalFixtureManifest = JSON.parse(readFileSync(
+  resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/longitudinal-fixture-manifest.json"),
   "utf8",
 ));
 
@@ -113,6 +130,18 @@ const setGatewayContext = async (requestId, nonce, issuedAt = new Date().toISOSt
 };
 
 try {
+  const fixtureDigestLines = longitudinalFixtureManifest.files.map((file) => {
+    const bytes = readFileSync(resolve(file.path));
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    assert(digest === file.sha256, `${file.path} must match its synthetic fixture pin`);
+    return `${digest}  ${file.path}\n`;
+  }).join("");
+  assert(
+    createHash("sha256").update(fixtureDigestLines, "utf8").digest("hex")
+      === longitudinalFixtureManifest.package_sha256,
+    "synthetic longitudinal fixture package must remain byte-pinned",
+  );
+
   await db.exec(`
     CREATE ROLE anon;
     CREATE ROLE authenticated;
@@ -1143,6 +1172,36 @@ try {
   // The additive gateway migration is intentionally applied only after the
   // base-package tests proved the original no-runtime-actor state.
   await db.exec(machineGatewayMigration);
+  await db.exec(declinedConsentExportRemediationMigration);
+
+  const dataPathDefinitions = await db.query(`
+    SELECT
+      namespace.nspname AS schema_name,
+      procedure.proname AS function_name,
+      pg_catalog.pg_get_functiondef(procedure.oid) AS definition
+    FROM pg_catalog.pg_proc procedure
+    INNER JOIN pg_catalog.pg_namespace namespace
+      ON namespace.oid = procedure.pronamespace
+    WHERE procedure.oid IN (
+      'public.read_feedback_intelligence_v0_2_draft(text,text,text,text)'::regprocedure,
+      'feedback_analysis.export_feedback_intelligence_v0_2_internal(text,text,text,text)'::regprocedure
+    )
+    ORDER BY namespace.nspname, procedure.proname
+  `);
+  const dataPathDefinitionHashes = Object.fromEntries(dataPathDefinitions.rows.map((row) => [
+    `${row.schema_name}.${row.function_name}`,
+    createHash("sha256").update(row.definition, "utf8").digest("hex"),
+  ]));
+  assert(
+    dataPathDefinitionHashes["public.read_feedback_intelligence_v0_2_draft"]
+      === "0d617fcb5e5a7ece31ca94b7ff0cf07026712b0d9ed4206c95bee9f4b198a8af",
+    "the executed public gateway definition must remain byte-pinned",
+  );
+  assert(
+    dataPathDefinitionHashes["feedback_analysis.export_feedback_intelligence_v0_2_internal"]
+      === "89420ddf3f79ad57538f4fb1ad56458717874490ddbc88b52d577e081d3e872f",
+    "the executed internal export definition must remain byte-pinned",
+  );
 
   const gatewayPrivileges = await db.query(`
     SELECT
@@ -1439,6 +1498,91 @@ try {
     "SELECT COUNT(*)::integer AS count FROM feedback_core.campaigns",
   );
   assert(campaignCount.rows[0].count === 4, "versioned campaign definitions must survive account deletion");
+
+  await db.exec(`
+    UPDATE feedback_core.campaigns
+    SET status = 'draft', available_from = NULL
+  `);
+  await db.exec(longitudinalFixture);
+  await db.exec(`
+    UPDATE feedback_consent.text_consent_receipts receipt
+    SET state = 'withdrawn', withdrawn_at = clock_timestamp()
+    FROM feedback_core.submissions submission
+    WHERE submission.id = receipt.submission_id
+      AND submission.user_id = '88080800-0000-4000-8000-000000000003'::uuid
+      AND submission.program_day = 55
+      AND receipt.state = 'granted'
+      AND receipt.granted_at IS NOT NULL
+  `);
+  await db.query(
+    "SELECT set_config('request.mahleos_feedback_request_id', '78000000-0000-4000-8000-000000000001', false)",
+  );
+  const longitudinalExport = await db.query(`
+    SELECT feedback_analysis.export_feedback_intelligence_v0_2_internal(
+      'mahles-jarvis-feedback-intelligence',
+      '0.2.0-draft',
+      'fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9',
+      'synthetic'
+    ) AS result
+  `);
+  const longitudinalPayload = longitudinalExport.rows[0].result;
+  assert(
+    validateMachineExport(longitudinalPayload),
+    "the full longitudinal fixture must match the byte-pinned export schema",
+  );
+  assert(
+    longitudinalPayload.items.length === 825,
+    "15 synthetic subjects across all 55 questions must export 825 items",
+  );
+  assert(
+    new Set(longitudinalPayload.items.map((item) => item.subject_reference)).size === 15,
+    "the longitudinal fixture must contain exactly 15 pseudonymous subjects",
+  );
+  assert(
+    longitudinalPayload.items.filter((item) => item.comment !== null).length === 20,
+    "the longitudinal fixture must export exactly 20 consent-valid synthetic comments",
+  );
+  const declinedConsentItems = longitudinalPayload.items.filter(
+    (item) => item.consent.state === "NOT_GRANTED" && item.consent.granted_at === null,
+  );
+  assert(
+    declinedConsentItems.length > 0
+      && declinedConsentItems.every((item) => item.comment === null
+        && item.consent.consent_reference === null
+        && item.consent.withdrawn_at === null
+        && item.consent.valid_at_export === false),
+    "declined consent must preserve structured answers without exporting a receipt reference or comment",
+  );
+  const withdrawnConsentItems = longitudinalPayload.items.filter(
+    (item) => item.consent.state === "NOT_GRANTED"
+      && item.consent.granted_at !== null
+      && item.consent.withdrawn_at !== null,
+  );
+  assert(
+    withdrawnConsentItems.length > 0
+      && withdrawnConsentItems.every((item) => item.comment === null
+        && item.consent.consent_reference !== null
+        && item.consent.valid_at_export === false),
+    "withdrawn consent must preserve auditable receipt timestamps while suppressing every comment",
+  );
+  const grantedConsentItems = longitudinalPayload.items.filter(
+    (item) => item.consent.state === "GRANTED",
+  );
+  assert(
+    grantedConsentItems.length > 0
+      && grantedConsentItems.every((item) => item.consent.consent_reference !== null
+        && item.consent.granted_at !== null
+        && item.consent.withdrawn_at === null
+        && item.consent.valid_at_export === true)
+      && grantedConsentItems.some((item) => item.comment !== null),
+    "granted consent must keep the auditable reference and expose only consent-valid comments",
+  );
+  assert(
+    JSON.stringify([...new Set(longitudinalPayload.items.map((item) => item.program_day))])
+      === JSON.stringify([10, 24, 39, 55]),
+    "the longitudinal fixture must cover all four checkpoint days",
+  );
+  await db.exec(longitudinalFixtureCleanup);
 
   console.log("Feedback Intelligence SQL foundation checks passed.");
 } finally {

@@ -7,6 +7,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 type InviteState = "idle" | "accepting" | "accepted" | "error";
+type OrganizationInvitationRpcClient = {
+  rpc: (
+    name: "accept_organization_invitation",
+    args: { _token: string },
+  ) => Promise<{ error: { message?: string } | null }>;
+};
 
 const OrganizationInvite = () => {
   const { user, loading, verifyRole } = useAuth();
@@ -29,7 +35,9 @@ const OrganizationInvite = () => {
     setState("accepting");
     setError("");
     if (!roleRefreshPending) {
-      const { error: rpcError } = await (supabase as any).rpc("accept_organization_invitation", { _token: token });
+      const { error: rpcError } = await (
+        supabase as unknown as OrganizationInvitationRpcClient
+      ).rpc("accept_organization_invitation", { _token: token });
       if (rpcError) {
         setState("error");
         setError(
