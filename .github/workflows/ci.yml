@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Historical feedback package pins are verified with git show.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
