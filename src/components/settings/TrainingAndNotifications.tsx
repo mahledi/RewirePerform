@@ -6,8 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { getProgramModeInfo } from "@/lib/programMode";
+import { getCachedProgramModeInfo, getProgramModeInfo } from "@/lib/programMode";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const DAYS = [
   { idx: 1, label: "Mo" },
@@ -77,13 +78,15 @@ const eveningOptions = (() => {
 export const TrainingAndNotifications = () => {
   const { user } = useAuth();
   const push = usePushSubscription();
+  const navigate = useNavigate();
+  const initialProgramMode = getCachedProgramModeInfo(user?.id);
 
   // Training schedule state
-  const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [scheduleLoading, setScheduleLoading] = useState(() => initialProgramMode?.mode !== "team");
   const [scheduleSaveState, setScheduleSaveState] = useState<SaveState>("idle");
   // Stored in local display time. Persisted rows also keep UTC fallback fields.
   const [schedule, setSchedule] = useState<ScheduleMap>(() => emptySchedule());
-  const [isTeamMode, setIsTeamMode] = useState(false);
+  const [isTeamMode, setIsTeamMode] = useState(() => initialProgramMode?.mode === "team");
 
   // Notification time UI state (local for display)
   const [morningLocal, setMorningLocal] = useState({ h: 7, m: 30 });
@@ -94,28 +97,38 @@ export const TrainingAndNotifications = () => {
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      const modeInfo = await getProgramModeInfo(user.id);
-      setIsTeamMode(modeInfo.mode === "team");
-      if (modeInfo.mode === "team") {
+      const cachedModeInfo = getCachedProgramModeInfo(user.id);
+      if (cachedModeInfo?.mode === "team") {
+        setIsTeamMode(true);
         setScheduleLoading(false);
-        return;
       }
+      try {
+        const modeInfo = await getProgramModeInfo(user.id);
+        setIsTeamMode(modeInfo.mode === "team");
+        if (modeInfo.mode === "team") {
+          setScheduleLoading(false);
+          return;
+        }
 
-      const { data } = await supabase
-        .from("training_schedule")
-        .select("day_of_week,training_hour,training_local_hour,training_local_minute")
-        .eq("user_id", user.id);
-      const map = emptySchedule();
-      (data ?? []).forEach((r) => {
-        const local = typeof r.training_local_hour === "number"
-          ? { h: r.training_local_hour, m: r.training_local_minute ?? 0 }
-          : { h: r.training_hour, m: 0 };
-        map[r.day_of_week] = local;
-      });
-      setSchedule(map);
-      setScheduleLoading(false);
+        const { data } = await supabase
+          .from("training_schedule")
+          .select("day_of_week,training_hour,training_local_hour,training_local_minute")
+          .eq("user_id", user.id);
+        const map = emptySchedule();
+        (data ?? []).forEach((r) => {
+          const local = typeof r.training_local_hour === "number"
+            ? { h: r.training_local_hour, m: r.training_local_minute ?? 0 }
+            : { h: r.training_hour, m: 0 };
+          map[r.day_of_week] = local;
+        });
+        setSchedule(map);
+      } catch (error) {
+        console.error("training settings load error", error);
+      } finally {
+        setScheduleLoading(false);
+      }
     };
-    load();
+    void load();
   }, [user]);
 
   useEffect(() => {
@@ -270,6 +283,13 @@ export const TrainingAndNotifications = () => {
                     Dein Coach steuert Training, Wettkämpfe und Ruhetage. Du findest den Teamkalender auf deinem Dashboard;
                     eigene Kalenderänderungen sind im Teammodus nicht nötig.
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/dashboard#dashboard-plan")}
+                    className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  >
+                    Zum Teamkalender
+                  </button>
                 </div>
               </div>
             </div>

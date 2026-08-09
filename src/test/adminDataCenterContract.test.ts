@@ -32,4 +32,12 @@ describe("admin data center information architecture", () => {
     expect(pilotSource).toContain('view === "evidence" ? (');
     expect(pilotSource).toContain("Production ohne QA");
   });
+
+  it("never flashes an admin-only error while the active account is changing", () => {
+    const source = read("src/pages/Admin.tsx");
+
+    expect(source).toContain("authLoading || roleLoading || (user && !roleVerified)");
+    expect(source).toContain('if (!user) return <Navigate to="/auth?mode=login" replace />');
+    expect(source).not.toContain("Diese Seite ist nur für Admin-Konten verfügbar.");
+  });
 });

@@ -26,6 +26,7 @@ class AudioContextStub {
     frequency: AudioParamStub;
     detune: AudioParamStub;
     connect: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
     start: ReturnType<typeof vi.fn>;
     stop: ReturnType<typeof vi.fn>;
   }> = [];
@@ -56,6 +57,7 @@ class AudioContextStub {
       frequency: createAudioParam(),
       detune: createAudioParam(),
       connect: vi.fn(),
+      disconnect: vi.fn(),
       start: vi.fn(),
       stop: vi.fn(),
     };
@@ -102,5 +104,23 @@ describe("visualization chime", () => {
       expect(oscillator.start).toHaveBeenCalledWith(4);
       expect(oscillator.stop).toHaveBeenCalledOnce();
     }
+  });
+
+  it("keeps an inaudible audio session alive during a long iOS timer and releases it afterwards", async () => {
+    vi.stubGlobal("AudioContext", AudioContextStub);
+    const {
+      startVisualizationAudioSession,
+      stopVisualizationAudioSession,
+    } = await import("@/lib/visualizationChime");
+
+    await expect(startVisualizationAudioSession()).resolves.toBe(true);
+    const context = AudioContextStub.instances[0];
+    expect(context.oscillators).toHaveLength(1);
+    expect(context.oscillators[0].frequency.setValueAtTime).toHaveBeenCalledWith(28, 4);
+    expect(context.oscillators[0].start).toHaveBeenCalledWith(4);
+
+    stopVisualizationAudioSession();
+    expect(context.oscillators[0].stop).toHaveBeenCalledOnce();
+    expect(context.oscillators[0].disconnect).toHaveBeenCalledOnce();
   });
 });

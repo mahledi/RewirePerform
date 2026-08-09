@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -306,7 +306,7 @@ const opsSplitLabel: Record<string, string> = {
 };
 
 const Admin = () => {
-  const { role, loading: authLoading, user, signOut } = useAuth();
+  const { role, roleVerified, roleLoading, loading: authLoading, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [teams, setTeams] = useState<TeamRow[]>([]);
@@ -404,7 +404,7 @@ const Admin = () => {
     if (!authLoading && isAdmin && tab === "teams") void loadTeamsOnly();
   }, [authLoading, isAdmin, loadTeamsOnly, tab]);
 
-  if (authLoading) {
+  if (authLoading || roleLoading || (user && !roleVerified)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -412,20 +412,8 @@ const Admin = () => {
     );
   }
 
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Kein Zugriff</CardTitle>
-            <CardDescription>
-              Diese Seite ist nur für Admin-Konten verfügbar.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
+  if (!user) return <Navigate to="/auth?mode=login" replace />;
+  if (!isAdmin) return <Navigate to={role === "coach" ? "/coach" : "/dashboard"} replace />;
 
   const updateFeedback = async (id: string, status: string) => {
     const note = noteDraft[id];

@@ -290,6 +290,7 @@ interface DashboardMemoryCache {
   baselineDone: boolean;
   retestDone: boolean;
   flameStats: FlameStats | null;
+  missedDayReviews: MissedDayReview[];
   effectiveTodayIso: string;
 }
 
@@ -699,6 +700,7 @@ const Dashboard = () => {
     setBaselineDone(cache.baselineDone);
     setRetestDone(cache.retestDone);
     setFlameStats(cache.flameStats);
+    setMissedDayReviews(cache.missedDayReviews);
     setEffectiveToday(new Date(cache.effectiveTodayIso));
     setLoading(false);
   };
@@ -890,6 +892,7 @@ const Dashboard = () => {
       baselineDone,
       retestDone,
       flameStats,
+      missedDayReviews,
       effectiveTodayIso: effectiveToday.toISOString(),
     };
   }, [
@@ -916,6 +919,7 @@ const Dashboard = () => {
     baselineDone,
     retestDone,
     flameStats,
+    missedDayReviews,
     effectiveToday,
   ]);
 
@@ -1832,7 +1836,7 @@ const Dashboard = () => {
                     </>
                   )}
                 </div>
-                <h2 className="mt-4 line-clamp-3 max-w-[270px] text-[clamp(1.6rem,7vw,1.9rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
+                <h2 className="mt-4 break-words text-[clamp(1.45rem,6vw,1.9rem)] font-semibold leading-[1.08] tracking-[-0.04em] [overflow-wrap:anywhere]">
                   {todayResolved?.content.title
                     ?? todayResolved?.content.lens
                     ?? todayResolved?.matrix.lens

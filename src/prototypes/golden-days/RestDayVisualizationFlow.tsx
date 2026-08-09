@@ -6,7 +6,6 @@ import {
   Play,
   RotateCcw,
   Volume2,
-  VolumeX,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -19,6 +18,8 @@ import { getFirstName } from "@/lib/athleteGreeting";
 import {
   playVisualizationChime,
   primeVisualizationAudio,
+  startVisualizationAudioSession,
+  stopVisualizationAudioSession,
   type VisualizationChimeStyle,
   VISUALIZATION_CHIME_STYLES,
 } from "@/lib/visualizationChime";
@@ -56,11 +57,7 @@ const formatTime = (seconds: number): string => {
   return `${minutes}:${String(rest).padStart(2, "0")}`;
 };
 
-const notifyPhaseFinished = (
-  soundEnabled: boolean,
-  soundStyle: VisualizationChimeStyle,
-) => {
-  if (soundEnabled) void playVisualizationChime(soundStyle);
+const notifyHaptic = () => {
   try {
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(18);
   } catch {
@@ -130,9 +127,10 @@ const RestDayVisualizationFlow = ({
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [remaining, setRemaining] = useState(visualization.phases[0].durationSec);
   const [running, setRunning] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [soundStyle, setSoundStyle] = useState<VisualizationChimeStyle>("deep");
   const [soundError, setSoundError] = useState<string | null>(null);
+  const [soundTestState, setSoundTestState] = useState<"idle" | "testing" | "played">("idle");
+  const soundTestResetRef = useRef<number | null>(null);
   const didNotifyRef = useRef(false);
   const timerDeadlineRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -189,6 +187,8 @@ const RestDayVisualizationFlow = ({
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       releaseWakeLock();
+      stopVisualizationAudioSession();
+      if (soundTestResetRef.current !== null) window.clearTimeout(soundTestResetRef.current);
     };
   }, [acquireWakeLock, releaseWakeLock]);
 
@@ -198,9 +198,11 @@ const RestDayVisualizationFlow = ({
     setRemaining(visualization.phases[0].durationSec);
     setRunning(false);
     setSoundError(null);
+    setSoundTestState("idle");
     didNotifyRef.current = false;
     timerDeadlineRef.current = null;
     releaseWakeLock();
+    stopVisualizationAudioSession();
     onCompletionChangeRef.current?.(false);
   }, [draft.day, releaseWakeLock, visualization.phases]);
 
@@ -222,17 +224,32 @@ const RestDayVisualizationFlow = ({
     timerDeadlineRef.current = null;
     setRunning(false);
     releaseWakeLock();
-    notifyPhaseFinished(soundEnabled, soundStyle);
-  }, [releaseWakeLock, remaining, soundEnabled, soundStyle, step]);
+    notifyHaptic();
+    void playVisualizationChime(soundStyle).then((played) => {
+      if (!played) setSoundError("Der Abschlusston konnte auf diesem Gerät nicht abgespielt werden. Die visuelle Anzeige bleibt verfügbar.");
+    }).finally(() => stopVisualizationAudioSession());
+  }, [releaseWakeLock, remaining, soundStyle, step]);
 
   const testSound = async () => {
     setSoundError(null);
+    setSoundTestState("testing");
     const played = await playVisualizationChime(soundStyle);
-    if (!played) setSoundError("Der Ton konnte auf diesem Gerät nicht abgespielt werden. Die visuelle Anzeige bleibt verfügbar.");
+    if (!played) {
+      setSoundTestState("idle");
+      setSoundError("Der Ton konnte auf diesem Gerät nicht abgespielt werden. Die visuelle Anzeige bleibt verfügbar.");
+      return;
+    }
+    setSoundTestState("played");
+    notifyHaptic();
+    if (soundTestResetRef.current !== null) window.clearTimeout(soundTestResetRef.current);
+    soundTestResetRef.current = window.setTimeout(() => {
+      setSoundTestState("idle");
+      soundTestResetRef.current = null;
+    }, 1_600);
   };
 
   const startSession = async () => {
-    if (soundEnabled) await primeVisualizationAudio();
+    await primeVisualizationAudio();
     setPhaseIndex(0);
     setRemaining(phases[0].durationSec);
     setRunning(false);
@@ -242,7 +259,10 @@ const RestDayVisualizationFlow = ({
   };
 
   const startTimer = async () => {
-    if (soundEnabled) await primeVisualizationAudio();
+    const audioReady = await startVisualizationAudioSession();
+    if (!audioReady) {
+      setSoundError("Der Abschlusston ist auf diesem Gerät gerade nicht verfügbar. Der Timer bleibt vollständig sichtbar.");
+    }
     timerDeadlineRef.current = Date.now() + remaining * 1000;
     void acquireWakeLock();
     setRunning(true);
@@ -255,6 +275,7 @@ const RestDayVisualizationFlow = ({
     }
     timerDeadlineRef.current = null;
     releaseWakeLock();
+    stopVisualizationAudioSession();
     setRunning(false);
   };
 
@@ -264,6 +285,7 @@ const RestDayVisualizationFlow = ({
       setRunning(false);
       timerDeadlineRef.current = null;
       releaseWakeLock();
+      stopVisualizationAudioSession();
       setStep("complete");
       onCompletionChangeRef.current?.(true);
       return;
@@ -307,28 +329,19 @@ const RestDayVisualizationFlow = ({
             Lies jeden Schritt. Starte den Timer und schließe dann die Augen. Der leise Ton sagt dir, wann du wieder auf den Bildschirm schaust.
           </p>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="mt-5">
             <button
               type="button"
-              onClick={() => {
-                setSoundEnabled(true);
-                void testSound();
-              }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.025] px-4 text-sm font-semibold text-white/68 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              onClick={() => void testSound()}
+              disabled={soundTestState === "testing"}
+              aria-live="polite"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 text-sm font-semibold text-white/72 transition active:scale-[0.985] disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Volume2 className="h-4 w-4 text-primary" /> Ton testen
-            </button>
-            <button
-              type="button"
-              aria-pressed={!soundEnabled}
-              onClick={() => setSoundEnabled((current) => !current)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-xs font-semibold text-white/42 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              {soundEnabled ? "Ton an" : "Ton aus"}
+              {soundTestState === "played" ? <Check className="h-4 w-4 text-primary" /> : <Volume2 className="h-4 w-4 text-primary" />}
+              {soundTestState === "testing" ? "Ton wird gestartet…" : soundTestState === "played" ? "Testton gestartet" : "Abschlusston testen"}
             </button>
           </div>
-          <p className="mt-2 text-xs leading-5 text-white/36">Stell die Medienlautstärke so ein, dass du den Ton mit geschlossenen Augen gut hörst.</p>
+          <p className="mt-2 text-xs leading-5 text-white/36">Deaktiviere den Lautlosmodus und stell die Medienlautstärke so ein, dass du den Ton mit geschlossenen Augen gut hörst.</p>
 
           {showSoundLab && (
             <div className="mt-5" data-testid="visualization-sound-lab">
@@ -404,26 +417,12 @@ const RestDayVisualizationFlow = ({
     <div ref={containerRef} data-testid="rest-visualization-flow" data-step="active" data-phase={phase.id} className="relative overflow-hidden rounded-[30px] bg-[#101216] px-5 py-6 sm:px-8 sm:py-8">
       <div className="pointer-events-none absolute -top-28 left-1/2 h-64 w-80 -translate-x-1/2 rounded-full bg-primary/[0.1] blur-3xl" />
       <div className="relative">
-        <div className="flex items-center justify-between gap-3">
+        <div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">{PHASE_LABELS[phase.id]}</p>
             <p className="mt-1 text-xs text-white/35">
               {phase.id === "breathing" ? "2 Minuten ankommen" : `Visualisierung ${phaseIndex} von 3`}
             </p>
-          </div>
-          <div
-            className="flex gap-1.5"
-            aria-label={phase.id === "breathing" ? "Atmung" : `Visualisierung ${phaseIndex} von 3`}
-          >
-            {phases.slice(1).map((item, index) => (
-              <span
-                key={item.id}
-                className={cn(
-                  "h-1.5 rounded-full",
-                  phaseIndex > index ? "w-5 bg-primary" : "w-1.5 bg-white/10",
-                )}
-              />
-            ))}
           </div>
         </div>
 

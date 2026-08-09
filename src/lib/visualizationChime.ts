@@ -39,6 +39,7 @@ const CHIMES: Record<VisualizationChimeStyle, ChimeDefinition> = {
 };
 
 let sharedAudioContext: AudioContext | null = null;
+let activeAudioSession: { oscillator: OscillatorNode; gain: GainNode } | null = null;
 
 const getAudioContext = (): AudioContext | null => {
   if (typeof window === "undefined") return null;
@@ -52,8 +53,42 @@ const getAudioContext = (): AudioContext | null => {
 export const primeVisualizationAudio = async (): Promise<boolean> => {
   const context = getAudioContext();
   if (!context) return false;
-  if (context.state === "suspended") await context.resume();
+  try {
+    if (context.state === "suspended") await context.resume();
+  } catch {
+    return false;
+  }
   return context.state === "running";
+};
+
+export const stopVisualizationAudioSession = () => {
+  const session = activeAudioSession;
+  activeAudioSession = null;
+  if (!session) return;
+  try { session.oscillator.stop(); } catch { /* already stopped */ }
+  try { session.oscillator.disconnect(); } catch { /* optional cleanup */ }
+  try { session.gain.disconnect(); } catch { /* optional cleanup */ }
+};
+
+export const startVisualizationAudioSession = async (): Promise<boolean> => {
+  if (!await primeVisualizationAudio()) return false;
+  if (activeAudioSession) return true;
+  const context = getAudioContext();
+  if (!context || context.state !== "running") return false;
+
+  // iOS may suspend an otherwise idle WebAudio graph during a long eyes-closed
+  // timer. This inaudible oscillator keeps the user-unlocked media session alive
+  // so the real completion chime can start without a second screen interaction.
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(28, context.currentTime);
+  gain.gain.setValueAtTime(0.000001, context.currentTime);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(context.currentTime);
+  activeAudioSession = { oscillator, gain };
+  return true;
 };
 
 export const playVisualizationChime = async (
@@ -61,7 +96,11 @@ export const playVisualizationChime = async (
 ): Promise<boolean> => {
   const context = getAudioContext();
   if (!context) return false;
-  if (context.state === "suspended") await context.resume();
+  try {
+    if (context.state === "suspended") await context.resume();
+  } catch {
+    return false;
+  }
   if (context.state !== "running") return false;
 
   const definition = CHIMES[style];

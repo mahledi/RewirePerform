@@ -27,6 +27,30 @@ export interface ProgramModeInfo {
   setupReason: SetupReason;
 }
 
+const PROGRAM_MODE_CACHE_TTL_MS = 5 * 60 * 1000;
+const programModeCache = new Map<string, { cachedAt: number; value: ProgramModeInfo }>();
+
+export const getCachedProgramModeInfo = (userId?: string | null): ProgramModeInfo | null => {
+  if (!userId) return null;
+  const cached = programModeCache.get(userId);
+  if (!cached) return null;
+  if (Date.now() - cached.cachedAt > PROGRAM_MODE_CACHE_TTL_MS) {
+    programModeCache.delete(userId);
+    return null;
+  }
+  return cached.value;
+};
+
+const rememberProgramModeInfo = (userId: string, value: ProgramModeInfo): ProgramModeInfo => {
+  programModeCache.set(userId, { cachedAt: Date.now(), value });
+  return value;
+};
+
+export const clearCachedProgramModeInfo = (userId?: string | null) => {
+  if (userId) programModeCache.delete(userId);
+  else programModeCache.clear();
+};
+
 export const getProgramModeInfo = async (
   userId: string,
   signal?: AbortSignal,
@@ -76,7 +100,7 @@ export const getProgramModeInfo = async (
     const teamId = activeRun?.team_id ?? legacyTeam?.id ?? memberships?.[0]?.team_id;
     const teamStartDate = activeRun?.started_at ?? legacyTeam?.program_start_date ?? null;
 
-    return {
+    return rememberProgramModeInfo(userId, {
       mode: "team",
       teamId,
       teamStartDate,
@@ -84,7 +108,7 @@ export const getProgramModeInfo = async (
       effectiveStartDate: teamStartDate,
       setupRequired: !teamStartDate,
       setupReason: teamStartDate ? null : "coach_missing_team_start",
-    };
+    });
   }
 
   // Solo-Mode
@@ -98,12 +122,12 @@ export const getProgramModeInfo = async (
 
   if (settingsError) throw settingsError;
   const soloStartDate = settings?.program_start ?? null;
-  return {
+  return rememberProgramModeInfo(userId, {
     mode: "solo",
     teamStartDate: null,
     soloStartDate,
     effectiveStartDate: soloStartDate,
     setupRequired: !soloStartDate,
     setupReason: soloStartDate ? null : "solo_missing_setup",
-  };
+  });
 };

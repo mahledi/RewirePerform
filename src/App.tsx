@@ -17,6 +17,7 @@ import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
 import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardingGate";
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
+import AppScrollReset from "./components/app/AppScrollReset";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -226,6 +227,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <BrowserRouter>
+        <AppScrollReset />
         <AppRoutes />
       </BrowserRouter>
     </ErrorBoundary>

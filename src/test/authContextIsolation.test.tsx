@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Session } from "@supabase/supabase-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   contextQueries: new Map<string, Promise<QueryResult>>(),
   from: vi.fn(),
   signOut: vi.fn(),
+  getSession: vi.fn(),
   unsubscribe: vi.fn(),
 }));
 
@@ -21,6 +22,7 @@ vi.mock("@/integrations/supabase/client", () => ({
         return { data: { subscription: { unsubscribe: mocks.unsubscribe } } };
       }),
       signOut: mocks.signOut,
+      getSession: mocks.getSession,
     },
     from: mocks.from,
   },
@@ -37,11 +39,14 @@ const deferred = <T,>() => {
 const sessionFor = (userId: string) => ({ user: { id: userId } }) as Session;
 
 const Probe = () => {
-  const { user, role, isTestUser, loading } = useAuth();
+  const { user, role, isTestUser, loading, signOut } = useAuth();
   return (
-    <output data-testid="auth-state">
-      {`${user?.id ?? "none"}|${role ?? "none"}|${isTestUser ? "test" : "real"}|${loading ? "loading" : "ready"}`}
-    </output>
+    <>
+      <output data-testid="auth-state">
+        {`${user?.id ?? "none"}|${role ?? "none"}|${isTestUser ? "test" : "real"}|${loading ? "loading" : "ready"}`}
+      </output>
+      <button type="button" onClick={() => void signOut()}>Abmelden</button>
+    </>
   );
 };
 
@@ -58,6 +63,7 @@ describe("AuthProvider session isolation", () => {
     mocks.authCallback = null;
     mocks.contextQueries.clear();
     mocks.signOut.mockResolvedValue({ error: null });
+    mocks.getSession.mockResolvedValue({ data: { session: null }, error: null });
     mocks.from.mockImplementation((table: string) => {
       let userId = "";
       const queryBuilder = {
@@ -129,6 +135,30 @@ describe("AuthProvider session isolation", () => {
     });
 
     await waitFor(() => expect(screen.getByTestId("auth-state")).toHaveTextContent("none|none|real|ready"));
+  });
+
+  it("hides the previous account role while sign-out is still completing", async () => {
+    const role = Promise.resolve<QueryResult>({ data: { role: "admin" }, error: null });
+    const profile = Promise.resolve<QueryResult>({ data: { is_test_user: false }, error: null });
+    const signOut = deferred<{ error: null }>();
+    mocks.contextQueries.set("user_roles:user-a", role);
+    mocks.contextQueries.set("profiles:user-a", profile);
+    mocks.signOut.mockReturnValue(signOut.promise);
+
+    render(<AuthProvider><Probe /></AuthProvider>);
+    emitAuth("SIGNED_IN", sessionFor("user-a"));
+    await waitFor(() => expect(screen.getByTestId("auth-state"))
+      .toHaveTextContent("user-a|admin|real|ready"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Abmelden" }));
+    expect(screen.getByTestId("auth-state")).toHaveTextContent("user-a|none|real|loading");
+
+    await act(async () => {
+      signOut.resolve({ error: null });
+      await signOut.promise;
+    });
+    await waitFor(() => expect(screen.getByTestId("auth-state"))
+      .toHaveTextContent("none|none|real|ready"));
   });
 
   it("keeps role verification usable when WKWebView storage throws SecurityError", async () => {

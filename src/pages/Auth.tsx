@@ -55,7 +55,7 @@ const Auth = () => {
   const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
   const isOrganizationInvite = urlIntent === "organization"
     && Boolean(safeRedirect?.startsWith("/organization/invite"));
-  const { user, role, roleVerified, loading: authLoading, verifyRole } = useAuth();
+  const { user, role, roleVerified, loading: authLoading, verifyRole, signOut } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
   const [teamJoinStatus, setTeamJoinStatus] = useState<TeamJoinStatus>("idle");
   const [retryingRole, setRetryingRole] = useState(false);
@@ -63,16 +63,10 @@ const Auth = () => {
   useEffect(() => {
     if (!forceSwitch) return;
     // Sign out any existing session so the login form is shown
-    supabase.auth.signOut().finally(() => {
-      try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
-      try {
-        const cachedUserId = window.localStorage.getItem("cached_user_id");
-        if (cachedUserId) window.localStorage.removeItem(`cached_user_role:${cachedUserId}`);
-        window.localStorage.removeItem("cached_user_id");
-      } catch { /* noop */ }
+    signOut().finally(() => {
       setSwitching(false);
     });
-  }, [forceSwitch]);
+  }, [forceSwitch, signOut]);
 
   const initialMode: Mode = authLinkError
     ? "link-error"
