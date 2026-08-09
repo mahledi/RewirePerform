@@ -1,0 +1,64 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-synthetic-cycle-summary-v1",
+  "contract_status": "COMPLETE_POSTREAD_ASSURED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "producer_gate_basis_commit": "1e6270233f8f5017dd825e3ff6293469035522c7",
+  "consumer_operator_commit": "21108bc928210599504673846ff41aa83dc990b0",
+  "consumer_operator_source_commit": "02765bd1b479b50634f30048af850a63089aa702",
+  "consumer_manifest_sha256": "9a408bd550548894197a8cd178a84e9d6711498f370630e052fffb6981eaa9a4",
+  "consumer_package_sha256": "7ef67990e7b8148ffc3a30b2ddfbe403426ad40edb54a61ca1ccc2f4f689f4cc",
+  "predecessor_cycle": {
+    "status": "PRE_NETWORK_ABORTED_ASSURED",
+    "error_code": "MACHINE_KEY_UNAVAILABLE_OR_INVALID",
+    "requests_consumed": 0,
+    "network_request_count": 0,
+    "replay_headers_created": false,
+    "retry_performed": false
+  },
+  "successful_cycle": {
+    "request_id": "6b20e372-4318-4939-b3f9-0e06b472e4a3",
+    "network_request_count": 1,
+    "http_status": 200,
+    "validated_item_count": 825,
+    "question_count": 55,
+    "consumer_evidence_sha256": "f47a4b85712d6a4e365b5e872b8cdade3960c8c4722e6d14e41e003b4eecefe7",
+    "data_scope": "synthetic",
+    "language": "de"
+  },
+  "privacy": {
+    "raw_response_persisted": false,
+    "raw_text_persisted": false,
+    "subject_reference_persisted": false,
+    "secret_values_included": false,
+    "production": false,
+    "real_data_read": false
+  },
+  "cleanup": {
+    "edge_secret_count_after_cleanup": 0,
+    "reader_password_state": "NULL",
+    "consumer_pin_ready": false,
+    "synthetic_export_enabled": false,
+    "machine_credential_ready": false,
+    "production_export_enabled": false,
+    "synthetic_fixture_users": 0,
+    "synthetic_fixture_rows": 0,
+    "local_keychain_item_removed": true,
+    "local_keychain_absence_verified": true,
+    "postread_assurance": "PASS_POSTREAD_ASSURANCE"
+  },
+  "runtime_evidence": {
+    "v0_2_sha256": "cbdada88c0d0106d53223b55158488003b2b3cffa7e8d57a5e3ee36dae0e7458",
+    "v0_2_state": "ARMED_FOR_ONE_SYNTHETIC_READ",
+    "v0_2_requests_consumed": 0,
+    "v0_3_sha256": "aa6736188bdc70b1ce09cbb480627bf1574b78db5deda520041e0b130423697b",
+    "v0_3_state": "COMPLETE_POSTREAD_ASSURED",
+    "v0_3_requests_consumed": 1
+  },
+  "activation": {
+    "staging_synthetic_cycle_complete": true,
+    "production": false,
+    "real_data": false,
+    "push": false,
+    "merge": false
+  }
+}
