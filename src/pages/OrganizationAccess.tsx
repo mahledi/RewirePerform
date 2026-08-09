@@ -115,6 +115,7 @@ declare global {
       render: (element: HTMLElement, options: {
         sitekey: string;
         theme: "dark";
+        action: "organization_access_request";
         callback: (token: string) => void;
         "expired-callback": () => void;
         "error-callback": () => void;
@@ -138,6 +139,7 @@ const TurnstileVerification = ({ onToken }: { onToken: (token: string) => void }
       widgetId = window.turnstile.render(elementRef.current, {
         sitekey: siteKey,
         theme: "dark",
+        action: "organization_access_request",
         callback: onToken,
         "expired-callback": () => onToken(""),
         "error-callback": () => onToken(""),

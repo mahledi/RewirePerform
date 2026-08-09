@@ -6,6 +6,10 @@ const source = readFileSync(
   resolve(process.cwd(), "supabase/functions/submit-organization-access-request/index.ts"),
   "utf8",
 );
+const clientSource = readFileSync(
+  resolve(process.cwd(), "src/pages/OrganizationAccess.tsx"),
+  "utf8",
+);
 
 describe("organization inquiry edge boundary", () => {
   it("is disabled until explicitly configured and accepts only known origins", () => {
@@ -24,7 +28,11 @@ describe("organization inquiry edge boundary", () => {
   });
 
   it("fails closed behind Turnstile and a honeypot", () => {
-    expect(source).toContain("verifyTurnstile(turnstileToken, remoteIp)");
+    expect(source).toContain("verifyTurnstile(turnstileToken, remoteIp, expectedTurnstileHostname)");
+    expect(source).toContain("result.hostname === expectedHostname");
+    expect(source).toContain("result.action === TURNSTILE_ACTION");
+    expect(source).toContain('origin === "capacitor://localhost"');
+    expect(clientSource).toContain('action: "organization_access_request"');
     expect(source).toContain("parsed.website_field");
     expect(source).toContain('error: "verification_failed"');
     expect(source).toContain('throw new Error("service_not_configured")');

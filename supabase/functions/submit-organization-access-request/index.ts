@@ -2,6 +2,7 @@ import { readBoundedRequestText, RequestBodyTooLargeError } from "../_shared/bou
 import { serviceClient } from "../_shared/supabaseService.ts";
 
 const MAXIMUM_BODY_BYTES = 24_000;
+const TURNSTILE_ACTION = "organization_access_request";
 const ALLOWED_KEYS = new Set([
   "contact_name", "work_email", "phone", "job_title", "preferred_contact",
   "organization_name", "organization_type", "country_code", "website", "sports",
@@ -86,7 +87,11 @@ const enumText = (body: JsonRecord, key: string, allowed: Set<string>) => {
   return value;
 };
 
-const verifyTurnstile = async (token: string, remoteIp: string | null) => {
+const verifyTurnstile = async (
+  token: string,
+  remoteIp: string | null,
+  expectedHostname: string,
+) => {
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY")?.trim();
   if (!secret) throw new Error("service_not_configured");
   const form = new FormData();
@@ -99,8 +104,14 @@ const verifyTurnstile = async (token: string, remoteIp: string | null) => {
     signal: AbortSignal.timeout(8_000),
   });
   if (!response.ok) return false;
-  const result = await response.json() as { success?: unknown };
-  return result.success === true;
+  const result = await response.json() as {
+    success?: unknown;
+    hostname?: unknown;
+    action?: unknown;
+  };
+  return result.success === true
+    && result.hostname === expectedHostname
+    && result.action === TURNSTILE_ACTION;
 };
 
 Deno.serve(async (request) => {
@@ -139,7 +150,10 @@ Deno.serve(async (request) => {
 
     const turnstileToken = text(parsed, "turnstile_token", 10, 2048);
     const remoteIp = request.headers.get("CF-Connecting-IP");
-    if (!await verifyTurnstile(turnstileToken, remoteIp)) {
+    const expectedTurnstileHostname = origin === "capacitor://localhost"
+      ? "localhost"
+      : new URL(origin).hostname;
+    if (!await verifyTurnstile(turnstileToken, remoteIp, expectedTurnstileHostname)) {
       return jsonResponse(400, { error: "verification_failed" }, origin);
     }
 
