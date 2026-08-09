@@ -1,14 +1,24 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import OrganizationAccess from "@/pages/OrganizationAccess";
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { functions: { invoke: vi.fn() } },
 }));
 
+const scrollIntoViewMock = vi.fn();
+
 describe("organization access inquiry", () => {
-  it("guides any sports organization through a focused, budget-free review journey", () => {
+  beforeEach(() => {
+    scrollIntoViewMock.mockReset();
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoViewMock,
+    });
+  });
+
+  it("guides any sports organization through a focused, budget-free review journey", async () => {
     render(<MemoryRouter><OrganizationAccess /></MemoryRouter>);
 
     expect(screen.getByRole("heading", { name: "Mentales Training wird Teil eures Systems." })).toBeInTheDocument();
@@ -27,7 +37,10 @@ describe("organization access inquiry", () => {
     expect(next).toBeEnabled();
     fireEvent.click(next);
 
-    expect(screen.getByRole("heading", { name: "Welcher Start passt zu euch?" })).toBeInTheDocument();
+    const secondStepHeading = screen.getByRole("heading", { name: "Welcher Start passt zu euch?" });
+    expect(secondStepHeading).toBeInTheDocument();
+    await waitFor(() => expect(secondStepHeading).toHaveFocus());
+    expect(scrollIntoViewMock).toHaveBeenLastCalledWith({ behavior: "auto", block: "start" });
     expect(screen.getByText(/keine Namen oder persönlichen Daten von Athleten/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /mentale routinen im alltag verankern/i }));
     fireEvent.click(screen.getByRole("button", { name: "Persönliche Einführung" }));

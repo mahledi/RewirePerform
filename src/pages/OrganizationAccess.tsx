@@ -3,15 +3,10 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
-  Building2,
   Check,
   ChevronLeft,
   Loader2,
   ShieldCheck,
-  Sparkles,
-  Target,
-  Route,
-  Users,
 } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
@@ -207,9 +202,24 @@ const OrganizationAccess = () => {
   const [error, setError] = useState<string | null>(null);
   const [referenceCode, setReferenceCode] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+  const previousStepRef = useRef(step);
 
   const source = window.location.protocol === "capacitor:" ? "ios" : "web";
   const publicSubmissionEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
+
+  useEffect(() => {
+    if (previousStepRef.current === step) return;
+    previousStepRef.current = step;
+
+    const frame = window.requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView?.({ behavior: "auto", block: "start" });
+      stepHeadingRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [step]);
 
   const canContinue = useMemo(() => {
     if (step === 0) {
@@ -330,8 +340,8 @@ const OrganizationAccess = () => {
       <div className="relative mx-auto grid w-full max-w-6xl min-w-0 gap-8 overflow-hidden px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:gap-12 lg:py-16">
         <div className="pointer-events-none absolute -left-36 top-12 h-80 w-80 rounded-full bg-primary/[0.08] blur-3xl" />
         <aside className="min-w-0 lg:sticky lg:top-8 lg:self-start">
-          <div className="relative inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-            <Sparkles className="h-3.5 w-3.5" /> Organization Access
+          <div className="relative inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+            Organization Access
           </div>
           <h1 className="relative mt-6 font-heading text-4xl font-bold leading-[1.04] sm:text-5xl lg:text-[3.5rem]">
             Mentales Training wird Teil eures Systems.
@@ -341,25 +351,24 @@ const OrganizationAccess = () => {
           </p>
           <div className="relative mt-9 overflow-hidden rounded-2xl border border-border/70 bg-card/70 backdrop-blur-sm">
             {[
-              ["01", Target, "Einordnen", "Wir verstehen Struktur, Ziel und geplanten Umfang."],
-              ["02", Route, "Vorbereiten", "Wir klären den sinnvollsten Start und offene Fragen."],
-              ["03", ShieldCheck, "Freigeben", "Rollen und Datenräume werden bewusst eingerichtet."],
-            ].map(([number, Icon, title, text], index) => (
+              ["01", "Einordnen", "Wir verstehen Struktur, Ziel und geplanten Umfang."],
+              ["02", "Vorbereiten", "Wir klären den sinnvollsten Start und offene Fragen."],
+              ["03", "Freigeben", "Rollen und Datenräume werden bewusst eingerichtet."],
+            ].map(([number, title, text], index) => (
               <div key={String(number)} className={`flex gap-4 p-4 ${index < 2 ? "border-b border-border/60" : ""}`}>
-                <span className="pt-0.5 font-mono text-[11px] font-semibold text-primary">{number as string}</span>
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="h-4 w-4" /></span>
-                <div><p className="text-sm font-semibold text-foreground">{title as string}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{text as string}</p></div>
+                <span className="pt-0.5 font-mono text-[11px] font-semibold text-primary">{number}</span>
+                <div><p className="text-sm font-semibold text-foreground">{title}</p><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{text}</p></div>
               </div>
             ))}
           </div>
           <p className="relative mt-5 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Jede Freigabe wird persönlich geprüft. Keine automatische Team-Erstellung, keine pauschale Preisentscheidung.</p>
         </aside>
 
-        <form onSubmit={submit} className="relative w-full min-w-0 max-w-full rounded-[2rem] border border-border/70 bg-card/95 p-5 shadow-2xl shadow-black/15 backdrop-blur-sm sm:p-8">
+        <form ref={formRef} onSubmit={submit} className="relative w-full min-w-0 max-w-full scroll-mt-24 rounded-[2rem] border border-border/70 bg-card/95 p-5 shadow-2xl shadow-black/15 backdrop-blur-sm sm:p-8">
           <div className="mb-7 flex min-w-0 items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Schritt {step + 1} von 3</p>
-              <h2 className="mt-2 font-heading text-2xl font-semibold sm:text-3xl">
+              <h2 ref={stepHeadingRef} tabIndex={-1} className="mt-2 font-heading text-2xl font-semibold outline-none sm:text-3xl">
                 {step === 0 ? "Wir möchten euch verstehen." : step === 1 ? "Welcher Start passt zu euch?" : "Bereit für den nächsten Schritt."}
               </h2>
             </div>
