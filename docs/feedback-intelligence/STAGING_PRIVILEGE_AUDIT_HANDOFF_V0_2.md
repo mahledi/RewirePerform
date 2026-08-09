@@ -2,8 +2,9 @@
 
 Status: `LOCAL_UNSIGNED_METADATA_ONLY_AWAITING_CONSUMER_REVIEW`
 
-This package supersedes v0.1 for every deployment or read after Producer commit
-`cbecd9066a1004ddb284ddcad3ae443d73b85451`. Historical v0.1 remote results
+This package supersedes v0.1 for every deployment or read after remediation
+commit `cbecd9066a1004ddb284ddcad3ae443d73b85451`; its audited implementation
+source is `970f581fb855ecff432283f099de6b85a95fc564`. Historical v0.1 remote results
 remain immutable evidence of their earlier database state, but cannot satisfy
 the current gate.
 

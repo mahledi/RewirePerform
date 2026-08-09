@@ -34,7 +34,7 @@ const manifest = {
   contract_status: "LOCAL_UNSIGNED_METADATA_ONLY_AWAITING_CONSUMER_REVIEW",
   generated_at: "2026-08-09T10:30:00+02:00",
   producer_branch: "codex/feedback-intelligence-v1-1-20260805",
-  producer_source_commit: "cbecd9066a1004ddb284ddcad3ae443d73b85451",
+  producer_source_commit: "970f581fb855ecff432283f099de6b85a95fc564",
   target_project_ref: "zbeswjipayspgvcipzmx",
   package_signed: false,
   package_sha256: sha256(digestInput.join("")),
@@ -50,7 +50,7 @@ const manifest = {
     },
   },
   upstream_gateway_pins: {
-    producer_commit: "cbecd9066a1004ddb284ddcad3ae443d73b85451",
+    producer_commit: "970f581fb855ecff432283f099de6b85a95fc564",
     manifest_sha256: "97b4caf3109650be74963587c1340ddd699e0aa80b6acf587da79cfdf0ed001d",
     package_sha256: "15c85f345592c7df3b0c700134ff5ab2c6b7b86b3ea64e4a7088168a488dbbbb",
     consumer_branch: "agent/feedback-intelligence-machine-gateway-v0-1-20260807",

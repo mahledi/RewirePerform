@@ -16,12 +16,12 @@ const releasePair = {
   release_status: "UNSIGNED_AWAITING_CURRENT_CONSUMER_ACCEPTANCE",
   target_project_ref: "zbeswjipayspgvcipzmx",
   producer: {
-    source_commit: "cbecd9066a1004ddb284ddcad3ae443d73b85451",
+    source_commit: "970f581fb855ecff432283f099de6b85a95fc564",
     gateway_manifest_sha256: "97b4caf3109650be74963587c1340ddd699e0aa80b6acf587da79cfdf0ed001d",
     gateway_package_sha256: "15c85f345592c7df3b0c700134ff5ab2c6b7b86b3ea64e4a7088168a488dbbbb",
     audit_contract_version: "0.2.0-draft",
-    audit_manifest_sha256: "f65b0456edb901b17da5e56b7c7f82244450016e67b91b50974f75c573557b0e",
-    audit_package_sha256: "9fe6919092f8d56ea76396418721a401cc03d8961ade99cd7be055c602741ec0",
+    audit_manifest_sha256: "8b2a98c143780056046a2d98d83b25786e58c31f800ffb726d20ff12528690b5",
+    audit_package_sha256: "06e86e836f8100a3e377a26d137881831aeaa456ecf1a8eaf13530a11863e4cf",
     audit_sql_sha256: "7f7865f769f46bfab204c37d071ee743636fe183f6d6876a24557e51dc508bd3",
     data_path_definition_sha256: {
       gateway: "0d617fcb5e5a7ece31ca94b7ff0cf07026712b0d9ed4206c95bee9f4b198a8af",

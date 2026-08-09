@@ -137,7 +137,7 @@ describe("Feedback Intelligence Staging privilege audit v0.2", () => {
     expect(pair).toMatchObject({
       release_status: "UNSIGNED_AWAITING_CURRENT_CONSUMER_ACCEPTANCE",
       producer: {
-        source_commit: "cbecd9066a1004ddb284ddcad3ae443d73b85451",
+        source_commit: "970f581fb855ecff432283f099de6b85a95fc564",
         gateway_package_sha256: "15c85f345592c7df3b0c700134ff5ab2c6b7b86b3ea64e4a7088168a488dbbbb",
       },
       consumer: {

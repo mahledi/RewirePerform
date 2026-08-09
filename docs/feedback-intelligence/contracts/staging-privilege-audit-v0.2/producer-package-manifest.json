@@ -4,10 +4,10 @@
   "contract_status": "LOCAL_UNSIGNED_METADATA_ONLY_AWAITING_CONSUMER_REVIEW",
   "generated_at": "2026-08-09T10:30:00+02:00",
   "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
-  "producer_source_commit": "cbecd9066a1004ddb284ddcad3ae443d73b85451",
+  "producer_source_commit": "970f581fb855ecff432283f099de6b85a95fc564",
   "target_project_ref": "zbeswjipayspgvcipzmx",
   "package_signed": false,
-  "package_sha256": "9fe6919092f8d56ea76396418721a401cc03d8961ade99cd7be055c602741ec0",
+  "package_sha256": "06e86e836f8100a3e377a26d137881831aeaa456ecf1a8eaf13530a11863e4cf",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/audit.sql",
@@ -31,11 +31,11 @@
     },
     {
       "path": "src/test/feedbackIntelligenceStagingPrivilegeAuditV02.test.ts",
-      "sha256": "0c2b86f0b2117a545a54d31890c2f6fc43815a1614de0fd555f676e869625b14"
+      "sha256": "8b21d1dc06461177144be324b6b2a95f137a49298ff17a23693cb27bca39cb22"
     },
     {
       "path": "docs/feedback-intelligence/STAGING_PRIVILEGE_AUDIT_HANDOFF_V0_2.md",
-      "sha256": "aca55ac114dfd3af99dea0a4c6679f231a0116529061aef985314feb28172f86"
+      "sha256": "65ca90e46cd95d6ae95a26306ae9f586c4516376731a42b4206a244310d405f6"
     }
   ],
   "executed_data_path_pins": {
@@ -49,7 +49,7 @@
     }
   },
   "upstream_gateway_pins": {
-    "producer_commit": "cbecd9066a1004ddb284ddcad3ae443d73b85451",
+    "producer_commit": "970f581fb855ecff432283f099de6b85a95fc564",
     "manifest_sha256": "97b4caf3109650be74963587c1340ddd699e0aa80b6acf587da79cfdf0ed001d",
     "package_sha256": "15c85f345592c7df3b0c700134ff5ab2c6b7b86b3ea64e4a7088168a488dbbbb",
     "consumer_branch": "agent/feedback-intelligence-machine-gateway-v0-1-20260807",
