@@ -24,6 +24,9 @@ const migration = () => readRepoFile(
 const privilegeRemediation = () => readRepoFile(
   "supabase/migrations/20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
 );
+const declinedConsentExportRemediation = () => readRepoFile(
+  "supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql",
+);
 const syntheticGateOpen = () => readRepoFile(
   "supabase/migrations/20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql",
 );
@@ -214,6 +217,19 @@ describe("Feedback Intelligence machine gateway draft", () => {
       expect(sql).toContain("FROM PUBLIC, mahleos_feedback_reader");
     }
     expect(sql).toContain("ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public");
+    expect(sql).not.toMatch(/GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE|EXECUTE)/u);
+  });
+
+  it("keeps declined-consent structured answers while minimizing receipt metadata", () => {
+    const sql = declinedConsentExportRemediation();
+
+    expect(sql).toContain("row.receipt_state IN ('granted', 'withdrawn')");
+    expect(sql).toContain("'consent_reference', CASE");
+    expect(sql).toContain("'comment', CASE");
+    expect(sql).toContain("WHEN row.consent_valid AND row.position = 1 THEN row.raw_text");
+    expect(sql).toContain(
+      "REVOKE ALL ON FUNCTION feedback_analysis.export_feedback_intelligence_v0_2_internal",
+    );
     expect(sql).not.toMatch(/GRANT\s+(?:SELECT|INSERT|UPDATE|DELETE|EXECUTE)/u);
   });
 

@@ -9,7 +9,7 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "ed611dc74bc3766abe7b6f4801195618387e2891965bf1a1dd15991ddbb50326",
+  "package_sha256": "f9ab2b1a6d6c04810997caaae2833503d35b79939a335caefef31045d4147629",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
@@ -34,6 +34,10 @@
     {
       "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
       "sha256": "9b570f125ebf43d39ed413e7d88d01fb1dee47b1f5c81e780ed0dba48819e3bd"
+    },
+    {
+      "path": "supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql",
+      "sha256": "b82bdda5a60133e8ada310bfacdfbf50475f4a56d65668b41a3dcd96071ed2e6"
     },
     {
       "path": "supabase/functions/_shared/boundedRequestBody.ts",
@@ -65,11 +69,11 @@
     },
     {
       "path": "src/test/feedbackIntelligenceMachineGateway.test.ts",
-      "sha256": "7e6a8be24ab45a9ccc7042fb82fa1b8e0dd81b045b79202d4262f59cbcf2f242"
+      "sha256": "5b9bc8e8880f77822e13eb1d06881317c7ce4117a270cf8980ebd1be20f130ad"
     },
     {
       "path": "scripts/verify-feedback-intelligence-sql.mjs",
-      "sha256": "f1113cc15974dbc85a00d989d94a5964a03d9e8a33e7193fa54b5e5a1bfecd4f"
+      "sha256": "309ef889fec7fc58f6f1f418e0d075a7c150ec526810d6b9c38bd08731fccd6c"
     },
     {
       "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",

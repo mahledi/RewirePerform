@@ -2,9 +2,9 @@
   "schema_version": "rewireperform-feedback-intelligence-provisioning-evidence-v1-proposed",
   "contract_status": "SANITIZED_STAGING_PROVISIONING_READY",
   "project_ref": "zbeswjipayspgvcipzmx",
-  "generated_at": "2026-08-08T08:19:03Z",
+  "generated_at": "2026-08-09T09:17:56Z",
   "producer_commit": "1c348537cc719b97a55442d4ea2b593f487770e4",
-  "consumer_operator_commit": "01e2218eebf5254eaedc96769fdf8bf5a980685b",
+  "consumer_operator_commit": "ec197d6bcfb32e02596024f61d0fa2e0011fb871",
   "edge_deployment_id": "4579d2b9-16c9-4387-be84-d5a5b440265e",
   "secret_values_included": false,
   "runtime_configuration": {
@@ -28,7 +28,7 @@
   },
   "pre_read_audit": {
     "status": "PASS_POSTPROVISION_ASSURANCE",
-    "result_sha256": "ab5e007bdde9aa14a9da7cd24d84c17edf963cbfcfa7bab41da276184554a45f",
+    "result_sha256": "75a8a2dd888d2549191f2a7c266d474b5735cd8b339e24cbc5532d80d76ef655",
     "application_rows_read": false,
     "application_functions_called": false,
     "database_mutated": false

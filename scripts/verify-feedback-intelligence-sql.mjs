@@ -53,6 +53,10 @@ const machineGatewayMigration = readFileSync(
   resolve("supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql"),
   "utf8",
 );
+const declinedConsentExportRemediationMigration = readFileSync(
+  resolve("supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql"),
+  "utf8",
+);
 const machineExportSchema = JSON.parse(readFileSync(
   resolve("docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json"),
   "utf8",
@@ -1168,6 +1172,7 @@ try {
   // The additive gateway migration is intentionally applied only after the
   // base-package tests proved the original no-runtime-actor state.
   await db.exec(machineGatewayMigration);
+  await db.exec(declinedConsentExportRemediationMigration);
 
   const gatewayPrivileges = await db.query(`
     SELECT
@@ -1497,6 +1502,17 @@ try {
   assert(
     longitudinalPayload.items.filter((item) => item.comment !== null).length === 20,
     "the longitudinal fixture must export exactly 20 consent-valid synthetic comments",
+  );
+  const declinedConsentItems = longitudinalPayload.items.filter(
+    (item) => item.consent.state === "NOT_GRANTED" && item.consent.granted_at === null,
+  );
+  assert(
+    declinedConsentItems.length > 0
+      && declinedConsentItems.every((item) => item.comment === null
+        && item.consent.consent_reference === null
+        && item.consent.withdrawn_at === null
+        && item.consent.valid_at_export === false),
+    "declined consent must preserve structured answers without exporting a receipt reference or comment",
   );
   assert(
     JSON.stringify([...new Set(longitudinalPayload.items.map((item) => item.program_day))])
