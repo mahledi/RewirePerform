@@ -75,7 +75,9 @@ describe("founder organization request manager", () => {
     await screen.findByRole("heading", { name: "Sportverein Beispiel" });
 
     fireEvent.click(screen.getByRole("button", { name: "Persönlich freigeben" }));
-    expect(screen.getByRole("heading", { name: /verbindlich vorbereiten/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /verbindlich vorbereiten/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/keine e-mail versendet und keine zahlung ausgelöst/i)).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
 
