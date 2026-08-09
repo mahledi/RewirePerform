@@ -1174,6 +1174,35 @@ try {
   await db.exec(machineGatewayMigration);
   await db.exec(declinedConsentExportRemediationMigration);
 
+  const dataPathDefinitions = await db.query(`
+    SELECT
+      namespace.nspname AS schema_name,
+      procedure.proname AS function_name,
+      pg_catalog.pg_get_functiondef(procedure.oid) AS definition
+    FROM pg_catalog.pg_proc procedure
+    INNER JOIN pg_catalog.pg_namespace namespace
+      ON namespace.oid = procedure.pronamespace
+    WHERE procedure.oid IN (
+      'public.read_feedback_intelligence_v0_2_draft(text,text,text,text)'::regprocedure,
+      'feedback_analysis.export_feedback_intelligence_v0_2_internal(text,text,text,text)'::regprocedure
+    )
+    ORDER BY namespace.nspname, procedure.proname
+  `);
+  const dataPathDefinitionHashes = Object.fromEntries(dataPathDefinitions.rows.map((row) => [
+    `${row.schema_name}.${row.function_name}`,
+    createHash("sha256").update(row.definition, "utf8").digest("hex"),
+  ]));
+  assert(
+    dataPathDefinitionHashes["public.read_feedback_intelligence_v0_2_draft"]
+      === "0d617fcb5e5a7ece31ca94b7ff0cf07026712b0d9ed4206c95bee9f4b198a8af",
+    "the executed public gateway definition must remain byte-pinned",
+  );
+  assert(
+    dataPathDefinitionHashes["feedback_analysis.export_feedback_intelligence_v0_2_internal"]
+      === "89420ddf3f79ad57538f4fb1ad56458717874490ddbc88b52d577e081d3e872f",
+    "the executed internal export definition must remain byte-pinned",
+  );
+
   const gatewayPrivileges = await db.query(`
     SELECT
       has_function_privilege(
@@ -1475,6 +1504,16 @@ try {
     SET status = 'draft', available_from = NULL
   `);
   await db.exec(longitudinalFixture);
+  await db.exec(`
+    UPDATE feedback_consent.text_consent_receipts receipt
+    SET state = 'withdrawn', withdrawn_at = clock_timestamp()
+    FROM feedback_core.submissions submission
+    WHERE submission.id = receipt.submission_id
+      AND submission.user_id = '88080800-0000-4000-8000-000000000003'::uuid
+      AND submission.program_day = 55
+      AND receipt.state = 'granted'
+      AND receipt.granted_at IS NOT NULL
+  `);
   await db.query(
     "SELECT set_config('request.mahleos_feedback_request_id', '78000000-0000-4000-8000-000000000001', false)",
   );
@@ -1513,6 +1552,30 @@ try {
         && item.consent.withdrawn_at === null
         && item.consent.valid_at_export === false),
     "declined consent must preserve structured answers without exporting a receipt reference or comment",
+  );
+  const withdrawnConsentItems = longitudinalPayload.items.filter(
+    (item) => item.consent.state === "NOT_GRANTED"
+      && item.consent.granted_at !== null
+      && item.consent.withdrawn_at !== null,
+  );
+  assert(
+    withdrawnConsentItems.length > 0
+      && withdrawnConsentItems.every((item) => item.comment === null
+        && item.consent.consent_reference !== null
+        && item.consent.valid_at_export === false),
+    "withdrawn consent must preserve auditable receipt timestamps while suppressing every comment",
+  );
+  const grantedConsentItems = longitudinalPayload.items.filter(
+    (item) => item.consent.state === "GRANTED",
+  );
+  assert(
+    grantedConsentItems.length > 0
+      && grantedConsentItems.every((item) => item.consent.consent_reference !== null
+        && item.consent.granted_at !== null
+        && item.consent.withdrawn_at === null
+        && item.consent.valid_at_export === true)
+      && grantedConsentItems.some((item) => item.comment !== null),
+    "granted consent must keep the auditable reference and expose only consent-valid comments",
   );
   assert(
     JSON.stringify([...new Set(longitudinalPayload.items.map((item) => item.program_day))])
