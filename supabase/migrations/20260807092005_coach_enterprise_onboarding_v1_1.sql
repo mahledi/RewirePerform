@@ -246,19 +246,11 @@ SET search_path = pg_catalog
 AS $$
   SELECT app_private.is_admin(_user_id) OR EXISTS (
     SELECT 1
-    FROM public.teams t
-    WHERE t.id = _team_id
-      AND (
-        t.created_by = _user_id
-        OR EXISTS (
-          SELECT 1
-          FROM public.team_staff_memberships tsm
-          WHERE tsm.team_id = t.id
-            AND tsm.user_id = _user_id
-            AND tsm.role = 'lead_coach'
-            AND tsm.status = 'active'
-        )
-      )
+    FROM public.team_staff_memberships tsm
+    WHERE tsm.team_id = _team_id
+      AND tsm.user_id = _user_id
+      AND tsm.role = 'lead_coach'
+      AND tsm.status = 'active'
   );
 $$;
 
@@ -288,12 +280,17 @@ CREATE POLICY "Team staff read staff memberships"
 -- members. The explicit staff table adds role truth; team_members remains the
 -- compatibility bridge for the current Coach Console and aggregate RPCs.
 DROP POLICY IF EXISTS "Coaches can view team members" ON public.team_members;
+DROP POLICY IF EXISTS "Coaches can remove members" ON public.team_members;
+DROP POLICY IF EXISTS "Approved team creator can join own team" ON public.team_members;
 CREATE POLICY "Team staff can view team members"
   ON public.team_members FOR SELECT TO authenticated
   USING (
     user_id = (select auth.uid())
     OR app_private.has_team_staff_access(team_id, (select auth.uid()))
   );
+CREATE POLICY "Lead coach removes team members"
+  ON public.team_members FOR DELETE TO authenticated
+  USING (app_private.can_administer_team(team_id, (select auth.uid())));
 
 CREATE OR REPLACE FUNCTION public.is_coach_of_user(_user_id uuid)
 RETURNS boolean
@@ -318,6 +315,7 @@ GRANT EXECUTE ON FUNCTION public.is_coach_of_user(uuid) TO authenticated;
 
 -- Deliberately do not add team-staff policies to assessments, daily_checkins,
 -- profiles or journals. Coaches consume purpose-limited aggregate RPCs only.
+DROP POLICY IF EXISTS "Approved coaches and admins can update teams" ON public.teams;
 CREATE POLICY "Lead coach updates assigned team"
   ON public.teams FOR UPDATE TO authenticated
   USING (app_private.can_administer_team(id, (select auth.uid())))
@@ -692,7 +690,6 @@ BEGIN
   END IF;
   IF NOT (
     app_private.is_admin(actor_id)
-    OR target_team.created_by = actor_id
     OR EXISTS (
       SELECT 1 FROM public.team_staff_memberships tsm
       WHERE tsm.team_id = _team_id

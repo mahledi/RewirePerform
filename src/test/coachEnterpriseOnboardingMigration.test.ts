@@ -64,6 +64,13 @@ describe("coach and enterprise onboarding V1.1 migration", () => {
     expect(policy).toContain("user_id = (select auth.uid())");
     expect(policy).toContain("app_private.has_team_staff_access");
     expect(policy).not.toContain("public.is_member_of_team(team_id)");
+    expect(migration).toContain(
+      'DROP POLICY IF EXISTS "Coaches can remove members" ON public.team_members',
+    );
+    expect(migration).toContain(
+      'DROP POLICY IF EXISTS "Approved team creator can join own team" ON public.team_members',
+    );
+    expect(migration).toContain('CREATE POLICY "Lead coach removes team members"');
   });
 
   it("backfills every legacy coach creator before replacing existing coach access", () => {
@@ -111,12 +118,17 @@ describe("coach and enterprise onboarding V1.1 migration", () => {
       "REVOKE ALL ON FUNCTION app_private.is_admin",
     );
     expect(helper).toContain("tsm.role = 'lead_coach'");
+    expect(helper).not.toContain("t.created_by = _user_id");
+    expect(migration).toContain(
+      'DROP POLICY IF EXISTS "Approved coaches and admins can update teams" ON public.teams',
+    );
     expect(migration).toContain('CREATE POLICY "Lead coach updates assigned team"');
     const invitation = functionBlock(
       "public.create_team_staff_invitation",
       "REVOKE ALL ON FUNCTION public.create_team_staff_invitation",
     );
     expect(invitation).toContain("tsm.role = 'lead_coach'");
+    expect(invitation).not.toContain("target_team.created_by = actor_id");
     expect(invitation).toContain("now() + interval '7 days'");
     expect(invitation).toContain("extensions.digest(raw_token, 'sha256')");
   });
