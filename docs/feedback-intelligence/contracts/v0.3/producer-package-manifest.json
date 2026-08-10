@@ -1,10 +1,10 @@
 {
   "schema_version": "rewireperform-feedback-semantics-producer-package-manifest-v1",
-  "contract_version": "0.3.2-draft",
+  "contract_version": "0.3.3-draft",
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
-  "generated_at": "2026-08-10T12:35:00+02:00",
-  "producer_branch": "codex/v1-1-consent-privacy-activation-20260810",
-  "producer_base_commit": "9d9670e6f678346e1a29b6341a04582bd8c8e965",
+  "generated_at": "2026-08-10T17:55:50+02:00",
+  "producer_branch": "codex/feedback-visualization-contract-v1-1-20260810",
+  "producer_base_commit": "33de9bb0f65a2eac573b80831f3a71b554cb3750",
   "producer_worktree_dirty": false,
   "package_signed": false,
   "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
@@ -15,7 +15,7 @@
   },
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "f38ae254af315eb6656edaddf7c196870f40b536c39817abc0a26123395de363",
+  "package_sha256": "c5df75dd0ddbf717b039e1c809d9e06b06219b7e55e1d4384886a07496e210d5",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
@@ -23,7 +23,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.json",
-      "sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20"
+      "sha256": "f8a15bedd179c2f6dc4176a8296437e87b175d6e5747d8faa187154b8eee9c4a"
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-decisions.json",
@@ -31,11 +31,11 @@
     },
     {
       "path": "src/content/feedbackIntelligenceV1.ts",
-      "sha256": "ad46b87fda4e02f7ce82fe888a77da89008bc2cfbb474e538e100fc4af9c0403"
+      "sha256": "1783af6bfbf635df32b526dfc7e13b8858995aee9780b178244313c19649472a"
     },
     {
       "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
-      "sha256": "b6a587457621f25f7a748d4cd150b5ac8c383e3209a3e3a0328d9a019869e50d"
+      "sha256": "a2d29007d4137f4a6d4db6e3a2f3b9401bfbe5f0cbc29e56f33dcc3bfccf305e"
     },
     {
       "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
@@ -46,20 +46,24 @@
       "sha256": "f724676847e4fd8c915248cba55c150646c89110ef6ecd243e958e6800f39ced"
     },
     {
+      "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9"
+    },
+    {
       "path": "src/test/feedbackIntelligenceContent.test.ts",
-      "sha256": "b9662e79847b02d2485628e950fa5743deef17dae78c257d1061f2cba94b1bae"
+      "sha256": "43084bfca418e338ced32e835326bcb3f290561dcbe914e2dab3741f0fe88928"
     },
     {
       "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",
-      "sha256": "38d52712eabf34a8e63e845e8339361156a5293bebd7d58b86049de89d322a16"
+      "sha256": "ca8a4b50f03554d95583d94046647f4ae8a644f5f8347fd308151f851b0cd7e3"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
-      "sha256": "98122f17fdb2a90fe0bfc8605bb32ba665726a1d1878c58e093879854f8e87e9"
+      "sha256": "7b1dd7feac6ace1ee28d97fe1ad3eb7d7f3cab38d52cf85aff68511987e6406b"
     },
     {
       "path": "docs/feedback-intelligence/REST_DAY_VISUALIZATION_FEEDBACK_HANDOFF_V1_1.md",
-      "sha256": "003fc6503d642ee34a6389dd0dc5cabb6c9d7d3542e7de0ceca11bd7a81a547e"
+      "sha256": "49b05eeab93752bbfa6d2784143c613e04a83244709abf70cb92f1765db0267b"
     },
     {
       "path": "src/content/guardianFeedbackTextPolicy.ts",
