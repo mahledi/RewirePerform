@@ -51,6 +51,7 @@ async function verifyPackage(manifestPath, sourceCommit = null) {
 }
 
 const v02Manifest = "docs/feedback-intelligence/contracts/v0.2/producer-package-manifest.json";
+const v021Manifest = "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json";
 const v03Manifest = "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json";
 const v02AcceptedProducerCommit = "c0a80af4e8d6bb5c5092646913bef1283e19083b";
 const policyPath = "src/content/guardianFeedbackTextPolicy.ts";
@@ -74,6 +75,7 @@ const expectedPolicy = {
 try {
   const [
     v02,
+    v021,
     v03,
     policy,
     guardianMigration,
@@ -84,6 +86,7 @@ try {
     fkIndexesMigration,
   ] = await Promise.all([
     verifyPackage(v02Manifest, v02AcceptedProducerCommit),
+    verifyPackage(v021Manifest),
     verifyPackage(v03Manifest),
     readText(policyPath),
     readText(guardianMigrationPath),
@@ -93,6 +96,23 @@ try {
     readText(machineMigrationPath),
     readText(fkIndexesMigrationPath),
   ]);
+
+  assert(v021.contract_version === "0.2.1-draft", "transfer pulse contract version drift");
+  const v021ManifestJson = await readJson(v021Manifest);
+  assert(
+    v021ManifestJson.export_pins.schema_sha256
+      === "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
+    "transfer pulse export schema pin drift",
+  );
+  assert(
+    JSON.stringify(v021ManifestJson.export_pins.checkpoint_maxima)
+      === JSON.stringify({ "10": 2, "24": 6, "39": 11, "55": 15 }),
+    "transfer pulse checkpoint maxima drift",
+  );
+  assert(
+    v021ManifestJson.invalidated_historical_gate.can_authorize_this_package === false,
+    "v0.2.0 historical assurance must not authorize v0.2.1",
+  );
 
   for (const indexName of [
     "feedback_consent_audit_submission_idx",
@@ -171,6 +191,7 @@ try {
     status: "LOCAL_RELEASE_GATES_VERIFIED_EXTERNAL_GATES_CLOSED",
     release_scope: "DE_ONLY",
     v02,
+    v021,
     v03,
     guardian_policy: {
       reference: expectedPolicy.reference,

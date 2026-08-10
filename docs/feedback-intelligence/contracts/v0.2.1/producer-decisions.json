@@ -1,0 +1,66 @@
+{
+  "schema_version": "rewire-feedback-intelligence-producer-decisions-v0.2.1-draft",
+  "contract_version": "0.2.1-draft",
+  "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "supersedes_for_future_reads": "0.2.0-draft",
+  "unchanged_item_fields": true,
+  "activity_snapshot": {
+    "source_contract_version": "feedback-activity-counts-v1.1.0",
+    "capture_time": "atomic_feedback_submit",
+    "mutable_after_capture": false,
+    "observation_window": "cumulative_program_day_1_through_feedback_checkpoint",
+    "transfer_pulse_count": {
+      "status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+      "source_relation": "public.athlete_transfer_observations",
+      "source_scope": "same_user_and_same_program_instance",
+      "window": "day_number_between_1_and_checkpoint_inclusive",
+      "aggregation": "count_completed_observation_rows",
+      "not_observed_counts_as_completed": true,
+      "checkpoint_maxima": {
+        "10": 2,
+        "24": 6,
+        "39": 11,
+        "55": 15
+      },
+      "score_read": false,
+      "score_exported": false,
+      "domain_exported": false,
+      "event_type_exported": false,
+      "response_duration_exported": false,
+      "text_read": false,
+      "text_exported": false
+    },
+    "journal_reflection_support_text_read": false,
+    "journal_length_or_quality_read": false,
+    "coach_or_team_data_read": false
+  },
+  "consent_contract": {
+    "structured_answers_require_text_consent": false,
+    "activity_counts_require_text_consent": false,
+    "comment_requires_valid_consent_at_submit": true,
+    "comment_requires_valid_consent_at_export": true,
+    "under_16_comment_requires_matching_guardian_scope_at_submit_and_export": true,
+    "transfer_observation_rows_can_only_exist_after_the_separate_evidence_authorization_path": true
+  },
+  "privacy_contract": {
+    "pseudonymous_package_only": true,
+    "direct_identifiers_exported": false,
+    "journal_reflection_support_text_exported": false,
+    "observational_not_causal": true,
+    "minimum_cohort_size": 5
+  },
+  "activation": {
+    "consumer_pin_ready": false,
+    "synthetic_export_enabled": false,
+    "production_export_enabled": false,
+    "machine_credential_ready": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false
+  },
+  "invalidated_historical_assurance": {
+    "v0_2_0_synthetic_cycle_proves_v0_2_1": false,
+    "new_consumer_review_required": true,
+    "new_staging_assurance_required_before_any_read": true
+  }
+}
