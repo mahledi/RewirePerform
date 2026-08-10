@@ -119,25 +119,26 @@ Diese Ideen sind nicht vergessen, sondern absichtlich spätere Produktarbeit:
 
 ## Aktuelle Differenz Delta
 
-1. Einen frischen credentiallosen Presence-only-Preflight abschließen, der
-   ohne Lesen von Secret-Werten die Abwesenheit alter Machine-/Reader-Secrets,
-   `PASSWORD NULL` für die Reader-Rolle und geschlossene Runtime-Gates belegt.
-2. Nach separater Freigabe exakt einen synthetischen Jarvis-One-Shot mit
+1. Nach separater Freigabe exakt einen synthetischen Jarvis-One-Shot mit
    temporären Staging-Credentials
    durchführen, vollständig bereinigen und erneut auditieren.
-3. Den tatsächlich zu aktivierenden Production-Datenumfang festschreiben und
+2. Den tatsächlich zu aktivierenden Production-Datenumfang festschreiben und
    Datenschutzseite, App-Store-Datentypen und Review Notes exakt daran binden.
-4. Production-Migrationen und Edge-Functions einzeln kontrolliert aktivieren;
+3. Production-Migrationen und Edge-Functions einzeln kontrolliert aktivieren;
    kein pauschales Datenbank-Push.
-5. Finalen RC erneut bauen und die release-relevanten Wege physisch auf iPhone
+4. Finalen RC erneut bauen und die release-relevanten Wege physisch auf iPhone
    und – solange iPad unterstützt wird – iPad prüfen.
-6. Erst danach PR, Merge, Website-Production, TestFlight und V1.1-Einreichung.
+5. Erst danach PR, Merge, Website-Production, TestFlight und V1.1-Einreichung.
 
 Bereits geschlossen sind die Feedback-v1.1.2-Registrymigration auf Staging,
 der nachgelagerte metadata-only Postdeploy-Audit und dessen unabhängige
 Jarvis-v0.3.3-Abnahme. Ebenso abgeschlossen ist ein positiver synthetischer
 Organisationsanfrage-Smoke mit echtem Turnstile, vollständiger Bereinigung und
-erneut geschlossenem Staging-Gate.
+erneut geschlossenem Staging-Gate. Der anschließend erzeugte credentiallose
+Presence-only-Preflight belegt zusätzlich fünf abwesende Gateway-Secrets,
+`PASSWORD NULL` für die Reader-Rolle und vollständig geschlossene
+Credential-/Read-/Minor-/Guardian-/Production-Gates; Jarvis hat ihn unabhängig
+akzeptiert.
 
 ## No-False-Green-Regel
 

@@ -97,40 +97,44 @@ Team-/Coach-Verbindungen bereitstellt und den freigegebenen Datenumfang intern
   über den realen Browserweg gesmoked. Der synthetische Antrag und sein Event
   wurden danach vollständig gelöscht; das öffentliche Staging-Gate ist wieder
   geschlossen und antwortet erneut fail-closed.
+- Ein frischer credentialloser Presence-only-Preflight belegt fünf aktuell
+  abwesende Feedback-Gateway-Secrets, `PASSWORD NULL` für die Reader-Rolle,
+  keine privilegierten Datenrechte und geschlossene Credential-/Read-/Minor-/
+  Guardian-/Production-Gates. Das Producer-Paket bestand 144 von 144
+  Testdateien und 811 von 811 Tests.
+- Jarvis hat das Paket mit 16 von 16 Dateien und 1.456 von 1.456 Tests
+  unabhängig akzeptiert: Consumer-Commit
+  `9e9c8b48260a5017e3b7c8aa8ca7aae2b0b4a816`, Acceptance SHA-256
+  `adcf46dbc00a5db16872b5ddf74fbe3a0dd86ddfabfa32917d7de1a857b373fd`.
 
 ## Differenz Delta zur vollständigen 1.1-Readiness
 
 ### Lokal beziehungsweise Staging zuerst
 
-1. Einen frischen, sanitisierten credentiallosen Presence-only-Preflight
-   erzeugen und unabhängig abnehmen lassen. Er muss die aktuelle Abwesenheit
-   der Machine-Key- und Reader-URL-Secrets, `PASSWORD NULL` für die Reader-Rolle
-   und geschlossene Consumer-/Synthetic-/Machine-/Real-/Production-Gates
-   belegen, ohne Secret-Werte oder Anwendungsdaten zu lesen.
-2. Erst nach einer neuen separaten Freigabe temporäre Staging-Credentials
+1. Erst nach einer neuen separaten Freigabe temporäre Staging-Credentials
    provisionieren, exakt einen synthetischen Jarvis-One-Shot ausführen,
    ausschließlich in-memory validieren und sofort vollständig bereinigen.
-3. Danach einen metadata-only Postread-Audit erzeugen und erneut unabhängig
+2. Danach einen metadata-only Postread-Audit erzeugen und erneut unabhängig
    abnehmen lassen.
 
 ### Vor Production und App-Store-Upload
 
-4. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
+3. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
    freiwillige Kommentare, Guardian-Scope und realer Jarvis-Read dürfen nur in
    der jeweils verifizierten Kombination geöffnet werden.
    Die aktuell für den lokalen Production-Build verwendete bestätigte
    Konfiguration enthält `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED` und
    `VITE_TURNSTILE_SITE_KEY` noch nicht; Feedback-Checkpoints und öffentliche
    Anfrageannahme sind in diesem Build daher absichtlich geschlossen.
-5. App-Privacy-Angaben, Datenschutzerklärung und Review Notes gegen diesen
+4. App-Privacy-Angaben, Datenschutzerklärung und Review Notes gegen diesen
    realen Datenweg angleichen.
-6. Die noch nicht in Production vorhandenen Migrationen in exakt geprüfter
+5. Die noch nicht in Production vorhandenen Migrationen in exakt geprüfter
    Reihenfolge einzeln anwenden; kein pauschales `supabase db push`.
-7. Benötigte Edge Functions und Feature-Gates kontrolliert aktivieren und
+6. Benötigte Edge Functions und Feature-Gates kontrolliert aktivieren und
    direkt negativ sowie positiv prüfen.
-8. Exakten finalen RC erneut auf iPhone und – solange iPad unterstützt wird –
+7. Exakten finalen RC erneut auf iPhone und – solange iPad unterstützt wird –
    iPad installieren und die Kernwege physisch prüfen.
-9. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
+8. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
     erstellen und Version 1.1 in App Store Connect einreichen.
 
 ## Feste Altersentscheidung
