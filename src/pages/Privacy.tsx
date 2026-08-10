@@ -218,8 +218,10 @@ const Privacy = () => {
             <p>
               Das System ordnet Check-ins, Aufgaben und Assessments dem richtigen Programmtag zu, berechnet
               Serien und Abschlüsse, entscheidet, welcher Tagesinhalt heute angezeigt wird, und bereitet
-              deinen Vergleich zwischen Anfang und Ende auf. Personalisierte Inhalte (zum Beispiel KI-generierte Aufgaben) basieren
-              auf strukturierten Profildaten und Assessment-Werten — <span className="text-foreground">nie auf Journalen, privaten Reflexionen oder Produktfeedback-Kommentaren</span>.
+              deinen Vergleich zwischen Anfang und Ende auf. Der feste 56-Tage-Inhalt und seine Missionen werden
+              nicht von einer KI erzeugt. Kurze, deterministische Einordnungen können den Programmtag, den
+              Kalenderkontext und strukturierte Angaben zu Sport, Rolle oder Tageszustand berücksichtigen — <span className="text-foreground">nie
+              Journaltexte, private Reflexionen oder Produktfeedback-Kommentare</span>.
             </p>
           </section>
 

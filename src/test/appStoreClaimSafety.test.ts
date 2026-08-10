@@ -65,6 +65,7 @@ describe("App Store claim safety", () => {
       "messbare Entwicklung",
       "Sport, Position, Zustand und Fortschritt persönlich eingeordnet",
       "Dankbarkeit verändert Aufmerksamkeit",
+      "KI-generierte Aufgaben",
     ];
 
     for (const claim of retiredClaims) {
