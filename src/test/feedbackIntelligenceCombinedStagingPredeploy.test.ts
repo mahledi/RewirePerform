@@ -20,7 +20,7 @@ describe("Feedback Intelligence combined Staging predeploy evidence", () => {
     expect(evidence.next_gate.separate_staging_apply_approval_required).toBe(true);
   });
 
-  it("pins the exact locally accepted semantics, export and combined gateway packages", () => {
+  it("preserves v0.3.2 assurance as historical and does not authorize current v0.3.3", () => {
     const evidence = JSON.parse(read(`${base}/evidence.json`));
     const paths = {
       semantics: "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
@@ -28,12 +28,23 @@ describe("Feedback Intelligence combined Staging predeploy evidence", () => {
       gateway: "docs/feedback-intelligence/contracts/machine-gateway-v0.1/producer-package-manifest.json",
     };
 
-    for (const [key, path] of Object.entries(paths)) {
-      const source = read(path);
-      const manifest = JSON.parse(source);
-      expect(evidence.producer_inputs[key].manifest_sha256).toBe(sha256(source));
-      expect(evidence.producer_inputs[key].package_sha256).toBe(manifest.package_sha256);
-    }
+    const exportSource = read(paths.export);
+    const exportManifest = JSON.parse(exportSource);
+    expect(evidence.producer_inputs.export.manifest_sha256).toBe(sha256(exportSource));
+    expect(evidence.producer_inputs.export.package_sha256).toBe(exportManifest.package_sha256);
+
+    const currentSemanticsSource = read(paths.semantics);
+    const currentSemanticsManifest = JSON.parse(currentSemanticsSource);
+    expect(currentSemanticsManifest.contract_version).toBe("0.3.3-draft");
+    expect(evidence.producer_inputs.semantics.contract_version).toBe("0.3.2-draft");
+    expect(evidence.producer_inputs.semantics.manifest_sha256).not.toBe(sha256(currentSemanticsSource));
+    expect(evidence.producer_inputs.semantics.package_sha256)
+      .not.toBe(currentSemanticsManifest.package_sha256);
+
+    const currentGatewaySource = read(paths.gateway);
+    const currentGatewayManifest = JSON.parse(currentGatewaySource);
+    expect(evidence.producer_inputs.gateway.manifest_sha256).not.toBe(sha256(currentGatewaySource));
+    expect(evidence.producer_inputs.gateway.package_sha256).not.toBe(currentGatewayManifest.package_sha256);
     expect(evidence.producer_inputs.gateway.consumer_commit)
       .toBe("f203e8efc28b76921f21458dcc0ce473b5d279ad");
     expect(evidence.producer_inputs.gateway.consumer_acceptance_sha256)
