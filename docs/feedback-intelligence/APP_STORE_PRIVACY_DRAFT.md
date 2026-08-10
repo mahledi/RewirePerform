@@ -1,6 +1,6 @@
 # Feedback Intelligence 1.1 – App-Store- und Privacy-Draft
 
-Stand: 2026-08-05
+Stand: 2026-08-10
 Status: lokaler Implementierungsentwurf; keine Rechts-, App-Store-, KI- oder Production-Freigabe
 
 ## Produktwahrheit
@@ -33,9 +33,20 @@ Nicht als neue Feedback-Quelle erklären: Journalinhalt, Reflexionsinhalt, Team-
 
 ## Machine-/KI-Gate
 
-Derzeit erhält kein externer KI-Anbieter echte Feedback-Kommentare. Vor einem echten Read sind mindestens erforderlich:
+Der vorgesehene interne Verarbeitungsweg ist nun konkret benannt: Supabase in
+`eu-central-1` stellt nach erneutem Consent- und Policy-Check einen minimierten,
+byte-gepinnten Export über eine eigene Edge Function bereit. Die Übertragung
+erfolgt per HTTPS an das lokal auf Mahles Mac betriebene Jarvis-System. Jarvis
+ruft keinen externen KI-Anbieter auf, persistiert weder Rohkommentare noch
+direkte Nutzerreferenzen und behält nur zusammengefasste Auswertungen und
+Berichte. Cloudflare gehört nicht zu diesem Feedback-Datenpfad.
 
-1. konkreter Anbieter, Empfänger, Region, Transfer- und Auftragsverarbeitungsgrundlage;
+Dieser Pfad ist bislang ausschließlich mit synthetischen Staging-Daten
+nachgewiesen. Production-Gateway, Production-Reader und Machine-Credential sind
+nicht aktiviert. Kein externer KI-Anbieter erhält echte Feedback-Kommentare.
+Vor einem echten Read sind mindestens erforderlich:
+
+1. finaler Production-Processor- und Zielumgebungsnachweis einschließlich der nicht durch aktuelle Evidenz belegten Edge-Ausführungsregion;
 2. entsprechend aktualisierte und versionierte Privacy- und Consent-Information;
 3. byte-gepinnter Consumer-Vertrag und eigenes Read-only Machine-Credential;
 4. Production-, Privacy-, App-Store- und Minor-Gates einzeln geöffnet;
@@ -49,11 +60,13 @@ Rohtext und personenbeziehbare Ableitungen werden bei Widerruf oder Kontolöschu
 
 > RewirePerform bietet an vier festen Programmpunkten freiwillige Produktfeedback-Checkpoints. Strukturierte Antworten sind unabhängig von optionalen Kommentaren nutzbar. Ein Kommentarfeld wird nur nach einer separaten, nicht vorangekreuzten Einwilligung geöffnet. Private Journale und Reflexionen werden nicht für diese Analyse verwendet. Nutzer können jede Freitext-Einwilligung in der App widerrufen; dadurch werden Kommentar und personenbeziehbare Ableitungen gelöscht. Die Daten werden nicht für Werbung, Tracking, Coach-Bewertungen oder automatisierte Entscheidungen verwendet.
 
+> Freigegebene Kommentare können zusammen mit minimierten strukturierten Feedback- und Aktivitätsdaten im intern und lokal betriebenen Jarvis-System ausgewertet werden. Der Analyseexport enthält keine Namen, E-Mail-Adressen oder direkten Nutzerkennungen. Jarvis speichert keine zweite Rohtextkopie; kein externer KI-Anbieter erhält die Kommentare.
+
 ## Release-Blocker
 
 - qualifizierte Rechts-/Datenschutzfreigabe der finalen Texte und Rechtsgrundlagen;
 - rechtliche Freigabe der technisch festgelegten 365-Tage-Höchstdauer und des automatisierten Löschlaufs;
-- konkreter KI-/Machine-Empfänger oder bestätigter Verzicht auf echten Text-Export;
+- finaler Production-Nachweis für den benannten internen Jarvis-Verarbeitungsweg;
 - finale App Privacy Details im App Store Connect auf Basis des echten RC;
 - aktualisierte User Privacy Choices URL und Review Notes;
 - Deutschland-Minor-/Guardian-Texte und Staging-Negativtests; Nicht-DE muss fail-closed bleiben;

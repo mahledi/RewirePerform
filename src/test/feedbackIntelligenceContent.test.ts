@@ -6,6 +6,7 @@ import {
   FEEDBACK_CHECKPOINTS,
   FEEDBACK_INTELLIGENCE_INVARIANTS,
   FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT,
+  FEEDBACK_TEXT_CONSENT_VERSION,
   feedbackTextConsentCopy,
   getFeedbackCheckpoint,
   getFeedbackQuestionnaireManifestPayload,
@@ -238,11 +239,16 @@ describe("feedback intelligence content contract", () => {
     });
   });
 
-  it("presents text consent as an equal, voluntary choice", () => {
-    expect(feedbackTextConsentCopy.acceptLabel).toBe("Zustimmen und schreiben");
-    expect(feedbackTextConsentCopy.declineLabel).toBe("Ohne Freitext fortfahren");
-    expect(feedbackTextConsentCopy.body.join(" ")).toContain("freiwillig");
-    expect(feedbackTextConsentCopy.body.join(" ")).toContain("jederzeit widerrufen");
-    expect(feedbackTextConsentCopy.body.join(" ")).toContain("nicht meinem Coach gezeigt");
+  it("presents text consent as a clear, benefit-led and voluntary choice", () => {
+    expect(FEEDBACK_TEXT_CONSENT_VERSION).toBe("feedback-text-consent-v1.1.0-draft");
+    expect(createHash("sha256").update(JSON.stringify(feedbackTextConsentCopy)).digest("hex"))
+      .toBe("4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7");
+    expect(feedbackTextConsentCopy.acceptLabel).toBe("Ja, mit Feedback verbessern");
+    expect(feedbackTextConsentCopy.declineLabel).toBe("Nur Auswahlantwort senden");
+    expect(feedbackTextConsentCopy.title).toContain("besser");
+    expect(feedbackTextConsentCopy.body.join(" ")).toContain("kein externer KI-Anbieter");
+    expect(feedbackTextConsentCopy.body.join(" ")).toContain("weder dein Name noch deine E-Mail-Adresse");
+    expect(feedbackTextConsentCopy.body.join(" ")).toContain("jederzeit in den Einstellungen widerrufen");
+    expect(feedbackTextConsentCopy.body.join(" ")).toContain("Dein Coach sieht ihn nicht");
   });
 });

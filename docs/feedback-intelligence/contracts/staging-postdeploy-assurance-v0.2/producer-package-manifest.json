@@ -1,7 +1,7 @@
 {
   "schema_version": "rewireperform-feedback-intelligence-staging-postdeploy-assurance-package-v2",
   "package_status": "SANITIZED_UNSIGNED_AWAITING_CONSUMER_POSTDEPLOY_REVIEW",
-  "package_sha256": "d109a07202bdfd17edd69d37dc9ec0605f619e60fe0e7285939469acf8328c92",
+  "package_sha256": "fb66f15bbbee206401596482e42090f4c6ee5d4d211227f317251cf98eda1bac",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/staging-postdeploy-assurance-v0.2/postdeploy-evidence.json",
@@ -13,7 +13,7 @@
     },
     {
       "path": "scripts/generate-feedback-staging-postdeploy-assurance-v0-2.mjs",
-      "sha256": "d38f87a2c8e44bc4f69cbd439cd083fb2990519b066b503b217ee4ccef493a94"
+      "sha256": "9c06fa8354817f989651901dec5328bed1a5703f3065b4cf2a729ef0938319d5"
     },
     {
       "path": "src/test/feedbackIntelligenceStagingPostdeployAssuranceV02.test.ts",

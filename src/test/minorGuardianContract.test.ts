@@ -27,6 +27,7 @@ const evidenceHardeningMigration = () => read("supabase/migrations/2026072008010
 const teamAggregateMigration = () => read("supabase/migrations/20260720082309_harden_team_mental_state_aggregate.sql");
 const runEvidenceMigration = () => read("supabase/migrations/20260720090000_unify_program_run_evidence_eligibility.sql");
 const guardianFeedbackMigration = () => read("supabase/migrations/20260805145921_guardian_feedback_text_authorization_v1.sql");
+const guardianFeedbackNoticeMigration = () => read("supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql");
 
 describe("minor guardian production contract", () => {
   it("allows the configured native Capacitor origin through hardened edge functions", () => {
@@ -53,7 +54,7 @@ describe("minor guardian production contract", () => {
     const calculated = createHash("sha256")
       .update(JSON.stringify(guardianFeedbackTextCanonicalDocument))
       .digest("hex");
-    const feedbackMigration = guardianFeedbackMigration();
+    const feedbackMigration = guardianFeedbackNoticeMigration();
 
     expect(calculated).toBe(GUARDIAN_FEEDBACK_TEXT_NOTICE_HASH);
     expect(feedbackMigration).toContain(`'${GUARDIAN_FEEDBACK_TEXT_POLICY_REFERENCE}'`);
@@ -65,8 +66,10 @@ describe("minor guardian production contract", () => {
 
   it("keeps guardian feedback RPCs service-role-only and the policy draft fail-closed", () => {
     const feedbackMigration = guardianFeedbackMigration();
+    const noticeMigration = guardianFeedbackNoticeMigration();
 
-    expect(feedbackMigration).toContain("'draft'");
+    expect(noticeMigration).toContain("'draft'");
+    expect(noticeMigration).toContain("'no_external_processor'");
     expect(feedbackMigration).toContain("feedback_consent.guardian_text_policy_ready('DE')");
     expect(feedbackMigration).toContain("TO service_role");
     expect(feedbackMigration).not.toContain("TO authenticated;");

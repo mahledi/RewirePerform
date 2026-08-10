@@ -21,6 +21,10 @@ const restVisualizationRegistryMigration = readFileSync(
   resolve("supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql"),
   "utf8",
 );
+const consentNoticeMigration = readFileSync(
+  resolve("supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql"),
+  "utf8",
+);
 const dachMinorPolicyMigration = readFileSync(
   resolve("supabase/migrations/20260805103650_feedback_intelligence_v1_dach_minor_policy.sql"),
   "utf8",
@@ -233,6 +237,7 @@ try {
   await db.exec(securityMigration);
   await db.exec(registryMigration);
   await db.exec(restVisualizationRegistryMigration);
+  await db.exec(consentNoticeMigration);
   await db.exec(dachMinorPolicyMigration);
   await db.exec(transactionMigration);
   await db.exec(activityMigration);
@@ -430,8 +435,8 @@ try {
           notice_hash, granted_at
         ) VALUES (
           $1, $2, 'granted', 'product-improvement-individual-text-ai-analysis-v1',
-          'feedback-text-consent-v1.0.0-draft',
-          '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4',
+          'feedback-text-consent-v1.1.0-draft',
+          '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7',
           now()
         ) RETURNING id
       `, [machineSubmission.rows[0].id, machineUser.user]);
@@ -698,8 +703,8 @@ try {
       granted_at
     )
     VALUES ($1, $2, 'granted', 'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4', now())
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7', now())
     RETURNING id
   `, [submissionId, ids.user]);
 
@@ -820,8 +825,8 @@ try {
         submission_id, user_id, state, scope, consent_version, notice_hash, granted_at
       )
       VALUES ($1, $2, 'granted', 'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4', now())
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7', now())
     `, [minorSubmission.rows[0].id, ids.minor]),
     "guardian_feedback_text_scope_required",
   );
@@ -831,8 +836,8 @@ try {
       user_id, scope, consent_version, notice_hash, state, granted_at, policy_reference
     )
     VALUES ($1, 'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4', 'granted', now(),
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7', 'granted', now(),
       'guardian-feedback-text-v1-draft')
     RETURNING consent_reference
   `, [ids.minor]);
@@ -843,8 +848,8 @@ try {
       guardian_authorization_reference, granted_at
     )
     VALUES ($1, $2, 'granted', 'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4', $3, now())
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7', $3, now())
     RETURNING id
   `, [minorSubmission.rows[0].id, ids.minor, guardianAuthorization.rows[0].consent_reference]);
 
@@ -1427,8 +1432,8 @@ try {
         submission_id, user_id, state, scope, consent_version, notice_hash, granted_at
       ) VALUES (
         $1, $2, 'granted', 'product-improvement-individual-text-ai-analysis-v1',
-        'feedback-text-consent-v1.0.0-draft',
-        '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4',
+        'feedback-text-consent-v1.1.0-draft',
+        '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7',
         now()
       )
     `, [gatewayMinorSubmission.rows[0].id, gatewayMinor.user]),

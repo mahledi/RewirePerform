@@ -679,24 +679,24 @@ export const FeedbackQuestionnairePreview = ({
       </main>
 
       <Dialog open={pendingCommentId !== null} onOpenChange={(open) => !open && setPendingCommentId(null)}>
-        <DialogContent className="max-w-[390px] rounded-3xl border-border/70 bg-background p-6">
+        <DialogContent className="max-w-[390px] rounded-3xl border-border/70 bg-background p-4 sm:p-6">
           <DialogHeader>
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <DialogTitle className="text-xl leading-tight">{feedbackTextConsentCopy.title}</DialogTitle>
             <DialogDescription asChild>
-              <div className="space-y-3 pt-3 text-left text-sm leading-6 text-muted-foreground">
+              <div className="space-y-2 pt-2 text-left text-sm leading-6 text-muted-foreground">
                 {feedbackTextConsentCopy.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-2 grid gap-3">
+          <div className="mt-1 grid gap-2">
+            <Button className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={acceptTextConsent}>
+              {feedbackTextConsentCopy.acceptLabel}
+            </Button>
             <Button variant="outline" className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={declineTextConsent}>
               {feedbackTextConsentCopy.declineLabel}
-            </Button>
-            <Button variant="outline" className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={acceptTextConsent}>
-              {feedbackTextConsentCopy.acceptLabel}
             </Button>
           </div>
         </DialogContent>

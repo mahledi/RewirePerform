@@ -1,13 +1,13 @@
 {
   "schema_version": "rewireperform-feedback-semantics-producer-package-manifest-v1",
-  "contract_version": "0.3.1-draft",
+  "contract_version": "0.3.2-draft",
   "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
-  "generated_at": "2026-08-07T11:40:00+02:00",
-  "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
-  "producer_base_commit": "4fc5363931dd0ec0301f9fca40cf2f4c2ffc48f7",
-  "producer_worktree_dirty": false,
+  "generated_at": "2026-08-10T12:35:00+02:00",
+  "producer_branch": "codex/v1-1-consent-privacy-activation-20260810",
+  "producer_base_commit": "9d9670e6f678346e1a29b6341a04582bd8c8e965",
+  "producer_worktree_dirty": true,
   "package_signed": false,
-  "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "package_status": "LOCAL_DRAFT_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "release_scope": {
     "jurisdiction": "DE",
     "language": "de-DE",
@@ -15,7 +15,7 @@
   },
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
+  "package_sha256": "f38ae254af315eb6656edaddf7c196870f40b536c39817abc0a26123395de363",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
@@ -31,7 +31,7 @@
     },
     {
       "path": "src/content/feedbackIntelligenceV1.ts",
-      "sha256": "c90f6c8df59b3ebedba3b5eb0af782f853920e6f651d1262cfaeba93176da911"
+      "sha256": "ad46b87fda4e02f7ce82fe888a77da89008bc2cfbb474e538e100fc4af9c0403"
     },
     {
       "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
@@ -47,7 +47,7 @@
     },
     {
       "path": "src/test/feedbackIntelligenceContent.test.ts",
-      "sha256": "57921c839c0a55084a23ede633d0f2af0e91416330fa4bcbf282d8f7bdbfcb94"
+      "sha256": "b9662e79847b02d2485628e950fa5743deef17dae78c257d1061f2cba94b1bae"
     },
     {
       "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",
@@ -55,11 +55,27 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
-      "sha256": "3c901b3393436945f5d53212832e02760f985f50a761ddf4c9cf1512eb88ebff"
+      "sha256": "98122f17fdb2a90fe0bfc8605bb32ba665726a1d1878c58e093879854f8e87e9"
     },
     {
       "path": "docs/feedback-intelligence/REST_DAY_VISUALIZATION_FEEDBACK_HANDOFF_V1_1.md",
       "sha256": "003fc6503d642ee34a6389dd0dc5cabb6c9d7d3542e7de0ceca11bd7a81a547e"
+    },
+    {
+      "path": "src/content/guardianFeedbackTextPolicy.ts",
+      "sha256": "6aa932e896de5e5a477c9c4663fb022295f9338fdf46355293584afd6e122090"
+    },
+    {
+      "path": "supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql",
+      "sha256": "50eea80f6977972c921429db697e295dfe6134c74ea8a480c937537f549e9f6f"
+    },
+    {
+      "path": "supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql",
+      "sha256": "3663a7f385cbf168aac2d200ced3a7aa68906de5f736a1a768e401480e1788d1"
+    },
+    {
+      "path": "docs/feedback-intelligence/CONSENT_UX_ACTIVATION_PACKET_V1_1.md",
+      "sha256": "bd6e0087e57fda0b3a9def60ae483aaa43cfef9908425164499ce1ffa345244d"
     }
   ],
   "catalog_evidence": {
@@ -82,6 +98,7 @@
   },
   "open_release_gates": [
     "CONSUMER_BYTE_REVIEW_AND_ADAPTATION",
+    "VERSIONED_CONSENT_AND_GUARDIAN_CONSUMER_ACCEPTANCE",
     "QUALIFIED_GERMAN_LEGAL_AND_PRIVACY_APPROVAL",
     "FIXED_RAW_TEXT_RETENTION_AND_AUTOMATED_DELETION",
     "DE_UNDER_16_GUARDIAN_NOTICE_AND_AUTHORIZATION_APPROVAL",

@@ -1,6 +1,6 @@
 # Feedback Intelligence 1.1 – Handoff an den finalen App-Store-Review
 
-Stand: 7. August 2026
+Stand: 10. August 2026
 Status: Rest-Day-/Daily-Flow und Feedback-Inhalt lokal integriert; kombinierter 1.1-Kandidat bis zu den unten genannten Release-Gates weiterhin `NO-GO`; keine Production- oder Machine-Aktivierung
 
 ## Entscheidung, die dieser Review treffen soll
@@ -80,24 +80,45 @@ Werbe-, Datenbroker- oder Cross-App-Verknüpfung.
 
 ## Machine- und Jarvis-Wahrheit
 
-Jarvis ist bewusst nicht mit echten Daten verbunden. Aktuell erhält kein
-externer KI-Anbieter echte Feedbackkommentare. Der vorbereitete Export ist ein
+Jarvis ist bewusst nicht mit echten Daten verbunden. Der technisch vorgesehene
+Processor ist nun konkret: Supabase Staging in `eu-central-1` übergibt einen
+minimierten Export nach erneutem Consent- und Policy-Check über die eigene Edge
+Function `mahleos-feedback-intelligence-read` per HTTPS an das lokal auf Mahles
+Mac betriebene Jarvis-System. Jarvis ruft für diesen Pfad keinen externen
+KI-Anbieter auf. Cloudflare ist nicht Teil dieses Feedback-Datenpfads. Der
+Staging-Pfad wurde einmal synthetisch nachgewiesen; die Ausführungsregion der
+Edge Function selbst ist durch die aktuelle Evidenz nicht belegt.
+
+Production-Gateway, dedizierter Production-Reader und Machine-Credential sind
+nicht provisioniert. Es wurden keine echten Produktfeedback-Kommentare oder
+pseudonymen Aktivitätssnapshots verarbeitet. Der vorbereitete Export ist ein
 separater, eng begrenzter Machine/Admin-Vertrag:
 
 - keine Namen, E-Mails, `user_id`, `team_id`, Coach- oder privaten Texte;
 - Rohtext nur mit beim Export erneut gültigem, nicht widerrufenem Consent;
 - Text gilt immer als `UNTRUSTED_USER_TEXT`;
 - lokales Identifier-Redacting und Quarantäne sensibler/Secret-Inhalte;
-- kein zweiter Rohtextbestand beim Consumer;
+- keine Persistenz von Rohtext, direkter Nutzerreferenz oder zweitem
+  personenbezogenen Rohtextbestand beim Consumer; nur zusammengefasste
+  Auswertungen und Berichte dürfen erhalten bleiben;
 - Kohorten erst ab mindestens fünf Athleten;
 - Zusammenhänge sind `OBSERVATIONAL_NOT_CAUSAL`;
 - kein direkter Tabellenzugriff, sondern später ein eigener Read-only Actor und
   ein byte-gepinnter Vertrag;
 - Contract-, Consent- oder Gate-Drift schließt den Export fail-closed.
 
-Ein späterer Jarvis-Read verlangt eine neue ausdrückliche Freigabe nach
-Processor-, Transfer-, Vertrags-, Credential-, Privacy-, Minor- und
-Löschprüfung. Dieser Review darf ihn nicht implizit aktivieren.
+Ein späterer echter Jarvis-Read verlangt eine neue ausdrückliche Freigabe nach
+Production-Processor-, Credential-, Privacy-, Minor- und Löschprüfung. Dieser
+Review darf ihn nicht implizit aktivieren.
+
+Der aktuelle Athlete-Consent-Draft ist
+`feedback-text-consent-v1.1.0-draft` mit Notice-Hash
+`4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7`.
+Der zugehörige Guardian-Draft ist
+`guardian-feedback-text-de-v1.1.0-draft` mit Guardian-Notice-Hash
+`4b7c6f6cbf3d932c2e244d6a281f0d45056706eeb6108cb2ac2303dbe0f19c4f`.
+Beide sind neue additive Entwürfe; die historischen V1.0-Zeilen werden nicht
+still umgedeutet oder überschrieben.
 
 ## Nachweise im isolierten Staging
 
@@ -144,7 +165,7 @@ qualifiziert bestätigt werden.
 ## Harte Blocker vor Einreichung oder Aktivierung
 
 1. qualifizierte deutsche Rechts-, Datenschutz- und Minderjährigenfreigabe;
-2. finale Consent-, Privacy- und Guardian-Texte samt Versionen und Notice-Hashes;
+2. qualifizierte Freigabe der versionierten Consent-, Privacy- und Guardian-Texte samt Notice-Hashes;
 3. finale App-Store-Connect-Angaben zu App Privacy, Altersrating/Override,
    Privacy Choices URL und Review Notes gegen den echten RC;
 4. positiver Guardian-E-Mail-Pfad in Staging mit synthetischer Adresse und
@@ -165,16 +186,13 @@ qualifiziert bestätigt werden.
 ## Aktueller Build- und Dependency-Stand
 
 - `npm run ci`: grün;
-- 107 Vitest-Dateien, 631 Tests: grün;
+- 133 Vitest-Dateien, 754 Tests: grün;
 - alle Feedback-, Guardian-, Access-, Deletion-, Tracking- und Minor-SQL-
   Harnesses: grün;
 - TypeScript, PWA-/Web-Build und statische App-Store-Prüfung: grün;
 - Staging-Target-Validator und erneuter Build gegen Projekt
   `zbeswjipayspgvcipzmx`: grün;
-- `npm audit --omit=dev`: null kritisch, null hoch, zwei moderat. Beide Treffer
-  betreffen React Router; npm bietet nur ein SemVer-Major-Upgrade auf Router 7
-  an. Das ist im integrierten RC gezielt zu migrieren und zu regressieren,
-  nicht ungeprüft in diesem isolierten Feedback-Branch zu erzwingen.
+- `npm audit --omit=dev`: null kritisch, null hoch, null moderat;
 
 Vite meldet außerdem einen bestehenden Chunk über 500 kB. Das ist ein
 Performance-/Optimierungshinweis und kein fehlgeschlagener Sicherheits- oder

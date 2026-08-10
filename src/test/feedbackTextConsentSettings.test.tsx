@@ -29,7 +29,7 @@ const receipt = {
   checkpointDay: 24 as const,
   state: "granted" as const,
   scope: "product-improvement-individual-text-ai-analysis-v1",
-  consentVersion: "feedback-text-consent-v1.0.0-draft",
+  consentVersion: "feedback-text-consent-v1.1.0-draft",
   grantedAt: "2026-08-05T10:00:00.000Z",
   withdrawnAt: null,
 };

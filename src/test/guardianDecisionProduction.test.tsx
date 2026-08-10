@@ -132,7 +132,7 @@ describe("guardian decision production flow", () => {
     });
     renderDecision();
 
-    const feedbackText = await screen.findByRole("checkbox", { name: /Freiwillige Feedback-Kommentare erlauben/ });
+    const feedbackText = await screen.findByRole("checkbox", { name: /Mit Feedback RewirePerform verbessern/ });
     expect(feedbackText).not.toBeChecked();
     fireEvent.click(screen.getByRole("checkbox", { name: /Ich bestätige, dass ich.*sorgeberechtigt/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Nutzung des RewirePerform-Programms erlauben/ }));

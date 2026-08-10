@@ -558,7 +558,7 @@ const GuardianDecision = () => {
             </div>
 
             {status.feedback_text_authorization_available === true && (
-              <div className="flex items-start gap-3 border-b border-border py-5">
+              <div className="my-3 flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] px-4 py-5">
                 <Checkbox
                   id="guardian-feedback-text"
                   checked={feedbackText}

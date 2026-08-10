@@ -55,26 +55,40 @@ const v03Manifest = "docs/feedback-intelligence/contracts/v0.3/producer-package-
 const v02AcceptedProducerCommit = "c0a80af4e8d6bb5c5092646913bef1283e19083b";
 const policyPath = "src/content/guardianFeedbackTextPolicy.ts";
 const guardianMigrationPath = "supabase/migrations/20260805145921_guardian_feedback_text_authorization_v1.sql";
+const athleteNoticeMigrationPath = "supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql";
+const guardianNoticeMigrationPath = "supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql";
 const transactionMigrationPath = "supabase/migrations/20260805103700_feedback_intelligence_v1_transaction_api.sql";
 const machineMigrationPath = "supabase/migrations/20260805104000_feedback_intelligence_v0_2_machine_export.sql";
 const fkIndexesMigrationPath = "supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql";
 
 const expectedPolicy = {
-  reference: "guardian-feedback-text-de-v1.0.0-draft",
+  reference: "guardian-feedback-text-de-v1.1.0-draft",
   scope: "product-improvement-individual-text-ai-analysis-v1",
-  consentVersion: "feedback-text-consent-v1.0.0-draft",
-  guardianNoticeHash: "138843d107ec3681de41b00e71033a77ec67b143c6c4aacf67cc47f46b7bcfd9",
-  athleteNoticeHash: "7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4",
+  consentVersion: "feedback-text-consent-v1.1.0-draft",
+  guardianNoticeHash: "4b7c6f6cbf3d932c2e244d6a281f0d45056706eeb6108cb2ac2303dbe0f19c4f",
+  athleteNoticeHash: "4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7",
   retentionDays: 365,
   processorMode: "no_external_processor",
 };
 
 try {
-  const [v02, v03, policy, guardianMigration, transactionMigration, machineMigration, fkIndexesMigration] = await Promise.all([
+  const [
+    v02,
+    v03,
+    policy,
+    guardianMigration,
+    athleteNoticeMigration,
+    guardianNoticeMigration,
+    transactionMigration,
+    machineMigration,
+    fkIndexesMigration,
+  ] = await Promise.all([
     verifyPackage(v02Manifest, v02AcceptedProducerCommit),
     verifyPackage(v03Manifest),
     readText(policyPath),
     readText(guardianMigrationPath),
+    readText(athleteNoticeMigrationPath),
+    readText(guardianNoticeMigrationPath),
     readText(transactionMigrationPath),
     readText(machineMigrationPath),
     readText(fkIndexesMigrationPath),
@@ -99,11 +113,15 @@ try {
     expectedPolicy.guardianNoticeHash,
   ]) {
     assert(policy.includes(value), `${policyPath}: missing canonical value ${value}`);
-    assert(guardianMigration.includes(value), `${guardianMigrationPath}: missing canonical value ${value}`);
+    assert(guardianNoticeMigration.includes(value), `${guardianNoticeMigrationPath}: missing canonical value ${value}`);
   }
 
   for (const value of [expectedPolicy.athleteNoticeHash, expectedPolicy.processorMode]) {
-    assert(guardianMigration.includes(value), `${guardianMigrationPath}: missing canonical value ${value}`);
+    assert(guardianNoticeMigration.includes(value), `${guardianNoticeMigrationPath}: missing canonical value ${value}`);
+  }
+
+  for (const value of [expectedPolicy.scope, expectedPolicy.consentVersion, expectedPolicy.athleteNoticeHash]) {
+    assert(athleteNoticeMigration.includes(value), `${athleteNoticeMigrationPath}: missing canonical value ${value}`);
   }
 
   assert(
@@ -111,12 +129,17 @@ try {
     `${policyPath}: retention drift`,
   );
   assert(
-    guardianMigration.includes(`  ${expectedPolicy.retentionDays},`),
-    `${guardianMigrationPath}: retention drift`,
+    guardianNoticeMigration.includes(`  ${expectedPolicy.retentionDays},`),
+    `${guardianNoticeMigrationPath}: retention drift`,
   );
   assert(
-    guardianMigration.includes("'draft'"),
-    `${guardianMigrationPath}: guardian policy is not draft-bound`,
+    guardianNoticeMigration.includes("'draft'"),
+    `${guardianNoticeMigrationPath}: guardian policy is not draft-bound`,
+  );
+
+  assert(
+    guardianMigration.includes("feedback_consent.guardian_text_policy_ready('DE')"),
+    `${guardianMigrationPath}: guardian runtime gate missing`,
   );
 
   for (const gate of [

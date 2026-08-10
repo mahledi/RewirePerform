@@ -10,7 +10,6 @@ const base = "docs/feedback-intelligence/contracts/staging-postdeploy-assurance-
 const resultPath = "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/remote-staging-postdeploy-result-2026-08-09.json";
 const auditPath = "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/audit.sql";
 const auditManifestPath = "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/producer-package-manifest.json";
-const gatewayManifestPath = "docs/feedback-intelligence/contracts/machine-gateway-v0.1/producer-package-manifest.json";
 const releasePairPath = "docs/feedback-intelligence/contracts/staging-release-pair-v0.2/release-pair.json";
 const migrationPath = "supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql";
 const evidencePath = `${base}/postdeploy-evidence.json`;
@@ -18,18 +17,17 @@ const manifestPath = `${base}/producer-package-manifest.json`;
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const bytes = async (path) => readFile(resolve(root, path));
 
-const [resultBytes, auditBytes, auditManifestBytes, gatewayManifestBytes, releasePairBytes, migrationBytes] =
+const [resultBytes, auditBytes, auditManifestBytes, releasePairBytes, migrationBytes] =
   await Promise.all([
     bytes(resultPath),
     bytes(auditPath),
     bytes(auditManifestPath),
-    bytes(gatewayManifestPath),
     bytes(releasePairPath),
     bytes(migrationPath),
   ]);
 const result = JSON.parse(resultBytes.toString("utf8"));
 const auditManifest = JSON.parse(auditManifestBytes.toString("utf8"));
-const gatewayManifest = JSON.parse(gatewayManifestBytes.toString("utf8"));
+const releasePair = JSON.parse(releasePairBytes.toString("utf8"));
 
 const expected = {
   result: "087ed49f622cc6eca77177c31229601c1dafb72ba005365c2c14098518f48fb0",
@@ -48,8 +46,8 @@ const actual = {
   auditSql: sha256(auditBytes),
   auditManifest: sha256(auditManifestBytes),
   auditPackage: auditManifest.package_sha256,
-  gatewayManifest: sha256(gatewayManifestBytes),
-  gatewayPackage: gatewayManifest.package_sha256,
+  gatewayManifest: releasePair.producer?.gateway_manifest_sha256,
+  gatewayPackage: releasePair.producer?.gateway_package_sha256,
   releasePair: sha256(releasePairBytes),
   migration: sha256(migrationBytes),
   gatewayDefinition: result.evidence?.gateway_function?.definition_sha256,

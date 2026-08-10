@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { FeedbackQuestionnairePreview } from "@/components/feedback-intelligence/FeedbackQuestionnairePreview";
@@ -20,9 +20,10 @@ describe("feedback intelligence synthetic preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText(/einschließlich KI/)).toBeInTheDocument();
+    expect(screen.getByText(/intern betriebenen Jarvis-System/)).toBeInTheDocument();
+    expect(screen.getByText(/kein externer KI-Anbieter/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Ohne Freitext fortfahren" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nur Auswahlantwort senden" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: "Optionaler Feedbacktext" })).not.toBeInTheDocument();
     expect(screen.getByText(/Deine Auswahl bleibt trotzdem gespeichert/)).toBeInTheDocument();
@@ -40,11 +41,26 @@ describe("feedback intelligence synthetic preview", () => {
 
     expect(screen.queryByRole("textbox", { name: "Optionaler Feedbacktext" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
-    fireEvent.click(screen.getByRole("button", { name: "Zustimmen und schreiben" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ja, mit Feedback verbessern" }));
 
     const textField = screen.getByRole("textbox", { name: "Optionaler Feedbacktext" });
     fireEvent.change(textField, { target: { value: "Die Aufgabe war heute zu abstrakt." } });
     expect(textField).toHaveValue("Die Aufgabe war heute zu abstrakt.");
+  });
+
+  it("leads with the explicit consent action while keeping refusal visible and separate", async () => {
+    render(<FeedbackQuestionnairePreview day={10} />);
+    await openFirstQuestion();
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
+    const dialog = screen.getByRole("dialog");
+    const accept = within(dialog).getByRole("button", { name: "Ja, mit Feedback verbessern" });
+    const decline = within(dialog).getByRole("button", { name: "Nur Auswahlantwort senden" });
+
+    expect(accept).toHaveClass("bg-primary");
+    expect(decline).toHaveClass("border");
+    expect(accept.compareDocumentPosition(decline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
   });
 
   it("does not reveal the day 55 content context before free recall", async () => {

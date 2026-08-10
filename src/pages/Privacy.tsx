@@ -293,9 +293,17 @@ const Privacy = () => {
               <li><span className="text-foreground">Push-Infrastruktur:</span> Browser- beziehungsweise Betriebssystemanbieter transportieren optionale Benachrichtigungen. Private Journal- oder Antwortinhalte werden nicht in Push-Nachrichten aufgenommen.</li>
             </ul>
             <p className="mt-3">
-              Derzeit erhält kein externer KI-Anbieter echte Produktfeedback-Kommentare. Bevor sich das ändert, wird der
-              konkrete Empfänger samt Verarbeitungsort und Schutzgrundlage hier benannt, die Einwilligungsinformation
-              entsprechend versioniert und die Freischaltung erneut geprüft. Ohne diese Voraussetzungen bleibt der Export gesperrt.
+              Für Feedback Intelligence ist eine eng begrenzte Auswertung über das intern und lokal auf Mahles Mac
+              betriebene Jarvis-System vorgesehen. Der Analyseexport enthält weder Namen noch E-Mail-Adressen oder
+              direkte Nutzerkennungen. Jarvis verarbeitet die freigegebenen Daten nur während der Analyse und speichert
+              weder den Rohkommentar noch eine zweite personenbezogene Rohtextkopie; erhalten bleiben ausschließlich
+              zusammengefasste Auswertungen und Berichte. Der echte Produktdatenzugriff bleibt bis zur gesonderten
+              technischen, datenschutzrechtlichen und minderjährigenbezogenen Freigabe geschlossen.
+            </p>
+            <p className="mt-3">
+              Kein externer KI-Anbieter erhält echte Produktfeedback-Kommentare. Bevor sich das ändert, wird der konkrete
+              Empfänger samt Verarbeitungsort und Schutzgrundlage hier benannt, die Einwilligungsinformation versioniert
+              und die Freischaltung erneut geprüft. Ohne diese Voraussetzungen bleibt eine externe Übermittlung gesperrt.
             </p>
             <p className="mt-3">Es findet keine Weitergabe an Werbenetzwerke oder Datenhändler statt. Sentry ist nicht mehr mit der App verbunden und erhält keine neuen App-Ereignisse.</p>
           </section>

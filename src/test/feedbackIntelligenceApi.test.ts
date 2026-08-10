@@ -106,7 +106,7 @@ describe("feedback intelligence athlete API adapter", () => {
         checkpoint_day: 24,
         state: "granted",
         scope: "product-improvement-individual-text-ai-analysis-v1",
-        consent_version: "feedback-text-consent-v1.0.0-draft",
+        consent_version: "feedback-text-consent-v1.1.0-draft",
         granted_at: "2026-08-05T10:00:00.000Z",
         withdrawn_at: null,
       }],
@@ -118,7 +118,7 @@ describe("feedback intelligence athlete API adapter", () => {
       checkpointDay: 24,
       state: "granted",
       scope: "product-improvement-individual-text-ai-analysis-v1",
-      consentVersion: "feedback-text-consent-v1.0.0-draft",
+      consentVersion: "feedback-text-consent-v1.1.0-draft",
       grantedAt: "2026-08-05T10:00:00.000Z",
       withdrawnAt: null,
     }]);

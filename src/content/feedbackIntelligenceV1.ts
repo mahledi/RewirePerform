@@ -2,7 +2,7 @@ export const FEEDBACK_INTELLIGENCE_CONTENT_VERSION = "feedback-intelligence-cont
 export const FEEDBACK_PROGRAM_CONTENT_SOURCE_COMMIT =
   "bd647c1b4e709cc0285c6438639e1e9b42ef6128" as const;
 export const FEEDBACK_TEXT_CONSENT_SCOPE = "product-improvement-individual-text-ai-analysis-v1" as const;
-export const FEEDBACK_TEXT_CONSENT_VERSION = "feedback-text-consent-v1.0.0-draft" as const;
+export const FEEDBACK_TEXT_CONSENT_VERSION = "feedback-text-consent-v1.1.0-draft" as const;
 
 export type FeedbackCheckpointDay = 10 | 24 | 39 | 55;
 export type FeedbackQuestionType = "single" | "multi";
@@ -673,13 +673,14 @@ const day55Questions: readonly FeedbackQuestionDefinition[] = [
 ];
 
 export const feedbackTextConsentCopy = {
-  title: "Möchtest du zusätzlich etwas schreiben?",
+  title: "Mach RewirePerform mit deinem Feedback besser",
   body: [
-    "Ich willige ein, dass meine freiwillig geschriebenen Feedbacktexte von RewirePerform und dafür freigegebenen Analysesystemen, einschließlich KI, einzeln ausgewertet und mit meinen pseudonymisierten Nutzungs- und Feedbackdaten verbunden werden.",
-    "Der Zweck ist ausschließlich, RewirePerform verständlicher, hilfreicher und nutzerfreundlicher zu machen. Mein Feedback wird nicht meinem Coach gezeigt, nicht für Werbung verwendet und nicht für automatische Entscheidungen über mich genutzt. Ich kann meine Einwilligung jederzeit widerrufen.",
+    "Ein kurzer Kommentar zeigt uns genauer, was für dich klar ist, was dir hilft und was wir verbessern sollten.",
+    "Wenn du zustimmst, darf RewirePerform ihn einzeln mit deinen strukturierten Feedback- und Aktivitätsdaten auswerten. Im Analyseexport stehen weder dein Name noch deine E-Mail-Adresse. Die Auswertung läuft im intern betriebenen Jarvis-System; kein externer KI-Anbieter erhält deinen Kommentar.",
+    "Dein Coach sieht ihn nicht. Wir nutzen ihn nicht für Werbung, Personalisierung oder automatische Entscheidungen über dich. Du kannst deine Einwilligung jederzeit in den Einstellungen widerrufen.",
   ],
-  acceptLabel: "Zustimmen und schreiben",
-  declineLabel: "Ohne Freitext fortfahren",
+  acceptLabel: "Ja, mit Feedback verbessern",
+  declineLabel: "Nur Auswahlantwort senden",
 } as const;
 
 export const FEEDBACK_CHECKPOINTS: Record<FeedbackCheckpointDay, FeedbackCheckpointDefinition> = {

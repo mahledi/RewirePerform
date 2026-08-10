@@ -7,6 +7,10 @@ const migration = readFileSync(
   resolve("supabase/migrations/20260805145921_guardian_feedback_text_authorization_v1.sql"),
   "utf8",
 );
+const noticeMigration = readFileSync(
+  resolve("supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql"),
+  "utf8",
+);
 
 const ids = {
   child: "00000000-0000-4000-8000-000000009101",
@@ -280,6 +284,7 @@ try {
   `);
 
   await db.exec(migration);
+  await db.exec(noticeMigration);
 
   await db.query("INSERT INTO auth.users(id) VALUES ($1)", [ids.child]);
   await db.query("INSERT INTO minor_auth.policy_versions VALUES ($1, 'DE', 'active')", [ids.policy]);
@@ -333,7 +338,7 @@ try {
     WHERE jurisdiction = 'DE';
     UPDATE feedback_consent.guardian_text_policy_versions
     SET status = 'active', effective_from = now()
-    WHERE policy_reference = 'guardian-feedback-text-de-v1.0.0-draft';
+    WHERE policy_reference = 'guardian-feedback-text-de-v1.1.0-draft';
   `);
 
   const ready = await db.query(
@@ -363,11 +368,11 @@ try {
   `, [ids.child]);
   assert(authorization.rows.length === 1, "one active guardian feedback scope must be stored");
   assert(
-    authorization.rows[0].notice_hash === "7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4",
+    authorization.rows[0].notice_hash === "4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7",
     "guardian authorization must bind to the athlete checkpoint consent contract",
   );
   assert(
-    authorization.rows[0].guardian_notice_hash === "138843d107ec3681de41b00e71033a77ec67b143c6c4aacf67cc47f46b7bcfd9",
+    authorization.rows[0].guardian_notice_hash === "4b7c6f6cbf3d932c2e244d6a281f0d45056706eeb6108cb2ac2303dbe0f19c4f",
     "guardian authorization must separately bind the exact visible guardian notice",
   );
   await expectFailure(
@@ -386,8 +391,8 @@ try {
     ) VALUES (
       $1, gen_random_uuid(), gen_random_uuid(), $2, 'granted',
       'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4',
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7',
       now(), $3
     )
   `, [ids.receipt, ids.child, authorization.rows[0].consent_reference]);
@@ -442,8 +447,8 @@ try {
     ) VALUES (
       $1, gen_random_uuid(), gen_random_uuid(), $2, 'granted',
       'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4',
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7',
       now() - interval '366 days'
     )
   `, [retentionReceipt, ids.child]);
@@ -477,7 +482,7 @@ try {
     () => db.exec(`
       UPDATE feedback_consent.guardian_text_policy_versions
       SET raw_text_retention_days = 364
-      WHERE policy_reference = 'guardian-feedback-text-de-v1.0.0-draft'
+      WHERE policy_reference = 'guardian-feedback-text-de-v1.1.0-draft'
     `),
     "guardian_feedback_text_active_policy_immutable",
   );
@@ -494,8 +499,8 @@ try {
     ) VALUES (
       $1, gen_random_uuid(), gen_random_uuid(), $2, 'granted',
       'product-improvement-individual-text-ai-analysis-v1',
-      'feedback-text-consent-v1.0.0-draft',
-      '7da3fee62d13672430e7c288274994f3d284ad8dfd1b73a92ecc0c8d15962af4',
+      'feedback-text-consent-v1.1.0-draft',
+      '4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7',
       now(), $3
     )
   `, [retirementReceipt, ids.child, activeGuardian.rows[0].consent_reference]);
@@ -506,7 +511,7 @@ try {
   await db.exec(`
     UPDATE feedback_consent.guardian_text_policy_versions
     SET status = 'retired', retired_at = now()
-    WHERE policy_reference = 'guardian-feedback-text-de-v1.0.0-draft'
+    WHERE policy_reference = 'guardian-feedback-text-de-v1.1.0-draft'
   `);
   const afterRetirement = await db.query(`
     SELECT
@@ -521,7 +526,7 @@ try {
     () => db.exec(`
       UPDATE feedback_consent.guardian_text_policy_versions
       SET processor_reference = 'forbidden-after-retirement'
-      WHERE policy_reference = 'guardian-feedback-text-de-v1.0.0-draft'
+      WHERE policy_reference = 'guardian-feedback-text-de-v1.1.0-draft'
     `),
     "guardian_feedback_text_policy_retired_immutable",
   );
