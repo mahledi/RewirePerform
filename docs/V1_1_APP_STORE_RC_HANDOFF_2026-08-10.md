@@ -54,9 +54,9 @@ Team-/Coach-Verbindungen bereitstellt und den freigegebenen Datenumfang intern
   `/organization/invite`-AASA-Pfad sind noch nicht aus dem lokalen 1.1-Stand
   ausgerollt.
 
-### Lokale Nachweise auf der integrierten Codebasis `0a459a5`
+### Lokale Nachweise auf der integrierten Codebasis `5eadb04`
 
-- `npm run ci`: 142 von 142 Testdateien und 799 von 799 Tests grün.
+- `npm run ci`: 143 von 143 Testdateien und 805 von 805 Tests grün.
 - `npm run test:e2e`: 81 bestanden, 4 plattformbedingt übersprungen, 0 Fehler;
   Desktop, iPhone Hoch-/Querformat und iPad Hoch-/Querformat.
 - Production-Webbuild, sämtliche Feedback-, Guardian-, Minor-, Privacy-,
@@ -83,39 +83,54 @@ Team-/Coach-Verbindungen bereitstellt und den freigegebenen Datenumfang intern
   Consumer-Commit `59e84cb70f07cb2e51c09e267d2d209aaf805421`,
   Acceptance SHA-256
   `cf352c7af509cd3ff1b61039e1437059d574697713e05b30e0cfa0224013554d`.
+- Die einzelne Feedback-v1.1.2-Registrymigration wurde separat freigegeben und
+  auf Staging als Remote-Version `20260810183222` angewendet. Der anschließende
+  metadata-only Postdeploy-Audit belegt vier weiterhin geschlossene
+  Draft-Kampagnen, unveränderte Export-/Gateway-/Edgebytes, genau ein
+  Reader-RPC und keine Relation-/Sequence-Rechte.
+- Jarvis hat dieses aktuelle Postdeploy-v0.2-Paket unabhängig akzeptiert:
+  23 von 23 Paketdateien bytegenau, 1.451 von 1.451 Tests grün,
+  Consumer-Commit `602945a7b67fbc09a99f41361888b0447f6ec1e2`,
+  Acceptance SHA-256
+  `0941fd066378e4e5ec16435dc2c789dde9476f9073e24921c695be49f6981164`.
+- Die Organisationsanfrage wurde in Staging mit echtem Turnstile einmal positiv
+  über den realen Browserweg gesmoked. Der synthetische Antrag und sein Event
+  wurden danach vollständig gelöscht; das öffentliche Staging-Gate ist wieder
+  geschlossen und antwortet erneut fail-closed.
 
 ## Differenz Delta zur vollständigen 1.1-Readiness
 
 ### Lokal beziehungsweise Staging zuerst
 
-1. Genau den einen ausstehenden Registry-Migrations-Apply separat
-   freigeben und auf Staging anwenden. Ein metadata-only Audit ohne diesen
-   Apply wäre kein Nachweis des neuen Registrystands.
-2. Unmittelbar danach einen nicht mutierenden metadata-only Postdeploy-Audit
-   erzeugen. Keine Credentials setzen, keine Antworten oder Exporte lesen und
-   keine Edge Function erneut deployen.
-3. Die neue Postdeploy-Evidence erneut unabhängig durch Jarvis abnehmen lassen.
-4. Den positiven Organisationsanfrage-Smoke mit echtem Turnstile in Staging
-   wiederholen; anschließend Gate wieder schließen.
+1. Einen frischen, sanitisierten credentiallosen Presence-only-Preflight
+   erzeugen und unabhängig abnehmen lassen. Er muss die aktuelle Abwesenheit
+   der Machine-Key- und Reader-URL-Secrets, `PASSWORD NULL` für die Reader-Rolle
+   und geschlossene Consumer-/Synthetic-/Machine-/Real-/Production-Gates
+   belegen, ohne Secret-Werte oder Anwendungsdaten zu lesen.
+2. Erst nach einer neuen separaten Freigabe temporäre Staging-Credentials
+   provisionieren, exakt einen synthetischen Jarvis-One-Shot ausführen,
+   ausschließlich in-memory validieren und sofort vollständig bereinigen.
+3. Danach einen metadata-only Postread-Audit erzeugen und erneut unabhängig
+   abnehmen lassen.
 
 ### Vor Production und App-Store-Upload
 
-5. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
+4. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
    freiwillige Kommentare, Guardian-Scope und realer Jarvis-Read dürfen nur in
    der jeweils verifizierten Kombination geöffnet werden.
    Die aktuell für den lokalen Production-Build verwendete bestätigte
    Konfiguration enthält `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED` und
    `VITE_TURNSTILE_SITE_KEY` noch nicht; Feedback-Checkpoints und öffentliche
    Anfrageannahme sind in diesem Build daher absichtlich geschlossen.
-6. App-Privacy-Angaben, Datenschutzerklärung und Review Notes gegen diesen
+5. App-Privacy-Angaben, Datenschutzerklärung und Review Notes gegen diesen
    realen Datenweg angleichen.
-7. Die noch nicht in Production vorhandenen Migrationen in exakt geprüfter
+6. Die noch nicht in Production vorhandenen Migrationen in exakt geprüfter
    Reihenfolge einzeln anwenden; kein pauschales `supabase db push`.
-8. Benötigte Edge Functions und Feature-Gates kontrolliert aktivieren und
+7. Benötigte Edge Functions und Feature-Gates kontrolliert aktivieren und
    direkt negativ sowie positiv prüfen.
-9. Exakten finalen RC erneut auf iPhone und – solange iPad unterstützt wird –
+8. Exakten finalen RC erneut auf iPhone und – solange iPad unterstützt wird –
    iPad installieren und die Kernwege physisch prüfen.
-10. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
+9. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
     erstellen und Version 1.1 in App Store Connect einreichen.
 
 ## Feste Altersentscheidung
