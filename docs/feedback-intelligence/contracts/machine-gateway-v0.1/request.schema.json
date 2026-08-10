@@ -15,10 +15,10 @@
       "const": "mahles-jarvis-feedback-intelligence"
     },
     "contract_version": {
-      "const": "0.2.0-draft"
+      "const": "0.2.1-draft"
     },
     "schema_sha256": {
-      "const": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9"
+      "const": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d"
     },
     "data_scope": {
       "const": "synthetic"

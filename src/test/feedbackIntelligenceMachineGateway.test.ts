@@ -38,6 +38,10 @@ const syntheticGateClose = () => readRepoFile(
 
 describe("Feedback Intelligence machine gateway draft", () => {
   it("pins one internally consistent v0.3.2 producer package", () => {
+    const exportManifestSource = readRepoFile(
+      "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
+    );
+    const exportManifest = JSON.parse(exportManifestSource);
     const semanticsManifestSource = readRepoFile(
       "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
     );
@@ -50,6 +54,11 @@ describe("Feedback Intelligence machine gateway draft", () => {
     ));
 
     const expectedPins = {
+      export_contract_version: exportManifest.contract_version,
+      export_producer_commit: "1eb9de1960213878fc4186f76aca0bd59b2c99c9",
+      export_manifest_sha256: sha256(exportManifestSource),
+      export_package_sha256: exportManifest.package_sha256,
+      export_schema_sha256: exportManifest.export_pins.schema_sha256,
       semantics_contract_version: semanticsManifest.contract_version,
       semantics_producer_commit: "1975f767a61a0f481247aa1a5138846b5e2addb8",
       semantics_manifest_sha256: sha256(semanticsManifestSource),
@@ -60,10 +69,15 @@ describe("Feedback Intelligence machine gateway draft", () => {
       question_count: semanticsManifest.catalog_evidence.questions,
     };
 
+    expect(exportManifest.contract_version).toBe("0.2.1-draft");
     expect(semanticsManifest.contract_version).toBe("0.3.2-draft");
     expect(semanticsManifest.producer_worktree_dirty).toBe(false);
     expect(gatewayContract.producer_pins).toEqual(expectedPins);
     expect(gatewayManifest.upstream_pins).toMatchObject(expectedPins);
+    expect(gatewayManifest.files).toContainEqual({
+      path: "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
+      sha256: expectedPins.export_manifest_sha256,
+    });
     expect(gatewayManifest.files).toContainEqual({
       path: "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
       sha256: expectedPins.semantics_manifest_sha256,
@@ -134,8 +148,8 @@ describe("Feedback Intelligence machine gateway draft", () => {
     const validateError = ajv.compile(errorSchema);
     const request = {
       client_id: "mahles-jarvis-feedback-intelligence",
-      contract_version: "0.2.0-draft",
-      schema_sha256: "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+      contract_version: "0.2.1-draft",
+      schema_sha256: "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
       data_scope: "synthetic",
     };
 
@@ -156,9 +170,9 @@ describe("Feedback Intelligence machine gateway draft", () => {
     );
     expect(source).toContain('"https://zbeswjipayspgvcipzmx.supabase.co"');
     expect(source).toContain('"mahles-jarvis-feedback-intelligence"');
-    expect(source).toContain('"0.2.0-draft"');
+    expect(source).toContain('"0.2.1-draft"');
     expect(source).toContain(
-      '"fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9"',
+      '"e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d"',
     );
     expect(source).toContain('body.data_scope !== "synthetic"');
     expect(source).toContain('"production_scope_blocked"');

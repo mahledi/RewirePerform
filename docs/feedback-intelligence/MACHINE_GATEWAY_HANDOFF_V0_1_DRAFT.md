@@ -11,7 +11,7 @@ weiterhin kein Machine-Key, kein Reader-Passwort, kein Deployment und kein
 Netzwerk-Read. Sämtliche Collection-, Machine-, Staging-Read-, Production- und
 Real-Data-Gates bleiben geschlossen.
 
-Die bestehenden 55 Fragen, das v0.2-Exportformat, DE-Filter,
+Die bestehenden 55 Fragen, das versionierte v0.2.1-Exportformat, DE-Filter,
 Kohortenunterdrückung und Privacy-Grenzen wurden nicht umbenannt. Der
 Gateway-Pin verweist eindeutig auf Semantikpaket `0.3.2-draft`. Gegenüber
 `0.3.1-draft` bleiben IDs, Skalen, Antwortwerte, Katalog und Exportform
@@ -31,7 +31,7 @@ Consent-, Guardian-, Consumer- und Aktivierungsgates bleiben geschlossen.
   höchstens 1 Minute in der Zukunft
 - Body: exakt das Schema
   `contracts/machine-gateway-v0.1/request.schema.json`, maximal 1.024 Bytes
-- Erfolg: HTTP 200 und exakt der bestehende v0.2-Export ohne neues Envelope;
+- Erfolg: HTTP 200 und exakt der v0.2.1-Export ohne neues Envelope;
   `X-MahleOS-Request-Id` wird als Response-Header gespiegelt
 - Fehler: allowgelistetes JSON `{ "error": "...", "request_id": "..." }`;
   vor einer gültigen Request-ID kann `request_id` fehlen
@@ -111,7 +111,7 @@ Feedbacktext.
    Staging-Audit aller effektiven `PUBLIC`-Function-Rechte verbindlich.
 
 Es wurde nichts still umbenannt. Endpoint, Rolle, Upstream-Signatur,
-Client-ID, v0.2-Schema-Pin, v0.3.2-Paket, 55-Fragen-Katalog und DE-Scope stimmen
+Client-ID, v0.2.1-Schema-Pin, v0.3.2-Paket, 55-Fragen-Katalog und DE-Scope stimmen
 mit dem Jarvis-Handoff überein.
 
 ## Lokale Negativ- und Vertragstests
@@ -133,7 +133,7 @@ Geprüft sind:
 - weniger als fünf DE-Subjects ergibt leeres `items`-Array;
 - Under-16-Freitext-Consent ohne Guardian-Scope wird schon beim Receipt
   abgewiesen; strukturierte Antwort bleibt exportierbar;
-- erfolgreicher Output bleibt v0.2-schema-valide und enthält weiterhin nur
+- erfolgreicher Output bleibt v0.2.1-schema-valide und enthält weiterhin nur
   consentierten Freitext.
 
 ## Bewusster Stop

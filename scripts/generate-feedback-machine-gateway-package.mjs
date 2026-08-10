@@ -8,7 +8,8 @@ const root = process.cwd();
 const checkOnly = process.argv.includes("--check");
 const manifestPath = "docs/feedback-intelligence/contracts/machine-gateway-v0.1/producer-package-manifest.json";
 const packageFiles = [
-  "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
+  "docs/feedback-intelligence/contracts/v0.2.1/proposed-export.schema.json",
+  "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
   "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
   "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
   "docs/feedback-intelligence/contracts/machine-gateway-v0.1/error.schema.json",
@@ -55,7 +56,11 @@ const manifest = {
     endpoint: "/functions/v1/mahleos-feedback-intelligence-read",
     role: "mahleos_feedback_reader",
     rpc: "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
-    export_schema_sha256: "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+    export_contract_version: "0.2.1-draft",
+    export_producer_commit: "1eb9de1960213878fc4186f76aca0bd59b2c99c9",
+    export_manifest_sha256: "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
+    export_package_sha256: "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
+    export_schema_sha256: "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
     semantics_contract_version: "0.3.2-draft",
     semantics_producer_commit: "1975f767a61a0f481247aa1a5138846b5e2addb8",
     semantics_manifest_sha256: "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df",

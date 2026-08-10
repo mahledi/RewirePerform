@@ -19,8 +19,8 @@ import { authenticateFeedbackIntelligenceMachine } from
 
 const STAGING_URL = "https://zbeswjipayspgvcipzmx.supabase.co";
 const CLIENT_ID = "mahles-jarvis-feedback-intelligence";
-const CONTRACT_VERSION = "0.2.0-draft";
-const SCHEMA_SHA256 = "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9";
+const CONTRACT_VERSION = "0.2.1-draft";
+const SCHEMA_SHA256 = "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d";
 const SYNTHETIC_GATE = "SYNTHETIC_STAGING_APPROVED";
 const ALLOWED_BODY_KEYS = new Set([
   "client_id",
@@ -140,7 +140,7 @@ Deno.serve(async (request) => {
         requestId,
       );
     }
-    if (!payload || payload.schema_version !== "rewire-feedback-intelligence-export-v0.2-draft") {
+    if (!payload || payload.schema_version !== "rewire-feedback-intelligence-export-v0.2.1-draft") {
       return jsonResponse(503, { error: "feedback_read_unavailable", request_id: requestId }, requestId);
     }
 

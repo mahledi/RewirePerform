@@ -9,11 +9,15 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "ac8f9b6e4ed8092e1f2292959e30a2f25a2e2cc465659714e5581902cc9faf09",
+  "package_sha256": "a540bb8fdbef4800bcb2329236364d6c87ffa9fa0d2516a114d2aa5459862c62",
   "files": [
     {
-      "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
-      "sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9"
+      "path": "docs/feedback-intelligence/contracts/v0.2.1/proposed-export.schema.json",
+      "sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
+      "sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab"
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
@@ -21,7 +25,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
-      "sha256": "fa7429f94c6acc29d8a4dca2f68422597307d56bf28b0bf9613337afa06d28a8"
+      "sha256": "74e3616a67975766b51238d5573671d8e086014392d0e59e3ee9696ab287d204"
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/error.schema.json",
@@ -29,7 +33,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
-      "sha256": "fdb81d7f6207096fe3bffd6aef69d392ba3f6ad7dd1558b0af802d7391c1b317"
+      "sha256": "20f13eca24d2c07f87984bd5c85a33e86989bceea919e732fe54ab7b28cda531"
     },
     {
       "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
@@ -61,7 +65,7 @@
     },
     {
       "path": "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
-      "sha256": "905622344608afef5f49908885cee961c5ddf84cd9178e4df380f5223a9e26f7"
+      "sha256": "b1e1cf077970011f6f62beef121ec617c94a4f37849163958bc1a2840199c384"
     },
     {
       "path": "src/test/feedbackIntelligenceMachineAuth.test.ts",
@@ -69,7 +73,7 @@
     },
     {
       "path": "src/test/feedbackIntelligenceMachineGateway.test.ts",
-      "sha256": "cf86d6a22bc775643f39ab6e259b2d35abb115a8e12fe61371d6e5d45524b914"
+      "sha256": "af9e51f8e300b4e089dac19fd72a9da2d2f6392ad367340e9c68cecaeb06fe26"
     },
     {
       "path": "scripts/verify-feedback-intelligence-sql.mjs",
@@ -77,14 +81,18 @@
     },
     {
       "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",
-      "sha256": "275dd01bff066dbdbb6a465b9e0db8068314d54dc751b289d2495c6b0c69cbe5"
+      "sha256": "3144d6bc3d7081a5afbaf49ce51618ae0583b37bb8033b3d3d34eaf27edea3d0"
     }
   ],
   "upstream_pins": {
     "endpoint": "/functions/v1/mahleos-feedback-intelligence-read",
     "role": "mahleos_feedback_reader",
     "rpc": "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
-    "export_schema_sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
+    "export_contract_version": "0.2.1-draft",
+    "export_producer_commit": "1eb9de1960213878fc4186f76aca0bd59b2c99c9",
+    "export_manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
+    "export_package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
+    "export_schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
     "semantics_contract_version": "0.3.2-draft",
     "semantics_producer_commit": "1975f767a61a0f481247aa1a5138846b5e2addb8",
     "semantics_manifest_sha256": "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df",
