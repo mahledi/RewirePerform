@@ -14,37 +14,37 @@ export const demoFlowSteps: DemoFlowStep[] = [
     id: "science",
     eyebrow: "Step 1",
     title: "Science Bite",
-    description: "Der Tag startet mit einem kurzen Mechanismus, der die Denkaufgabe fachlich einordnet.",
-  },
-  {
-    id: "today",
-    eyebrow: "Step 2",
-    title: "Heute für dich",
-    description: "Der Athlet bekommt einen ruhigen Tagesrahmen, ohne dass Tasks oder Inhalte verändert werden.",
+    description: "Der Tag startet mit einem kurzen Mechanismus, der die heutige Mission verständlich einordnet.",
   },
   {
     id: "checkin",
+    eyebrow: "Step 2",
+    title: "Dein Tages-Puls",
+    description: "Zehn kurze Fragen erfassen den heutigen Zustand, ohne daraus ein psychologisches Profil zu machen.",
+  },
+  {
+    id: "today",
     eyebrow: "Step 3",
-    title: "Check-in",
-    description: "Der echte Flow arbeitet mit Skalen und Tageszustand, nicht mit einem privaten Coach-Profil.",
+    title: "Heute für dich",
+    description: "Ein klarer Satz verbindet den Mechanismus mit der nächsten beeinflussbaren Handlung.",
   },
   {
     id: "task",
     eyebrow: "Step 4",
-    title: "Denkaufgabe",
-    description: "Die Aufgabe besteht aus Warum, Auslöser, konkreter Handlung, Reframing und Self-Talk.",
+    title: "Deine Mission",
+    description: "Eine Mission bündelt Warum, Auslöser und konkrete Handlung zu einer Linie für den Tag.",
   },
   {
-    id: "reflection",
+    id: "comprehension",
     eyebrow: "Step 5",
-    title: "Reflexion",
-    description: "Eine kurze Reflexionskarte prüft, ob die Tagesaufgabe wirklich verstanden wurde.",
+    title: "Verständnis-Check",
+    description: "Eine kurze Frage festigt die heutige Linie. Kein Test und keine Bewertung der Person.",
   },
   {
-    id: "journal",
+    id: "completion",
     eyebrow: "Step 6",
-    title: "Journal",
-    description: "Danach kommt das private Journal zum Erleben des Tages und zur Dankbarkeit.",
+    title: "Abschluss",
+    description: "Der Daily Flow endet klar. Das private Journal bleibt ein eigener Tagesabschluss am Abend.",
   },
 ];
 
@@ -81,9 +81,9 @@ export const demoDailyTask = {
 };
 
 export const demoScienceBite = {
-  title: "Dein Gehirn bewertet schneller, als du bewusst denkst.",
+  title: "Nach einem Fehler sucht der Kopf schnell nach Bedeutung.",
   body:
-    "Nach Fehlern springt Aufmerksamkeit oft zu Bedeutung und Bewertung: Was war das? Was sagt das über mich? RewirePerform trainiert an solchen Tagen den Wechsel von Urteil zu Information. Dadurch wird die nächste Handlung wieder greifbarer.",
+    "Nach Fehlern springt Aufmerksamkeit oft zu Bewertung: Was war das? Was sagt das über mich? Die heutige Mission übt, zuerst eine nutzbare Information zu finden und dann die nächste Handlung zu wählen.",
 };
 
 export const coachTabs: DemoCoachTab[] = [
@@ -102,9 +102,9 @@ export const overviewMetrics: DemoMetric[] = [
 ];
 
 export const evidenceBars = [
-  { label: "Fehlererholung", pre: 42, mid: 58, post: 66 },
-  { label: "Prozessfokus", pre: 48, mid: 61, post: 69 },
-  { label: "Druckregulation", pre: 39, mid: 54, post: 62 },
+  { label: "Programmtage genutzt", value: 12, max: 14, detail: "im aktuellen Zeitraum" },
+  { label: "Missionen abgeschlossen", value: 11, max: 14, detail: "Status, keine Inhaltswertung" },
+  { label: "Team-Reviews beantwortet", value: 2, max: 2, detail: "geschützter Team-Prozess" },
 ];
 
 export const coachSees = [
@@ -124,7 +124,7 @@ export const coachDoesNotSee = [
 ];
 
 export const demoHighlights = [
-  { Icon: Sparkles, title: "Täglich nutzbar", text: "kurzer Flow statt überladener Theorie" },
+  { Icon: Sparkles, title: "Im Alltag nutzbar", text: "klare Missionen statt überladener Theorie" },
   { Icon: ShieldCheck, title: "Rollenbasiert", text: "Orientierung für Coaches, Privatsphäre für Athleten" },
-  { Icon: BarChart3, title: "Entwicklung sichtbar", text: "Beispielwerte, Missingness und Fortschritt ohne Rohinhalte" },
+  { Icon: BarChart3, title: "Verlauf sichtbar", text: "Nutzung, Teilnahme und Programmfortschritt ohne private Rohinhalte" },
 ];

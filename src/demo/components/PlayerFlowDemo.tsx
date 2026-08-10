@@ -73,8 +73,9 @@ export const PlayerFlowDemo = () => {
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-primary">Athleten-Flow</p>
           <h2 className="font-heading text-3xl font-bold md:text-5xl">Ein Daily Flow, der sofort verständlich wirkt.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-            Diese Demo speichert nichts. Sie zeigt die echte Logik: Science Bite, Heute für dich, Check-in,
-            Denkaufgabe, Reflexion und Journal.
+            Diese Demo speichert nichts. Sie zeigt die echte Trainingslogik:
+            Science Bite, zehnteiliger Tages-Puls, eine Mission und ein kurzer
+            Verständnis-Check. Das private Journal folgt getrennt am Abend.
           </p>
         </div>
 
@@ -120,14 +121,14 @@ export const PlayerFlowDemo = () => {
                     <p className="p-5 leading-relaxed text-muted-foreground">{demoScienceBite.body}</p>
                   </div>
                 </div>
-                <DemoNextButton onClick={goNext} label="Heute für dich ansehen" />
+                <DemoNextButton onClick={goNext} label="Tages-Puls ansehen" />
               </div>
             )}
 
             {currentStep === "today" && (
               <div className="flex h-full flex-col justify-between gap-8">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 2 · Heute für dich</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 3 · Heute für dich</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">Urteil zu Information</h3>
                   <p className="mt-4 max-w-xl text-muted-foreground">
                     Der echte `Heute für dich`-Block rahmt den Tag. Er ersetzt keine Aufgabe und verändert keine Inhalte,
@@ -148,18 +149,17 @@ export const PlayerFlowDemo = () => {
                     </p>
                   </div>
                 </div>
-                <DemoNextButton onClick={goNext} label="Check-in ansehen" />
+                <DemoNextButton onClick={goNext} label="Mission öffnen" />
               </div>
             )}
 
             {currentStep === "checkin" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 3 · Check-in</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 2 · Tages-Puls</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">Wie ist dein Zustand heute?</h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    In der echten App werden diese Werte als Tageszustand gespeichert. Sie sind kein privates
-                    psychologisches Einzelprofil für den Coach.
+                    Die echte App fragt zehn Bereiche ab. Diese kompakte Demo zeigt vier davon. Daraus entsteht kein privates psychologisches Einzelprofil für den Coach.
                   </p>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -193,14 +193,14 @@ export const PlayerFlowDemo = () => {
                   Im echten System wird daraus kein privates Einzelprofil für den Coach. Der Athlet bekommt seinen
                   Tagesrahmen; der Coach sieht nur passende Team-Signale und Teilnahme, wenn die fachliche Grundlage stimmt.
                 </div>
-                <DemoNextButton onClick={goNext} label="Denkaufgabe öffnen" />
+                <DemoNextButton onClick={goNext} label="Heute für dich ansehen" />
               </div>
             )}
 
             {currentStep === "task" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 4 · Denkaufgabe</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 4 · Deine Mission</p>
                   <h3 className="mt-3 font-heading text-3xl font-bold">{demoDailyTask.title}</h3>
                 </div>
                 <button
@@ -283,30 +283,29 @@ export const PlayerFlowDemo = () => {
                   <CheckCircle2 className="h-5 w-5" />
                   {taskDone ? "Verstanden" : "Verstanden"}
                 </button>
-                <DemoNextButton onClick={goNext} label="Reflexion ansehen" />
+                <DemoNextButton onClick={goNext} label="Verständnis-Check" />
               </div>
             )}
 
-            {currentStep === "reflection" && (
+            {currentStep === "comprehension" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 5 · Reflexion</p>
-                  <h3 className="mt-3 font-heading text-3xl font-bold">Hast du die Aufgabe verstanden?</h3>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 5 · Verständnis-Check</p>
+                  <h3 className="mt-3 font-heading text-3xl font-bold">Eine kurze Frage. Kein Test.</h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Diese Karte gehört zur Tagesaufgabe. Sie prüft nicht dein Leben, sondern ob der Mechanismus klar ist:
-                    Fehler werden zu Information, bevor du in Bewertung rutschst.
+                    Der Check festigt nur die heutige Linie. Er bewertet weder die Person noch die sportliche Leistung.
                   </p>
                 </div>
                 <div className="rounded-3xl border border-border bg-background/70 p-5">
                   <div className="mb-4 flex items-center gap-3 text-primary">
                     <Check className="h-5 w-5" />
-                    <p className="font-heading font-semibold">Kurze Aufgaben-Reflexion</p>
+                    <p className="font-heading font-semibold">Was ist nach einem Fehler zuerst hilfreich?</p>
                   </div>
                   <div className="space-y-3">
                     {[
-                      "Was bedeutet heute: Fehler ist zuerst Information, nicht Identität?",
-                      "Welche nächste kontrollierbare Aktion passt nach einem Fehler?",
-                      "Welcher Self-Talk-Anker hilft dir, wieder in die Handlung zu kommen?",
+                      "Eine nutzbare Information finden und die nächste Handlung wählen.",
+                      "Den Fehler möglichst lange bewerten.",
+                      "Den Fehler sofort vergessen, ohne etwas mitzunehmen.",
                     ].map((question) => (
                       <div key={question} className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
                         {question}
@@ -314,30 +313,29 @@ export const PlayerFlowDemo = () => {
                     ))}
                   </div>
                 </div>
-                <DemoNextButton onClick={goNext} label="Journal öffnen" />
+                <DemoNextButton onClick={goNext} label="Daily Flow abschließen" />
               </div>
             )}
 
-            {currentStep === "journal" && (
+            {currentStep === "completion" && (
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 6 · Journal</p>
-                  <h3 className="mt-3 font-heading text-3xl font-bold">Privater Tagesabschluss.</h3>
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary">Schritt 6 · Abschluss</p>
+                  <h3 className="mt-3 font-heading text-3xl font-bold">Daily Flow abgeschlossen.</h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Erst nach der Aufgaben-Reflexion kommt das Journal. Hier geht es um dein Erleben, was hängen bleibt
-                    und wofür du heute konkret dankbar bist.
+                    Der Tagesanker steht. Das Journal bleibt ein eigener, privater Tagesabschluss am Abend.
                   </p>
                 </div>
                 <div className="rounded-3xl border border-border bg-background/70 p-5">
                   <div className="mb-5 flex items-center gap-3 text-primary">
                     <BookOpen className="h-5 w-5" />
-                    <p className="font-heading font-semibold">Journal zum Tag</p>
+                    <p className="font-heading font-semibold">Heute Abend im Journal</p>
                   </div>
                   <div className="space-y-3">
                     {[
-                      "Wie war es heute, Fehler eher als Information zu lesen?",
-                      "Was hast du über dich im Training oder Spiel bemerkt?",
-                      "Wofür bist du heute konkret dankbar?",
+                      "Erfahrung bewusst festhalten",
+                      "den Tagesanker auf die echte Situation beziehen",
+                      "Dankbarkeit als eigenen Block abschließen",
                     ].map((question) => (
                       <div key={question} className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
                         {question}
@@ -348,8 +346,7 @@ export const PlayerFlowDemo = () => {
                 <div className="flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/10 p-4 text-sm">
                   <Lock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                   <p>
-                    Daily Flow abgeschlossen. Im echten System fließt nur der passende Status in Fortschritt und
-                    Adherence. Private Reflexionen erscheinen nicht in der Coach-Ansicht.
+                    Im echten System fließt nur der passende Abschlussstatus in den Programmverlauf. Private Journaltexte erscheinen nicht in der Coach-Ansicht.
                   </p>
                 </div>
                 <DemoNextButton onClick={reset} label="Demo erneut durchgehen" />

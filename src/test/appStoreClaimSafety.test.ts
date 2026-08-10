@@ -31,7 +31,11 @@ describe("App Store claim safety", () => {
       "src/pages/Journal.tsx",
       "src/pages/Coach.tsx",
       "src/pages/Admin.tsx",
+      "src/components/BrainSection.tsx",
+      "src/components/ScienceSection.tsx",
+      "src/demo/DemoPage.tsx",
       "src/demo/data/demoData.ts",
+      "src/demo/components/DemoFrames.tsx",
       "src/demo/components/CoachDashboardDemo.tsx",
     ]
       .map(readSource)
@@ -48,6 +52,12 @@ describe("App Store claim safety", () => {
       "neue Bahnen schneller als beim Tippen",
       "Wirksamkeit (aggregiert)",
       'label="Wirksamkeit"',
+      "Dein Gehirn baut sich physisch um",
+      "Disziplin zu einem physischen Muskel",
+      "100% Individuell",
+      "Wirkung · Demo-Werte",
+      "Fehlererholung",
+      "Druckregulation",
     ];
 
     for (const claim of retiredClaims) {
@@ -58,5 +68,9 @@ describe("App Store claim safety", () => {
     expect(visibleCopy).toContain(
       "RewirePerform misst oder garantiert keine körperliche Gehirnveränderung",
     );
+    expect(visibleCopy).toContain("Wissenschaftliche Prinzipien.");
+    expect(visibleCopy).toContain("Wie gut das");
+    expect(visibleCopy).toContain("Gesamtsystem im Sportalltag funktioniert");
+    expect(visibleCopy).toContain("Programmverlauf · Demo-Werte");
   });
 });
