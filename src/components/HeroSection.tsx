@@ -50,7 +50,8 @@ const HeroSection = () => {
             className="text-base md:text-xl text-muted-foreground max-w-2xl mb-7 md:mb-10 leading-relaxed"
           >
             Ein 56-Tage-System für Athleten und Teams, das tägliche mentale
-            Praxis, neurokognitive Prinzipien und messbare Entwicklung verbindet.
+            Praxis, neurokognitive Prinzipien und einen nachvollziehbaren
+            Programmverlauf verbindet.
           </motion.p>
 
           <motion.div

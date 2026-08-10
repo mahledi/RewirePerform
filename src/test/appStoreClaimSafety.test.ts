@@ -31,7 +31,11 @@ describe("App Store claim safety", () => {
       "src/pages/Journal.tsx",
       "src/pages/Coach.tsx",
       "src/pages/Admin.tsx",
+      "src/components/HeroSection.tsx",
+      "src/components/ProcessSection.tsx",
       "src/components/BrainSection.tsx",
+      "src/components/MechanismSection.tsx",
+      "src/components/EvidenceSection.tsx",
       "src/components/ScienceSection.tsx",
       "src/demo/DemoPage.tsx",
       "src/demo/data/demoData.ts",
@@ -58,6 +62,9 @@ describe("App Store claim safety", () => {
       "Wirkung · Demo-Werte",
       "Fehlererholung",
       "Druckregulation",
+      "messbare Entwicklung",
+      "Sport, Position, Zustand und Fortschritt persönlich eingeordnet",
+      "Dankbarkeit verändert Aufmerksamkeit",
     ];
 
     for (const claim of retiredClaims) {
