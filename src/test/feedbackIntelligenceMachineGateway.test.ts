@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -9,6 +10,7 @@ import {
 } from "../../supabase/functions/_shared/feedbackIntelligenceGatewayHttp";
 
 const readRepoFile = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
+const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
 const edge = () => readRepoFile(
   "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
 );
@@ -35,6 +37,39 @@ const syntheticGateClose = () => readRepoFile(
 );
 
 describe("Feedback Intelligence machine gateway draft", () => {
+  it("pins one internally consistent v0.3.2 producer package", () => {
+    const semanticsManifestSource = readRepoFile(
+      "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
+    );
+    const semanticsManifest = JSON.parse(semanticsManifestSource);
+    const gatewayContract = JSON.parse(readRepoFile(
+      "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
+    ));
+    const gatewayManifest = JSON.parse(readRepoFile(
+      "docs/feedback-intelligence/contracts/machine-gateway-v0.1/producer-package-manifest.json",
+    ));
+
+    const expectedPins = {
+      semantics_contract_version: semanticsManifest.contract_version,
+      semantics_producer_commit: "1975f767a61a0f481247aa1a5138846b5e2addb8",
+      semantics_manifest_sha256: sha256(semanticsManifestSource),
+      semantics_package_sha256: semanticsManifest.package_sha256,
+      semantics_catalog_sha256: semanticsManifest.files.find(
+        ({ path }: { path: string }) => path.endsWith("construct-catalog.json"),
+      )?.sha256,
+      question_count: semanticsManifest.catalog_evidence.questions,
+    };
+
+    expect(semanticsManifest.contract_version).toBe("0.3.2-draft");
+    expect(semanticsManifest.producer_worktree_dirty).toBe(false);
+    expect(gatewayContract.producer_pins).toEqual(expectedPins);
+    expect(gatewayManifest.upstream_pins).toMatchObject(expectedPins);
+    expect(gatewayManifest.files).toContainEqual({
+      path: "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
+      sha256: expectedPins.semantics_manifest_sha256,
+    });
+  });
+
   it("mirrors a valid request ID in body and header when another replay header is invalid", async () => {
     const requestId = "70000000-0000-4000-8000-000000000013";
     const now = Date.parse("2026-08-07T10:00:00.000Z");

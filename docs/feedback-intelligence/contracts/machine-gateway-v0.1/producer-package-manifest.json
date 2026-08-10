@@ -9,7 +9,7 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "9e671e9885e37019853bb5e542eabc9d246310d9a10e55befedb9caecf7bcbf1",
+  "package_sha256": "ac8f9b6e4ed8092e1f2292959e30a2f25a2e2cc465659714e5581902cc9faf09",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
@@ -29,7 +29,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
-      "sha256": "0649f9a892d771da2ac2fb512b477d894dd24012149ca178b8236d1310b4dad4"
+      "sha256": "fdb81d7f6207096fe3bffd6aef69d392ba3f6ad7dd1558b0af802d7391c1b317"
     },
     {
       "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
@@ -69,7 +69,7 @@
     },
     {
       "path": "src/test/feedbackIntelligenceMachineGateway.test.ts",
-      "sha256": "5b9bc8e8880f77822e13eb1d06881317c7ce4117a270cf8980ebd1be20f130ad"
+      "sha256": "cf86d6a22bc775643f39ab6e259b2d35abb115a8e12fe61371d6e5d45524b914"
     },
     {
       "path": "scripts/verify-feedback-intelligence-sql.mjs",
@@ -77,7 +77,7 @@
     },
     {
       "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",
-      "sha256": "e3bded03e9ed923a5ee1339582374b3833eb74f82fed9a09a4a38a3ee21cfd25"
+      "sha256": "275dd01bff066dbdbb6a465b9e0db8068314d54dc751b289d2495c6b0c69cbe5"
     }
   ],
   "upstream_pins": {
@@ -85,8 +85,10 @@
     "role": "mahleos_feedback_reader",
     "rpc": "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
     "export_schema_sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
-    "semantics_manifest_sha256": "1981a5142e1c4f654fb12104be922ed99477cb36dc3c80b70fabc1aded9dc5ee",
-    "semantics_package_sha256": "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
+    "semantics_contract_version": "0.3.2-draft",
+    "semantics_producer_commit": "1975f767a61a0f481247aa1a5138846b5e2addb8",
+    "semantics_manifest_sha256": "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df",
+    "semantics_package_sha256": "f38ae254af315eb6656edaddf7c196870f40b536c39817abc0a26123395de363",
     "semantics_catalog_sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
     "question_count": 55
   },

@@ -56,8 +56,10 @@ const manifest = {
     role: "mahleos_feedback_reader",
     rpc: "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
     export_schema_sha256: "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9",
-    semantics_manifest_sha256: "1981a5142e1c4f654fb12104be922ed99477cb36dc3c80b70fabc1aded9dc5ee",
-    semantics_package_sha256: "5d81f7b7d3cde773af805f5d51aae7c304667737f0d918201696869248a78896",
+    semantics_contract_version: "0.3.2-draft",
+    semantics_producer_commit: "1975f767a61a0f481247aa1a5138846b5e2addb8",
+    semantics_manifest_sha256: "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df",
+    semantics_package_sha256: "f38ae254af315eb6656edaddf7c196870f40b536c39817abc0a26123395de363",
     semantics_catalog_sha256: "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
     question_count: 55
   },
