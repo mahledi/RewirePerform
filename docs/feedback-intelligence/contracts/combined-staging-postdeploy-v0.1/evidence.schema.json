@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/combined-staging-postdeploy-v0.1/evidence.schema.json",
+  "title": "RewirePerform Feedback Intelligence combined Staging postdeploy assurance v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_status",
+    "target",
+    "accepted_predeploy",
+    "remote_migrations",
+    "database_assurance",
+    "edge_assurance",
+    "advisor_assurance",
+    "gates",
+    "next_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rewireperform-feedback-intelligence-combined-staging-postdeploy-v1"
+    },
+    "evidence_status": {
+      "const": "PASS_POSTDEPLOY_ASSURANCE_UNSIGNED_AWAITING_CONSUMER_REVIEW"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_ref", "project_name", "region", "environment", "jurisdiction", "data_scope"],
+      "properties": {
+        "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+        "project_name": { "const": "RewirePerform Staging" },
+        "region": { "const": "eu-central-1" },
+        "environment": { "const": "staging" },
+        "jurisdiction": { "const": "DE" },
+        "data_scope": { "const": "synthetic_only" }
+      }
+    },
+    "accepted_predeploy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_commit", "evidence_sha256", "manifest_sha256", "package_sha256", "consumer_commit", "consumer_acceptance_sha256"],
+      "properties": {
+        "producer_commit": { "const": "1e4f3581d7d9c174fa65bf7d3475b78955b9f4c8" },
+        "evidence_sha256": { "const": "78caa5bd105045b5430391d70f2b905a82326f5f5e637d4cd85b5712e4d46c9e" },
+        "manifest_sha256": { "const": "6cb065724144a9d390432307cc524382269ce9611ffa4b607a2fb3b1cb28424e" },
+        "package_sha256": { "const": "8b27e88fb03081a751e2062ec263400b0736dc7d70e893c83ea2e3deefdf8e26" },
+        "consumer_commit": { "const": "d349421da0a5fb137ce2cb121654c78a0cda4b42" },
+        "consumer_acceptance_sha256": { "const": "079129b700d1a33025ea49480334eabc2aa8d9923f6d2fce233a3db79b60d235" }
+      }
+    },
+    "remote_migrations": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["remote_version", "name", "local_path", "local_sha256", "applied"],
+        "properties": {
+          "remote_version": { "type": "string", "pattern": "^[0-9]{14}$" },
+          "name": { "type": "string", "minLength": 1 },
+          "local_path": { "type": "string", "minLength": 1 },
+          "local_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "applied": { "const": true }
+        }
+      }
+    },
+    "database_assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executed_at", "audit_phase", "audit_result_path", "audit_result_sha256",
+        "audit_sql_sha256", "application_rows_read", "application_functions_called",
+        "database_mutated", "contract_version", "schema_version", "contract_status",
+        "activation_flags_closed", "four_draft_campaigns_pinned", "guardian_draft_exact",
+        "reader_password_is_null", "standard_runtime_execute_denied", "reader_execute_allowlisted",
+        "reader_direct_relation_privileges", "reader_direct_sequence_privileges",
+        "function_definition_sha256"
+      ],
+      "properties": {
+        "executed_at": { "const": "2026-08-10T11:53:38.076999+00:00" },
+        "audit_phase": { "const": "POSTDEPLOY_ASSURANCE" },
+        "audit_result_path": { "const": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.1/remote-audit-result-2026-08-10.json" },
+        "audit_result_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "audit_sql_sha256": { "const": "7f7865f769f46bfab204c37d071ee743636fe183f6d6876a24557e51dc508bd3" },
+        "application_rows_read": { "const": false },
+        "application_functions_called": { "const": false },
+        "database_mutated": { "const": false },
+        "contract_version": { "const": "0.2.1-draft" },
+        "schema_version": { "const": "rewire-feedback-intelligence-export-v0.2.1-draft" },
+        "contract_status": { "const": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED" },
+        "activation_flags_closed": { "const": true },
+        "four_draft_campaigns_pinned": { "const": true },
+        "guardian_draft_exact": { "const": true },
+        "reader_password_is_null": { "const": true },
+        "standard_runtime_execute_denied": { "const": true },
+        "reader_execute_allowlisted": { "const": true },
+        "reader_direct_relation_privileges": { "const": 0 },
+        "reader_direct_sequence_privileges": { "const": 0 },
+        "function_definition_sha256": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["gateway", "internal_export"],
+          "properties": {
+            "gateway": { "const": "d08d3fbf17420570ad6e8f29f0e3e19717a874f19a767c8eb7c7656acf7aedfd" },
+            "internal_export": { "const": "534d0d8770899566658b7efb68c6bc31cfecc068dcf5cf94c30f09143b2ab043" }
+          }
+        }
+      }
+    },
+    "edge_assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "deployment_id", "observed_version", "status", "verify_jwt", "ezbr_sha256", "source_file_count", "source_manifest_sha256", "deployed_source_byte_match"],
+      "properties": {
+        "slug": { "const": "mahleos-feedback-intelligence-read" },
+        "deployment_id": { "const": "4579d2b9-16c9-4387-be84-d5a5b440265e" },
+        "observed_version": { "const": 25 },
+        "status": { "const": "ACTIVE" },
+        "verify_jwt": { "const": false },
+        "ezbr_sha256": { "const": "ff2e9862d07cf237f906c861e0c81e9760f6d56f8a3f3a0251cdeeb9e9c8900c" },
+        "source_file_count": { "const": 6 },
+        "source_manifest_sha256": { "const": "cd76527cbe5bd3accfc7b64c8860b2ad5a11042bcecb2f5b4722510255f2eb6a" },
+        "deployed_source_byte_match": { "const": true }
+      }
+    },
+    "advisor_assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["security_errors", "performance_errors", "new_block_finding", "private_tables_have_client_privileges", "intentional_private_rls_info_count"],
+      "properties": {
+        "security_errors": { "const": 0 },
+        "performance_errors": { "const": 0 },
+        "new_block_finding": { "const": false },
+        "private_tables_have_client_privileges": { "const": false },
+        "intentional_private_rls_info_count": { "const": 3 }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedback_collection_enabled", "text_collection_enabled", "minor_policy_enabled",
+        "guardian_policy_enabled", "consumer_pin_enabled", "synthetic_export_enabled",
+        "reader_password_provisioned", "machine_key_provisioned_by_this_gate",
+        "credential_mutation_performed", "network_read_performed", "export_function_called",
+        "production_export_enabled", "real_data_read_enabled", "push_performed",
+        "merge_performed", "app_store_release_authorized"
+      ],
+      "properties": {
+        "feedback_collection_enabled": { "const": false },
+        "text_collection_enabled": { "const": false },
+        "minor_policy_enabled": { "const": false },
+        "guardian_policy_enabled": { "const": false },
+        "consumer_pin_enabled": { "const": false },
+        "synthetic_export_enabled": { "const": false },
+        "reader_password_provisioned": { "const": false },
+        "machine_key_provisioned_by_this_gate": { "const": false },
+        "credential_mutation_performed": { "const": false },
+        "network_read_performed": { "const": false },
+        "export_function_called": { "const": false },
+        "production_export_enabled": { "const": false },
+        "real_data_read_enabled": { "const": false },
+        "push_performed": { "const": false },
+        "merge_performed": { "const": false },
+        "app_store_release_authorized": { "const": false }
+      }
+    },
+    "next_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "consumer_review_required", "credentials_allowed", "network_read_allowed", "production_allowed"],
+      "properties": {
+        "decision": { "const": "AWAITING_CONSUMER_POSTDEPLOY_REVIEW" },
+        "consumer_review_required": { "const": true },
+        "credentials_allowed": { "const": false },
+        "network_read_allowed": { "const": false },
+        "production_allowed": { "const": false }
+      }
+    }
+  }
+}
