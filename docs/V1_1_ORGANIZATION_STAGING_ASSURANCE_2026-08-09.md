@@ -1,6 +1,6 @@
 # RewirePerform V1.1 – Organisationsanfrage Staging-Assurance
 
-Stand: 9. August 2026  
+Stand: 10. August 2026
 Status: Staging installiert und negativ verifiziert; öffentliche Annahme bleibt fail-closed
 
 ## Praktische Bedeutung
@@ -16,7 +16,7 @@ Feedback- oder Jarvis-Aktivierung.
 ## Eingefrorene Quelle
 
 - Release-Branch: `codex/v1-1-release-final-20260809`
-- geprüfter Release-HEAD: `578cccdab472f4de3487321aa8f6e91f3bf964e6`
+- geprüfter Release-HEAD: `ab787c41922855fe6429f4d64e542c647814c84e`
 - Draft-PR: `#116`
 - Staging-Projekt: `RewirePerform Staging`
 - Staging-Projekt-ID: `zbeswjipayspgvcipzmx`
@@ -36,6 +36,30 @@ Feedback-Kette nicht still erweitert werden darf.
 - Remote-Migrationsname: `coach_enterprise_onboarding_v1_1`
 - Remote-Version: `20260809193704`
 
+Die zwei additiven Folgebausteine wurden am 10. August ebenfalls einzeln und
+ohne allgemeinen Migrationspush angewendet:
+
+- Team-/Organisationspfad:
+  - Quelldatei:
+    `supabase/migrations/20260810082841_extend_organization_inquiry_team_path_v1_1.sql`
+  - lokale SHA-256:
+    `3dcb8f26a6103cc97f3a1ebadb76e6fdb3cfad864c276451ac127a54f036a268`
+  - Remote-Migrationsname: `extend_organization_inquiry_team_path_v1_1`
+  - Remote-Version: `20260810093124`
+- Aufbewahrung und Fake-/Spam-Löschung:
+  - Quelldatei:
+    `supabase/migrations/20260810091629_organization_inquiry_retention_v1_1.sql`
+  - lokale SHA-256:
+    `8ebd6d6cc7b3f8a360450b1898249a2b9a308072230919cbed0a6212d5aff543`
+  - Remote-Migrationsname: `organization_inquiry_retention_v1_1`
+  - Remote-Version: `20260810093132`
+
+Der tägliche Aufbewahrungsjob existiert genau einmal und ist aktiv:
+`organization-inquiry-retention-daily`, `17 4 * * *`, Datenbank `postgres`,
+Ausführung als `postgres`. Er löscht ausschließlich `declined` oder
+`withdrawn`, deren letzte Änderung mehr als 365 Tage zurückliegt. Genehmigte
+und aktive Beziehungen sind ausgeschlossen.
+
 Der Preflight zeigte in Staging keine vorhandene Organisation und kein Team,
 das einen Legacy-Backfill ausgelöst hätte. Nach dem Apply waren weiterhin alle
 sechs Organisationsdatentabellen leer.
@@ -44,19 +68,19 @@ sechs Organisationsdatentabellen leer.
 
 - Slug: `submit-organization-access-request`
 - Deployment-ID: `aab4885c-9e85-48d3-bf7e-583c2f564b64`
-- Version: `1`
+- Version: `5`
 - Status: `ACTIVE`
 - `verify_jwt=false` ist für diesen öffentlichen Eingang beabsichtigt; die
   Function erzwingt stattdessen Origin-Allowlist, Turnstile, Payloadgrenzen,
   DE-Scope, Notice-Version und ein separates Aktivierungsflag.
 - Bundle-Kennung:
-  `94b3f21e115991a9193551cf30ecc9a7e3e194a5e34b1243dbe0b073dde7b309`
+  `73a65da5ac16ca86a026257a6f6e768beee9a85e84e394f154831c6d58c89505`
 
 Remote und lokal wurden für alle drei ausgelieferten Dateien bytegleich
 verglichen:
 
 - `index.ts`:
-  `4a15863db2b0a1fffbc4986b389462dadf4d7331e5dec2ad0daadd09839ee2b4`
+  `62f033015349d64a8217bd76015ce204e9699c9fac9b9aeea9679aa8dde9b643`
 - `_shared/boundedRequestBody.ts`:
   `7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e`
 - `_shared/supabaseService.ts`:
@@ -76,8 +100,16 @@ verglichen:
 - Vier historische Coach-/Creator-Policies wurden entfernt. Die neuen Policies
   binden Administration an aktive Rollen statt an `teams.created_by`.
 - Anfrage und Organisation sind server- und datenbankseitig auf `DE` begrenzt.
-- Die Notice-Version ist exakt
-  `organization-inquiry-v1.1-2026-08-07`.
+- Neue Anfragen verwenden exakt
+  `organization-inquiry-v1.1-2026-08-10`; die vorherige Staging-Version
+  `organization-inquiry-v1.1-2026-08-07` bleibt nur migrationssicher lesbar.
+- Die Machine-View besitzt weiterhin keinerlei Rechte für `PUBLIC`, `anon`,
+  `authenticated` oder `service_role`; der neue Teamname erweitert deshalb
+  keinen Machine-/Jarvis-Zugriff.
+- Die Aufbewahrungsfunktion ist ausschließlich für ihren Eigentümer
+  ausführbar. Die sofortige Fake-/Spam-Löschung ist nur für angemeldete
+  Plattform-Admins nach der exakten Bestätigung `DELETE_FAKE_OR_SPAM`
+  ausführbar und verweigert genehmigte oder aktive Anfragen.
 - Alle Feedback-, Freitext-, Minor-, App-Store-, Consumer-, Synthetic-,
   Production- und Machine-Credential-Gates blieben `false`.
 
@@ -94,21 +126,34 @@ HTTP-Negativpfade gegen die reale Staging-Edge-Function:
 Die Edge-Logs enthalten für diesen Test nur Methode, Status, Function und
 Laufzeit; keine Request-Payload oder personenbezogenen Felder.
 
-Der transaktionale Datenbank-Smoke wurde vollständig zurückgerollt:
+Der erweiterte transaktionale Datenbank-Smoke wurde vollständig zurückgerollt:
 
-- gültiger synthetischer DE-Request und atomisches Submitted-Event: grün;
-- AT und falsche Notice-Version: abgelehnt;
-- doppelter offener Request: abgelehnt;
-- `anon`/`authenticated` gegen service-only Submit-RPC: abgelehnt;
-- abschließende Fixture-Zählung: überall `0`.
+- kurzer Einzelteamweg mit Teamname, `team_count_band=1` und atomischem
+  Submitted-Event: grün;
+- vertiefter Organisationsweg ohne Teamname: grün;
+- inkonsistenter Einzelteamweg ohne Teamname: datenbankseitig abgelehnt;
+- mehr als 365 Tage alte abgelehnte Anfrage samt Event gelöscht: grün;
+- 364 Tage alte abgelehnte und 500 Tage alte genehmigte Anfrage erhalten:
+  grün;
+- falsche Fake-/Spam-Bestätigung abgelehnt, exakte Admin-Bestätigung löscht:
+  grün;
+- genehmigte Anfrage auch mit Adminbestätigung nicht löschbar: grün;
+- der dafür rein transaktional erzeugte synthetische Admin wurde gemeinsam
+  mit allen Fixtures zurückgerollt;
+- abschließende Zählung: Anfragen `0`, Events `0`, Auth-Nutzer `0`, Rollen `0`.
 
 ## Advisor-Einordnung
 
-Der Supabase-Security-Advisor meldet keine Fehler. Vier INFO-Hinweise
-`rls_enabled_no_policy` betreffen absichtlich private/service-only Tabellen,
-deren direkte Rechte zusätzlich negativ geprüft wurden. Warnungen zu
-authentifizierten `SECURITY DEFINER`-Funktionen sind durch die oben genannten
-festen Authentisierungs- und Rollenprüfungen begrenzt.
+Der Supabase-Security-Advisor meldet keine Fehler, aber projektweit INFO- und
+WARN-Hinweise. Die für diesen Block relevanten INFO-Hinweise
+`rls_enabled_no_policy` betreffen absichtlich geschlossene Tabellen, deren
+direkte Rechte zusätzlich negativ geprüft wurden. Die relevanten WARN-Hinweise
+zu authentifizierten `SECURITY DEFINER`-Funktionen sind beabsichtigt: Der
+Aufruf ist möglich, der Datenzugriff aber erst nach den fest implementierten
+Admin-, Einladungs-, Organisations- oder aktiven Teamrollenprüfungen. Die neue
+Fake-/Spam-Funktion wurde zusätzlich mit positivem und negativem Rollenpfad
+transaktional geprüft. Referenz:
+https://supabase.com/docs/guides/database/database-linter
 
 Der Performance-Advisor meldet mehrere nicht indexierte Fremdschlüssel in den
 neuen, aktuell leeren Organisationsrelationen. Das ist kein Korrektheits- oder
@@ -128,4 +173,3 @@ Hardening-Punkt vor breiterem realem Organisationsbetrieb.
    die Nullzählung erneut bestätigt.
 4. Production, signierter iPhone-Build, TestFlight und App Store bleiben eigene
    Freigabeschritte.
-

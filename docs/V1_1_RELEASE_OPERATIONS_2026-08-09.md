@@ -39,7 +39,7 @@ Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
 
 1. die in Staging einzeln verifizierte Migration
    `20260807092005_coach_enterprise_onboarding_v1_1.sql`;
-2. die additiven, noch nicht extern angewendeten Migrationen
+2. die additiven, in Staging einzeln angewendeten und verifizierten Migrationen
    `20260810082841_extend_organization_inquiry_team_path_v1_1.sql` und
    `20260810091629_organization_inquiry_retention_v1_1.sql`;
 3. die in Staging negativ verifizierte Edge Function
@@ -48,8 +48,9 @@ Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
    denselben zentralen Webweg über Apples vorgesehenen In-App-Browser;
 5. Turnstile-Secret und `ORGANIZATION_INQUIRY_PUBLIC_ENABLED=true` nur in der
    Zielumgebung;
-6. positive und negative Staging-/Production-Smokes, Retention-Job- sowie
-   Admin-Sichtprüfung.
+6. vor öffentlicher Staging-Aktivierung noch den positiven Turnstile-E2E-Smoke
+   und die Admin-Sichtprüfung; die Negativmatrix, Datenbankpfade und der
+   Retention-Job sind bereits Staging-verifiziert.
 
 Im Repository liegen vor der Organisationsmigration mehrere noch nicht für
 Production freigegebene Feedback-/Minor-Migrationen. Ein normaler
@@ -72,12 +73,11 @@ aktiviert werden.
 
 Keiner dieser Wege wird ohne informierte Freigabe produktiv ausgeführt.
 
-Die vorhandene Staging-Instanz bildet noch die erste Organisationsfassung ab.
-Der neue kurze Teamweg liegt deshalb als additive, noch nicht angewendete
-Folgemigration
-`20260810082841_extend_organization_inquiry_team_path_v1_1.sql` vor. Vor einer
-Aktivierung muss diese Folgemigration einzeln in Staging angewendet und der
-gesamte positive und negative Anfrageweg erneut geprüft werden.
+Die vorhandene Staging-Instanz bildet jetzt die erste Organisationsfassung,
+den kurzen Teamweg und die 365-Tage-Aufbewahrungslogik ab. Beide
+Folgemigrationen wurden einzeln angewendet; Rollen-, Payload-, Lösch-,
+Rollback- und HTTP-Negativpfade sind erneut grün. Die öffentliche Annahme
+bleibt dennoch absichtlich geschlossen, bis Turnstile vorhanden ist.
 
 Der bisherige getrennte Staging-Nachweis ist in
 `docs/V1_1_ORGANIZATION_STAGING_ASSURANCE_2026-08-09.md` festgehalten. Der
@@ -95,7 +95,7 @@ fail-closed.
 - [x] Icon-Qualitätsblock unabhängig geprüft und integriert;
 - [x] erste Organisationsmigration und Edge Function isoliert in Staging anwenden;
 - [x] Rollen-, RLS-, DE-/Notice- und HTTP-Negativpfade in Staging prüfen;
-- [ ] additive Teamweg-Migration und aktualisierte Edge Function isoliert in
+- [x] additive Teamweg-Migration und aktualisierte Edge Function isoliert in
       Staging anwenden und beide Anfragewege erneut prüfen;
 - [ ] echten Turnstile-Site-Key/Secret nach Nutzeranmeldung ausschließlich in
       Staging setzen und einen positiven synthetischen E2E-Smoke durchführen;
@@ -125,8 +125,10 @@ fail-closed.
 
 ## Harte Grenzen
 
-- Feedback-Freitext, Guardian-Feedback-Scope, 365-Tage-Retention und echte
-  Machine-/Jarvis-Reads bleiben ohne qualifizierte Privacy-/Rechtsfreigabe aus.
+- Feedback-Freitext, Guardian-Feedback-Scope und echte Machine-/Jarvis-Reads
+  bleiben ohne qualifizierte Privacy-/Rechtsfreigabe aus. Die technisch
+  freigegebene 365-Tage-Aufbewahrung ist ausschließlich in Staging aktiv;
+  Production bleibt geschlossen.
 - Ein grünes CI oder vorhandene Migrationen beweisen keine Production-Aktivität.
 - Ein erfolgreicher Build/Install ersetzt nicht Mahles physischen Sicht- und
   Verhaltenstest.
