@@ -734,6 +734,7 @@ const OrganizationAccess = () => {
                           <p>Verarbeitet werden die eingetragenen Kontakt-, Team-, Organisations- und Projektangaben. Bitte trage keine Namen oder persönlichen Daten von Athleten ein.</p>
                           <p>Zur Vorbereitung können wir öffentlich verfügbare Informationen über das angegebene Team oder die Organisation prüfen. Daraus entstehen weder automatisch ein Zugang noch ein Preis oder Vertrag.</p>
                           <p>Vor dem Absenden bleiben deine Angaben nur im aktuell geöffneten Formular. Nach erfolgreicher Übermittlung melden wir uns über den von dir gewählten Kontaktweg.</p>
+                          <p>Wird eine echte Anfrage abgelehnt, zurückgezogen oder nicht weiterverfolgt, löschen wir die Anfrage spätestens zwölf Monate nach Abschluss. Offensichtliche Fake- oder Spam-Anfragen können nach Prüfung sofort vollständig gelöscht werden. Bei einer Zusammenarbeit werden die erforderlichen Angaben in die getrennte Organisations- und Vertragsverwaltung übernommen.</p>
                           <p>
                             Fragen oder Datenschutzanliegen: <a href={SUPPORT_MAILTO} className="font-medium text-primary hover:underline">{SUPPORT_EMAIL}</a>
                           </p>

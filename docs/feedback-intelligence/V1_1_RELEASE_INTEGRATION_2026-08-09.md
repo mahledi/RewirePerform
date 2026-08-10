@@ -30,8 +30,8 @@ Da `package.json` Teil des synthetischen Feedbackpakets ist, wurde der Package-P
 
 Der spaetere V1.1-Zugangsblock ergaenzt die offizielle Capacitor-Browser-Abhaengigkeit fuer den nativen Wechsel in das zentrale Web-Anfrageformular. Dadurch wurde derselbe rein mechanische Pin erneut synchronisiert:
 
-- `package.json` SHA-256: `4370f6f6b635f715fa8489229f88433e1154d4379c186950a4ea0d8ada22e5fe`
-- Release-Package SHA-256: `82d9058d4a2205a0268c335e7d1695898d66936291edddfe04a3e5dbdc079085`
+- `package.json` SHA-256: `ad038e0f60dbe2989d2c775119fe417560bd4ba72fd2055ebbf7fd1ac5364c74`
+- Release-Package SHA-256: `e95e74e9666b315f6d2eb2056a4fa1b0b72e3856881fe22a6edce3df8d3d685c`
 - Feedback-Inhalt, Consent, Rechte, Runtime und vorhandene synthetische Evidenz bleiben unveraendert.
 
 ## Verifikation

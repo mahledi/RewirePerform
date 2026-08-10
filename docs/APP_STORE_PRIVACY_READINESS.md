@@ -40,7 +40,10 @@ they are tied to the account:
   Funktion, Team-/Organisationskontext und freiwilliger Hinweis. Diese Angaben
   werden nur zur persoenlichen Pruefung, Vorbereitung und Kontaktaufnahme
   verwendet; nicht fuer Werbung, Tracking oder automatische Preis-, Vertrags-
-  oder Zugangsentscheidungen.
+  oder Zugangsentscheidungen. Abgelehnte, zurueckgezogene oder nicht
+  weiterverfolgte Anfragen werden spaetestens 365 Tage nach Abschluss
+  automatisch geloescht. Bestaetigte Fake-/Spam-Anfragen koennen durch einen
+  Admin nach exakter Bestaetigung sofort dauerhaft geloescht werden.
 - Diagnostics: incident-only system events with normalized error codes and
   allow-listed technical metadata.
 
@@ -93,6 +96,17 @@ keinen Datenbroker und keine geruebergreifende Werbemessung. Cloudflare
 Turnstile dient ausschliesslich dem Missbrauchsschutz und muss in der
 Datenschutzerklaerung als technischer Dienst benannt werden, bevor die
 oeffentliche Annahme aktiviert wird.
+
+Fuer App Store Connect konservativ final pruefen:
+
+- `Contact Info`: Name, Email Address und bei der ausfuehrlichen Anfrage
+  optional Phone Number;
+- `Other User Content`: freiwilliger Projekt-/Kontexthinweis;
+- Zwecke: ausschliesslich `App Functionality` beziehungsweise Bearbeitung der
+  angeforderten Team-/Organisationsleistung;
+- linked to user: `true`, sofern Apple den zentralen, aus der App geoeffneten
+  RewirePerform-Webweg dem App-Datenumfang zurechnet;
+- tracking: `false`.
 
 References checked during this work:
 

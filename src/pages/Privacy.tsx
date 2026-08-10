@@ -38,7 +38,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: 5. August 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
+          Stand: 10. August 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert.
         </p>
@@ -89,6 +89,7 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Rechtsgrundlage (DSGVO)</h2>
             <ul className="space-y-2">
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
+              <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Soweit du selbst vorvertragliche Schritte anfragst, erfolgt die Bearbeitung auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Soweit du eine Organisation vertrittst, stützen wir die angefragte geschäftliche Kommunikation und die angemessene Vorbereitung auf Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse besteht darin, die von dir initiierte Anfrage sicher und passend zu beantworten. Der technische Missbrauchsschutz und die Prüfung offensichtlicher Fake-/Spam-Anfragen beruhen ebenfalls auf diesem Sicherheitsinteresse.</li>
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. Eine davon getrennte, freiwillige Einwilligung gilt für die individuelle Analyse ausdrücklich abgegebener Produktfeedback-Kommentare. <span className="text-foreground">Ohne dein aktives Ja wird kein Feedback-Kommentar gespeichert.</span></li>
               <li><span className="text-foreground">Art. 9 Abs. 2 lit. a DSGVO - ausdrückliche Einwilligung:</span> Soweit psychologisch sensible Angaben verarbeitet werden, ist dafür eine gesonderte, ausdrückliche Einwilligung erforderlich.</li>
               <li><span className="text-foreground">Minderjährige und Länderumfang:</span> RewirePerform und Feedback Intelligence werden derzeit ausschließlich für Deutschland angeboten. Unter 16 werden datenabhängige Programmfunktionen erst freigeschaltet, wenn eine sorgeberechtigte Person und der Jugendliche selbst der aktuellen Version zugestimmt haben. Mit 16 oder 17 entscheidet der Jugendliche selbst. Zugriffe aus nicht freigegebenen Ländern bleiben technisch gesperrt. Bei einer späteren internationalen Einführung werden Rechts-, Datenschutz- und Store-Anforderungen erneut für den dann vorgesehenen Umfang geprüft. Der Verein ist an diesem Freigabeprozess nicht beteiligt.</li>
@@ -121,6 +122,7 @@ const Privacy = () => {
               <li><span className="text-foreground">Journale, private Reflexionen und sonstige freie Antworten:</span> werden ausschließlich gespeichert, damit du sie wiederfindest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer KI gelesen, nicht in Gruppenwerte einbezogen und nicht für Personalisierung verwendet.</span></li>
               <li><span className="text-foreground">Feedback-Checkpoints an Tag 10, 24, 39 und 55:</span> strukturierte Auswahlantworten, Fragebogen- und Inhaltsversion, Programmtag und ein minimierter Aktivitäts-Snapshot, zum Beispiel abgeschlossene Programmtage, Check-ins, erstellte Journal-<em>Anzahl</em> und erledigte Aufgaben. Journalinhalt, Namen, E-Mail, Team- und Coach-Daten gehören nicht zu diesem Snapshot.</li>
               <li><span className="text-foreground">Freiwillige Produktfeedback-Kommentare:</span> nur nach einer separaten, nicht vorangekreuzten Einwilligung direkt vor dem ersten Kommentarfeld. Sie dürfen ausschließlich zur Produktverbesserung individuell analysiert werden, nicht für Werbung, Coach-Bewertungen, Personalisierung oder automatisierte Entscheidungen über Athleten.</li>
+              <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Name, E-Mail-Adresse, Funktion sowie die angegebenen Team-, Organisations-, Sport- und Projektinformationen. Eine Telefonnummer wird nur in der ausführlichen Organisationsstrecke und nur freiwillig beziehungsweise passend zum gewählten Kontaktweg erhoben. Bitte übermittle dabei keine Namen oder persönlichen Daten von Athleten.</li>
               <li><span className="text-foreground">Trainingszeiten und Benachrichtigungseinstellungen:</span> nur, wenn du Erinnerungen aktivierst.</li>
             </ul>
           </section>
@@ -275,6 +277,8 @@ const Privacy = () => {
               <li>– Push-Zustellprotokolle: höchstens 90 Tage nach ihrer Erstellung</li>
               <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls; bei Widerruf werden personenbezogene Transferdaten unmittelbar aus der Pilot-Auswertung entfernt</li>
               <li>– freiwillige Produktfeedback-Kommentare und personenbeziehbare Analyseableitungen: höchstens 365 Tage; vorherige Löschung bei Widerruf, Kontolöschung oder Ende des konkreten Produktverbesserungszwecks</li>
+              <li>– abgelehnte, zurückgezogene oder nicht weiterverfolgte Team- und Organisationsanfragen: spätestens zwölf Monate nach Abschluss; bestätigte Fake- oder Spam-Anfragen können sofort vollständig gelöscht werden</li>
+              <li>– bei einer Zusammenarbeit: nur die für Organisation, Vertrag und laufende Betreuung erforderlichen Angaben nach den dafür geltenden gesetzlichen und vertraglichen Fristen; die ursprüngliche Anfrage wird nicht unbegrenzt als separater Interessenten-Datensatz weitergeführt</li>
               <li>– vollständig anonyme Aggregate: solange sie keinen Personenbezug mehr besitzen</li>
             </ul>
           </section>
@@ -284,6 +288,7 @@ const Privacy = () => {
             <ul className="space-y-2">
               <li><span className="text-foreground">Supabase:</span> Authentifizierung, Datenbank und Edge Functions. Das bestätigte Hauptprojekt liegt in Frankfurt (eu-central-1). Technische Betriebs- und Sicherheitsdaten können nach Anbieterbedingungen und Auftragsverarbeitungsvertrag verarbeitet werden.</li>
               <li><span className="text-foreground">Vercel:</span> Auslieferung der Website und Web-App. Dabei fallen technisch notwendige Anfrage- und Sicherheitsmetadaten an. Soweit Daten außerhalb des EWR verarbeitet werden, stützt sich der Anbieter unter anderem auf die vereinbarten Standardvertragsklauseln.</li>
+              <li><span className="text-foreground">Cloudflare Turnstile:</span> Missbrauchsschutz für das öffentliche Team- und Organisationsformular. Dabei werden ausschließlich die für die Sicherheitsprüfung notwendigen technischen Anfrage- und Gerätedaten verarbeitet; Turnstile wird nicht für Werbung, Nutzerprofile oder appübergreifendes Tracking eingesetzt.</li>
               <li><span className="text-foreground">Resend:</span> ausschließlich für transaktionale E-Mails an sorgeberechtigte Personen. Verarbeitet werden Empfängeradresse, Nachrichteninhalt und Zustellmetadaten. Öffnungs- und Link-Tracking werden für diesen Versand nicht genutzt.</li>
               <li><span className="text-foreground">Push-Infrastruktur:</span> Browser- beziehungsweise Betriebssystemanbieter transportieren optionale Benachrichtigungen. Private Journal- oder Antwortinhalte werden nicht in Push-Nachrichten aufgenommen.</li>
             </ul>

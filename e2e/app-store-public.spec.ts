@@ -99,6 +99,8 @@ test("organization inquiry review stays aligned and explains privacy in-app", as
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Datenschutz bei eurer Anfrage" })).toBeVisible();
   await expect(page.getByText(/keine Namen oder persönlichen Daten von Athleten/i)).toBeVisible();
+  await expect(page.getByText(/spätestens zwölf Monate nach Abschluss/i)).toBeVisible();
+  await expect(page.getByText(/Fake- oder Spam-Anfragen.*sofort vollständig gelöscht/i)).toBeVisible();
   await page.getByRole("button", { name: "Verstanden" }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expectNoHorizontalOverflow(page);

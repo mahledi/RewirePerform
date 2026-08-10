@@ -10,6 +10,7 @@ import {
   Phone,
   RefreshCcw,
   ShieldCheck,
+  Trash2,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -230,6 +231,23 @@ const OrganizationRequestManager = () => {
     setInviteUrl(url);
   };
 
+  const purgeFakeOrSpam = async () => {
+    if (!selected || saving) return;
+    setSaving(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: rpcError } = await (supabase as any).rpc("delete_organization_access_request_spam", {
+      _request_id: selected.id,
+      _confirmation: "DELETE_FAKE_OR_SPAM",
+    });
+    setSaving(false);
+    if (rpcError) {
+      toast.error("Die Fake-/Spam-Anfrage konnte nicht sicher gelöscht werden.");
+      return;
+    }
+    toast.success("Fake-/Spam-Anfrage vollständig gelöscht.");
+    await load();
+  };
+
   if (loading) {
     return <div className="flex min-h-52 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
@@ -337,6 +355,23 @@ const OrganizationRequestManager = () => {
                         <Button variant="outline" disabled={saving} onClick={() => void updateStatus("call_requested")}>Gespräch</Button>
                         <Button variant="outline" disabled={saving} onClick={() => void updateStatus("review_ready")}>Entscheidungsbereit</Button>
                         <Button variant="ghost" disabled={saving} onClick={() => void updateStatus("declined")}>Ablehnen</Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button className="col-span-2" variant="destructive" disabled={saving}><Trash2 className="h-4 w-4" />Fake/Spam löschen</Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Fake-/Spam-Anfrage endgültig löschen?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                „{selected.organization_name}“ und sämtliche zugehörigen Anfrageereignisse werden sofort und unwiderruflich gelöscht. Nutze dies ausschließlich für bestätigte Fake- oder Spam-Anfragen. Eine echte Anfrage kannst du stattdessen ablehnen; sie wird spätestens nach zwölf Monaten automatisch gelöscht.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Behalten</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => void purgeFakeOrSpam()}>Endgültig als Fake/Spam löschen</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </div>

@@ -39,13 +39,17 @@ Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
 
 1. die in Staging einzeln verifizierte Migration
    `20260807092005_coach_enterprise_onboarding_v1_1.sql`;
-2. die in Staging negativ verifizierte Edge Function
+2. die additiven, noch nicht extern angewendeten Migrationen
+   `20260810082841_extend_organization_inquiry_team_path_v1_1.sql` und
+   `20260810091629_organization_inquiry_retention_v1_1.sql`;
+3. die in Staging negativ verifizierte Edge Function
    `submit-organization-access-request`;
-3. Cloudflare-Turnstile-Site-Key im Website-Build; die native App öffnet
+4. Cloudflare-Turnstile-Site-Key im Website-Build; die native App öffnet
    denselben zentralen Webweg über Apples vorgesehenen In-App-Browser;
-4. Turnstile-Secret und `ORGANIZATION_INQUIRY_PUBLIC_ENABLED=true` nur in der
+5. Turnstile-Secret und `ORGANIZATION_INQUIRY_PUBLIC_ENABLED=true` nur in der
    Zielumgebung;
-5. positive und negative Staging-/Production-Smokes sowie Admin-Sichtprüfung.
+6. positive und negative Staging-/Production-Smokes, Retention-Job- sowie
+   Admin-Sichtprüfung.
 
 Im Repository liegen vor der Organisationsmigration mehrere noch nicht für
 Production freigegebene Feedback-/Minor-Migrationen. Ein normaler

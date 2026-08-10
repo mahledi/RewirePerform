@@ -56,6 +56,9 @@ describe("founder organization request manager", () => {
       if (name === "approve_organization_access_request") {
         return Promise.resolve({ data: { invitation_token: "secure-token" }, error: null });
       }
+      if (name === "delete_organization_access_request_spam") {
+        return Promise.resolve({ data: { success: true }, error: null });
+      }
       throw new Error(`Unexpected RPC: ${name}`);
     });
   });
@@ -93,5 +96,24 @@ describe("founder organization request manager", () => {
       },
     ));
     expect(await screen.findByDisplayValue(/organization\/invite\?token=secure-token/)).toBeInTheDocument();
+  });
+
+  it("requires a destructive confirmation before permanently deleting confirmed fake or spam", async () => {
+    render(<OrganizationRequestManager />);
+    await screen.findByRole("heading", { name: "Sportverein Beispiel" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Fake/Spam löschen" }));
+    expect(await screen.findByRole("heading", { name: /endgültig löschen/i })).toBeInTheDocument();
+    expect(screen.getByText(/echte Anfrage kannst du stattdessen ablehnen/i)).toBeInTheDocument();
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Endgültig als Fake/Spam löschen" }));
+    await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith(
+      "delete_organization_access_request_spam",
+      {
+        _request_id: "request-1",
+        _confirmation: "DELETE_FAKE_OR_SPAM",
+      },
+    ));
   });
 });

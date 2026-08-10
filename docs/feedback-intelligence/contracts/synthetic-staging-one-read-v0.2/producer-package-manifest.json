@@ -5,12 +5,12 @@
   "generated_at": "2026-08-09T12:56:52.365Z",
   "producer_gate_basis_commit": "1e6270233f8f5017dd825e3ff6293469035522c7",
   "consumer_operator_commit": "21108bc928210599504673846ff41aa83dc990b0",
-  "package_sha256": "82d9058d4a2205a0268c335e7d1695898d66936291edddfe04a3e5dbdc079085",
+  "package_sha256": "e95e74e9666b315f6d2eb2056a4fa1b0b72e3856881fe22a6edce3df8d3d685c",
   "secret_values_included": false,
   "files": [
     {
       "path": "package.json",
-      "sha256": "4370f6f6b635f715fa8489229f88433e1154d4379c186950a4ea0d8ada22e5fe"
+      "sha256": "ad038e0f60dbe2989d2c775119fe417560bd4ba72fd2055ebbf7fd1ac5364c74"
     },
     {
       "path": "scripts/verify-feedback-intelligence-synthetic-cycle.mjs",

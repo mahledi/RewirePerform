@@ -49,6 +49,11 @@ werden auch nicht automatisch aus oeffentlichen Quellen abgeleitet.
   angewendet.
 - Keine Anfrage wird automatisch genehmigt, kein Vertrag wird erzeugt und keine
   Einladung wird ohne bewusste Adminentscheidung versendet.
+- Abgelehnte oder zurueckgezogene Anfragen werden nach spaetestens 365 Tagen
+  mitsamt ihren Anfrageereignissen automatisch geloescht. Ein eigener
+  Admin-RPC erlaubt nach exakter Warnbestaetigung die sofortige, dauerhafte
+  Loeschung bestaetigter Fake-/Spam-Anfragen. Freigegebene und aktive
+  Partnerschaften sind von beiden Loeschwegen ausgeschlossen.
 
 ## Lokal verifiziert
 
@@ -63,15 +68,12 @@ werden auch nicht automatisch aus oeffentlichen Quellen abgeleitet.
 
 ## Offen vor Aktivierung
 
-1. verbindliche Aufbewahrungsdauer fuer abgelehnte oder nicht weiterverfolgte
-   Anfragen festlegen und technisch sowie in der Datenschutzerklaerung binden;
-2. Cloudflare Turnstile in Staging konfigurieren;
-3. additive Teamweg-Migration und aktualisierte Edge Function einzeln in
+1. Cloudflare Turnstile in Staging konfigurieren;
+2. additive Teamweg- und Retention-Migration sowie aktualisierte Edge Function einzeln in
    Staging pruefen, ohne die geschlossene Feedback-/Jarvis-Kette zu aktivieren;
-4. Datenschutzseite und App-Store-Privacy-/Review-Angaben gegen den aktivierten
+3. Datenschutzseite und App-Store-Privacy-/Review-Angaben gegen den aktivierten
    Umfang angleichen;
-5. Production-Konfiguration bauen und den nativen App-zu-Web-Rueckweg auf dem
+4. Production-Konfiguration bauen und den nativen App-zu-Web-Rueckweg auf dem
    physischen iPhone testen;
-6. erst danach kontrolliert mergen, Production aktivieren, TestFlight bauen und
+5. erst danach kontrolliert mergen, Production aktivieren, TestFlight bauen und
    die App-Store-Version einreichen.
-
