@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -9,6 +10,7 @@ const checkOnly = process.argv.includes("--check");
 const base = "docs/feedback-intelligence/contracts/edge-deployment-evidence-v0.1";
 const evidencePath = `${base}/edge-deployment-evidence.json`;
 const manifestPath = `${base}/producer-package-manifest.json`;
+const historicalGatewayCommit = "b35bfc89aa5c5781fb0b300440bb8cbb56f69658";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const sourceMap = [
   ["functions/_shared/boundedRequestBody.ts", "supabase/functions/_shared/boundedRequestBody.ts"],
@@ -21,7 +23,10 @@ const sourceMap = [
 const sources = [];
 const sourceDigestLines = [];
 for (const [deployedPath, localPath] of sourceMap) {
-  const bytes = await readFile(resolve(root, localPath));
+  const bytes = execFileSync("git", ["show", `${historicalGatewayCommit}:${localPath}`], {
+    cwd: root,
+    maxBuffer: 20 * 1024 * 1024,
+  });
   const digest = sha256(bytes);
   sources.push({ deployed_path: deployedPath, local_path: localPath, sha256: digest, deployed_byte_match: true });
   sourceDigestLines.push(`${digest}  ${deployedPath}\n`);
@@ -49,7 +54,7 @@ const evidence = {
     source_manifest_sha256: "SHA-256 over sorted lines '<file_sha256><two spaces><deployed_path><newline>' for all six deployed files."
   },
   producer: {
-    gateway_commit: "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
+    gateway_commit: historicalGatewayCommit,
     gateway_manifest_sha256: "4c53990d8f1c751a2d2d9d5820abf0c418cf38c47cd59ecdbc90501d75e28d07",
     gateway_package_sha256: "5f89b849bb148f0d02b4bdafbb0b072bcec5087a02614856f011133b6f13a8d3",
     postdeploy_commit: "4b46b8180a79edf0658e9d567d116e69cecd594e"

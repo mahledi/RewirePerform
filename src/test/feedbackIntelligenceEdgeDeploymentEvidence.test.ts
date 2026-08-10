@@ -26,8 +26,10 @@ describe("Feedback Intelligence Edge deployment evidence", () => {
     expect(evidence.hash_semantics.ezbr_sha256).toContain("not treated as a local-source digest");
   });
 
-  it("fails generated checks when local source or config bytes drift", () => {
+  it("verifies deployed bytes against the historical gateway commit, not current source", () => {
     const generator = read("scripts/generate-feedback-edge-deployment-evidence.mjs");
+    expect(generator).toContain("historicalGatewayCommit");
+    expect(generator).toContain('execFileSync("git", ["show"');
     expect(generator).toContain("Edge config verify_jwt drift");
     expect(generator).toContain("currentEvidence !== evidenceSerialized");
     expect(generator).toContain("currentManifest !== manifestSerialized");

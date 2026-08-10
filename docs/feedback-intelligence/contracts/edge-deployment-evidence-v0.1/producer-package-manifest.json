@@ -1,7 +1,7 @@
 {
   "schema_version": "rewireperform-feedback-intelligence-edge-deployment-evidence-package-v1",
   "package_status": "SANITIZED_POSTDEPLOY_EVIDENCE_NO_CREDENTIALS",
-  "package_sha256": "4437fd61bb5cecc4b4ade89877ddf58778c82e0588dfa211db5f78737ac7bae6",
+  "package_sha256": "c2880b638663d3d7a36d8ea10309c0169cb7f84099784fea1a02088d9fd7e90e",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/edge-deployment-evidence-v0.1/edge-deployment-evidence.json",
@@ -13,11 +13,11 @@
     },
     {
       "path": "scripts/generate-feedback-edge-deployment-evidence.mjs",
-      "sha256": "f29a3ca2bc63d193a84c1d512a1bdd117f08e72337a8177b65b32296b177828a"
+      "sha256": "6be2837a6f1193677e98a3115096e3431ecc6c85d3947a9a2c1a04e0a6dd76ef"
     },
     {
       "path": "src/test/feedbackIntelligenceEdgeDeploymentEvidence.test.ts",
-      "sha256": "ddd53f47c48112139f895c2bbd278146dbdcc41e4c76cbae32ce0a6d7ae84288"
+      "sha256": "377873914e52336d2ceb7daf9bbec25c668ea1cf30b588ddb961619faf0edd84"
     },
     {
       "path": "docs/feedback-intelligence/EDGE_DEPLOYMENT_EVIDENCE_V0_1.md",
