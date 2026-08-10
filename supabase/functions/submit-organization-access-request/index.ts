@@ -3,10 +3,10 @@ import { serviceClient } from "../_shared/supabaseService.ts";
 
 const MAXIMUM_BODY_BYTES = 24_000;
 const TURNSTILE_ACTION = "organization_access_request";
-const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-07";
+const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-10";
 const ALLOWED_KEYS = new Set([
   "contact_name", "work_email", "phone", "job_title", "preferred_contact",
-  "organization_name", "organization_type", "country_code", "website", "sports",
+  "organization_name", "organization_type", "team_name", "country_code", "website", "sports",
   "athlete_age_groups", "performance_levels", "team_count_band", "athlete_count_band",
   "coach_count_band", "rollout_scope", "desired_start", "goals", "support_needs",
   "context_note", "source", "locale", "privacy_version",
@@ -179,6 +179,7 @@ Deno.serve(async (request) => {
       preferred_contact: enumText(parsed, "preferred_contact", CONTACT_MODES),
       organization_name: text(parsed, "organization_name", 2, 180),
       organization_type: enumText(parsed, "organization_type", ORGANIZATION_TYPES),
+      team_name: nullableText(parsed, "team_name", 160),
       country_code: text(parsed, "country_code", 2, 2).toUpperCase(),
       website,
       sports: stringList(parsed, "sports"),
@@ -204,6 +205,8 @@ Deno.serve(async (request) => {
       || row.sports.length === 0
       || row.goals.length === 0
       || row.support_needs.length === 0
+      || (row.rollout_scope === "single_team" && (!row.team_name || row.team_count_band !== "1"))
+      || (row.rollout_scope !== "single_team" && row.team_name !== null)
     ) {
       throw new Error("invalid_request");
     }

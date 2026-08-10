@@ -218,7 +218,8 @@ describe("auth email confirmation", () => {
     renderAuth("/auth");
 
     expect(screen.queryByRole("button", { name: /Team erstellen/ })).not.toBeInTheDocument();
-    expect(screen.getByText(/Coach-Zugänge werden.*persönlich geprüft/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Für Teams & Organisationen/ })).toHaveAttribute("href", "/team-access");
+    expect(screen.queryByText(/Coach-Zugänge werden/)).not.toBeInTheDocument();
   });
 
   it("opens a direct solo signup without a duplicate intent step", () => {
@@ -249,7 +250,7 @@ describe("auth email confirmation", () => {
 
     expect(screen.getByRole("heading", { name: "Willkommen zurück." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Anmelden" })).toBeInTheDocument();
-    expect(screen.queryByText(/Coach-Zugänge werden.*persönlich geprüft/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Für Teams & Organisationen/ })).not.toBeInTheDocument();
   });
 
   it("rebases a warm team link and never carries it into a later normal login", async () => {

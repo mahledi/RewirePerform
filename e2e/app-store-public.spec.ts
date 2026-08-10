@@ -19,7 +19,7 @@ const capture = async (page: Page, testInfo: TestInfo, name: string) => {
 const firstRunSceneHeadings = [
   "Du siehst sofort, was ansteht.",
   "Zuerst verstehst du den Fokus des Tages.",
-  "Drei konkrete Aufgaben bringen ihn in deinen Alltag.",
+  "Eine klare Mission bringt ihn in deinen Alltag.",
   "Ein kurzer Check festigt, was du heute brauchst.",
   "Vor dem Training siehst du denselben Fokus wieder.",
   "Am Abend reflektierst du den echten Tag.",
@@ -73,6 +73,8 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
 
 test("organization inquiry review stays aligned and explains privacy in-app", async ({ page }) => {
   await page.goto("/team-access");
+  await expect(page.getByRole("heading", { name: "Wie möchtet ihr RewirePerform einführen?" })).toBeVisible();
+  await page.getByRole("button", { name: /Verein oder Organisation einführen/ }).click();
   await page.getByLabel("Name").fill("Alexandra Beispielperson mit langem Namen");
   await page.getByLabel("Funktion / Position").fill("Sportliche Leitung und Organisationsentwicklung");
   await page.getByLabel("Geschäftliche E-Mail").fill("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de");
@@ -90,6 +92,7 @@ test("organization inquiry review stays aligned and explains privacy in-app", as
   await expect(page.getByRole("heading", { name: "Bereit für den nächsten Schritt." })).toBeVisible();
   await expect(page.getByText("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
+  await expect(page.getByText(/Teststand:/)).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("button", { name: "Datenschutz zur Anfrage ansehen" }).click();

@@ -43,6 +43,7 @@ export type OrganizationRequest = {
   preferred_contact: string;
   organization_name: string;
   organization_type: string;
+  team_name: string | null;
   country_code: string;
   website: string | null;
   sports: string[];
@@ -305,6 +306,11 @@ const OrganizationRequestManager = () => {
                     <RequestMetric label="Teams" value={bandLabels[selected.team_count_band] ?? selected.team_count_band} />
                     <RequestMetric label="Athleten" value={bandLabels[selected.athlete_count_band] ?? selected.athlete_count_band} />
                   </div>
+                  {selected.team_name && (
+                    <div className="mt-3">
+                      <RequestMetric label="Team / Altersklasse" value={selected.team_name} />
+                    </div>
+                  )}
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <RequestMetric label="Gewünschter Start" value={startLabels[selected.desired_start] ?? selected.desired_start} />
                     <RequestMetric label="Coaches" value={bandLabels[selected.coach_count_band] ?? selected.coach_count_band} />

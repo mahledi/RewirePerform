@@ -36,6 +36,11 @@ they are tied to the account:
   Separately consented product-feedback comments are linked `Other User Content`
   for Product Improvement until withdrawal, deletion, or real anonymization.
 - Customer support content submitted through the support flow.
+- Team- und Organisationsanfragen: Name, E-Mail, optional Telefonnummer,
+  Funktion, Team-/Organisationskontext und freiwilliger Hinweis. Diese Angaben
+  werden nur zur persoenlichen Pruefung, Vorbereitung und Kontaktaufnahme
+  verwendet; nicht fuer Werbung, Tracking oder automatische Preis-, Vertrags-
+  oder Zugangsentscheidungen.
 - Diagnostics: incident-only system events with normalized error codes and
   allow-listed technical metadata.
 
@@ -72,6 +77,22 @@ Coach-hidden data:
   undeclared required-reason API.
 - Recheck Apple requirements before submission; Apple can update SDK privacy
   manifest and required-reason API rules.
+
+## V1.1 Team-/Organisationsanfrage
+
+Die native App sammelt die Anfrage nicht in einem zweiten App-Formular. Sie
+oeffnet den zentralen HTTPS-Webweg ueber Capacitor Browser. Apple nimmt Daten
+aus, die beim Navigieren im offenen Web erhoben werden; weil dieser Webweg aber
+direkt zum RewirePerform-Angebot gehoert und die Kontaktarten teilweise ohnehin
+bereits im App-Label vorkommen, wird vor V1.1 konservativ gegen den echten
+Release Candidate geprueft, ob insbesondere `Phone Number` zusaetzlich als
+verknuepfte Kontaktinformation fuer `App Functionality` angegeben wird.
+
+Die Anfrage fuehrt nicht zu Apple-Tracking: Es gibt keine Werbeverknuepfung,
+keinen Datenbroker und keine geruebergreifende Werbemessung. Cloudflare
+Turnstile dient ausschliesslich dem Missbrauchsschutz und muss in der
+Datenschutzerklaerung als technischer Dienst benannt werden, bevor die
+oeffentliche Annahme aktiviert wird.
 
 References checked during this work:
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Building2, Mail, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/config/contact";
 
@@ -28,29 +28,13 @@ const Support = () => {
         </p>
 
         <div className="grid gap-4">
-          <section className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <Building2 className="w-5 h-5 text-primary" />
-              <h2 className="font-heading text-lg font-semibold">Team- oder Organisationszugang</h2>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Für Vereine, Akademien, Leistungszentren, Schulen und Verbände. Jede Anfrage wird persönlich geprüft.
-            </p>
-            <Link
-              to="/team-access"
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-            >
-              Zugang anfragen <ArrowRight className="h-4 w-4" />
-            </Link>
-          </section>
-
           <section className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-3 mb-2">
               <Mail className="w-5 h-5 text-primary" />
               <h2 className="font-heading text-lg font-semibold">Kontakt</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Bei Login-Problemen, Teamzugang, Datenschutzfragen oder technischem Feedback.
+              Bei Login-Problemen, fehlerhaften Einladungen, Datenschutzfragen oder technischem Feedback.
             </p>
             <a
               href={SUPPORT_MAILTO}

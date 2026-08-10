@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -8,6 +7,7 @@ import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
 import TeamStaffInvitation from "@/components/coach/TeamStaffInvitation";
+import TeamAccessLink from "@/components/access/TeamAccessLink";
 import { buildTeamInviteUrl } from "@/lib/teamInvite";
 import {
   AlertDialog,
@@ -525,9 +525,9 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary"><ShieldCheck className="h-4 w-4" /> Kontrollierter Zugang</div>
               <h3 className="mt-2 font-heading text-lg font-semibold">Weitere Teams werden persönlich freigegeben.</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">So bleiben Rollen, Datenräume und Betreuung vom ersten Tag an sauber auf deine Organisation zugeschnitten.</p>
-              <Link to="/team-access" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]">
-                Organisationszugang anfragen
-              </Link>
+              <TeamAccessLink scope="single_team" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]">
+                Weiteres Team anfragen
+              </TeamAccessLink>
             </div>
           </div>
         </section>

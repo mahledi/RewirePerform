@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Activity, BarChart3, BookOpen, Lock } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, BookOpen, Lock } from "lucide-react";
+import TeamAccessLink from "@/components/access/TeamAccessLink";
 
 const features = [
   {
@@ -50,6 +51,10 @@ const CoachSection = () => {
             und aggregierte Entwicklung — ohne private Journale, Einzelantworten
             oder psychologische Labels einzelner Athlet:innen zu sehen.
           </p>
+          <TeamAccessLink className="group mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-heading text-sm font-semibold text-primary-foreground transition-transform hover:shadow-glow active:scale-[0.99]">
+            Team oder Organisation starten
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </TeamAccessLink>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-5 mb-16">

@@ -28,6 +28,12 @@ Da `package.json` Teil des synthetischen Feedbackpakets ist, wurde der Package-P
 - Einzige Paketdatei mit neuen Bytes: `package.json`
 - Feedback-, Consent-, Privacy-, Rechte-, Runtime- und synthetische Evidence-Dateien unverändert.
 
+Der spaetere V1.1-Zugangsblock ergaenzt die offizielle Capacitor-Browser-Abhaengigkeit fuer den nativen Wechsel in das zentrale Web-Anfrageformular. Dadurch wurde derselbe rein mechanische Pin erneut synchronisiert:
+
+- `package.json` SHA-256: `4370f6f6b635f715fa8489229f88433e1154d4379c186950a4ea0d8ada22e5fe`
+- Release-Package SHA-256: `82d9058d4a2205a0268c335e7d1695898d66936291edddfe04a3e5dbdc079085`
+- Feedback-Inhalt, Consent, Rechte, Runtime und vorhandene synthetische Evidenz bleiben unveraendert.
+
 ## Verifikation
 
 - `npm run ci`: 128 Vitest-Dateien / 732 Tests grün.

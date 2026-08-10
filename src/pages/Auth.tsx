@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
+import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
+import TeamAccessLink from "@/components/access/TeamAccessLink";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   AuthStatusLayout,
@@ -744,13 +745,19 @@ const Auth = () => {
             />
           </div>
 
-          <p className="mt-6 rounded-lg border border-border/60 bg-secondary/30 px-4 py-3 text-center text-xs leading-relaxed text-muted-foreground">
-            Coach-Zugänge werden nach einer Anfrage über den{" "}
-            <Link to="/support" className="font-medium text-primary hover:underline">
-              Support
-            </Link>{" "}
-            persönlich geprüft und freigegeben.
-          </p>
+          <TeamAccessLink
+            className="group mt-6 flex min-h-20 items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/[0.05] to-card px-4 py-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.12] active:scale-[0.99]"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
+              <Building2 className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Für Verantwortliche</span>
+              <span className="mt-1 block font-heading text-base font-semibold text-foreground">Für Teams &amp; Organisationen</span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">RewirePerform kontrolliert in einem Team, Verein oder einer Organisation einführen.</span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </TeamAccessLink>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
             Bereits registriert?{" "}

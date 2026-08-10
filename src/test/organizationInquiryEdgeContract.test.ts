@@ -39,9 +39,17 @@ describe("organization inquiry edge boundary", () => {
   });
 
   it("pins the public request to the approved DE scope and privacy notice", () => {
-    expect(source).toContain('const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-07"');
+    expect(source).toContain('const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-10"');
     expect(source).toContain('row.country_code !== "DE"');
     expect(source).toContain("row.privacy_version !== ORGANIZATION_INQUIRY_PRIVACY_VERSION");
+  });
+
+  it("requires a real team label only for the short single-team path", () => {
+    expect(source).toContain('"organization_name", "organization_type", "team_name"');
+    expect(source).toContain('team_name: nullableText(parsed, "team_name", 160)');
+    expect(source).toContain('row.rollout_scope === "single_team" && (!row.team_name || row.team_count_band !== "1")');
+    expect(source).toContain('row.rollout_scope !== "single_team" && row.team_name !== null');
+    expect(clientSource).toContain('team_name: inquiryPath === "single_team" ? form.teamName.trim() : null');
   });
 
   it("normalizes websites and rejects active credentials or non-web protocols", () => {

@@ -27,6 +27,7 @@ const request = {
   preferred_contact: "email",
   organization_name: "Sportverein Beispiel",
   organization_type: "local_club",
+  team_name: null,
   country_code: "DE",
   website: "https://verein.de/",
   sports: ["Volleyball"],

@@ -24,7 +24,8 @@ signierte Gerätebeweis und alle externen Aktivierungen bleiben getrennt offen.
 - kanonischer 56-Tage-Inhalt im echten Daily Flow;
 - Rest-Day-Atmung und dreistufige Visualisierung mit Rückweg zum Dashboard;
 - UI-, Scroll-, Lade- und Navigation-Härtungen;
-- Coach-/Enterprise-Anfrageoberfläche und Adminoberfläche als Code;
+- zentrale Team-/Organisationsanfrage auf der Website mit kurzer Teamstrecke
+  und vertiefter Organisationsstrecke sowie die Adminoberfläche als Code;
 - bestehende Minderjährigen-, Guardian-, Lösch- und Privacy-Grenzen.
 
 `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED=false` bleibt für diesen Release die
@@ -40,7 +41,8 @@ Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
    `20260807092005_coach_enterprise_onboarding_v1_1.sql`;
 2. die in Staging negativ verifizierte Edge Function
    `submit-organization-access-request`;
-3. Cloudflare-Turnstile-Site-Key im Web-/iOS-Build;
+3. Cloudflare-Turnstile-Site-Key im Website-Build; die native App öffnet
+   denselben zentralen Webweg über Apples vorgesehenen In-App-Browser;
 4. Turnstile-Secret und `ORGANIZATION_INQUIRY_PUBLIC_ENABLED=true` nur in der
    Zielumgebung;
 5. positive und negative Staging-/Production-Smokes sowie Admin-Sichtprüfung.
@@ -66,7 +68,14 @@ aktiviert werden.
 
 Keiner dieser Wege wird ohne informierte Freigabe produktiv ausgeführt.
 
-Der getrennte Staging-Nachweis ist in
+Die vorhandene Staging-Instanz bildet noch die erste Organisationsfassung ab.
+Der neue kurze Teamweg liegt deshalb als additive, noch nicht angewendete
+Folgemigration
+`20260810082841_extend_organization_inquiry_team_path_v1_1.sql` vor. Vor einer
+Aktivierung muss diese Folgemigration einzeln in Staging angewendet und der
+gesamte positive und negative Anfrageweg erneut geprüft werden.
+
+Der bisherige getrennte Staging-Nachweis ist in
 `docs/V1_1_ORGANIZATION_STAGING_ASSURANCE_2026-08-09.md` festgehalten. Der
 Endpunkt bleibt dort ohne echten Turnstile-Schlüssel und Aktivierungsflag
 fail-closed.
@@ -80,8 +89,10 @@ fail-closed.
 - [x] Version 1.1 / Build 5 lokal vorbereitet und statisch geschützt;
 - [x] Feedback-Clientgate explizit geschlossen dokumentiert;
 - [x] Icon-Qualitätsblock unabhängig geprüft und integriert;
-- [x] Organisationsmigration und Edge Function isoliert in Staging anwenden;
+- [x] erste Organisationsmigration und Edge Function isoliert in Staging anwenden;
 - [x] Rollen-, RLS-, DE-/Notice- und HTTP-Negativpfade in Staging prüfen;
+- [ ] additive Teamweg-Migration und aktualisierte Edge Function isoliert in
+      Staging anwenden und beide Anfragewege erneut prüfen;
 - [ ] echten Turnstile-Site-Key/Secret nach Nutzeranmeldung ausschließlich in
       Staging setzen und einen positiven synthetischen E2E-Smoke durchführen;
 - [ ] App-Store-Privacy-/Review-Text gegen den tatsächlich aktivierten Umfang

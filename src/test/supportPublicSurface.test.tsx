@@ -13,6 +13,8 @@ describe("public support surface", () => {
 
     expect(screen.getByRole("heading", { name: "RewirePerform Support" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Hinweis zum Angebot" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Team- oder Organisationszugang/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Zugang anfragen/ })).not.toBeInTheDocument();
     expect(screen.queryByText(/App-Store-Review/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Review Notes/i)).not.toBeInTheDocument();
   });
