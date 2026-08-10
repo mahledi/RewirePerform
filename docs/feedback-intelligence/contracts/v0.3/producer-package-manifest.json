@@ -5,9 +5,9 @@
   "generated_at": "2026-08-10T12:35:00+02:00",
   "producer_branch": "codex/v1-1-consent-privacy-activation-20260810",
   "producer_base_commit": "9d9670e6f678346e1a29b6341a04582bd8c8e965",
-  "producer_worktree_dirty": true,
+  "producer_worktree_dirty": false,
   "package_signed": false,
-  "package_status": "LOCAL_DRAFT_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "release_scope": {
     "jurisdiction": "DE",
     "language": "de-DE",

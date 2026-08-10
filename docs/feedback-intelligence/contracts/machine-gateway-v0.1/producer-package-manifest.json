@@ -9,7 +9,7 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "c6d59e9c59d45616af9d0beef4027eede526f80f806a3f5177b5e9f2cda0c18d",
+  "package_sha256": "9e671e9885e37019853bb5e542eabc9d246310d9a10e55befedb9caecf7bcbf1",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
@@ -17,7 +17,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
-      "sha256": "286d8f8211fc767caf08e12802b0c70a47980942a63c7cc58a5e0dca75c89c30"
+      "sha256": "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df"
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
