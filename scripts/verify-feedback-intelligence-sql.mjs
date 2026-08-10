@@ -21,6 +21,10 @@ const restVisualizationRegistryMigration = readFileSync(
   resolve("supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql"),
   "utf8",
 );
+const visualizationCopyRegistryMigration = readFileSync(
+  resolve("supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql"),
+  "utf8",
+);
 const consentNoticeMigration = readFileSync(
   resolve("supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql"),
   "utf8",
@@ -237,6 +241,7 @@ try {
   await db.exec(securityMigration);
   await db.exec(registryMigration);
   await db.exec(restVisualizationRegistryMigration);
+  await db.exec(visualizationCopyRegistryMigration);
   await db.exec(consentNoticeMigration);
   await db.exec(dachMinorPolicyMigration);
   await db.exec(transactionMigration);
@@ -575,8 +580,8 @@ try {
   assert(
     visualizationRegistry.rows.every((row) =>
       row.option_ids.includes("not_used")
-      && row.questionnaire_version === `feedback-d${row.checkpoint_day}-v1.1.1`
-      && row.content_version === "feedback-intelligence-content-v1.1.1"
+      && row.questionnaire_version === `feedback-d${row.checkpoint_day}-v1.1.2`
+      && row.content_version === "feedback-intelligence-content-v1.1.2"
       && row.status === "draft"
       && /^[a-f0-9]{64}$/.test(row.questionnaire_manifest_hash)),
     "visualization questions must preserve not_used and remain pinned to draft-only v1.1 registries",
@@ -915,8 +920,8 @@ try {
   const started = await db.query(`
     SELECT public.start_my_feedback_submission(
       'feedback-day-10-v1', $1, '1.1.0+5',
-      'feedback-intelligence-content-v1.1.1',
-      '0b60fed7e7ec9a36e691489deb02b819056ecad277bd307f0ddb7769dc03d1b9'
+      'feedback-intelligence-content-v1.1.2',
+      '48c2bf887ec96a0cc49eb327b380f7da7d163beb08929b9b359bfa0356692f2c'
     ) AS result
   `, [ids.transactionClient]);
   assert(started.rows[0].result.status === "draft", "claimed checkpoint must start a draft");

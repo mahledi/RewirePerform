@@ -6,7 +6,7 @@ Status: `LOCAL_DRAFT_NOT_ACTIVATED`
 ## Ergebnis
 
 Die vier Feedback-Checkpoints an Tag 10, 24, 39 und 55 enthalten jeweils exakt
-zwei Fragen zur mentalen Visualisierungseinheit am Ruhetag. Sie sind Teil der
+zwei Fragen zur Visualisierung am Ruhetag. Sie sind Teil der
 jeweiligen Fragefolge und kein nachträglicher Zusatzblock.
 
 | Tag | Auswertungsfokus | Fragen |
@@ -41,15 +41,15 @@ anderer Consumer darf sie nicht als denselben Längsschnittscore behandeln.
 
 ## Content- und Fragebogen-Pins
 
-- kanonischer Produktions-Content und finaler Rest-Day-Vertrag:
-  `bd647c1b4e709cc0285c6438639e1e9b42ef6128`;
+- kanonischer Produktions-Content und finaler dreistufiger Rest-Day-Vertrag:
+  `47519c273f30e73781b827645c726be8e9713db4`;
 - kanonische Quelle für Preview und echten `resolveDay`-/`DailyCheckin`-Pfad:
   `PROGRAM_DAY_DRAFTS` über `src/content/programV11.ts`;
 - die früheren Pins `d5c4f15` und `1afd04c` sind durch den finalen
   Rest-Day-Content-Handoff ersetzt und keine gültige Feedback-Abhängigkeit mehr;
-- Content-Version: `feedback-intelligence-content-v1.1.1`;
-- Fragebogen-Versionen: `feedback-d10-v1.1.1`, `feedback-d24-v1.1.1`,
-  `feedback-d39-v1.1.1`, `feedback-d55-v1.1.1`;
+- Content-Version: `feedback-intelligence-content-v1.1.2`;
+- Fragebogen-Versionen: `feedback-d10-v1.1.2`, `feedback-d24-v1.1.2`,
+  `feedback-d39-v1.1.2`, `feedback-d55-v1.1.2`;
 - die vollständigen Fragebogenpayloads und alle vier Tageskontexte tragen
   SHA-256-Pins.
 

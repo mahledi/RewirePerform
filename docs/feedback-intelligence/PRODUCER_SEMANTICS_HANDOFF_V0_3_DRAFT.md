@@ -1,4 +1,4 @@
-# Feedback Intelligence Producer Semantics Handoff v0.3.2 Draft
+# Feedback Intelligence Producer Semantics Handoff v0.3.3 Draft
 
 Status: `PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED`
 
@@ -35,6 +35,15 @@ Jarvis-Verarbeitungsweg. Das Paket bindet deshalb zusätzlich die V1.1-Consent-
 und Guardian-Quelldateien sowie die additiven Draft-Migrationen. Ein Consumer
 darf die vorherigen Consent-Bytes nicht still weiterverwenden und muss diese
 Revision ausdrücklich annehmen.
+
+Revision `0.3.3-draft` gleicht die sieben sichtbaren Ruhetag-Fragen und ihre
+Semantik mit dem realen Produktbegriff `Visualisierung` ab. Sie pinnt außerdem
+den finalen dreistufigen Rest-Day-Content-Commit
+`47519c273f30e73781b827645c726be8e9713db4`. Frage-IDs, Antwortoptionen,
+Skalen, Consent-, Guardian- und Transfer-Semantik bleiben unverändert. Die
+Fragebogen- und Content-Versionen werden additiv auf `v1.1.2` gehoben; alle
+Kampagnen bleiben `draft`. Ein Consumer muss die neuen Prompt-, Katalog- und
+Gateway-Bytes separat annehmen.
 
 ## Identifier corrections before activation
 

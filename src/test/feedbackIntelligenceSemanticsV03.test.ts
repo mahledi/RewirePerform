@@ -22,6 +22,7 @@ const packageManifest = readJson(
 const registryMigration = [
   "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
   "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
+  "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
 ].map((path) => readFileSync(resolve(process.cwd(), path), "utf8")).join("\n");
 
 const catalogFamilies = FEEDBACK_CONSTRUCT_CATALOG_V03.constructs.flatMap(

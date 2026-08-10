@@ -14,7 +14,7 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
 
 - Feedback-Checkpoints erscheinen deterministisch an Tag 10, 24, 39 und 55.
 - Die vier sichtbaren Tageskontexte sind an den finalen 56-Tage-/Rest-Day-Content-Commit
-  `bd647c1b4e709cc0285c6438639e1e9b42ef6128` und je Tag zusätzlich an einen
+  `47519c273f30e73781b827645c726be8e9713db4` und je Tag zusätzlich an einen
   kanonischen SHA-256-Hash gebunden. Titel, Werkzeug, Cue, Mechanismus und
   Mission werden im Test direkt gegen den finalen Programminhalt geprüft.
 - Jeder Checkpoint enthält exakt zwei organisch eingeordnete Fragen zur mentalen

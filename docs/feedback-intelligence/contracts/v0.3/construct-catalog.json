@@ -878,7 +878,7 @@
       "construct_id": "rest_visualization_guidance_clarity",
       "human_label_de": "Führungsklarheit der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst subjektiv, wie klar die mentale Einheit durch die vorgegebene Sportsituation zum heutigen Satz und zur nächsten Handlung führt.",
+      "measurement_intention_de": "Erfasst subjektiv, wie klar die Visualisierung durch die vorgegebene Sportsituation zum heutigen Satz und zur nächsten Handlung führt.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_guidance_clarity_v1",
@@ -944,7 +944,7 @@
           "questions": [
             {
               "question_id": "d10_rest_visualization_guidance_clarity",
-              "human_label_de": "Wie klar war dir bei der mentalen Einheit am Ruhetag, was du dir Schritt für Schritt vorstellen solltest?",
+              "human_label_de": "Wie klar war dir bei der Visualisierung am Ruhetag, was du dir Schritt für Schritt vorstellen solltest?",
               "item_variant_id": "rest_visualization_guidance_clarity_d10_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -994,7 +994,7 @@
             },
             {
               "question_id": "d24_rest_visualization_guidance_clarity",
-              "human_label_de": "Wie klar führt dich die mentale Einheit am Ruhetag durch die Sportsituation bis zu deinem Satz und deiner nächsten Handlung?",
+              "human_label_de": "Wie klar führt dich die Visualisierung am Ruhetag durch die Sportsituation bis zu deinem Satz und deiner nächsten Handlung?",
               "item_variant_id": "rest_visualization_guidance_clarity_d24_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -1043,7 +1043,7 @@
               "stable_evidence_id": "FICAT-DE-V0.3-D24-REST-VISUALIZATION-GUIDANCE-CLARITY"
             }
           ],
-          "product_test_hypothesis_de": "Eine klarere Schrittführung gegen die bestehende Führung der mentalen Einheit testen."
+          "product_test_hypothesis_de": "Eine klarere Schrittführung gegen die bestehende Führung der Visualisierung testen."
         }
       ]
     },
@@ -1171,7 +1171,7 @@
             },
             {
               "question_id": "d24_rest_visualization_practical_access",
-              "human_label_de": "Wie klar ist dir nach der mentalen Einheit, welche konkrete Handlung du bei einer späteren realen Gelegenheit ausprobieren willst?",
+              "human_label_de": "Wie klar ist dir nach der Visualisierung, welche konkrete Handlung du bei einer späteren realen Gelegenheit ausprobieren willst?",
               "item_variant_id": "rest_visualization_practical_access_d24_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -1221,7 +1221,7 @@
             },
             {
               "question_id": "d39_rest_visualization_practical_access",
-              "human_label_de": "Wie klar kannst du am Ende der mentalen Einheit benennen, was du bei der nächsten realen Gelegenheit tun willst?",
+              "human_label_de": "Wie klar kannst du am Ende der Visualisierung benennen, was du bei der nächsten realen Gelegenheit tun willst?",
               "item_variant_id": "rest_visualization_practical_access_d39_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -3457,7 +3457,7 @@
           "questions": [
             {
               "question_id": "d39_rest_visualization_self_direction",
-              "human_label_de": "Wie selbstständig kannst du inzwischen in der mentalen Einheit deinen heutigen Satz zurückholen und in der Sportsituation nutzen?",
+              "human_label_de": "Wie selbstständig kannst du inzwischen in der Visualisierung deinen heutigen Satz zurückholen und in der Sportsituation nutzen?",
               "item_variant_id": "rest_visualization_self_direction_d39_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -4484,7 +4484,7 @@
       "construct_id": "rest_visualization_integration",
       "human_label_de": "Rückblickende Integration der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für RewirePerform-Sätze in konkreten Sportsituationen.",
+      "measurement_intention_de": "Erfasst rückblickend die subjektive Nutzbarkeit der Visualisierungen für RewirePerform-Sätze in konkreten Sportsituationen.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_integration_v1",
@@ -4550,7 +4550,7 @@
           "questions": [
             {
               "question_id": "d55_rest_visualization_integration",
-              "human_label_de": "Rückblickend: Wie gut konntest du die mentalen Einheiten an Ruhetagen nutzen, um deine RewirePerform-Sätze in konkreten Sportsituationen durchzugehen?",
+              "human_label_de": "Rückblickend: Wie gut konntest du die Visualisierungen an Ruhetagen nutzen, um deine RewirePerform-Sätze in konkreten Sportsituationen durchzugehen?",
               "item_variant_id": "rest_visualization_integration_d55_v1",
               "analysis_role": "checkpoint_module",
               "display_answer_options": [
@@ -4599,7 +4599,7 @@
               "stable_evidence_id": "FICAT-DE-V0.3-D55-REST-VISUALIZATION-INTEGRATION"
             }
           ],
-          "product_test_hypothesis_de": "Die am schwächsten bewertete Phase der mentalen Einheit gezielt überarbeiten und erneut testen."
+          "product_test_hypothesis_de": "Die am schwächsten bewertete Phase der Visualisierung gezielt überarbeiten und erneut testen."
         }
       ]
     },
@@ -4607,7 +4607,7 @@
       "construct_id": "rest_visualization_continuation_intent",
       "human_label_de": "Weiternutzungsabsicht der Ruhetag-Visualisierung",
       "dimension": "rest_day_visualization",
-      "measurement_intention_de": "Erfasst die subjektive Absicht, diese Art der mentalen Einheit nach dem Programm selbstständig weiterzuverwenden.",
+      "measurement_intention_de": "Erfasst die subjektive Absicht, diese Art der Visualisierung nach dem Programm selbstständig weiterzuverwenden.",
       "item_families": [
         {
           "item_family_id": "rest_visualization_continuation_intent_v1",
@@ -4673,7 +4673,7 @@
           "questions": [
             {
               "question_id": "d55_rest_visualization_continuation_intent",
-              "human_label_de": "Wie wahrscheinlich ist es, dass du solche mentalen Einheiten nach dem Programm selbstständig weiter nutzt?",
+              "human_label_de": "Wie wahrscheinlich ist es, dass du solche Visualisierungen nach dem Programm selbstständig weiter nutzt?",
               "item_variant_id": "rest_visualization_continuation_intent_d55_v1",
               "analysis_role": "quality_context",
               "display_answer_options": [

@@ -86,8 +86,8 @@ const CONSTRUCT_META: Readonly<Record<string, ConstructMeta>> = {
   },
   rest_visualization_guidance_clarity: {
     humanLabelDe: "Führungsklarheit der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst subjektiv, wie klar die mentale Einheit durch die vorgegebene Sportsituation zum heutigen Satz und zur nächsten Handlung führt.",
-    productTestHypothesisDe: "Eine klarere Schrittführung gegen die bestehende Führung der mentalen Einheit testen.",
+    measurementIntentionDe: "Erfasst subjektiv, wie klar die Visualisierung durch die vorgegebene Sportsituation zum heutigen Satz und zur nächsten Handlung führt.",
+    productTestHypothesisDe: "Eine klarere Schrittführung gegen die bestehende Führung der Visualisierung testen.",
   },
   rest_visualization_practical_access: {
     humanLabelDe: "Praktische Zugänglichkeit der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
@@ -101,12 +101,12 @@ const CONSTRUCT_META: Readonly<Record<string, ConstructMeta>> = {
   },
   rest_visualization_integration: {
     humanLabelDe: "Rückblickende Integration der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst rückblickend die subjektive Nutzbarkeit der mentalen Einheiten für RewirePerform-Sätze in konkreten Sportsituationen.",
-    productTestHypothesisDe: "Die am schwächsten bewertete Phase der mentalen Einheit gezielt überarbeiten und erneut testen.",
+    measurementIntentionDe: "Erfasst rückblickend die subjektive Nutzbarkeit der Visualisierungen für RewirePerform-Sätze in konkreten Sportsituationen.",
+    productTestHypothesisDe: "Die am schwächsten bewertete Phase der Visualisierung gezielt überarbeiten und erneut testen.",
   },
   rest_visualization_continuation_intent: {
     humanLabelDe: "Weiternutzungsabsicht der Ruhetag-Visualisierung", dimension: "rest_day_visualization",
-    measurementIntentionDe: "Erfasst die subjektive Absicht, diese Art der mentalen Einheit nach dem Programm selbstständig weiterzuverwenden.",
+    measurementIntentionDe: "Erfasst die subjektive Absicht, diese Art der Visualisierung nach dem Programm selbstständig weiterzuverwenden.",
     productTestHypothesisDe: "Eine kompaktere Abschlussfassung gegen die bestehende Einheit hinsichtlich berichteter Weiternutzungsabsicht testen.",
   },
   daily_fit: {
