@@ -97,6 +97,13 @@ Turnstile dient ausschliesslich dem Missbrauchsschutz und muss in der
 Datenschutzerklaerung als technischer Dienst benannt werden, bevor die
 oeffentliche Annahme aktiviert wird.
 
+Der Release-Entwurf trennt vorvertragliche Schritte der betroffenen Person
+(Art. 6 Abs. 1 lit. b DSGVO) von Anfragen eines Organisationsvertreters und dem
+Missbrauchsschutz (geplantes berechtigtes Interesse nach Art. 6 Abs. 1 lit. f).
+Vor oeffentlicher Aktivierung bleibt eine dokumentierte Interessenabwaegung und
+externe rechtliche Gegenpruefung erforderlich; lokales CI ist keine anwaltliche
+Freigabe.
+
 Fuer App Store Connect konservativ final pruefen:
 
 - `Contact Info`: Name, Email Address und bei der ausfuehrlichen Anfrage

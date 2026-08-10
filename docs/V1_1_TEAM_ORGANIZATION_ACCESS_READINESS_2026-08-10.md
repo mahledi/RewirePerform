@@ -68,12 +68,17 @@ werden auch nicht automatisch aus oeffentlichen Quellen abgeleitet.
 
 ## Offen vor Aktivierung
 
-1. Cloudflare Turnstile in Staging konfigurieren;
-2. additive Teamweg- und Retention-Migration sowie aktualisierte Edge Function einzeln in
+1. die Interessenabwaegung fuer Anfragen von Organisationsvertretern und den
+   technischen Missbrauchsschutz kurz dokumentieren und den finalen
+   Datenschutzhinweis extern rechtlich gegenpruefen; der aktuelle Text ist ein
+   technisch und nach offiziellen EU-Grundlagen gepruefter Release-Entwurf,
+   keine anwaltliche Freigabe;
+2. Cloudflare Turnstile in Staging konfigurieren;
+3. additive Teamweg- und Retention-Migration sowie aktualisierte Edge Function einzeln in
    Staging pruefen, ohne die geschlossene Feedback-/Jarvis-Kette zu aktivieren;
-3. Datenschutzseite und App-Store-Privacy-/Review-Angaben gegen den aktivierten
+4. Datenschutzseite und App-Store-Privacy-/Review-Angaben gegen den aktivierten
    Umfang angleichen;
-4. Production-Konfiguration bauen und den nativen App-zu-Web-Rueckweg auf dem
+5. Production-Konfiguration bauen und den nativen App-zu-Web-Rueckweg auf dem
    physischen iPhone testen;
-5. erst danach kontrolliert mergen, Production aktivieren, TestFlight bauen und
+6. erst danach kontrolliert mergen, Production aktivieren, TestFlight bauen und
    die App-Store-Version einreichen.
