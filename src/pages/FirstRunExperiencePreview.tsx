@@ -1082,20 +1082,22 @@ const FirstRunExperiencePreview = ({
             ))}
           </div>
 
-          <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#0B0C10]/80 px-3 py-2 backdrop-blur-xl" aria-label={`Schritt ${step + 1} von ${scenes.length}`}>
-            {scenes.map((item, index) => (
-              <span
-                key={item.id}
-                aria-hidden="true"
-                className="flex h-2 min-w-2 items-center justify-center"
-              >
-                <span className={cn(
-                  "block h-1.5 rounded-full transition-all",
-                  index === step ? "w-5 bg-primary" : "w-1.5 bg-white/18",
-                )} />
-              </span>
-            ))}
-          </div>
+          {!isLast && (
+            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#0B0C10]/80 px-3 py-2 backdrop-blur-xl" aria-label={`Schritt ${step + 1} von ${scenes.length}`}>
+              {scenes.map((item, index) => (
+                <span
+                  key={item.id}
+                  aria-hidden="true"
+                  className="flex h-2 min-w-2 items-center justify-center"
+                >
+                  <span className={cn(
+                    "block h-1.5 rounded-full transition-all",
+                    index === step ? "w-5 bg-primary" : "w-1.5 bg-white/18",
+                  )} />
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

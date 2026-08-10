@@ -39,13 +39,16 @@ describe("post-signup app contract", () => {
     }
   });
 
-  it("opens native first launch on auth and never forces the athlete tour before login", () => {
+  it("opens native first launch on the role-first introduction before authentication", () => {
     const app = read("src/App.tsx");
     const index = read("src/pages/Index.tsx");
 
     expect(app).toContain('<Route path="/auth" element={<Auth />} />');
     expect(app).not.toContain("PublicOnboardingGate");
-    expect(index).toContain('navigate("/auth", { replace: true })');
+    expect(app).toContain('<Route path="/start" element={<FirstRunRoleEntry />} />');
+    expect(app).toContain('<Route path="/start/athlete" element={<AthleteFirstRunEntry />} />');
+    expect(app).toContain('<Route path="/start/coach" element={<CoachFirstRunEntry />} />');
+    expect(index).toContain('navigate("/start", { replace: true })');
     expect(index).not.toContain('navigate("/welcome"');
   });
 

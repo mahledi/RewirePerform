@@ -19,6 +19,7 @@ describe("native signup auth return", () => {
       intent: "solo",
       teamCode: null,
       redirect: null,
+      intro: null,
     });
 
     for (const url of [
@@ -58,6 +59,47 @@ describe("native signup auth return", () => {
     expect(nativeSignupContinuationRoute(parsed)).toBe(
       "/minor-consent?next=%2Fquestionnaire",
     );
+  });
+
+  it("returns a personally invited coach to the existing invitation instead of athlete authorization", () => {
+    const redirect = `/organization/invite?token=${"a".repeat(64)}`;
+    const parsed = parseNativeSignupReturn(sessionUrl(
+      "https://rewireperform.com",
+      `flow=signup&intent=organization&intro=coach&redirect=${encodeURIComponent(redirect)}`,
+    ));
+
+    expect(parsed).toMatchObject({
+      kind: "session",
+      intent: "organization",
+      intro: "coach",
+      teamCode: null,
+      redirect,
+    });
+    if (parsed.kind !== "session") throw new Error("expected session");
+    expect(nativeSignupContinuationRoute(parsed)).toBe(redirect);
+  });
+
+  it("rejects broadened organization redirects in native signup callbacks", () => {
+    const token = "a".repeat(64);
+    const redirect = `/organization/invite?token=${token}&next=/coach`;
+    const parsed = parseNativeSignupReturn(sessionUrl(
+      "https://rewireperform.com",
+      `flow=signup&intent=organization&intro=coach&redirect=${encodeURIComponent(redirect)}`,
+    ));
+
+    expect(parsed).toEqual({ kind: "error", errorCode: "invalid_callback" });
+  });
+
+  it("rejects crossed athlete and coach introduction markers", () => {
+    const redirect = `/organization/invite?token=${"a".repeat(64)}`;
+    expect(parseNativeSignupReturn(sessionUrl(
+      "https://rewireperform.com",
+      `flow=signup&intent=organization&intro=athlete&redirect=${encodeURIComponent(redirect)}`,
+    ))).toEqual({ kind: "error", errorCode: "invalid_callback" });
+    expect(parseNativeSignupReturn(sessionUrl(
+      "https://rewireperform.com",
+      "flow=signup&intent=solo&intro=coach",
+    ))).toEqual({ kind: "error", errorCode: "invalid_callback" });
   });
 
   it("supports a one-time auth-code return while rejecting mixed or malformed session data", () => {

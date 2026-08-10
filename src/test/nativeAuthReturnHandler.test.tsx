@@ -111,6 +111,46 @@ describe("native auth return handler", () => {
     expect(mocks.getLaunchUrl).toHaveBeenCalledTimes(1);
   });
 
+  it("opens a cold-start personal coach invitation without changing the auth session", async () => {
+    const token = "a".repeat(64);
+    mocks.getLaunchUrl.mockResolvedValue({
+      url: `https://rewireperform.com/organization/invite?token=${token}`,
+    });
+    renderHandler();
+
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(
+      `/organization/invite?token=${token}`,
+    ));
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
+  });
+
+  it("fails closed for a malformed personal coach invitation", async () => {
+    renderHandler();
+    await waitFor(() => expect(mocks.appUrlOpen).toBeTypeOf("function"));
+
+    await act(async () => {
+      mocks.appUrlOpen?.({
+        url: `https://rewireperform.com/organization/invite?token=${"a".repeat(64)}&redirect=https://evil.example`,
+      });
+    });
+
+    expect(screen.getByTestId("location")).toHaveTextContent("/organization/invite");
+    expect(screen.getByTestId("location")).not.toHaveTextContent("evil");
+    expect(mocks.setSession).not.toHaveBeenCalled();
+  });
+
+  it("does not reopen post-signup onboarding after the athlete completed the pre-auth flight", async () => {
+    mocks.getLaunchUrl.mockResolvedValue({ url: nativeSessionUrl("flow=signup&intro=athlete") });
+    renderHandler();
+
+    await waitFor(() => expect(mocks.setSession).toHaveBeenCalledTimes(1));
+    expect(pendingPostSignupIntent("athlete-1")).toBeNull();
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/minor-consent?next=%2Fquestionnaire",
+    );
+  });
+
   it("does not replay the cold-start invite when its own navigation changes the route", async () => {
     mocks.getLaunchUrl.mockResolvedValue({ url: "https://rewireperform.com/join?team=abc123" });
     renderHandler();

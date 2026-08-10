@@ -113,6 +113,7 @@ describe("first run experience preview", () => {
     expect(screen.getByRole("heading", { name: "Dein Weg beginnt mit dem ersten Tag." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Solo" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Registrierung starten")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Schritt 10 von 10")).not.toBeInTheDocument();
   }, 15_000);
 
   it("keeps the preview replayable and makes the Solo/Team choice explicit", () => {

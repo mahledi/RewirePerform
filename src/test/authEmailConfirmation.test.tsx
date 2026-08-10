@@ -54,7 +54,7 @@ vi.mock("sonner", () => ({
   },
 }));
 
-const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
+const renderAuth = (initialEntry = "/auth?mode=signup&intent=solo&intro=athlete") => render(
   <MemoryRouter
     initialEntries={[initialEntry]}
   >
@@ -65,6 +65,9 @@ const renderAuth = (initialEntry = "/auth?redirect=%2Fadmin%2Fqa") => render(
       <Route path="/coach" element={<div>Coach-Bereich geöffnet</div>} />
       <Route path="/admin" element={<div>Admin-Bereich geöffnet</div>} />
       <Route path="/organization/invite" element={<div>Organisationseinladung geöffnet</div>} />
+      <Route path="/start" element={<div>Rollenauswahl geöffnet</div>} />
+      <Route path="/start/athlete" element={<div>Athleten-Einführung geöffnet</div>} />
+      <Route path="/start/coach" element={<div>Coach-Einführung geöffnet</div>} />
       <Route path="/auth/reset-password" element={<div>Passwortseite geöffnet</div>} />
     </Routes>
   </MemoryRouter>,
@@ -74,7 +77,7 @@ const WarmAuthNavigation = () => {
   const navigate = useNavigate();
   return (
     <>
-      <button type="button" onClick={() => navigate("/auth?mode=signup&intent=join&team=ABC123", { replace: true })}>
+      <button type="button" onClick={() => navigate("/auth?mode=signup&intent=join&team=ABC123&intro=athlete", { replace: true })}>
         Teamlink öffnen
       </button>
       <button type="button" onClick={() => navigate("/auth?mode=login", { replace: true })}>
@@ -97,7 +100,6 @@ const renderWarmAuthNavigation = () => render(
 );
 
 const submitSoloSignup = () => {
-  fireEvent.click(screen.getByRole("button", { name: /Allein starten/ }));
   fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Test Person" } });
   fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
   fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
@@ -158,6 +160,7 @@ describe("auth email confirmation", () => {
     const redirectUrl = new URL(signUpCall.options.emailRedirectTo);
     expect(redirectUrl.pathname).toBe("/auth");
     expect(redirectUrl.searchParams.get("flow")).toBe("signup");
+    expect(redirectUrl.searchParams.get("intro")).toBe("athlete");
     expect(redirectUrl.searchParams.has("redirect")).toBe(false);
     expect(signUpCall.options.data).toEqual({
       full_name: "Test Person",
@@ -173,7 +176,7 @@ describe("auth email confirmation", () => {
       error: null,
     });
     const redirect = encodeURIComponent(`/organization/invite?token=${"a".repeat(64)}`);
-    renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}`);
+    renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}&intro=coach`);
 
     expect(screen.getByRole("heading", { name: "Dein Organisationszugang." })).toBeInTheDocument();
     expect(screen.queryByText(/athletin oder athlet/i)).not.toBeInTheDocument();
@@ -214,24 +217,33 @@ describe("auth email confirmation", () => {
     expect(screen.queryByText("Coach-Bereich geöffnet")).not.toBeInTheDocument();
   });
 
-  it("does not offer public coach registration", () => {
+  it("replaces the old public intent cards with the role-first entry", () => {
     renderAuth("/auth");
 
-    expect(screen.queryByRole("button", { name: /Team erstellen/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Für Teams & Organisationen/ })).toHaveAttribute("href", "/team-access");
-    expect(screen.queryByText(/Coach-Zugänge werden/)).not.toBeInTheDocument();
+    expect(screen.getByText("Rollenauswahl geöffnet")).toBeInTheDocument();
   });
 
   it("opens a direct solo signup without a duplicate intent step", () => {
-    renderAuth("/auth?mode=signup&intent=solo");
+    renderAuth("/auth?mode=signup&intent=solo&intro=athlete");
 
     expect(screen.getByRole("heading", { name: "Du startest allein." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Konto erstellen" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Teamcode")).not.toBeInTheDocument();
   });
 
+  it("sends a direct athlete signup through the athlete flight when no completion marker exists", () => {
+    renderAuth("/auth?mode=signup&intent=solo");
+    expect(screen.getByText("Athleten-Einführung geöffnet")).toBeInTheDocument();
+  });
+
+  it("sends a personal coach invitation through the coach flight before auth", () => {
+    const redirect = encodeURIComponent(`/organization/invite?token=${"a".repeat(64)}`);
+    renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}`);
+    expect(screen.getByText("Coach-Einführung geöffnet")).toBeInTheDocument();
+  });
+
   it("opens a team invite signup and still requires a real team code", () => {
-    renderAuth("/auth?mode=signup&intent=join");
+    renderAuth("/auth?mode=signup&intent=join&intro=athlete");
 
     expect(screen.getByRole("heading", { name: "Du trittst einem Team bei." })).toBeInTheDocument();
     expect(screen.getByLabelText("Teamcode")).toBeInTheDocument();
@@ -239,7 +251,7 @@ describe("auth email confirmation", () => {
   });
 
   it("shows a safe recovery message for a malformed invite without prefilling its payload", () => {
-    renderAuth("/auth?mode=signup&intent=join&invite_error=invalid");
+    renderAuth("/auth?mode=signup&intent=join&invite_error=invalid&intro=athlete");
 
     expect(screen.getByRole("alert")).toHaveTextContent("Teamcode bitte erneut ein");
     expect(screen.getByLabelText("Teamcode")).toHaveValue("");
@@ -313,7 +325,7 @@ describe("auth email confirmation", () => {
       error: null,
     });
 
-    renderAuth(`/auth?redirect=${encodeURIComponent("/\\evil.example")}`);
+    renderAuth(`/auth?mode=signup&intent=solo&intro=athlete&redirect=${encodeURIComponent("/\\evil.example")}`);
     submitSoloSignup();
 
     expect(await screen.findByRole("heading", { name: "Bestätige deine E-Mail." })).toBeInTheDocument();
@@ -341,7 +353,7 @@ describe("auth email confirmation", () => {
       token: "123456",
       type: "email",
     });
-    expect(pendingPostSignupIntent("user-1")).toBe("solo");
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
     await settleOtpTimers();
   });
 
@@ -389,7 +401,7 @@ describe("auth email confirmation", () => {
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Bestätige deine E-Mail." })).not.toBeInTheDocument();
-    expect(pendingPostSignupIntent("user-1")).toBe("solo");
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
   });
 
   it("requires an explicit confirmation before an existing athlete joins from a team link", async () => {
@@ -520,14 +532,14 @@ describe("auth email confirmation", () => {
       return { data: { user: { id: "user-1" }, session: { access_token: "token" } }, error: null };
     });
 
-    renderAuth("/auth?mode=signup&intent=join&team=ABC123");
+    renderAuth("/auth?mode=signup&intent=join&team=ABC123&intro=athlete");
     fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Test Person" } });
     fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
     fireEvent.click(screen.getByRole("button", { name: "Konto erstellen" }));
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
-    expect(pendingPostSignupIntent("user-1")).toBe("join");
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
     expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
@@ -538,7 +550,7 @@ describe("auth email confirmation", () => {
       mocks.authState.role = "athlete";
       return { data: { user: { id: "user-1" } }, error: null };
     });
-    renderAuth("/auth?mode=login&intent=join&team=ABC123");
+    renderAuth("/auth?mode=login&intent=join&team=ABC123&intro=athlete");
     fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
     fireEvent.click(screen.getByRole("button", { name: "Anmelden" }));
@@ -556,7 +568,7 @@ describe("auth email confirmation", () => {
       mocks.authState.role = "athlete";
       return { data: { user: { id: "user-1" } }, error: null };
     });
-    renderAuth("/auth?mode=signup&intent=join&team=ABC123");
+    renderAuth("/auth?mode=signup&intent=join&team=ABC123&intro=athlete");
     fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Test Person" } });
     fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
@@ -567,7 +579,7 @@ describe("auth email confirmation", () => {
     fireEvent.click(screen.getByRole("button", { name: "E-Mail bestätigen" }));
 
     expect(await screen.findByText("Fragebogen geöffnet")).toBeInTheDocument();
-    expect(pendingPostSignupIntent("user-1")).toBe("join");
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
     expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
     expect(mocks.rpc).not.toHaveBeenCalled();
     await settleOtpTimers();

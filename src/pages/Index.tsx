@@ -23,7 +23,7 @@ const Index = () => {
   useEffect(() => {
     if (loading) return;
     if (!user && Capacitor.isNativePlatform()) {
-      navigate("/auth", { replace: true });
+      navigate("/start", { replace: true });
       return;
     }
     if (!user || !role) return;

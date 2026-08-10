@@ -24,6 +24,9 @@ const evidencePreviewEnabled = import.meta.env.DEV
   || import.meta.env.VITE_ENABLE_EVIDENCE_PREVIEW === "true";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
+const FirstRunRoleEntry = lazy(() => import("./pages/FirstRunRoleEntry.tsx"));
+const AthleteFirstRunEntry = lazy(() => import("./pages/AthleteFirstRunEntry.tsx"));
+const CoachFirstRunEntry = lazy(() => import("./pages/CoachFirstRunEntry.tsx"));
 const Demo = lazy(() => import("./demo/DemoPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
@@ -64,6 +67,9 @@ const MinorConsentPreview = evidencePreviewEnabled
 const FirstRunExperiencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/FirstRunExperiencePreview.tsx"))
   : null;
+const CoachFirstRunExperiencePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/CoachFirstRunExperience.tsx"))
+  : null;
 const FeedbackIntelligencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/FeedbackIntelligencePreview.tsx"))
   : null;
@@ -89,6 +95,8 @@ const AppRoutes = () => {
   const isMinorConsentPreview = MinorConsentPreview !== null && location.pathname === "/internal/minor-consent-preview";
   const isFirstRunExperiencePreview = FirstRunExperiencePreview !== null
     && location.pathname === "/internal/first-run-preview";
+  const isCoachFirstRunExperiencePreview = CoachFirstRunExperiencePreview !== null
+    && location.pathname === "/internal/coach-first-run-preview";
   const isFeedbackIntelligencePreview = FeedbackIntelligencePreview !== null
     && location.pathname === "/internal/feedback-intelligence-preview";
   const isGoldenDaysPreview = GoldenDaysPreview !== null
@@ -100,6 +108,7 @@ const AppRoutes = () => {
     || isEmailPreview
     || isMinorConsentPreview
     || isFirstRunExperiencePreview
+    || isCoachFirstRunExperiencePreview
     || isFeedbackIntelligencePreview
     || isGoldenDaysPreview
     || isProgramContentPreview;
@@ -117,6 +126,9 @@ const AppRoutes = () => {
             {MinorConsentPreview && <Route path="/internal/minor-consent-preview" element={<MinorConsentPreview />} />}
             {FirstRunExperiencePreview && (
               <Route path="/internal/first-run-preview" element={<FirstRunExperiencePreview />} />
+            )}
+            {CoachFirstRunExperiencePreview && (
+              <Route path="/internal/coach-first-run-preview" element={<CoachFirstRunExperiencePreview />} />
             )}
             {FeedbackIntelligencePreview && (
               <Route path="/internal/feedback-intelligence-preview" element={<FeedbackIntelligencePreview />} />
@@ -150,6 +162,9 @@ const AppRoutes = () => {
             <Suspense fallback={null}><FeedbackCheckpointGate /></Suspense>
             <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/start" element={<FirstRunRoleEntry />} />
+            <Route path="/start/athlete" element={<AthleteFirstRunEntry />} />
+            <Route path="/start/coach" element={<CoachFirstRunEntry />} />
             <Route path="/presentation" element={<Presentation />} />
             <Route path="/coach-pitch" element={<Presentation />} />
             <Route path="/privacy" element={<Privacy />} />

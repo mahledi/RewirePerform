@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ import {
 import { safeInternalRoute } from "@/lib/internalRoute";
 import {
   beginPostSignupOnboarding,
+  completePostSignupOnboarding,
   pendingPostAuthorizationTeamCode,
   pendingPostSignupIntent,
   queuePostAuthorizationTeamJoin,
@@ -51,6 +52,11 @@ const Auth = () => {
   const legacyTeamCode = authFlow === "signup" ? null : searchParams.get("code");
   const urlCode = searchParams.get("team") ?? legacyTeamCode;
   const requestedMode = searchParams.get("mode");
+  const introAudience = searchParams.get("intro") === "athlete"
+    ? "athlete"
+    : searchParams.get("intro") === "coach"
+      ? "coach"
+      : null;
   const authLinkError = parseAuthLinkError(window.location.search, window.location.hash);
   const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
   const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
@@ -118,6 +124,8 @@ const Auth = () => {
   const activeTeamJoinCode = intent === "join"
     ? confirmedTeamJoinCode || normalizedTeamCode()
     : "";
+  const athleteIntroComplete = introAudience === "athlete" && intent !== "organization";
+  const coachIntroComplete = introAudience === "coach" && intent === "organization";
   const signupMetadata = user?.user_metadata as Record<string, unknown> | undefined;
   const metadataOnboardingIntent = authFlow === "signup"
     && signupMetadata?.rewireperform_post_signup_onboarding_version === "1"
@@ -137,6 +145,8 @@ const Auth = () => {
       redirectUrl.searchParams.set("intent", "organization");
       redirectUrl.searchParams.set("redirect", safeRedirect);
     }
+    if (athleteIntroComplete) redirectUrl.searchParams.set("intro", "athlete");
+    if (coachIntroComplete) redirectUrl.searchParams.set("intro", "coach");
     return redirectUrl.toString();
   };
 
@@ -188,8 +198,9 @@ const Auth = () => {
 
   const confirmTeamJoin = () => {
     if (!activeTeamJoinCode || !user) return;
+    if (athleteIntroComplete) completePostSignupOnboarding(user.id, "join");
     const requiresOnboarding = Boolean(
-      pendingPostSignupIntent(user.id) || metadataOnboardingIntent,
+      !athleteIntroComplete && (pendingPostSignupIntent(user.id) || metadataOnboardingIntent),
     );
     if (requiresOnboarding && !pendingPostSignupIntent(user.id)) {
       beginPostSignupOnboarding(user.id, "join");
@@ -203,6 +214,7 @@ const Auth = () => {
 
   const cancelConfirmedTeamJoin = () => {
     if (!user) return;
+    if (athleteIntroComplete) completePostSignupOnboarding(user.id, "join");
     const pendingIntent = pendingPostSignupIntent(user.id);
     if (!pendingIntent && metadataOnboardingIntent) {
       beginPostSignupOnboarding(user.id, metadataOnboardingIntent);
@@ -261,7 +273,9 @@ const Auth = () => {
         navigate(safeRedirect, { replace: true });
         return;
       }
-      if (!pendingPostSignupIntent(user.id) && metadataOnboardingIntent) {
+      if (athleteIntroComplete && metadataOnboardingIntent) {
+        completePostSignupOnboarding(user.id, metadataOnboardingIntent);
+      } else if (!pendingPostSignupIntent(user.id) && metadataOnboardingIntent) {
         beginPostSignupOnboarding(user.id, metadataOnboardingIntent);
       }
       navigate(pendingPostSignupIntent(user.id) ? "/questionnaire" : "/dashboard", { replace: true });
@@ -269,7 +283,7 @@ const Auth = () => {
     else if (pendingPostSignupIntent(user.id)) navigate("/questionnaire", { replace: true });
     else if (safeRedirect) navigate(safeRedirect, { replace: true });
     else if (role === "athlete") navigate("/dashboard", { replace: true });
-  }, [user, role, roleVerified, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, isOrganizationInvite, verifyingCode, authFlow, authLinkError, metadataOnboardingIntent, intent]);
+  }, [user, role, roleVerified, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, isOrganizationInvite, verifyingCode, authFlow, authLinkError, metadataOnboardingIntent, intent, athleteIntroComplete]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,13 +313,16 @@ const Auth = () => {
         : roleData?.role === "coach"
           ? "/coach"
           : "/dashboard";
+      if (roleData?.role !== "admin" && roleData?.role !== "coach" && athleteIntroComplete) {
+        completePostSignupOnboarding(data.user.id, intent === "join" ? "join" : "solo");
+      }
       if (intent === "join") {
         if (roleData?.role === "admin" || roleData?.role === "coach") {
           navigate(nextRoute, { replace: true });
           setLoading(false);
           return;
         }
-        const requiresOnboarding = Boolean(pendingPostSignupIntent(data.user.id));
+        const requiresOnboarding = Boolean(!athleteIntroComplete && pendingPostSignupIntent(data.user.id));
         if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, requiresOnboarding)) {
           toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
           setLoading(false);
@@ -383,8 +400,11 @@ const Auth = () => {
       return;
     }
 
-    if (intent !== "organization") beginPostSignupOnboarding(data.user.id, intent);
-    if (intent === "join" && !queuePostAuthorizationTeamJoin(data.user.id, teamCode, true)) {
+    if (intent !== "organization") {
+      if (athleteIntroComplete) completePostSignupOnboarding(data.user.id, intent);
+      else beginPostSignupOnboarding(data.user.id, intent);
+    }
+    if (intent === "join" && !queuePostAuthorizationTeamJoin(data.user.id, teamCode, !athleteIntroComplete)) {
       toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
       setLoading(false);
       return;
@@ -462,9 +482,12 @@ const Auth = () => {
     }
 
     await backfillProfileSport(data.user.id);
-    if (intent !== "organization") beginPostSignupOnboarding(data.user.id, intent);
+    if (intent !== "organization") {
+      if (athleteIntroComplete) completePostSignupOnboarding(data.user.id, intent);
+      else beginPostSignupOnboarding(data.user.id, intent);
+    }
     if (intent === "join") {
-      if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, true)) {
+      if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, !athleteIntroComplete)) {
         toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
         setVerifyingCode(false);
         return;
@@ -544,6 +567,34 @@ const Auth = () => {
     return (
       <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
     );
+  }
+
+  if (!user && !forceSwitch && !authLinkError && authFlow !== "signup") {
+    if (initialMode === "intent") {
+      return <Navigate to="/start" replace />;
+    }
+
+    if (initialIntent === "organization" && isOrganizationInvite && introAudience !== "coach" && safeRedirect) {
+      const params = new URLSearchParams({
+        redirect: safeRedirect,
+        auth_mode: initialMode === "login" ? "login" : "signup",
+      });
+      return <Navigate to={`/start/coach?${params.toString()}`} replace />;
+    }
+
+    if (
+      initialIntent !== "organization"
+      && introAudience !== "athlete"
+      && (initialMode === "signup" || initialIntent === "join")
+    ) {
+      const params = new URLSearchParams({
+        intent: initialIntent === "join" ? "join" : "solo",
+        auth_mode: initialMode === "login" ? "login" : "signup",
+      });
+      const code = normalizeTeamInviteCode(urlCode ?? "");
+      if (initialIntent === "join" && code) params.set("team", code);
+      return <Navigate to={`/start/athlete?${params.toString()}`} replace />;
+    }
   }
 
   if (user && !roleVerified && mode !== "link-error") {
