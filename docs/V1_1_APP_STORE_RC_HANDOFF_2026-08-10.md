@@ -54,9 +54,9 @@ Team-/Coach-Verbindungen bereitstellt und den freigegebenen Datenumfang intern
   `/organization/invite`-AASA-Pfad sind noch nicht aus dem lokalen 1.1-Stand
   ausgerollt.
 
-### Lokale Nachweise auf der integrierten Codebasis `c132feb`
+### Lokale Nachweise auf der integrierten Codebasis `0a459a5`
 
-- `npm run ci`: 141 von 141 Testdateien und 794 von 794 Tests grün.
+- `npm run ci`: 142 von 142 Testdateien und 799 von 799 Tests grün.
 - `npm run test:e2e`: 81 bestanden, 4 plattformbedingt übersprungen, 0 Fehler;
   Desktop, iPhone Hoch-/Querformat und iPad Hoch-/Querformat.
 - Production-Webbuild, sämtliche Feedback-, Guardian-, Minor-, Privacy-,
@@ -73,18 +73,28 @@ Team-/Coach-Verbindungen bereitstellt und den freigegebenen Datenumfang intern
   akzeptiert: 16 von 16 Semantikdateien und 18 von 18 Gatewaydateien bytegenau,
   1.442 von 1.442 Jarvis-Tests grün. Consumer-Commit:
   `71f853da86a0d6450233c695702747d52059cd6e`.
+- Das neue fail-closed Combined-Staging-Predeploy-v0.2-Paket ist lokal erzeugt
+  und vollständig grün. Es pinnt exakt eine noch nicht angewendete additive
+  Registrymigration `20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql`.
+  Export-, Request- und Edgebytes sind gegenüber dem bereits akzeptierten
+  Staging-Stand unverändert; ein Edge-Redeploy ist nicht erforderlich.
+- Jarvis hat auch dieses exakte Predeploy-v0.2-Paket unabhängig akzeptiert:
+  15 von 15 Paketdateien bytegenau und 1.446 von 1.446 Tests grün.
+  Consumer-Commit `59e84cb70f07cb2e51c09e267d2d209aaf805421`,
+  Acceptance SHA-256
+  `cf352c7af509cd3ff1b61039e1437059d574697713e05b30e0cfa0224013554d`.
 
 ## Differenz Delta zur vollständigen 1.1-Readiness
 
 ### Lokal beziehungsweise Staging zuerst
 
-1. Ein neues fail-closed Predeploy-Paket für die additive
-   Registry-Migration erzeugen.
-2. Das Paket unabhängig gegen den akzeptierten Jarvis-Consumer prüfen.
-3. Zuerst klären, ob wegen bytegleicher Runtime-/Exportdefinitionen eine
-   frische metadata-only Postdeploy-Evidence genügt. Nur falls tatsächlich eine
-   Staging-Mutation nötig ist, diese separat freigeben und danach metadata-only
-   auditieren. Keine echten Antworten lesen.
+1. Genau den einen ausstehenden Registry-Migrations-Apply separat
+   freigeben und auf Staging anwenden. Ein metadata-only Audit ohne diesen
+   Apply wäre kein Nachweis des neuen Registrystands.
+2. Unmittelbar danach einen nicht mutierenden metadata-only Postdeploy-Audit
+   erzeugen. Keine Credentials setzen, keine Antworten oder Exporte lesen und
+   keine Edge Function erneut deployen.
+3. Die neue Postdeploy-Evidence erneut unabhängig durch Jarvis abnehmen lassen.
 4. Den positiven Organisationsanfrage-Smoke mit echtem Turnstile in Staging
    wiederholen; anschließend Gate wieder schließen.
 
