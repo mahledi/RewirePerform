@@ -1,7 +1,9 @@
 -- Feedback Intelligence v0.2.1 transfer-pulse count contract.
 --
--- Adds only the count of completed athlete transfer observations captured for
--- the same user/program instance from day 1 through the feedback checkpoint.
+-- Adds only the count of distinct scheduled program days with a completed
+-- athlete transfer observation for the same user/program instance from day 1
+-- through the feedback checkpoint. A protocol transition can therefore never
+-- count the same program day twice.
 -- not_observed is a completed response row and therefore counts. Score, domain,
 -- event type, response duration, text and direct identifiers are never selected
 -- into the activity snapshot or machine payload. All activation gates are reset
@@ -65,8 +67,11 @@ ALTER TABLE feedback_core.activity_snapshots
 
 UPDATE feedback_core.activity_snapshots snapshot
 SET transfer_pulse_count = (
-      SELECT COUNT(*)::smallint
+      SELECT COUNT(DISTINCT observation.day_number)::smallint
       FROM public.athlete_transfer_observations observation
+      INNER JOIN public.evidence_transfer_schedule schedule
+        ON schedule.protocol_version = observation.protocol_version
+       AND schedule.day_number = observation.day_number
       INNER JOIN feedback_core.submissions source_submission
         ON source_submission.id = snapshot.submission_id
       WHERE observation.user_id = source_submission.user_id
@@ -119,9 +124,12 @@ BEGIN
     RAISE EXCEPTION 'feedback_activity_checkpoint_invalid' USING ERRCODE = '22023';
   END IF;
 
-  SELECT COUNT(*)::integer
+  SELECT COUNT(DISTINCT observation.day_number)::integer
   INTO completed_transfer_count
   FROM public.athlete_transfer_observations observation
+  INNER JOIN public.evidence_transfer_schedule schedule
+    ON schedule.protocol_version = observation.protocol_version
+   AND schedule.day_number = observation.day_number
   WHERE observation.user_id = NEW.user_id
     AND observation.program_instance_id = NEW.program_instance_id
     AND observation.day_number BETWEEN 1 AND NEW.program_day;
@@ -155,9 +163,9 @@ REVOKE ALL ON FUNCTION feedback_core.capture_transfer_pulse_count_on_submit()
   FROM PUBLIC, anon, authenticated, service_role, mahleos_feedback_reader;
 
 COMMENT ON FUNCTION feedback_core.capture_transfer_pulse_count_on_submit() IS
-  'Counts completed athlete_transfer_observations for the same user/program instance through the feedback checkpoint. not_observed counts; scores and text are never selected.';
+  'Counts distinct scheduled program days with a completed athlete_transfer_observation for the same user/program instance through the feedback checkpoint. Protocol transitions cannot double-count a day; not_observed counts; scores and text are never selected.';
 COMMENT ON COLUMN feedback_core.activity_snapshots.transfer_pulse_count IS
-  'Count-only completed transfer observations through the checkpoint. Includes not_observed; excludes score, domain, event type, duration and text.';
+  'Count-only distinct scheduled program days with a completed transfer observation through the checkpoint. Includes not_observed; excludes score, domain, event type, duration and text.';
 
 CREATE OR REPLACE FUNCTION feedback_analysis.export_feedback_intelligence_v0_2_internal(
   _client_id text,

@@ -44,7 +44,7 @@ const manifest = {
     schema_sha256: "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
     activity_source_contract_version: "feedback-activity-counts-v1.1.0",
     checkpoint_maxima: { "10": 2, "24": 6, "39": 11, "55": 15 },
-    capture_definition_sha256: "af65a494d503b49e1e8edc8fe65d00c85009af6e3adfedd2e0f9ee0836249072",
+    capture_definition_sha256: "f086a56c020cb5dad3cce0df754435368f5fcd8b02981f3ac5fcb98b0b87386a",
     internal_export_definition_sha256: "534d0d8770899566658b7efb68c6bc31cfecc068dcf5cf94c30f09143b2ab043",
     gateway_definition_sha256: "d08d3fbf17420570ad6e8f29f0e3e19717a874f19a767c8eb7c7656acf7aedfd"
   },

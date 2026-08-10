@@ -14,7 +14,10 @@
       "source_relation": "public.athlete_transfer_observations",
       "source_scope": "same_user_and_same_program_instance",
       "window": "day_number_between_1_and_checkpoint_inclusive",
-      "aggregation": "count_completed_observation_rows",
+      "aggregation": "count_distinct_scheduled_day_numbers",
+      "schedule_relation": "public.evidence_transfer_schedule",
+      "schedule_match": "observation_protocol_version_and_day_number",
+      "protocol_transition_behavior": "same_program_day_counts_at_most_once_across_protocol_versions",
       "not_observed_counts_as_completed": true,
       "checkpoint_maxima": {
         "10": 2,

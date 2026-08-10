@@ -204,13 +204,20 @@ try {
       program_instance_id uuid REFERENCES public.program_instances(id) ON DELETE CASCADE,
       date date NOT NULL
     );
+    CREATE TABLE public.evidence_transfer_schedule(
+      protocol_version text NOT NULL,
+      day_number integer NOT NULL,
+      PRIMARY KEY(protocol_version, day_number)
+    );
     CREATE TABLE public.athlete_transfer_observations(
       id uuid PRIMARY KEY,
       user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
       program_instance_id uuid NOT NULL REFERENCES public.program_instances(id) ON DELETE CASCADE,
+      protocol_version text NOT NULL,
       day_number integer NOT NULL,
       score smallint,
-      not_observed boolean NOT NULL DEFAULT false
+      not_observed boolean NOT NULL DEFAULT false,
+      UNIQUE(user_id, program_instance_id, protocol_version, day_number)
     );
     CREATE TABLE minor_auth.policy_versions(
       id uuid PRIMARY KEY,
@@ -1219,12 +1226,22 @@ try {
     "the executed internal export definition must remain byte-pinned",
   );
 
+  await db.exec(`
+    INSERT INTO public.evidence_transfer_schedule(protocol_version, day_number)
+    VALUES
+      ('56d-transfer-v1-2026-07', 4),
+      ('56d-transfer-v1-2026-07', 7),
+      ('56d-transfer-v2-2026-07', 4),
+      ('56d-transfer-v2-2026-07', 7)
+  `);
   await db.query(`
     INSERT INTO public.athlete_transfer_observations(
-      id, user_id, program_instance_id, day_number, score, not_observed
+      id, user_id, program_instance_id, protocol_version, day_number, score, not_observed
     ) VALUES
-      ('90000000-0000-4000-8000-000000001301', $1, $2, 4, 3, false),
-      ('90000000-0000-4000-8000-000000001302', $1, $2, 7, NULL, true)
+      ('90000000-0000-4000-8000-000000001301', $1, $2, '56d-transfer-v1-2026-07', 4, 3, false),
+      ('90000000-0000-4000-8000-000000001302', $1, $2, '56d-transfer-v1-2026-07', 7, NULL, true),
+      ('90000000-0000-4000-8000-000000001303', $1, $2, '56d-transfer-v2-2026-07', 4, 2, false),
+      ('90000000-0000-4000-8000-000000001304', $1, $2, '56d-transfer-v2-2026-07', 5, 2, false)
   `, [machineUsers[0].user, machineUsers[0].instance]);
   await db.exec(transferPulseCountMigration);
   const upgradedDefinitions = await db.query(`
@@ -1248,10 +1265,10 @@ try {
     upgradedDefinitionHashes["feedback_analysis.export_feedback_intelligence_v0_2_internal"]
       === "534d0d8770899566658b7efb68c6bc31cfecc068dcf5cf94c30f09143b2ab043"
       && upgradedDefinitionHashes["feedback_core.capture_transfer_pulse_count_on_submit"]
-        === "af65a494d503b49e1e8edc8fe65d00c85009af6e3adfedd2e0f9ee0836249072"
+        === "f086a56c020cb5dad3cce0df754435368f5fcd8b02981f3ac5fcb98b0b87386a"
       && upgradedDefinitionHashes["public.read_feedback_intelligence_v0_2_draft"]
         === "d08d3fbf17420570ad6e8f29f0e3e19717a874f19a767c8eb7c7656acf7aedfd",
-    "v0.2.1 transfer capture and both executed machine data paths must remain definition-pinned",
+    `v0.2.1 transfer capture and both executed machine data paths must remain definition-pinned: ${JSON.stringify(upgradedDefinitionHashes)}`,
   );
   await db.exec(`
     UPDATE feedback_core.machine_contract_settings
@@ -1269,7 +1286,7 @@ try {
   assert(
     upgradedTransferSnapshot.rows[0].transfer_pulse_count === 2
       && upgradedTransferSnapshot.rows[0].source_contract_version === "feedback-activity-counts-v1.1.0",
-    "v0.2.1 must count scored and not_observed transfer responses without exporting either value",
+    "v0.2.1 must count each scheduled day once across protocol versions and ignore unscheduled rows",
   );
   await expectFailure(
     () => db.query(`
@@ -1510,6 +1527,15 @@ try {
     ) VALUES ($1, 10, 10, 10, 10, 2, 10, NULL,
       'NO_RESUME_NEEDED', 'ACTIVE_OR_COMPLETED')
   `, [gatewayMinorSubmission.rows[0].id]);
+  await db.query(`
+    INSERT INTO public.athlete_transfer_observations(
+      id, user_id, program_instance_id, protocol_version, day_number, score, not_observed
+    ) VALUES
+      ('90000000-0000-4000-8000-000000001311', $1, $2, '56d-transfer-v1-2026-07', 4, 3, false),
+      ('90000000-0000-4000-8000-000000001312', $1, $2, '56d-transfer-v1-2026-07', 7, NULL, true),
+      ('90000000-0000-4000-8000-000000001313', $1, $2, '56d-transfer-v2-2026-07', 4, 2, false),
+      ('90000000-0000-4000-8000-000000001314', $1, $2, '56d-transfer-v2-2026-07', 5, 2, false)
+  `, [gatewayMinor.user, gatewayMinor.instance]);
   await expectFailure(
     () => db.query(`
       INSERT INTO feedback_consent.text_consent_receipts(
@@ -1528,6 +1554,15 @@ try {
     SET status = 'submitted', submitted_at = now()
     WHERE id = $1
   `, [gatewayMinorSubmission.rows[0].id]);
+  const gatewayMinorTransferSnapshot = await db.query(`
+    SELECT transfer_pulse_count
+    FROM feedback_core.activity_snapshots
+    WHERE submission_id = $1
+  `, [gatewayMinorSubmission.rows[0].id]);
+  assert(
+    gatewayMinorTransferSnapshot.rows[0].transfer_pulse_count === 2,
+    "atomic submit must count each scheduled day once across protocol versions",
+  );
 
   await db.exec("SET ROLE mahleos_feedback_reader");
   const guardianBlocked = await gatewayCall(3);
