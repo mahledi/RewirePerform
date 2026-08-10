@@ -9,7 +9,7 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
-  "package_sha256": "a540bb8fdbef4800bcb2329236364d6c87ffa9fa0d2516a114d2aa5459862c62",
+  "package_sha256": "5828858602b3a28374b6e11ea5c80649f908eef2f1c0527f1382a39d2b477ed0",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2.1/proposed-export.schema.json",
@@ -21,7 +21,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
-      "sha256": "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df"
+      "sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f"
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
@@ -33,7 +33,7 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
-      "sha256": "20f13eca24d2c07f87984bd5c85a33e86989bceea919e732fe54ab7b28cda531"
+      "sha256": "625371ec54a78a1e9b26cf7ae485a4bcf07ee5705a0ea9c1166c71bad5d1be7c"
     },
     {
       "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
@@ -73,15 +73,15 @@
     },
     {
       "path": "src/test/feedbackIntelligenceMachineGateway.test.ts",
-      "sha256": "af9e51f8e300b4e089dac19fd72a9da2d2f6392ad367340e9c68cecaeb06fe26"
+      "sha256": "706921bfe7a7e51ffc363421dbcda2f5bb96a69c459e77c9b81d18cf609d2611"
     },
     {
       "path": "scripts/verify-feedback-intelligence-sql.mjs",
-      "sha256": "5d6e31e4c9da802eb03fd44e120881b880441b827cac5f59960b8c504b34b119"
+      "sha256": "88ae23ec0eb16e615f3ea80c1b1e3ae439bcc07d9e613d728522ace42c6f58df"
     },
     {
       "path": "docs/feedback-intelligence/MACHINE_GATEWAY_HANDOFF_V0_1_DRAFT.md",
-      "sha256": "3144d6bc3d7081a5afbaf49ce51618ae0583b37bb8033b3d3d34eaf27edea3d0"
+      "sha256": "aa8ac7b5cbcf3647498673a2450d10eed286e3fe278d8673e18962f7abb44b20"
     }
   ],
   "upstream_pins": {
@@ -93,11 +93,11 @@
     "export_manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
     "export_package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
     "export_schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
-    "semantics_contract_version": "0.3.2-draft",
-    "semantics_producer_commit": "1975f767a61a0f481247aa1a5138846b5e2addb8",
-    "semantics_manifest_sha256": "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df",
-    "semantics_package_sha256": "f38ae254af315eb6656edaddf7c196870f40b536c39817abc0a26123395de363",
-    "semantics_catalog_sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
+    "semantics_contract_version": "0.3.3-draft",
+    "semantics_producer_commit": "6beef95999bdddc78b9f7bfc8a40d725f4b1af96",
+    "semantics_manifest_sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f",
+    "semantics_package_sha256": "c5df75dd0ddbf717b039e1c809d9e06b06219b7e55e1d4384886a07496e210d5",
+    "semantics_catalog_sha256": "f8a15bedd179c2f6dc4176a8296437e87b175d6e5747d8faa187154b8eee9c4a",
     "question_count": 55
   },
   "activation": {

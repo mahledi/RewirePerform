@@ -37,7 +37,7 @@ const syntheticGateClose = () => readRepoFile(
 );
 
 describe("Feedback Intelligence machine gateway draft", () => {
-  it("pins one internally consistent v0.3.2 producer package", () => {
+  it("pins one internally consistent v0.3.3 producer package", () => {
     const exportManifestSource = readRepoFile(
       "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
     );
@@ -60,7 +60,7 @@ describe("Feedback Intelligence machine gateway draft", () => {
       export_package_sha256: exportManifest.package_sha256,
       export_schema_sha256: exportManifest.export_pins.schema_sha256,
       semantics_contract_version: semanticsManifest.contract_version,
-      semantics_producer_commit: "1975f767a61a0f481247aa1a5138846b5e2addb8",
+      semantics_producer_commit: "6beef95999bdddc78b9f7bfc8a40d725f4b1af96",
       semantics_manifest_sha256: sha256(semanticsManifestSource),
       semantics_package_sha256: semanticsManifest.package_sha256,
       semantics_catalog_sha256: semanticsManifest.files.find(
@@ -70,7 +70,7 @@ describe("Feedback Intelligence machine gateway draft", () => {
     };
 
     expect(exportManifest.contract_version).toBe("0.2.1-draft");
-    expect(semanticsManifest.contract_version).toBe("0.3.2-draft");
+    expect(semanticsManifest.contract_version).toBe("0.3.3-draft");
     expect(semanticsManifest.producer_worktree_dirty).toBe(false);
     expect(gatewayContract.producer_pins).toEqual(expectedPins);
     expect(gatewayManifest.upstream_pins).toMatchObject(expectedPins);

@@ -13,6 +13,13 @@ Machine-Consumer ausgeben. Der vollständige Staging-Nachweis steht in
 
 `npm run feedback:release:check` prüft reproduzierbar:
 
+- das aktuelle lokale Semantikpaket v0.3.3 und den v0.3.3-Gateway-Pin;
+- historische v0.3.2-Postdeploy-/Credentialless-Evidence ausschließlich als
+  historischen Nachweis; sie autorisiert v0.3.3 ausdrücklich nicht;
+- v0.3.3 bleibt bis zur neuen Jarvis-Consumer-Abnahme und einem separat
+  freigegebenen fail-closed Apply der additiven Draft-Registry-Migration ohne
+  aktuellen Staging-Assurance-Status.
+
 - alle Dateien und Paketdigests des v0.2-Exportvertrags;
 - alle Dateien und Paketdigests des v0.3-Semantikkatalogs;
 - exakte Übereinstimmung von Guardian-Scope, Consent-Version, Notice-Hashes,

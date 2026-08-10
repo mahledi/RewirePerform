@@ -108,11 +108,11 @@
     "export_manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
     "export_package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
     "export_schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
-    "semantics_contract_version": "0.3.2-draft",
-    "semantics_producer_commit": "1975f767a61a0f481247aa1a5138846b5e2addb8",
-    "semantics_manifest_sha256": "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df",
-    "semantics_package_sha256": "f38ae254af315eb6656edaddf7c196870f40b536c39817abc0a26123395de363",
-    "semantics_catalog_sha256": "aeea5f6a68b3bc4532328331130d2f07af8302f7c7cc4b80c04bbac9e3fc1e20",
+    "semantics_contract_version": "0.3.3-draft",
+    "semantics_producer_commit": "6beef95999bdddc78b9f7bfc8a40d725f4b1af96",
+    "semantics_manifest_sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f",
+    "semantics_package_sha256": "c5df75dd0ddbf717b039e1c809d9e06b06219b7e55e1d4384886a07496e210d5",
+    "semantics_catalog_sha256": "f8a15bedd179c2f6dc4176a8296437e87b175d6e5747d8faa187154b8eee9c4a",
     "question_count": 55
   },
   "privacy": {

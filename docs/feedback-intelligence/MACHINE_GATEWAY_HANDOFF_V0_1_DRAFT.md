@@ -13,7 +13,7 @@ Real-Data-Gates bleiben geschlossen.
 
 Die bestehenden 55 Fragen, das versionierte v0.2.1-Exportformat, DE-Filter,
 Kohortenunterdrückung und Privacy-Grenzen wurden nicht umbenannt. Der
-Gateway-Pin verweist eindeutig auf Semantikpaket `0.3.2-draft`. Gegenüber
+Gateway-Pin verweist eindeutig auf Semantikpaket `0.3.3-draft`. Gegenüber
 `0.3.1-draft` bleiben IDs, Skalen, Antwortwerte, Katalog und Exportform
 unverändert; versioniert wurden die sichtbare Athleten-Einwilligung und die
 passende Sorgeberechtigten-Information samt ihrer exakten Hash-Bindung. Alle
@@ -111,7 +111,7 @@ Feedbacktext.
    Staging-Audit aller effektiven `PUBLIC`-Function-Rechte verbindlich.
 
 Es wurde nichts still umbenannt. Endpoint, Rolle, Upstream-Signatur,
-Client-ID, v0.2.1-Schema-Pin, v0.3.2-Paket, 55-Fragen-Katalog und DE-Scope stimmen
+Client-ID, v0.2.1-Schema-Pin, v0.3.3-Paket, 55-Fragen-Katalog und DE-Scope stimmen
 mit dem Jarvis-Handoff überein.
 
 ## Lokale Negativ- und Vertragstests

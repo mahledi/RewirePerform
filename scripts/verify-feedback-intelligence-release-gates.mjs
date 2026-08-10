@@ -61,7 +61,6 @@ const guardianNoticeMigrationPath = "supabase/migrations/20260810122100_guardian
 const transactionMigrationPath = "supabase/migrations/20260805103700_feedback_intelligence_v1_transaction_api.sql";
 const machineMigrationPath = "supabase/migrations/20260805104000_feedback_intelligence_v0_2_machine_export.sql";
 const fkIndexesMigrationPath = "supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql";
-const combinedStagingPredeployScriptPath = "scripts/generate-feedback-combined-staging-predeploy.mjs";
 const combinedStagingPostdeployScriptPath = "scripts/generate-feedback-combined-staging-postdeploy.mjs";
 const credentiallessStagingPreflightScriptPath = "scripts/generate-feedback-credentialless-staging-preflight.mjs";
 
@@ -101,7 +100,14 @@ try {
   ]);
 
   assert(v021.contract_version === "0.2.1-draft", "transfer pulse contract version drift");
+  assert(v03.contract_version === "0.3.3-draft", "feedback semantics contract version drift");
   const v021ManifestJson = await readJson(v021Manifest);
+  const v03ManifestSource = await readText(v03Manifest);
+  const historicalV032ManifestSha = "cb5d8df3a20903e08f874294f14d149f4e6615f26381e6118d4f5dd4e74f34df";
+  assert(
+    sha256(v03ManifestSource) !== historicalV032ManifestSha,
+    "v0.3.3 must not reuse the historical v0.3.2 manifest bytes",
+  );
   assert(
     v021ManifestJson.export_pins.schema_sha256
       === "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
@@ -190,12 +196,9 @@ try {
     `${machineMigrationPath}: machine RPC execute revoke missing`,
   );
 
-  execFileSync(process.execPath, [combinedStagingPredeployScriptPath, "--check"], {
-    cwd: root,
-    stdio: "pipe",
-    maxBuffer: 20 * 1024 * 1024,
-  });
-
+  // The checked postdeploy and credentialless packages remain immutable evidence
+  // for v0.3.2. They must not be regenerated as if they covered the new v0.3.3
+  // questionnaire bytes and additive draft-only registry migration.
   execFileSync(process.execPath, [combinedStagingPostdeployScriptPath, "--check"], {
     cwd: root,
     stdio: "pipe",
@@ -224,9 +227,11 @@ try {
     },
     external_activation: false,
     real_jarvis_reads_possible: false,
-    combined_staging_predeploy_evidence_verified: true,
-    combined_staging_postdeploy_evidence_verified: true,
-    credentialless_staging_preflight_verified: true,
+    historical_v0_3_2_staging_postdeploy_evidence_verified: true,
+    historical_v0_3_2_credentialless_preflight_verified: true,
+    current_v0_3_3_consumer_acceptance_complete: false,
+    current_v0_3_3_staging_assurance_complete: false,
+    next_gate: "JARVIS_V0_3_3_BYTE_AND_SEMANTIC_ACCEPTANCE_THEN_FAIL_CLOSED_STAGING_REGISTRY_APPLY",
   }, null, 2));
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Feedback Intelligence release-gate verification failed");
