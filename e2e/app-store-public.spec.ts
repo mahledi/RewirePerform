@@ -88,15 +88,13 @@ test("team invitation is a professional app-and-web handoff", async ({ page }, t
 });
 
 test("auth flow exposes accessible controls and legal links", async ({ page }, testInfo) => {
-  await page.goto("/auth");
-  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
+  await page.goto("/auth?mode=signup&intent=solo&intro=athlete");
+  await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
   await expect(page.getByRole("link", { name: "Datenschutz" })).toHaveAttribute("href", "/privacy");
   await expect(
     page.getByLabel("Rechtliches und Hilfe").getByRole("link", { name: "Support" }),
   ).toHaveAttribute("href", "/support");
 
-  await page.getByRole("button", { name: /Allein starten/ }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
   await expect(page.getByLabel("Vollständiger Name")).toHaveAttribute("autocomplete", "name");
   await expect(page.getByLabel("E-Mail")).toHaveAttribute("autocomplete", "email");
   await expect(page.getByLabel("Passwort")).toHaveAttribute("autocomplete", "new-password");
@@ -139,11 +137,12 @@ test("organization inquiry review stays aligned and explains privacy in-app", as
   await expectNoHorizontalOverflow(page);
 });
 
-test("the athlete introduction is no longer exposed before authentication", async ({ page }) => {
-  await page.goto("/welcome");
-  await expect(page).toHaveURL(/\/auth\?redirect=%2Fwelcome$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).not.toBeVisible();
+test("the role-specific athlete introduction is intentionally available before authentication", async ({ page }) => {
+  await page.goto("/start");
+  await expect(page.getByRole("heading", { level: 1, name: "Wie nutzt du RewirePerform?" })).toBeVisible();
+  await page.getByRole("button", { name: /Ich bin Athlet/ }).click();
+  await expect(page).toHaveURL(/\/start\/athlete$/);
+  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).toBeVisible();
 });
 
 test("internal introduction evidence completes without collecting personal data", async ({ page }, testInfo) => {
@@ -156,7 +155,11 @@ test("internal introduction evidence completes without collecting personal data"
 
   for (const [index, heading] of firstRunSceneHeadings.entries()) {
     await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
-    await expect(page.getByLabel(`Schritt ${index + 1} von 10`)).toBeVisible();
+    if (index < firstRunSceneHeadings.length - 1) {
+      await expect(page.getByLabel(`Schritt ${index + 1} von 10`)).toBeVisible();
+    } else {
+      await expect(page.getByLabel("Schritt 10 von 10")).toHaveCount(0);
+    }
     expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
     await expectNoHorizontalOverflow(page);
 
@@ -257,8 +260,7 @@ test.describe("email confirmation", () => {
       });
     });
 
-    await page.goto("/auth?redirect=%2Fadmin%2Fqa");
-    await page.getByRole("button", { name: /Allein starten/ }).click();
+    await page.goto("/auth?mode=signup&intent=solo&intro=athlete&redirect=%2Fadmin%2Fqa");
     await page.getByLabel("Vollständiger Name").fill("QA Confirmation");
     await page.getByLabel("E-Mail").fill("qa-confirmation@example.com");
     await page.getByLabel("Passwort").fill("secure-test-password");
@@ -272,7 +274,12 @@ test.describe("email confirmation", () => {
     await expect(page.getByText("qa-confirmation@example.com")).toBeVisible();
     await expect(page.getByRole("button", { name: "E-Mail erneut senden" })).toBeVisible();
     await expect(page.getByRole("button", { name: "E-Mail-Adresse ändern" })).toBeVisible();
-    await expect(page).toHaveURL(/\/auth\?redirect=%2Fadmin%2Fqa$/);
+    const confirmationUrl = new URL(page.url());
+    expect(confirmationUrl.pathname).toBe("/auth");
+    expect(confirmationUrl.searchParams.get("mode")).toBe("signup");
+    expect(confirmationUrl.searchParams.get("intent")).toBe("solo");
+    expect(confirmationUrl.searchParams.get("intro")).toBe("athlete");
+    expect(confirmationUrl.searchParams.get("redirect")).toBe("/admin/qa");
     await expectNoHorizontalOverflow(page);
     await capture(page, testInfo, "auth-email-confirmation");
   });

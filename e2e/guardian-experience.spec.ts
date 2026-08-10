@@ -116,7 +116,8 @@ test("guardian management withdraws pilot data without removing program access",
   await page.getByRole("button", { name: "Pilot-Auswertung beenden" }).click();
   await page.getByRole("button", { name: "Pilot-Auswertung beenden" }).click();
   await expect(page.getByRole("status")).toContainText("Der normale Programmzugang bleibt aktiv");
-  await expect(page.getByText("Nicht aktiv")).toBeVisible();
+  const pilotSection = page.getByText("Pilot-Auswertung", { exact: true }).locator("../..");
+  await expect(pilotSection.getByText("Nicht aktiv", { exact: true })).toBeVisible();
 });
 
 test("guardian emails use the same branded source as delivery", async ({ page }, testInfo) => {
