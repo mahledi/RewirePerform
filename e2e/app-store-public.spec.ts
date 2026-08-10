@@ -36,6 +36,11 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Trainiere das System");
   await expect(page.getByRole("button", { name: "Demo ansehen" }).first()).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "RewirePerform im App Store" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Im App Store/ })).toHaveAttribute(
+    "href",
+    "https://apps.apple.com/de/app/rewireperform/id6795463263",
+  );
   await expectNoHorizontalOverflow(page);
   await capture(page, testInfo, "home");
 
@@ -51,6 +56,34 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   );
   await expectNoHorizontalOverflow(page);
 
+  expect(pageErrors).toEqual([]);
+});
+
+test("team invitation is a professional app-and-web handoff", async ({ page }, testInfo) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.goto("/join?team=abc123");
+  await expect(page.getByRole("heading", { name: "Dein Team wartet auf dich." })).toBeVisible();
+  await expect(page.getByText("ABC123")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Teambeitritt starten/ })).toHaveAttribute(
+    "href",
+    "/auth?mode=signup&intent=join&team=ABC123",
+  );
+  await expect(page.getByRole("link", { name: "RewirePerform im App Store" })).toHaveAttribute(
+    "href",
+    "https://apps.apple.com/de/app/rewireperform/id6795463263",
+  );
+  await expectNoHorizontalOverflow(page);
+  await capture(page, testInfo, "team-invitation");
+
+  await page.goto("/join?team=BAD%2F12");
+  await expect(page.getByRole("alert")).toContainText("vollständigen Link");
+  await expect(page.getByRole("link", { name: /Zur Registrierung/ })).toHaveAttribute(
+    "href",
+    "/auth?mode=signup&intent=join&invite_error=invalid",
+  );
+  await expectNoHorizontalOverflow(page);
   expect(pageErrors).toEqual([]);
 });
 

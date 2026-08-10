@@ -46,7 +46,9 @@ describe("team staff invitation", () => {
       "create_team_staff_invitation",
       { _team_id: "team-1", _email: "coach@verein.de", _team_role: "co_coach" },
     ));
-    expect(await screen.findByDisplayValue(/organization\/invite\?token=secure-token/)).toBeInTheDocument();
+    expect(await screen.findByText("Einladung ist bereit")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Link kopieren" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Einladung teilen" })).toBeInTheDocument();
     expect(screen.getByText(/einmalig, sieben tage gültig/i)).toBeInTheDocument();
   });
 });

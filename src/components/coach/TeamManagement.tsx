@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Copy, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle, Building2, ShieldCheck } from "lucide-react";
+import { Plus, Copy, Link2, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle, Building2, ShieldCheck } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
 import TeamStaffInvitation from "@/components/coach/TeamStaffInvitation";
 import TeamAccessLink from "@/components/access/TeamAccessLink";
-import { buildTeamInviteUrl } from "@/lib/teamInvite";
+import { buildAthleteTeamInvitation, type SharePayload } from "@/lib/invitationShare";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -115,26 +115,50 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     setCreating(false);
   };
 
-  const getPlayerMessage = (team: Team) => {
-    const inviteUrl = buildTeamInviteUrl(team.access_code) ?? "https://rewireperform.com/auth?intent=join";
-    return `Hey, ich lade dich als Athletin oder Athlet zu RewirePerform ein.\n\nTeam: ${team.name}\nDein Teamcode: ${team.access_code}\n\nÖffne den Link, um RewirePerform zu öffnen und dich dem Team anzuschließen:\n${inviteUrl}`;
+  const getPlayerInvitation = (team: Team) => (
+    buildAthleteTeamInvitation(team.name, team.access_code)
+  );
+
+  const shareWhatsApp = (invitation: SharePayload | null) => {
+    if (!invitation) {
+      toast.error("Der Einladungslink konnte nicht erstellt werden.");
+      return;
+    }
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(invitation.message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
-  const shareWhatsApp = (message: string) => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
-  };
-
-  const shareNative = async (title: string, message: string) => {
+  const shareNative = async (invitation: SharePayload | null) => {
+    if (!invitation) {
+      toast.error("Der Einladungslink konnte nicht erstellt werden.");
+      return;
+    }
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: message });
+        await navigator.share({
+          title: invitation.title,
+          text: invitation.text,
+          url: invitation.url,
+        });
       } catch {
         // user cancelled
       }
     } else {
-      navigator.clipboard.writeText(message);
+      await navigator.clipboard.writeText(invitation.message);
       toast.success("Einladungstext kopiert!");
     }
+  };
+
+  const copyInvitationLink = async (invitation: SharePayload | null) => {
+    if (!invitation) {
+      toast.error("Der Einladungslink konnte nicht erstellt werden.");
+      return;
+    }
+    await navigator.clipboard.writeText(invitation.url);
+    toast.success("Einladungslink kopiert!");
   };
 
   const copyCode = (code: string, label: string) => {
@@ -301,20 +325,27 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
                 <Copy className="w-5 h-5" />
               </button>
             </div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <button
-                onClick={() => shareWhatsApp(getPlayerMessage(team))}
+                onClick={() => shareWhatsApp(getPlayerInvitation(team))}
                 className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-[#25D366]/10 py-2 text-xs font-medium text-[#25D366] transition-colors hover:bg-[#25D366]/20"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 WhatsApp
               </button>
               <button
-                onClick={() => shareNative(`Team ${team.name} – Athlet:innen einladen`, getPlayerMessage(team))}
+                onClick={() => void shareNative(getPlayerInvitation(team))}
                 className="flex min-w-0 items-center justify-center gap-2 rounded-xl bg-primary/10 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
               >
                 <Share2 className="w-3.5 h-3.5" />
                 Teilen
+              </button>
+              <button
+                onClick={() => void copyInvitationLink(getPlayerInvitation(team))}
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border/70 bg-secondary/30 py-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary/60"
+              >
+                <Link2 className="h-3.5 w-3.5 text-primary" />
+                Link kopieren
               </button>
             </div>
           </div>

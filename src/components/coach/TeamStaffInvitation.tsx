@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Clipboard, Loader2, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { Check, Copy, Loader2, Share2, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { buildCoachInvitationShare } from "@/lib/invitationShare";
 
 const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
   const [open, setOpen] = useState(false);
@@ -44,6 +45,31 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
     toast.success("Einmalige Co-Coach-Einladung vorbereitet.");
   };
 
+  const copyInvite = async () => {
+    if (!inviteUrl) return;
+    await navigator.clipboard.writeText(inviteUrl);
+    toast.success("Einladungslink kopiert.");
+  };
+
+  const shareInvite = async () => {
+    if (!inviteUrl) return;
+    const invitation = buildCoachInvitationShare(inviteUrl);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: invitation.title,
+          text: invitation.text,
+          url: invitation.url,
+        });
+        return;
+      } catch {
+        return;
+      }
+    }
+    await navigator.clipboard.writeText(invitation.message);
+    toast.success("Einladungstext kopiert.");
+  };
+
   return (
     <section className="mt-4 rounded-2xl border border-border/60 bg-secondary/20 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -64,7 +90,31 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
         <div className="mt-4 space-y-3 border-t border-border/60 pt-4">
           <div className="space-y-2"><Label htmlFor={`co-coach-${teamId}`}>Bestätigte berufliche E-Mail</Label><div className="flex flex-col gap-2 sm:flex-row"><Input id={`co-coach-${teamId}`} type="email" value={email} onChange={(event) => { setEmail(event.target.value); setInviteUrl(null); }} placeholder="coach@verein.de" /><Button type="button" onClick={() => void createInvite()} disabled={loading || !email.includes("@")} className="shrink-0">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}Einladung erstellen</Button></div></div>
           <p className="text-xs leading-relaxed text-muted-foreground">Der Link ist einmalig, sieben Tage gültig und funktioniert ausschließlich mit der eingeladenen bestätigten E-Mail-Adresse.</p>
-          {inviteUrl && <div className="flex gap-2 rounded-xl border border-border bg-background p-2"><Input readOnly value={inviteUrl} className="font-mono text-xs" /><Button type="button" size="icon" variant="outline" aria-label="Co-Coach-Einladung kopieren" onClick={() => { void navigator.clipboard.writeText(inviteUrl); toast.success("Einladungslink kopiert."); }}><Clipboard className="h-4 w-4" /></Button></div>}
+          {inviteUrl && (
+            <div className="rounded-2xl border border-primary/25 bg-primary/[0.06] p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <Check className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Einladung ist bereit</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Einmaliger Link · sieben Tage gültig · an {email.trim().toLowerCase()} gebunden
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Button type="button" variant="outline" className="min-h-10" onClick={() => void copyInvite()}>
+                  <Copy className="h-4 w-4" />
+                  Link kopieren
+                </Button>
+                <Button type="button" className="min-h-10" onClick={() => void shareInvite()}>
+                  <Share2 className="h-4 w-4" />
+                  Einladung teilen
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
