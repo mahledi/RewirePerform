@@ -63,6 +63,7 @@ const machineMigrationPath = "supabase/migrations/20260805104000_feedback_intell
 const fkIndexesMigrationPath = "supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql";
 const combinedStagingPredeployScriptPath = "scripts/generate-feedback-combined-staging-predeploy.mjs";
 const combinedStagingPostdeployScriptPath = "scripts/generate-feedback-combined-staging-postdeploy.mjs";
+const credentiallessStagingPreflightScriptPath = "scripts/generate-feedback-credentialless-staging-preflight.mjs";
 
 const expectedPolicy = {
   reference: "guardian-feedback-text-de-v1.1.0-draft",
@@ -201,6 +202,12 @@ try {
     maxBuffer: 20 * 1024 * 1024,
   });
 
+  execFileSync(process.execPath, [credentiallessStagingPreflightScriptPath, "--check"], {
+    cwd: root,
+    stdio: "pipe",
+    maxBuffer: 20 * 1024 * 1024,
+  });
+
   console.log(JSON.stringify({
     status: "LOCAL_RELEASE_GATES_VERIFIED_EXTERNAL_GATES_CLOSED",
     release_scope: "DE_ONLY",
@@ -219,6 +226,7 @@ try {
     real_jarvis_reads_possible: false,
     combined_staging_predeploy_evidence_verified: true,
     combined_staging_postdeploy_evidence_verified: true,
+    credentialless_staging_preflight_verified: true,
   }, null, 2));
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Feedback Intelligence release-gate verification failed");
