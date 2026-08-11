@@ -51,14 +51,14 @@
     "inherit": false,
     "explicit_grants": [
       "CONNECT_ON_CURRENT_DATABASE",
-      "USAGE_ON_SCHEMA_PUBLIC",
-      "EXECUTE_ON_public.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)"
+      "USAGE_ON_SCHEMA_feedback_machine_production",
+      "EXECUTE_ON_feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)"
     ],
     "table_grants": [],
     "sequence_grants": [],
     "service_role_used": false,
     "edge_database_url_environment_name": "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL",
-    "upstream_rpc": "public.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)",
+    "upstream_rpc": "feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)",
     "upstream_scope": "production_only"
   },
   "replay_and_rate_limit": {

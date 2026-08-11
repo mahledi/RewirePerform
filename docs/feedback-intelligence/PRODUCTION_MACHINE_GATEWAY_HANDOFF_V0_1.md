@@ -7,9 +7,11 @@ Credentials oder echten Datenread.
 
 ## Ziel
 
-Der reale Deutschland-Pfad ist technisch vollständig vom synthetischen
-Staging-Pfad getrennt. Ein Staging-Key, eine Staging-Datenbank-URL oder der
-Staging-Endpoint kann diesen Pfad nicht autorisieren.
+Der reale Deutschland-Pfad hat einen eigenen Endpoint, Reader, Secret-Namespace
+und eine eigene nicht exponierte RPC-Schema-Grenze. Replay-/Rate-Limit-Tabellen
+bleiben bewusst gemeinsam, sind aber durch unterschiedliche Client-IDs
+getrennt. Ein Staging-Key, eine Staging-Datenbank-URL oder der Staging-Endpoint
+kann den Production-Pfad nicht autorisieren.
 
 ## Lokaler Umfang
 
@@ -17,6 +19,11 @@ Staging-Endpoint kann diesen Pfad nicht autorisieren.
 - exakte Production-Hostbindung an `bqsbxesmybthwtxmowfz`;
 - eigene Rolle `mahleos_feedback_production_reader` ohne Passwort und ohne
   Tabellen- oder Sequenzrechte;
+- vollständige erneute Rollen-Härtung und Entfernung sämtlicher unerwarteter
+  Rollenmitgliedschaften bei jeder Anwendung;
+- RPC ausschließlich im nicht exponierten Schema `feedback_machine_production`;
+- fail-closed Apply, sobald eine fremde, über `PUBLIC` aufrufbare
+  `SECURITY DEFINER`-Funktion in `public` existiert;
 - eigene Machine-Key-, Reader-URL-, Machine-Gate- und Real-Data-Gate-Namen;
 - ausschließlich `data_scope=production` und der gepinnte Export v0.2.1;
 - persistenter Replay-Schutz, höchstens vier manuelle Versuche pro Stunde,

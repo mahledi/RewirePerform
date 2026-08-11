@@ -1,6 +1,7 @@
 // @vitest-environment node
 
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
@@ -48,7 +49,9 @@ describe("Feedback Intelligence DE-Production gateway", () => {
     expect(edge).toContain('"https://bqsbxesmybthwtxmowfz.supabase.co"');
     expect(edge).toContain('"mahles-jarvis-feedback-intelligence-production"');
     expect(edge).toContain('body.data_scope !== "production"');
-    expect(edge).toContain("public.read_feedback_intelligence_production_v0_2_draft(");
+    expect(edge).toContain(
+      "feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(",
+    );
     expect(database).toContain('"bqsbxesmybthwtxmowfz"');
     expect(database).toContain('"mahleos_feedback_production_reader"');
     expect(database).toContain('"MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL"');
@@ -85,9 +88,13 @@ describe("Feedback Intelligence DE-Production gateway", () => {
     expect(migration).toContain("PASSWORD NULL");
     expect(migration).toContain("NOINHERIT");
     expect(migration).toContain("NOBYPASSRLS");
-    expect(migration).toContain("REVOKE mahleos_feedback_production_reader FROM postgres");
+    expect(migration).toContain("pg_catalog.pg_auth_members");
     expect(migration).toContain(
-      "GRANT EXECUTE ON FUNCTION public.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)",
+      "feedback_production_reader_unsafe_public_security_definer_path",
+    );
+    expect(migration).toContain("CREATE SCHEMA IF NOT EXISTS feedback_machine_production");
+    expect(migration).toContain(
+      "GRANT EXECUTE ON FUNCTION feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)",
     );
     expect(migration).toContain(
       "REVOKE ALL ON ALL TABLES IN SCHEMA public, feedback_core, feedback_consent, feedback_raw, feedback_analysis",
@@ -125,8 +132,13 @@ describe("Feedback Intelligence DE-Production gateway", () => {
         CREATE ROLE anon;
         CREATE ROLE authenticated;
         CREATE ROLE service_role;
+        CREATE ROLE inherited_power SUPERUSER;
         CREATE ROLE mahleos_feedback_reader LOGIN NOINHERIT NOSUPERUSER NOCREATEDB
           NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+        CREATE ROLE mahleos_feedback_production_reader LOGIN SUPERUSER CREATEDB CREATEROLE
+          INHERIT REPLICATION BYPASSRLS PASSWORD 'unexpected';
+        GRANT inherited_power TO mahleos_feedback_production_reader;
+        GRANT mahleos_feedback_production_reader TO postgres;
         CREATE SCHEMA extensions;
         CREATE SCHEMA feedback_core;
         CREATE SCHEMA feedback_consent;
@@ -177,6 +189,8 @@ describe("Feedback Intelligence DE-Production gateway", () => {
         raw_select: boolean;
         structured_select: boolean;
         internal_export: boolean;
+        membership_count: number;
+        public_schema_usage: boolean;
       }>(`
         SELECT
           role.rolpassword IS NULL AS password_null,
@@ -185,7 +199,7 @@ describe("Feedback Intelligence DE-Production gateway", () => {
             AS hardened,
           has_function_privilege(
             'mahleos_feedback_production_reader',
-            'public.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)',
+            'feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)',
             'EXECUTE'
           ) AS production_rpc,
           has_function_privilege(
@@ -203,7 +217,15 @@ describe("Feedback Intelligence DE-Production gateway", () => {
             'mahleos_feedback_production_reader',
             'feedback_analysis.export_feedback_intelligence_v0_2_internal(text,text,text,text)',
             'EXECUTE'
-          ) AS internal_export
+          ) AS internal_export,
+          (
+            SELECT COUNT(*)::integer
+            FROM pg_auth_members membership
+            WHERE membership.member = role.oid OR membership.roleid = role.oid
+          ) AS membership_count,
+          has_schema_privilege(
+            'mahleos_feedback_production_reader', 'public', 'USAGE'
+          ) AS public_schema_usage
         FROM pg_authid role
         WHERE role.rolname = 'mahleos_feedback_production_reader'
       `);
@@ -215,6 +237,8 @@ describe("Feedback Intelligence DE-Production gateway", () => {
         raw_select: false,
         structured_select: false,
         internal_export: false,
+        membership_count: 0,
+        public_schema_usage: true,
       });
 
       await db.exec("SET ROLE mahleos_feedback_production_reader");
@@ -225,7 +249,7 @@ describe("Feedback Intelligence DE-Production gateway", () => {
           set_config('request.mahleos_feedback_issued_at', $2, false)
       `, ["1".repeat(64), new Date().toISOString()]);
       const closed = await db.query<{ result: Record<string, unknown> }>(`
-        SELECT public.read_feedback_intelligence_production_v0_2_draft(
+        SELECT feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(
           'mahles-jarvis-feedback-intelligence-production',
           '0.2.1-draft',
           'e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d',
@@ -238,7 +262,7 @@ describe("Feedback Intelligence DE-Production gateway", () => {
       for (const deniedRole of ["anon", "authenticated", "service_role", "mahleos_feedback_reader"]) {
         await db.exec(`SET ROLE ${deniedRole}`);
         await expect(db.query(`
-          SELECT public.read_feedback_intelligence_production_v0_2_draft(
+          SELECT feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(
             'mahles-jarvis-feedback-intelligence-production',
             '0.2.1-draft',
             'e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d',
@@ -252,7 +276,49 @@ describe("Feedback Intelligence DE-Production gateway", () => {
     }
   });
 
+  it("rejects an inherited PUBLIC-executable SECURITY DEFINER path", async () => {
+    const db = new PGlite();
+    try {
+      await db.exec(`
+        CREATE ROLE anon;
+        CREATE ROLE authenticated;
+        CREATE ROLE service_role;
+        CREATE ROLE mahleos_feedback_reader LOGIN NOINHERIT NOSUPERUSER NOCREATEDB
+          NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+        CREATE SCHEMA feedback_core;
+        CREATE SCHEMA feedback_consent;
+        CREATE SCHEMA feedback_raw;
+        CREATE SCHEMA feedback_analysis;
+        CREATE FUNCTION public.unrelated_privileged_function()
+          RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path = ''
+          AS 'SELECT true';
+      `);
+
+      const inheritedCallable = await db.query<{ callable: boolean }>(`
+        SELECT has_function_privilege(
+          'mahleos_feedback_reader',
+          'public.unrelated_privileged_function()',
+          'EXECUTE'
+        ) AS callable
+      `);
+      expect(inheritedCallable.rows[0]?.callable).toBe(true);
+
+      await expect(db.exec(read(migrationPath))).rejects.toThrow(
+        /feedback_production_reader_unsafe_public_security_definer_path/iu,
+      );
+    } finally {
+      await db.close();
+    }
+  });
+
   it("keeps the package byte-pinned with every activation gate false", () => {
+    const generator = spawnSync(
+      process.execPath,
+      ["scripts/generate-feedback-production-gateway-package.mjs", "--check"],
+      { cwd: process.cwd(), encoding: "utf8" },
+    );
+    expect(generator.status, generator.stderr || generator.stdout).toBe(0);
+
     const manifestSource = read(`${base}/producer-package-manifest.json`);
     const manifest = JSON.parse(manifestSource);
     const digestInput = manifest.files.map(({ path, sha256: pinned }: {
@@ -273,5 +339,8 @@ describe("Feedback Intelligence DE-Production gateway", () => {
       semantics_contract_version: "0.3.3-draft",
       question_count: 55,
     });
+    expect(manifest.files.some(({ path }: { path: string }) =>
+      path === "scripts/generate-feedback-production-gateway-package.mjs"
+    )).toBe(true);
   });
 });

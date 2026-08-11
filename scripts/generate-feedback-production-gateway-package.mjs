@@ -23,7 +23,8 @@ const packageFiles = [
   "supabase/functions/_shared/feedbackIntelligenceProductionDatabase.ts",
   "supabase/functions/mahleos-feedback-intelligence-production-read/index.ts",
   "src/test/feedbackIntelligenceProductionGateway.test.ts",
-  "docs/feedback-intelligence/PRODUCTION_MACHINE_GATEWAY_HANDOFF_V0_1.md"
+  "docs/feedback-intelligence/PRODUCTION_MACHINE_GATEWAY_HANDOFF_V0_1.md",
+  "scripts/generate-feedback-production-gateway-package.mjs"
 ];
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
@@ -51,7 +52,7 @@ const manifest = {
   upstream_pins: {
     endpoint: "/functions/v1/mahleos-feedback-intelligence-production-read",
     role: "mahleos_feedback_production_reader",
-    rpc: "public.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)",
+    rpc: "feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)",
     export_contract_version: "0.2.1-draft",
     export_manifest_sha256: "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
     export_package_sha256: "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",

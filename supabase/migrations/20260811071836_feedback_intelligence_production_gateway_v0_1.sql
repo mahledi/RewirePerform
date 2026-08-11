@@ -27,11 +27,59 @@ END;
 $$;
 
 ALTER ROLE mahleos_feedback_production_reader PASSWORD NULL;
+ALTER ROLE mahleos_feedback_production_reader
+  WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
 ALTER ROLE mahleos_feedback_production_reader SET statement_timeout = '12s';
 ALTER ROLE mahleos_feedback_production_reader SET lock_timeout = '2s';
 ALTER ROLE mahleos_feedback_production_reader SET idle_in_transaction_session_timeout = '5s';
 
-REVOKE mahleos_feedback_production_reader FROM postgres;
+DO $$
+DECLARE
+  membership record;
+BEGIN
+  FOR membership IN
+    SELECT granted.rolname AS granted_role, member.rolname AS member_role
+    FROM pg_catalog.pg_auth_members edge
+    JOIN pg_catalog.pg_roles granted ON granted.oid = edge.roleid
+    JOIN pg_catalog.pg_roles member ON member.oid = edge.member
+    WHERE granted.rolname = 'mahleos_feedback_production_reader'
+       OR member.rolname = 'mahleos_feedback_production_reader'
+  LOOP
+    EXECUTE pg_catalog.format(
+      'REVOKE %I FROM %I', membership.granted_role, membership.member_role
+    );
+  END LOOP;
+END;
+$$;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_proc procedure
+    JOIN pg_catalog.pg_namespace namespace ON namespace.oid = procedure.pronamespace
+    WHERE namespace.nspname = 'public'
+      AND procedure.prosecdef
+      AND EXISTS (
+        SELECT 1
+        FROM pg_catalog.aclexplode(
+          COALESCE(
+            procedure.proacl,
+            pg_catalog.acldefault('f', procedure.proowner)
+          )
+        ) privilege
+        WHERE privilege.grantee = 0
+          AND privilege.privilege_type = 'EXECUTE'
+      )
+  ) THEN
+    RAISE EXCEPTION 'feedback_production_reader_unsafe_public_security_definer_path';
+  END IF;
+END;
+$$;
+
+CREATE SCHEMA IF NOT EXISTS feedback_machine_production;
+REVOKE ALL ON SCHEMA feedback_machine_production FROM PUBLIC, anon, authenticated, service_role,
+  mahleos_feedback_reader;
 
 DO $$
 BEGIN
@@ -42,9 +90,9 @@ BEGIN
 END;
 $$;
 
-GRANT USAGE ON SCHEMA public TO mahleos_feedback_production_reader;
-REVOKE ALL ON SCHEMA feedback_core, feedback_consent, feedback_raw, feedback_analysis
+REVOKE ALL ON SCHEMA public, feedback_core, feedback_consent, feedback_raw, feedback_analysis
   FROM mahleos_feedback_production_reader;
+GRANT USAGE ON SCHEMA feedback_machine_production TO mahleos_feedback_production_reader;
 REVOKE ALL ON ALL TABLES IN SCHEMA public, feedback_core, feedback_consent, feedback_raw, feedback_analysis
   FROM mahleos_feedback_production_reader;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA public, feedback_core, feedback_consent, feedback_raw, feedback_analysis
@@ -52,7 +100,7 @@ REVOKE ALL ON ALL SEQUENCES IN SCHEMA public, feedback_core, feedback_consent, f
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public, feedback_core, feedback_consent, feedback_raw, feedback_analysis
   FROM mahleos_feedback_production_reader;
 
-CREATE OR REPLACE FUNCTION public.read_feedback_intelligence_production_v0_2_draft(
+CREATE OR REPLACE FUNCTION feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(
   _client_id text,
   _contract_version text,
   _schema_sha256 text,
@@ -202,9 +250,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)
+REVOKE ALL ON FUNCTION feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)
   FROM PUBLIC, anon, authenticated, service_role, mahleos_feedback_reader;
-GRANT EXECUTE ON FUNCTION public.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)
+GRANT EXECUTE ON FUNCTION feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)
   TO mahleos_feedback_production_reader;
 
 REVOKE ALL ON FUNCTION public.read_feedback_intelligence_v0_2_draft(text, text, text, text)
@@ -214,7 +262,9 @@ REVOKE ALL ON FUNCTION feedback_analysis.export_feedback_intelligence_v0_2_inter
 
 COMMENT ON ROLE mahleos_feedback_production_reader IS
   'Inactive DE-Production Feedback Intelligence reader. Repository migration provisions no password and opens no runtime or database gate.';
-COMMENT ON FUNCTION public.read_feedback_intelligence_production_v0_2_draft(text, text, text, text) IS
+COMMENT ON SCHEMA feedback_machine_production IS
+  'Non-exposed schema for the dedicated DE-Production Feedback Intelligence machine RPC.';
+COMMENT ON FUNCTION feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text, text, text, text) IS
   'DE-Production-only v0.2.1 gateway wrapper. Requires the dedicated Production reader and all upstream contract, consent, privacy, App-Store and minor gates. Prepared but not activated.';
 
 COMMIT;

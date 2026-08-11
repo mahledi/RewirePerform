@@ -126,7 +126,7 @@ Deno.serve(async (request) => {
           set_config('request.mahleos_feedback_issued_at', ${new Date(parsedIssuedAt).toISOString()}, true)
       `;
       const rows = await transaction`
-        SELECT public.read_feedback_intelligence_production_v0_2_draft(
+        SELECT feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(
           ${CLIENT_ID}, ${CONTRACT_VERSION}, ${SCHEMA_SHA256}, 'production'
         ) AS payload
       `;
