@@ -110,7 +110,9 @@ const packageFiles = [
   planPath,
   "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
   "scripts/generate-v1-1-production-migration-plan.mjs",
+  "scripts/generate-v1-1-production-rollback-dry-run.mjs",
   "src/test/v11ProductionMigrationPlan.test.ts",
+  "src/test/v11ProductionRollbackDryRun.test.ts",
   ...migrations.map(({ path }) => path),
 ];
 

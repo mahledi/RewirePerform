@@ -40,6 +40,25 @@ zurückgerollten Transaktion. Es werden keine Feldwerte als Evidence
 persistiert oder ausgegeben. Trotzdem beginnt dieser Test erst nach einer
 separaten Freigabe für genau diesen Production-Datenzugriff.
 
+## Rollback-Operator
+
+Der bytegepinnte Generator
+`scripts/generate-v1-1-production-rollback-dry-run.mjs` löst die
+Transaktionsgrenze deterministisch: Er prüft vor der Ausgabe jede Migration
+gegen ihren SHA-256-Pin und entfernt ausschließlich die jeweils genau einmal
+vorhandenen, alleinstehenden äußeren Zeilen `BEGIN;` und `COMMIT;`. Der übrige
+SQL-Inhalt bleibt unverändert und wird in eine einzige äußere Transaktion
+eingebettet. Vor dem ersten Migrationsschritt prüft der Operator den erwarteten
+Production-Ausgangspunkt. Vor dem `ROLLBACK` prüft er den geschlossenen
+Zielzustand und danach erneut, dass Rollen und Schemas nicht persistiert sind.
+
+Der Operator autorisiert oder startet selbst keine Verbindung und keinen
+Production-Lauf. Seine normale Ausgabe enthält nur Hash, Bytezahl und
+Gate-Status. Die SQL-Ausgabe über `--print` darf erst nach der separaten
+Freigabe des eng begrenzten Teamzeilen-Reads an den kontrollierten
+Production-Dry-run übergeben werden. Sie darf niemals für einen persistenten
+Apply verwendet werden.
+
 ## Geschlossene Grenzen
 
 Dieser Plan erzeugt oder autorisiert keine Credentials, keinen Edge-Deploy,

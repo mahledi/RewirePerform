@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "965e8314b2da3c52ca79eeb837855151ee435f421c1b7ca9a0d7ea584d9968dc",
+  "package_sha256": "7795fc3ca39bbf6cd4ee513008176db20524417eb6a90e4fd035471f190aae14",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
@@ -10,15 +10,23 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "0a7ef35ab214e0ed7cf590d507894fbd65705bf2a808ff377d72061b2b4e6da8"
+      "sha256": "980fd2ab7c210ab64b005758391bbef2c2caa5fa2e61c68f07f39dbef4044a2d"
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "b71246ab46af47c668d909cca528f8eabd676b36227878cc31d8f3547296f6b2"
+      "sha256": "fb364f9a517be92b7d942ea217b175cce6304cf8c54e3c6f59ca1744196708a3"
+    },
+    {
+      "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
+      "sha256": "ce3facebde83ba9461ecb3d3502d43e580d3f7172fe408a3ab466dc4039674e7"
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
       "sha256": "8f765f80dc2c6216e395cda4aef9c2bd6e0cb50f86029ced4168f6151171bfe1"
+    },
+    {
+      "path": "src/test/v11ProductionRollbackDryRun.test.ts",
+      "sha256": "c5be63f2349c4c3552a1c19df81fa1c77136b00279082200aba5c7a3d89967e2"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",
