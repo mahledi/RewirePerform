@@ -40,6 +40,11 @@ zurückgerollten Transaktion. Es werden keine Feldwerte als Evidence
 persistiert oder ausgegeben. Trotzdem beginnt dieser Test erst nach einer
 separaten Freigabe für genau diesen Production-Datenzugriff.
 
+Mahle hat diesen Read am 11. August 2026 für seine bestehenden Testteams
+freigegeben. Der Scope ist exakt auf `public.teams.id/created_by` und die damit
+geprüften `public.user_roles.user_id/role` begrenzt. Andere Anwendungswerte sind
+weder freigegeben noch erforderlich.
+
 ## Rollback-Operator
 
 Der bytegepinnte Generator

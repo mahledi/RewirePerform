@@ -1,12 +1,21 @@
 // @vitest-environment node
 
 import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { describe, expect, it } from "vitest";
 import {
   composeDryRunSql,
   normalizeOuterTransaction,
 } from "../../scripts/generate-v1-1-production-rollback-dry-run.mjs";
+import {
+  expectedRemoteMigrationVersions,
+  runProductionRollbackDryRun,
+  validateDryRunResult,
+  validatePostRollbackResult,
+} from "../../scripts/run-v1-1-production-rollback-dry-run.mjs";
 
 const root = process.cwd();
 
@@ -41,11 +50,11 @@ describe("V1.1 Production rollback dry-run operator", () => {
   it("pins all apply migrations into one rollback transaction and excludes the gate-open migration", async () => {
     const { sql, summary } = await composeDryRunSql({ cwd: root });
     expect(summary).toMatchObject({
-      status: "LOCAL_OPERATOR_READY_EXTERNAL_DATA_READ_NOT_APPROVED",
+      status: "LOCAL_OPERATOR_READY_BOUNDED_DATA_READ_APPROVED",
       normalized_apply_migrations: 24,
       history_only_migrations_skipped: 1,
       application_data_access_required: true,
-      application_data_access_approved: false,
+      application_data_access_approved: true,
       persistent_production_apply_authorized: false,
     });
     expect(sql.match(/BEGIN_NORMALIZED_MIGRATION/g)).toHaveLength(24);
@@ -66,5 +75,99 @@ describe("V1.1 Production rollback dry-run operator", () => {
     );
     expect(generated.status, generated.stderr || generated.stdout).toBe(0);
     expect(JSON.parse(generated.stdout)).toMatchObject(summary);
+  });
+
+  it("accepts only the two fixed dry-run statuses and one fixed fresh audit status", () => {
+    const target = {
+      application_values_returned: false,
+      persistent_mutation_authorized: false,
+      status: "PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK",
+    };
+    const rollback = {
+      application_values_returned: false,
+      persistent_mutation_detected: false,
+      status: "PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT",
+    };
+    expect(validateDryRunResult(JSON.stringify({
+      rows: [{
+        v1_1_dry_run_target_status: target,
+        v1_1_dry_run_rollback_status: rollback,
+      }],
+    }))).toEqual({ target: expect.objectContaining(target), rollback: expect.objectContaining(rollback) });
+    expect(validatePostRollbackResult(JSON.stringify({
+      rows: [{ v1_1_dry_run_rollback_status: rollback }],
+    }))).toEqual(expect.objectContaining(rollback));
+    expect(() => validateDryRunResult(JSON.stringify({
+      rows: [{
+        v1_1_dry_run_target_status: target,
+        v1_1_dry_run_rollback_status: rollback,
+        leaked_application_value: "forbidden",
+      }],
+    }))).toThrow("unexpected result keys");
+  });
+
+  it("always performs one fresh postrollback audit and never retries", async () => {
+    const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-linked-test-"));
+    mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
+    writeFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "bqsbxesmybthwtxmowfz\n");
+    const versions = expectedRemoteMigrationVersions(root);
+    const calls: string[][] = [];
+    const rollback = {
+      application_values_returned: false,
+      persistent_mutation_detected: false,
+      status: "PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT",
+    };
+    const runCli = (args: string[]) => {
+      calls.push(args);
+      if (args[0] === "migration") {
+        return { status: 0, stdout: JSON.stringify({ migrations: versions.map((remote) => ({ remote })) }) };
+      }
+      if (calls.filter(([command]) => command === "db").length === 1) {
+        return {
+          status: 0,
+          stdout: JSON.stringify({ rows: [{
+            v1_1_dry_run_target_status: {
+              application_values_returned: false,
+              persistent_mutation_authorized: false,
+              status: "PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK",
+            },
+            v1_1_dry_run_rollback_status: rollback,
+          }] }),
+        };
+      }
+      return { status: 0, stdout: JSON.stringify({ rows: [{ v1_1_dry_run_rollback_status: rollback }] }) };
+    };
+    try {
+      const result = await runProductionRollbackDryRun({ cwd: root, linkedWorkdir, runCli });
+      expect(result).toMatchObject({
+        status: "PASS_V1_1_PRODUCTION_ROLLBACK_DRY_RUN",
+        dry_run_request_count: 1,
+        postrollback_audit_request_count: 1,
+        retry_count: 0,
+        persistent_mutation_detected: false,
+      });
+      expect(calls).toHaveLength(3);
+
+      calls.length = 0;
+      let databaseCalls = 0;
+      const failingRunCli = (args: string[]) => {
+        calls.push(args);
+        if (args[0] === "migration") {
+          return { status: 0, stdout: JSON.stringify({ migrations: versions.map((remote) => ({ remote })) }) };
+        }
+        databaseCalls += 1;
+        if (databaseCalls === 1) return { status: 1, stdout: "" };
+        return { status: 0, stdout: JSON.stringify({ rows: [{ v1_1_dry_run_rollback_status: rollback }] }) };
+      };
+      await expect(runProductionRollbackDryRun({
+        cwd: root,
+        linkedWorkdir,
+        runCli: failingRunCli,
+      })).rejects.toThrow("rollback dry-run query failed");
+      expect(calls).toHaveLength(3);
+      expect(databaseCalls).toBe(2);
+    } finally {
+      rmSync(linkedWorkdir, { recursive: true, force: true });
+    }
   });
 });

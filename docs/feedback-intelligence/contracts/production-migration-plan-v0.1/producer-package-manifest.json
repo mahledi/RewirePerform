@@ -2,31 +2,35 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "7795fc3ca39bbf6cd4ee513008176db20524417eb6a90e4fd035471f190aae14",
+  "package_sha256": "3b61877bec48e5a10deaab2699f7720b63af2016b6494e21690c64d1850da44f",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
-      "sha256": "68bf295ab78f09c7c42a9a36eaa335696b06fd0f5cf95cd0fd274e7284f8a8a2"
+      "sha256": "5236931739744f4b2ac1e849b81abee08789f61418a5ca7e77de1fbc503f4569"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "980fd2ab7c210ab64b005758391bbef2c2caa5fa2e61c68f07f39dbef4044a2d"
+      "sha256": "cda7664782781fdfb61512717e244e0d9c003862d6dbad31f04bc67e91b38e58"
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "fb364f9a517be92b7d942ea217b175cce6304cf8c54e3c6f59ca1744196708a3"
+      "sha256": "b2d835f5a5ec9b002bcebd6cb157a616c7c11d76f7f30e9f3d021d7a2d7056f1"
     },
     {
       "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "ce3facebde83ba9461ecb3d3502d43e580d3f7172fe408a3ab466dc4039674e7"
+      "sha256": "e495378b7d6e09baf70535af8c23826ca36ec26e5c2d8f94bf444c975dee04a6"
+    },
+    {
+      "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
+      "sha256": "4e30ca0faf1bdad9d6f0e9b226532a714db5f867f8269547517f35ed5666af14"
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
-      "sha256": "8f765f80dc2c6216e395cda4aef9c2bd6e0cb50f86029ced4168f6151171bfe1"
+      "sha256": "e46f3916b4c78d997b415dc481f02a110cd522b3fe8019874d6a216a7f6ab76f"
     },
     {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
-      "sha256": "c5be63f2349c4c3552a1c19df81fa1c77136b00279082200aba5c7a3d89967e2"
+      "sha256": "1966260f61ec3114644eff1bd5ffde477210ff64ab8b6b57d5d2b55838ce2522"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

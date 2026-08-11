@@ -173,15 +173,9 @@ BEGIN
   END IF;
 END;
 $dry_run_target$;
-
-SELECT json_build_object(
-  'status', 'PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK',
-  'application_values_returned', false,
-  'persistent_mutation_authorized', false
-) AS v1_1_dry_run_target_status;
 `;
 
-const postRollbackAuditSql = `
+const postRollbackDoSql = `
 DO $dry_run_rollback$
 DECLARE latest_version text;
 BEGIN
@@ -206,7 +200,23 @@ BEGIN
   END IF;
 END;
 $dry_run_rollback$;
+`;
 
+const postRollbackAuditSql = `${postRollbackDoSql}
+SELECT
+  json_build_object(
+    'status', 'PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK',
+    'application_values_returned', false,
+    'persistent_mutation_authorized', false
+  ) AS v1_1_dry_run_target_status,
+  json_build_object(
+    'status', 'PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT',
+    'application_values_returned', false,
+    'persistent_mutation_detected', false
+  ) AS v1_1_dry_run_rollback_status;
+`;
+
+export const freshPostRollbackAuditSql = `${postRollbackDoSql}
 SELECT json_build_object(
   'status', 'PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT',
   'application_values_returned', false,
@@ -261,7 +271,9 @@ export const composeDryRunSql = async ({ cwd = root } = {}) => {
   return {
     sql,
     summary: {
-      status: "LOCAL_OPERATOR_READY_EXTERNAL_DATA_READ_NOT_APPROVED",
+      status: plan.execution_contract.application_data_access_approved
+        ? "LOCAL_OPERATOR_READY_BOUNDED_DATA_READ_APPROVED"
+        : "LOCAL_OPERATOR_READY_EXTERNAL_DATA_READ_NOT_APPROVED",
       sql_sha256: sha256(sql),
       sql_bytes: Buffer.byteLength(sql),
       normalized_apply_migrations: normalizedMigrations.length,
@@ -277,5 +289,9 @@ const isMain = process.argv[1]
   && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
 if (isMain) {
   const { sql, summary } = await composeDryRunSql();
-  process.stdout.write(process.argv.includes("--print") ? sql : `${JSON.stringify(summary, null, 2)}\n`);
+  if (process.argv.includes("--postrollback-audit-print")) {
+    process.stdout.write(freshPostRollbackAuditSql);
+  } else {
+    process.stdout.write(process.argv.includes("--print") ? sql : `${JSON.stringify(summary, null, 2)}\n`);
+  }
 }

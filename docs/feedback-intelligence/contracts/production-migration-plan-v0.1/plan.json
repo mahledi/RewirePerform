@@ -18,7 +18,14 @@
     "backup_required_before_persistent_apply": true,
     "transactional_rollback_dry_run_complete": false,
     "application_data_access_required_for_full_rollback_dry_run": true,
-    "application_data_access_approved": false,
+    "application_data_access_approved": true,
+    "application_data_access_approval_scope": [
+      "public.teams.id",
+      "public.teams.created_by",
+      "public.user_roles.user_id",
+      "public.user_roles.role"
+    ],
+    "application_data_access_approval_basis": "Mahle confirmed on 2026-08-11 that the existing teams are his test data and the bounded rollback dry-run is acceptable.",
     "persistent_production_apply_approved": false,
     "credentials_allowed": false,
     "data_reads_allowed": false,
