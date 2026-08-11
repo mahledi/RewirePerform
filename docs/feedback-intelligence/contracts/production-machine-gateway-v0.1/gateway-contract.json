@@ -1,0 +1,106 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-production-gateway-v0.1-draft",
+  "contract_status": "LOCAL_PREPARED_UNSIGNED_NOT_ACTIVATED",
+  "release_scope": {
+    "environment": "production_only",
+    "jurisdiction": "DE",
+    "language": "de-DE",
+    "production_host": "bqsbxesmybthwtxmowfz.supabase.co",
+    "staging_scope": "HARD_BLOCKED",
+    "non_de_scope": "HARD_FILTERED_BY_UPSTREAM_RPC"
+  },
+  "http": {
+    "method": "POST",
+    "path": "/functions/v1/mahleos-feedback-intelligence-production-read",
+    "redirects_allowed": false,
+    "cors_allowed": false,
+    "content_type": "application/json",
+    "max_request_bytes": 1024,
+    "max_response_bytes": 8388608,
+    "cache_control": "no-store"
+  },
+  "authentication": {
+    "scheme": "Bearer",
+    "machine_key_pattern": "^[a-f0-9]{64}$",
+    "machine_key_environment_name": "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY",
+    "previous_key_environment_name": "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS",
+    "comparison": "SHA256_CONSTANT_TIME",
+    "key_created": false,
+    "key_stored": false
+  },
+  "runtime_gates": {
+    "machine_gate_environment_name": "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE",
+    "machine_gate_value": "PRODUCTION_MANUAL_READ_APPROVED",
+    "real_data_gate_environment_name": "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE",
+    "real_data_gate_value": "true",
+    "both_required": true
+  },
+  "request": {
+    "schema_path": "docs/feedback-intelligence/contracts/production-machine-gateway-v0.1/request.schema.json",
+    "client_id": "mahles-jarvis-feedback-intelligence-production",
+    "contract_version": "0.2.1-draft",
+    "schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
+    "data_scope": "production"
+  },
+  "database": {
+    "role": "mahleos_feedback_production_reader",
+    "login_enabled": true,
+    "password_provisioned": false,
+    "bypass_rls": false,
+    "superuser": false,
+    "inherit": false,
+    "explicit_grants": [
+      "CONNECT_ON_CURRENT_DATABASE",
+      "USAGE_ON_SCHEMA_PUBLIC",
+      "EXECUTE_ON_public.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)"
+    ],
+    "table_grants": [],
+    "sequence_grants": [],
+    "service_role_used": false,
+    "edge_database_url_environment_name": "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL",
+    "upstream_rpc": "public.read_feedback_intelligence_production_v0_2_draft(text,text,text,text)",
+    "upstream_scope": "production_only"
+  },
+  "replay_and_rate_limit": {
+    "persistent_atomic_guard": true,
+    "nonce_storage": "SHA256_ONLY",
+    "maximum_past_skew_seconds": 300,
+    "maximum_future_skew_seconds": 60,
+    "manual_requests_per_hour": 4
+  },
+  "producer_pins": {
+    "export_contract_version": "0.2.1-draft",
+    "export_manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
+    "export_package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
+    "export_schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
+    "semantics_contract_version": "0.3.3-draft",
+    "semantics_manifest_sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f",
+    "semantics_package_sha256": "c5df75dd0ddbf717b039e1c809d9e06b06219b7e55e1d4384886a07496e210d5",
+    "semantics_catalog_sha256": "f8a15bedd179c2f6dc4176a8296437e87b175d6e5747d8faa187154b8eee9c4a",
+    "question_count": 55
+  },
+  "privacy": {
+    "second_raw_text_store": false,
+    "response_body_logged": false,
+    "machine_key_logged": false,
+    "nonce_stored_raw": false,
+    "direct_table_reads": false,
+    "upstream_consent_and_guardian_checks_required": true,
+    "minimum_cohort_size": 5,
+    "observational_not_causal": true
+  },
+  "activation": {
+    "collection_enabled": false,
+    "production_gateway_deployed": false,
+    "reader_password_provisioned": false,
+    "machine_key_provisioned": false,
+    "edge_machine_gate_open": false,
+    "edge_real_data_gate_open": false,
+    "database_consumer_pin_ready": false,
+    "database_production_export_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false,
+    "real_data_read_enabled": false
+  }
+}

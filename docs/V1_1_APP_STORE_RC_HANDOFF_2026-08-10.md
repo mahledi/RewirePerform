@@ -121,9 +121,12 @@ akzeptiert. Dieser Nachweis autorisiert keine echten Daten oder Production.
 
 ### Vor Production und App-Store-Upload
 
-1. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
-   freiwillige Kommentare, Guardian-Scope und realer Jarvis-Read dürfen nur in
-   der jeweils verifizierten Kombination geöffnet werden.
+1. Der endgültige Aktivierungsumfang ist festgehalten und von Mahle
+   freigegeben: strukturierte Antworten, separat consentierte Kommentare und
+   ein zunächst manuell gestarteter, minimierter interner Jarvis-Read.
+   Der dafür vollständig vom Staging-Pfad getrennte Production-Gateway ist
+   lokal vorbereitet und getestet, aber nicht angewendet, deployed oder
+   aktiviert.
    Die aktuell für den lokalen Production-Build verwendete bestätigte
    Konfiguration enthält `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED` und
    `VITE_TURNSTILE_SITE_KEY` noch nicht; Feedback-Checkpoints und öffentliche
@@ -141,7 +144,8 @@ akzeptiert. Dieser Nachweis autorisiert keine echten Daten oder Production.
 7. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
     erstellen und Version 1.1 in App Store Connect einreichen.
 
-Der empfohlene, noch ausdrücklich freizugebende Production-Datenumfang ist in
+Der ausdrücklich freigegebene, weiterhin extern geschlossene
+Production-Datenumfang ist in
 `docs/V1_1_PRODUCTION_DATA_ACTIVATION_DECISION_2026-08-11.md` festgehalten.
 
 ## Feste Altersentscheidung

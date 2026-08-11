@@ -11,6 +11,7 @@ const base = "docs/feedback-intelligence/contracts/edge-deployment-evidence-v0.1
 const evidencePath = `${base}/edge-deployment-evidence.json`;
 const manifestPath = `${base}/producer-package-manifest.json`;
 const historicalGatewayCommit = "b35bfc89aa5c5781fb0b300440bb8cbb56f69658";
+const historicalConfigCommit = "2c22524c6b4dda2a3aa61d05f30d3267220d0f9c";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const sourceMap = [
   ["functions/_shared/boundedRequestBody.ts", "supabase/functions/_shared/boundedRequestBody.ts"],
@@ -31,9 +32,12 @@ for (const [deployedPath, localPath] of sourceMap) {
   sources.push({ deployed_path: deployedPath, local_path: localPath, sha256: digest, deployed_byte_match: true });
   sourceDigestLines.push(`${digest}  ${deployedPath}\n`);
 }
-const configBytes = await readFile(resolve(root, "supabase/config.toml"));
-const config = configBytes.toString("utf8");
-if (!config.includes("[functions.mahleos-feedback-intelligence-read]\nverify_jwt = false")) {
+const configBytes = execFileSync("git", ["show", `${historicalConfigCommit}:supabase/config.toml`], {
+  cwd: root,
+  maxBuffer: 20 * 1024 * 1024,
+});
+const currentConfig = await readFile(resolve(root, "supabase/config.toml"), "utf8");
+if (!currentConfig.includes("[functions.mahleos-feedback-intelligence-read]\nverify_jwt = false")) {
   throw new Error("Edge config verify_jwt drift");
 }
 

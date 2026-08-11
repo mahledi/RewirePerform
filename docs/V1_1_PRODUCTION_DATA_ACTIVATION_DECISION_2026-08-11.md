@@ -31,6 +31,12 @@ altersgerecht autorisierten und fachlich freigegebenen Scopes teilnehmen.
 - Jarvis hat das vollständige Postread-Paket unabhängig byte- und
   semantikgenau akzeptiert. Dieser Nachweis beweist ausschließlich den
   synthetischen Datenweg.
+- Mahle hat den in diesem Dokument begrenzten realen V1.1-Datenumfang
+  ausdrücklich freigegeben. Daraufhin wurde ein vollständig separater,
+  weiterhin geschlossener Production-Gateway lokal vorbereitet: eigener
+  Endpoint, eigene Reader-Rolle, eigene Secret-Namen und zwei unabhängige
+  Runtime-Gates. Es wurden keine Credentials erzeugt, keine Migration
+  angewendet, keine Function deployed und keine echten Daten gelesen.
 
 Exakte Evidence-Pins:
 
@@ -152,8 +158,9 @@ bleiben `Nein`.
    Production mit ausschließlich kontrollierten synthetischen Konten prüfen.
 4. Öffentliche Team-/Organisationsanfrage mit Production-Turnstile aktivieren,
    einmal positiv testen und den synthetischen Antrag wieder löschen.
-5. Eigenen Production-Reader, eigene Credentials und einen vom Staging-Pfad
-   getrennten Production-Gateway bereitstellen; keine Wiederverwendung der
+5. Den lokal vorbereiteten, vom Staging-Pfad getrennten Production-Gateway
+   unabhängig abnehmen. Erst danach Production-Reader und eigene Credentials
+   in getrennten Freigabeschritten bereitstellen; keine Wiederverwendung der
    Staging-Credentials.
 6. Genau einen kontrollierten Production-Read erst nach erneuter
    Human-Freigabe und nur auf dem final freigegebenen Datenumfang ausführen;
@@ -163,10 +170,9 @@ bleiben `Nein`.
 8. Signierten V1.1-RC auf iPhone und iPad prüfen; danach erst Merge,
    Website-Production, TestFlight und App-Store-Einreichung.
 
-## Noch erforderliche Mahle-Entscheidung
+## Erteilte Produktfreigabe und verbleibende Grenze
 
-Vor der lokalen Production-Gateway-Implementierung und jeder echten
-Aktivierung ist ausdrücklich zu bestätigen:
+Mahle hat am 11. August 2026 ausdrücklich bestätigt:
 
 > Für RewirePerform 1.1 sollen strukturierte Feedbackantworten, separat
 > consentierte Produktfeedback-Kommentare und der oben exakt begrenzte,
@@ -174,5 +180,7 @@ Aktivierung ist ausdrücklich zu bestätigen:
 > Deutschland-Piloten sein. Minderjährigendaten dürfen erst nach dokumentierter
 > qualifizierter DE-Rechts-/Privacy-Freigabe in diesen Pfad gelangen.
 
-Ohne diese Bestätigung bleiben Feedback-Client, Kommentare, Guardian-Policy,
-Machine-Credentials, Real-Data- und Production-Gates geschlossen.
+Diese Produktfreigabe autorisiert die lokale Gateway-Implementierung. Sie
+autorisiert keine Migration, keinen Deploy, keine Credentials, keinen echten
+Datenread und keine Minderjährigenverarbeitung. Diese Gates bleiben einzeln
+geschlossen.

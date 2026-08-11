@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rewireperform:feedback-intelligence-production-gateway-request:0.1.0-draft",
+  "title": "Feedback Intelligence DE-Production machine gateway request v0.1 draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "client_id",
+    "contract_version",
+    "schema_sha256",
+    "data_scope"
+  ],
+  "properties": {
+    "client_id": {
+      "const": "mahles-jarvis-feedback-intelligence-production"
+    },
+    "contract_version": {
+      "const": "0.2.1-draft"
+    },
+    "schema_sha256": {
+      "const": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d"
+    },
+    "data_scope": {
+      "const": "production"
+    }
+  }
+}

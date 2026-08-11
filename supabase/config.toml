@@ -30,3 +30,11 @@ verify_jwt = false
 # Runtime host, machine and database gates remain fail-closed in source.
 [functions.mahleos-feedback-intelligence-read]
 verify_jwt = false
+
+# Dedicated Production Feedback Intelligence endpoint. It is intentionally
+# separate from the synthetic Staging endpoint and remains fail-closed until
+# the exact Production host, machine gate, real-data gate, machine key and
+# passwordless-by-default reader credential are provisioned in a later,
+# separately approved operation.
+[functions.mahleos-feedback-intelligence-production-read]
+verify_jwt = false

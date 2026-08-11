@@ -29,6 +29,7 @@ describe("Feedback Intelligence Edge deployment evidence", () => {
   it("verifies deployed bytes against the historical gateway commit, not current source", () => {
     const generator = read("scripts/generate-feedback-edge-deployment-evidence.mjs");
     expect(generator).toContain("historicalGatewayCommit");
+    expect(generator).toContain("historicalConfigCommit");
     expect(generator).toContain('execFileSync("git", ["show"');
     expect(generator).toContain("Edge config verify_jwt drift");
     expect(generator).toContain("currentEvidence !== evidenceSerialized");

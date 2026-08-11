@@ -119,8 +119,9 @@ Diese Ideen sind nicht vergessen, sondern absichtlich spätere Produktarbeit:
 
 ## Aktuelle Differenz Delta
 
-1. Den tatsächlich zu aktivierenden Production-Datenumfang festschreiben und
-   Datenschutzseite, App-Store-Datentypen und Review Notes exakt daran binden.
+1. Den inzwischen freigegebenen Production-Datenumfang nach unabhängiger
+   Gateway-Abnahme an Datenschutzseite, App-Store-Datentypen und Review Notes
+   binden.
 2. Die qualifizierte DE-Rechts-/Privacy-/Minor-Prüfung des finalen Consent- und
    Guardian-Umfangs dokumentieren.
 3. Production-Migrationen und Edge-Functions einzeln kontrolliert aktivieren;
@@ -147,8 +148,14 @@ entfernt; sämtliche Gates sind wieder geschlossen. Jarvis hat das vollständige
 Postread-Paket unabhängig mit 21 von 21 Dateien und 1.472 von 1.472 Tests
 akzeptiert. Dieser Nachweis autorisiert keine echten Daten oder Production.
 
-Der empfohlene und noch ausdrücklich freizugebende Production-Umfang steht in
+Der ausdrücklich freigegebene, aber noch nicht aktivierte Production-Umfang
+steht in
 `docs/V1_1_PRODUCTION_DATA_ACTIVATION_DECISION_2026-08-11.md`.
+
+Der dafür getrennte Production-Gateway ist lokal vorbereitet: eigener
+Production-Endpoint, eigene Reader-Rolle, eigene Secret-Namen und getrennte
+Machine-/Real-Data-Gates. Rolle und Gates bleiben credentiallos und
+geschlossen; es gab keine Migration, keinen Deploy und keinen echten Read.
 
 ## No-False-Green-Regel
 
