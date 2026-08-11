@@ -1,0 +1,231 @@
+{
+  "schema_version": "rewireperform-v1.1-production-migration-plan-v1",
+  "status": "LOCAL_PREPARED_AWAITING_TRANSACTIONAL_ROLLBACK_DRY_RUN",
+  "generated_at": "2026-08-11T10:05:00+02:00",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "jurisdiction": "DE",
+  "observed_remote_state": {
+    "checked_at": "2026-08-11T09:30:00+02:00",
+    "latest_applied_migration": "20260801104717",
+    "feedback_production_reader_present": false,
+    "production_gateway_rpc_present": false,
+    "production_edge_function_present": false,
+    "application_rows_read": false
+  },
+  "execution_contract": {
+    "bulk_db_push_allowed": false,
+    "ordered_apply_only": true,
+    "backup_required_before_persistent_apply": true,
+    "transactional_rollback_dry_run_complete": false,
+    "persistent_production_apply_approved": false,
+    "credentials_allowed": false,
+    "data_reads_allowed": false,
+    "edge_deploy_allowed": false,
+    "runtime_gates_must_remain_closed": true
+  },
+  "migration_count": 25,
+  "apply_count": 24,
+  "history_only_count": 1,
+  "migrations": [
+    {
+      "version": "20260805103400",
+      "file": "20260805103400_feedback_intelligence_v1_foundation.sql",
+      "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",
+      "sha256": "33e6b7841acda6d2faee095dd6f620b1db9a4148ee47e1623a5d6ec2306f0230",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805103500",
+      "file": "20260805103500_feedback_intelligence_v1_security.sql",
+      "path": "supabase/migrations/20260805103500_feedback_intelligence_v1_security.sql",
+      "sha256": "2017d0ca6af2b9e524dc2c293e9528e19a04d2d0aed64355c52f76af31c10169",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805103600",
+      "file": "20260805103600_feedback_intelligence_v1_registry.sql",
+      "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
+      "sha256": "1dfbaafe2115d009ea16db5567a316e1daa827d0b4aad4040720a89a56822b28",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805103650",
+      "file": "20260805103650_feedback_intelligence_v1_dach_minor_policy.sql",
+      "path": "supabase/migrations/20260805103650_feedback_intelligence_v1_dach_minor_policy.sql",
+      "sha256": "0898a586f602b02d1ac5137c3f01bd2f2a3b6f6b6b88eb9f36548d266683bcde",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805103700",
+      "file": "20260805103700_feedback_intelligence_v1_transaction_api.sql",
+      "path": "supabase/migrations/20260805103700_feedback_intelligence_v1_transaction_api.sql",
+      "sha256": "5b1ad0d50e07a0ac6845a2398d997d1a9499a5c351591a7938a6fc0d83c18741",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805103840",
+      "file": "20260805103840_feedback_intelligence_v1_activity_snapshot.sql",
+      "path": "supabase/migrations/20260805103840_feedback_intelligence_v1_activity_snapshot.sql",
+      "sha256": "45a00b71b1ded02ba48d5e40d7632aca1c50535a135a4967bb9db4fbd19e7259",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805103900",
+      "file": "20260805103900_feedback_intelligence_v1_admin_aggregates.sql",
+      "path": "supabase/migrations/20260805103900_feedback_intelligence_v1_admin_aggregates.sql",
+      "sha256": "66796f1b36cd23de22479bea840a48937cf792bd925ab17bc2cb1cb1336f0eb7",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805104000",
+      "file": "20260805104000_feedback_intelligence_v0_2_machine_export.sql",
+      "path": "supabase/migrations/20260805104000_feedback_intelligence_v0_2_machine_export.sql",
+      "sha256": "95f6ea0f50607ff96cb28fe9d532e94a4c294eaa625239bf061637c6ac8c5c3a",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805104100",
+      "file": "20260805104100_feedback_intelligence_v1_consent_self_service.sql",
+      "path": "supabase/migrations/20260805104100_feedback_intelligence_v1_consent_self_service.sql",
+      "sha256": "18d2f559a74c7e34e3e024083da22c5219e1e63cfc4ba64bcb84738de79b04c8",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260805145921",
+      "file": "20260805145921_guardian_feedback_text_authorization_v1.sql",
+      "path": "supabase/migrations/20260805145921_guardian_feedback_text_authorization_v1.sql",
+      "sha256": "c2d123c141960212570daa2aa8ef0116a23b56b466c82df619681c34d1bc393f",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260806081925",
+      "file": "20260806081925_feedback_intelligence_fk_indexes.sql",
+      "path": "supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql",
+      "sha256": "359a36c9e7f853b5e6c6a9f77d34d826960ed700a398136287d9d4f9867b4da0",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260806110000",
+      "file": "20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
+      "path": "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
+      "sha256": "f724676847e4fd8c915248cba55c150646c89110ef6ecd243e958e6800f39ced",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260807090000",
+      "file": "20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
+      "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
+      "sha256": "9b570f125ebf43d39ed413e7d88d01fb1dee47b1f5c81e780ed0dba48819e3bd",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260807092005",
+      "file": "20260807092005_coach_enterprise_onboarding_v1_1.sql",
+      "path": "supabase/migrations/20260807092005_coach_enterprise_onboarding_v1_1.sql",
+      "sha256": "d16aa78f46156ebaa1201f808c04050f6e07e87cf655b59e02df18f6025c100c",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260808074346",
+      "file": "20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql",
+      "path": "supabase/migrations/20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql",
+      "sha256": "36e7c0ddb74c69e4d8089c8bced52e22065959c8e7047e00fd689dc0b5d41e7c",
+      "action": "MARK_APPLIED_WITHOUT_EXECUTION",
+      "rationale": "Staging-only migration opens the synthetic database gates and must never execute in Production."
+    },
+    {
+      "version": "20260808074742",
+      "file": "20260808074742_feedback_intelligence_synthetic_staging_read_gate_close_v0_1.sql",
+      "path": "supabase/migrations/20260808074742_feedback_intelligence_synthetic_staging_read_gate_close_v0_1.sql",
+      "sha256": "221a8cd1065ffd542eb03f4b23a73440fa0a00df1271cb9e368fde2a7ae42738",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260808093000",
+      "file": "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
+      "path": "supabase/migrations/20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
+      "sha256": "ee53b73a5459c32ee5d4ed54b94bf9c0cecb02a7c4a123d4225cdcba33c17205",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260809093000",
+      "file": "20260809093000_feedback_intelligence_declined_consent_export_remediation.sql",
+      "path": "supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql",
+      "sha256": "b82bdda5a60133e8ada310bfacdfbf50475f4a56d65668b41a3dcd96071ed2e6",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260810082841",
+      "file": "20260810082841_extend_organization_inquiry_team_path_v1_1.sql",
+      "path": "supabase/migrations/20260810082841_extend_organization_inquiry_team_path_v1_1.sql",
+      "sha256": "3dcb8f26a6103cc97f3a1ebadb76e6fdb3cfad864c276451ac127a54f036a268",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260810091629",
+      "file": "20260810091629_organization_inquiry_retention_v1_1.sql",
+      "path": "supabase/migrations/20260810091629_organization_inquiry_retention_v1_1.sql",
+      "sha256": "8ebd6d6cc7b3f8a360450b1898249a2b9a308072230919cbed0a6212d5aff543",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260810122000",
+      "file": "20260810122000_feedback_text_consent_notice_v1_1.sql",
+      "path": "supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql",
+      "sha256": "50eea80f6977972c921429db697e295dfe6134c74ea8a480c937537f549e9f6f",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260810122100",
+      "file": "20260810122100_guardian_feedback_text_notice_v1_1.sql",
+      "path": "supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql",
+      "sha256": "3663a7f385cbf168aac2d200ced3a7aa68906de5f736a1a768e401480e1788d1",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260810122749",
+      "file": "20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql",
+      "path": "supabase/migrations/20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql",
+      "sha256": "463bf24d04eb981fa6509b47e0ce97487d8f51061f4ba514f652052399ab06e6",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260810154932",
+      "file": "20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    },
+    {
+      "version": "20260811071836",
+      "file": "20260811071836_feedback_intelligence_production_gateway_v0_1.sql",
+      "path": "supabase/migrations/20260811071836_feedback_intelligence_production_gateway_v0_1.sql",
+      "sha256": "178a02a6695c5aa150e93911a6175b0ee34e02bc7821c83d7064c150c6081578",
+      "action": "APPLY_EXACT_BYTES",
+      "rationale": "Required ordered V1.1 schema or hardening delta."
+    }
+  ]
+}

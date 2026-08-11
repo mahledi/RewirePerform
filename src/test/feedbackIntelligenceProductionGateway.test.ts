@@ -88,11 +88,13 @@ describe("Feedback Intelligence DE-Production gateway", () => {
     expect(migration).toContain("PASSWORD NULL");
     expect(migration).toContain("NOINHERIT");
     expect(migration).toContain("NOBYPASSRLS");
+    expect(migration).toContain("ALTER ROLE mahleos_feedback_production_reader RESET ALL");
     expect(migration).toContain("pg_catalog.pg_auth_members");
     expect(migration).toContain(
       "feedback_production_reader_unsafe_public_security_definer_path",
     );
-    expect(migration).toContain("CREATE SCHEMA IF NOT EXISTS feedback_machine_production");
+    expect(migration).toContain("feedback_production_reader_unexpected_private_schema");
+    expect(migration).toContain("CREATE SCHEMA feedback_machine_production AUTHORIZATION postgres");
     expect(migration).toContain(
       "GRANT EXECUTE ON FUNCTION feedback_machine_production.read_feedback_intelligence_production_v0_2_draft(text, text, text, text)",
     );
@@ -305,6 +307,34 @@ describe("Feedback Intelligence DE-Production gateway", () => {
 
       await expect(db.exec(read(migrationPath))).rejects.toThrow(
         /feedback_production_reader_unsafe_public_security_definer_path/iu,
+      );
+    } finally {
+      await db.close();
+    }
+  });
+
+  it("rejects any preexisting private-schema inventory before granting reader usage", async () => {
+    const db = new PGlite();
+    try {
+      await db.exec(`
+        CREATE ROLE anon;
+        CREATE ROLE authenticated;
+        CREATE ROLE service_role;
+        CREATE ROLE mahleos_feedback_reader LOGIN NOINHERIT NOSUPERUSER NOCREATEDB
+          NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+        CREATE SCHEMA feedback_core;
+        CREATE SCHEMA feedback_consent;
+        CREATE SCHEMA feedback_raw;
+        CREATE SCHEMA feedback_analysis;
+        CREATE SCHEMA feedback_machine_production;
+        CREATE FUNCTION feedback_machine_production.unexpected_privileged_function()
+          RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path = ''
+          AS 'SELECT true';
+        GRANT USAGE ON SCHEMA feedback_machine_production TO PUBLIC;
+      `);
+
+      await expect(db.exec(read(migrationPath))).rejects.toThrow(
+        /feedback_production_reader_unexpected_private_schema/iu,
       );
     } finally {
       await db.close();

@@ -19,9 +19,12 @@ kann den Production-Pfad nicht autorisieren.
 - exakte Production-Hostbindung an `bqsbxesmybthwtxmowfz`;
 - eigene Rolle `mahleos_feedback_production_reader` ohne Passwort und ohne
   Tabellen- oder Sequenzrechte;
-- vollständige erneute Rollen-Härtung und Entfernung sämtlicher unerwarteter
-  Rollenmitgliedschaften bei jeder Anwendung;
+- vollständige erneute Rollen-Härtung, Zurücksetzen alter Rollen-Konfiguration
+  und Entfernung sämtlicher unerwarteter Rollenmitgliedschaften bei jeder
+  Anwendung;
 - RPC ausschließlich im nicht exponierten Schema `feedback_machine_production`;
+- fail-closed Apply, falls dieses private Schema oder irgendein dortiges
+  Objektinventar wider Erwarten bereits existiert;
 - fail-closed Apply, sobald eine fremde, über `PUBLIC` aufrufbare
   `SECURITY DEFINER`-Funktion in `public` existiert;
 - eigene Machine-Key-, Reader-URL-, Machine-Gate- und Real-Data-Gate-Namen;

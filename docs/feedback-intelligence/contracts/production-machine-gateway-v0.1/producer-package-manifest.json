@@ -7,7 +7,7 @@
   "package_status": "LOCAL_UNSIGNED_AWAITING_INDEPENDENT_REVIEW",
   "digest_algorithm": "sha256",
   "package_digest_algorithm": "sha256 over exact file digest lines in manifest order with two spaces and relative path",
-  "package_sha256": "02aa0ba3445cce2f96d26c5db73b83e392285b6aeb9607db3732ce4b9b465c2c",
+  "package_sha256": "3c131f36ef1b2f62725f879a8694bcdadcea7d85de6f5ce93fdad4198fd978b4",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/v0.2.1/proposed-export.schema.json",
@@ -35,7 +35,7 @@
     },
     {
       "path": "supabase/migrations/20260811071836_feedback_intelligence_production_gateway_v0_1.sql",
-      "sha256": "93c1bfcc534714c667e1fb2653e664ab97ea133002c4e3c07d4ea19b500eb67d"
+      "sha256": "178a02a6695c5aa150e93911a6175b0ee34e02bc7821c83d7064c150c6081578"
     },
     {
       "path": "supabase/functions/_shared/boundedRequestBody.ts",
@@ -63,11 +63,11 @@
     },
     {
       "path": "src/test/feedbackIntelligenceProductionGateway.test.ts",
-      "sha256": "231fc445dee2144431f9e4ff9feff9f3353d82a7391380aba68e6edab4dd836b"
+      "sha256": "a6e717e218ed951849a78e69d4aa54f324ee898c9ccbb7e0ed50eb78455d4165"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MACHINE_GATEWAY_HANDOFF_V0_1.md",
-      "sha256": "d365e80039635ccd35023df42a228ee0606dd4b4cf926d8ebd2f136fd083584b"
+      "sha256": "1c0c996929f75ed46c97ff2049bc55ad4c18e3b4c6b037acb1a203ff08e303b2"
     },
     {
       "path": "scripts/generate-feedback-production-gateway-package.mjs",

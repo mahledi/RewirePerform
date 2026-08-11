@@ -29,6 +29,7 @@ $$;
 ALTER ROLE mahleos_feedback_production_reader PASSWORD NULL;
 ALTER ROLE mahleos_feedback_production_reader
   WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+ALTER ROLE mahleos_feedback_production_reader RESET ALL;
 ALTER ROLE mahleos_feedback_production_reader SET statement_timeout = '12s';
 ALTER ROLE mahleos_feedback_production_reader SET lock_timeout = '2s';
 ALTER ROLE mahleos_feedback_production_reader SET idle_in_transaction_session_timeout = '5s';
@@ -77,7 +78,19 @@ BEGIN
 END;
 $$;
 
-CREATE SCHEMA IF NOT EXISTS feedback_machine_production;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_namespace
+    WHERE nspname = 'feedback_machine_production'
+  ) THEN
+    RAISE EXCEPTION 'feedback_production_reader_unexpected_private_schema';
+  END IF;
+END;
+$$;
+
+CREATE SCHEMA feedback_machine_production AUTHORIZATION postgres;
 REVOKE ALL ON SCHEMA feedback_machine_production FROM PUBLIC, anon, authenticated, service_role,
   mahleos_feedback_reader;
 
