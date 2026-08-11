@@ -12,6 +12,7 @@ import {
 } from "../../scripts/generate-v1-1-production-rollback-dry-run.mjs";
 import {
   expectedRemoteMigrationVersions,
+  parseRemoteMigrationVersions,
   runProductionRollbackDryRun,
   validateDryRunResult,
   validatePostRollbackResult,
@@ -120,7 +121,16 @@ describe("V1.1 Production rollback dry-run operator", () => {
     const runCli = (args: string[]) => {
       calls.push(args);
       if (args[0] === "migration") {
-        return { status: 0, stdout: JSON.stringify({ migrations: versions.map((remote) => ({ remote })) }) };
+        return {
+          status: 0,
+          stdout: JSON.stringify({
+            migrations: [
+              ...versions.map((remote) => ({ local: "", remote, time: "2026-08-11 00:00:00" })),
+              { local: "20260812000000", remote: null, time: null },
+            ],
+            message: "Migrations listed",
+          }),
+        };
       }
       if (calls.filter(([command]) => command === "db").length === 1) {
         return {
@@ -147,13 +157,24 @@ describe("V1.1 Production rollback dry-run operator", () => {
         persistent_mutation_detected: false,
       });
       expect(calls).toHaveLength(3);
+      expect(calls[0]).toEqual([
+        "migration", "list", "--linked", "--output-format", "json",
+      ]);
 
       calls.length = 0;
       let databaseCalls = 0;
       const failingRunCli = (args: string[]) => {
         calls.push(args);
         if (args[0] === "migration") {
-          return { status: 0, stdout: JSON.stringify({ migrations: versions.map((remote) => ({ remote })) }) };
+          return {
+            status: 0,
+            stdout: JSON.stringify({
+              migrations: versions.map((remote) => ({
+                local: "", remote, time: "2026-08-11 00:00:00",
+              })),
+              message: "Migrations listed",
+            }),
+          };
         }
         databaseCalls += 1;
         if (databaseCalls === 1) return { status: 1, stdout: "" };
@@ -169,5 +190,25 @@ describe("V1.1 Production rollback dry-run operator", () => {
     } finally {
       rmSync(linkedWorkdir, { recursive: true, force: true });
     }
+  });
+
+  it("rejects malformed, duplicate, or unordered remote migration inventories", () => {
+    const make = (migrations: unknown[]) => JSON.stringify({
+      migrations,
+      message: "Migrations listed",
+    });
+    const entry = (remote: unknown) => ({ local: "", remote, time: "2026-08-11 00:00:00" });
+    expect(parseRemoteMigrationVersions(make([
+      entry("20260101000000"),
+      { local: "20260102000000", remote: null, time: null },
+    ]))).toEqual(["20260101000000"]);
+    expect(() => parseRemoteMigrationVersions(make([
+      entry("20260101000000"), entry("20260101000000"),
+    ]))).toThrow("duplicate remote version");
+    expect(() => parseRemoteMigrationVersions(make([
+      entry("20260102000000"), entry("20260101000000"),
+    ]))).toThrow("not ordered");
+    expect(() => parseRemoteMigrationVersions(make([entry(20260101000000)])))
+      .toThrow("invalid entry types");
   });
 });

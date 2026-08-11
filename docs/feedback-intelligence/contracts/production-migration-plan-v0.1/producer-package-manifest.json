@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "3b61877bec48e5a10deaab2699f7720b63af2016b6494e21690c64d1850da44f",
+  "package_sha256": "853b78eb86cf5448e54ba14c98ec5585da33a2f677419f9f6404ee8a66516066",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
@@ -22,7 +22,7 @@
     },
     {
       "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "4e30ca0faf1bdad9d6f0e9b226532a714db5f867f8269547517f35ed5666af14"
+      "sha256": "0d815e8f42613ffbd83881f67f3bac5a061f9ba26fb9596c1aaa41d1113a0930"
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
@@ -30,7 +30,7 @@
     },
     {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
-      "sha256": "1966260f61ec3114644eff1bd5ffde477210ff64ab8b6b57d5d2b55838ce2522"
+      "sha256": "cc1254532481ae9c515e7431b19798bca7389a018b122e4fbbfd973927a7075f"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

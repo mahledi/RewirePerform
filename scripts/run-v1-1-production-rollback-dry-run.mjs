@@ -73,6 +73,35 @@ export const expectedRemoteMigrationVersions = (cwd) => readdirSync(resolve(cwd,
   .map((name) => name.slice(0, 14))
   .sort();
 
+export const parseRemoteMigrationVersions = (stdout) => {
+  const payload = parseJson(stdout, "migration-preflight");
+  assertExactKeys(payload, ["migrations", "message"], "migration-preflight payload");
+  if (!Array.isArray(payload.migrations) || typeof payload.message !== "string") {
+    throw new Error("migration-preflight: invalid response schema");
+  }
+  const versions = [];
+  for (const entry of payload.migrations) {
+    assertExactKeys(entry, ["local", "remote", "time"], "migration-preflight entry");
+    if (!(typeof entry.local === "string" || entry.local === null)
+        || !(typeof entry.remote === "string" || entry.remote === null)
+        || !(typeof entry.time === "string" || entry.time === null)) {
+      throw new Error("migration-preflight: invalid entry types");
+    }
+    if (entry.remote === null || entry.remote === "") continue;
+    if (!/^\d{14}$/u.test(entry.remote)) {
+      throw new Error("migration-preflight: invalid remote version");
+    }
+    versions.push(entry.remote);
+  }
+  if (new Set(versions).size !== versions.length) {
+    throw new Error("migration-preflight: duplicate remote version");
+  }
+  if (JSON.stringify(versions) !== JSON.stringify([...versions].sort())) {
+    throw new Error("migration-preflight: remote versions are not ordered");
+  }
+  return versions;
+};
+
 const defaultRunCli = (args, cwd) => spawnSync(
   "npx",
   ["--yes", `supabase@${cliVersion}`, ...args],
@@ -97,10 +126,10 @@ export const runProductionRollbackDryRun = async ({
     throw new Error("bounded data-read approval missing or persistent apply unexpectedly approved");
   }
 
-  const history = runCli(["migration", "list", "--linked"], linkedWorkdir);
+  const historyArgs = ["migration", "list", "--linked", "--output-format", "json"];
+  const history = runCli(historyArgs, linkedWorkdir);
   if (history.status !== 0) throw new Error("fresh remote migration preflight failed");
-  const observedVersions = parseJson(history.stdout, "migration-preflight").migrations
-    ?.map(({ remote }) => remote);
+  const observedVersions = parseRemoteMigrationVersions(history.stdout);
   const expectedVersions = expectedRemoteMigrationVersions(cwd);
   if (JSON.stringify(observedVersions) !== JSON.stringify(expectedVersions)) {
     throw new Error("fresh remote migration inventory drift");
