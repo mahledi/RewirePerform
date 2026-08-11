@@ -22,6 +22,8 @@ describe("V1.1 Production migration plan", () => {
     expect(plan.execution_contract).toMatchObject({
       bulk_db_push_allowed: false,
       transactional_rollback_dry_run_complete: false,
+      application_data_access_required_for_full_rollback_dry_run: true,
+      application_data_access_approved: false,
       persistent_production_apply_approved: false,
       credentials_allowed: false,
       data_reads_allowed: false,
@@ -40,6 +42,12 @@ describe("V1.1 Production migration plan", () => {
     expect(plan.migrations[plan.migrations.indexOf(skipped[0]) + 1].file).toBe(
       "20260808074742_feedback_intelligence_synthetic_staging_read_gate_close_v0_1.sql",
     );
+
+    const dataTouching = plan.migrations.filter(({ application_data_impact }: {
+      application_data_impact: string;
+    }) => application_data_impact.startsWith("Reads existing"));
+    expect(dataTouching).toHaveLength(1);
+    expect(dataTouching[0].file).toBe("20260807092005_coach_enterprise_onboarding_v1_1.sql");
   });
 
   it("keeps the generated plan and every migration byte-pinned in normal CI", () => {

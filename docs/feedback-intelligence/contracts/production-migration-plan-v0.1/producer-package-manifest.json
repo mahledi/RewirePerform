@@ -2,23 +2,23 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "07e507b74c8e57ddb4bd9da0dbc455ac7dde36eecb7e0cf2675b130b35e1087a",
+  "package_sha256": "965e8314b2da3c52ca79eeb837855151ee435f421c1b7ca9a0d7ea584d9968dc",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
-      "sha256": "b83fbc65cb4434a0174c505e9af1e9a25166d23da58e1f1ea85de7336a30c4aa"
+      "sha256": "68bf295ab78f09c7c42a9a36eaa335696b06fd0f5cf95cd0fd274e7284f8a8a2"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "0280427ecbae93553971c863d3bf6c0c840a989dd793ece65ce406d55b17061f"
+      "sha256": "0a7ef35ab214e0ed7cf590d507894fbd65705bf2a808ff377d72061b2b4e6da8"
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "6b87aa71690c99d189b775ace0e631d7c245b48010b9aa77f3d18f405af653fd"
+      "sha256": "b71246ab46af47c668d909cca528f8eabd676b36227878cc31d8f3547296f6b2"
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
-      "sha256": "c1eb7f783add21f48e512ea57707904092087ef2915d20cb07f2b4f894a3d530"
+      "sha256": "8f765f80dc2c6216e395cda4aef9c2bd6e0cb50f86029ced4168f6151171bfe1"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

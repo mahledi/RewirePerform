@@ -33,6 +33,13 @@ sind erforderlich:
 4. ein aktueller Backup-/Wiederherstellungsnachweis;
 5. eine separate Freigabe für den persistenten Apply.
 
+Der vollständige Rollback-Dry-run ist nicht rein metadata-only: Die
+Coach-/Enterprise-Migration liest die bestehenden Teamzeilen und erzeugt die
+daraus abgeleiteten `team_staff_memberships` innerhalb der anschließend
+zurückgerollten Transaktion. Es werden keine Feldwerte als Evidence
+persistiert oder ausgegeben. Trotzdem beginnt dieser Test erst nach einer
+separaten Freigabe für genau diesen Production-Datenzugriff.
+
 ## Geschlossene Grenzen
 
 Dieser Plan erzeugt oder autorisiert keine Credentials, keinen Edge-Deploy,

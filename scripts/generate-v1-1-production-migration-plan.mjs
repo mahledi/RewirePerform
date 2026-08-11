@@ -12,6 +12,7 @@ const planPath = `${base}/plan.json`;
 const manifestPath = `${base}/producer-package-manifest.json`;
 const remoteFloor = "20260801104717_harden_team_join_minor_authorization.sql";
 const neverExecute = "20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql";
+const teamStaffBackfill = "20260807092005_coach_enterprise_onboarding_v1_1.sql";
 
 const expected = [
   "20260805103400_feedback_intelligence_v1_foundation.sql",
@@ -65,6 +66,9 @@ for (const file of expected) {
     rationale: file === neverExecute
       ? "Staging-only migration opens the synthetic database gates and must never execute in Production."
       : "Required ordered V1.1 schema or hardening delta.",
+    application_data_impact: file === teamStaffBackfill
+      ? "Reads existing public.teams rows and backfills derived team_staff_memberships; a rollback dry-run still performs this work transiently."
+      : "No existing application-row backfill is executed by this migration.",
   });
 }
 
@@ -87,6 +91,8 @@ const plan = {
     ordered_apply_only: true,
     backup_required_before_persistent_apply: true,
     transactional_rollback_dry_run_complete: false,
+    application_data_access_required_for_full_rollback_dry_run: true,
+    application_data_access_approved: false,
     persistent_production_apply_approved: false,
     credentials_allowed: false,
     data_reads_allowed: false,
