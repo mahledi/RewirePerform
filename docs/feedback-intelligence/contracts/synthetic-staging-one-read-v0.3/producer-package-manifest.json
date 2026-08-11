@@ -1,0 +1,107 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-synthetic-cycle-package-v2",
+  "package_status": "COMPLETE_V0_3_3_POSTREAD_ASSURED_SANITIZED_STAGING_ONLY",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "generated_at": "2026-08-11T06:06:54.559541+00:00",
+  "producer_gate_basis_commit": "408b653953d2d9be7c29f8ada2924d7333746a62",
+  "consumer_operator_commit": "d50b8967df8abd21cd581f752136ff5c3613a6ac",
+  "package_sha256": "84f478970e9d4fddab5f2630482c46e970c81867df9aab43698cae7c72f9898c",
+  "secret_values_included": false,
+  "secret_digests_included": false,
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/README.md",
+      "sha256": "c2fe27ef862a87834e4d908f61466b2d8148630a6abcb8eeded8477c7485f501"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/postread-evidence.schema.json",
+      "sha256": "510f8dfaed70bed1ec78ab734ceb3288ab9e54e44edaf3fb752e766e87e3c725"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/provisioning-evidence-v0.3.3.json",
+      "sha256": "b7bd56f240e364f81312a3079c749b9928ab7cbef90cfdc2ffc24507dfd8cae6"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/postprovision-metadata-audit-v0.3.3.json",
+      "sha256": "5c00a10fa150149b04626a91dc9277bfc6241f32b0567531a6625ffcec310b77"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/edge-request-evidence-v0.3.3.json",
+      "sha256": "0c50d9852aea6676188bec40f1e6cafd9f25ed98f34730fa5082c701d3213def"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/postread-metadata-audit-v0.3.3.json",
+      "sha256": "79aa9190c4aa1fea7a85853b996e756899090eb3e76fa7fa4bb04ed39b4f2786"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/postread-evidence-v0.3.3.json",
+      "sha256": "d90157db8148705893417c48fa040e1fbbbaf60068fecfac2dc5c758096f960a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/cycle-summary-v0.3.3.json",
+      "sha256": "dd658812f5c6e9fa395cb0e0229b9c8d417284d95a87d57bff61304ba7cf1b65"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/orchestration-evidence-v0.3.3.json",
+      "sha256": "a57db049736063a26d9063f936af74d9404f7d030270caf82366cdb651b058da"
+    },
+    {
+      "path": "scripts/generate-feedback-intelligence-synthetic-cycle-v0-3.mjs",
+      "sha256": "ed7f2ad8c51a82be38546430e96f82137b5ff61170570a9d1f7516d70696d5f7"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceSyntheticCycleV03.test.ts",
+      "sha256": "330784ee148b52a1aec5f60ce0c4895e81796aac03379f69c14cacf428e2f6e7"
+    },
+    {
+      "path": "docs/feedback-intelligence/FEEDBACK_V0_3_3_SYNTHETIC_ONE_SHOT_HANDOFF_2026-08-11.md",
+      "sha256": "faeec6462a2bf5c622d924d3824b713d3825ed3f33972423aa1c8579a16ca66f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/credentialless-staging-preflight-v0.2/preflight-evidence.json",
+      "sha256": "af4b0ea0b50474e314d4066503ce64d18a2f5570c6a7c81ed0efc783c82e645d"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/credentialless-staging-preflight-v0.2/producer-package-manifest.json",
+      "sha256": "c2a5a45bff2d0ead25bcbd8324c721da09a9ece0d43c68a4b0372374f54250ea"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.2/postdeploy-evidence.json",
+      "sha256": "cb48c6efaf4ac0da906608ac0191e749850693016a3d6379ae8a69acae8a6999"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.2/producer-package-manifest.json",
+      "sha256": "39d3188144515cf48ac5ac7bdb3ad4275a3698ccf5430355b8cc59bdb01401d9"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
+      "sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
+      "sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2.1/proposed-export.schema.json",
+      "sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/producer-package-manifest.json",
+      "sha256": "bc69e224b22e568269a74eff7d021533075dab931fb8adf6bc212f79a58d9f0e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
+      "sha256": "74e3616a67975766b51238d5573671d8e086014392d0e59e3ee9696ab287d204"
+    }
+  ],
+  "activation": {
+    "staging_synthetic_cycle_complete": true,
+    "credentials_present": false,
+    "all_runtime_gates_closed": true,
+    "production": false,
+    "real_data": false,
+    "push": false,
+    "merge": false
+  },
+  "next_gate": "AWAITING_INDEPENDENT_JARVIS_V0_3_3_POSTREAD_ACCEPTANCE"
+}
