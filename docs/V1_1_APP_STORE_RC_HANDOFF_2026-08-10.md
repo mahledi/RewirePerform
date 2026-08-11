@@ -109,33 +109,40 @@ Team-/Coach-Verbindungen bereitstellt und den freigegebenen Datenumfang intern
 
 ## Differenz Delta zur vollständigen 1.1-Readiness
 
-### Lokal beziehungsweise Staging zuerst
+### Abgeschlossener Staging-Nachweis
 
-1. Erst nach einer neuen separaten Freigabe temporäre Staging-Credentials
-   provisionieren, exakt einen synthetischen Jarvis-One-Shot ausführen,
-   ausschließlich in-memory validieren und sofort vollständig bereinigen.
-2. Danach einen metadata-only Postread-Audit erzeugen und erneut unabhängig
-   abnehmen lassen.
+Der separat freigegebene synthetische Jarvis-One-Shot wurde inzwischen
+vollständig abgeschlossen. Es gab exakt einen HTTP-200-Request mit 825 Items
+und 55 Fragen, keinen Retry und keine persistierte Rohresponse. Alle
+temporären Secrets, Reader-Credentials, Keychain-Einträge und synthetischen
+Fixtures wurden entfernt; sämtliche Gates sind wieder geschlossen. Jarvis hat
+das Postread-Paket unabhängig mit 21 von 21 Dateien und 1.472 von 1.472 Tests
+akzeptiert. Dieser Nachweis autorisiert keine echten Daten oder Production.
 
 ### Vor Production und App-Store-Upload
 
-3. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
+1. Den endgültigen Aktivierungsumfang festhalten: strukturierte Antworten,
    freiwillige Kommentare, Guardian-Scope und realer Jarvis-Read dürfen nur in
    der jeweils verifizierten Kombination geöffnet werden.
    Die aktuell für den lokalen Production-Build verwendete bestätigte
    Konfiguration enthält `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED` und
    `VITE_TURNSTILE_SITE_KEY` noch nicht; Feedback-Checkpoints und öffentliche
    Anfrageannahme sind in diesem Build daher absichtlich geschlossen.
-4. App-Privacy-Angaben, Datenschutzerklärung und Review Notes gegen diesen
+2. Die qualifizierte DE-Rechts-/Privacy-/Minor-Prüfung der finalen Consent- und
+   Guardian-Texte dokumentieren.
+3. App-Privacy-Angaben, Datenschutzerklärung und Review Notes gegen diesen
    realen Datenweg angleichen.
-5. Die noch nicht in Production vorhandenen Migrationen in exakt geprüfter
+4. Die noch nicht in Production vorhandenen Migrationen in exakt geprüfter
    Reihenfolge einzeln anwenden; kein pauschales `supabase db push`.
-6. Benötigte Edge Functions und Feature-Gates kontrolliert aktivieren und
+5. Benötigte Edge Functions und Feature-Gates kontrolliert aktivieren und
    direkt negativ sowie positiv prüfen.
-7. Exakten finalen RC erneut auf iPhone und – solange iPad unterstützt wird –
+6. Exakten finalen RC erneut auf iPhone und – solange iPad unterstützt wird –
    iPad installieren und die Kernwege physisch prüfen.
-8. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
+7. Erst danach Branch/PR mergen, Production-Website ausrollen, TestFlight-Build
     erstellen und Version 1.1 in App Store Connect einreichen.
+
+Der empfohlene, noch ausdrücklich freizugebende Production-Datenumfang ist in
+`docs/V1_1_PRODUCTION_DATA_ACTIVATION_DECISION_2026-08-11.md` festgehalten.
 
 ## Feste Altersentscheidung
 
@@ -150,6 +157,7 @@ damit getrennt, aber widerspruchsfrei definiert.
 
 - Dieser Stand ist lokal verifiziert, nicht in Production aktiviert.
 - Staging-Evidence ist kein Nachweis echter Pilotwirkung.
-- Jarvis hat auf diesem Stand noch keinen neuen realen Feedback-Read.
+- Jarvis hat auf diesem Stand keinen realen Feedback-Read. Der einzige neue
+  Read war vollständig synthetisch in Staging und wurde bereinigt.
 - Kein Push, Merge, Production-Deploy, TestFlight-Upload oder App-Store-Schritt
   ist durch dieses Dokument ausgeführt oder freigegeben.

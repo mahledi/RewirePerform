@@ -119,11 +119,10 @@ Diese Ideen sind nicht vergessen, sondern absichtlich spätere Produktarbeit:
 
 ## Aktuelle Differenz Delta
 
-1. Nach separater Freigabe exakt einen synthetischen Jarvis-One-Shot mit
-   temporären Staging-Credentials
-   durchführen, vollständig bereinigen und erneut auditieren.
-2. Den tatsächlich zu aktivierenden Production-Datenumfang festschreiben und
+1. Den tatsächlich zu aktivierenden Production-Datenumfang festschreiben und
    Datenschutzseite, App-Store-Datentypen und Review Notes exakt daran binden.
+2. Die qualifizierte DE-Rechts-/Privacy-/Minor-Prüfung des finalen Consent- und
+   Guardian-Umfangs dokumentieren.
 3. Production-Migrationen und Edge-Functions einzeln kontrolliert aktivieren;
    kein pauschales Datenbank-Push.
 4. Finalen RC erneut bauen und die release-relevanten Wege physisch auf iPhone
@@ -139,6 +138,17 @@ Presence-only-Preflight belegt zusätzlich fünf abwesende Gateway-Secrets,
 `PASSWORD NULL` für die Reader-Rolle und vollständig geschlossene
 Credential-/Read-/Minor-/Guardian-/Production-Gates; Jarvis hat ihn unabhängig
 akzeptiert.
+
+Der danach separat freigegebene synthetische Jarvis-One-Shot ist ebenfalls
+abgeschlossen: exakt ein HTTP-200-Request mit 825 Items und 55 Fragen, kein
+Retry und keine persistierte Rohresponse. Alle temporären Secrets, Reader-
+Credentials, Keychain-Einträge und synthetischen Fixtures wurden anschließend
+entfernt; sämtliche Gates sind wieder geschlossen. Jarvis hat das vollständige
+Postread-Paket unabhängig mit 21 von 21 Dateien und 1.472 von 1.472 Tests
+akzeptiert. Dieser Nachweis autorisiert keine echten Daten oder Production.
+
+Der empfohlene und noch ausdrücklich freizugebende Production-Umfang steht in
+`docs/V1_1_PRODUCTION_DATA_ACTIVATION_DECISION_2026-08-11.md`.
 
 ## No-False-Green-Regel
 

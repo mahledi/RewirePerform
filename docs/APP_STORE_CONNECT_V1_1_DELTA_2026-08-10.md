@@ -48,13 +48,19 @@ eigene Store-Kategorie.
 | Name | Konto; Team-/Organisationsanfrage | Ja | App Functionality |
 | Email Address | Konto; Team-/Organisationsanfrage | Ja | App Functionality |
 | Phone Number | optional in ausführlicher Team-/Organisationsanfrage | Ja, falls der aus der App geöffnete zentrale Webweg dem App-Umfang zugerechnet wird | App Functionality |
-| Health | freiwillige Tages-Pulse und Assessment-Selbstauskünfte | Ja | App Functionality; Personalization; Analytics |
-| Fitness | Trainings-/Wettkampf-/Ruhetagskontext und Kalender | Ja | App Functionality; Personalization |
+| Health | freiwillige Tages-Pulse und Assessment-Selbstauskünfte | Ja | App Functionality; Analytics |
+| Fitness | Trainings-/Wettkampf-/Ruhetagskontext und Kalender | Ja | App Functionality; Product Personalization |
 | Other User Content | private Journale/Reflexionen; freiwilliger Anfragehinweis; separat consentierter Produktfeedback-Kommentar | Ja bis Löschung, Widerruf oder echte Anonymisierung | App Functionality; Analytics für den ausdrücklich freigegebenen Feedbacktext |
 | User ID | interner Account-/Programminstanzbezug | Ja | App Functionality |
 | Product Interaction | Programmtage, Missions-/Check-in-/Verständnisabschlüsse, strukturierte Feedbackantworten, Aktivitätszählungen | Ja | App Functionality; Analytics |
 | Customer Support | vom Nutzer initiierte Supportkommunikation | Ja | App Functionality |
-| Other Diagnostic Data | minimierte Incident-Ereignisse und erlaubte technische Metadaten | Ja, soweit kontobezogen | App Functionality |
+| Other Data Types | gespeicherte Altersgruppe `unter 16`, `16–17` oder `18+` | Ja | App Functionality |
+
+`Other Diagnostic Data` ist nur dann aufzunehmen, wenn der finale Binary- und
+Network-Report bestätigt, dass technische Incident-Daten länger als zur
+unmittelbaren Anfragebearbeitung lesbar gespeichert werden. Ein rein lokaler
+Fehlerzustand oder eine nicht aufbewahrte Request-Metainformation ist nach
+Apples Definition nicht automatisch „Collected“.
 
 Nicht anzugeben, solange der finale RC unverändert bleibt:
 
@@ -70,12 +76,17 @@ Strukturierte Feedbackantworten und separat consentierte Produktfeedbacktexte
 sind unterschiedliche Datenwege. Ablehnung des Freitexts darf die
 strukturierten Antworten und das Programm nicht sperren.
 
-Der vorbereitete Jarvis-Weg ist intern, lokal und minimiert. Solange echter
+Der vorbereitete Jarvis-Weg ist intern, lokal und minimiert. Der synthetische
+Staging-Pfad wurde inzwischen exakt einmal erfolgreich ausgeführt und
+vollständig bereinigt; das ist kein echter Produktdatenzugriff. Solange
 Production-Zugriff, Credential und Real-Data-Gate geschlossen sind, darf in
 Review Notes oder Privacy-Antworten nicht behauptet werden, Jarvis verarbeite
 bereits echte Produktdaten. Vor einer Aktivierung müssen mindestens finaler
 Consent-/Guardian-Stand, Widerruf/Löschung, Aufbewahrung, Processor-Pfad und
 Production-Evidence übereinstimmen.
+
+Der empfohlene, noch ausdrücklich freizugebende reale Datenumfang steht in
+`docs/V1_1_PRODUCTION_DATA_ACTIVATION_DECISION_2026-08-11.md`.
 
 ## 5. Review-Information für den finalen RC
 
@@ -107,20 +118,44 @@ physischen Test des finalen Builds eingetragen.
 Offizielle Referenz:
 https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information
 
-## 6. Noch nicht festgelegte sichtbare Texte
+## 6. „Neu in dieser Version“ – finaler Freigabeentwurf
 
-`What's New in This Version` ist bei einem Update verpflichtend und wird erst
-nach Freeze des sichtbaren V1.1-Umfangs final formuliert. Auch eine mögliche
-Aktualisierung der Store-Screenshots wird erst nach dem physischen iPhone-Test
-entschieden. Diese beiden Marketingentscheidungen werden nicht technisch
-vorweggenommen.
+Der folgende Text beschreibt ausschließlich sichtbare V1.1-Funktionen und
+bleibt bis zu Mahles sprachlicher Freigabe ein Entwurf:
+
+> RewirePerform 1.1 führt Athleten und Coaches jetzt mit eigenen Einführungen
+> durch die für sie relevanten Bereiche.
+>
+> Neu sind außerdem der überarbeitete 56-Tage-Ablauf, klarere Tagesinhalte,
+> ein verbessertes Pre-Training und eine geführte Atmungs- und
+> Visualisierungseinheit an Ruhetagen. Professionelle Team- und
+> Coach-Einladungen sowie ein zentraler Anfrageweg erleichtern den Start mit
+> Teams und Organisationen.
+>
+> Zusätzlich wurden Navigation, Ladezustände, Einstellungen und die
+> Bedienbarkeit auf iPhone und iPad weiter verbessert.
+
+Nur wenn die strukturierten Feedback-Checkpoints im finalen Production-Stand
+wirklich aktiv sind, folgt zusätzlich:
+
+> An vier Punkten des Programms können Athleten freiwillig strukturiertes
+> Feedback zur Verständlichkeit und Alltagstauglichkeit geben.
+
+Jarvis, KI-Analyse, optionale Kommentare, wissenschaftliche Wirksamkeit,
+Leistungssteigerung, Gehirnveränderung oder nicht vorhandene individuelle
+Personalisierung gehören nicht in diesen Marketingtext.
+
+Eine Aktualisierung der Store-Screenshots wird erst nach dem physischen Test
+des finalen sichtbaren RC entschieden.
 
 ## 7. Reihenfolge bis zur Einreichung
 
-1. Rollenwahl-/Coach-First-Run-Handoff integrieren und vollständig prüfen.
-2. Finalen Production-Build erzeugen und physisch auf iPhone testen.
-3. Exakt aktivierten Organisations-, Feedback- und Jarvis-Datenweg belegen.
-4. Privacy-Antworten, öffentliche Datenschutzerklärung und Review Notes
+1. Empfohlenen Production-Datenumfang und qualifizierte DE-Privacy-/Minor-
+   Freigabe schließen.
+2. Exakt aktivierten Organisations-, Feedback- und Jarvis-Datenweg belegen.
+3. Privacy-Antworten, öffentliche Datenschutzerklärung und Review Notes
    byte-/verhaltensnah angleichen.
+4. Finalen signierten Production-RC erzeugen und physisch auf iPhone und iPad
+   testen.
 5. `What's New`, Screenshots und Reviewer-Konten final freigeben.
 6. Erst danach Archive, TestFlight und App-Store-Update getrennt freigeben.

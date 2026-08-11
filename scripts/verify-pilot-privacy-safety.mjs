@@ -248,7 +248,15 @@ const hasProductWriteAgeGate =
 const hasFrontendAuthorizationGate =
   files.minorGate.includes('status.product_status !== "authorized"') &&
   ["Questionnaire", "Dashboard", "Assessment", "DeepProfile", "Progress", "Journal", "JournalHistory", "PreTraining"]
-    .every((page) => files.app.includes(`<MinorAuthorizationGate><${page} /></MinorAuthorizationGate>`));
+    .every((page) => {
+      const directGate = new RegExp(
+        `<MinorAuthorizationGate>\\s*<${page}\\s*/>\\s*</MinorAuthorizationGate>`,
+      );
+      const postSignupGate = new RegExp(
+        `<MinorAuthorizationGate>\\s*<PostSignupOnboardingGate>\\s*<${page}\\s*/>\\s*</PostSignupOnboardingGate>\\s*</MinorAuthorizationGate>`,
+      );
+      return directGate.test(files.app) || postSignupGate.test(files.app);
+    });
 
 verify(
   "release_gate",
