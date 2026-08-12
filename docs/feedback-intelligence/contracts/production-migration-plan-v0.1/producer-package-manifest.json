@@ -2,35 +2,55 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "c31de61dcdc97e98668b97a776d487ca8c8fee8c33da7d63a2095613577bdbeb",
+  "package_sha256": "03d44e2b4b398678aacc6f9b7a150ba6f700a6d394ef326260ff2dfd797f5d5f",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
       "sha256": "5236931739744f4b2ac1e849b81abee08789f61418a5ca7e77de1fbc503f4569"
     },
     {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "99ba47fed2bb995252d6bc3a1544fb286e005ed5fd0d8b473943f86a0f40552e"
+    },
+    {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "cda7664782781fdfb61512717e244e0d9c003862d6dbad31f04bc67e91b38e58"
+      "sha256": "5717252503520bb8bcab02dcee72bc3672f0ebf5dc1ab5403f03a7a0ccdbdbca"
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "b2d835f5a5ec9b002bcebd6cb157a616c7c11d76f7f30e9f3d021d7a2d7056f1"
+      "sha256": "aeb7aedf6058169d25173664d9147163d27c05ea687ae75a87f6f84df4871a28"
     },
     {
       "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
       "sha256": "e495378b7d6e09baf70535af8c23826ca36ec26e5c2d8f94bf444c975dee04a6"
     },
     {
+      "path": "scripts/execute-postgres-simple-query.mjs",
+      "sha256": "b91c8fd991a55be41aed9e0ab390f35cfec77d9f052196980eb7b249107025f5"
+    },
+    {
       "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "75405930e0b39bc0f9dd4bfe8f2cafa63b0d0728d1645b0da3ff3ca3706f6721"
+      "sha256": "5649725012177c2c88bbae5ae456ed71ea14705df7bdd564356d743c7369f5c4"
+    },
+    {
+      "path": "tools/production-rollback-dry-run/package.json",
+      "sha256": "4617a30bd39d6dd594d66e806a59294f48b6b2661dc07c2cbdcfe11fb4d9bcaa"
+    },
+    {
+      "path": "tools/production-rollback-dry-run/package-lock.json",
+      "sha256": "473380ffa329b62ab69946269f1d8da16ae98360c0bd38fcde29b4cf76de3c53"
+    },
+    {
+      "path": "src/test/postgresSimpleQueryWorker.test.ts",
+      "sha256": "0a435c4b984a1a6f64e3e8e4275ffb9ec805553ce1c4044bd4d54ff7973119ba"
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
-      "sha256": "e46f3916b4c78d997b415dc481f02a110cd522b3fe8019874d6a216a7f6ab76f"
+      "sha256": "c1845e64f25daafaa0ad22d010a94fcd2bcc712d0daa62eddf09046172341478"
     },
     {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
-      "sha256": "1b70e627eb36a45806ed30d956293de06cac60d1fa986450d635c37e04ec2496"
+      "sha256": "9bb5ab0fa0b914b9cdc6f7f1f505cf1942cf98b52da9dd80c6f4a8c019147ee5"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

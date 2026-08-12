@@ -64,6 +64,46 @@ Freigabe des eng begrenzten Teamzeilen-Reads an den kontrollierten
 Production-Dry-run übergeben werden. Sie darf niemals für einen persistenten
 Apply verwendet werden.
 
+Der erste freigegebene Dry-run-Versuch über den Beta-Endpunkt der Supabase
+Management API wurde vor einem belegbaren PostgreSQL-Fehler abgebrochen. Die
+lokale PostgreSQL-Reproduktion derselben gepinnten SQL-Kette und der frische
+Production-Postrollback-Audit blieben grün; die genaue Transportursache konnte
+wegen der damals fehlenden sanitisierten Fehlerklassifikation nicht
+rückwirkend bewiesen werden. Dieser Beta-Transport darf deshalb für den
+Gesamtlauf nicht wiederverwendet werden.
+
+Ein erneuter Remote-Dry-run benötigt deshalb eine neu geprüfte
+PostgreSQL-Client-Architektur mit einfacher Multi-Statement-Ausführung,
+exakt einer Transaktionssitzung und einer frischen
+Postrollback-Auditsitzung. Supabase CLI `2.113.0` ist dafür auch über
+`db query --db-url` ungeeignet, weil dieser Pfad Multi-Statement-SQL im
+Extended-Protocol als Prepared Statement ablehnt. Diese Diagnose erteilt keine
+Credential- oder Production-Freigabe und autorisiert keinen zweiten Versuch.
+
+Der lokale Ersatzoperator verwendet deshalb das in
+`tools/production-rollback-dry-run/package-lock.json` isoliert und exakt
+gepinnte `pg@8.23.0` direkt; die App- und historischen Feedback-Pakete bleiben
+bytegleich. Ein frischer Checkout installiert diese isolierte Abhängigkeit
+deterministisch mit
+`npm ci --ignore-scripts --prefix tools/production-rollback-dry-run`; der
+Operator stoppt fail-closed, wenn Lock, Paket oder installierte Version
+abweichen. Ein parameterloser Query-String erzwingt das PostgreSQL
+Simple Query Protocol und überträgt die bereits bytegepinnte äußere
+`BEGIN ... ROLLBACK`-Transaktion als genau einen Query-Aufruf. Das Ziel ist
+fest auf den Production-Session-Pooler Port `5432` begrenzt. TLS prüft die
+Zertifikatskette und den Zielhost. Der Child-Prozess erhält ausschließlich die
+festen Werte `LANG=C`, `LC_ALL=C`, `TZ=UTC`; insbesondere werden keine
+geerbten `NODE_*`-, `PG*`-, TLS-/Keylog-, Proxy-, CA-, Loader-, Debug- oder
+Passwort-Umgebungsvariablen weitergegeben. Ein
+separat und nur temporär freigegebenes Passwort darf ausschließlich als
+einmalige stdin-Nachricht in diesen Child-Prozess gelangen, nie in URL,
+Argumente, Datei oder Evidenzausgabe. Der Child-Prozess muss seine Session
+nachweislich schließen, bevor eine zweite, frische Postrollback-Auditsitzung
+beginnt. Timeout beendet den direkten Child-Prozess mit `SIGKILL`; durch den
+Socket-Abbruch rollt PostgreSQL eine gegebenenfalls offene Transaktion zurück.
+Kein Retry ist zulässig. Auch dieser lokal getestete Operator autorisiert
+weiterhin weder ein Credential noch einen zweiten Production-Lauf.
+
 ## Geschlossene Grenzen
 
 Dieser Plan erzeugt oder autorisiert keine Credentials, keinen Edge-Deploy,

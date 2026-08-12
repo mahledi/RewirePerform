@@ -12,8 +12,12 @@ import {
 } from "../../scripts/generate-v1-1-production-rollback-dry-run.mjs";
 import {
   expectedRemoteMigrationVersions,
+  directWorkerArgs,
+  assertDirectToolInstalled,
   parseRemoteMigrationVersions,
+  resolveDirectTarget,
   runProductionRollbackDryRun,
+  sanitizedDirectChildEnv,
   sanitizeCliFailure,
   validateDryRunResult,
   validatePostRollbackResult,
@@ -90,22 +94,18 @@ describe("V1.1 Production rollback dry-run operator", () => {
       persistent_mutation_detected: false,
       status: "PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT",
     };
-    expect(validateDryRunResult(JSON.stringify({
-      rows: [{
+    expect(validateDryRunResult(JSON.stringify([{
         v1_1_dry_run_target_status: target,
         v1_1_dry_run_rollback_status: rollback,
-      }],
-    }))).toEqual({ target: expect.objectContaining(target), rollback: expect.objectContaining(rollback) });
-    expect(validatePostRollbackResult(JSON.stringify({
-      rows: [{ v1_1_dry_run_rollback_status: rollback }],
-    }))).toEqual(expect.objectContaining(rollback));
-    expect(() => validateDryRunResult(JSON.stringify({
-      rows: [{
+    }]))).toEqual({ target: expect.objectContaining(target), rollback: expect.objectContaining(rollback) });
+    expect(validatePostRollbackResult(JSON.stringify([
+      { v1_1_dry_run_rollback_status: rollback },
+    ]))).toEqual(expect.objectContaining(rollback));
+    expect(() => validateDryRunResult(JSON.stringify([{
         v1_1_dry_run_target_status: target,
         v1_1_dry_run_rollback_status: rollback,
         leaked_application_value: "forbidden",
-      }],
-    }))).toThrow("unexpected result keys");
+    }]))).toThrow("unexpected result keys");
   });
 
   it("classifies CLI failures without retaining arbitrary stderr, SQL, or application values", () => {
@@ -143,14 +143,29 @@ describe("V1.1 Production rollback dry-run operator", () => {
       sqlstate: "42501",
       dry_run_guard: "v1_1_dry_run_public_security_definer_drift",
     });
+
+    expect(sanitizeCliFailure({
+      status: 1,
+      stdout: "",
+      stderr: JSON.stringify({
+        failure_class: "POSTGRES_QUERY_ERROR",
+        sqlstate: "42501",
+        raw_error_persisted: false,
+      }),
+    })).toMatchObject({ sqlstate: "42501" });
   });
 
-  it("always performs one fresh postrollback audit and never retries", async () => {
+  it("always performs one fresh direct-session audit and never retries", async () => {
     const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-linked-test-"));
     mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
     writeFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "bqsbxesmybthwtxmowfz\n");
+    writeFileSync(
+      resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
+      "postgresql://postgres.bqsbxesmybthwtxmowfz@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\n",
+    );
     const versions = expectedRemoteMigrationVersions(root);
     const calls: string[][] = [];
+    const directCalls: Array<Record<string, unknown>> = [];
     const rollback = {
       application_values_returned: false,
       persistent_mutation_detected: false,
@@ -158,35 +173,43 @@ describe("V1.1 Production rollback dry-run operator", () => {
     };
     const runCli = (args: string[]) => {
       calls.push(args);
-      if (args[0] === "migration") {
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          migrations: [
+            ...versions.map((remote) => ({ local: "", remote, time: "2026-08-11 00:00:00" })),
+            { local: "20260812000000", remote: null, time: null },
+          ],
+          message: "Migrations listed",
+        }),
+      };
+    };
+    const runDirectSession = (input: Record<string, unknown>) => {
+      directCalls.push(input);
+      if (directCalls.length === 1) {
         return {
           status: 0,
-          stdout: JSON.stringify({
-            migrations: [
-              ...versions.map((remote) => ({ local: "", remote, time: "2026-08-11 00:00:00" })),
-              { local: "20260812000000", remote: null, time: null },
-            ],
-            message: "Migrations listed",
-          }),
-        };
-      }
-      if (calls.filter(([command]) => command === "db").length === 1) {
-        return {
-          status: 0,
-          stdout: JSON.stringify({ rows: [{
+          stdout: JSON.stringify([{
             v1_1_dry_run_target_status: {
               application_values_returned: false,
               persistent_mutation_authorized: false,
               status: "PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK",
             },
             v1_1_dry_run_rollback_status: rollback,
-          }] }),
+          }]),
         };
       }
-      return { status: 0, stdout: JSON.stringify({ rows: [{ v1_1_dry_run_rollback_status: rollback }] }) };
+      return { status: 0, stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]) };
     };
     try {
-      const result = await runProductionRollbackDryRun({ cwd: root, linkedWorkdir, runCli });
+      const result = await runProductionRollbackDryRun({
+        cwd: root,
+        linkedWorkdir,
+        runCli,
+        runDirectSession,
+        directSessionCredentialApproved: true,
+        directSessionPassword: "temporary-test-password",
+      });
       expect(result).toMatchObject({
         status: "PASS_V1_1_PRODUCTION_ROLLBACK_DRY_RUN",
         dry_run_request_count: 1,
@@ -194,43 +217,161 @@ describe("V1.1 Production rollback dry-run operator", () => {
         retry_count: 0,
         persistent_mutation_detected: false,
       });
-      expect(calls).toHaveLength(3);
+      expect(calls).toHaveLength(1);
       expect(calls[0]).toEqual([
         "migration", "list", "--linked", "--output-format", "json",
       ]);
+      expect(directCalls).toHaveLength(2);
+      expect(directCalls[0]).toMatchObject({
+        target: {
+          host: "aws-1-eu-central-1.pooler.supabase.com",
+          port: "5432",
+          user: "postgres.bqsbxesmybthwtxmowfz",
+          database: "postgres",
+        },
+        password: "temporary-test-password",
+        cwd: linkedWorkdir,
+      });
+      expect(directCalls[0].sqlPath).not.toBe(directCalls[1].sqlPath);
 
       calls.length = 0;
-      let databaseCalls = 0;
-      const failingRunCli = (args: string[]) => {
-        calls.push(args);
-        if (args[0] === "migration") {
+      directCalls.length = 0;
+      const failingRunDirectSession = (input: Record<string, unknown>) => {
+        directCalls.push(input);
+        if (directCalls.length === 1) {
           return {
-            status: 0,
-            stdout: JSON.stringify({
-              migrations: versions.map((remote) => ({
-                local: "", remote, time: "2026-08-11 00:00:00",
-              })),
-              message: "Migrations listed",
-            }),
+            status: 1,
+            stdout: "",
+            stderr: JSON.stringify({ sqlstate: "57014", raw_error_persisted: false }),
           };
         }
-        databaseCalls += 1;
-        if (databaseCalls === 1) return { status: 1, stdout: "" };
-        return { status: 0, stdout: JSON.stringify({ rows: [{ v1_1_dry_run_rollback_status: rollback }] }) };
+        return { status: 0, stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]) };
       };
       await expect(runProductionRollbackDryRun({
         cwd: root,
         linkedWorkdir,
-        runCli: failingRunCli,
+        runCli,
+        runDirectSession: failingRunDirectSession,
+        directSessionCredentialApproved: true,
+        directSessionPassword: "temporary-test-password",
       })).rejects.toThrow(
         /rollback dry-run query failed: .*"raw_output_persisted":false,"output_digest_persisted":false,"cli_output_forwarded_by_runner":false/u,
       );
-      expect(calls).toHaveLength(3);
-      expect(databaseCalls).toBe(2);
-      expect(calls[1]).toContain("--agent");
-      expect(calls[1]).toContain("yes");
-      expect(calls[2]).toContain("--agent");
-      expect(calls[2]).toContain("yes");
+      expect(calls).toHaveLength(1);
+      expect(directCalls).toHaveLength(2);
+    } finally {
+      rmSync(linkedWorkdir, { recursive: true, force: true });
+    }
+  });
+
+  it("pins the passwordless target and removes ambient PostgreSQL configuration", () => {
+    const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-target-test-"));
+    mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
+    writeFileSync(
+      resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
+      "postgresql://postgres.bqsbxesmybthwtxmowfz@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\n",
+    );
+    try {
+      expect(resolveDirectTarget(linkedWorkdir)).toEqual({
+        host: "aws-1-eu-central-1.pooler.supabase.com",
+        port: "5432",
+        user: "postgres.bqsbxesmybthwtxmowfz",
+        database: "postgres",
+      });
+      writeFileSync(
+        resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
+        "postgresql://postgres.bqsbxesmybthwtxmowfz:leak@evil.example:5432/postgres\n",
+      );
+      expect(() => resolveDirectTarget(linkedWorkdir)).toThrow("target drift");
+    } finally {
+      rmSync(linkedWorkdir, { recursive: true, force: true });
+    }
+
+    expect(sanitizedDirectChildEnv({
+      PATH: "/bin",
+      HOME: "/tmp/home",
+      PGHOST: "evil.example",
+      pgservice: "unexpected",
+      PGSSLMODE: "disable",
+      SUPABASE_DB_PASSWORD: "secret",
+      NODE_EXTRA_CA_CERTS: "/tmp/evil-ca.pem",
+      SSL_CERT_FILE: "/tmp/evil-ca.pem",
+      SSL_CERT_DIR: "/tmp/evil-certs",
+      NODE_OPTIONS: "--import=/tmp/steal-password.mjs",
+      NODE_DEBUG: "tls,net",
+      NODE_TLS_REJECT_UNAUTHORIZED: "0",
+      SSLKEYLOGFILE: "/tmp/tls-keys.log",
+      OPENSSL_CONF: "/tmp/evil-openssl.cnf",
+      HTTPS_PROXY: "http://evil.example",
+    })).toEqual({ LANG: "C", LC_ALL: "C", TZ: "UTC" });
+
+    expect(assertDirectToolInstalled()).toBe("8.23.0");
+    const missingTool = mkdtempSync(resolve(tmpdir(), "rewire-v11-missing-tool-"));
+    try {
+      expect(() => assertDirectToolInstalled(missingTool)).toThrow("installation missing or invalid");
+    } finally {
+      rmSync(missingTool, { recursive: true, force: true });
+    }
+
+    const workerArgs = directWorkerArgs({
+      host: "aws-1-eu-central-1.pooler.supabase.com",
+      port: "5432",
+      user: "postgres.bqsbxesmybthwtxmowfz",
+      database: "postgres",
+    }, "/tmp/query.sql");
+    expect(workerArgs).toContain("/tmp/query.sql");
+    expect(workerArgs).not.toContain("temporary-test-password");
+    expect(workerArgs.join(" ")).not.toContain("password");
+  });
+
+  it("treats a killed direct child as a failed attempt and audits in a fresh process", async () => {
+    const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-timeout-test-"));
+    mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
+    writeFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "bqsbxesmybthwtxmowfz\n");
+    writeFileSync(
+      resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
+      "postgresql://postgres.bqsbxesmybthwtxmowfz@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\n",
+    );
+    const versions = expectedRemoteMigrationVersions(root);
+    const rollback = {
+      application_values_returned: false,
+      persistent_mutation_detected: false,
+      status: "PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT",
+    };
+    let directCalls = 0;
+    try {
+      await expect(runProductionRollbackDryRun({
+        cwd: root,
+        linkedWorkdir,
+        directSessionCredentialApproved: true,
+        directSessionPassword: "temporary-test-password",
+        runCli: () => ({
+          status: 0,
+          stdout: JSON.stringify({
+            migrations: versions.map((remote) => ({
+              local: "", remote, time: "2026-08-11 00:00:00",
+            })),
+            message: "Migrations listed",
+          }),
+        }),
+        runDirectSession: () => {
+          directCalls += 1;
+          if (directCalls === 1) {
+            return {
+              status: null,
+              signal: "SIGKILL",
+              error: { code: "ETIMEDOUT" },
+              stdout: "",
+              stderr: "",
+            };
+          }
+          return {
+            status: 0,
+            stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]),
+          };
+        },
+      })).rejects.toThrow(/CLI_PROCESS_ERROR/u);
+      expect(directCalls).toBe(2);
     } finally {
       rmSync(linkedWorkdir, { recursive: true, force: true });
     }

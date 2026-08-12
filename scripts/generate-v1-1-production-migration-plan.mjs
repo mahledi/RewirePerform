@@ -115,10 +115,15 @@ const plan = {
 const serializedPlan = `${JSON.stringify(plan, null, 2)}\n`;
 const packageFiles = [
   planPath,
+  ".github/workflows/ci.yml",
   "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
   "scripts/generate-v1-1-production-migration-plan.mjs",
   "scripts/generate-v1-1-production-rollback-dry-run.mjs",
+  "scripts/execute-postgres-simple-query.mjs",
   "scripts/run-v1-1-production-rollback-dry-run.mjs",
+  "tools/production-rollback-dry-run/package.json",
+  "tools/production-rollback-dry-run/package-lock.json",
+  "src/test/postgresSimpleQueryWorker.test.ts",
   "src/test/v11ProductionMigrationPlan.test.ts",
   "src/test/v11ProductionRollbackDryRun.test.ts",
   ...migrations.map(({ path }) => path),

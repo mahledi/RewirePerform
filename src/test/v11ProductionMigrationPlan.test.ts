@@ -75,5 +75,10 @@ describe("V1.1 Production migration plan", () => {
     }).join("");
     expect(sha256(digestInput)).toBe(manifest.package_sha256);
     expect(Object.values(manifest.activation).every((value) => value === false)).toBe(true);
+
+    const workflow = read(".github/workflows/ci.yml");
+    const isolatedInstall = "npm ci --ignore-scripts --prefix tools/production-rollback-dry-run";
+    expect(workflow).toContain(isolatedInstall);
+    expect(workflow.indexOf(isolatedInstall)).toBeLessThan(workflow.indexOf("npm run ci"));
   });
 });

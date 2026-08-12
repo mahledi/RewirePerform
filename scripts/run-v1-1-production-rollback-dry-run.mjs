@@ -3,14 +3,24 @@
 import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { composeDryRunSql, freshPostRollbackAuditSql } from "./generate-v1-1-production-rollback-dry-run.mjs";
 
 const projectRef = "bqsbxesmybthwtxmowfz";
 const remoteFloor = "20260801104717";
 const cliVersion = "2.113.0";
+const expectedDirectTarget = {
+  host: "aws-1-eu-central-1.pooler.supabase.com",
+  port: "5432",
+  user: `postgres.${projectRef}`,
+  database: "postgres",
+};
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const directToolDirectory = resolve(scriptDirectory, "../tools/production-rollback-dry-run");
+const pinnedPgVersion = "8.23.0";
 
 const safeDryRunMarkers = [
   "v1_1_dry_run_feedback_schema_must_be_absent",
@@ -36,7 +46,7 @@ export const sanitizeCliFailure = (result, { requestBytes = 0 } = {}) => {
   const stderr = typeof result?.stderr === "string" ? result.stderr : "";
   const combined = `${stderr}\n${stdout}`;
   const httpStatus = combined.match(/unexpected status\s+(\d{3})(?:\D|$)/iu)?.[1];
-  const sqlstate = combined.match(/(?:SQLSTATE[\s:=]+|["']code["']\s*:\s*["'])([0-9A-Z]{5})(?:["']|\b)/u)?.[1];
+  const sqlstate = combined.match(/(?:SQLSTATE[\s:=]+|["'](?:code|sqlstate)["']\s*:\s*["'])([0-9A-Z]{5})(?:["']|\b)/u)?.[1];
   const guardMarker = safeDryRunMarkers.find((marker) => combined.includes(marker));
   const spawnCode = typeof result?.error?.code === "string"
     && /^[A-Z0-9_]{2,32}$/u.test(result.error.code)
@@ -85,6 +95,12 @@ const parseJson = (value, label) => {
   }
 };
 
+const parseDirectRows = (value, label) => {
+  const rows = parseJson(value, label);
+  if (!Array.isArray(rows)) throw new Error(`${label}: direct session did not return a JSON row array`);
+  return rows;
+};
+
 const assertExactKeys = (value, expected, label) => {
   const keys = Object.keys(value ?? {}).sort();
   if (JSON.stringify(keys) !== JSON.stringify([...expected].sort())) {
@@ -104,11 +120,11 @@ const rollbackStatus = {
 };
 
 export const validateDryRunResult = (stdout) => {
-  const payload = parseJson(stdout, "dry-run");
-  if (!Array.isArray(payload.rows) || payload.rows.length !== 1) {
+  const rows = parseDirectRows(stdout, "dry-run");
+  if (rows.length !== 1) {
     throw new Error("dry-run: expected exactly one sanitized status row");
   }
-  const row = payload.rows[0];
+  const row = rows[0];
   assertExactKeys(row, ["v1_1_dry_run_target_status", "v1_1_dry_run_rollback_status"], "dry-run");
   assertExactKeys(row.v1_1_dry_run_target_status, Object.keys(targetStatus), "dry-run target status");
   assertExactKeys(row.v1_1_dry_run_rollback_status, Object.keys(rollbackStatus), "dry-run rollback status");
@@ -120,11 +136,11 @@ export const validateDryRunResult = (stdout) => {
 };
 
 export const validatePostRollbackResult = (stdout) => {
-  const payload = parseJson(stdout, "postrollback-audit");
-  if (!Array.isArray(payload.rows) || payload.rows.length !== 1) {
+  const rows = parseDirectRows(stdout, "postrollback-audit");
+  if (rows.length !== 1) {
     throw new Error("postrollback-audit: expected exactly one sanitized status row");
   }
-  const row = payload.rows[0];
+  const row = rows[0];
   assertExactKeys(row, ["v1_1_dry_run_rollback_status"], "postrollback-audit");
   assertExactKeys(row.v1_1_dry_run_rollback_status, Object.keys(rollbackStatus), "postrollback status");
   if (Object.entries(rollbackStatus).some(([key, value]) => row.v1_1_dry_run_rollback_status[key] !== value)) {
@@ -173,10 +189,92 @@ const defaultRunCli = (args, cwd) => spawnSync(
   { cwd, encoding: "utf8", maxBuffer: 32 * 1024 * 1024, timeout: 240_000 },
 );
 
+export const sanitizedDirectChildEnv = () => ({
+  // Positive allowlist only. No ambient NODE_*, PG*, TLS/keylog, proxy,
+  // loader, debug, service, credential, locale-file, or CA overrides.
+  LANG: "C",
+  LC_ALL: "C",
+  TZ: "UTC",
+});
+
+export const assertDirectToolInstalled = (toolDirectory = directToolDirectory) => {
+  let packageJson;
+  let lock;
+  let installed;
+  try {
+    packageJson = JSON.parse(readFileSync(resolve(toolDirectory, "package.json"), "utf8"));
+    lock = JSON.parse(readFileSync(resolve(toolDirectory, "package-lock.json"), "utf8"));
+    installed = JSON.parse(readFileSync(
+      resolve(toolDirectory, "node_modules/pg/package.json"),
+      "utf8",
+    ));
+  } catch {
+    throw new Error("direct-session pg installation missing or invalid; run the pinned isolated npm ci");
+  }
+  if (JSON.stringify(packageJson.dependencies) !== JSON.stringify({ pg: pinnedPgVersion })
+      || lock.lockfileVersion !== 3
+      || lock.packages?.[""]?.dependencies?.pg !== pinnedPgVersion
+      || lock.packages?.["node_modules/pg"]?.version !== pinnedPgVersion
+      || installed.version !== pinnedPgVersion) {
+    throw new Error("direct-session pg installation drift; run the pinned isolated npm ci");
+  }
+  return pinnedPgVersion;
+};
+
+export const resolveDirectTarget = (linkedWorkdir) => {
+  const raw = readFileSync(resolve(linkedWorkdir, "supabase/.temp/pooler-url"), "utf8").trim();
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error("direct-session pooler URL is invalid");
+  }
+  const target = {
+    host: parsed.hostname,
+    port: parsed.port,
+    user: decodeURIComponent(parsed.username),
+    database: parsed.pathname.replace(/^\//u, ""),
+  };
+  if (parsed.protocol !== "postgresql:"
+      || parsed.password !== ""
+      || parsed.search !== ""
+      || parsed.hash !== ""
+      || JSON.stringify(target) !== JSON.stringify(expectedDirectTarget)) {
+    throw new Error("direct-session pooler target drift");
+  }
+  return target;
+};
+
+export const directWorkerArgs = (target, sqlPath) => [
+  resolve(scriptDirectory, "execute-postgres-simple-query.mjs"),
+  "--host", target.host,
+  "--port", target.port,
+  "--user", target.user,
+  "--database", target.database,
+  "--file", sqlPath,
+];
+
+const defaultRunDirectSession = ({ target, sqlPath, password, cwd }) => spawnSync(
+  process.execPath,
+  directWorkerArgs(target, sqlPath),
+  {
+    cwd,
+    env: sanitizedDirectChildEnv(process.env),
+    input: JSON.stringify({ password }),
+    encoding: "utf8",
+    maxBuffer: 4 * 1024 * 1024,
+    timeout: 240_000,
+    killSignal: "SIGKILL",
+  },
+);
+
 export const runProductionRollbackDryRun = async ({
   cwd = process.cwd(),
   linkedWorkdir,
   runCli = defaultRunCli,
+  runDirectSession = defaultRunDirectSession,
+  directSessionCredentialApproved = false,
+  directSessionPassword = process.env.SUPABASE_DB_PASSWORD,
 } = {}) => {
   if (!linkedWorkdir) throw new Error("linked Supabase workdir is required");
   const linkedRef = readFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "utf8").trim();
@@ -190,6 +288,15 @@ export const runProductionRollbackDryRun = async ({
       || plan.execution_contract.persistent_production_apply_approved !== false) {
     throw new Error("bounded data-read approval missing or persistent apply unexpectedly approved");
   }
+  if (directSessionCredentialApproved !== true) {
+    throw new Error("direct-session Production credential approval is required");
+  }
+  if (typeof directSessionPassword !== "string" || directSessionPassword.length < 8) {
+    throw new Error("SUPABASE_DB_PASSWORD must be supplied ephemerally for the direct session");
+  }
+  delete process.env.SUPABASE_DB_PASSWORD;
+  assertDirectToolInstalled();
+  const directTarget = resolveDirectTarget(linkedWorkdir);
 
   const historyArgs = ["migration", "list", "--linked", "--output-format", "json"];
   const history = runCli(historyArgs, linkedWorkdir);
@@ -220,10 +327,12 @@ export const runProductionRollbackDryRun = async ({
   let dryRunFailure = null;
   try {
     dryRunAttempted = true;
-    const result = runCli(
-      ["db", "query", "--linked", "--agent", "yes", "--output-format", "json", "--file", dryRunPath],
-      linkedWorkdir,
-    );
+    const result = runDirectSession({
+      target: directTarget,
+      sqlPath: dryRunPath,
+      password: directSessionPassword,
+      cwd: linkedWorkdir,
+    });
     if (result.status !== 0) {
       dryRunFailure = sanitizedCliError(
         "Production rollback dry-run query failed",
@@ -237,10 +346,12 @@ export const runProductionRollbackDryRun = async ({
   } finally {
     try {
       if (dryRunAttempted) {
-        const audit = runCli(
-          ["db", "query", "--linked", "--agent", "yes", "--output-format", "json", "--file", postRollbackPath],
-          linkedWorkdir,
-        );
+        const audit = runDirectSession({
+          target: directTarget,
+          sqlPath: postRollbackPath,
+          password: directSessionPassword,
+          cwd: linkedWorkdir,
+        });
         if (audit.status !== 0) {
           throw sanitizedCliError(
             "fresh postrollback metadata audit failed",
@@ -266,6 +377,8 @@ export const runProductionRollbackDryRun = async ({
     remote_migration_count: observedVersions.length,
     remote_migration_inventory_sha256: sha256(`${observedVersions.join("\n")}\n`),
     generated_sql_sha256: summary.sql_sha256,
+    transport: "direct_node_postgres_simple_protocol",
+    credential_persisted_by_operator: false,
     dry_run_request_count: 1,
     postrollback_audit_request_count: 1,
     retry_count: 0,
@@ -278,8 +391,14 @@ if (process.argv[1]?.endsWith("run-v1-1-production-rollback-dry-run.mjs")) {
   if (!process.argv.includes("--execute")) {
     throw new Error("Refusing to connect without explicit --execute");
   }
+  if (!process.argv.includes("--direct-session-credential-approved")) {
+    throw new Error("Refusing direct Production session without explicit credential approval");
+  }
   const workdirIndex = process.argv.indexOf("--linked-workdir");
   const linkedWorkdir = workdirIndex >= 0 ? process.argv[workdirIndex + 1] : null;
-  const result = await runProductionRollbackDryRun({ linkedWorkdir });
+  const result = await runProductionRollbackDryRun({
+    linkedWorkdir,
+    directSessionCredentialApproved: true,
+  });
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }

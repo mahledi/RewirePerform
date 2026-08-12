@@ -1,0 +1,11 @@
+{
+  "name": "@rewireperform/production-rollback-dry-run",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Isolated local PostgreSQL transport for the credential-gated V1.1 rollback dry-run.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "dependencies": {
+    "pg": "8.23.0"
+  }
+}

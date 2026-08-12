@@ -37,6 +37,9 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Install isolated Production dry-run transport
+        run: npm ci --ignore-scripts --prefix tools/production-rollback-dry-run
+
       - name: Install brand verification dependencies
         run: python -m pip install --disable-pip-version-check --requirement requirements-brand.txt
 
