@@ -12,6 +12,71 @@ const remoteFloor = "20260801104717";
 const cliVersion = "2.113.0";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
+const safeDryRunMarkers = [
+  "v1_1_dry_run_feedback_schema_must_be_absent",
+  "v1_1_dry_run_forbidden_callable_inventory",
+  "v1_1_dry_run_machine_gates_not_closed",
+  "v1_1_dry_run_private_function_inventory_drift",
+  "v1_1_dry_run_private_schema_owner_drift",
+  "v1_1_dry_run_production_reader_membership_drift",
+  "v1_1_dry_run_production_reader_not_hardened",
+  "v1_1_dry_run_production_rpc_not_callable",
+  "v1_1_dry_run_public_security_definer_drift",
+  "v1_1_dry_run_reader_role_must_be_absent",
+  "v1_1_dry_run_remote_floor_drift",
+  "v1_1_dry_run_rollback_floor_drift",
+  "v1_1_dry_run_rollback_reader_persisted",
+  "v1_1_dry_run_rollback_schema_persisted",
+];
+
+const byteLength = (value) => Buffer.byteLength(typeof value === "string" ? value : "", "utf8");
+
+export const sanitizeCliFailure = (result, { requestBytes = 0 } = {}) => {
+  const stdout = typeof result?.stdout === "string" ? result.stdout : "";
+  const stderr = typeof result?.stderr === "string" ? result.stderr : "";
+  const combined = `${stderr}\n${stdout}`;
+  const httpStatus = combined.match(/unexpected status\s+(\d{3})(?:\D|$)/iu)?.[1];
+  const sqlstate = combined.match(/(?:SQLSTATE[\s:=]+|["']code["']\s*:\s*["'])([0-9A-Z]{5})(?:["']|\b)/u)?.[1];
+  const guardMarker = safeDryRunMarkers.find((marker) => combined.includes(marker));
+  const spawnCode = typeof result?.error?.code === "string"
+    && /^[A-Z0-9_]{2,32}$/u.test(result.error.code)
+    ? result.error.code
+    : undefined;
+  const signal = typeof result?.signal === "string" && /^[A-Z0-9]{2,16}$/u.test(result.signal)
+    ? result.signal
+    : undefined;
+
+  const failureClass = guardMarker
+    ? "DRY_RUN_GUARD_REJECTED"
+    : httpStatus
+      ? "MANAGEMENT_API_HTTP_ERROR"
+      : spawnCode
+        ? "CLI_PROCESS_ERROR"
+        : signal
+          ? "CLI_PROCESS_SIGNAL"
+          : "UNCLASSIFIED_CLI_FAILURE";
+
+  return {
+    failure_class: failureClass,
+    exit_status: Number.isInteger(result?.status) ? result.status : null,
+    signal: signal ?? null,
+    spawn_code: spawnCode ?? null,
+    http_status: httpStatus ? Number(httpStatus) : null,
+    sqlstate: sqlstate ?? null,
+    dry_run_guard: guardMarker ?? null,
+    request_bytes: Number.isSafeInteger(requestBytes) && requestBytes >= 0 ? requestBytes : 0,
+    stdout_bytes: byteLength(stdout),
+    stderr_bytes: byteLength(stderr),
+    raw_output_persisted: false,
+    output_digest_persisted: false,
+    cli_output_forwarded_by_runner: false,
+  };
+};
+
+const sanitizedCliError = (label, result, requestBytes = 0) => new Error(
+  `${label}: ${JSON.stringify(sanitizeCliFailure(result, { requestBytes }))}`,
+);
+
 const parseJson = (value, label) => {
   try {
     return JSON.parse(value);
@@ -128,7 +193,9 @@ export const runProductionRollbackDryRun = async ({
 
   const historyArgs = ["migration", "list", "--linked", "--output-format", "json"];
   const history = runCli(historyArgs, linkedWorkdir);
-  if (history.status !== 0) throw new Error("fresh remote migration preflight failed");
+  if (history.status !== 0) {
+    throw sanitizedCliError("fresh remote migration preflight failed", history);
+  }
   const observedVersions = parseRemoteMigrationVersions(history.stdout);
   const expectedVersions = expectedRemoteMigrationVersions(cwd);
   if (JSON.stringify(observedVersions) !== JSON.stringify(expectedVersions)) {
@@ -154,11 +221,15 @@ export const runProductionRollbackDryRun = async ({
   try {
     dryRunAttempted = true;
     const result = runCli(
-      ["db", "query", "--linked", "--output-format", "json", "--file", dryRunPath],
+      ["db", "query", "--linked", "--agent", "yes", "--output-format", "json", "--file", dryRunPath],
       linkedWorkdir,
     );
     if (result.status !== 0) {
-      dryRunFailure = new Error("Production rollback dry-run query failed");
+      dryRunFailure = sanitizedCliError(
+        "Production rollback dry-run query failed",
+        result,
+        byteLength(sql),
+      );
     } else {
       dryRunEvidence = validateDryRunResult(result.stdout);
       dryRunSucceeded = true;
@@ -167,11 +238,15 @@ export const runProductionRollbackDryRun = async ({
     try {
       if (dryRunAttempted) {
         const audit = runCli(
-          ["db", "query", "--linked", "--output-format", "json", "--file", postRollbackPath],
+          ["db", "query", "--linked", "--agent", "yes", "--output-format", "json", "--file", postRollbackPath],
           linkedWorkdir,
         );
         if (audit.status !== 0) {
-          throw new Error("fresh postrollback metadata audit failed");
+          throw sanitizedCliError(
+            "fresh postrollback metadata audit failed",
+            audit,
+            byteLength(freshPostRollbackAuditSql),
+          );
         }
         postRollbackEvidence = validatePostRollbackResult(audit.stdout);
       }

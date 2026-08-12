@@ -14,6 +14,7 @@ import {
   expectedRemoteMigrationVersions,
   parseRemoteMigrationVersions,
   runProductionRollbackDryRun,
+  sanitizeCliFailure,
   validateDryRunResult,
   validatePostRollbackResult,
 } from "../../scripts/run-v1-1-production-rollback-dry-run.mjs";
@@ -107,6 +108,43 @@ describe("V1.1 Production rollback dry-run operator", () => {
     }))).toThrow("unexpected result keys");
   });
 
+  it("classifies CLI failures without retaining arbitrary stderr, SQL, or application values", () => {
+    const secretValue = "athlete@example.test journal-private-value";
+    const diagnostic = sanitizeCliFailure({
+      status: 1,
+      signal: null,
+      stdout: "",
+      stderr: JSON.stringify({
+        code: "LegacyDbQueryUnexpectedStatusError",
+        message: `unexpected status 413: ${secretValue}`,
+      }),
+    }, { requestBytes: 288_845 });
+    expect(diagnostic).toMatchObject({
+      failure_class: "MANAGEMENT_API_HTTP_ERROR",
+      exit_status: 1,
+      http_status: 413,
+      sqlstate: null,
+      dry_run_guard: null,
+      request_bytes: 288_845,
+      raw_output_persisted: false,
+      output_digest_persisted: false,
+      cli_output_forwarded_by_runner: false,
+    });
+    expect(JSON.stringify(diagnostic)).not.toContain(secretValue);
+    expect(JSON.stringify(diagnostic)).not.toContain("athlete@example.test");
+
+    expect(sanitizeCliFailure({
+      status: 1,
+      stdout: "",
+      stderr: "unexpected status 400: SQLSTATE 42501 v1_1_dry_run_public_security_definer_drift:99",
+    })).toMatchObject({
+      failure_class: "DRY_RUN_GUARD_REJECTED",
+      http_status: 400,
+      sqlstate: "42501",
+      dry_run_guard: "v1_1_dry_run_public_security_definer_drift",
+    });
+  });
+
   it("always performs one fresh postrollback audit and never retries", async () => {
     const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-linked-test-"));
     mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
@@ -184,9 +222,15 @@ describe("V1.1 Production rollback dry-run operator", () => {
         cwd: root,
         linkedWorkdir,
         runCli: failingRunCli,
-      })).rejects.toThrow("rollback dry-run query failed");
+      })).rejects.toThrow(
+        /rollback dry-run query failed: .*"raw_output_persisted":false,"output_digest_persisted":false,"cli_output_forwarded_by_runner":false/u,
+      );
       expect(calls).toHaveLength(3);
       expect(databaseCalls).toBe(2);
+      expect(calls[1]).toContain("--agent");
+      expect(calls[1]).toContain("yes");
+      expect(calls[2]).toContain("--agent");
+      expect(calls[2]).toContain("yes");
     } finally {
       rmSync(linkedWorkdir, { recursive: true, force: true });
     }
