@@ -26,7 +26,7 @@ const feedbackTypes = [
 const faqItems = [
   {
     q: "Was ist RewirePerform?",
-    a: "RewirePerform ist ein strukturiertes 56-Tage-Programm für mentale Fähigkeiten im Sport. Es unterstützt Athletinnen und Athleten dabei, Fokus, Selbststeuerung und den Umgang mit Druck systematisch zu üben — unabhängig von der Sportart. Empfohlen ab 15 Jahren.",
+    a: "RewirePerform ist ein strukturiertes 56-Tage-Programm für mentale Fähigkeiten im Sport. Es unterstützt Athletinnen und Athleten dabei, Fokus, Selbststeuerung und den Umgang mit Druck systematisch zu üben — unabhängig von der Sportart. Die App ist ab 13 Jahren vorgesehen; von 13 bis einschließlich 15 ist die Freigabe einer sorgeberechtigten Person erforderlich.",
   },
   {
     q: "Wie funktioniert das Programm?",

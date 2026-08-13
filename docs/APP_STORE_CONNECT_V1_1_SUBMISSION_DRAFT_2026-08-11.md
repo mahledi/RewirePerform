@@ -1,6 +1,6 @@
 # RewirePerform 1.1 – App Store Connect Submission Draft
 
-Stand: 11. August 2026
+Stand: 13. August 2026
 Status: lokal vorbereitet; Platzhalter und bedingte Abschnitte vor Eintragung
 gegen den final aktivierten Production-Stand bestätigen
 
@@ -32,10 +32,14 @@ Freigabeentwurf:
 > Zusätzlich wurden Navigation, Ladezustände, Einstellungen und die
 > Bedienbarkeit auf iPhone und iPad weiter verbessert.
 
-Nur bei tatsächlich aktivem strukturiertem Feedback ergänzen:
+Nur bei im eingereichten Production-RC tatsächlich aktivem strukturiertem
+Feedback ergänzen:
 
 > An vier Punkten des Programms können Athleten freiwillig strukturiertes
 > Feedback zur Verständlichkeit und Alltagstauglichkeit geben.
+
+Der Text behauptet keine diagnostische, medizinische oder garantierte
+Leistungswirkung. Mahles sprachliche Freigabe bleibt vor Eintragung nötig.
 
 ## App Review Notes
 
@@ -117,6 +121,9 @@ Ein Kommentarfeld öffnet sich ausschließlich nach einer separaten, nicht
 vorausgewählten Einwilligung. Ein Nein verändert weder Programm noch
 strukturierte Antworten. Erteilte Freigaben können unter
 „Mehr → Konto & Daten → Freiwillige Feedback-Kommentare“ widerrufen werden.
+Von 13 bis einschließlich 15 Jahren ist zusätzlich die exakt passende
+Guardian-Freigabe erforderlich. Ohne Kommentar bleibt der strukturierte
+Feedback-Checkpoint vollständig nutzbar.
 ```
 
 Nur bei tatsächlich aktivem realen Jarvis-Processor ergänzen:
@@ -181,6 +188,31 @@ Erläuterung:
 - `Other Diagnostic Data` nur ergänzen, falls der finale Network-Report eine
   lesbar aufbewahrte technische Diagnostik bestätigt.
 
+### Exaktes Feedback-/Jarvis-Delta
+
+| Aktivierter Stand | Änderung gegenüber dem Basisprodukt |
+| --- | --- |
+| Strukturierte Feedbackfragen aktiv, Kommentare aus | `Product Interaction` umfasst zusätzlich strukturierte Antworten, Inhalts-/Fragebogenversion, Programmtag und minimierte Aktivitätszählungen; Zwecke `App Functionality` und `Analytics`; linked `Yes`; Tracking `No`. |
+| Freiwillige Kommentare aktiv | `Other User Content` umfasst zusätzlich bewusst abgegebene Produktfeedback-Kommentare; Zwecke `App Functionality` und `Analytics`; linked `Yes` bis Widerruf/Löschung oder echte Anonymisierung; Tracking `No`. |
+| Interner Jarvis-Read aktiv | Kein zusätzlicher Apple-Datentyp, sofern ausschließlich dieselben bereits deklarierten Daten verarbeitet werden. Privacy Policy und Review Notes müssen den internen Empfänger, den minimierten Export, die fehlenden direkten Kennungen und die Löschgrenze nennen. Tracking bleibt `No`. |
+| Feedback/Jarvis fail-closed | Feedbackspezifische Analytics-Zwecke und Review-Notes-Absätze nicht als aktive Funktion behaupten. Andere bereits real erhobene Journale, Interaktionen oder Kennungen bleiben unabhängig davon zu deklarieren. |
+
+Die Aktivierung von Jarvis ist keine Erlaubnis, neue private Datenquellen zu
+lesen. Journale, private Reflexionen, Supporttexte, Coach- und Teamdaten bleiben
+außerhalb des Feedbackexports.
+
+## Aktueller technischer Wahrheitsstand vor dem finalen RC
+
+- Production-Datenbank: 104 Migrationen verifiziert.
+- Beide neuen Edge Functions sind credentiallos und fail-closed deployed.
+- Feedback-Request bei geschlossenem Gate: `503`.
+- Organisationsanfrage: erlaubter Origin `503`, fremder Origin `403`.
+- Der neue finale 13+-Consent-/Guardian-Vertrag ist auf diesem lokalen Stand
+  nur als additive, weiterhin geschlossene Registrierung vorbereitet.
+- Es gibt dadurch noch keine aktivierte Feedback-Collection, keine aktive
+  Guardian-Feedback-Policy, kein Production-Credential und keinen echten
+  Jarvis-Read.
+
 ## Vor Eintragung zu verifizieren
 
 - [ ] Production-Rollback-Dry-run exakt einmal grün, ohne persistente Änderung;
@@ -192,7 +224,9 @@ Erläuterung:
 - [ ] qualifizierte DE-Rechts-/Privacy-/Minor-Freigabe;
 - [ ] Production-Turnstile und Organisationseingang;
 - [ ] veröffentlichte Datenschutzerklärung entspricht dem realen Datenweg;
-- [ ] Privacy Policy URL und Privacy Choices URL erreichbar;
+- [ ] Privacy Policy URL erreichbar;
+- [ ] optionales Privacy-Choices-Feld leer lassen, solange keine eigene
+      öffentliche Privacy-Choices-Seite existiert;
 - [ ] stabile synthetische Review-Konten physisch geprüft;
 - [ ] „Neu in dieser Version“ von Mahle sprachlich freigegeben;
 - [ ] finaler signierter Build `1.1 (5)` ausgewählt;

@@ -153,9 +153,9 @@ Production-Datenumfang ist in
 Der öffentliche App-Store-Eintrag zeigt 13+. Jugendliche von 13 bis 15 dürfen
 den Dienst ausschließlich über den bestehenden Unter-16-Guardian-Weg nutzen;
 mit 16 oder 17 entscheiden sie im vorgesehenen altersgerechten Flow selbst.
-„Empfohlen ab 15“ ist eine Zielgruppenempfehlung und kein technisches oder
-vertragliches Mindestalter. App-Store-Altersrating und Produktzugang bleiben
-damit getrennt, aber widerspruchsfrei definiert.
+Eine zusätzliche Aussage „Empfohlen ab 15“ wird im aktiven 1.1-Vertrag nicht
+mehr verwendet. App-Store-Altersrating und Produktzugang erzählen einheitlich
+13+ mit verpflichtendem Guardian-Weg von 13 bis einschließlich 15.
 
 ## Harte Grenzen
 

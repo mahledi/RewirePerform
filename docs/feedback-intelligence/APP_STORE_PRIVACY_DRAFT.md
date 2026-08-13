@@ -1,6 +1,6 @@
 # Feedback Intelligence 1.1 – App-Store- und Privacy-Draft
 
-Stand: 2026-08-10
+Stand: 2026-08-13
 Status: lokaler Implementierungsentwurf; keine Rechts-, App-Store-, KI- oder Production-Freigabe
 
 ## Produktwahrheit
@@ -28,7 +28,7 @@ Nicht als neue Feedback-Quelle erklären: Journalinhalt, Reflexionsinhalt, Team-
 - Ablehnung öffnet kein Kommentarfeld und verändert weder Programm noch Fragebogen.
 - Jede erteilte Freitext-Einwilligung ist unter `Einstellungen → Konto & Daten` sichtbar und einzeln widerrufbar.
 - Der Widerruf löscht Rohtext und personenbeziehbare Analyseartefakte; strukturierte Antworten bleiben erhalten.
-- Unter 16 bleibt Freitext im vorgesehenen Deutschland-Flow ohne exakt passenden Guardian-Scope technisch gesperrt.
+- RewirePerform ist ab 13 Jahren vorgesehen. Von 13 bis einschließlich 15 bleibt Freitext im vorgesehenen Deutschland-Flow ohne exakt passenden Guardian-Scope und eigene Athletenentscheidung technisch gesperrt; mit 16 oder 17 entscheidet der Athlet selbst.
 - Update 1.1 ist ausschließlich für Deutschland vorgesehen. Alle Nicht-DE-Länder bleiben technisch `out_of_scope` und gesperrt; ihre spätere Freigabe wäre ein neuer internationaler Rechts-, Privacy- und Store-Release.
 
 ## Machine-/KI-Gate
@@ -42,8 +42,10 @@ direkte Nutzerreferenzen und behält nur zusammengefasste Auswertungen und
 Berichte. Cloudflare gehört nicht zu diesem Feedback-Datenpfad.
 
 Dieser Pfad ist bislang ausschließlich mit synthetischen Staging-Daten
-nachgewiesen. Production-Gateway, Production-Reader und Machine-Credential sind
-nicht aktiviert. Kein externer KI-Anbieter erhält echte Feedback-Kommentare.
+nachgewiesen. Die Production-Edge-Function ist credentiallos und fail-closed
+deployed; ein erlaubter Request endet bei geschlossenem Gate mit `503`.
+Production-Reader, Machine-Credential und echter Datenread sind nicht aktiviert.
+Kein externer KI-Anbieter erhält echte Feedback-Kommentare.
 Vor einem echten Read sind mindestens erforderlich:
 
 1. finaler Production-Processor- und Zielumgebungsnachweis einschließlich der nicht durch aktuelle Evidenz belegten Edge-Ausführungsregion;
@@ -68,7 +70,8 @@ Rohtext und personenbeziehbare Ableitungen werden bei Widerruf oder Kontolöschu
 - rechtliche Freigabe der technisch festgelegten 365-Tage-Höchstdauer und des automatisierten Löschlaufs;
 - finaler Production-Nachweis für den benannten internen Jarvis-Verarbeitungsweg;
 - finale App Privacy Details im App Store Connect auf Basis des echten RC;
-- aktualisierte User Privacy Choices URL und Review Notes;
+- eine User Privacy Choices URL nur dann, wenn dafür eine echte öffentliche Seite bereitsteht; andernfalls bleibt das optionale App-Store-Feld leer;
+- aktualisierte Review Notes;
 - Deutschland-Minor-/Guardian-Texte und Staging-Negativtests; Nicht-DE muss fail-closed bleiben;
 - Apple-Altersrating anhand der finalen Funktionen, nicht nur der Zielgruppe.
 

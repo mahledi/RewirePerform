@@ -1,6 +1,6 @@
 # Guardian Feedback Text – Producer-Handoff
 
-Stand: 10. August 2026
+Stand: 13. August 2026
 Status: lokal implementiert und getestet; Policy `draft`; keine Production-, App-Store- oder Jarvis-Aktivierung
 
 ## Ergebnis
@@ -37,14 +37,14 @@ Produktfeedback abgefragte Freitexte bleiben ausgeschlossen.
 - `effective_from`
 - `retired_at`
 
-Aktueller V1.1-Draft; die V1.0-Zeile bleibt ausschließlich als historische,
-nicht aktivierte Vorversion erhalten:
+Aktueller finaler V1.1-Review-Kandidat; alle früheren `*-draft`-Zeilen bleiben
+ausschließlich als historische, nicht aktivierte Vorversionen erhalten:
 
-- `policy_reference`: `guardian-feedback-text-de-v1.1.0-draft`
+- `policy_reference`: `guardian-feedback-text-de-v1.1.0`
 - `scope`: `product-improvement-individual-text-ai-analysis-v1`
-- `consent_version`: `feedback-text-consent-v1.1.0-draft`
-- `guardian_notice_hash`: `4b7c6f6cbf3d932c2e244d6a281f0d45056706eeb6108cb2ac2303dbe0f19c4f`
-- `athlete_notice_hash`: `4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7`
+- `consent_version`: `feedback-text-consent-v1.1.0`
+- `guardian_notice_hash`: `90b0ede2a1a7671f1631e2048a605e6331006972ee05e63d38d229857f0aeb0b`
+- `athlete_notice_hash`: `c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16`
 - `raw_text_retention_days`: `365`
 - `processor_mode`: `no_external_processor`
 
@@ -138,15 +138,14 @@ System- oder Codeanweisung.
 
 ## Offene echte Gates
 
-- `guardian-feedback-text-de-v1.1.0-draft` ist weiterhin `draft`.
+- `guardian-feedback-text-de-v1.1.0` ist weiterhin `draft`.
 - Alle Raw-Text-, Minor-, App-Store- und Jarvis-Real-Read-Gates bleiben geschlossen.
 - Der vorgesehene interne Consumer ist das lokal auf Mahles Mac betriebene
   Jarvis-System. Der echte Production-Pfad und das Machine-Credential bleiben
   geschlossen. Vor einer künftigen Übermittlung an einen externen KI-Anbieter
   sind konkrete Information, Vertrag, Empfänger-/Transferprüfung und eine neue
   ausdrückliche Freigabe erforderlich.
-- RewirePerform akzeptiert Nutzer ab 15, während Apples aktuelles Ratingsystem
-  die Stufen 13+ und 16+ kennt. Die reale App-Store-Connect-Altersangabe muss
-  deshalb vor 1.1 bewusst mit Produktregel, EULA und internem Age-Gate
-  abgeglichen werden; der lokale Build kann diese Store-Entscheidung nicht
-  selbst bestätigen.
+- RewirePerform ist ab 13 Jahren vorgesehen. Von 13 bis einschließlich 15
+  bleibt der bestehende Unter-16-Guardian-Weg verpflichtend; mit 16 oder 17
+  entscheidet der Athlet selbst. App-Store-Connect bleibt auf 13+ ohne Kids
+  Category und muss vor Einreichung gegen den finalen RC geprüft werden.

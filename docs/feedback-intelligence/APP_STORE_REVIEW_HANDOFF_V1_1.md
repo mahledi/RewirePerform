@@ -1,6 +1,6 @@
 # Feedback Intelligence 1.1 – Handoff an den finalen App-Store-Review
 
-Stand: 10. August 2026
+Stand: 13. August 2026
 Status: Rest-Day-/Daily-Flow und Feedback-Inhalt lokal integriert; kombinierter 1.1-Kandidat bis zu den unten genannten Release-Gates weiterhin `NO-GO`; keine Production- oder Machine-Aktivierung
 
 ## Entscheidung, die dieser Review treffen soll
@@ -53,11 +53,11 @@ aktiviert weder Production, echte Athletendaten, Freitextanalyse noch Jarvis.
 
 ## Deutschland- und Minderjährigen-Scope
 
-- Update 1.1 ist für Deutschland und Athleten ab 15 vorgesehen.
+- Update 1.1 ist für Deutschland und Athleten ab 13 vorgesehen.
 - Alle Nicht-DE-Länder bleiben für diesen Feedbacktext-Flow technisch
   `out_of_scope`.
 - Ab 16 entscheidet der Athlet freiwillig selbst über den Produktfeedbacktext.
-- Mit 15 beziehungsweise allgemein unter 16 verlangt der Server sowohl die
+- Von 13 bis einschließlich 15 verlangt der Server sowohl die
   freiwillige Athleten-Einwilligung als auch eine exakte, noch gültige
   Guardian-Autorisierung für den versionierten Feedbacktext-Scope.
 - Fehlt eine der beiden Freigaben, wird kein Rohtext gespeichert. Strukturierte
@@ -111,21 +111,22 @@ Ein späterer echter Jarvis-Read verlangt eine neue ausdrückliche Freigabe nach
 Production-Processor-, Credential-, Privacy-, Minor- und Löschprüfung. Dieser
 Review darf ihn nicht implizit aktivieren.
 
-Der aktuelle Athlete-Consent-Draft ist
-`feedback-text-consent-v1.1.0-draft` mit Notice-Hash
-`4f067f11e8ba0075989ba3af730cfcac3849e6e406da97227defa92ac41dfda7`.
-Der zugehörige Guardian-Draft ist
-`guardian-feedback-text-de-v1.1.0-draft` mit Guardian-Notice-Hash
-`4b7c6f6cbf3d932c2e244d6a281f0d45056706eeb6108cb2ac2303dbe0f19c4f`.
-Beide sind neue additive Entwürfe; die historischen V1.0-Zeilen werden nicht
-still umgedeutet oder überschrieben.
+Der finale, weiterhin nicht aktivierte Athlete-Consent-Kandidat ist
+`feedback-text-consent-v1.1.0` mit Notice-Hash
+`c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16`.
+Der zugehörige Guardian-Kandidat ist
+`guardian-feedback-text-de-v1.1.0` mit Guardian-Notice-Hash
+`90b0ede2a1a7671f1631e2048a605e6331006972ee05e63d38d229857f0aeb0b`.
+Beide werden additiv registriert und bleiben `draft`; historische Zeilen und
+das akzeptierte v0.3.3-Paket werden nicht umgedeutet oder überschrieben.
 
 ## Nachweise im isolierten Staging
 
 - Projekt: `RewirePerform Staging` (`zbeswjipayspgvcipzmx`), Region
   `eu-central-1`, Free-Plan; Production blieb unverändert.
-- 90 Migrationen angewendet; alle Kampagnen blieben `draft`, alle Collection-
-  und Machine-Gates geschlossen, Staging endete ohne Testdaten.
+- Die historische Staging-Evidenz bleibt als Nachweis ihres damaligen
+  Byte-Stands erhalten. Der neue finale Consent-Vertrag verlangt vor
+  Aktivierung eine eigene unabhängige Abnahme und positive synthetische Smokes.
 - Echter Tag-10-Athleten-RPC-Lauf mit strukturierter Antwort und ohne Rohtext
   bestand innerhalb einer zurückgerollten synthetischen Transaktion.
 - Unter-16 ohne passenden Guardian-Scope wurde blockiert.
@@ -166,8 +167,9 @@ qualifiziert bestätigt werden.
 
 1. qualifizierte deutsche Rechts-, Datenschutz- und Minderjährigenfreigabe;
 2. qualifizierte Freigabe der versionierten Consent-, Privacy- und Guardian-Texte samt Notice-Hashes;
-3. finale App-Store-Connect-Angaben zu App Privacy, Altersrating/Override,
-   Privacy Choices URL und Review Notes gegen den echten RC;
+3. finale App-Store-Connect-Angaben zu App Privacy, Altersrating 13+ und Review
+   Notes gegen den echten RC; das optionale Privacy-Choices-Feld nur mit realer
+   öffentlicher Zielseite befüllen;
 4. positiver Guardian-E-Mail-Pfad in Staging mit synthetischer Adresse und
    isolierten Staging-Secrets für URL, Verschlüsselung, Hashing, Absender und
    Provider;
@@ -205,7 +207,7 @@ Feedbacktest, soll aber im finalen RC-Budget sichtbar bleiben.
 - [ ] Tag 55 bleibt bis nach dem freien Abruf frei von Cue, Mission,
       Musterantworten und Testsatz des Tages.
 - [ ] Strukturierte Antworten bleiben ohne Freitext und bei Ablehnung nutzbar.
-- [ ] Unter 16 ist Text ohne beide versionierten Freigaben technisch unmöglich.
+- [ ] Von 13 bis einschließlich 15 ist Text ohne beide versionierten Freigaben technisch unmöglich.
 - [ ] Widerruf, Löschung und Retention erfassen Rohtext und personenbeziehbare
       Ableitungen, aber nicht die privacy-sichere strukturierte Antwort.
 - [ ] Private Journale/Reflexionen und Coach-/Team-/Identitätsdaten erscheinen

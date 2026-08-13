@@ -23,7 +23,7 @@ describe("feedback intelligence synthetic preview", () => {
     expect(screen.getByText(/intern betriebenen Jarvis-System/)).toBeInTheDocument();
     expect(screen.getByText(/kein externer KI-Anbieter/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nur Auswahlantwort senden" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ohne Kommentar fortfahren" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: "Optionaler Feedbacktext" })).not.toBeInTheDocument();
     expect(screen.getByText(/Deine Auswahl bleibt trotzdem gespeichert/)).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("feedback intelligence synthetic preview", () => {
 
     expect(screen.queryByRole("textbox", { name: "Optionaler Feedbacktext" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
-    fireEvent.click(screen.getByRole("button", { name: "Ja, mit Feedback verbessern" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ja, Kommentar freiwillig freigeben" }));
 
     const textField = screen.getByRole("textbox", { name: "Optionaler Feedbacktext" });
     fireEvent.change(textField, { target: { value: "Die Aufgabe war heute zu abstrakt." } });
@@ -54,8 +54,8 @@ describe("feedback intelligence synthetic preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
     const dialog = screen.getByRole("dialog");
-    const accept = within(dialog).getByRole("button", { name: "Ja, mit Feedback verbessern" });
-    const decline = within(dialog).getByRole("button", { name: "Nur Auswahlantwort senden" });
+    const accept = within(dialog).getByRole("button", { name: "Ja, Kommentar freiwillig freigeben" });
+    const decline = within(dialog).getByRole("button", { name: "Ohne Kommentar fortfahren" });
 
     expect(accept).toHaveClass("bg-primary");
     expect(decline).toHaveClass("border");
