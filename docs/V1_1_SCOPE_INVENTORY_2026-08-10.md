@@ -1,6 +1,8 @@
 # RewirePerform 1.1 – verbindliches Umfangs- und Readiness-Inventar
 
-Stand: 10. August 2026
+Stand: 13. August 2026
+
+Exakt getesteter lokaler Code- und Buildstand: `74fd4ee`
 
 ## Ziel B
 
@@ -119,16 +121,25 @@ Diese Ideen sind nicht vergessen, sondern absichtlich spätere Produktarbeit:
 
 ## Aktuelle Differenz Delta
 
-1. Den inzwischen freigegebenen Production-Datenumfang nach unabhängiger
-   Gateway-Abnahme an Datenschutzseite, App-Store-Datentypen und Review Notes
-   binden.
-2. Die qualifizierte DE-Rechts-/Privacy-/Minor-Prüfung des finalen Consent- und
-   Guardian-Umfangs dokumentieren.
-3. Production-Migrationen und Edge-Functions einzeln kontrolliert aktivieren;
-   kein pauschales Datenbank-Push.
-4. Finalen RC erneut bauen und die release-relevanten Wege physisch auf iPhone
-   und – solange iPad unterstützt wird – iPad prüfen.
-5. Erst danach PR, Merge, Website-Production, TestFlight und V1.1-Einreichung.
+1. Den vorbereiteten Production-Rollback-Dry-run exakt einmal mit dem erst bei
+   Ausführung eingegebenen Production-Datenbankpasswort durchführen. Der Lauf
+   verwendet eine echte Transaktion und endet mit `ROLLBACK`; er darf nichts
+   dauerhaft anwenden und besitzt keinen Retry.
+2. Nur nach grünem Rollback-Nachweis, aktuellem Backup-/Recovery-Nachweis und
+   eigener Freigabe die 25 gepinnten Production-Migrationsschritte über den
+   kontrollierten Apply-Operator anwenden. Ein pauschales `supabase db push`
+   bleibt verboten.
+3. Danach ausschließlich die wirklich benötigten Edge Functions, Origins,
+   Feature- und Datengates sequenziert aktivieren und jeden Pfad negativ sowie
+   positiv prüfen. Jarvis-Production-Credential und echter Datenread bleiben
+   davon getrennte Gates.
+4. Den dann real aktivierten Datenweg endgültig mit Datenschutzerklärung,
+   App-Store-Datentypen und Review Notes abgleichen sowie die qualifizierte
+   DE-Rechts-/Privacy-/Minor-Prüfung des Consent-/Guardian-Umfangs festhalten.
+5. Exakten finalen RC erneut bauen und die release-relevanten Wege physisch auf
+   iPhone und – solange iPad unterstützt wird – iPad prüfen.
+6. Erst danach PR, Merge, Website-Production, TestFlight und
+   V1.1-App-Store-Einreichung.
 
 Bereits geschlossen sind die Feedback-v1.1.2-Registrymigration auf Staging,
 der nachgelagerte metadata-only Postdeploy-Audit und dessen unabhängige
@@ -156,6 +167,33 @@ Der dafür getrennte Production-Gateway ist lokal vorbereitet: eigener
 Production-Endpoint, eigene Reader-Rolle, eigene Secret-Namen und getrennte
 Machine-/Real-Data-Gates. Rolle und Gates bleiben credentiallos und
 geschlossen; es gab keine Migration, keinen Deploy und keinen echten Read.
+
+### Aktueller Production- und Native-Nachweis
+
+Der Production-Migrationsvertrag wurde an den belegten Hosted-Supabase-
+PostgreSQL-17-Rollenvertrag angepasst, ohne historische Migrationsdateien zu
+verändern. Der Rollback-Operator prüft vor dem Verbindungsaufbau alle
+Quell-Hashes und die exakte Remote-Historie, verwendet eine direkte
+TLS-verifizierte Session, genau einen Query-Versuch und eine nachgelagerte
+frische Audit-Session. Der persistente Apply-Operator ist separat vorbereitet,
+bleibt aber durch vier explizite Gates geschlossen: Apply-Freigabe,
+Credential-Freigabe, grüner Rollback-Nachweis und aktueller
+Backup-/Recovery-Nachweis. Die synthetische Staging-Gate-Migration wird in
+Production nie ausgeführt, sondern ausschließlich als nicht ausgeführter
+History-Schritt behandelt.
+
+Die zentrale Release-Wahrheit bestätigt inzwischen Feedback-Semantik v0.3.3,
+den aktuellen Gateway, das metadata-only Staging-Postdeploy, den
+credentiallosen Preflight und genau einen bereinigten synthetischen One-Shot.
+Sie bestätigt ausdrücklich keinen echten oder Production-Datenread.
+
+Auf `74fd4ee` lief der vollständige native Production-Build am 13. August grün:
+151 von 151 Testdateien und 854 von 854 Tests, sämtliche SQL-, Privacy-,
+Minor-, Guardian-, Security- und App-Store-Gates, Production-Webbuild,
+Production-Target `bqsbxesmybthwtxmowfz`, Capacitor-iOS-Sync und eingebettetes
+iOS-Production-Ziel. `npm audit --omit=dev` meldet null Befunde. Der Build ist
+ein lokaler technischer Nachweis; finaler signierter Build, letzter physischer
+Gerätetest und Live-Aktivierung bleiben offen.
 
 ## No-False-Green-Regel
 
