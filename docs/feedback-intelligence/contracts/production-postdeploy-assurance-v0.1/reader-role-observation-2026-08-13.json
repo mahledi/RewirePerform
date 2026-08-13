@@ -1,0 +1,13 @@
+{
+  "schema_version": "rewireperform-production-reader-role-observation-v1",
+  "observed_at": "2026-08-13T11:20:16Z",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "source": "postgres-catalog-metadata-audit-v1",
+  "role_name": "mahleos_feedback_production_reader",
+  "password_is_null": true,
+  "login": true,
+  "superuser": false,
+  "inherit": false,
+  "bypassrls": false,
+  "application_rows_read": false
+}

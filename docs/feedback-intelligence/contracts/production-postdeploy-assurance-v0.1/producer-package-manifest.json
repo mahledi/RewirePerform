@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-v1.1-production-postdeploy-assurance-package-v1",
   "status": "LOCAL_ASSURANCE_CONTRACT_PREPARED_PRODUCTION_NOT_APPLIED",
   "generated_at": "2026-08-13T13:20:00+02:00",
-  "package_sha256": "f864e3058154dc378f9562ea62d86f14ad1f466c797023eddfd01eecb01f3dc1",
+  "package_sha256": "46d5eb12679b088100f8ff16296fbc1e064c4590ee788b5983b8ef6d17dd4846",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/assurance-plan.json",
@@ -22,7 +22,7 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_POSTDEPLOY_ASSURANCE_V1_1.md",
-      "sha256": "8eb03f6328222e5f6d9a3ff1eb2d4bbc185cf2c90b2dfefc7c59fe4941b3e705"
+      "sha256": "8c0c108e1c6229e16ca4d84e4bf78eb6f6fae4ad14f072a38a4346ef3aea3eed"
     },
     {
       "path": "scripts/generate-v1-1-production-postdeploy-assurance.mjs",

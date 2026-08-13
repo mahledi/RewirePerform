@@ -2,9 +2,9 @@
 
 Stand: 13. August 2026
 
-Status: lokal vorbereitet. Keine Production-Migration, kein Edge-Deploy, kein
-Credential und kein Datenread wird durch dieses Dokument ausgeführt oder
-freigegeben.
+Status: Production-Migrationen am 13. August 2026 kontrolliert angewendet;
+sanitierter Postdeploy-Nachweis grün. Kein Edge-Deploy, kein Credential und kein
+Laufzeit-Datenread wurde dadurch aktiviert oder freigegeben.
 
 ## Zweck
 
@@ -43,6 +43,6 @@ Rohresponses und nicht sanitierte Fehlermeldungen.
 Ein grüner Production-Migrationsnachweis aktiviert keine Laufzeitfunktion. Die
 öffentliche Organisationsanfrage, Feedback-Collection, optionale Kommentare,
 Minderjährigenverarbeitung, Jarvis, Edge Functions, Secrets und App-Store-
-Einreichung bleiben jeweils eigene nachgelagerte Gates. Bis zu einem realen
-Apply existiert nur der erwartete, bytegepinnte Prüfvertrag; es darf kein
-Postdeploy-Ergebnis vorgetäuscht werden.
+Einreichung bleiben jeweils eigene nachgelagerte Gates. Das reale Ergebnis liegt
+bytegepinnt in `postdeploy-evidence.json`; seine Beobachtungen enthalten nur
+Control-Plane- und Katalogmetadaten.
