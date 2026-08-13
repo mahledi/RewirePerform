@@ -31,21 +31,35 @@ describe("V1.1 Production postdeploy assurance contract", () => {
     });
     expect(Object.values(plan.activation).every((value) => value === false)).toBe(true);
     expect(schema.properties.control_plane.properties).toMatchObject({
-      production_feedback_edge_present: { const: false },
-      organization_inquiry_edge_present: { const: false },
-      production_feedback_secrets_present: { const: false },
-      production_feedback_reader_password_is_null: { const: true },
+      edge_presence_observation: expect.any(Object),
+      secret_presence_observation: expect.any(Object),
+      reader_role_observation: expect.any(Object),
+      combined_audit_provenance: expect.any(Object),
     });
+    expect(schema.properties.control_plane.properties.secret_presence_observation
+      .properties.expected_secret_names.prefixItems).toHaveLength(5);
+    expect(Object.keys(schema.properties.control_plane.properties.edge_presence_observation
+      .properties.observed_slugs.properties)).toEqual([
+      "mahleos-feedback-intelligence-production-read",
+      "submit-organization-access-request",
+    ]);
   });
 
   it("allows no application values, credentials, or runtime activation in evidence", async () => {
     const { plan, schema } = await composeProductionPostdeployAssurance({ cwd: root });
     expect(plan.required_control_plane_evidence).toMatchObject({
-      application_rows_read: false,
+      migration_application_rows_read: true,
+      migration_application_read_scope: {
+        "public.teams": ["id", "created_by"],
+        "public.user_roles": ["user_id", "role"],
+      },
+      postdeploy_metadata_audit_application_rows_read: false,
       application_values_persisted_in_evidence: false,
     });
     expect(schema.properties.privacy.properties).toEqual({
-      application_rows_read: { const: false },
+      migration_application_rows_read: { const: true },
+      migration_application_read_scope: expect.any(Object),
+      postdeploy_metadata_audit_application_rows_read: { const: false },
       application_values_persisted: { const: false },
       credential_value_persisted: { const: false },
     });

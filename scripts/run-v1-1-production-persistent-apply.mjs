@@ -29,6 +29,33 @@ const persistentPackageManifestPath = resolve(
   "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json",
 );
 
+export const assertPersistentPackageBytes = ({ cwd, manifest }) => {
+  if (!Array.isArray(manifest.files) || manifest.files.length === 0) {
+    throw new Error("persistent Production package file inventory drift");
+  }
+  const seen = new Set();
+  const digestInput = [];
+  for (const entry of manifest.files) {
+    if (typeof entry?.path !== "string"
+        || entry.path.startsWith("/")
+        || entry.path.split("/").includes("..")
+        || typeof entry.sha256 !== "string"
+        || !/^[a-f0-9]{64}$/u.test(entry.sha256)
+        || seen.has(entry.path)) {
+      throw new Error("persistent Production package inventory entry drift");
+    }
+    seen.add(entry.path);
+    const actual = sha256(readFileSync(resolve(cwd, entry.path)));
+    if (actual !== entry.sha256) {
+      throw new Error(`persistent Production package byte drift: ${entry.path}`);
+    }
+    digestInput.push(`${actual}  ${entry.path}\n`);
+  }
+  if (sha256(digestInput.join("")) !== manifest.package_sha256) {
+    throw new Error("persistent Production package SHA-256 drift");
+  }
+};
+
 export const persistentWorkerArgs = (target, sqlPath, caFile) => [
   resolve(scriptDirectory, "execute-postgres-simple-query.mjs"),
   "--host", target.host,
@@ -158,6 +185,7 @@ export const runProductionPersistentApply = async ({
       || !/^[a-f0-9]{64}$/u.test(persistentPackageManifest.package_sha256)) {
     throw new Error("persistent Production package manifest drift");
   }
+  assertPersistentPackageBytes({ cwd, manifest: persistentPackageManifest });
   if (plan.execution.persistent_apply_approved !== false
       || plan.execution.credential_approved !== false
       || plan.execution.rollback_dry_run_verified !== false

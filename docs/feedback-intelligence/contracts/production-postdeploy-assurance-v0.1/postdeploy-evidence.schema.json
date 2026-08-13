@@ -45,7 +45,7 @@
           "const": "bqsbxesmybthwtxmowfz"
         },
         "source_package_sha256": {
-          "const": "b905395196cd2c4bd2092eb56304c631e82936386f8b2853da0a394ab0bc2627"
+          "const": "05644a862adab7117b301f0bb0a666bbb5ca71e243d811ef45d719d808b19b50"
         },
         "completed_migrations": {
           "const": 25
@@ -82,10 +82,10 @@
       "required": [
         "final_remote_migration_count",
         "final_remote_versions_sha256",
-        "production_feedback_edge_present",
-        "organization_inquiry_edge_present",
-        "production_feedback_secrets_present",
-        "production_feedback_reader_password_is_null"
+        "edge_presence_observation",
+        "secret_presence_observation",
+        "reader_role_observation",
+        "combined_audit_provenance"
       ],
       "properties": {
         "final_remote_migration_count": {
@@ -94,17 +94,170 @@
         "final_remote_versions_sha256": {
           "const": "f20873d87cd352ceed9460bf995d20fdde4b7e984c660983f81a5277b312981b"
         },
-        "production_feedback_edge_present": {
-          "const": false
+        "edge_presence_observation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "observation_sha256",
+            "observed_slugs"
+          ],
+          "properties": {
+            "source": {
+              "const": "supabase-functions-list-metadata-v1"
+            },
+            "observation_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "observed_slugs": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "mahleos-feedback-intelligence-production-read",
+                "submit-organization-access-request"
+              ],
+              "properties": {
+                "mahleos-feedback-intelligence-production-read": {
+                  "const": false
+                },
+                "submit-organization-access-request": {
+                  "const": false
+                }
+              }
+            }
+          }
         },
-        "organization_inquiry_edge_present": {
-          "const": false
+        "secret_presence_observation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "observation_sha256",
+            "expected_secret_names",
+            "observed_presence",
+            "secret_values_read",
+            "secret_values_persisted",
+            "unrelated_secret_names_persisted"
+          ],
+          "properties": {
+            "source": {
+              "const": "supabase-secrets-list-presence-only-v1"
+            },
+            "observation_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "expected_secret_names": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "prefixItems": [
+                {
+                  "const": "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY"
+                },
+                {
+                  "const": "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS"
+                },
+                {
+                  "const": "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL"
+                },
+                {
+                  "const": "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE"
+                },
+                {
+                  "const": "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE"
+                }
+              ]
+            },
+            "observed_presence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY",
+                "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS",
+                "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL",
+                "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE",
+                "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE"
+              ],
+              "properties": {
+                "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY": {
+                  "const": false
+                },
+                "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS": {
+                  "const": false
+                },
+                "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL": {
+                  "const": false
+                },
+                "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE": {
+                  "const": false
+                },
+                "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE": {
+                  "const": false
+                }
+              }
+            },
+            "secret_values_read": {
+              "const": false
+            },
+            "secret_values_persisted": {
+              "const": false
+            },
+            "unrelated_secret_names_persisted": {
+              "const": false
+            }
+          }
         },
-        "production_feedback_secrets_present": {
-          "const": false
+        "reader_role_observation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "source",
+            "observation_sha256",
+            "role_name",
+            "password_is_null",
+            "application_rows_read"
+          ],
+          "properties": {
+            "source": {
+              "const": "postgres-catalog-metadata-audit-v1"
+            },
+            "observation_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "role_name": {
+              "const": "mahleos_feedback_production_reader"
+            },
+            "password_is_null": {
+              "const": true
+            },
+            "application_rows_read": {
+              "const": false
+            }
+          }
         },
-        "production_feedback_reader_password_is_null": {
-          "const": true
+        "combined_audit_provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "project_ref",
+            "contract",
+            "audit_sha256"
+          ],
+          "properties": {
+            "project_ref": {
+              "const": "bqsbxesmybthwtxmowfz"
+            },
+            "contract": {
+              "const": "rewireperform-production-postdeploy-control-plane-audit-v1"
+            },
+            "audit_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
         }
       }
     },
@@ -112,12 +265,53 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "application_rows_read",
+        "migration_application_rows_read",
+        "migration_application_read_scope",
+        "postdeploy_metadata_audit_application_rows_read",
         "application_values_persisted",
         "credential_value_persisted"
       ],
       "properties": {
-        "application_rows_read": {
+        "migration_application_rows_read": {
+          "const": true
+        },
+        "migration_application_read_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "public.teams",
+            "public.user_roles"
+          ],
+          "properties": {
+            "public.teams": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "const": "id"
+                },
+                {
+                  "const": "created_by"
+                }
+              ]
+            },
+            "public.user_roles": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "prefixItems": [
+                {
+                  "const": "user_id"
+                },
+                {
+                  "const": "role"
+                }
+              ]
+            }
+          }
+        },
+        "postdeploy_metadata_audit_application_rows_read": {
           "const": false
         },
         "application_values_persisted": {
@@ -132,7 +326,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "database_apply",
+        "database_apply_gate_open",
         "edge_deploy",
         "credentials",
         "feedback_collection",
@@ -143,7 +337,7 @@
         "app_store_submission"
       ],
       "properties": {
-        "database_apply": {
+        "database_apply_gate_open": {
           "const": false
         },
         "edge_deploy": {

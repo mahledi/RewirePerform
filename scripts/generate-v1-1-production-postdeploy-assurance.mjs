@@ -17,6 +17,17 @@ const persistentPlanPath =
 const persistentManifestPath =
   "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+const productionFeedbackSecretNames = [
+  "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY",
+  "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS",
+  "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL",
+  "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE",
+  "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE",
+];
+const productionEdgeSlugs = [
+  "mahleos-feedback-intelligence-production-read",
+  "submit-organization-access-request",
+];
 
 const exactObjectSchema = (properties) => ({
   type: "object",
@@ -71,15 +82,20 @@ export const composeProductionPostdeployAssurance = async ({ cwd = root } = {}) 
     expected_result: expectedResult,
     required_control_plane_evidence: {
       exact_remote_migration_history: true,
-      production_feedback_edge_absent_before_its_separate_gate: true,
-      organization_inquiry_edge_absent_before_its_separate_gate: true,
-      production_feedback_secrets_absent: true,
+      exact_edge_slugs: productionEdgeSlugs,
+      exact_production_feedback_secret_names: productionFeedbackSecretNames,
+      presence_only_secret_observation: true,
       production_feedback_reader_password_null: true,
-      application_rows_read: false,
+      migration_application_rows_read: true,
+      migration_application_read_scope: {
+        "public.teams": ["id", "created_by"],
+        "public.user_roles": ["user_id", "role"],
+      },
+      postdeploy_metadata_audit_application_rows_read: false,
       application_values_persisted_in_evidence: false,
     },
     activation: {
-      database_apply: false,
+      database_apply_gate_open: false,
       edge_deploy: false,
       credentials: false,
       feedback_collection: false,
@@ -104,13 +120,55 @@ export const composeProductionPostdeployAssurance = async ({ cwd = root } = {}) 
       control_plane: exactObjectSchema({
         final_remote_migration_count: { const: expectedResult.final_remote_migration_count },
         final_remote_versions_sha256: { const: expectedResult.final_remote_versions_sha256 },
-        production_feedback_edge_present: { const: false },
-        organization_inquiry_edge_present: { const: false },
-        production_feedback_secrets_present: { const: false },
-        production_feedback_reader_password_is_null: { const: true },
+        edge_presence_observation: exactObjectSchema({
+          source: { const: "supabase-functions-list-metadata-v1" },
+          observation_sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
+          observed_slugs: exactObjectSchema(Object.fromEntries(
+            productionEdgeSlugs.map((slug) => [slug, { const: false }]),
+          )),
+        }),
+        secret_presence_observation: exactObjectSchema({
+          source: { const: "supabase-secrets-list-presence-only-v1" },
+          observation_sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
+          expected_secret_names: {
+            type: "array",
+            minItems: productionFeedbackSecretNames.length,
+            maxItems: productionFeedbackSecretNames.length,
+            prefixItems: productionFeedbackSecretNames.map((name) => ({ const: name })),
+          },
+          observed_presence: exactObjectSchema(Object.fromEntries(
+            productionFeedbackSecretNames.map((name) => [name, { const: false }]),
+          )),
+          secret_values_read: { const: false },
+          secret_values_persisted: { const: false },
+          unrelated_secret_names_persisted: { const: false },
+        }),
+        reader_role_observation: exactObjectSchema({
+          source: { const: "postgres-catalog-metadata-audit-v1" },
+          observation_sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
+          role_name: { const: "mahleos_feedback_production_reader" },
+          password_is_null: { const: true },
+          application_rows_read: { const: false },
+        }),
+        combined_audit_provenance: exactObjectSchema({
+          project_ref: { const: expectedResult.project_ref },
+          contract: { const: "rewireperform-production-postdeploy-control-plane-audit-v1" },
+          audit_sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
+        }),
       }),
       privacy: exactObjectSchema({
-        application_rows_read: { const: false },
+        migration_application_rows_read: { const: true },
+        migration_application_read_scope: exactObjectSchema({
+          "public.teams": {
+            type: "array", minItems: 2, maxItems: 2,
+            prefixItems: [{ const: "id" }, { const: "created_by" }],
+          },
+          "public.user_roles": {
+            type: "array", minItems: 2, maxItems: 2,
+            prefixItems: [{ const: "user_id" }, { const: "role" }],
+          },
+        }),
+        postdeploy_metadata_audit_application_rows_read: { const: false },
         application_values_persisted: { const: false },
         credential_value_persisted: { const: false },
       }),

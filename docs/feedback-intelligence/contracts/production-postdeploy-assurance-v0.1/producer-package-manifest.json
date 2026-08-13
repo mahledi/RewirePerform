@@ -2,15 +2,15 @@
   "schema_version": "rewireperform-v1.1-production-postdeploy-assurance-package-v1",
   "status": "LOCAL_ASSURANCE_CONTRACT_PREPARED_PRODUCTION_NOT_APPLIED",
   "generated_at": "2026-08-13T13:20:00+02:00",
-  "package_sha256": "26fa9d4f24771730019e21384d020a09277e47f433403c3197aa7f0ac086f261",
+  "package_sha256": "16ca310c4191b92f659b208f1eae711b41a58a6ad9f43a9ea695f39ce198bd16",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/assurance-plan.json",
-      "sha256": "c7baa72b13551bf6ddb228bf137abda7a50534fcf8d81f52c35bf64c5f2efe8a"
+      "sha256": "dfcd9dad3951096d9f94e74e9f4fc3446ca0a2b214336d1714689cebf6d842e4"
     },
     {
       "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/postdeploy-evidence.schema.json",
-      "sha256": "0acc803e565e7c80368cba07d87a9763016b3682c77816a0a7af16bd6a269cad"
+      "sha256": "82ffe43ecb364333169543685d204930f6d56d49cfc783a8681065537cf77101"
     },
     {
       "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/plan.json",
@@ -18,31 +18,31 @@
     },
     {
       "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json",
-      "sha256": "6486a6de670e4287b4d6a8fd8af0988f3969a380fedf4e450f7150e3d17cdebb"
+      "sha256": "17fdab65764d9796d7bc08188c0963a8727587a37041d96347799a7da41b2741"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_POSTDEPLOY_ASSURANCE_V1_1.md",
-      "sha256": "5accf7a1896fc65ee3009812ed6551db5a1c9d02f69772eb170588e0e9d3558d"
+      "sha256": "8eb03f6328222e5f6d9a3ff1eb2d4bbc185cf2c90b2dfefc7c59fe4941b3e705"
     },
     {
       "path": "scripts/generate-v1-1-production-postdeploy-assurance.mjs",
-      "sha256": "28992ee2bf4978f7154b1365a995c49082de78006dfd3db2f9cd43486ee6ab69"
+      "sha256": "ea3b1aa35d0800b3e3e08b9f691c38f51486eff56e3a8be12aa4cb8b80077a4a"
     },
     {
       "path": "scripts/run-v1-1-production-persistent-apply.mjs",
-      "sha256": "f9089edd425451c396ae540e11b8e1424cbb0c22504ad5e3b599785dd4695f0e"
+      "sha256": "a40fd3d118f4fe171058e678fa13abbe03fd404303baeaefbb7c1c50f842df99"
     },
     {
       "path": "src/test/v11ProductionPostdeployAssurance.test.ts",
-      "sha256": "34e24d8fced830b3f795cae9270ec4c23526ad84e3672c6adcb72ffc1e273ffe"
+      "sha256": "075d6ca3a11c7cf224fa291e341ee434b1c6659c662b9f16d275114c0168d393"
     },
     {
       "path": "src/test/v11ProductionPersistentRunner.test.ts",
-      "sha256": "bcf923de706342ab04a4d575b8d73d28c0b3602103ee645404f8795ac88c9113"
+      "sha256": "b5ed688dcf8d883ec5db7301f5a5d335af37e7ccc931a457d1d4b70a15adebc6"
     }
   ],
   "activation": {
-    "database_apply": false,
+    "database_apply_gate_open": false,
     "edge_deploy": false,
     "credentials": false,
     "feedback_collection": false,

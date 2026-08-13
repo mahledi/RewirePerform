@@ -4,12 +4,12 @@
   "generated_at": "2026-08-13T13:20:00+02:00",
   "project_ref": "bqsbxesmybthwtxmowfz",
   "persistent_plan_sha256": "e672f4859f0cb7b19c719e314d85cd9badc500b1b555d0317c67e4986c0c74d4",
-  "persistent_manifest_sha256": "6486a6de670e4287b4d6a8fd8af0988f3969a380fedf4e450f7150e3d17cdebb",
-  "persistent_package_sha256": "b905395196cd2c4bd2092eb56304c631e82936386f8b2853da0a394ab0bc2627",
+  "persistent_manifest_sha256": "17fdab65764d9796d7bc08188c0963a8727587a37041d96347799a7da41b2741",
+  "persistent_package_sha256": "05644a862adab7117b301f0bb0a666bbb5ca71e243d811ef45d719d808b19b50",
   "expected_result": {
     "status": "PASS_V1_1_PRODUCTION_MIGRATIONS_APPLIED_RUNTIME_CLOSED",
     "project_ref": "bqsbxesmybthwtxmowfz",
-    "source_package_sha256": "b905395196cd2c4bd2092eb56304c631e82936386f8b2853da0a394ab0bc2627",
+    "source_package_sha256": "05644a862adab7117b301f0bb0a666bbb5ca71e243d811ef45d719d808b19b50",
     "completed_migrations": 25,
     "completed_versions_sha256": "42ea240bbf1289cc6772615584c311b5672953d2344baab7d041c1b4ede6c5ac",
     "final_remote_migration_count": 104,
@@ -22,15 +22,35 @@
   },
   "required_control_plane_evidence": {
     "exact_remote_migration_history": true,
-    "production_feedback_edge_absent_before_its_separate_gate": true,
-    "organization_inquiry_edge_absent_before_its_separate_gate": true,
-    "production_feedback_secrets_absent": true,
+    "exact_edge_slugs": [
+      "mahleos-feedback-intelligence-production-read",
+      "submit-organization-access-request"
+    ],
+    "exact_production_feedback_secret_names": [
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY",
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS",
+      "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL",
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE",
+      "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE"
+    ],
+    "presence_only_secret_observation": true,
     "production_feedback_reader_password_null": true,
-    "application_rows_read": false,
+    "migration_application_rows_read": true,
+    "migration_application_read_scope": {
+      "public.teams": [
+        "id",
+        "created_by"
+      ],
+      "public.user_roles": [
+        "user_id",
+        "role"
+      ]
+    },
+    "postdeploy_metadata_audit_application_rows_read": false,
     "application_values_persisted_in_evidence": false
   },
   "activation": {
-    "database_apply": false,
+    "database_apply_gate_open": false,
     "edge_deploy": false,
     "credentials": false,
     "feedback_collection": false,

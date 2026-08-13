@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { expectedRemoteMigrationVersions } from "../../scripts/run-v1-1-production-rollback-dry-run.mjs";
 import {
+  assertPersistentPackageBytes,
   persistentWorkerArgs,
   runProductionPersistentApply,
 } from "../../scripts/run-v1-1-production-persistent-apply.mjs";
@@ -167,5 +168,17 @@ describe("V1.1 guarded persistent Production runner", () => {
     }, "/tmp/step.sql", "/tmp/ca.crt");
     expect(args).toContain("persistent-apply");
     expect(args).not.toContain("password");
+  });
+
+  it("recomputes every package byte before a Production session is possible", () => {
+    const manifest = JSON.parse(readFileSync(
+      `${root}/docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json`,
+      "utf8",
+    ));
+    expect(() => assertPersistentPackageBytes({ cwd: root, manifest })).not.toThrow();
+    const drifted = structuredClone(manifest);
+    drifted.files[0].sha256 = "0".repeat(64);
+    expect(() => assertPersistentPackageBytes({ cwd: root, manifest: drifted }))
+      .toThrow(/package byte drift/u);
   });
 });

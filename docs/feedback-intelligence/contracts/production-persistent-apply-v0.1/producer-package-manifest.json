@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-v1.1-production-persistent-apply-package-v1",
   "status": "LOCAL_PREPARED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-13T10:40:00+02:00",
-  "package_sha256": "b905395196cd2c4bd2092eb56304c631e82936386f8b2853da0a394ab0bc2627",
+  "package_sha256": "05644a862adab7117b301f0bb0a666bbb5ca71e243d811ef45d719d808b19b50",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/plan.json",
@@ -26,7 +26,7 @@
     },
     {
       "path": "scripts/run-v1-1-production-persistent-apply.mjs",
-      "sha256": "f9089edd425451c396ae540e11b8e1424cbb0c22504ad5e3b599785dd4695f0e"
+      "sha256": "a40fd3d118f4fe171058e678fa13abbe03fd404303baeaefbb7c1c50f842df99"
     },
     {
       "path": "scripts/execute-postgres-simple-query.mjs",
@@ -78,7 +78,7 @@
     },
     {
       "path": "src/test/v11ProductionPersistentRunner.test.ts",
-      "sha256": "bcf923de706342ab04a4d575b8d73d28c0b3602103ee645404f8795ac88c9113"
+      "sha256": "b5ed688dcf8d883ec5db7301f5a5d335af37e7ccc931a457d1d4b70a15adebc6"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

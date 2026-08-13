@@ -21,11 +21,18 @@ interpretiert wird.
   V1.1-Migrationsversionen;
 - die vollständige finale Migration-History nur als Anzahl und SHA-256;
 - der fest definierte metadata-only Target-Audit-Status;
-- Presence-only-Aussagen zu den beiden noch nicht separat freigegebenen Edge
-  Functions und den Production-Feedback-Secrets;
+- Presence-only-Aussagen zu den exakt gepinnten Edge-Slugs
+  `mahleos-feedback-intelligence-production-read` und
+  `submit-organization-access-request`;
+- Presence-only-Aussagen zu den exakt fünf gepinnten Production-Secret-Namen;
 - `PASSWORD NULL` für den weiterhin credentiallosen Production-Reader;
-- ausschließlich boolesche Bestätigung, dass weder Anwendungszeilen gelesen
-  noch Anwendungswerte, Credentials oder Rohfehler persistiert wurden.
+- SHA-256 und feste Quellenkennung jeder Control-Plane-Beobachtung sowie des
+  kombinierten Audits;
+- ehrliche Trennung des bereits freigegebenen, einmaligen Migrationsreads aus
+  `public.teams(id, created_by)` und `public.user_roles(user_id, role)` vom
+  nachgelagerten metadata-only Audit, der keine Anwendungszeile liest;
+- Bestätigung, dass keine Anwendungswerte, Credentials oder Rohfehler in der
+  Evidence persistiert wurden.
 
 Nicht zulässig sind Namen, E-Mails, Teamkennungen, Athleten-, Feedback-,
 Guardian-, Journal- oder sonstige Anwendungswerte, Secret-Werte, Passwörter,
