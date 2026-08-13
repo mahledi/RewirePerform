@@ -63,6 +63,22 @@ const machineMigrationPath = "supabase/migrations/20260805104000_feedback_intell
 const fkIndexesMigrationPath = "supabase/migrations/20260806081925_feedback_intelligence_fk_indexes.sql";
 const combinedStagingPostdeployScriptPath = "scripts/generate-feedback-combined-staging-postdeploy.mjs";
 const credentiallessStagingPreflightScriptPath = "scripts/generate-feedback-credentialless-staging-preflight.mjs";
+const currentCombinedStagingPostdeployScriptPath =
+  "scripts/generate-feedback-combined-staging-postdeploy-v0-2.mjs";
+const currentCredentiallessStagingPreflightScriptPath =
+  "scripts/generate-feedback-credentialless-staging-preflight-v0-2.mjs";
+const currentSyntheticCycleScriptPath =
+  "scripts/generate-feedback-intelligence-synthetic-cycle-v0-3.mjs";
+const currentPostreadEvidencePath =
+  "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.3/postread-evidence-v0.3.3.json";
+const productionActivationDecisionPath = "docs/V1_1_PRODUCTION_DATA_ACTIVATION_DECISION_2026-08-11.md";
+const currentAcceptances = {
+  semantics: "a5563f83bcaef42d743ee898cdf02331d7965d18b88ab4ad431bde35f6176818",
+  gateway: "a2a236212b7e4e1f5c6ce323c9ddd9ee1b583f4f1974bcb251a33603f4a0f8d6",
+  postdeploy: "0941fd066378e4e5ec16435dc2c789dde9476f9073e24921c695be49f6981164",
+  credentiallessPreflight: "adcf46dbc00a5db16872b5ddf74fbe3a0dd86ddfabfa32917d7de1a857b373fd",
+  syntheticPostread: "243ee7568846ce209ea84bc9e001fd8f892ecc4248921206fa3ec923bfadf2f4",
+};
 
 const expectedPolicy = {
   reference: "guardian-feedback-text-de-v1.1.0-draft",
@@ -86,6 +102,8 @@ try {
     transactionMigration,
     machineMigration,
     fkIndexesMigration,
+    productionActivationDecision,
+    currentPostreadEvidence,
   ] = await Promise.all([
     verifyPackage(v02Manifest, v02AcceptedProducerCommit),
     verifyPackage(v021Manifest),
@@ -97,6 +115,8 @@ try {
     readText(transactionMigrationPath),
     readText(machineMigrationPath),
     readText(fkIndexesMigrationPath),
+    readText(productionActivationDecisionPath),
+    readJson(currentPostreadEvidencePath),
   ]);
 
   assert(v021.contract_version === "0.2.1-draft", "transfer pulse contract version drift");
@@ -211,6 +231,40 @@ try {
     maxBuffer: 20 * 1024 * 1024,
   });
 
+  for (const [label, acceptance] of Object.entries({
+    semantics: currentAcceptances.semantics,
+    gateway: currentAcceptances.gateway,
+    postdeploy: currentAcceptances.postdeploy,
+    credentiallessPreflight: currentAcceptances.credentiallessPreflight,
+  })) {
+    assert(
+      Object.values(currentPostreadEvidence.accepted_pins).includes(acceptance),
+      `${currentPostreadEvidencePath}: missing current ${label} acceptance ${acceptance}`,
+    );
+  }
+  assert(
+    productionActivationDecision.includes(currentAcceptances.syntheticPostread),
+    `${productionActivationDecisionPath}: missing final synthetic postread acceptance`,
+  );
+  assert(currentPostreadEvidence.network_request_count === 1, "v0.3.3 synthetic request-count drift");
+  assert(currentPostreadEvidence.production === false, "v0.3.3 synthetic evidence must not authorize Production");
+  assert(currentPostreadEvidence.real_data_read === false, "v0.3.3 synthetic evidence must not authorize real data");
+  assert(
+    Object.values(currentPostreadEvidence.gate_close).every((value) => value === false),
+    "v0.3.3 postread runtime gate unexpectedly open",
+  );
+  for (const script of [
+    currentCombinedStagingPostdeployScriptPath,
+    currentCredentiallessStagingPreflightScriptPath,
+    currentSyntheticCycleScriptPath,
+  ]) {
+    execFileSync(process.execPath, [script, "--check"], {
+      cwd: root,
+      stdio: "pipe",
+      maxBuffer: 20 * 1024 * 1024,
+    });
+  }
+
   console.log(JSON.stringify({
     status: "LOCAL_RELEASE_GATES_VERIFIED_EXTERNAL_GATES_CLOSED",
     release_scope: "DE_ONLY",
@@ -229,9 +283,14 @@ try {
     real_jarvis_reads_possible: false,
     historical_v0_3_2_staging_postdeploy_evidence_verified: true,
     historical_v0_3_2_credentialless_preflight_verified: true,
-    current_v0_3_3_consumer_acceptance_complete: false,
-    current_v0_3_3_staging_assurance_complete: false,
-    next_gate: "JARVIS_V0_3_3_BYTE_AND_SEMANTIC_ACCEPTANCE_THEN_FAIL_CLOSED_STAGING_REGISTRY_APPLY",
+    current_v0_3_3_consumer_acceptance_complete: true,
+    current_v0_3_3_staging_assurance_complete: true,
+    current_v0_3_3_credentialless_preflight_complete: true,
+    current_v0_3_3_synthetic_connectivity_complete: true,
+    current_v0_3_3_synthetic_request_count: 1,
+    current_v0_3_3_all_credentials_removed: true,
+    production_and_real_data_gates_closed: true,
+    next_gate: "PRODUCTION_MIGRATION_ROLLBACK_DRY_RUN_THEN_SEPARATE_PERSISTENT_APPLY",
   }, null, 2));
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Feedback Intelligence release-gate verification failed");
