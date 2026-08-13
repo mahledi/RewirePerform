@@ -93,9 +93,9 @@ Minderjährigenwegen, professionellen Team-/Coach-Verbindungen, einer aktuellen
 Diese Punkte gehören zum Zielumfang von V1.1, sind aber noch nicht live:
 
 - Feedback-Feature-Flag im finalen Production-Build.
-- Die 104 Migrationen des bisherigen Production-Vertrags sind kontrolliert
-  angewendet und metadata-only auditiert. Offen ist nur die danach additive,
-  weiterhin fail-closed registrierende finale Consent-/Guardian-Migration.
+- 105 Production-Migrationen sind kontrolliert angewendet und metadata-only
+  auditiert, einschließlich der additiven, weiterhin fail-closed
+  registrierenden finalen Consent-/Guardian-Migration `20260813123955`.
 - Die beiden benötigten Production-Edge-Functions sind credentiallos deployed
   und negativ fail-closed geprüft. Ihre Secrets und positiven Runtime-Gates
   bleiben geschlossen.

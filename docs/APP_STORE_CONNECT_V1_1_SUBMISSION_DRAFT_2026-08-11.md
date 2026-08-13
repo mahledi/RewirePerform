@@ -204,12 +204,15 @@ außerhalb des Feedbackexports.
 
 ## Aktueller technischer Wahrheitsstand vor dem finalen RC
 
-- Production-Datenbank: 104 Migrationen verifiziert.
+- Production-Datenbank: 105 Migrationen verifiziert; die finale
+  Consent-/Guardian-Registrierung `20260813123955` ist angewendet und bleibt
+  runtime-seitig geschlossen.
 - Beide neuen Edge Functions sind credentiallos und fail-closed deployed.
 - Feedback-Request bei geschlossenem Gate: `503`.
 - Organisationsanfrage: erlaubter Origin `503`, fremder Origin `403`.
-- Der neue finale 13+-Consent-/Guardian-Vertrag ist auf diesem lokalen Stand
-  nur als additive, weiterhin geschlossene Registrierung vorbereitet.
+- Der neue finale 13+-Consent-/Guardian-Vertrag ist in Production additiv
+  registriert; Kampagnen, Guardian-Policy und Runtime-Gates bleiben weiterhin
+  geschlossen.
 - Es gibt dadurch noch keine aktivierte Feedback-Collection, keine aktive
   Guardian-Feedback-Policy, kein Production-Credential und keinen echten
   Jarvis-Read.
@@ -218,7 +221,7 @@ außerhalb des Feedbackexports.
 
 - [ ] Production-Rollback-Dry-run exakt einmal grün, ohne persistente Änderung;
 - [ ] aktueller Backup-/Recovery-Nachweis und kontrollierter 25-Schritt-Apply;
-- [ ] Postdeploy-Evidence bestätigt exakt 104 Migrationen, geschlossene
+- [x] Postdeploy-Evidence bestätigt exakt 105 Migrationen, geschlossene
       Runtime-Gates, fünf geprüfte Production-Secret-Namen und beide erwarteten
       Edge-Slugs mit SHA-Provenienz;
 - [ ] finaler aktivierter Feedback-/Kommentar-/Jarvis-Umfang;
