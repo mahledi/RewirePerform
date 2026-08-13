@@ -82,7 +82,11 @@ describe("V1.1 guarded persistent Production runner", () => {
     });
     expect(result).toMatchObject({
       status: "PASS_V1_1_PRODUCTION_MIGRATIONS_APPLIED_RUNTIME_CLOSED",
+      source_package_sha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
       completed_migrations: 25,
+      final_remote_migration_count: floor.length + 25,
+      final_remote_versions_sha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      target_audit_status: "PASS_V1_1_PERSISTENT_TARGET_METADATA_AUDIT",
       retry_count: 0,
       credential_persisted_by_operator: false,
       runtime_activation_authorized: false,

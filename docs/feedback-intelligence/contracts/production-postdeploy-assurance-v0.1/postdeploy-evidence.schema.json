@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/production-postdeploy-assurance-v0.1.schema.json",
+  "title": "RewirePerform V1.1 Production postdeploy assurance evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observed_at",
+    "operator_result",
+    "control_plane",
+    "privacy",
+    "gates"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rewireperform-v1.1-production-postdeploy-assurance-evidence-v1"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "operator_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "project_ref",
+        "source_package_sha256",
+        "completed_migrations",
+        "completed_versions_sha256",
+        "final_remote_migration_count",
+        "final_remote_versions_sha256",
+        "target_audit_status",
+        "retry_count",
+        "credential_persisted_by_operator",
+        "application_values_returned",
+        "runtime_activation_authorized"
+      ],
+      "properties": {
+        "status": {
+          "const": "PASS_V1_1_PRODUCTION_MIGRATIONS_APPLIED_RUNTIME_CLOSED"
+        },
+        "project_ref": {
+          "const": "bqsbxesmybthwtxmowfz"
+        },
+        "source_package_sha256": {
+          "const": "b905395196cd2c4bd2092eb56304c631e82936386f8b2853da0a394ab0bc2627"
+        },
+        "completed_migrations": {
+          "const": 25
+        },
+        "completed_versions_sha256": {
+          "const": "42ea240bbf1289cc6772615584c311b5672953d2344baab7d041c1b4ede6c5ac"
+        },
+        "final_remote_migration_count": {
+          "const": 104
+        },
+        "final_remote_versions_sha256": {
+          "const": "f20873d87cd352ceed9460bf995d20fdde4b7e984c660983f81a5277b312981b"
+        },
+        "target_audit_status": {
+          "const": "PASS_V1_1_PERSISTENT_TARGET_METADATA_AUDIT"
+        },
+        "retry_count": {
+          "const": 0
+        },
+        "credential_persisted_by_operator": {
+          "const": false
+        },
+        "application_values_returned": {
+          "const": false
+        },
+        "runtime_activation_authorized": {
+          "const": false
+        }
+      }
+    },
+    "control_plane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "final_remote_migration_count",
+        "final_remote_versions_sha256",
+        "production_feedback_edge_present",
+        "organization_inquiry_edge_present",
+        "production_feedback_secrets_present",
+        "production_feedback_reader_password_is_null"
+      ],
+      "properties": {
+        "final_remote_migration_count": {
+          "const": 104
+        },
+        "final_remote_versions_sha256": {
+          "const": "f20873d87cd352ceed9460bf995d20fdde4b7e984c660983f81a5277b312981b"
+        },
+        "production_feedback_edge_present": {
+          "const": false
+        },
+        "organization_inquiry_edge_present": {
+          "const": false
+        },
+        "production_feedback_secrets_present": {
+          "const": false
+        },
+        "production_feedback_reader_password_is_null": {
+          "const": true
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application_rows_read",
+        "application_values_persisted",
+        "credential_value_persisted"
+      ],
+      "properties": {
+        "application_rows_read": {
+          "const": false
+        },
+        "application_values_persisted": {
+          "const": false
+        },
+        "credential_value_persisted": {
+          "const": false
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "database_apply",
+        "edge_deploy",
+        "credentials",
+        "feedback_collection",
+        "feedback_comments",
+        "minor_feedback",
+        "real_jarvis",
+        "organization_inquiry_public",
+        "app_store_submission"
+      ],
+      "properties": {
+        "database_apply": {
+          "const": false
+        },
+        "edge_deploy": {
+          "const": false
+        },
+        "credentials": {
+          "const": false
+        },
+        "feedback_collection": {
+          "const": false
+        },
+        "feedback_comments": {
+          "const": false
+        },
+        "minor_feedback": {
+          "const": false
+        },
+        "real_jarvis": {
+          "const": false
+        },
+        "organization_inquiry_public": {
+          "const": false
+        },
+        "app_store_submission": {
+          "const": false
+        }
+      }
+    }
+  }
+}

@@ -24,6 +24,10 @@ const root = process.cwd();
 const projectRef = "bqsbxesmybthwtxmowfz";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const persistentPackageManifestPath = resolve(
+  root,
+  "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json",
+);
 
 export const persistentWorkerArgs = (target, sqlPath, caFile) => [
   resolve(scriptDirectory, "execute-postgres-simple-query.mjs"),
@@ -140,6 +144,20 @@ export const runProductionPersistentApply = async ({
   assertDirectToolInstalled();
   const target = resolveDirectTarget();
   const plan = await composePersistentApplyPlan({ cwd });
+  const persistentPackageManifest = JSON.parse(readFileSync(
+    cwd === root
+      ? persistentPackageManifestPath
+      : resolve(
+        cwd,
+        "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json",
+      ),
+    "utf8",
+  ));
+  if (persistentPackageManifest.status !== "LOCAL_PREPARED_EXTERNAL_GATES_CLOSED"
+      || typeof persistentPackageManifest.package_sha256 !== "string"
+      || !/^[a-f0-9]{64}$/u.test(persistentPackageManifest.package_sha256)) {
+    throw new Error("persistent Production package manifest drift");
+  }
   if (plan.execution.persistent_apply_approved !== false
       || plan.execution.credential_approved !== false
       || plan.execution.rollback_dry_run_verified !== false
@@ -245,8 +263,14 @@ export const runProductionPersistentApply = async ({
   return {
     status: "PASS_V1_1_PRODUCTION_MIGRATIONS_APPLIED_RUNTIME_CLOSED",
     project_ref: projectRef,
+    source_package_sha256: persistentPackageManifest.package_sha256,
     completed_migrations: completed.length,
     completed_versions_sha256: sha256(`${completed.join("\n")}\n`),
+    final_remote_migration_count: expectedRemoteMigrationVersions(cwd).length + completed.length,
+    final_remote_versions_sha256: sha256(
+      `${[...expectedRemoteMigrationVersions(cwd), ...completed].join("\n")}\n`,
+    ),
+    target_audit_status: "PASS_V1_1_PERSISTENT_TARGET_METADATA_AUDIT",
     retry_count: 0,
     credential_persisted_by_operator: false,
     application_values_returned: false,
