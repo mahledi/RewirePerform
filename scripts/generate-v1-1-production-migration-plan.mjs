@@ -121,6 +121,7 @@ const packageFiles = [
   "scripts/generate-v1-1-production-rollback-dry-run.mjs",
   "scripts/execute-postgres-simple-query.mjs",
   "scripts/run-v1-1-production-rollback-dry-run.mjs",
+  "config/certs/supabase-prod-root-2021.crt",
   "tools/production-rollback-dry-run/package.json",
   "tools/production-rollback-dry-run/package-lock.json",
   "src/test/postgresSimpleQueryWorker.test.ts",

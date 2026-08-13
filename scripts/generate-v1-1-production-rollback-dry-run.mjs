@@ -9,8 +9,21 @@ const root = process.cwd();
 const planPath = "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json";
 const remoteFloor = "20260801104717";
 const skippedMigration = "20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql";
+const stagingRoleRemediationMigration =
+  "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql";
+const productionReaderMigration =
+  "20260811071836_feedback_intelligence_production_gateway_v0_1.sql";
 const productionFunction = "read_feedback_intelligence_production_v0_2_draft";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+
+export const assertNoCredentialBearingRoleStatement = (source, file = "migration.sql") => {
+  const rolePasswordLines = source.split(/\r?\n/u).filter((line) =>
+    /^\s*(?:(?:CREATE|ALTER)\s+ROLE\b.*\bPASSWORD\b|PASSWORD\b)/iu.test(line)
+  );
+  if (rolePasswordLines.some((line) => !/\bPASSWORD\s+NULL(?:\s|;|$)/iu.test(line))) {
+    throw new Error(`${file}: credential-bearing role statement is forbidden`);
+  }
+};
 
 export const normalizeOuterTransaction = (source, file = "migration.sql") => {
   const terminalNewline = source.endsWith("\n");
@@ -35,6 +48,26 @@ export const normalizeOuterTransaction = (source, file = "migration.sql") => {
     .filter((_, index) => index !== beginIndex && index !== commitIndex)
     .join("\n");
   return terminalNewline ? `${normalized}\n` : normalized;
+};
+
+export const adaptHostedRoleAdministration = (source, file) => {
+  let adapted = source;
+  if (file === stagingRoleRemediationMigration) {
+    const membershipRevoke = "REVOKE mahleos_feedback_reader FROM postgres;";
+    if (!adapted.includes(membershipRevoke)) {
+      throw new Error(`${file}: expected hosted reader membership revoke is missing`);
+    }
+    adapted = adapted.replace(membershipRevoke, "");
+  } else if (file === productionReaderMigration) {
+    const membershipCleanupStart = "DO $$\nDECLARE\n  membership record;";
+    const start = adapted.indexOf(membershipCleanupStart);
+    const end = adapted.indexOf("$$;", start);
+    if (start < 0 || end < start) {
+      throw new Error(`${file}: expected hosted Production membership cleanup is missing`);
+    }
+    adapted = `${adapted.slice(0, start)}${adapted.slice(end + 3)}`;
+  }
+  return adapted;
 };
 
 const preflightSql = `
@@ -86,6 +119,9 @@ DECLARE
   settings_count integer;
   private_function_count integer;
   forbidden_callable_count integer;
+  reader_membership_count integer;
+  hosted_management_membership_count integer;
+  hosted_management_reader_count integer;
   production_reader record;
 BEGIN
   SELECT count(*) INTO settings_count
@@ -104,29 +140,50 @@ BEGIN
 
   SELECT
     role.rolsuper, role.rolinherit, role.rolcreaterole, role.rolcreatedb,
-    role.rolcanlogin, role.rolreplication, role.rolbypassrls,
-    auth.rolpassword IS NULL AS password_is_null
+    role.rolcanlogin, role.rolreplication, role.rolbypassrls
   INTO production_reader
   FROM pg_catalog.pg_roles role
-  JOIN pg_catalog.pg_authid auth ON auth.oid = role.oid
   WHERE role.rolname = 'mahleos_feedback_production_reader';
   IF production_reader IS NULL
      OR production_reader.rolsuper OR production_reader.rolinherit
      OR production_reader.rolcreaterole OR production_reader.rolcreatedb
      OR NOT production_reader.rolcanlogin OR production_reader.rolreplication
-     OR production_reader.rolbypassrls OR NOT production_reader.password_is_null THEN
+     OR production_reader.rolbypassrls THEN
     RAISE EXCEPTION 'v1_1_dry_run_production_reader_not_hardened';
   END IF;
 
-  IF EXISTS (
-    SELECT 1
+  SELECT count(*), count(DISTINCT granted.rolname) INTO
+    reader_membership_count, hosted_management_reader_count
     FROM pg_catalog.pg_auth_members membership
     JOIN pg_catalog.pg_roles granted ON granted.oid = membership.roleid
     JOIN pg_catalog.pg_roles member ON member.oid = membership.member
-    WHERE granted.rolname = 'mahleos_feedback_production_reader'
-       OR member.rolname = 'mahleos_feedback_production_reader'
-  ) THEN
-    RAISE EXCEPTION 'v1_1_dry_run_production_reader_membership_drift';
+    WHERE granted.rolname IN (
+      'mahleos_feedback_reader', 'mahleos_feedback_production_reader'
+    ) OR member.rolname IN (
+      'mahleos_feedback_reader', 'mahleos_feedback_production_reader'
+    );
+
+  SELECT count(*) INTO hosted_management_membership_count
+  FROM pg_catalog.pg_auth_members membership
+  JOIN pg_catalog.pg_roles granted ON granted.oid = membership.roleid
+  JOIN pg_catalog.pg_roles member ON member.oid = membership.member
+  JOIN pg_catalog.pg_roles grantor ON grantor.oid = membership.grantor
+  WHERE granted.rolname IN (
+      'mahleos_feedback_reader', 'mahleos_feedback_production_reader'
+    )
+    AND member.rolname = 'postgres'
+    AND grantor.rolname = 'supabase_admin'
+    AND membership.admin_option
+    AND NOT membership.inherit_option
+    AND NOT membership.set_option;
+
+  IF reader_membership_count <> 2
+     OR hosted_management_membership_count <> 2
+     OR hosted_management_reader_count <> 2 THEN
+    RAISE EXCEPTION 'v1_1_dry_run_reader_membership_drift:%:%:%',
+      reader_membership_count,
+      hosted_management_membership_count,
+      hosted_management_reader_count;
   END IF;
 
   IF NOT EXISTS (
@@ -240,6 +297,7 @@ export const composeDryRunSql = async ({ cwd = root } = {}) => {
     const source = await readFile(resolve(cwd, migration.path), "utf8");
     const actualSha = sha256(source);
     if (actualSha !== migration.sha256) throw new Error(`${migration.file}: migration SHA-256 drift`);
+    assertNoCredentialBearingRoleStatement(source, migration.file);
     if (migration.action === "MARK_APPLIED_WITHOUT_EXECUTION") {
       if (migration.file !== skippedMigration) throw new Error(`${migration.file}: unexpected history-only migration`);
       skipped.push(migration.file);
@@ -251,7 +309,10 @@ export const composeDryRunSql = async ({ cwd = root } = {}) => {
     normalizedMigrations.push({
       file: migration.file,
       source_sha256: actualSha,
-      sql: normalizeOuterTransaction(source, migration.file),
+      sql: adaptHostedRoleAdministration(
+        normalizeOuterTransaction(source, migration.file),
+        migration.file,
+      ),
     });
   }
   if (normalizedMigrations.length !== 24 || skipped.length !== 1) {

@@ -10,7 +10,6 @@ import { composeDryRunSql, freshPostRollbackAuditSql } from "./generate-v1-1-pro
 
 const projectRef = "bqsbxesmybthwtxmowfz";
 const remoteFloor = "20260801104717";
-const cliVersion = "2.113.0";
 const expectedDirectTarget = {
   host: "aws-1-eu-central-1.pooler.supabase.com",
   port: "5432",
@@ -155,25 +154,14 @@ export const expectedRemoteMigrationVersions = (cwd) => readdirSync(resolve(cwd,
   .sort();
 
 export const parseRemoteMigrationVersions = (stdout) => {
-  const payload = parseJson(stdout, "migration-preflight");
-  assertExactKeys(payload, ["migrations", "message"], "migration-preflight payload");
-  if (!Array.isArray(payload.migrations) || typeof payload.message !== "string") {
-    throw new Error("migration-preflight: invalid response schema");
-  }
-  const versions = [];
-  for (const entry of payload.migrations) {
-    assertExactKeys(entry, ["local", "remote", "time"], "migration-preflight entry");
-    if (!(typeof entry.local === "string" || entry.local === null)
-        || !(typeof entry.remote === "string" || entry.remote === null)
-        || !(typeof entry.time === "string" || entry.time === null)) {
-      throw new Error("migration-preflight: invalid entry types");
-    }
-    if (entry.remote === null || entry.remote === "") continue;
-    if (!/^\d{14}$/u.test(entry.remote)) {
+  const rows = parseDirectRows(stdout, "migration-preflight");
+  const versions = rows.map((entry) => {
+    assertExactKeys(entry, ["remote"], "migration-preflight entry");
+    if (typeof entry.remote !== "string" || !/^\d{14}$/u.test(entry.remote)) {
       throw new Error("migration-preflight: invalid remote version");
     }
-    versions.push(entry.remote);
-  }
+    return entry.remote;
+  });
   if (new Set(versions).size !== versions.length) {
     throw new Error("migration-preflight: duplicate remote version");
   }
@@ -182,12 +170,6 @@ export const parseRemoteMigrationVersions = (stdout) => {
   }
   return versions;
 };
-
-const defaultRunCli = (args, cwd) => spawnSync(
-  "npx",
-  ["--yes", `supabase@${cliVersion}`, ...args],
-  { cwd, encoding: "utf8", maxBuffer: 32 * 1024 * 1024, timeout: 240_000 },
-);
 
 export const sanitizedDirectChildEnv = () => ({
   // Positive allowlist only. No ambient NODE_*, PG*, TLS/keylog, proxy,
@@ -221,42 +203,21 @@ export const assertDirectToolInstalled = (toolDirectory = directToolDirectory) =
   return pinnedPgVersion;
 };
 
-export const resolveDirectTarget = (linkedWorkdir) => {
-  const raw = readFileSync(resolve(linkedWorkdir, "supabase/.temp/pooler-url"), "utf8").trim();
-  let parsed;
-  try {
-    parsed = new URL(raw);
-  } catch {
-    throw new Error("direct-session pooler URL is invalid");
-  }
-  const target = {
-    host: parsed.hostname,
-    port: parsed.port,
-    user: decodeURIComponent(parsed.username),
-    database: parsed.pathname.replace(/^\//u, ""),
-  };
-  if (parsed.protocol !== "postgresql:"
-      || parsed.password !== ""
-      || parsed.search !== ""
-      || parsed.hash !== ""
-      || JSON.stringify(target) !== JSON.stringify(expectedDirectTarget)) {
-    throw new Error("direct-session pooler target drift");
-  }
-  return target;
-};
+export const resolveDirectTarget = () => ({ ...expectedDirectTarget });
 
-export const directWorkerArgs = (target, sqlPath) => [
+export const directWorkerArgs = (target, sqlPath, caFile) => [
   resolve(scriptDirectory, "execute-postgres-simple-query.mjs"),
   "--host", target.host,
   "--port", target.port,
   "--user", target.user,
   "--database", target.database,
   "--file", sqlPath,
+  "--ca-file", caFile,
 ];
 
-const defaultRunDirectSession = ({ target, sqlPath, password, cwd }) => spawnSync(
+const defaultRunDirectSession = ({ target, sqlPath, caFile, password, cwd }) => spawnSync(
   process.execPath,
-  directWorkerArgs(target, sqlPath),
+  directWorkerArgs(target, sqlPath, caFile),
   {
     cwd,
     env: sanitizedDirectChildEnv(process.env),
@@ -270,16 +231,11 @@ const defaultRunDirectSession = ({ target, sqlPath, password, cwd }) => spawnSyn
 
 export const runProductionRollbackDryRun = async ({
   cwd = process.cwd(),
-  linkedWorkdir,
-  runCli = defaultRunCli,
   runDirectSession = defaultRunDirectSession,
   directSessionCredentialApproved = false,
   directSessionPassword = process.env.SUPABASE_DB_PASSWORD,
+  directSessionCaPath = process.env.SUPABASE_DB_CA_CERT_PATH,
 } = {}) => {
-  if (!linkedWorkdir) throw new Error("linked Supabase workdir is required");
-  const linkedRef = readFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "utf8").trim();
-  if (linkedRef !== projectRef) throw new Error(`linked project drift: ${linkedRef}`);
-
   const plan = JSON.parse(readFileSync(
     resolve(cwd, "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json"),
     "utf8",
@@ -294,20 +250,13 @@ export const runProductionRollbackDryRun = async ({
   if (typeof directSessionPassword !== "string" || directSessionPassword.length < 8) {
     throw new Error("SUPABASE_DB_PASSWORD must be supplied ephemerally for the direct session");
   }
+  if (typeof directSessionCaPath !== "string" || directSessionCaPath.length === 0) {
+    throw new Error("SUPABASE_DB_CA_CERT_PATH must identify the pinned Supabase root certificate");
+  }
   delete process.env.SUPABASE_DB_PASSWORD;
+  delete process.env.SUPABASE_DB_CA_CERT_PATH;
   assertDirectToolInstalled();
-  const directTarget = resolveDirectTarget(linkedWorkdir);
-
-  const historyArgs = ["migration", "list", "--linked", "--output-format", "json"];
-  const history = runCli(historyArgs, linkedWorkdir);
-  if (history.status !== 0) {
-    throw sanitizedCliError("fresh remote migration preflight failed", history);
-  }
-  const observedVersions = parseRemoteMigrationVersions(history.stdout);
-  const expectedVersions = expectedRemoteMigrationVersions(cwd);
-  if (JSON.stringify(observedVersions) !== JSON.stringify(expectedVersions)) {
-    throw new Error("fresh remote migration inventory drift");
-  }
+  const directTarget = resolveDirectTarget();
 
   const { sql, summary } = await composeDryRunSql({ cwd });
   if (summary.application_data_access_approved !== true) {
@@ -315,23 +264,43 @@ export const runProductionRollbackDryRun = async ({
   }
 
   const tempRoot = mkdtempSync(resolve(tmpdir(), "rewire-v11-production-dry-run-"));
+  const historyPath = resolve(tempRoot, "migration-history.sql");
   const dryRunPath = resolve(tempRoot, "rollback-dry-run.sql");
   const postRollbackPath = resolve(tempRoot, "postrollback-audit.sql");
+  writeFileSync(historyPath, `SELECT version::text AS remote\nFROM supabase_migrations.schema_migrations\nORDER BY version;\n`, { encoding: "utf8", mode: 0o600 });
   writeFileSync(dryRunPath, sql, { encoding: "utf8", mode: 0o600 });
   writeFileSync(postRollbackPath, freshPostRollbackAuditSql, { encoding: "utf8", mode: 0o600 });
 
+  let observedVersions;
   let dryRunAttempted = false;
   let dryRunSucceeded = false;
   let dryRunEvidence;
   let postRollbackEvidence;
   let dryRunFailure = null;
   try {
+    const history = runDirectSession({
+      target: directTarget,
+      sqlPath: historyPath,
+      caFile: directSessionCaPath,
+      password: directSessionPassword,
+      cwd,
+    });
+    if (history.status !== 0) {
+      throw sanitizedCliError("fresh remote migration preflight failed", history);
+    }
+    observedVersions = parseRemoteMigrationVersions(history.stdout);
+    const expectedVersions = expectedRemoteMigrationVersions(cwd);
+    if (JSON.stringify(observedVersions) !== JSON.stringify(expectedVersions)) {
+      throw new Error("fresh remote migration inventory drift");
+    }
+
     dryRunAttempted = true;
     const result = runDirectSession({
       target: directTarget,
       sqlPath: dryRunPath,
+      caFile: directSessionCaPath,
       password: directSessionPassword,
-      cwd: linkedWorkdir,
+      cwd,
     });
     if (result.status !== 0) {
       dryRunFailure = sanitizedCliError(
@@ -349,8 +318,9 @@ export const runProductionRollbackDryRun = async ({
         const audit = runDirectSession({
           target: directTarget,
           sqlPath: postRollbackPath,
+          caFile: directSessionCaPath,
           password: directSessionPassword,
-          cwd: linkedWorkdir,
+          cwd,
         });
         if (audit.status !== 0) {
           throw sanitizedCliError(
@@ -394,10 +364,7 @@ if (process.argv[1]?.endsWith("run-v1-1-production-rollback-dry-run.mjs")) {
   if (!process.argv.includes("--direct-session-credential-approved")) {
     throw new Error("Refusing direct Production session without explicit credential approval");
   }
-  const workdirIndex = process.argv.indexOf("--linked-workdir");
-  const linkedWorkdir = workdirIndex >= 0 ? process.argv[workdirIndex + 1] : null;
   const result = await runProductionRollbackDryRun({
-    linkedWorkdir,
     directSessionCredentialApproved: true,
   });
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

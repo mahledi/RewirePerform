@@ -52,10 +52,30 @@ Der bytegepinnte Generator
 Transaktionsgrenze deterministisch: Er prüft vor der Ausgabe jede Migration
 gegen ihren SHA-256-Pin und entfernt ausschließlich die jeweils genau einmal
 vorhandenen, alleinstehenden äußeren Zeilen `BEGIN;` und `COMMIT;`. Der übrige
-SQL-Inhalt bleibt unverändert und wird in eine einzige äußere Transaktion
-eingebettet. Vor dem ersten Migrationsschritt prüft der Operator den erwarteten
-Production-Ausgangspunkt. Vor dem `ROLLBACK` prüft er den geschlossenen
-Zielzustand und danach erneut, dass Rollen und Schemas nicht persistiert sind.
+SQL-Inhalt bleibt grundsätzlich unverändert und wird in eine einzige äußere
+Transaktion eingebettet. Zwei zusätzlich bytegenau erwartete, ausschließlich
+Production-spezifische Anpassungen bilden den realen Hosted-Supabase-Vertrag
+ab: Die historische Staging-Anweisung, die den von `supabase_admin` erzeugten
+Creator-Admin-Edge des Readers entfernen will, und der entsprechende dynamische
+Revoke-Block des neuen Production-Readers werden nur im Rollback-Test
+ausgelassen. PostgreSQL 17 erzeugt diese Management-Edges bei einem
+nicht-superuser `CREATEROLE`-Creator automatisch. Sie verleihen `postgres`
+ausschließlich `ADMIN OPTION`; `INHERIT` und `SET` bleiben beide `false`.
+Der Zielaudit verlangt deshalb exakt je einen solchen Edge von
+`supabase_admin` für beide Reader und stoppt bei jeder weiteren, erbbaren oder
+setzbaren Rollenbeziehung. Die originalen historischen Migrationsdateien und
+ihre Source-SHAs werden nicht verändert. Vor dem ersten Migrationsschritt prüft
+der Operator den erwarteten Production-Ausgangspunkt. Vor dem `ROLLBACK` prüft
+er den geschlossenen Zielzustand und danach erneut, dass Rollen und Schemas
+nicht persistiert sind.
+
+Der öffentliche Systemkatalog `pg_roles` blendet Passwortwerte aus und wird
+deshalb nicht als scheinbarer Passwortnachweis verwendet. Passwortlosigkeit
+folgt im Dry-run aus dem fail-closed geprüften Nichtvorhandensein beider Rollen
+vor Beginn, der bytegepinnnten Erstellung mit `PASSWORD NULL`, dem zusätzlichen
+Production-`ALTER ROLE ... PASSWORD NULL` und dem Ausschluss jeder späteren
+Passwortvergabe in der gepinnten Sequenz. Ein echtes Runtime-Credential bleibt
+ein nachgelagerter, separat freizugebender Gate.
 
 Der Operator autorisiert oder startet selbst keine Verbindung und keinen
 Production-Lauf. Seine normale Ausgabe enthält nur Hash, Bytezahl und

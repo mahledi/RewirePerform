@@ -1,12 +1,14 @@
 // @vitest-environment node
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { describe, expect, it } from "vitest";
 import {
+  adaptHostedRoleAdministration,
+  assertNoCredentialBearingRoleStatement,
   composeDryRunSql,
   normalizeOuterTransaction,
 } from "../../scripts/generate-v1-1-production-rollback-dry-run.mjs";
@@ -53,6 +55,46 @@ describe("V1.1 Production rollback dry-run operator", () => {
     )).toThrow("final material line");
   });
 
+  it("adapts only hosted role-administration statements while preserving source pins", () => {
+    const stagingRole = "20260807090000_feedback_intelligence_machine_gateway_v0_1.sql";
+    const stagingRemediation =
+      "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql";
+    const productionRole =
+      "20260811071836_feedback_intelligence_production_gateway_v0_1.sql";
+    const readMigration = (file: string) => normalizeOuterTransaction(
+      readFileSync(resolve(root, "supabase/migrations", file), "utf8"),
+      file,
+    );
+
+    const stagingSql = adaptHostedRoleAdministration(readMigration(stagingRole), stagingRole);
+    expect(stagingSql).toContain("CREATE ROLE mahleos_feedback_reader");
+    expect(stagingSql).toContain("ALTER ROLE mahleos_feedback_reader SET");
+
+    const remediationSql = adaptHostedRoleAdministration(
+      readMigration(stagingRemediation),
+      stagingRemediation,
+    );
+    expect(remediationSql).not.toContain("REVOKE mahleos_feedback_reader FROM postgres");
+    expect(remediationSql).toContain("ALTER DEFAULT PRIVILEGES FOR ROLE postgres");
+
+    const productionSql = adaptHostedRoleAdministration(
+      readMigration(productionRole),
+      productionRole,
+    );
+    expect(productionSql).toContain("CREATE ROLE mahleos_feedback_production_reader");
+    expect(productionSql).toContain("ALTER ROLE mahleos_feedback_production_reader");
+    expect(productionSql).not.toContain("membership record");
+    expect(productionSql).toContain("CREATE SCHEMA feedback_machine_production");
+
+    expect(adaptHostedRoleAdministration("SELECT 1;", "unrelated.sql")).toBe("SELECT 1;");
+    expect(() => assertNoCredentialBearingRoleStatement(
+      "CREATE ROLE reader LOGIN\n  PASSWORD 'secret';\n",
+    )).toThrow("credential-bearing role statement");
+    expect(() => assertNoCredentialBearingRoleStatement(
+      "-- password secret\nCREATE ROLE reader LOGIN\n  PASSWORD NULL;\nCOMMENT ON ROLE reader IS 'No password';\n",
+    )).not.toThrow();
+  });
+
   it("pins all apply migrations into one rollback transaction and excludes the gate-open migration", async () => {
     const { sql, summary } = await composeDryRunSql({ cwd: root });
     expect(summary).toMatchObject({
@@ -70,6 +112,14 @@ describe("V1.1 Production rollback dry-run operator", () => {
     expect(sql.match(/^ROLLBACK;$/gmu)).toHaveLength(1);
     expect(sql).not.toContain("20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql");
     expect(sql).not.toContain("machine_credential_ready = true");
+    expect(sql).not.toContain("REVOKE mahleos_feedback_reader FROM postgres");
+    expect(sql).not.toContain("membership record");
+    expect(sql).toContain("grantor.rolname = 'supabase_admin'");
+    expect(sql).toContain("NOT membership.inherit_option");
+    expect(sql).toContain("NOT membership.set_option");
+    expect(sql).not.toContain("pg_catalog.pg_authid");
+    expect(sql).toContain("CREATE ROLE mahleos_feedback_production_reader");
+    expect(sql).toContain("ALTER ROLE mahleos_feedback_production_reader PASSWORD NULL");
     expect(sql).toContain("PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK");
     expect(sql).toContain("ROLLBACK;");
     expect(sql).toContain("PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT");
@@ -156,37 +206,19 @@ describe("V1.1 Production rollback dry-run operator", () => {
   });
 
   it("always performs one fresh direct-session audit and never retries", async () => {
-    const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-linked-test-"));
-    mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
-    writeFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "bqsbxesmybthwtxmowfz\n");
-    writeFileSync(
-      resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
-      "postgresql://postgres.bqsbxesmybthwtxmowfz@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\n",
-    );
     const versions = expectedRemoteMigrationVersions(root);
-    const calls: string[][] = [];
     const directCalls: Array<Record<string, unknown>> = [];
     const rollback = {
       application_values_returned: false,
       persistent_mutation_detected: false,
       status: "PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT",
     };
-    const runCli = (args: string[]) => {
-      calls.push(args);
-      return {
-        status: 0,
-        stdout: JSON.stringify({
-          migrations: [
-            ...versions.map((remote) => ({ local: "", remote, time: "2026-08-11 00:00:00" })),
-            { local: "20260812000000", remote: null, time: null },
-          ],
-          message: "Migrations listed",
-        }),
-      };
-    };
     const runDirectSession = (input: Record<string, unknown>) => {
       directCalls.push(input);
       if (directCalls.length === 1) {
+        return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
+      }
+      if (directCalls.length === 2) {
         return {
           status: 0,
           stdout: JSON.stringify([{
@@ -204,11 +236,10 @@ describe("V1.1 Production rollback dry-run operator", () => {
     try {
       const result = await runProductionRollbackDryRun({
         cwd: root,
-        linkedWorkdir,
-        runCli,
         runDirectSession,
         directSessionCredentialApproved: true,
         directSessionPassword: "temporary-test-password",
+        directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
       });
       expect(result).toMatchObject({
         status: "PASS_V1_1_PRODUCTION_ROLLBACK_DRY_RUN",
@@ -217,12 +248,8 @@ describe("V1.1 Production rollback dry-run operator", () => {
         retry_count: 0,
         persistent_mutation_detected: false,
       });
-      expect(calls).toHaveLength(1);
-      expect(calls[0]).toEqual([
-        "migration", "list", "--linked", "--output-format", "json",
-      ]);
-      expect(directCalls).toHaveLength(2);
-      expect(directCalls[0]).toMatchObject({
+      expect(directCalls).toHaveLength(3);
+      expect(directCalls[1]).toMatchObject({
         target: {
           host: "aws-1-eu-central-1.pooler.supabase.com",
           port: "5432",
@@ -230,15 +257,18 @@ describe("V1.1 Production rollback dry-run operator", () => {
           database: "postgres",
         },
         password: "temporary-test-password",
-        cwd: linkedWorkdir,
+        cwd: root,
       });
       expect(directCalls[0].sqlPath).not.toBe(directCalls[1].sqlPath);
+      expect(directCalls[1].sqlPath).not.toBe(directCalls[2].sqlPath);
 
-      calls.length = 0;
       directCalls.length = 0;
       const failingRunDirectSession = (input: Record<string, unknown>) => {
         directCalls.push(input);
         if (directCalls.length === 1) {
+          return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
+        }
+        if (directCalls.length === 2) {
           return {
             status: 1,
             stdout: "",
@@ -249,43 +279,24 @@ describe("V1.1 Production rollback dry-run operator", () => {
       };
       await expect(runProductionRollbackDryRun({
         cwd: root,
-        linkedWorkdir,
-        runCli,
         runDirectSession: failingRunDirectSession,
         directSessionCredentialApproved: true,
         directSessionPassword: "temporary-test-password",
+        directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
       })).rejects.toThrow(
         /rollback dry-run query failed: .*"raw_output_persisted":false,"output_digest_persisted":false,"cli_output_forwarded_by_runner":false/u,
       );
-      expect(calls).toHaveLength(1);
-      expect(directCalls).toHaveLength(2);
-    } finally {
-      rmSync(linkedWorkdir, { recursive: true, force: true });
-    }
+      expect(directCalls).toHaveLength(3);
+    } finally {}
   });
 
   it("pins the passwordless target and removes ambient PostgreSQL configuration", () => {
-    const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-target-test-"));
-    mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
-    writeFileSync(
-      resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
-      "postgresql://postgres.bqsbxesmybthwtxmowfz@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\n",
-    );
-    try {
-      expect(resolveDirectTarget(linkedWorkdir)).toEqual({
+    expect(resolveDirectTarget()).toEqual({
         host: "aws-1-eu-central-1.pooler.supabase.com",
         port: "5432",
         user: "postgres.bqsbxesmybthwtxmowfz",
         database: "postgres",
       });
-      writeFileSync(
-        resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
-        "postgresql://postgres.bqsbxesmybthwtxmowfz:leak@evil.example:5432/postgres\n",
-      );
-      expect(() => resolveDirectTarget(linkedWorkdir)).toThrow("target drift");
-    } finally {
-      rmSync(linkedWorkdir, { recursive: true, force: true });
-    }
 
     expect(sanitizedDirectChildEnv({
       PATH: "/bin",
@@ -318,20 +329,14 @@ describe("V1.1 Production rollback dry-run operator", () => {
       port: "5432",
       user: "postgres.bqsbxesmybthwtxmowfz",
       database: "postgres",
-    }, "/tmp/query.sql");
+    }, "/tmp/query.sql", "/tmp/supabase-root.crt");
     expect(workerArgs).toContain("/tmp/query.sql");
+    expect(workerArgs).toContain("/tmp/supabase-root.crt");
     expect(workerArgs).not.toContain("temporary-test-password");
     expect(workerArgs.join(" ")).not.toContain("password");
   });
 
   it("treats a killed direct child as a failed attempt and audits in a fresh process", async () => {
-    const linkedWorkdir = mkdtempSync(resolve(tmpdir(), "rewire-v11-timeout-test-"));
-    mkdirSync(resolve(linkedWorkdir, "supabase/.temp"), { recursive: true });
-    writeFileSync(resolve(linkedWorkdir, "supabase/.temp/project-ref"), "bqsbxesmybthwtxmowfz\n");
-    writeFileSync(
-      resolve(linkedWorkdir, "supabase/.temp/pooler-url"),
-      "postgresql://postgres.bqsbxesmybthwtxmowfz@aws-1-eu-central-1.pooler.supabase.com:5432/postgres\n",
-    );
     const versions = expectedRemoteMigrationVersions(root);
     const rollback = {
       application_values_returned: false,
@@ -342,21 +347,15 @@ describe("V1.1 Production rollback dry-run operator", () => {
     try {
       await expect(runProductionRollbackDryRun({
         cwd: root,
-        linkedWorkdir,
         directSessionCredentialApproved: true,
         directSessionPassword: "temporary-test-password",
-        runCli: () => ({
-          status: 0,
-          stdout: JSON.stringify({
-            migrations: versions.map((remote) => ({
-              local: "", remote, time: "2026-08-11 00:00:00",
-            })),
-            message: "Migrations listed",
-          }),
-        }),
+        directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
         runDirectSession: () => {
           directCalls += 1;
           if (directCalls === 1) {
+            return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
+          }
+          if (directCalls === 2) {
             return {
               status: null,
               signal: "SIGKILL",
@@ -371,21 +370,15 @@ describe("V1.1 Production rollback dry-run operator", () => {
           };
         },
       })).rejects.toThrow(/CLI_PROCESS_ERROR/u);
-      expect(directCalls).toBe(2);
-    } finally {
-      rmSync(linkedWorkdir, { recursive: true, force: true });
-    }
+      expect(directCalls).toBe(3);
+    } finally {}
   });
 
   it("rejects malformed, duplicate, or unordered remote migration inventories", () => {
-    const make = (migrations: unknown[]) => JSON.stringify({
-      migrations,
-      message: "Migrations listed",
-    });
-    const entry = (remote: unknown) => ({ local: "", remote, time: "2026-08-11 00:00:00" });
+    const make = (migrations: unknown[]) => JSON.stringify(migrations);
+    const entry = (remote: unknown) => ({ remote });
     expect(parseRemoteMigrationVersions(make([
       entry("20260101000000"),
-      { local: "20260102000000", remote: null, time: null },
     ]))).toEqual(["20260101000000"]);
     expect(() => parseRemoteMigrationVersions(make([
       entry("20260101000000"), entry("20260101000000"),
@@ -394,6 +387,6 @@ describe("V1.1 Production rollback dry-run operator", () => {
       entry("20260102000000"), entry("20260101000000"),
     ]))).toThrow("not ordered");
     expect(() => parseRemoteMigrationVersions(make([entry(20260101000000)])))
-      .toThrow("invalid entry types");
+      .toThrow("invalid remote version");
   });
 });

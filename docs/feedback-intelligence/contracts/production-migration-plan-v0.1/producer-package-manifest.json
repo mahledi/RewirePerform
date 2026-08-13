@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "03d44e2b4b398678aacc6f9b7a150ba6f700a6d394ef326260ff2dfd797f5d5f",
+  "package_sha256": "55a44b3dbb1f905f8288579839a560a0a6252251e5361ba3fc9d5ba9da6fa79a",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
@@ -14,23 +14,27 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "5717252503520bb8bcab02dcee72bc3672f0ebf5dc1ab5403f03a7a0ccdbdbca"
+      "sha256": "ff2eb9089c72947e6bd1f7d7bfb17a1f5aed9f670debb3f0c97ace210acef9f6"
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "aeb7aedf6058169d25173664d9147163d27c05ea687ae75a87f6f84df4871a28"
+      "sha256": "13c1248bb705ad9ce5cd2fe28c8a1f85a71e17cbb590658ed4cb34e29398f273"
     },
     {
       "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "e495378b7d6e09baf70535af8c23826ca36ec26e5c2d8f94bf444c975dee04a6"
+      "sha256": "5a76cc53764febb7897b43815f356e55215ccbf0be01b2d9034e3d0cb0dbff59"
     },
     {
       "path": "scripts/execute-postgres-simple-query.mjs",
-      "sha256": "b91c8fd991a55be41aed9e0ab390f35cfec77d9f052196980eb7b249107025f5"
+      "sha256": "efca418ef82ea3096e806aeda37e3a68f287a9040a0693b561c0bbeaddc872b7"
     },
     {
       "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "5649725012177c2c88bbae5ae456ed71ea14705df7bdd564356d743c7369f5c4"
+      "sha256": "5b2d4b6045d00ce5c8875d0b3d43485522bb9eb0b86ecac5140406405a59086a"
+    },
+    {
+      "path": "config/certs/supabase-prod-root-2021.crt",
+      "sha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7"
     },
     {
       "path": "tools/production-rollback-dry-run/package.json",
@@ -42,7 +46,7 @@
     },
     {
       "path": "src/test/postgresSimpleQueryWorker.test.ts",
-      "sha256": "0a435c4b984a1a6f64e3e8e4275ffb9ec805553ce1c4044bd4d54ff7973119ba"
+      "sha256": "b4126f3226c2b5ce8de86f7d61e3ddb6068d24cea7696a1d9cb5140ab7865bba"
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
@@ -50,7 +54,7 @@
     },
     {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
-      "sha256": "9bb5ab0fa0b914b9cdc6f7f1f505cf1942cf98b52da9dd80c6f4a8c019147ee5"
+      "sha256": "1ee94dde0e6176b215b1bd2c1b5fb8032f37e27c83154d74aef76706290f37f6"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

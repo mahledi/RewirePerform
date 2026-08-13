@@ -6,6 +6,7 @@ import pgPackage from "../../tools/production-rollback-dry-run/node_modules/pg/p
 import {
   executeSimpleQuery,
   parseCredentialInput,
+  readPinnedSupabaseCa,
   sanitizePostgresError,
 } from "../../scripts/execute-postgres-simple-query.mjs";
 
@@ -78,6 +79,7 @@ describe("direct PostgreSQL Simple Query worker", () => {
       target,
       password: "temporary-secret",
       sql,
+      ca: "pinned-supabase-ca",
       ClientClass: ClientDouble,
     });
 
@@ -87,7 +89,7 @@ describe("direct PostgreSQL Simple Query worker", () => {
     expect(state.config).toMatchObject({
       ...target,
       password: "temporary-secret",
-      ssl: { rejectUnauthorized: true, servername: target.host },
+      ssl: { ca: "pinned-supabase-ca", rejectUnauthorized: true, servername: target.host },
       application_name: "rewireperform_v11_rollback_dry_run",
       connectionTimeoutMillis: 15_000,
       query_timeout: 210_000,
@@ -104,6 +106,7 @@ describe("direct PostgreSQL Simple Query worker", () => {
       target,
       password: "temporary-secret",
       sql: "BEGIN; SELECT forbidden; ROLLBACK;",
+      ca: "pinned-supabase-ca",
       ClientClass: failed.ClientDouble,
     })).rejects.toBe(queryError);
     expect(failed.state.queryCalls).toHaveLength(1);
@@ -115,9 +118,16 @@ describe("direct PostgreSQL Simple Query worker", () => {
       target,
       password: "temporary-secret",
       sql: "SELECT 1;",
+      ca: "pinned-supabase-ca",
       ClientClass: unclosed.ClientDouble,
     })).rejects.toBe(endError);
     expect(unclosed.state.endCalls).toBe(1);
+  });
+
+  it("accepts only the pinned, currently valid Supabase root CA", () => {
+    expect(readPinnedSupabaseCa("config/certs/supabase-prod-root-2021.crt"))
+      .toContain("BEGIN CERTIFICATE");
+    expect(() => readPinnedSupabaseCa("package.json")).toThrow("CA_INVALID");
   });
 
   it("emits only allowlisted diagnostics", () => {

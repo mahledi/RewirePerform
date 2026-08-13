@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { X509Certificate } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +13,7 @@ const expected = {
   user: "postgres.bqsbxesmybthwtxmowfz",
   database: "postgres",
 };
+const expectedCaFingerprint256 = "80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA";
 const safeDryRunMarkers = [
   "v1_1_dry_run_feedback_schema_must_be_absent",
   "v1_1_dry_run_forbidden_callable_inventory",
@@ -40,16 +42,37 @@ const parseArgs = (argv) => {
     user: value("--user"),
     database: value("--database"),
     file: value("--file"),
+    caFile: value("--ca-file"),
   };
   if (parsed.host !== expected.host
       || parsed.port !== expected.port
       || parsed.user !== expected.user
       || parsed.database !== expected.database
       || typeof parsed.file !== "string"
-      || parsed.file.length === 0) {
+      || parsed.file.length === 0
+      || typeof parsed.caFile !== "string"
+      || parsed.caFile.length === 0) {
     throw new Error("DIRECT_QUERY_TARGET_DRIFT");
   }
   return parsed;
+};
+
+export const readPinnedSupabaseCa = (caFile) => {
+  let ca;
+  let certificate;
+  try {
+    ca = readFileSync(caFile, "utf8");
+    certificate = new X509Certificate(ca);
+  } catch {
+    throw new Error("DIRECT_QUERY_CA_INVALID");
+  }
+  if (certificate.fingerprint256 !== expectedCaFingerprint256
+      || certificate.ca !== true
+      || Date.parse(certificate.validFrom) > Date.now()
+      || Date.parse(certificate.validTo) <= Date.now()) {
+    throw new Error("DIRECT_QUERY_CA_DRIFT");
+  }
+  return ca;
 };
 
 export const parseCredentialInput = (input) => {
@@ -89,14 +112,14 @@ const selectFinalRows = (result) => {
   return final.rows;
 };
 
-export const executeSimpleQuery = async ({ target, password, sql, ClientClass = Client }) => {
+export const executeSimpleQuery = async ({ target, password, sql, ca, ClientClass = Client }) => {
   const client = new ClientClass({
     host: target.host,
     port: target.port,
     user: target.user,
     database: target.database,
     password,
-    ssl: { rejectUnauthorized: true, servername: target.host },
+    ssl: { ca, rejectUnauthorized: true, servername: target.host },
     application_name: "rewireperform_v11_rollback_dry_run",
     connectionTimeoutMillis: 15_000,
     query_timeout: 210_000,
@@ -122,7 +145,8 @@ if (isMain) {
     const target = parseArgs(process.argv.slice(2));
     const password = parseCredentialInput(readFileSync(0, "utf8"));
     const sql = readFileSync(target.file, "utf8");
-    const rows = await executeSimpleQuery({ target, password, sql });
+    const ca = readPinnedSupabaseCa(target.caFile);
+    const rows = await executeSimpleQuery({ target, password, sql, ca });
     process.stdout.write(`${JSON.stringify(rows)}\n`);
   } catch (error) {
     process.stderr.write(`${JSON.stringify(sanitizePostgresError(error))}\n`);
