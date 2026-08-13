@@ -2,7 +2,9 @@
 
 Stand: 13. August 2026
 
-Exakt vollständig CI-getesteter lokaler Stand: `cbcb5db`
+Aktueller integrierter lokaler Stand: `fabb711`. Der neue finale
+Consent-/Guardian-Vertrag ist fokussiert verifiziert; die eine abschließende
+vollständige RC-CI folgt nach der unabhängigen Abnahme des Jarvis-Operators.
 
 Letzter nativer Production-Buildstand: `74fd4ee`. Die danach hinzugekommenen
 Commits verändern ausschließlich Release-Verträge, Operatoren, Evidenz,
@@ -91,9 +93,12 @@ Minderjährigenwegen, professionellen Team-/Coach-Verbindungen, einer aktuellen
 Diese Punkte gehören zum Zielumfang von V1.1, sind aber noch nicht live:
 
 - Feedback-Feature-Flag im finalen Production-Build.
-- Production-Migrationen für Feedback, Consent/Guardian, Transfer-Pulse,
-  Organisationen, Rollen und Aufbewahrung.
-- Production-Edge-Functions und deren exakte Secrets/Origins.
+- Die 104 Migrationen des bisherigen Production-Vertrags sind kontrolliert
+  angewendet und metadata-only auditiert. Offen ist nur die danach additive,
+  weiterhin fail-closed registrierende finale Consent-/Guardian-Migration.
+- Die beiden benötigten Production-Edge-Functions sind credentiallos deployed
+  und negativ fail-closed geprüft. Ihre Secrets und positiven Runtime-Gates
+  bleiben geschlossen.
 - Öffentliche Production-Annahme von Team- und Organisationsanfragen.
 - Realer Jarvis-Lesezugang. Semantik, minimierter Export und Gateway sind lokal
   bytegenau akzeptiert; Credentials und echte Reads bleiben getrennte Gates.
@@ -125,18 +130,17 @@ Diese Ideen sind nicht vergessen, sondern absichtlich spätere Produktarbeit:
 
 ## Aktuelle Differenz Delta
 
-1. Den vorbereiteten Production-Rollback-Dry-run exakt einmal mit dem erst bei
-   Ausführung eingegebenen Production-Datenbankpasswort durchführen. Der Lauf
-   verwendet eine echte Transaktion und endet mit `ROLLBACK`; er darf nichts
-   dauerhaft anwenden und besitzt keinen Retry.
-2. Nur nach grünem Rollback-Nachweis, aktuellem Backup-/Recovery-Nachweis und
-   eigener Freigabe die 25 gepinnten Production-Migrationsschritte über den
-   kontrollierten Apply-Operator anwenden. Ein pauschales `supabase db push`
-   bleibt verboten.
-3. Danach ausschließlich die wirklich benötigten Edge Functions, Origins,
-   Feature- und Datengates sequenziert aktivieren und jeden Pfad negativ sowie
-   positiv prüfen. Jarvis-Production-Credential und echter Datenread bleiben
-   davon getrennte Gates.
+1. Die finale Consent-/Guardian-Registrierungsmigration kontrolliert anwenden,
+   weiterhin ohne einen Collection-, Minor-, Guardian- oder Jarvis-Gate zu
+   öffnen; anschließend metadata-only gegen die gepinnten Hashes prüfen.
+2. Production-Turnstile für `rewireperform.com` und
+   `www.rewireperform.com` konfigurieren, die öffentliche Team- und
+   Organisationsanfrage einmal positiv synthetisch prüfen und die Testzeilen
+   wieder entfernen.
+3. Feedback-, Adult-, 16/17-, 13–15-Guardian-, Ablehnungs-, Widerrufs- und
+   Löschpfade mit kontrollierten synthetischen Konten prüfen. Danach genau den
+   freigegebenen Umfang aktivieren. Jarvis-Credential und genau ein realer Read
+   bleiben davon ein getrennter, bereinigter One-Shot-Gate.
 4. Den dann real aktivierten Datenweg endgültig mit Datenschutzerklärung,
    App-Store-Datentypen und Review Notes abgleichen sowie die qualifizierte
    DE-Rechts-/Privacy-/Minor-Prüfung des Consent-/Guardian-Umfangs festhalten.

@@ -4,7 +4,7 @@
   "contract_status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
   "generated_at": "2026-08-13T12:30:00+02:00",
   "producer_branch": "codex/v1-1-apple-integration-20260810",
-  "producer_base_commit": "e190cb0d8623997c46856df3dc93c8ea85922a94",
+  "producer_base_commit": "ed95a3ed1f285cf9788a4dd1f8095bb3d9584762",
   "package_signed": false,
   "package_status": "LOCAL_UNSIGNED_AWAITING_INDEPENDENT_REVIEW",
   "digest_algorithm": "sha256",

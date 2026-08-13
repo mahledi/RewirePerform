@@ -2,19 +2,22 @@
 
 Stand: 13. August 2026
 
-Status: sanitisiertes, read-only Metadatenbild. Dieser Snapshot autorisiert
-keine Migration, kein Credential, keinen Edge-Deploy, keinen Datenread und
-keine Runtime- oder App-Store-Aktivierung.
+Status: historisches Predeploy-Metadatenbild. Der aktuelle Postdeploy-Stand ist
+in den separat bytegepinnten Production-Postdeploy- und
+Post-Edge-Preflight-Paketen dokumentiert. Dieser Snapshot autorisiert kein
+Credential, keinen Datenread und keine Runtime- oder App-Store-Aktivierung.
 
 ## Migration-History
 
 - Production-Projekt: `bqsbxesmybthwtxmowfz`.
-- Aktuelle Remote-History: 79 Migrationen.
-- Letzte Remote-Version: `20260801104717`.
-- Keine der 25 vorbereiteten V1.1-Migrationsversionen ist in Production
-  vorhanden.
-- Der persistente Apply-Plan erwartet nach erfolgreichem Lauf exakt 104
-  geordnete Remote-Versionen.
+- Dieser historische Snapshot sah 79 Migrationen bis `20260801104717`.
+- Der kontrollierte Rollback-Dry-run lief danach grün, ohne persistente
+  Mutation.
+- Anschließend wurde der gepinnte Plan kontrolliert angewendet. Der aktuelle
+  Postdeploy-Nachweis bestätigt exakt 104 geordnete Remote-Versionen mit dem
+  Inventar-SHA `f20873d87cd352ceed9460bf995d20fdde4b7e984c660983f81a5277b312981b`.
+- Die spätere finale Consent-/Guardian-Registrierungsmigration ist in diesem
+  104er Inventar noch nicht enthalten und bleibt ein eigener fail-closed Gate.
 
 Der spätere Rollback- und Apply-Operator prüft die History unmittelbar vor
 seiner ersten SQL-Ausführung erneut. Dieser Snapshot ersetzt diesen frischen
@@ -22,14 +25,16 @@ fail-closed Preflight nicht.
 
 ## Edge Functions
 
-- Aktuell aktive Functions: 14.
-- `submit-organization-access-request` ist in Production nicht vorhanden.
-- `mahleos-feedback-intelligence-production-read` ist in Production nicht
-  vorhanden.
+- Beide für V1.1 benötigten Functions sind inzwischen credentiallos deployed:
+  `submit-organization-access-request` als Version 2 und
+  `mahleos-feedback-intelligence-production-read` als Version 1.
+- Remote-Dateien und lokale Quellen sind im aktuellen Post-Edge-Paket
+  bytegepinnt; beide Laufzeitpfade bleiben ohne Secrets und mit geschlossenen
+  Gates fail-closed.
 
-Damit sind öffentliche Organisationsannahme und der getrennte Production-
-Feedback-Gateway nicht versehentlich vorgezogen. Ihre spätere Bereitstellung
-bleibt jeweils ein eigener Gate nach dem Datenbank-Postdeploy-Nachweis.
+Damit ist die technische Bereitstellung abgeschlossen, aber weder die
+öffentliche Organisationsannahme noch ein realer Feedback-/Jarvis-Read ist
+aktiviert.
 
 ## Supabase Advisors
 
