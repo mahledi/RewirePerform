@@ -15,7 +15,9 @@ Status: lokal vorbereitet; alle externen Gates geschlossen
 ## Verbindliche Sequenz
 
 Der Plan pinnt alle 25 lokalen Migrationen nach dem remote Stand bytegenau.
-24 davon sind in exakter Reihenfolge anzuwenden. Die Migration
+24 davon sind in exakter Reihenfolge anzuwenden: 22 als unveränderte Bytes und
+zwei über einen ebenfalls byte- und hashgepinnten Hosted-Production-Adapter.
+Die historischen Quelldateien bleiben dabei unverändert. Die Migration
 `20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql`
 darf in Production niemals ausgeführt werden, weil sie ausschließlich für den
 damaligen synthetischen Staging-Zyklus Datenbank-Gates öffnet. Ihre Version wird
@@ -57,14 +59,23 @@ Transaktion eingebettet. Zwei zusätzlich bytegenau erwartete, ausschließlich
 Production-spezifische Anpassungen bilden den realen Hosted-Supabase-Vertrag
 ab: Die historische Staging-Anweisung, die den von `supabase_admin` erzeugten
 Creator-Admin-Edge des Readers entfernen will, und der entsprechende dynamische
-Revoke-Block des neuen Production-Readers werden nur im Rollback-Test
-ausgelassen. PostgreSQL 17 erzeugt diese Management-Edges bei einem
+Revoke-Block des neuen Production-Readers werden im Rollback-Test und im
+späteren kontrollierten Production-Apply ausgelassen. Zusätzlich entzieht der
+Adapter dem historischen synthetischen Staging-Reader seinen öffentlichen
+Gateway-Aufruf und dessen direkte `public`-Schema-Nutzung; Production verwendet
+ausschließlich den privaten Production-Reader. PostgreSQL 17 erzeugt diese Management-Edges bei einem
 nicht-superuser `CREATEROLE`-Creator automatisch. Sie verleihen `postgres`
 ausschließlich `ADMIN OPTION`; `INHERIT` und `SET` bleiben beide `false`.
 Der Zielaudit verlangt deshalb exakt je einen solchen Edge von
 `supabase_admin` für beide Reader und stoppt bei jeder weiteren, erbbaren oder
-setzbaren Rollenbeziehung. Die originalen historischen Migrationsdateien und
-ihre Source-SHAs werden nicht verändert. Vor dem ersten Migrationsschritt prüft
+setzbaren Rollenbeziehung. Zusätzlich müssen beide Reader null Tabellen- und
+Sequenzrechte besitzen; der alte Reader darf keine privilegierte Funktion
+aufrufen und der neue Reader exakt nur den einen privaten Production-RPC.
+`anon`, `authenticated` und `service_role` dürfen weder dessen Schema nutzen
+noch den privaten RPC ausführen. Athlete-, Text-, Privacy-, App-Store- und
+Minor-Collection-Gates müssen weiterhin alle `false` sein. Die
+originalen historischen Migrationsdateien und ihre Source-SHAs werden nicht
+verändert; auch die adaptierten Ausgabebytes sind separat SHA-256-gepinnt. Vor dem ersten Migrationsschritt prüft
 der Operator den erwarteten Production-Ausgangspunkt. Vor dem `ROLLBACK` prüft
 er den geschlossenen Zielzustand und danach erneut, dass Rollen und Schemas
 nicht persistiert sind.

@@ -2,11 +2,11 @@
   "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
   "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "55a44b3dbb1f905f8288579839a560a0a6252251e5361ba3fc9d5ba9da6fa79a",
+  "package_sha256": "5efc101b6c69ebcda1829eb0710287ee02e1938d2827d2a0ccb54cda60594e22",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
-      "sha256": "5236931739744f4b2ac1e849b81abee08789f61418a5ca7e77de1fbc503f4569"
+      "sha256": "feaf15747114f6a9674b3c2aa7f85659f331b6fdceed054d24b72d971e8a655c"
     },
     {
       "path": ".github/workflows/ci.yml",
@@ -14,23 +14,23 @@
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "ff2eb9089c72947e6bd1f7d7bfb17a1f5aed9f670debb3f0c97ace210acef9f6"
+      "sha256": "dbf1f23b4794f3ec4c2e92bf8b3b41751d45d46d16eea769a6cd1813665b5618"
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "13c1248bb705ad9ce5cd2fe28c8a1f85a71e17cbb590658ed4cb34e29398f273"
+      "sha256": "306ac59af238c5c37f5c12ea08d2da3c7e3d3beb38e92ceb45730b01e4fee139"
     },
     {
       "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "5a76cc53764febb7897b43815f356e55215ccbf0be01b2d9034e3d0cb0dbff59"
+      "sha256": "aaa0a0fccfa35ed80012d939032f6e740220ed7ca0122661a514286c7d5b6b80"
     },
     {
       "path": "scripts/execute-postgres-simple-query.mjs",
-      "sha256": "efca418ef82ea3096e806aeda37e3a68f287a9040a0693b561c0bbeaddc872b7"
+      "sha256": "9826d98b3cf386f6bb4668d23e94c744deb6f9a958a96401c0a07eaa3d67ff22"
     },
     {
       "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "5b2d4b6045d00ce5c8875d0b3d43485522bb9eb0b86ecac5140406405a59086a"
+      "sha256": "51975bc5c464ec97feca8bb44f430094220b67425b5108b76e3a3d3b90d3bd39"
     },
     {
       "path": "config/certs/supabase-prod-root-2021.crt",
@@ -50,11 +50,11 @@
     },
     {
       "path": "src/test/v11ProductionMigrationPlan.test.ts",
-      "sha256": "c1845e64f25daafaa0ad22d010a94fcd2bcc712d0daa62eddf09046172341478"
+      "sha256": "2f615f02f3abcc46d4b5d251e2982c9c82e8f3b1722d96218a877eb5a73f7c70"
     },
     {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
-      "sha256": "1ee94dde0e6176b215b1bd2c1b5fb8032f37e27c83154d74aef76706290f37f6"
+      "sha256": "9d14db44f2ef5209a22287226126f057065a5f0fa1d93c0d6710d292d8fe3c48"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

@@ -3,6 +3,10 @@
 import { createHash } from "node:crypto";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
+import {
+  adaptHostedRoleAdministration,
+  hostedProductionAdaptedMigrations,
+} from "./generate-v1-1-production-rollback-dry-run.mjs";
 
 const root = process.cwd();
 const checkOnly = process.argv.includes("--check");
@@ -55,6 +59,9 @@ const migrations = [];
 for (const file of expected) {
   const path = `${migrationDir}/${file}`;
   const bytes = await readFile(resolve(root, path));
+  const source = bytes.toString("utf8");
+  const isHostedAdapted = hostedProductionAdaptedMigrations.has(file);
+  const productionAdapted = adaptHostedRoleAdministration(source, file);
   migrations.push({
     version: file.slice(0, 14),
     file,
@@ -62,7 +69,17 @@ for (const file of expected) {
     sha256: sha256(bytes),
     action: file === neverExecute
       ? "MARK_APPLIED_WITHOUT_EXECUTION"
-      : "APPLY_EXACT_BYTES",
+      : isHostedAdapted
+        ? "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES"
+        : "APPLY_EXACT_BYTES",
+    ...(isHostedAdapted ? {
+      production_adapted_sha256: sha256(productionAdapted),
+      production_adaptation_contract:
+        "Preserve the pinned historical source while omitting only hosted-role membership revocation and retiring the synthetic Staging reader from callable Production access.",
+    } : {}),
+    production_execution_sha256: file === neverExecute
+      ? null
+      : sha256(productionAdapted),
     rationale: file === neverExecute
       ? "Staging-only migration opens the synthetic database gates and must never execute in Production."
       : "Required ordered V1.1 schema or hardening delta.",
@@ -101,13 +118,21 @@ const plan = {
     ],
     application_data_access_approval_basis: "Mahle confirmed on 2026-08-11 that the existing teams are his test data and the bounded rollback dry-run is acceptable.",
     persistent_production_apply_approved: false,
+    persistent_execution_strategy: "ordered_stop_on_first_error_one_migration_per_step",
+    persistent_execution_bytes_pinned: true,
+    historical_source_migrations_immutable: true,
+    staging_gate_open_sql_execution_forbidden: true,
     credentials_allowed: false,
     data_reads_allowed: false,
     edge_deploy_allowed: false,
     runtime_gates_must_remain_closed: true,
   },
   migration_count: migrations.length,
-  apply_count: migrations.filter(({ action }) => action === "APPLY_EXACT_BYTES").length,
+  apply_count: migrations.filter(({ action }) => action !== "MARK_APPLIED_WITHOUT_EXECUTION").length,
+  exact_apply_count: migrations.filter(({ action }) => action === "APPLY_EXACT_BYTES").length,
+  hosted_adapted_apply_count: migrations.filter(({ action }) =>
+    action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES"
+  ).length,
   history_only_count: migrations.filter(({ action }) => action === "MARK_APPLIED_WITHOUT_EXECUTION").length,
   migrations,
 };
@@ -171,6 +196,8 @@ if (checkOnly) {
     status: plan.status,
     migrations: migrations.length,
     apply: plan.apply_count,
+    exact_apply: plan.exact_apply_count,
+    hosted_adapted_apply: plan.hosted_adapted_apply_count,
     history_only: plan.history_only_count,
     manifest_sha256: sha256(currentManifest),
     package_sha256: manifest.package_sha256,

@@ -18,6 +18,8 @@ describe("V1.1 Production migration plan", () => {
     expect(plan.observed_remote_state.latest_applied_migration).toBe("20260801104717");
     expect(plan.migration_count).toBe(25);
     expect(plan.apply_count).toBe(24);
+    expect(plan.exact_apply_count).toBe(22);
+    expect(plan.hosted_adapted_apply_count).toBe(2);
     expect(plan.history_only_count).toBe(1);
     expect(plan.execution_contract).toMatchObject({
       bulk_db_push_allowed: false,
@@ -31,6 +33,10 @@ describe("V1.1 Production migration plan", () => {
         "public.user_roles.role",
       ],
       persistent_production_apply_approved: false,
+      persistent_execution_strategy: "ordered_stop_on_first_error_one_migration_per_step",
+      persistent_execution_bytes_pinned: true,
+      historical_source_migrations_immutable: true,
+      staging_gate_open_sql_execution_forbidden: true,
       credentials_allowed: false,
       data_reads_allowed: false,
       edge_deploy_allowed: false,
@@ -48,6 +54,30 @@ describe("V1.1 Production migration plan", () => {
     expect(plan.migrations[plan.migrations.indexOf(skipped[0]) + 1].file).toBe(
       "20260808074742_feedback_intelligence_synthetic_staging_read_gate_close_v0_1.sql",
     );
+
+    const adapted = plan.migrations.filter(({ action }: { action: string }) =>
+      action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES"
+    );
+    expect(adapted.map(({ file }: { file: string }) => file)).toEqual([
+      "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
+      "20260811071836_feedback_intelligence_production_gateway_v0_1.sql",
+    ]);
+    for (const migration of adapted) {
+      expect(migration.production_adapted_sha256).toMatch(/^[a-f0-9]{64}$/u);
+      expect(migration.production_adaptation_contract).toContain("historical source");
+    }
+    for (const migration of plan.migrations) {
+      if (migration.action === "MARK_APPLIED_WITHOUT_EXECUTION") {
+        expect(migration.production_execution_sha256).toBeNull();
+      } else {
+        expect(migration.production_execution_sha256).toMatch(/^[a-f0-9]{64}$/u);
+        if (migration.action === "APPLY_EXACT_BYTES") {
+          expect(migration.production_execution_sha256).toBe(migration.sha256);
+        } else {
+          expect(migration.production_execution_sha256).toBe(migration.production_adapted_sha256);
+        }
+      }
+    }
 
     const dataTouching = plan.migrations.filter(({ application_data_impact }: {
       application_data_impact: string;

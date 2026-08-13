@@ -16,6 +16,11 @@ const productionReaderMigration =
 const productionFunction = "read_feedback_intelligence_production_v0_2_draft";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
+export const hostedProductionAdaptedMigrations = new Set([
+  stagingRoleRemediationMigration,
+  productionReaderMigration,
+]);
+
 export const assertNoCredentialBearingRoleStatement = (source, file = "migration.sql") => {
   const rolePasswordLines = source.split(/\r?\n/u).filter((line) =>
     /^\s*(?:(?:CREATE|ALTER)\s+ROLE\b.*\bPASSWORD\b|PASSWORD\b)/iu.test(line)
@@ -54,7 +59,7 @@ export const adaptHostedRoleAdministration = (source, file) => {
   let adapted = source;
   if (file === stagingRoleRemediationMigration) {
     const membershipRevoke = "REVOKE mahleos_feedback_reader FROM postgres;";
-    if (!adapted.includes(membershipRevoke)) {
+    if (adapted.split(membershipRevoke).length !== 2) {
       throw new Error(`${file}: expected hosted reader membership revoke is missing`);
     }
     adapted = adapted.replace(membershipRevoke, "");
@@ -66,6 +71,16 @@ export const adaptHostedRoleAdministration = (source, file) => {
       throw new Error(`${file}: expected hosted Production membership cleanup is missing`);
     }
     adapted = `${adapted.slice(0, start)}${adapted.slice(end + 3)}`;
+
+    const roleComment = "COMMENT ON ROLE mahleos_feedback_production_reader IS";
+    if (adapted.split(roleComment).length !== 2) {
+      throw new Error(`${file}: expected unique Production reader comment marker is missing`);
+    }
+    const retireStagingReader = `-- Production never uses the historical synthetic Staging reader.\n`
+      + `REVOKE ALL ON FUNCTION public.read_feedback_intelligence_v0_2_draft(text, text, text, text)\n`
+      + `  FROM mahleos_feedback_reader;\n`
+      + `REVOKE USAGE ON SCHEMA public FROM mahleos_feedback_reader;\n\n`;
+    adapted = adapted.replace(roleComment, `${retireStagingReader}${roleComment}`);
   }
   return adapted;
 };
@@ -117,13 +132,31 @@ const targetAuditSql = `
 DO $dry_run_target$
 DECLARE
   settings_count integer;
+  collection_settings_count integer;
   private_function_count integer;
+  private_rpc_public_callable_count integer;
   forbidden_callable_count integer;
+  legacy_reader_callable_count integer;
+  reader_relation_privilege_count integer;
+  reader_sequence_privilege_count integer;
   reader_membership_count integer;
   hosted_management_membership_count integer;
   hosted_management_reader_count integer;
   production_reader record;
 BEGIN
+  SELECT count(*) INTO collection_settings_count
+  FROM feedback_core.system_settings
+  WHERE singleton
+    AND athlete_collection_enabled = false
+    AND text_collection_enabled = false
+    AND privacy_notice_ready = false
+    AND app_store_declaration_ready = false
+    AND minor_policy_ready = false;
+  IF collection_settings_count <> 1 THEN
+    RAISE EXCEPTION 'v1_1_dry_run_collection_gates_not_closed:%',
+      collection_settings_count;
+  END IF;
+
   SELECT count(*) INTO settings_count
   FROM feedback_core.machine_contract_settings
   WHERE contract_version = '0.2.1-draft'
@@ -221,12 +254,81 @@ BEGIN
     RAISE EXCEPTION 'v1_1_dry_run_forbidden_callable_inventory:%', forbidden_callable_count;
   END IF;
 
+  SELECT count(*) INTO legacy_reader_callable_count
+  FROM pg_catalog.pg_proc procedure
+  JOIN pg_catalog.pg_namespace namespace ON namespace.oid = procedure.pronamespace
+  WHERE procedure.prosecdef
+    AND has_schema_privilege('mahleos_feedback_reader', namespace.oid, 'USAGE')
+    AND has_function_privilege('mahleos_feedback_reader', procedure.oid, 'EXECUTE');
+  IF legacy_reader_callable_count <> 0 THEN
+    RAISE EXCEPTION 'v1_1_dry_run_legacy_reader_callable_inventory:%',
+      legacy_reader_callable_count;
+  END IF;
+
+  SELECT count(*) INTO reader_relation_privilege_count
+  FROM pg_catalog.pg_class relation
+  JOIN pg_catalog.pg_namespace namespace ON namespace.oid = relation.relnamespace
+  WHERE relation.relkind IN ('r', 'p', 'v', 'm', 'f')
+    AND namespace.nspname IN (
+      'public', 'app_private', 'feedback_core', 'feedback_consent',
+      'feedback_raw', 'feedback_analysis', 'feedback_machine_production'
+    )
+    AND (
+      has_table_privilege(
+        'mahleos_feedback_reader', relation.oid,
+        'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'
+      )
+      OR has_table_privilege(
+        'mahleos_feedback_production_reader', relation.oid,
+        'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'
+      )
+    );
+  IF reader_relation_privilege_count <> 0 THEN
+    RAISE EXCEPTION 'v1_1_dry_run_reader_relation_privilege_inventory:%',
+      reader_relation_privilege_count;
+  END IF;
+
+  SELECT count(*) INTO reader_sequence_privilege_count
+  FROM pg_catalog.pg_class sequence
+  JOIN pg_catalog.pg_namespace namespace ON namespace.oid = sequence.relnamespace
+  WHERE sequence.relkind = 'S'
+    AND namespace.nspname IN (
+      'public', 'app_private', 'feedback_core', 'feedback_consent',
+      'feedback_raw', 'feedback_analysis', 'feedback_machine_production'
+    )
+    AND (
+      has_sequence_privilege('mahleos_feedback_reader', sequence.oid, 'USAGE,SELECT,UPDATE')
+      OR has_sequence_privilege(
+        'mahleos_feedback_production_reader', sequence.oid, 'USAGE,SELECT,UPDATE'
+      )
+    );
+  IF reader_sequence_privilege_count <> 0 THEN
+    RAISE EXCEPTION 'v1_1_dry_run_reader_sequence_privilege_inventory:%',
+      reader_sequence_privilege_count;
+  END IF;
+
   IF NOT has_function_privilege(
     'mahleos_feedback_production_reader',
     'feedback_machine_production.${productionFunction}(text,text,text,text)',
     'EXECUTE'
   ) THEN
     RAISE EXCEPTION 'v1_1_dry_run_production_rpc_not_callable';
+  END IF;
+
+  SELECT count(*) INTO private_rpc_public_callable_count
+  FROM pg_catalog.pg_roles role
+  WHERE role.rolname IN ('anon', 'authenticated', 'service_role')
+    AND (
+      has_schema_privilege(role.rolname, 'feedback_machine_production', 'USAGE')
+      OR has_function_privilege(
+        role.rolname,
+        'feedback_machine_production.${productionFunction}(text,text,text,text)',
+        'EXECUTE'
+      )
+    );
+  IF private_rpc_public_callable_count <> 0 THEN
+    RAISE EXCEPTION 'v1_1_dry_run_private_rpc_public_callable_inventory:%',
+      private_rpc_public_callable_count;
   END IF;
 END;
 $dry_run_target$;
@@ -303,16 +405,23 @@ export const composeDryRunSql = async ({ cwd = root } = {}) => {
       skipped.push(migration.file);
       continue;
     }
-    if (migration.action !== "APPLY_EXACT_BYTES") {
+    if (!["APPLY_EXACT_BYTES", "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES"].includes(
+      migration.action,
+    )) {
       throw new Error(`${migration.file}: unsupported migration action ${migration.action}`);
+    }
+    const adaptedSource = adaptHostedRoleAdministration(source, migration.file);
+    const isHostedAdapted = hostedProductionAdaptedMigrations.has(migration.file);
+    if ((migration.action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES") !== isHostedAdapted) {
+      throw new Error(`${migration.file}: hosted Production action drift`);
+    }
+    if (isHostedAdapted && sha256(adaptedSource) !== migration.production_adapted_sha256) {
+      throw new Error(`${migration.file}: hosted Production adapted SHA-256 drift`);
     }
     normalizedMigrations.push({
       file: migration.file,
       source_sha256: actualSha,
-      sql: adaptHostedRoleAdministration(
-        normalizeOuterTransaction(source, migration.file),
-        migration.file,
-      ),
+      sql: normalizeOuterTransaction(adaptedSource, migration.file),
     });
   }
   if (normalizedMigrations.length !== 24 || skipped.length !== 1) {

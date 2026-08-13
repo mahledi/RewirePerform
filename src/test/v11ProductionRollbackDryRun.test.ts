@@ -84,6 +84,10 @@ describe("V1.1 Production rollback dry-run operator", () => {
     expect(productionSql).toContain("CREATE ROLE mahleos_feedback_production_reader");
     expect(productionSql).toContain("ALTER ROLE mahleos_feedback_production_reader");
     expect(productionSql).not.toContain("membership record");
+    expect(productionSql).toContain(
+      "REVOKE ALL ON FUNCTION public.read_feedback_intelligence_v0_2_draft",
+    );
+    expect(productionSql).toContain("REVOKE USAGE ON SCHEMA public FROM mahleos_feedback_reader");
     expect(productionSql).toContain("CREATE SCHEMA feedback_machine_production");
 
     expect(adaptHostedRoleAdministration("SELECT 1;", "unrelated.sql")).toBe("SELECT 1;");
@@ -117,6 +121,13 @@ describe("V1.1 Production rollback dry-run operator", () => {
     expect(sql).toContain("grantor.rolname = 'supabase_admin'");
     expect(sql).toContain("NOT membership.inherit_option");
     expect(sql).toContain("NOT membership.set_option");
+    expect(sql).toContain("v1_1_dry_run_legacy_reader_callable_inventory");
+    expect(sql).toContain("v1_1_dry_run_reader_relation_privilege_inventory");
+    expect(sql).toContain("v1_1_dry_run_reader_sequence_privilege_inventory");
+    expect(sql).toContain("v1_1_dry_run_collection_gates_not_closed");
+    expect(sql).toContain("v1_1_dry_run_private_rpc_public_callable_inventory");
+    expect(sql).toContain("athlete_collection_enabled = false");
+    expect(sql).toContain("text_collection_enabled = false");
     expect(sql).not.toContain("pg_catalog.pg_authid");
     expect(sql).toContain("CREATE ROLE mahleos_feedback_production_reader");
     expect(sql).toContain("ALTER ROLE mahleos_feedback_production_reader PASSWORD NULL");

@@ -15,11 +15,17 @@ const expected = {
 };
 const expectedCaFingerprint256 = "80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA";
 const safeDryRunMarkers = [
+  "v1_1_dry_run_collection_gates_not_closed",
   "v1_1_dry_run_feedback_schema_must_be_absent",
   "v1_1_dry_run_forbidden_callable_inventory",
+  "v1_1_dry_run_legacy_reader_callable_inventory",
   "v1_1_dry_run_machine_gates_not_closed",
   "v1_1_dry_run_private_function_inventory_drift",
+  "v1_1_dry_run_private_rpc_public_callable_inventory",
   "v1_1_dry_run_private_schema_owner_drift",
+  "v1_1_dry_run_reader_membership_drift",
+  "v1_1_dry_run_reader_relation_privilege_inventory",
+  "v1_1_dry_run_reader_sequence_privilege_inventory",
   "v1_1_dry_run_production_reader_membership_drift",
   "v1_1_dry_run_production_reader_not_hardened",
   "v1_1_dry_run_production_rpc_not_callable",

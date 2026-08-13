@@ -22,11 +22,17 @@ const directToolDirectory = resolve(scriptDirectory, "../tools/production-rollba
 const pinnedPgVersion = "8.23.0";
 
 const safeDryRunMarkers = [
+  "v1_1_dry_run_collection_gates_not_closed",
   "v1_1_dry_run_feedback_schema_must_be_absent",
   "v1_1_dry_run_forbidden_callable_inventory",
+  "v1_1_dry_run_legacy_reader_callable_inventory",
   "v1_1_dry_run_machine_gates_not_closed",
   "v1_1_dry_run_private_function_inventory_drift",
+  "v1_1_dry_run_private_rpc_public_callable_inventory",
   "v1_1_dry_run_private_schema_owner_drift",
+  "v1_1_dry_run_reader_membership_drift",
+  "v1_1_dry_run_reader_relation_privilege_inventory",
+  "v1_1_dry_run_reader_sequence_privilege_inventory",
   "v1_1_dry_run_production_reader_membership_drift",
   "v1_1_dry_run_production_reader_not_hardened",
   "v1_1_dry_run_production_rpc_not_callable",
