@@ -160,13 +160,12 @@ Alle genannten Typen: `Tracking = No`.
 | Name | Yes | App Functionality |
 | Email Address | Yes | App Functionality |
 | Phone Number | Yes | App Functionality |
-| Health | Yes | App Functionality; Product Personalization; Analytics |
+| Health | Yes | App Functionality; Analytics |
 | Fitness | Yes | App Functionality; Product Personalization |
 | Other User Content | Yes | App Functionality; Analytics |
 | User ID | Yes | App Functionality; Analytics |
 | Product Interaction | Yes | App Functionality; Analytics |
 | Customer Support | Yes | App Functionality |
-| Other Diagnostic Data | Yes | App Functionality |
 | Other Data Types | Yes | App Functionality |
 
 Erläuterung:
@@ -181,13 +180,13 @@ Erläuterung:
 - `Fitness` umfasst Trainings-/Wettkampf-/Ruhetagskontext und Kalender.
 - `Product Interaction` umfasst Programm- und Aufgabenfortschritt,
   Checkpoint-Antworten und minimierte Aktivitätszählungen.
-- `Other Diagnostic Data` umfasst pseudonymisierte operative Fehlerereignisse
-  mit Fehlercode und Route; keine Crash-Dumps oder freien Fehlertexte.
 - Keine Crash Data, solange der finale Binary-/Network-Report keinen
   Crash-Collector zeigt.
 - Keine Audio Data, solange RewirePerform keine Audiodatei überträgt oder
   speichert und die native Spracheingabe ausschließlich lokal in Text
   umwandelt.
+- `Other Diagnostic Data` nur ergänzen, falls der finale Network-Report eine
+  lesbar aufbewahrte technische Diagnostik bestätigt.
 
 ### Exaktes Feedback-/Jarvis-Delta
 
@@ -204,15 +203,12 @@ außerhalb des Feedbackexports.
 
 ## Aktueller technischer Wahrheitsstand vor dem finalen RC
 
-- Production-Datenbank: 105 Migrationen verifiziert; die finale
-  Consent-/Guardian-Registrierung `20260813123955` ist angewendet und bleibt
-  runtime-seitig geschlossen.
+- Production-Datenbank: 104 Migrationen verifiziert.
 - Beide neuen Edge Functions sind credentiallos und fail-closed deployed.
 - Feedback-Request bei geschlossenem Gate: `503`.
 - Organisationsanfrage: erlaubter Origin `503`, fremder Origin `403`.
-- Der neue finale 13+-Consent-/Guardian-Vertrag ist in Production additiv
-  registriert; Kampagnen, Guardian-Policy und Runtime-Gates bleiben weiterhin
-  geschlossen.
+- Der neue finale 13+-Consent-/Guardian-Vertrag ist auf diesem lokalen Stand
+  nur als additive, weiterhin geschlossene Registrierung vorbereitet.
 - Es gibt dadurch noch keine aktivierte Feedback-Collection, keine aktive
   Guardian-Feedback-Policy, kein Production-Credential und keinen echten
   Jarvis-Read.
@@ -221,7 +217,7 @@ außerhalb des Feedbackexports.
 
 - [ ] Production-Rollback-Dry-run exakt einmal grün, ohne persistente Änderung;
 - [ ] aktueller Backup-/Recovery-Nachweis und kontrollierter 25-Schritt-Apply;
-- [x] Postdeploy-Evidence bestätigt exakt 105 Migrationen, geschlossene
+- [ ] Postdeploy-Evidence bestätigt exakt 104 Migrationen, geschlossene
       Runtime-Gates, fünf geprüfte Production-Secret-Namen und beide erwarteten
       Edge-Slugs mit SHA-Provenienz;
 - [ ] finaler aktivierter Feedback-/Kommentar-/Jarvis-Umfang;
