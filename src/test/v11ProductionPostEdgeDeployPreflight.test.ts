@@ -24,7 +24,7 @@ describe("V1.1 Production post-Edge-deploy credentialless preflight", () => {
       version: 1, status: "ACTIVE", verify_jwt: false,
     });
     expect(evidence.edge_functions["submit-organization-access-request"]).toMatchObject({
-      version: 1, status: "ACTIVE", verify_jwt: false,
+      version: 2, status: "ACTIVE", verify_jwt: false,
     });
   });
 

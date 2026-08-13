@@ -48,7 +48,12 @@ const allowedOrigins = () => {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-  return new Set(["capacitor://localhost", "https://rewireperform.com", ...configured]);
+  return new Set([
+    "capacitor://localhost",
+    "https://rewireperform.com",
+    "https://www.rewireperform.com",
+    ...configured,
+  ]);
 };
 
 const originForRequest = (request: Request) => {

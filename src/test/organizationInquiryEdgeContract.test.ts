@@ -16,6 +16,7 @@ describe("organization inquiry edge boundary", () => {
     expect(source).toContain('ORGANIZATION_INQUIRY_PUBLIC_ENABLED") !== "true"');
     expect(source).toContain('"capacitor://localhost"');
     expect(source).toContain('"https://rewireperform.com"');
+    expect(source).toContain('"https://www.rewireperform.com"');
     expect(source).toContain('error: "origin_not_allowed"');
   });
 

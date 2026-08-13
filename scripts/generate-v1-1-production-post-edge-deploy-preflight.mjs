@@ -13,7 +13,7 @@ const manifestPath = `${base}/producer-package-manifest.json`;
 const generatorPath = "scripts/generate-v1-1-production-post-edge-deploy-preflight.mjs";
 const testPath = "src/test/v11ProductionPostEdgeDeployPreflight.test.ts";
 const handoffPath = "docs/feedback-intelligence/PRODUCTION_POST_EDGE_DEPLOY_PREFLIGHT_V1_1.md";
-const observedAt = "2026-08-13T11:44:00Z";
+const observedAt = "2026-08-13T11:56:56Z";
 const projectRef = "bqsbxesmybthwtxmowfz";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -49,12 +49,12 @@ const functions = {
   },
   "submit-organization-access-request": {
     id: "a81e37b6-7e58-4a78-8f45-0da426a073d7",
-    version: 1,
+    version: 2,
     status: "ACTIVE",
     verify_jwt: false,
-    deployment_digest_sha256: "73a65da5ac16ca86a026257a6f6e768beee9a85e84e394f154831c6d58c89505",
+    deployment_digest_sha256: "96a2d7bdbd97b17700198890afe747f6554ee412ac62718e2032785d1a6c583a",
     remote_files: {
-      "supabase/functions/submit-organization-access-request/index.ts": "62f033015349d64a8217bd76015ce204e9699c9fac9b9aeea9679aa8dde9b643",
+      "supabase/functions/submit-organization-access-request/index.ts": "1b6d9600f81bfa97ef7c979a1e689df4f02c4cc3eb8b2ced2be8f8da1ed58234",
       "supabase/functions/_shared/supabaseService.ts": "5310e93594f4088266845f21472b6c6f77d3b67e8bc26191b916e84dc2c4cd9e",
       "supabase/functions/_shared/boundedRequestBody.ts": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e",
     },
@@ -162,7 +162,7 @@ const functionSchema = (slug, files) => ({
   required: ["id", "version", "status", "verify_jwt", "deployment_digest_sha256", "remote_files"],
   properties: {
     id: { type: "string", minLength: 1 },
-    version: { const: 1 },
+    version: { const: functions[slug].version },
     status: { const: "ACTIVE" },
     verify_jwt: { const: false },
     deployment_digest_sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },

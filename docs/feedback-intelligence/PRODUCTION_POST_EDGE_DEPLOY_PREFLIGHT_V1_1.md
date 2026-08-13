@@ -7,7 +7,7 @@ This package records a fresh credentialless Production observation after the two
 Verified on Production project `bqsbxesmybthwtxmowfz`:
 
 - 104 migrations remain present with the pinned remote-version inventory.
-- `mahleos-feedback-intelligence-production-read` and `submit-organization-access-request` are ACTIVE version 1 with `verify_jwt=false`, as required by their own machine-auth and public Turnstile/origin contracts.
+- `mahleos-feedback-intelligence-production-read` is ACTIVE version 1 and `submit-organization-access-request` is ACTIVE version 2, both with `verify_jwt=false` as required by their own machine-auth and public Turnstile/origin contracts. Organization version 2 adds the live `www.rewireperform.com` origin while the public gate remains closed.
 - Downloaded remote function files are byte-equal to the committed local files listed in the evidence.
 - All five Feedback Production secret names and all three Organization inquiry secret/gate names are absent. Only exact-name presence was retained; no value, digest, or unrelated name was persisted.
 - `mahleos_feedback_production_reader` remains passwordless and unprivileged outside exactly one private RPC: zero relation, sequence, or PUBLIC-callable paths.
