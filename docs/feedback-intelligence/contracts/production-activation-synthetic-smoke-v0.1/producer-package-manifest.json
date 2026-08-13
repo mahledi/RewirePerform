@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-feedback-v1.1-production-activation-synthetic-smoke-package-v1",
   "package_status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
   "source_base_commit": "acae4d643984f77fcd009804d69cfd114ab970e0",
-  "package_sha256": "571e0198d506d54b633c822d1dbb81780e3e49ccd9026394b2dc8b048bafffbf",
+  "package_sha256": "c6782775a9f809705d994b33b84f7d68d754ba50b5370ce1b97783d68e11d415",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-activation-synthetic-smoke-v0.1/activation-smoke-plan.json",
@@ -30,11 +30,35 @@
     },
     {
       "path": "scripts/generate-feedback-v1-1-activation-smoke.mjs",
-      "sha256": "db2ed4806133d2afbf5812b23042cf40f9a5a0eb8704930a501c9b748d4365ef"
+      "sha256": "fe5e2008fea60e4e91e4d37d1ffdea9ffa2b8a6002a049be606592a6cd60b4cb"
     },
     {
       "path": "scripts/run-feedback-v1-1-activation-synthetic-smoke.mjs",
-      "sha256": "8dd6929f4197f63e5d39fb70b5091c7478a535f2709a1d25481cf0a4dee49d39"
+      "sha256": "3fd621d9242e5b97ed7d4127d1e935c85c38d4bcea8043c4f19664b00b50a268"
+    },
+    {
+      "path": "scripts/feedback-v1-1-activation-smoke-sql.mjs",
+      "sha256": "11e7b116da8facbe02948df04a0dfa3914ca750492f172d79aead69e7bd4f85f"
+    },
+    {
+      "path": "scripts/execute-feedback-v1-1-activation-smoke-query.mjs",
+      "sha256": "3554e3a3fae154b2e6f1f358c386d16795a95932fcc36b94026a7c8360cf34d4"
+    },
+    {
+      "path": "scripts/execute-postgres-simple-query.mjs",
+      "sha256": "824f223542467cdd24b42bd6ed43cc51048be54c45e16c6902ea1c35789786aa"
+    },
+    {
+      "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
+      "sha256": "229481d9d7a2d0c93889e881aef9549edc549c46507b4f96ba94e3cf3d5bc460"
+    },
+    {
+      "path": "tools/production-rollback-dry-run/package.json",
+      "sha256": "4617a30bd39d6dd594d66e806a59294f48b6b2661dc07c2cbdcfe11fb4d9bcaa"
+    },
+    {
+      "path": "tools/production-rollback-dry-run/package-lock.json",
+      "sha256": "473380ffa329b62ab69946269f1d8da16ae98360c0bd38fcde29b4cf76de3c53"
     },
     {
       "path": "scripts/verify-feedback-intelligence-sql.mjs",
@@ -46,11 +70,11 @@
     },
     {
       "path": "src/test/feedbackIntelligenceProductionActivationSmoke.test.ts",
-      "sha256": "5c57b356b880b596bb56f17fd7f249bafe5bbd495a58e97235e0adca02aef0d4"
+      "sha256": "06f91dd61078c37093a3298acb87d909dce9895636111b2ecf35b83a04181106"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_ACTIVATION_SYNTHETIC_SMOKE_V0_1.md",
-      "sha256": "f41a6f314fedea6edf7ac81317c9b59a6ebcad5993e0427ed349dc7bd13805e4"
+      "sha256": "72ee2fd3d30a53fd481452674fed716b3306953b2919ea294041a2391cf30037"
     }
   ],
   "external_gates": {

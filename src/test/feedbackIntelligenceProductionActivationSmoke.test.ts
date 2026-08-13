@@ -7,6 +7,8 @@ import { resolve } from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import Ajv2020 from "ajv/dist/2020.js";
 import { describe, expect, it } from "vitest";
+import { composeActivationPostrollbackAuditSql, composeActivationSmokeSql, syntheticSubjects } from "../../scripts/feedback-v1-1-activation-smoke-sql.mjs";
+import { runFeedbackActivationSyntheticSmoke } from "../../scripts/run-feedback-v1-1-activation-synthetic-smoke.mjs";
 
 const root = process.cwd();
 const base = "docs/feedback-intelligence/contracts/production-activation-synthetic-smoke-v0.1";
@@ -143,10 +145,10 @@ describe("V1.1 Feedback Intelligence activation and synthetic-smoke contract", (
     const db = await setupDb();
     const legalReference = "legal-review-de-feedback-v1.1:qualified-counsel-reference-2026-08-13";
     await db.exec("BEGIN");
-    const activated = await db.query("SELECT feedback_core.activate_feedback_v1_1($1) AS result", [legalReference]);
+    const activated = await db.query<{ result: Record<string, unknown> }>("SELECT feedback_core.activate_feedback_v1_1($1) AS result", [legalReference]);
     expect(activated.rows[0].result).toEqual({ status: "ACTIVE_V1_1_DE", campaigns_active: 4, guardian_policy_active: true });
     expect((await snapshot(db)).rows[0]).toMatchObject({ campaigns_active: 4, guardian_active: 1, structured_status: "approved", raw_status: "approved", legal_reference: legalReference, athlete_gate: true, text_gate: true, privacy_gate: true, app_store_gate: true, minor_gate: true });
-    const closed = await db.query("SELECT feedback_core.reclose_feedback_v1_1($1) AS result", [legalReference]);
+    const closed = await db.query<{ result: Record<string, unknown> }>("SELECT feedback_core.reclose_feedback_v1_1($1) AS result", [legalReference]);
     expect(closed.rows[0].result).toEqual({ status: "RECLOSED_V1_1_DE", runtime_gates_closed: true, campaigns_active: 0, guardian_policy_active: false });
     expect((await snapshot(db)).rows[0]).toMatchObject({ campaigns_active: 0, guardian_active: 0, structured_status: "paused", raw_status: "paused", athlete_gate: false, text_gate: false, privacy_gate: false, app_store_gate: false, minor_gate: false });
     await db.exec("ROLLBACK");
@@ -193,6 +195,52 @@ describe("V1.1 Feedback Intelligence activation and synthetic-smoke contract", (
       expect(result.status).not.toBe(0);
       expect(`${result.stdout}${result.stderr}`).not.toContain("SUPABASE");
     }
+  });
+
+  it("composes all eight real API paths inside one rollback transaction without treating a test reference as legal approval", () => {
+    expect(() => composeActivationSmokeSql({ legalReference: "legal-review-de-feedback-v1.1:local-contract-test-input" }))
+      .toThrow("qualified legal-review reference");
+    const sql = composeActivationSmokeSql({ legalReference: "legal-review-de-feedback-v1.1:qualified-counsel-reference-2026-08-13" });
+    expect((sql.match(/^BEGIN;$/gmu) ?? [])).toHaveLength(1);
+    expect((sql.match(/^ROLLBACK;$/gmu) ?? [])).toHaveLength(1);
+    expect(sql).not.toContain("COMMIT;");
+    expect(sql).toContain("feedback_core.activate_feedback_v1_1");
+    expect(sql).toContain("feedback_core.reclose_feedback_v1_1");
+    expect(sql).toContain("public.claim_my_feedback_checkpoint");
+    expect(sql).toContain("public.start_my_feedback_submission");
+    expect(sql).toContain("public.save_my_feedback_draft");
+    expect(sql).toContain("public.submit_my_feedback");
+    expect(sql).toContain("public.withdraw_my_feedback_text");
+    expect(sql).toContain("DELETE FROM auth.users");
+    expect(sql).toContain("SYNTHETIC_OPTIONAL_COMMENT_V1_1");
+    expect(syntheticSubjects).toHaveLength(8);
+    expect(composeActivationPostrollbackAuditSql()).toContain("PASS_FEEDBACK_V1_1_SYNTHETIC_SMOKE_POSTROLLBACK");
+  });
+
+  it("runs exactly one smoke request and always one fresh postrollback audit with no retry", () => {
+    const outputs = [
+      [{ feedback_v1_1_smoke_status: { status: "PASS_FEEDBACK_V1_1_SYNTHETIC_SMOKE_ROLLED_BACK", scenario_count: 8, application_values_returned: false, legal_reference_returned: false } }],
+      [{ feedback_v1_1_postrollback_status: { status: "PASS_FEEDBACK_V1_1_SYNTHETIC_SMOKE_POSTROLLBACK", fixture_rows: 0, runtime_gates_open: false, application_values_returned: false } }],
+    ];
+    const calls: Array<{ operation: string; sql: string }> = [];
+    const runDirectSession = ({ operation, sqlPath }: { operation: string; sqlPath: string }) => {
+      calls.push({ operation, sql: readFileSync(sqlPath, "utf8") });
+      return { status: 0, stdout: JSON.stringify(outputs[calls.length - 1]), stderr: "" };
+    };
+    const result = runFeedbackActivationSyntheticSmoke({
+      cwd: root,
+      legalReference: "legal-review-de-feedback-v1.1:qualified-counsel-reference-2026-08-13",
+      productionActivationApproved: true,
+      productionCredentialApproved: true,
+      syntheticSmokeApproved: true,
+      directSessionPassword: "ephemeral-test-password",
+      directSessionCaPath: "/not-read-by-mock.pem",
+      runDirectSession,
+    });
+    expect(result).toMatchObject({ request_count: 2, smoke_request_count: 1, postrollback_audit_request_count: 1, retry_count: 0 });
+    expect(calls.map(({ operation }) => operation)).toEqual(["activation-smoke", "activation-postrollback-audit"]);
+    expect(calls[0].sql).toContain("ROLLBACK;");
+    expect(calls[1].sql).toContain("postrollback");
   });
 
   it("keeps the existing real SQL API regressions green for comment, decline, withdrawal, deletion and retry", () => {

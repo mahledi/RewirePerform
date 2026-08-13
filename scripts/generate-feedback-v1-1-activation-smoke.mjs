@@ -16,6 +16,12 @@ const finalConsentMigration = "supabase/migrations/20260813115737_feedback_conse
 const finalContentMigration = "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql";
 const generatorPath = "scripts/generate-feedback-v1-1-activation-smoke.mjs";
 const runnerPath = "scripts/run-feedback-v1-1-activation-synthetic-smoke.mjs";
+const sqlComposerPath = "scripts/feedback-v1-1-activation-smoke-sql.mjs";
+const queryWorkerPath = "scripts/execute-feedback-v1-1-activation-smoke-query.mjs";
+const directQueryWorkerPath = "scripts/execute-postgres-simple-query.mjs";
+const directRunnerPath = "scripts/run-v1-1-production-rollback-dry-run.mjs";
+const directToolPackagePath = "tools/production-rollback-dry-run/package.json";
+const directToolLockPath = "tools/production-rollback-dry-run/package-lock.json";
 const feedbackSqlHarnessPath = "scripts/verify-feedback-intelligence-sql.mjs";
 const guardianSqlHarnessPath = "scripts/verify-guardian-feedback-text-sql.mjs";
 const testPath = "src/test/feedbackIntelligenceProductionActivationSmoke.test.ts";
@@ -99,7 +105,9 @@ const plan = {
 const planBytes = serialize(plan);
 const packagePaths = [
   planPath, schemaPath, finalConsentMigration, finalContentMigration,
-  activationMigration, recloseMigration, generatorPath, runnerPath,
+  activationMigration, recloseMigration, generatorPath, runnerPath, sqlComposerPath,
+  queryWorkerPath, directQueryWorkerPath, directRunnerPath,
+  directToolPackagePath, directToolLockPath,
   feedbackSqlHarnessPath, guardianSqlHarnessPath, testPath, handoffPath,
 ];
 const files = [];
