@@ -1,0 +1,123 @@
+{
+  "schema_version": "rewireperform-feedback-v1.1-production-activation-synthetic-smoke-plan-v1",
+  "status": "LOCAL_CONTRACT_READY_EXTERNAL_GATES_CLOSED",
+  "source_base_commit": "acae4d643984f77fcd009804d69cfd114ab970e0",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "activation_contract": {
+    "function": "feedback_core.activate_feedback_v1_1(text)",
+    "legal_reference_format": "legal-review-de-feedback-v1.1:<qualified-reference>",
+    "missing_or_unqualified_reference": "FAIL_CLOSED_BEFORE_ACTIVATION",
+    "exact_campaigns": [
+      "feedback-day-10-v1",
+      "feedback-day-24-v1",
+      "feedback-day-39-v1",
+      "feedback-day-55-v1"
+    ],
+    "guardian_policy": "guardian-feedback-text-de-v1.1.0",
+    "jurisdiction_policy": "feedback-jurisdiction-minor-de-v1.1.0",
+    "runtime_gates_opened": [
+      "athlete_collection_enabled",
+      "text_collection_enabled",
+      "privacy_notice_ready",
+      "app_store_declaration_ready",
+      "minor_policy_ready"
+    ],
+    "machine_or_jarvis_gates_opened": []
+  },
+  "synthetic_fixture_boundary": {
+    "generated_users_only": true,
+    "profiles_is_test_user": true,
+    "program_instances_is_test_instance": true,
+    "real_athletes": false,
+    "real_text": false,
+    "permitted_comment_literal": "SYNTHETIC_OPTIONAL_COMMENT_V1_1",
+    "application_values_persisted_after_smoke": false
+  },
+  "scenarios": [
+    {
+      "id": "adult_structured",
+      "age_band": "adult",
+      "guardian": "not_required",
+      "comment": "declined",
+      "outcome": "submitted"
+    },
+    {
+      "id": "age_16_17_structured",
+      "age_band": "age_16_17",
+      "guardian": "not_required",
+      "comment": "declined",
+      "outcome": "submitted"
+    },
+    {
+      "id": "under_16_guardian_and_athlete",
+      "age_band": "under_16",
+      "guardian": "granted",
+      "athlete": "granted",
+      "comment": "declined",
+      "outcome": "submitted"
+    },
+    {
+      "id": "optional_comment",
+      "age_band": "adult",
+      "guardian": "not_required",
+      "comment": "granted_synthetic_literal_only",
+      "outcome": "submitted"
+    },
+    {
+      "id": "comment_decline",
+      "age_band": "adult",
+      "guardian": "not_required",
+      "comment": "declined",
+      "outcome": "structured_preserved_no_raw_text"
+    },
+    {
+      "id": "comment_withdrawal",
+      "age_band": "adult",
+      "guardian": "not_required",
+      "comment": "withdrawn",
+      "outcome": "structured_preserved_raw_text_deleted"
+    },
+    {
+      "id": "account_deletion",
+      "age_band": "adult",
+      "guardian": "not_required",
+      "comment": "granted_synthetic_literal_only",
+      "outcome": "all_subject_rows_deleted"
+    },
+    {
+      "id": "offline_retry",
+      "age_band": "adult",
+      "guardian": "not_required",
+      "comment": "declined",
+      "outcome": "same_mutation_idempotent_stale_ignored"
+    }
+  ],
+  "execution": {
+    "one_outer_transaction": true,
+    "activate_once": true,
+    "smoke_once": true,
+    "retry_allowed": false,
+    "reclose_before_rollback": true,
+    "rollback_always": true,
+    "fresh_postrollback_metadata_audit": true,
+    "expected_fixture_rows_after_rollback": 0,
+    "expected_active_campaigns_after_rollback": 0,
+    "expected_active_guardian_policies_after_rollback": 0,
+    "expected_runtime_gates_after_rollback": false
+  },
+  "external_gates": {
+    "qualified_legal_reference_supplied": false,
+    "production_activation_approved": false,
+    "production_database_credential_approved": false,
+    "synthetic_smoke_approved": false,
+    "real_athlete_data": false,
+    "real_comment_text": false,
+    "jarvis_credential": false,
+    "jarvis_read": false,
+    "push": false,
+    "merge": false,
+    "deploy": false,
+    "app_store_action": false
+  },
+  "next_gate": "QUALIFIED_LEGAL_REFERENCE_AND_SEPARATE_PRODUCTION_SYNTHETIC_SMOKE_APPROVAL_REQUIRED"
+}

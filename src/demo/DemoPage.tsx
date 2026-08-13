@@ -52,8 +52,9 @@ const DemoPage = () => {
                 Sieh, wie RewirePerform im Alltag funktioniert.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-                Eine isolierte Demo für Coaches: Daily Flow der Athleten, Team-Überblick, Check-in, Journal und Entwicklung
-                — ohne Login, ohne echte Daten.
+                Eine isolierte Demo für Coaches: Daily Flow der Athleten,
+                Tages-Puls, Mission, Programmverlauf und Team-Überblick — ohne
+                Login, ohne echte Daten.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <button
@@ -146,16 +147,16 @@ const FinalCTA = () => {
         <div className="mx-auto max-w-3xl rounded-3xl border border-primary/25 bg-primary/10 p-8 text-center md:p-12">
           <CalendarCheck className="mx-auto h-9 w-9 text-primary" />
           <h2 className="mt-6 font-heading text-3xl font-bold md:text-5xl">Bereit, das System mit deinem Team zu starten?</h2>
-          <p className="mt-5 text-muted-foreground">
-            Mentale Performance wird nicht nur verstanden. Sie wird täglich trainiert.
+            <p className="mt-5 text-muted-foreground">
+            Prüfe, ob RewirePerform zu deinem Team oder deiner Organisation passt.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={() => navigate("/auth?switch=1")}
+              onClick={() => navigate("/team-access")}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-4 font-heading font-semibold text-primary-foreground transition-all hover:shadow-glow"
             >
-              Zugang sichern
+              Team oder Organisation anfragen
               <ArrowRight className="h-5 w-5" />
             </button>
             <button

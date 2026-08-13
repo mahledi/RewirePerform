@@ -1,0 +1,111 @@
+{
+  "schema_version": "rewireperform-feedback-consent-producer-package-manifest-v1",
+  "contract_version": "feedback-consent-de-v1.1.0",
+  "contract_status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
+  "generated_at": "2026-08-13T12:30:00+02:00",
+  "producer_branch": "codex/v1-1-apple-integration-20260810",
+  "producer_base_commit": "ed95a3ed1f285cf9788a4dd1f8095bb3d9584762",
+  "package_signed": false,
+  "package_status": "LOCAL_UNSIGNED_AWAITING_INDEPENDENT_REVIEW",
+  "digest_algorithm": "sha256",
+  "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
+  "package_sha256": "7191f1ea0394b45cbce55e473f91461c6076a2db3586ce6a720f5568190d4ff3",
+  "files": [
+    {
+      "path": "src/content/feedbackTextConsentV11.ts",
+      "sha256": "2cf7c8c620efb78e860eff7899cc6ea336641729e439f2a09334bb3c8c727ce2"
+    },
+    {
+      "path": "src/content/guardianFeedbackTextPolicyV11.ts",
+      "sha256": "c8df458dc8669aae014183a2b3527bde05b653ff25067fd88e9ccd4c54a65a78"
+    },
+    {
+      "path": "src/components/feedback-intelligence/FeedbackQuestionnairePreview.tsx",
+      "sha256": "43845d85eb5773dba5ca6d05bc631ec119126aa5ea75882154fd767f4c03429c"
+    },
+    {
+      "path": "src/pages/GuardianDecision.tsx",
+      "sha256": "f7abd72d949c715a75db7e90a2596041e11b5abb4109a87d5a4d017703af9186"
+    },
+    {
+      "path": "src/pages/Privacy.tsx",
+      "sha256": "0677591b34298a01d6239faf265f49abe875ae07931dd7a52ff2a540c9b250d2"
+    },
+    {
+      "path": "src/pages/Settings.tsx",
+      "sha256": "db5235cbafaec157b6813ae7b8a470d45ad16b68c3ee8e383b3f72043b033a19"
+    },
+    {
+      "path": "supabase/migrations/20260813115737_feedback_consent_guardian_de_v1_1_final_contract.sql",
+      "sha256": "6a2933e3d33a41fe0c35523be795160c04f030dfccf3f4579078fabb0784eba9"
+    },
+    {
+      "path": "scripts/verify-feedback-consent-v1-1-final-contract-sql.mjs",
+      "sha256": "d8d0bf328bbe7d568df7937642d5d89ba8bfb3483272a7bdaea1eb3b71b53ca1"
+    },
+    {
+      "path": "src/test/feedbackConsentV11Contract.test.ts",
+      "sha256": "e285aa9759b47f2dfb11cbf715c5240b3a256542febe32d1eddc024f244d2d25"
+    },
+    {
+      "path": "src/test/feedbackIntelligencePreview.test.tsx",
+      "sha256": "c98cba1ff89c9cf891943b5da2d8484d4e8e71a3eb113bbab0b84d0fa772e657"
+    },
+    {
+      "path": "src/test/feedbackTextConsentSettings.test.tsx",
+      "sha256": "393e415348ddcb117f313f569ee1ab38fbf9e784bc69c99da783398d20c8b0ee"
+    },
+    {
+      "path": "docs/feedback-intelligence/FINAL_DE_CONSENT_GUARDIAN_CONTRACT_V1_1.md",
+      "sha256": "db01cfa5d337aefa640e4dff3e86b86d5decbb0ebb10f71d24c5a39d842a39ce"
+    },
+    {
+      "path": "docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md",
+      "sha256": "bcdaa755f9590f48021f0d81b19b3760a11bb70993f38794079a86a26131f5d4"
+    },
+    {
+      "path": "docs/feedback-intelligence/APP_STORE_REVIEW_HANDOFF_V1_1.md",
+      "sha256": "15f96cd17c96db9f723e543c2eadc95b6f073e1f5aa5dd6c7a6229391c17d9e1"
+    },
+    {
+      "path": "docs/APP_STORE_CONNECT_V1_1_SUBMISSION_DRAFT_2026-08-11.md",
+      "sha256": "f3783fb72fe8744d91623cfed989fb9b286e2ff91be3a9be73658b20054ebe0d"
+    }
+  ],
+  "release_scope": {
+    "jurisdiction": "DE",
+    "product_minimum_age": 13,
+    "guardian_required_below_age": 16,
+    "guardian_age_range": "13-15",
+    "athlete_self_decision_age_range": "16-17",
+    "non_de_status": "out_of_scope"
+  },
+  "notice_pins": {
+    "scope": "product-improvement-individual-text-ai-analysis-v1",
+    "athlete_consent_version": "feedback-text-consent-v1.1.0",
+    "athlete_notice_sha256": "c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16",
+    "guardian_policy_reference": "guardian-feedback-text-de-v1.1.0",
+    "guardian_notice_sha256": "90b0ede2a1a7671f1631e2048a605e6331006972ee05e63d38d229857f0aeb0b",
+    "raw_text_retention_days": 365,
+    "processor_mode": "no_external_processor"
+  },
+  "historical_semantics_boundary": {
+    "contract_version": "0.3.3-draft",
+    "manifest_sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f",
+    "can_authorize_this_contract": false
+  },
+  "activation": {
+    "independent_consumer_review_complete": false,
+    "legal_privacy_minor_review_complete": false,
+    "production_migration_applied": false,
+    "campaigns_active": false,
+    "athlete_collection_enabled": false,
+    "text_collection_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false,
+    "guardian_policy_active": false,
+    "jarvis_production_credential_present": false,
+    "jarvis_real_data_read_enabled": false
+  }
+}

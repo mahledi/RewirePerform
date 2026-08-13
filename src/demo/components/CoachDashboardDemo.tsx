@@ -14,7 +14,7 @@ export const CoachDashboardDemo = () => {
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-primary">Coach-Ansicht</p>
           <h2 className="font-heading text-3xl font-bold md:text-5xl">Orientierung, ohne private Reflexion zu öffnen.</h2>
           <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-            Die Demo zeigt beispielhaft Teamzustand, Aktivität, beobachtete Entwicklung und Coaching-Impulse.
+            Die Demo zeigt beispielhaft Teamzustand, Aktivität, Programmverlauf und Coaching-Impulse.
             Alle Werte sind statisch.
           </p>
         </div>
@@ -102,7 +102,7 @@ const ReadinessPanel = () => (
         ["Energie", "mittel", "62%"],
         ["Fokus", "stabil", "71%"],
         ["Druck", "erhöht", "68%"],
-        ["Tageslinse", "Fehlererholung", "Tag 12"],
+        ["Tageslinie", "Urteil zu Information", "Tag 12"],
       ].map(([label, value, detail]) => (
         <div key={label} className="rounded-2xl border border-border bg-background/70 p-5">
           <p className="text-sm text-muted-foreground">{label}</p>
@@ -119,10 +119,10 @@ const EvidencePanel = () => (
     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
       <div>
         <p className="text-sm text-muted-foreground">Demo-Werte · Beispielhafte Darstellung</p>
-        <h3 className="mt-2 font-heading text-3xl font-bold">Entwicklung sichtbar machen, ohne Rohinhalte zu zeigen.</h3>
+        <h3 className="mt-2 font-heading text-3xl font-bold">Programmverlauf sichtbar machen, ohne Rohinhalte zu zeigen.</h3>
       </div>
       <div className="rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground md:max-w-xs">
-        Keine medizinische Aussage. Keine Garantie. Nur eine Beispielansicht für Fortschritt, Teilnahme und Retests.
+        Keine Wirkungswertung. Die Ansicht zeigt nur Nutzung, Teilnahme und Programmfortschritt.
       </div>
     </div>
     <div className="space-y-5">
@@ -130,21 +130,12 @@ const EvidencePanel = () => (
         <div key={bar.label} className="rounded-2xl border border-border bg-background/70 p-5">
           <div className="mb-4 flex items-center justify-between gap-4">
             <p className="font-heading font-semibold">{bar.label}</p>
-            <p className="text-sm text-muted-foreground">Pre · Mid · Post</p>
+            <p className="text-sm text-muted-foreground">{bar.value}/{bar.max}</p>
           </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            {(["pre", "mid", "post"] as const).map((key) => (
-              <div key={key}>
-                <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-                  <span>{key.toUpperCase()}</span>
-                  <span>{bar[key]}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted">
-                  <div className="h-2 rounded-full bg-primary" style={{ width: `${bar[key]}%` }} />
-                </div>
-              </div>
-            ))}
+          <div className="h-2 rounded-full bg-muted">
+            <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.round((bar.value / bar.max) * 100)}%` }} />
           </div>
+          <p className="mt-3 text-xs text-muted-foreground">{bar.detail}</p>
         </div>
       ))}
     </div>
@@ -174,19 +165,19 @@ const TeamsPanel = () => (
       <p className="text-sm text-muted-foreground">Demo Teamverwaltung</p>
       <h3 className="mt-2 font-heading text-3xl font-bold">Einladung, Programmstart und Teamkalender.</h3>
       <p className="mt-4 leading-relaxed text-muted-foreground">
-        In der echten App verwaltet der Coach Teams, Zugangscode, Programmstart und Teamkalender. Diese Vorschau ist nur ein Mockup.
+        In der echten App verwaltet der Coach Athleteneinladungen, persönliche Co-Coach-Einladungen, Programmstart und Teamkalender. Diese Vorschau ist nur ein Mockup.
       </p>
     </div>
     <div className="rounded-2xl border border-border bg-background/70 p-5">
       <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary/10 p-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-primary">Einladungscode</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-primary">Athleteneinladung</p>
           <p className="mt-1 font-heading text-2xl font-bold">RW-DEMO</p>
         </div>
         <Copy className="h-5 w-5 text-primary" />
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <InfoPill icon={<ShieldCheck className="h-4 w-4" />} text="Rollenbasiert" />
+        <InfoPill icon={<ShieldCheck className="h-4 w-4" />} text="Co-Coach persönlich einladen" />
         <InfoPill icon={<TrendingUp className="h-4 w-4" />} text="Programmfortschritt" />
       </div>
     </div>

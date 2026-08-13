@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AccountDeletionDialog } from "@/components/settings/AccountDeletionDialog";
+import { FeedbackTextConsentSettings } from "@/components/settings/FeedbackTextConsentSettings";
 import { PasswordChangeDialog } from "@/components/settings/PasswordChangeDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMinorAuthorization } from "@/hooks/useMinorAuthorization";
 import { supabase } from "@/integrations/supabase/client";
 import type { DataContributionConsentState } from "@/lib/dataContributionConsent";
+import { isFeedbackIntelligenceClientEnabled } from "@/lib/feedbackIntelligenceApi";
 import {
   revokeMinorAuthorization,
   saveAuthorizedDataContribution,
@@ -411,6 +413,12 @@ const AccountSettings = () => {
             </p>
           </div>
         </motion.section>
+        )}
+
+        {role === "athlete" && isFeedbackIntelligenceClientEnabled() && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }}>
+            <FeedbackTextConsentSettings />
+          </motion.div>
         )}
 
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>

@@ -1,4 +1,4 @@
-import { Brain, Clock, Lightbulb, Lock, Target, Trophy } from "lucide-react";
+import { Brain, Clock, Lightbulb, Lock, Target, TrendingUp } from "lucide-react";
 
 export const MockPhoneFrame = () => (
   <div className="mx-auto w-full max-w-[340px] rounded-[2rem] border border-white/15 bg-black/60 p-3 shadow-2xl">
@@ -9,7 +9,7 @@ export const MockPhoneFrame = () => (
           <p className="text-xs uppercase tracking-[0.2em] text-primary">Tag 12</p>
           <h3 className="mt-1 font-heading text-2xl font-bold">Urteil zu Information</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Science Bite, Tagesrahmen, Check-in und Denkaufgabe.
+            Science Bite, Tages-Puls und eine klare Mission.
           </p>
         </div>
         <div className="rounded-2xl border border-border bg-card p-4">
@@ -46,7 +46,7 @@ export const MockPhoneFrame = () => (
         <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-primary" />
-            <p className="font-heading font-semibold">Denkaufgabe</p>
+            <p className="font-heading font-semibold">Deine Mission</p>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             Warum heute · Wann aktiv · Reframing · Self-Talk
@@ -83,18 +83,18 @@ export const MockDesktopFrame = () => (
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-primary">
-              <Trophy className="h-4 w-4" />
-              <p className="font-heading font-semibold">Wirkung · Demo-Werte</p>
+              <TrendingUp className="h-4 w-4" />
+              <p className="font-heading font-semibold">Programmverlauf · Demo-Werte</p>
             </div>
             <div className="mt-4 space-y-3">
-              {["Fehlererholung", "Prozessfokus", "Druckregulation"].map((label, index) => (
+              {["Programmtage", "Missionen", "Team-Reviews"].map((label, index) => (
                 <div key={label}>
                   <div className="mb-1 flex justify-between text-xs text-muted-foreground">
                     <span>{label}</span>
-                    <span>{62 + index * 4}%</span>
+                    <span>{["12/14", "11/14", "2/2"][index]}</span>
                   </div>
                   <div className="h-2 rounded-full bg-muted">
-                    <div className="h-2 rounded-full bg-primary" style={{ width: `${62 + index * 4}%` }} />
+                    <div className="h-2 rounded-full bg-primary" style={{ width: `${[86, 79, 100][index]}%` }} />
                   </div>
                 </div>
               ))}

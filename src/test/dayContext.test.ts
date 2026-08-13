@@ -17,8 +17,8 @@ describe("day context resolution", () => {
         expect(resolved?.calendarEventType).toBe(contextType);
         expect(resolved?.content.title).toBeTruthy();
         expect(resolved?.content.lens).toBeTruthy();
-        expect(resolved?.content.tasks).toHaveLength(3);
-        expect(resolved?.content.journal.questions.length).toBeGreaterThanOrEqual(4);
+        expect(resolved?.content.tasks).toHaveLength(1);
+        expect(resolved?.content.journal.questions.length).toBeGreaterThanOrEqual(2);
         expect(resolved?.context.focus.trim()).not.toBe("");
       }
     }
@@ -42,7 +42,9 @@ describe("day context resolution", () => {
       expect(competition?.content.tasks.map((task) => task.systemFunction)).toEqual(
         base?.tasks.map((task) => task.systemFunction),
       );
-      expect(rest?.content.journal.questions.map((question) => question.id)).toEqual(
+      expect(training?.content.selfTalkAnchors).toEqual(rest?.content.selfTalkAnchors);
+      expect(rest?.content.selfTalkAnchors).toEqual(competition?.content.selfTalkAnchors);
+      expect(rest?.content.journal.questions.map((question) => question.id)).not.toEqual(
         base?.journal.questions.map((question) => question.id),
       );
     }
@@ -61,9 +63,10 @@ describe("day context resolution", () => {
     for (let dayNumber = 1; dayNumber <= 56; dayNumber += 1) {
       const rest = resolveDay(dayNumber, testDate, "rest");
       expect(rest?.context.label).toBe("Ruhetag");
-      expect(rest?.context.checkin.taskIntro).toContain("keine sportliche Situation herstellen");
-      expect(rest?.context.journal.intro).toContain("keine erfundene Leistung");
-      expect(rest?.content.tasks.every((task) => task.whenToUse.includes("mentalen Probe"))).toBe(true);
+      expect(rest?.context.checkin.taskIntro).toContain("kurze Visualisierung");
+      expect(rest?.context.checkin.taskIntro).toContain("RewirePerform-Satz");
+      expect(rest?.context.checkin.taskIntro).not.toContain("eigene Sportszene");
+      expect(rest?.context.journal.intro).toContain("Visualisierung");
       expect(
         rest?.content.journal.questions.every((question) => !/\bheute\b/i.test(question.question)),
       ).toBe(true);
@@ -76,10 +79,11 @@ describe("day context resolution", () => {
       const competition = resolveDay(dayNumber, testDate, "competition");
 
       expect(training?.context.label).toBe("Trainingstag");
-      expect(training?.content.journal.questions.every((question) =>
-        question.placeholder?.includes("frühere Trainingsszene"))).toBe(true);
+      expect(training?.content.journal.questions.length).toBeGreaterThanOrEqual(2);
       expect(competition?.context.label).toBe("Wettkampftag");
-      expect(competition?.content.tasks.every((task) => task.whenToUse.includes("Halte die Anwendung kurz"))).toBe(true);
+      expect(competition?.context.checkin.taskIntro).toContain("eine Mission und einen Satz");
+      expect(competition?.content.journal.questions.every((question) =>
+        question.id.includes("competition"))).toBe(true);
     }
   });
 

@@ -4,7 +4,7 @@ Status: aktive Kontextbeschreibung mit offenem Prioritaetskonflikt `BD-03`.
 
 RewirePerform befindet sich in kontrollierter Pilot- und Launch-Haertung. Der Code enthaelt run-spezifisches Mannschaftstracking, einen atomaren Daily-Tracking-RPC, NLZ Pilot Readiness, Evidence-Dossiers, PWA/Web-Push und eine Capacitor-iOS-Shell.
 
-Der juengste Repository-Bericht dokumentiert erfolgreiche Staging-Pruefungen. Er beweist keinen produktiven Deployment-Stand. Mehrtaegiger Zeitlauf, echter iPhone/TestFlight-Test und separat freigegebener Production-Schritt bleiben offen.
+Der juengste Repository-Bericht dokumentiert erfolgreiche, ausschliesslich synthetische Feedback-Intelligence-Pruefungen im getrennten Free-Staging-Projekt `zbeswjipayspgvcipzmx`. Er beweist keinen produktiven Deployment-Stand. Rechtliche Deutschland-/Minor-Freigabe, mehrtaegiger Zeitlauf, echter iPhone/TestFlight-Test, Jarvis-Real-Read und separat freigegebener Production-Schritt bleiben offen.
 
 Zwei prioritaere Arbeitslinien sind bestaetigt:
 

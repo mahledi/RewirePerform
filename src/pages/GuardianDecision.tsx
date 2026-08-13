@@ -38,9 +38,11 @@ import {
   inspectGuardianManagement,
   revokeGuardianAuthorization,
   submitGuardianDecision,
+  setGuardianFeedbackTextAuthorization,
   withdrawGuardianDataContribution,
   type GuardianLinkStatus,
 } from "@/lib/minorAuthorization";
+import { guardianFeedbackTextPolicyCopyV11 } from "@/content/guardianFeedbackTextPolicyV11";
 import {
   guardianPolicyCopy,
   guardianPolicyDetails,
@@ -115,6 +117,7 @@ const GuardianDecision = () => {
   const [guardianDeclaration, setGuardianDeclaration] = useState(false);
   const [productAccepted, setProductAccepted] = useState(false);
   const [contribution, setContribution] = useState(false);
+  const [feedbackText, setFeedbackText] = useState(false);
   const [actionError, setActionError] = useState(false);
   const [managementMessage, setManagementMessage] = useState<string | null>(null);
   const [result, setResult] = useState<{ state: string; receiptDelivery?: string; manageUrl?: string | null } | null>(null);
@@ -188,6 +191,23 @@ const GuardianDecision = () => {
       }
     };
 
+    const setOptionalFeedbackText = async (authorized: boolean) => {
+      setBusy(true);
+      setActionError(false);
+      setManagementMessage(null);
+      try {
+        const next = await setGuardianFeedbackTextAuthorization(managementToken, authorized);
+        setStatus((current) => current ? { ...current, ...next } : next);
+        setManagementMessage(authorized
+          ? "Freiwillige Feedback-Kommentare sind freigegeben. Die minderjährige Person entscheidet an jedem Checkpoint weiterhin selbst."
+          : "Die Freigabe für Feedback-Kommentare ist widerrufen. Kommentare und personenbeziehbare Ableitungen werden gelöscht; das Programm bleibt aktiv.");
+      } catch {
+        setActionError(true);
+      } finally {
+        setBusy(false);
+      }
+    };
+
     const revoke = async () => {
       setBusy(true);
       setActionError(false);
@@ -209,11 +229,65 @@ const GuardianDecision = () => {
           <p className="mt-6 text-xs font-semibold uppercase text-primary">Persönlicher Verwaltungslink</p>
           <h1 className="mt-2 font-heading text-2xl font-semibold sm:text-3xl">Freigabe verwalten</h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Du kannst die getrennte Pilot-Auswertung beenden oder die gesamte Freigabe für {athleteName} widerrufen.
+            Du kannst freiwillige Feedback-Kommentare und die getrennte Pilot-Auswertung unabhängig verwalten oder die gesamte Freigabe für {athleteName} widerrufen.
           </p>
 
           <div className="mt-8 border-y border-border">
             <div className="grid gap-4 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div>
+                <p className="text-sm font-semibold">Freiwillige Feedback-Kommentare</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Nur ausdrücklich gekennzeichnete Produktfeedback-Kommentare. Journale und private Reflexionen bleiben ausgeschlossen.
+                </p>
+              </div>
+              {status.feedback_text_authorization_state === "granted" ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="h-11 w-full sm:w-auto" disabled={busy}>
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      Feedback-Kommentare widerrufen
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Feedback-Kommentare widerrufen?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Vorhandene Kommentare und personenbeziehbare Analyseableitungen werden gelöscht. Strukturierte Antworten und der normale Programmzugang bleiben erhalten.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void setOptionalFeedbackText(false)}>Jetzt widerrufen</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : status.feedback_text_authorization_available === true ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="h-11 w-full sm:w-auto" disabled={busy}>
+                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                      Freiwillig erlauben
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Freiwillige Feedback-Kommentare erlauben?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {guardianFeedbackTextPolicyCopyV11.detail} {guardianFeedbackTextPolicyCopyV11.retention}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Nicht erlauben</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void setOptionalFeedbackText(true)}>Freiwillig erlauben</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : (
+                <span className="text-sm font-medium text-muted-foreground">Nicht aktiv</span>
+              )}
+            </div>
+
+            <div className="grid gap-4 border-t border-border py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <div>
                 <p className="text-sm font-semibold">Pilot-Auswertung</p>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
@@ -333,7 +407,12 @@ const GuardianDecision = () => {
     setBusy(true);
     setActionError(false);
     try {
-      setResult(await submitGuardianDecision(decisionToken, productAuthorized, productAuthorized && contribution));
+      setResult(await submitGuardianDecision(
+        decisionToken,
+        productAuthorized,
+        productAuthorized && contribution,
+        productAuthorized && feedbackText,
+      ));
     } catch {
       setActionError(true);
     } finally {
@@ -388,6 +467,12 @@ const GuardianDecision = () => {
                 <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
                   {guardianPolicyDetails.dataGroups.map((item) => <li key={item}>• {item}</li>)}
                 </ul>
+                {status.feedback_text_authorization_available === true && (
+                  <p className="mt-4 border-l-2 border-primary/50 pl-3 text-sm leading-6 text-muted-foreground">
+                    <span className="font-semibold text-foreground">Klare Ausnahme: </span>
+                    {guardianFeedbackTextPolicyCopyV11.privateContentClarification}
+                  </p>
+                )}
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="visibility">
@@ -405,6 +490,22 @@ const GuardianDecision = () => {
                 <p className="text-sm leading-6 text-muted-foreground">{guardianPolicyDetails.evidenceBoundary}</p>
               </AccordionContent>
             </AccordionItem>
+            {status.feedback_text_authorization_available === true && (
+              <AccordionItem value="feedback-text">
+                <AccordionTrigger className="text-left text-sm">Was bedeutet die Feedback-Kommentar-Freigabe?</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-3 text-sm leading-6 text-muted-foreground">
+                    <p>{guardianFeedbackTextPolicyCopyV11.purpose}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV11.athleteChoice}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV11.includedData}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV11.excludedData}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV11.processor}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV11.retention}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV11.withdrawal}</p>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
             <AccordionItem value="recipients">
               <AccordionTrigger className="text-left text-sm">Welche Dienstleister erhalten Daten?</AccordionTrigger>
               <AccordionContent>
@@ -436,8 +537,8 @@ const GuardianDecision = () => {
         <aside className="h-fit rounded-lg border border-border bg-card lg:sticky lg:top-8">
           <div className="border-b border-border px-5 py-5 sm:px-6">
             <p className="text-xs font-semibold uppercase text-primary">Deine Entscheidung</p>
-            <h2 className="mt-2 font-heading text-xl font-semibold">Zugang und Pilot getrennt wählen</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">Keine Auswahl ist vorausgewählt. Du kannst die Pilot-Auswertung später unabhängig vom Programm widerrufen.</p>
+            <h2 className="mt-2 font-heading text-xl font-semibold">Zugang und freiwillige Auswertungen getrennt wählen</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">Keine Auswahl ist vorausgewählt. Freiwillige Entscheidungen können später unabhängig vom Programm widerrufen werden.</p>
           </div>
 
           <div className="px-5 sm:px-6">
@@ -455,6 +556,21 @@ const GuardianDecision = () => {
                 <span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{guardianPolicyCopy.productDetail}</span>
               </Label>
             </div>
+
+            {status.feedback_text_authorization_available === true && (
+              <div className="my-3 flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] px-4 py-5">
+                <Checkbox
+                  id="guardian-feedback-text"
+                  checked={feedbackText}
+                  onCheckedChange={(value) => setFeedbackText(value === true)}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="guardian-feedback-text" className="min-h-11 min-w-0 flex-1 cursor-pointer">
+                  <span className="block text-sm font-semibold">{guardianFeedbackTextPolicyCopyV11.label}</span>
+                  <span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{guardianFeedbackTextPolicyCopyV11.detail}</span>
+                </Label>
+              </div>
+            )}
 
             <div className="flex items-start gap-3 py-5">
               <Checkbox id="guardian-contribution" checked={contribution} onCheckedChange={(value) => setContribution(value === true)} className="mt-0.5" />

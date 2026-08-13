@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2 } from "lucide-react";
+import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -16,7 +16,8 @@ import AdminDayBrowser from "@/components/admin/AdminDayBrowser";
 import AdminComprehensionInsights from "@/components/admin/AdminComprehensionInsights";
 import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
-import CoachAccessApprovalPanel from "@/components/admin/CoachAccessApprovalPanel";
+import AdminCommandCenter from "@/components/admin/AdminCommandCenter";
+import OrganizationRequestManager from "@/components/admin/OrganizationRequestManager";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
@@ -305,7 +306,7 @@ const opsSplitLabel: Record<string, string> = {
 };
 
 const Admin = () => {
-  const { role, loading: authLoading, user, signOut } = useAuth();
+  const { role, roleVerified, roleLoading, loading: authLoading, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [teams, setTeams] = useState<TeamRow[]>([]);
@@ -320,26 +321,32 @@ const Admin = () => {
   const [studyIncludeTest, setStudyIncludeTest] = useState(false);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState<string>("overview");
+  const [tab, setTab] = useState<string>("command");
   const [evidenceView, setEvidenceView] = useState<"overview" | "portfolio" | "team" | "solo" | "comprehension">("overview");
   const [didInitDevice, setDidInitDevice] = useState(false);
   useEffect(() => {
     if (didInitDevice) return;
-    setTab(isMobile ? "home" : "overview");
+    setTab(isMobile ? "home" : "command");
     setDidInitDevice(true);
   }, [isMobile, didInitDevice]);
 
   const ADMIN_SECTIONS: Array<{ id: string; title: string; description: string; icon: typeof UsersIcon }> = [
-    { id: "overview", title: "Übersicht", description: "Programm, Datenlage und nächste operative Signale.", icon: LayoutGrid },
-    { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
-    { id: "teams", title: "Teams", description: "Aggregierte Teamdaten, keine Einzeldaten.", icon: UsersIcon },
-    { id: "access", title: "Coach-Zugänge", description: "Bestehende Konten persönlich prüfen, freigeben und einem Team zuordnen.", icon: Shield },
+    { id: "command", title: "Zentrale", description: "Entscheidungen, Partneranfragen und nächste operative Schritte.", icon: LayoutGrid },
+    { id: "access", title: "Partneranfragen", description: "Organisationen prüfen, vorbereiten und persönlich freigeben.", icon: Building2 },
+    { id: "teams", title: "Teams", description: "Teams, Coaches und Programmstart verwalten.", icon: UsersIcon },
     { id: "pilot", title: "Pilotsteuerung", description: "Programmläufe, Zuordnung und operative Startbereitschaft.", icon: ShieldCheck },
     { id: "evidence", title: "Daten & Exporte", description: "Ergebnisse, Exporte und internes Programmverständnis.", icon: BarChart3 },
+    { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
     { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
     { id: "health", title: "Datenqualität & System", description: "Operative Vollständigkeit, Systemgesundheit und Launch-Ops.", icon: HeartPulse },
   ];
   const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
+  const primaryAdminSections = ADMIN_SECTIONS.filter((section) =>
+    ["command", "access", "teams", "pilot", "evidence"].includes(section.id),
+  );
+  const specialistAdminSections = ADMIN_SECTIONS.filter((section) =>
+    ["days", "feedback", "health"].includes(section.id),
+  );
   const showMobileHome = isMobile && tab === "home";
   const showMobileBack = isMobile && tab !== "home";
 
@@ -380,12 +387,24 @@ const Admin = () => {
     setLoading(false);
   }, [studyIncludeTest]);
 
-  useEffect(() => {
-    if (!authLoading && isAdmin) loadAll();
-    else if (!authLoading) setLoading(false);
-  }, [authLoading, isAdmin, loadAll]);
+  const loadTeamsOnly = useCallback(async () => {
+    setLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc("get_admin_teams_summary", { include_test: false });
+    if (!error && data) setTeams(data as TeamRow[]);
+    setLoading(false);
+  }, []);
 
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading && isAdmin && !["command", "home", "days", "pilot", "access", "teams"].includes(tab)) loadAll();
+    else if (!authLoading) setLoading(false);
+  }, [authLoading, isAdmin, loadAll, tab]);
+
+  useEffect(() => {
+    if (!authLoading && isAdmin && tab === "teams") void loadTeamsOnly();
+  }, [authLoading, isAdmin, loadTeamsOnly, tab]);
+
+  if (authLoading || roleLoading || (user && !roleVerified)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -393,20 +412,8 @@ const Admin = () => {
     );
   }
 
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Kein Zugriff</CardTitle>
-            <CardDescription>
-              Diese Seite ist nur für Admin-Konten verfügbar.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
+  if (!user) return <Navigate to="/auth?mode=login" replace />;
+  if (!isAdmin) return <Navigate to={role === "coach" ? "/coach" : "/dashboard"} replace />;
 
   const updateFeedback = async (id: string, status: string) => {
     const note = noteDraft[id];
@@ -440,12 +447,12 @@ const Admin = () => {
             <div className="min-w-0">
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-primary">RewirePerform</p>
               <h1 className="text-2xl md:text-3xl font-bold leading-tight">
-                {isMobile ? "Admin" : "Admin Control Center"}
+                {isMobile ? "Admin" : "Founder Command Center"}
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
                 {isMobile
-                  ? "Control Center · aggregierte Daten."
-                  : "Aggregierte Programm- und Systemdaten. Keine Kausalaussage ohne Kontrollgruppe."}
+                  ? "Entscheidungen und Organisation."
+                  : "Organisation steuern, Entscheidungen treffen und Daten gezielt öffnen."}
               </p>
             </div>
           </div>
@@ -520,7 +527,7 @@ const Admin = () => {
         {/* Mobile home: vertical card nav */}
         {showMobileHome ? (
           <div className="w-full min-w-0 space-y-3">
-            {ADMIN_SECTIONS.map((s) => (
+            {primaryAdminSections.map((s) => (
               <MobileNavCard
                 key={s.id}
                 icon={s.icon}
@@ -529,31 +536,30 @@ const Admin = () => {
                 onClick={() => setTab(s.id)}
               />
             ))}
-            <MobileNavCard
-              icon={BookOpen}
-              title="Content offline"
-              description="Content offline bearbeiten und vorbereiten."
-              onClick={() => navigate("/admin/content")}
-            />
-            <MobileNavCard
-              icon={TestTube2}
-              title="QA Test Lab"
-              description="Testumgebung und QA-Tools."
-              onClick={() => navigate("/admin/qa")}
-            />
+            <details className="group rounded-2xl border border-border/70 bg-card">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-muted-foreground">Fachbereiche und interne Werkzeuge <span className="text-primary transition-transform group-open:rotate-45">+</span></summary>
+              <div className="space-y-2 border-t border-border/60 p-3">
+                {specialistAdminSections.map((s) => (
+                  <button key={s.id} type="button" onClick={() => setTab(s.id)} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm text-muted-foreground hover:bg-secondary/60 hover:text-foreground"><s.icon className="h-4 w-4 text-primary" />{s.title}</button>
+                ))}
+                <button type="button" onClick={() => navigate("/admin/content")} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm text-muted-foreground hover:bg-secondary/60 hover:text-foreground"><BookOpen className="h-4 w-4 text-primary" />Content offline</button>
+                <button type="button" onClick={() => navigate("/admin/qa")} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm text-muted-foreground hover:bg-secondary/60 hover:text-foreground"><TestTube2 className="h-4 w-4 text-primary" />QA Test Lab</button>
+              </div>
+            </details>
           </div>
         ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 w-full gap-1`}>
-            <TabsTrigger value="overview">Übersicht</TabsTrigger>
-            <TabsTrigger value="days">Tage</TabsTrigger>
+          <TabsList className={`${isMobile ? "hidden" : ""} grid h-auto min-h-10 grid-cols-5 w-full gap-1`}>
+            <TabsTrigger value="command">Zentrale</TabsTrigger>
+            <TabsTrigger value="access">Partner</TabsTrigger>
             <TabsTrigger value="teams">Teams</TabsTrigger>
-            <TabsTrigger value="access">Coach-Zugänge</TabsTrigger>
-            <TabsTrigger value="pilot">Pilotsteuerung</TabsTrigger>
+            <TabsTrigger value="pilot">Pilot</TabsTrigger>
             <TabsTrigger value="evidence">Daten & Exporte</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="health">Datenqualität</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="command" className="mt-4">
+            <AdminCommandCenter onNavigate={setTab} />
+          </TabsContent>
 
 
           {/* OVERVIEW */}
@@ -809,12 +815,7 @@ const Admin = () => {
 
           {/* COACH ACCESS */}
           <TabsContent value="access" className="mt-4">
-            <CoachAccessApprovalPanel
-              teams={teams.map((team) => ({ id: team.id, name: team.name }))}
-              onApproved={() => {
-                void loadAll();
-              }}
-            />
+            <OrganizationRequestManager />
           </TabsContent>
 
           {/* PILOT CONTROL */}

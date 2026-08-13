@@ -4,7 +4,29 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/((?!\\.well-known/|assets/|app-icon.png|og-image.png|robots.txt|offline.html|sw.js|workbox-|manifest.webmanifest|site.webmanifest).*)",
+      "source": "/join",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|TelegramBot).*"
+        }
+      ],
+      "destination": "/team-invite-preview.html"
+    },
+    {
+      "source": "/organization/invite",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(WhatsApp|facebookexternalhit|Facebot|Twitterbot|LinkedInBot|TelegramBot).*"
+        }
+      ],
+      "destination": "/coach-invite-preview.html"
+    },
+    {
+      "source": "/((?!\\.well-known/|assets/|app-icon.png|og-image.png|og-invite.png|team-invite-preview.html|coach-invite-preview.html|robots.txt|offline.html|sw.js|workbox-|manifest.webmanifest|site.webmanifest).*)",
       "destination": "/index.html"
     }
   ],

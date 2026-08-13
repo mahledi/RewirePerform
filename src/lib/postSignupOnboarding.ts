@@ -139,6 +139,7 @@ export const pendingPostSignupIntent = (userId: string): PostSignupIntent | null
 
 export const completePostSignupOnboarding = (userId: string, intent: PostSignupIntent) => {
   const current = readState(userId);
+  if (current?.status === "complete" && current.intent === intent) return;
   writeState(userId, {
     version: POST_SIGNUP_ONBOARDING_VERSION,
     status: "complete",

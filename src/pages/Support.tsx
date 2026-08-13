@@ -34,7 +34,7 @@ const Support = () => {
               <h2 className="font-heading text-lg font-semibold">Kontakt</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Bei Login-Problemen, Teamzugang, Datenschutzfragen oder technischem Feedback.
+              Bei Login-Problemen, fehlerhaften Einladungen, Datenschutzfragen oder technischem Feedback.
             </p>
             <a
               href={SUPPORT_MAILTO}

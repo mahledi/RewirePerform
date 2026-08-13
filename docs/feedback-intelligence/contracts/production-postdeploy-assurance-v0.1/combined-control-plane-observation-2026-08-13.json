@@ -1,0 +1,14 @@
+{
+  "schema_version": "rewireperform-production-postdeploy-control-plane-observation-v1",
+  "observed_at": "2026-08-13T11:20:16Z",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "contract": "rewireperform-production-postdeploy-control-plane-audit-v1",
+  "migration_count": 104,
+  "reader_password_is_null": true,
+  "collection_closed": true,
+  "machine_closed": true,
+  "private_function_count": 1,
+  "public_runtime_callable_count": 0,
+  "application_rows_read": false,
+  "database_mutated": false
+}

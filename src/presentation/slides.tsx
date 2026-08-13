@@ -468,12 +468,11 @@ const Slide08 = () => {
 const Slide09 = () => {
   const steps = [
     { label: "Science Bite", note: "verstehen" },
-    { label: "Aufgabe 1 · Haupthebel", note: "anwenden" },
-    { label: "Aufgabe 2 · Verstärkung", note: "anwenden" },
-    { label: "Aufgabe 3 · Reibung & Transfer", note: "anwenden" },
-    { label: "Abend-Journal", note: "reflektieren" },
-    { label: "Dankbarkeit · 5 Zeilen", note: "konsolidieren" },
-    { label: "Check-in", note: "wiederholen" },
+    { label: "Eine Mission", note: "anwenden" },
+    { label: "Verständnis-Check", note: "festigen" },
+    { label: "Pre-Training", note: "aktiv erinnern" },
+    { label: "Tagesjournal", note: "reflektieren" },
+    { label: "Dankbarkeit · ein Block", note: "Blick öffnen" },
   ];
   return (
     <SlideFrame kicker="Daily Flow">
@@ -747,7 +746,7 @@ const Slide15 = () => (
     </h2>
     <div className="mt-10 grid gap-6 md:grid-cols-3">
       {[
-        { tag: "Morgens", title: "Spieler-Dashboard", body: "Science Bite, 3 Aufgaben, Check-in." },
+        { tag: "Morgens", title: "Spieler-Dashboard", body: "Science Bite, eine Mission, Verständnis-Check." },
         { tag: "Abends", title: "Journal & Dankbarkeit", body: "Reflexion. Konsolidierung. Mustererkennung." },
         { tag: "Über Zeit", title: "Coach Dashboard", body: "Entwicklung sichtbar, Vertrauen intakt." },
       ].map((c) => (

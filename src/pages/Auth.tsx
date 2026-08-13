@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound } from "lucide-react";
+import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
+import TeamAccessLink from "@/components/access/TeamAccessLink";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   AuthStatusLayout,
@@ -27,6 +28,7 @@ import {
 import { safeInternalRoute } from "@/lib/internalRoute";
 import {
   beginPostSignupOnboarding,
+  completePostSignupOnboarding,
   pendingPostAuthorizationTeamCode,
   pendingPostSignupIntent,
   queuePostAuthorizationTeamJoin,
@@ -34,7 +36,7 @@ import {
 import { normalizeTeamInviteCode } from "@/lib/teamInvite";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
-type Intent = "solo" | "join";
+type Intent = "solo" | "join" | "organization";
 type TeamJoinStatus = "idle" | "confirmation";
 
 const Auth = () => {
@@ -50,10 +52,17 @@ const Auth = () => {
   const legacyTeamCode = authFlow === "signup" ? null : searchParams.get("code");
   const urlCode = searchParams.get("team") ?? legacyTeamCode;
   const requestedMode = searchParams.get("mode");
+  const introAudience = searchParams.get("intro") === "athlete"
+    ? "athlete"
+    : searchParams.get("intro") === "coach"
+      ? "coach"
+      : null;
   const authLinkError = parseAuthLinkError(window.location.search, window.location.hash);
   const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
   const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
-  const { user, role, roleVerified, loading: authLoading, verifyRole } = useAuth();
+  const isOrganizationInvite = urlIntent === "organization"
+    && Boolean(safeRedirect?.startsWith("/organization/invite"));
+  const { user, role, roleVerified, loading: authLoading, verifyRole, signOut } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
   const [teamJoinStatus, setTeamJoinStatus] = useState<TeamJoinStatus>("idle");
   const [retryingRole, setRetryingRole] = useState(false);
@@ -61,16 +70,10 @@ const Auth = () => {
   useEffect(() => {
     if (!forceSwitch) return;
     // Sign out any existing session so the login form is shown
-    supabase.auth.signOut().finally(() => {
-      try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
-      try {
-        const cachedUserId = window.localStorage.getItem("cached_user_id");
-        if (cachedUserId) window.localStorage.removeItem(`cached_user_role:${cachedUserId}`);
-        window.localStorage.removeItem("cached_user_id");
-      } catch { /* noop */ }
+    signOut().finally(() => {
       setSwitching(false);
     });
-  }, [forceSwitch]);
+  }, [forceSwitch, signOut]);
 
   const initialMode: Mode = authLinkError
     ? "link-error"
@@ -83,7 +86,11 @@ const Auth = () => {
       : urlIntent === "join" || urlCode
         ? "signup"
         : "intent";
-  const initialIntent: Intent = urlIntent === "join" || urlCode ? "join" : "solo";
+  const initialIntent: Intent = isOrganizationInvite
+    ? "organization"
+    : urlIntent === "join" || urlCode
+      ? "join"
+      : "solo";
 
   const [mode, setMode] = useState<Mode>(initialMode);
   const [intent, setIntent] = useState<Intent>(initialIntent);
@@ -117,6 +124,8 @@ const Auth = () => {
   const activeTeamJoinCode = intent === "join"
     ? confirmedTeamJoinCode || normalizedTeamCode()
     : "";
+  const athleteIntroComplete = introAudience === "athlete" && intent !== "organization";
+  const coachIntroComplete = introAudience === "coach" && intent === "organization";
   const signupMetadata = user?.user_metadata as Record<string, unknown> | undefined;
   const metadataOnboardingIntent = authFlow === "signup"
     && signupMetadata?.rewireperform_post_signup_onboarding_version === "1"
@@ -132,7 +141,12 @@ const Auth = () => {
       redirectUrl.searchParams.set("intent", "join");
       const code = normalizedTeamCode();
       if (code) redirectUrl.searchParams.set("team", code);
+    } else if (intent === "organization" && safeRedirect) {
+      redirectUrl.searchParams.set("intent", "organization");
+      redirectUrl.searchParams.set("redirect", safeRedirect);
     }
+    if (athleteIntroComplete) redirectUrl.searchParams.set("intro", "athlete");
+    if (coachIntroComplete) redirectUrl.searchParams.set("intro", "coach");
     return redirectUrl.toString();
   };
 
@@ -184,8 +198,9 @@ const Auth = () => {
 
   const confirmTeamJoin = () => {
     if (!activeTeamJoinCode || !user) return;
+    if (athleteIntroComplete) completePostSignupOnboarding(user.id, "join");
     const requiresOnboarding = Boolean(
-      pendingPostSignupIntent(user.id) || metadataOnboardingIntent,
+      !athleteIntroComplete && (pendingPostSignupIntent(user.id) || metadataOnboardingIntent),
     );
     if (requiresOnboarding && !pendingPostSignupIntent(user.id)) {
       beginPostSignupOnboarding(user.id, "join");
@@ -199,6 +214,7 @@ const Auth = () => {
 
   const cancelConfirmedTeamJoin = () => {
     if (!user) return;
+    if (athleteIntroComplete) completePostSignupOnboarding(user.id, "join");
     const pendingIntent = pendingPostSignupIntent(user.id);
     if (!pendingIntent && metadataOnboardingIntent) {
       beginPostSignupOnboarding(user.id, metadataOnboardingIntent);
@@ -239,6 +255,10 @@ const Auth = () => {
     if (authLoading || switching || verifyingCode || !user) return;
     if (authLinkError) return;
     if (!roleVerified || role === null) return;
+    if (isOrganizationInvite && safeRedirect) {
+      navigate(safeRedirect, { replace: true });
+      return;
+    }
     if (role === "admin") {
       navigate("/admin", { replace: true });
       return;
@@ -249,7 +269,13 @@ const Auth = () => {
     }
     if (isConfirmedTeamJoinReturn) return;
     if (authFlow === "signup") {
-      if (!pendingPostSignupIntent(user.id) && metadataOnboardingIntent) {
+      if (intent === "organization" && safeRedirect) {
+        navigate(safeRedirect, { replace: true });
+        return;
+      }
+      if (athleteIntroComplete && metadataOnboardingIntent) {
+        completePostSignupOnboarding(user.id, metadataOnboardingIntent);
+      } else if (!pendingPostSignupIntent(user.id) && metadataOnboardingIntent) {
         beginPostSignupOnboarding(user.id, metadataOnboardingIntent);
       }
       navigate(pendingPostSignupIntent(user.id) ? "/questionnaire" : "/dashboard", { replace: true });
@@ -257,7 +283,7 @@ const Auth = () => {
     else if (pendingPostSignupIntent(user.id)) navigate("/questionnaire", { replace: true });
     else if (safeRedirect) navigate(safeRedirect, { replace: true });
     else if (role === "athlete") navigate("/dashboard", { replace: true });
-  }, [user, role, roleVerified, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, verifyingCode, authFlow, authLinkError, metadataOnboardingIntent]);
+  }, [user, role, roleVerified, authLoading, switching, navigate, safeRedirect, isConfirmedTeamJoinReturn, isOrganizationInvite, verifyingCode, authFlow, authLinkError, metadataOnboardingIntent, intent, athleteIntroComplete]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,13 +313,16 @@ const Auth = () => {
         : roleData?.role === "coach"
           ? "/coach"
           : "/dashboard";
+      if (roleData?.role !== "admin" && roleData?.role !== "coach" && athleteIntroComplete) {
+        completePostSignupOnboarding(data.user.id, intent === "join" ? "join" : "solo");
+      }
       if (intent === "join") {
         if (roleData?.role === "admin" || roleData?.role === "coach") {
           navigate(nextRoute, { replace: true });
           setLoading(false);
           return;
         }
-        const requiresOnboarding = Boolean(pendingPostSignupIntent(data.user.id));
+        const requiresOnboarding = Boolean(!athleteIntroComplete && pendingPostSignupIntent(data.user.id));
         if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, requiresOnboarding)) {
           toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
           setLoading(false);
@@ -334,11 +363,16 @@ const Auth = () => {
       email: email.trim(),
       password,
       options: {
-        data: {
-          full_name: fullName.trim(),
-          rewireperform_post_signup_onboarding_version: "1",
-          rewireperform_post_signup_onboarding_intent: intent,
-        },
+        data: intent === "organization"
+          ? {
+              full_name: fullName.trim(),
+              rewireperform_account_purpose: "organization_invite",
+            }
+          : {
+              full_name: fullName.trim(),
+              rewireperform_post_signup_onboarding_version: "1",
+              rewireperform_post_signup_onboarding_intent: intent,
+            },
         emailRedirectTo: emailRedirectTo(),
       },
     });
@@ -366,8 +400,11 @@ const Auth = () => {
       return;
     }
 
-    beginPostSignupOnboarding(data.user.id, intent);
-    if (intent === "join" && !queuePostAuthorizationTeamJoin(data.user.id, teamCode, true)) {
+    if (intent !== "organization") {
+      if (athleteIntroComplete) completePostSignupOnboarding(data.user.id, intent);
+      else beginPostSignupOnboarding(data.user.id, intent);
+    }
+    if (intent === "join" && !queuePostAuthorizationTeamJoin(data.user.id, teamCode, !athleteIntroComplete)) {
       toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
       setLoading(false);
       return;
@@ -383,7 +420,7 @@ const Auth = () => {
 
     toast.success("Konto erstellt! Willkommen.");
 
-    navigate("/questionnaire");
+    navigate(intent === "organization" && safeRedirect ? safeRedirect : "/questionnaire");
     setLoading(false);
   };
 
@@ -445,14 +482,23 @@ const Auth = () => {
     }
 
     await backfillProfileSport(data.user.id);
-    beginPostSignupOnboarding(data.user.id, intent);
+    if (intent !== "organization") {
+      if (athleteIntroComplete) completePostSignupOnboarding(data.user.id, intent);
+      else beginPostSignupOnboarding(data.user.id, intent);
+    }
     if (intent === "join") {
-      if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, true)) {
+      if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, !athleteIntroComplete)) {
         toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
         setVerifyingCode(false);
         return;
       }
       navigate("/questionnaire", { replace: true });
+      return;
+    }
+
+    if (intent === "organization" && safeRedirect) {
+      toast.success("E-Mail bestätigt.");
+      navigate(safeRedirect, { replace: true });
       return;
     }
 
@@ -521,6 +567,34 @@ const Auth = () => {
     return (
       <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
     );
+  }
+
+  if (!user && !forceSwitch && !authLinkError && authFlow !== "signup") {
+    if (initialMode === "intent") {
+      return <Navigate to="/start" replace />;
+    }
+
+    if (initialIntent === "organization" && isOrganizationInvite && introAudience !== "coach" && safeRedirect) {
+      const params = new URLSearchParams({
+        redirect: safeRedirect,
+        auth_mode: initialMode === "login" ? "login" : "signup",
+      });
+      return <Navigate to={`/start/coach?${params.toString()}`} replace />;
+    }
+
+    if (
+      initialIntent !== "organization"
+      && introAudience !== "athlete"
+      && (initialMode === "signup" || initialIntent === "join")
+    ) {
+      const params = new URLSearchParams({
+        intent: initialIntent === "join" ? "join" : "solo",
+        auth_mode: initialMode === "login" ? "login" : "signup",
+      });
+      const code = normalizeTeamInviteCode(urlCode ?? "");
+      if (initialIntent === "join" && code) params.set("team", code);
+      return <Navigate to={`/start/athlete?${params.toString()}`} replace />;
+    }
   }
 
   if (user && !roleVerified && mode !== "link-error") {
@@ -722,13 +796,19 @@ const Auth = () => {
             />
           </div>
 
-          <p className="mt-6 rounded-lg border border-border/60 bg-secondary/30 px-4 py-3 text-center text-xs leading-relaxed text-muted-foreground">
-            Coach-Zugänge werden nach einer Anfrage über den{" "}
-            <Link to="/support" className="font-medium text-primary hover:underline">
-              Support
-            </Link>{" "}
-            persönlich geprüft und freigegeben.
-          </p>
+          <TeamAccessLink
+            className="group mt-6 flex min-h-20 items-center gap-4 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/[0.05] to-card px-4 py-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.12] active:scale-[0.99]"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
+              <Building2 className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Für Verantwortliche</span>
+              <span className="mt-1 block font-heading text-base font-semibold text-foreground">Für Teams &amp; Organisationen</span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">RewirePerform kontrolliert in einem Team, Verein oder einer Organisation einführen.</span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+          </TeamAccessLink>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
             Bereits registriert?{" "}
@@ -760,6 +840,8 @@ const Auth = () => {
             <p className="text-muted-foreground text-sm">
               {intent === "join"
                 ? "Melde dich an, um den Teambeitritt mit deinem Code abzuschließen."
+                : intent === "organization"
+                  ? "Melde dich mit der eingeladenen E-Mail-Adresse an, um den Organisationszugang zu bestätigen."
                 : "Melde dich an, um dein Programm fortzusetzen."}
             </p>
           </div>
@@ -818,10 +900,12 @@ const Auth = () => {
   // ─── SIGNUP ───────────────────────────────────────────────────
   const intentTitle =
     intent === "solo" ? "Du startest allein."
-    : "Du trittst einem Team bei.";
+    : intent === "join" ? "Du trittst einem Team bei."
+    : "Dein Organisationszugang.";
   const intentSub =
     intent === "solo" ? "Dein personalisiertes Mental-Performance-Programm beginnt gleich."
-    : "Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast.";
+    : intent === "join" ? "Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast."
+    : "Registriere dich mit der persönlich eingeladenen E-Mail-Adresse. Danach bestätigst du deine freigegebene Rolle.";
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
@@ -831,7 +915,7 @@ const Auth = () => {
         className="w-full max-w-md min-w-0"
       >
         <button
-          onClick={() => setMode("intent")}
+          onClick={() => intent === "organization" && safeRedirect ? navigate(safeRedirect) : setMode("intent")}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> Zurück

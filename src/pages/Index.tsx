@@ -23,7 +23,7 @@ const Index = () => {
   useEffect(() => {
     if (loading) return;
     if (!user && Capacitor.isNativePlatform()) {
-      navigate("/auth", { replace: true });
+      navigate("/start", { replace: true });
       return;
     }
     if (!user || !role) return;
@@ -68,6 +68,7 @@ const Index = () => {
           <BrandLockup symbolSize={28} textClassName="text-base text-foreground" />
           <span>© 2026 RewirePerform. Alle Rechte vorbehalten.</span>
           <nav aria-label="Rechtliches" className="flex flex-wrap justify-center gap-4 text-xs">
+            <Link to="/team-access" className="hover:text-foreground">Teams &amp; Organisationen</Link>
             <Link to="/privacy" className="hover:text-foreground">Datenschutz</Link>
             <Link to="/imprint" className="hover:text-foreground">Impressum</Link>
             <Link to="/support" className="hover:text-foreground">Support</Link>

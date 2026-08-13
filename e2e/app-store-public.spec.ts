@@ -19,7 +19,7 @@ const capture = async (page: Page, testInfo: TestInfo, name: string) => {
 const firstRunSceneHeadings = [
   "Du siehst sofort, was ansteht.",
   "Zuerst verstehst du den Fokus des Tages.",
-  "Drei konkrete Aufgaben bringen ihn in deinen Alltag.",
+  "Eine klare Mission bringt ihn in deinen Alltag.",
   "Ein kurzer Check festigt, was du heute brauchst.",
   "Vor dem Training siehst du denselben Fokus wieder.",
   "Am Abend reflektierst du den echten Tag.",
@@ -36,6 +36,11 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Trainiere das System");
   await expect(page.getByRole("button", { name: "Demo ansehen" }).first()).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "RewirePerform im App Store" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Im App Store/ })).toHaveAttribute(
+    "href",
+    "https://apps.apple.com/de/app/rewireperform/id6795463263",
+  );
   await expectNoHorizontalOverflow(page);
   await capture(page, testInfo, "home");
 
@@ -54,16 +59,42 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   expect(pageErrors).toEqual([]);
 });
 
+test("team invitation is a professional app-and-web handoff", async ({ page }, testInfo) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.goto("/join?team=abc123");
+  await expect(page.getByRole("heading", { name: "Dein Team wartet auf dich." })).toBeVisible();
+  await expect(page.getByText("ABC123")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Teambeitritt starten/ })).toHaveAttribute(
+    "href",
+    "/auth?mode=signup&intent=join&team=ABC123",
+  );
+  await expect(page.getByRole("link", { name: "RewirePerform im App Store" })).toHaveAttribute(
+    "href",
+    "https://apps.apple.com/de/app/rewireperform/id6795463263",
+  );
+  await expectNoHorizontalOverflow(page);
+  await capture(page, testInfo, "team-invitation");
+
+  await page.goto("/join?team=BAD%2F12");
+  await expect(page.getByRole("alert")).toContainText("vollständigen Link");
+  await expect(page.getByRole("link", { name: /Zur Registrierung/ })).toHaveAttribute(
+    "href",
+    "/auth?mode=signup&intent=join&invite_error=invalid",
+  );
+  await expectNoHorizontalOverflow(page);
+  expect(pageErrors).toEqual([]);
+});
+
 test("auth flow exposes accessible controls and legal links", async ({ page }, testInfo) => {
-  await page.goto("/auth");
-  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
+  await page.goto("/auth?mode=signup&intent=solo&intro=athlete");
+  await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
   await expect(page.getByRole("link", { name: "Datenschutz" })).toHaveAttribute("href", "/privacy");
   await expect(
     page.getByLabel("Rechtliches und Hilfe").getByRole("link", { name: "Support" }),
   ).toHaveAttribute("href", "/support");
 
-  await page.getByRole("button", { name: /Allein starten/ }).click();
-  await expect(page.getByRole("heading", { level: 1, name: "Du startest allein." })).toBeVisible();
   await expect(page.getByLabel("Vollständiger Name")).toHaveAttribute("autocomplete", "name");
   await expect(page.getByLabel("E-Mail")).toHaveAttribute("autocomplete", "email");
   await expect(page.getByLabel("Passwort")).toHaveAttribute("autocomplete", "new-password");
@@ -71,11 +102,47 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
   await capture(page, testInfo, "auth-signup");
 });
 
-test("the athlete introduction is no longer exposed before authentication", async ({ page }) => {
-  await page.goto("/welcome");
-  await expect(page).toHaveURL(/\/auth\?redirect=%2Fwelcome$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Wie startest du?" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).not.toBeVisible();
+test("organization inquiry review stays aligned and explains privacy in-app", async ({ page }) => {
+  await page.goto("/team-access");
+  await expect(page.getByRole("heading", { name: "Wie möchtet ihr RewirePerform einführen?" })).toBeVisible();
+  await page.getByRole("button", { name: /Verein oder Organisation einführen/ }).click();
+  await page.getByLabel("Name").fill("Alexandra Beispielperson mit langem Namen");
+  await page.getByLabel("Funktion / Position").fill("Sportliche Leitung und Organisationsentwicklung");
+  await page.getByLabel("Geschäftliche E-Mail").fill("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de");
+  await page.getByLabel("Organisation").fill("Sportverein mit einem außergewöhnlich langen Organisationsnamen");
+  await page.getByRole("button", { name: "Verein", exact: true }).click();
+  await page.getByLabel("Sportart(en)").fill("Volleyball, Fußball, Leichtathletik");
+  await page.getByRole("button", { name: "Weiter", exact: true }).click();
+
+  await page.getByRole("button", { name: /Mentale Routinen im Alltag verankern/ }).click();
+  await page.getByRole("button", { name: "Persönliche Einführung" }).click();
+  await page.getByRole("button", { name: "Anpassung an die Organisation" }).click();
+  await page.getByRole("button", { name: "Reporting und Auswertung" }).click();
+  await page.getByRole("button", { name: "Weiter", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Bereit für den nächsten Schritt." })).toBeVisible();
+  await expect(page.getByText("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
+  await expect(page.getByText(/Teststand:/)).toHaveCount(0);
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("button", { name: "Datenschutz zur Anfrage ansehen" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Datenschutz bei eurer Anfrage" })).toBeVisible();
+  await expect(page.getByText(/keine Namen oder persönlichen Daten von Athleten/i)).toBeVisible();
+  await expect(page.getByText(/spätestens zwölf Monate nach Abschluss/i)).toBeVisible();
+  await expect(page.getByText(/Fake- oder Spam-Anfragen.*sofort vollständig gelöscht/i)).toBeVisible();
+  await page.getByRole("button", { name: "Verstanden" }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expectNoHorizontalOverflow(page);
+});
+
+test("the role-specific athlete introduction is intentionally available before authentication", async ({ page }) => {
+  await page.goto("/start");
+  await expect(page.getByRole("heading", { level: 1, name: "Wie nutzt du RewirePerform?" })).toBeVisible();
+  await page.getByRole("button", { name: /Ich bin Athlet/ }).click();
+  await expect(page).toHaveURL(/\/start\/athlete$/);
+  await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).toBeVisible();
 });
 
 test("internal introduction evidence completes without collecting personal data", async ({ page }, testInfo) => {
@@ -88,7 +155,11 @@ test("internal introduction evidence completes without collecting personal data"
 
   for (const [index, heading] of firstRunSceneHeadings.entries()) {
     await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
-    await expect(page.getByLabel(`Schritt ${index + 1} von 10`)).toBeVisible();
+    if (index < firstRunSceneHeadings.length - 1) {
+      await expect(page.getByLabel(`Schritt ${index + 1} von 10`)).toBeVisible();
+    } else {
+      await expect(page.getByLabel("Schritt 10 von 10")).toHaveCount(0);
+    }
     expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
     await expectNoHorizontalOverflow(page);
 
@@ -189,8 +260,7 @@ test.describe("email confirmation", () => {
       });
     });
 
-    await page.goto("/auth?redirect=%2Fadmin%2Fqa");
-    await page.getByRole("button", { name: /Allein starten/ }).click();
+    await page.goto("/auth?mode=signup&intent=solo&intro=athlete&redirect=%2Fadmin%2Fqa");
     await page.getByLabel("Vollständiger Name").fill("QA Confirmation");
     await page.getByLabel("E-Mail").fill("qa-confirmation@example.com");
     await page.getByLabel("Passwort").fill("secure-test-password");
@@ -204,7 +274,12 @@ test.describe("email confirmation", () => {
     await expect(page.getByText("qa-confirmation@example.com")).toBeVisible();
     await expect(page.getByRole("button", { name: "E-Mail erneut senden" })).toBeVisible();
     await expect(page.getByRole("button", { name: "E-Mail-Adresse ändern" })).toBeVisible();
-    await expect(page).toHaveURL(/\/auth\?redirect=%2Fadmin%2Fqa$/);
+    const confirmationUrl = new URL(page.url());
+    expect(confirmationUrl.pathname).toBe("/auth");
+    expect(confirmationUrl.searchParams.get("mode")).toBe("signup");
+    expect(confirmationUrl.searchParams.get("intent")).toBe("solo");
+    expect(confirmationUrl.searchParams.get("intro")).toBe("athlete");
+    expect(confirmationUrl.searchParams.get("redirect")).toBe("/admin/qa");
     await expectNoHorizontalOverflow(page);
     await capture(page, testInfo, "auth-email-confirmation");
   });

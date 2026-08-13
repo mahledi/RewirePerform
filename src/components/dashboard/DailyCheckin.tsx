@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
 import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
-import TodayForYou from "@/components/daily/TodayForYou";
+import RestDayMission, { type RestDayPlanMode } from "@/components/daily/RestDayMission";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,10 +28,6 @@ import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { ensureAssignment, upsertCompletion, drawComprehensionQuestions } from "@/lib/dayAssignment";
 import { saveDailyTracking, type DailyTrackingComprehensionResult } from "@/lib/dailyTracking";
-import {
-  buildMicroAdjustmentContext,
-  type MicroAdjustmentOutput,
-} from "@/lib/microAdjustment";
 import { pulseQuestionsByContext } from "@/lib/dayContext";
 import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
@@ -46,6 +42,7 @@ import {
   type TransferPulseResponse,
 } from "@/lib/performanceEvidence";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
+import { getProgramDayDraft } from "@/content/programV11";
 
 type EventType = CalendarEventType;
 
@@ -53,6 +50,7 @@ interface DailyCheckinProps {
   eventType: EventType;
   date: Date;
   onClose: () => void;
+  initialFocus?: "rest-visualization";
   /** Preview/Admin mode: no DB writes, force a specific day, no navigation on completion. */
   previewMode?: boolean;
   /** Force a specific day number instead of computing from program start (preview only). */
@@ -75,6 +73,9 @@ interface CheckinDraft {
   teamConnection: number | null;
   transferPulseResponse?: TransferPulseResponse | null;
   transferPulseResponseDurationMs?: number | null;
+  restPlanMode?: RestDayPlanMode;
+  restReminderTime?: string;
+  restReminderScheduled?: boolean;
   savedAt: string;
 }
 
@@ -89,68 +90,6 @@ const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; colo
   competition: { label: "Wettkampftag", icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/20" },
 };
 
-const numberOrUndefined = (value: unknown): number | undefined => (
-  typeof value === "number" && Number.isFinite(value) ? value : undefined
-);
-
-const asRecord = (value: unknown): Record<string, unknown> | null => (
-  value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null
-);
-
-const score100ToSignal = (score: unknown): number | undefined => {
-  const n = numberOrUndefined(score);
-  if (typeof n !== "number") return undefined;
-  return Math.max(0, Math.min(1, (100 - n) / 100));
-};
-
-const score100ToStrength = (score: unknown): number | undefined => {
-  const n = numberOrUndefined(score);
-  if (typeof n !== "number") return undefined;
-  return Math.max(0, Math.min(1, n / 100));
-};
-
-const maxSignal = (...values: Array<number | undefined>) => {
-  const valid = values.filter((value): value is number => typeof value === "number");
-  return valid.length ? Math.max(...valid) : undefined;
-};
-
-const buildQuestionnaireSignals = (analysis: Record<string, unknown> | null) => {
-  if (!analysis) return undefined;
-  const scores = asRecord(analysis.scores);
-  const categoryScores = asRecord(analysis.category_scores) ?? asRecord(scores?.category_scores);
-  const itemScores = asRecord(scores?.item_scores);
-  const inner = asRecord(analysis.inner_excellence_profile);
-
-  return {
-    resultFocus: maxSignal(
-      score100ToSignal(categoryScores?.focus_presence),
-      score100ToSignal(categoryScores?.motivation_purpose),
-      score100ToSignal(itemScores?.["mot-05"])
-    ),
-    selfCriticism: maxSignal(
-      score100ToSignal(categoryScores?.identity_selfworth),
-      score100ToSignal(categoryScores?.mistakes_evaluation),
-      score100ToSignal(itemScores?.["id-01"]),
-      score100ToSignal(itemScores?.["id-02"])
-    ),
-    judgementFear: maxSignal(
-      score100ToSignal(itemScores?.["err-04"]),
-      score100ToSignal(itemScores?.["id-04"]),
-      score100ToSignal(categoryScores?.environment_team)
-    ),
-    egoVisibility: maxSignal(
-      score100ToSignal(itemScores?.["id-04"]),
-      score100ToSignal(itemScores?.["id-05"]),
-      score100ToSignal(inner?.ego_freedom_score)
-    ),
-    confidence: maxSignal(
-      score100ToStrength(analysis.start_profile_score),
-      score100ToStrength(scores?.start_profile_score),
-      score100ToStrength(inner?.presence_level)
-    ),
-  };
-};
-
 const normalizeDraftStep = (draftStep: number | null | undefined) => {
   const safeStep = typeof draftStep === "number" && Number.isFinite(draftStep) ? draftStep : 0;
 
@@ -163,20 +102,27 @@ const normalizeDraftStep = (draftStep: number | null | undefined) => {
   return Math.max(0, safeStep);
 };
 
-const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDayNumber }: DailyCheckinProps) => {
+const DailyCheckin = ({
+  eventType,
+  date,
+  onClose,
+  initialFocus,
+  previewMode = false,
+  previewDayNumber,
+}: DailyCheckinProps) => {
   const { user, role, isTestUser } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialFocus === "rest-visualization" ? 3 : 0);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [selectedTask, setSelectedTask] = useState<DailyTask | null>(null);
   const [assignmentId, setAssignmentId] = useState<string | null>(null);
   const [comprehensionQuestions, setComprehensionQuestions] = useState<ComprehensionQuestion[]>([]);
   const [comprehensionDone, setComprehensionDone] = useState(false);
-  const [microAdjustment, setMicroAdjustment] = useState<MicroAdjustmentOutput | null>(null);
   const [moodBefore, setMoodBefore] = useState<number | null>(null);
   const [energyLevel, setEnergyLevel] = useState<number | null>(null);
   // Team Pulse — erweiterte Wohlbefindens-Metriken (1-10)
@@ -194,6 +140,11 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
+  const [restPlanMode, setRestPlanMode] = useState<RestDayPlanMode>(
+    initialFocus === "rest-visualization" ? "now" : null,
+  );
+  const [restReminderTime, setRestReminderTime] = useState("15:00");
+  const [restReminderScheduled, setRestReminderScheduled] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const transferPulseStartedAtRef = useRef<number | null>(null);
 
@@ -276,7 +227,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       setResolved(r);
       setAssignmentId(null);
       setComprehensionQuestions(drawComprehensionQuestions(r.matrix.dayNumber, 3));
-      setMicroAdjustment(null);
     }
     setLoadingTasks(false);
   };
@@ -290,19 +240,12 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     transferPulseStartedAtRef.current = null;
     const dateStr = format(date, "yyyy-MM-dd");
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("sport, position, team")
-      .eq("id", user.id)
-      .maybeSingle();
-
     const result = await ensureAssignment({
       userId: user.id,
       date,
       contextType: eventType,
-      sport: profile?.sport ?? null,
-      // Bevorzuge das neue, semantisch korrekte Feld; Fallback auf Legacy-Feld für ältere Profile.
-      position: profile?.position ?? profile?.team ?? null,
+      sport: null,
+      position: null,
     });
 
     if (result) {
@@ -348,8 +291,17 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         setTransferPulseResponseDurationMs(
           normalizeEvidenceDurationMs(local.transferPulseResponseDurationMs),
         );
+        setRestPlanMode(local.restPlanMode ?? null);
+        setRestReminderTime(local.restReminderTime ?? "15:00");
+        setRestReminderScheduled(local.restReminderScheduled ?? false);
       } else if (persistedTaskIds.length > 0) {
         setCompletedTasks(persistedTaskIds);
+      }
+
+      if (initialFocus === "rest-visualization") {
+        setStep(3);
+        setRestPlanMode("now");
+        setRestReminderScheduled(false);
       }
 
       const scheduledPulse = getTransferPulseForDay(result.resolved.matrix.dayNumber, eventType);
@@ -396,72 +348,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         }
       }
 
-      // ─── Micro-Adjustment Layer ─────────────────────────
-      // Lädt nur bestehende Daten, kein KI-Call, undefined-safe.
-      let todayCheckinQuery = supabase
-        .from("daily_checkins")
-        .select("mood_before, energy_level, focus_rating, wellbeing_metrics")
-        .eq("user_id", user.id)
-        .eq("date", dateStr)
-        .limit(1);
-      todayCheckinQuery = instance?.id
-        ? todayCheckinQuery.eq("program_instance_id", instance.id)
-        : todayCheckinQuery.is("program_instance_id", null);
-
-      let questionnaireQuery = supabase
-        .from("questionnaire_responses")
-        .select("analysis")
-        .eq("user_id", user.id)
-        .not("analysis", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(1);
-      if (instance?.id) questionnaireQuery = questionnaireQuery.eq("program_instance_id", instance.id);
-
-      const [{ data: todayCheckins }, { data: questionnaireRows }] = await Promise.all([
-        todayCheckinQuery,
-        questionnaireQuery,
-      ]);
-      const todayCheckin = todayCheckins?.[0] ?? null;
-      const questionnaire = questionnaireRows?.[0] ?? null;
-      const wellbeingMetrics = asRecord(todayCheckin?.wellbeing_metrics);
-
-      // Robuste, optionale Signal-Extraktion aus der bestehenden Analyse.
-      // Keine Diagnosen, keine privaten Rohantworten im UI — nur grobe Musterlinien.
-      const analysis = (questionnaire?.analysis ?? null) as Record<string, unknown> | null;
-      const questionnaireSignals = buildQuestionnaireSignals(analysis);
-      const localCheckin = local
-        ? {
-            mood: local.moodBefore,
-            energy: local.energyLevel,
-            focus: local.focusClarity,
-            stress: local.stress ?? local.pressure,
-          }
-        : undefined;
-
-      const micro = buildMicroAdjustmentContext({
-        day: {
-          dayNumber: result.resolved.matrix.dayNumber,
-          lens: result.resolved.content.title ?? result.resolved.content.lens ?? result.resolved.matrix.lens,
-          primaryMechanism: result.resolved.matrix.primaryMechanism,
-          recurrenceType: result.resolved.matrix.recurrenceType,
-          phase: result.resolved.matrix.phase,
-        },
-        contextType: eventType,
-        profile: {
-          sport: profile?.sport ?? null,
-          position: profile?.position ?? profile?.team ?? null,
-        },
-        questionnaireSignals,
-        checkin: todayCheckin
-          ? {
-              mood: todayCheckin.mood_before ?? null,
-              energy: todayCheckin.energy_level ?? null,
-              focus: todayCheckin.focus_rating ?? null,
-              stress: numberOrUndefined(wellbeingMetrics?.stress) ?? numberOrUndefined(wellbeingMetrics?.pressure) ?? null,
-            }
-          : localCheckin,
-      });
-      setMicroAdjustment(micro);
     }
     setLoadingTasks(false);
   };
@@ -472,6 +358,8 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       completedTasks.length > 0 ||
       reflection.trim().length > 0 ||
       transferPulseResponse !== null ||
+      restPlanMode !== null ||
+      restReminderScheduled ||
       [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection]
         .some((value) => value !== null);
     if (!hasDraft) return;
@@ -491,6 +379,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       teamConnection,
       transferPulseResponse,
       transferPulseResponseDurationMs,
+      restPlanMode,
+      restReminderTime,
+      restReminderScheduled,
       savedAt: new Date().toISOString(),
     });
   }, [
@@ -511,6 +402,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     teamConnection,
     transferPulseResponse,
     transferPulseResponseDurationMs,
+    restPlanMode,
+    restReminderTime,
+    restReminderScheduled,
   ]);
 
   const persistTaskProgress = async (taskIds: string[]) => {
@@ -556,30 +450,33 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
   const saveCheckin = async (
     comprehensionResults?: DailyTrackingComprehensionResult[],
+    completedTaskIds: string[] = completedTasks,
   ): Promise<boolean> => {
     if (previewMode) {
       setStep(5);
       return true;
     }
     if (!user?.id || !assignmentId || !resolved) return false;
-    if (saving) return false; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
+    if (savingRef.current) return false; // Race-Schutz: Doppelklick / parallele Auslösungen ignorieren
+    savingRef.current = true;
     setSaveError(null);
     setSaving(true);
     const dateStr = format(date, "yyyy-MM-dd");
     const focusRating = focusClarity
-      ?? (tasks.length > 0 ? Math.max(1, Math.round((completedTasks.length / tasks.length) * 10)) : null);
-    const completedTitles = completedTasks.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
-
-    const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
-    const instance = await getOrCreateActiveInstance(user.id);
-
-    if (!instance?.id) {
-      setSaving(false);
-      setSaveError("Dein Programmlauf ist noch nicht vollständig eingerichtet. Bitte wende dich an den Coach oder Support.");
-      return false;
-    }
+      ?? (tasks.length > 0 ? Math.max(1, Math.round((completedTaskIds.length / tasks.length) * 10)) : null);
+    const completedTitles = completedTaskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
 
     try {
+      const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+      const instance = await getOrCreateActiveInstance(user.id);
+
+      if (!instance?.id) {
+        savingRef.current = false;
+        setSaving(false);
+        setSaveError("Dein Programmlauf ist noch nicht vollständig eingerichtet. Bitte wende dich an den Coach oder Support.");
+        return false;
+      }
+
       await saveDailyTracking({
         assignmentId,
         userId: user.id,
@@ -626,6 +523,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         },
       });
     } catch (error) {
+      savingRef.current = false;
       setSaving(false);
       console.error("Atomic daily tracking save error:", error);
       void captureAppError({
@@ -640,12 +538,17 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
           stage: "atomic_tracking",
         },
       });
-      const { toast } = await import("sonner");
       setSaveError("Dein Check-in ist lokal gesichert. Bitte erneut speichern, sobald die Verbindung stabil ist.");
-      toast.error("Check-in lokal gesichert. Speichern bitte erneut versuchen.");
+      try {
+        const { toast } = await import("sonner");
+        toast.error("Check-in lokal gesichert. Speichern bitte erneut versuchen.");
+      } catch {
+        // The inline retry state remains available if the optional toast cannot load.
+      }
       return false;
     }
 
+    savingRef.current = false;
     setSaving(false);
 
     if (draftKey) clearLocalDraft(draftKey);
@@ -663,7 +566,28 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       return;
     }
     const saved = await saveCheckin(results);
+    if (saved) {
+      setComprehensionDone(true);
+    }
+  };
+
+  const handleEmptyComprehensionComplete = async () => {
+    const saved = await saveCheckin();
     if (saved) setComprehensionDone(true);
+  };
+
+  const finishRestDay = async (completedTaskIds: string[] = completedTasks) => {
+    const saved = await saveCheckin(undefined, completedTaskIds);
+    if (saved) onClose();
+  };
+
+  const handleRestVisualizationComplete = (taskId: string) => {
+    const nextCompletedTasks = completedTasks.includes(taskId)
+      ? completedTasks
+      : [...completedTasks, taskId];
+    setCompletedTasks(nextCompletedTasks);
+    setSelectedTask(null);
+    void finishRestDay(nextCompletedTasks);
   };
 
   const ScienceBiteIntro = () => {
@@ -719,8 +643,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
               </div>
             )}
 
-            {microAdjustment && <TodayForYou data={microAdjustment} />}
-
             <motion.button
               data-testid="daily-science-ack"
               whileHover={{ scale: 1.02 }}
@@ -738,6 +660,42 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
 
   // ─── Task Dashboard ─────────────────────────────
   const TaskDashboard = () => {
+    if (eventType === "rest" && resolved) {
+      const draft = getProgramDayDraft(resolved.matrix.dayNumber);
+      const missionTask = tasks[0];
+      if (!draft || !missionTask) {
+        return (
+          <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-5 text-sm text-muted-foreground">
+            Die Visualisierung für diesen Tag konnte nicht geladen werden.
+          </div>
+        );
+      }
+
+      return (
+        <RestDayMission
+          draft={draft}
+          userId={user?.id ?? null}
+          athleteName={user?.user_metadata?.full_name}
+          date={dateKey}
+          planMode={restPlanMode}
+          reminderTime={restReminderTime}
+          reminderScheduled={restReminderScheduled}
+          completed={completedTasks.includes(missionTask.id)}
+          saving={saving}
+          saveError={saveError}
+          onPlanModeChange={(mode) => {
+            setRestPlanMode(mode);
+            if (mode === "now") setRestReminderScheduled(false);
+          }}
+          onReminderTimeChange={setRestReminderTime}
+          onReminderScheduledChange={setRestReminderScheduled}
+          onComplete={() => handleRestVisualizationComplete(missionTask.id)}
+          onRetrySave={() => void finishRestDay()}
+          onCloseForLater={onClose}
+        />
+      );
+    }
+
     return (
       <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
         <div className="flex items-center justify-between mb-2">
@@ -796,14 +754,22 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
     );
   };
 
-  const flowStepTitles = [
-    "Science Bite",
-    "Dein Tages-Puls",
-    activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
-    "Deine Aufgaben",
-    "Verständnis-Check",
-    "Abgeschlossen",
-  ] as const;
+  const flowStepTitles = eventType === "rest"
+    ? [
+        "Science Bite",
+        "Dein Tages-Puls",
+        activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
+        "Visualisierung",
+      ]
+    : [
+        "Science Bite",
+        "Dein Tages-Puls",
+        activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
+        "Deine Mission",
+        "Verständnis-Check",
+        "Abgeschlossen",
+      ];
+  const flowStageCount = eventType === "rest" ? 4 : 5;
 
   return (
     <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[#0D0E12] text-[#EEF0F2]">
@@ -821,7 +787,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
       />
       <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
         <div className="mx-auto flex max-w-lg items-center gap-2">
-          {Array.from({ length: 5 }, (_, index) => (
+          {Array.from({ length: flowStageCount }, (_, index) => (
             <div
               key={index}
               className={`h-1 flex-1 rounded-full ${
@@ -830,14 +796,16 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
             />
           ))}
           <span className="ml-1 text-[10px] tabular-nums text-white/42">
-            {step === 5 ? "5/5" : `${Math.min(step + 1, 5)}/5`}
+            {step === 5
+              ? `${flowStageCount}/${flowStageCount}`
+              : `${Math.min(step + 1, flowStageCount)}/${flowStageCount}`}
           </span>
         </div>
       </div>
 
       <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-5 py-7">
         <div className="mx-auto w-full max-w-lg">
-          {saveError && (
+          {saveError && !(eventType === "rest" && step === 3) && (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
               {saveError}
             </div>
@@ -964,7 +932,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
                     <p className="text-muted-foreground mb-6 text-sm">
                       {comprehensionQuestions.length > 0
-                        ? "Drei Fragen zur heutigen Linse. Kein Test — nur Festigung."
+                        ? "Eine kurze Frage zur heutigen Linie. Kein Test — nur Festigung."
                         : "Heute kein Check verfügbar. Du kannst direkt abschließen."}
                     </p>
                     {comprehensionQuestions.length > 0 ? (
@@ -975,7 +943,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                     ) : (
                       <motion.button
                         data-testid="comprehension-empty-finish"
-                        onClick={() => saveCheckin()}
+                        onClick={handleEmptyComprehensionComplete}
                         disabled={saving}
                         whileTap={!saving ? { scale: 0.98 } : undefined}
                         className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold transition-all active:scale-[0.98] disabled:opacity-60"
@@ -1024,7 +992,7 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
         </div>
       </div>
 
-      {(step === 1 || step === 2 || step === 3) && !selectedTask && (
+      {(step === 1 || step === 2 || (step === 3 && eventType !== "rest")) && !selectedTask && (
         <div className="sticky bottom-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={handleBack} className="flex min-h-12 items-center gap-2 rounded-xl px-4 py-3 text-white/52 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -1034,7 +1002,6 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
-              const remainingTasks = tasks.filter((task) => !completedTasks.includes(task.id)).length;
               const transferPulseIncomplete = step === 2
                 && Boolean(activeTransferPulse)
                 && transferPulseResponse === null;
@@ -1061,7 +1028,9 @@ const DailyCheckin = ({ eventType, date, onClose, previewMode = false, previewDa
                   }`}
                 >
                   {step === 3 && !tasksComplete
-                    ? `${remainingTasks} ${remainingTasks === 1 ? "Aufgabe" : "Aufgaben"} offen`
+                    ? eventType === "rest"
+                      ? "Visualisierung offen"
+                      : "Mission offen"
                     : "Weiter"}
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>

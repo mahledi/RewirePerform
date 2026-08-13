@@ -18,7 +18,7 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-6 pt-28 pb-14 md:py-32">
+      <div className="relative z-10 container mx-auto px-6 pb-14 pt-40 md:pb-32 md:pt-44">
         <div className="max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -50,7 +50,8 @@ const HeroSection = () => {
             className="text-base md:text-xl text-muted-foreground max-w-2xl mb-7 md:mb-10 leading-relaxed"
           >
             Ein 56-Tage-System für Athleten und Teams, das tägliche mentale
-            Praxis, neurokognitive Prinzipien und messbare Entwicklung verbindet.
+            Praxis, neurokognitive Prinzipien und einen nachvollziehbaren
+            Programmverlauf verbindet.
           </motion.p>
 
           <motion.div

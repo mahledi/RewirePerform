@@ -36,7 +36,7 @@ vi.mock("framer-motion", async () => {
 });
 
 const renderWelcome = (path: string) => render(
-  <MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+  <MemoryRouter initialEntries={[path]}>
     <Routes>
       <Route path="/welcome" element={<Welcome />} />
       <Route path="/questionnaire" element={<div>Fragebogen geöffnet</div>} />

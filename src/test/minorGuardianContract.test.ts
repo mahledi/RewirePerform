@@ -12,6 +12,13 @@ import {
   MINOR_PRODUCT_POLICY_VERSION,
   minorPolicyCanonicalDocument,
 } from "@/content/minorPolicy";
+import {
+  GUARDIAN_FEEDBACK_TEXT_CONSENT_VERSION,
+  GUARDIAN_FEEDBACK_TEXT_NOTICE_HASH,
+  GUARDIAN_FEEDBACK_TEXT_POLICY_REFERENCE,
+  GUARDIAN_FEEDBACK_TEXT_SCOPE,
+  guardianFeedbackTextCanonicalDocument,
+} from "@/content/guardianFeedbackTextPolicy";
 
 const read = (path: string) => readFileSync(resolve(path), "utf8");
 const baseMigration = () => read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
@@ -19,6 +26,8 @@ const currentMigration = () => read("supabase/migrations/20260719085701_guardian
 const evidenceHardeningMigration = () => read("supabase/migrations/20260720080100_add_structured_solo_evidence_locks.sql");
 const teamAggregateMigration = () => read("supabase/migrations/20260720082309_harden_team_mental_state_aggregate.sql");
 const runEvidenceMigration = () => read("supabase/migrations/20260720090000_unify_program_run_evidence_eligibility.sql");
+const guardianFeedbackMigration = () => read("supabase/migrations/20260805145921_guardian_feedback_text_authorization_v1.sql");
+const guardianFeedbackNoticeMigration = () => read("supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql");
 
 describe("minor guardian production contract", () => {
   it("allows the configured native Capacitor origin through hardened edge functions", () => {
@@ -39,6 +48,32 @@ describe("minor guardian production contract", () => {
     expect(calculated).toBe(MINOR_POLICY_CONTENT_HASH);
     expect(migration).toContain(`'${MINOR_POLICY_KEY}'`);
     expect(migration).toContain(`'${MINOR_POLICY_CONTENT_HASH}'`);
+  });
+
+  it("pins the separate guardian feedback-text notice without changing the base product authorization", () => {
+    const calculated = createHash("sha256")
+      .update(JSON.stringify(guardianFeedbackTextCanonicalDocument))
+      .digest("hex");
+    const feedbackMigration = guardianFeedbackNoticeMigration();
+
+    expect(calculated).toBe(GUARDIAN_FEEDBACK_TEXT_NOTICE_HASH);
+    expect(feedbackMigration).toContain(`'${GUARDIAN_FEEDBACK_TEXT_POLICY_REFERENCE}'`);
+    expect(feedbackMigration).toContain(`'${GUARDIAN_FEEDBACK_TEXT_SCOPE}'`);
+    expect(feedbackMigration).toContain(`'${GUARDIAN_FEEDBACK_TEXT_CONSENT_VERSION}'`);
+    expect(feedbackMigration).toContain(`'${GUARDIAN_FEEDBACK_TEXT_NOTICE_HASH}'`);
+    expect(feedbackMigration).not.toContain("UPDATE minor_auth.policy_versions");
+  });
+
+  it("keeps guardian feedback RPCs service-role-only and the policy draft fail-closed", () => {
+    const feedbackMigration = guardianFeedbackMigration();
+    const noticeMigration = guardianFeedbackNoticeMigration();
+
+    expect(noticeMigration).toContain("'draft'");
+    expect(noticeMigration).toContain("'no_external_processor'");
+    expect(feedbackMigration).toContain("feedback_consent.guardian_text_policy_ready('DE')");
+    expect(feedbackMigration).toContain("TO service_role");
+    expect(feedbackMigration).not.toContain("TO authenticated;");
+    expect(feedbackMigration).not.toContain("TO anon;");
   });
 
   it("keeps frontend, Edge Function and database policy versions aligned", () => {

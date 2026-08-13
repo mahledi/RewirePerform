@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/credentialless-staging-preflight-v0.2/evidence.schema.json",
+  "title": "RewirePerform Feedback Intelligence credentialless Staging preflight v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_status",
+    "target",
+    "producer_basis",
+    "accepted_postdeploy",
+    "observations",
+    "runtime_gates",
+    "historical_evidence",
+    "next_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rewireperform-feedback-intelligence-credentialless-staging-preflight-v2"
+    },
+    "evidence_status": {
+      "const": "PASS_V0_3_3_CREDENTIALLESS_PREFLIGHT_UNSIGNED_AWAITING_CONSUMER_REVIEW"
+    },
+    "target": {
+      "type": "object",
+      "required": ["project_ref", "project_name", "region", "environment", "jurisdiction", "data_scope"],
+      "properties": {
+        "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+        "project_name": { "const": "RewirePerform Staging" },
+        "region": { "const": "eu-central-1" },
+        "environment": { "const": "staging" },
+        "jurisdiction": { "const": "DE" },
+        "data_scope": { "const": "synthetic_only" }
+      },
+      "additionalProperties": false
+    },
+    "producer_basis": {
+      "type": "object",
+      "required": ["apple_rc_commit", "postdeploy_integration_commit", "repository_state"],
+      "properties": {
+        "apple_rc_commit": { "const": "5eadb046d4a4902d98393bb0284a5471bc3d2a20" },
+        "postdeploy_integration_commit": { "const": "061076d5d35e4c443ca6a482c0dc6676a46a0832" },
+        "repository_state": { "const": "PINNED_COMMITTED_INPUTS" }
+      },
+      "additionalProperties": false
+    },
+    "accepted_postdeploy": {
+      "type": "object",
+      "required": ["producer_commit", "evidence_sha256", "manifest_sha256", "package_sha256", "consumer_commit", "consumer_acceptance_sha256", "review_status"],
+      "properties": {
+        "producer_commit": { "const": "bdba136a30e95718f47da545ec575b81378f659f" },
+        "evidence_sha256": { "const": "cb48c6efaf4ac0da906608ac0191e749850693016a3d6379ae8a69acae8a6999" },
+        "manifest_sha256": { "const": "39d3188144515cf48ac5ac7bdb3ad4275a3698ccf5430355b8cc59bdb01401d9" },
+        "package_sha256": { "const": "2dc086363fd4bfe8523550471fa24548de838e57d9a53200226613b15f49e479" },
+        "consumer_commit": { "const": "602945a7b67fbc09a99f41361888b0447f6ec1e2" },
+        "consumer_acceptance_sha256": { "const": "0941fd066378e4e5ec16435dc2c789dde9476f9073e24921c695be49f6981164" },
+        "review_status": { "const": "ACCEPTED_V0_3_3_POSTDEPLOY_ASSURANCE_AWAITING_FRESH_CREDENTIALLESS_PREFLIGHT" }
+      },
+      "additionalProperties": false
+    },
+    "observations": {
+      "type": "object",
+      "required": ["secret_presence", "database_preflight"],
+      "properties": {
+        "secret_presence": {
+          "type": "object",
+          "minProperties": 12
+        },
+        "database_preflight": {
+          "type": "object",
+          "minProperties": 14
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime_gates": {
+      "type": "object",
+      "minProperties": 22,
+      "additionalProperties": { "const": false }
+    },
+    "historical_evidence": {
+      "type": "object",
+      "required": ["v0_3_2_preflight_authorizes_v0_3_3", "prior_synthetic_read_authorizes_current_read", "silent_reinterpretation_allowed", "historical_bytes_preserved"],
+      "properties": {
+        "v0_3_2_preflight_authorizes_v0_3_3": { "const": false },
+        "prior_synthetic_read_authorizes_current_read": { "const": false },
+        "silent_reinterpretation_allowed": { "const": false },
+        "historical_bytes_preserved": { "const": true }
+      },
+      "additionalProperties": false
+    },
+    "next_gate": {
+      "type": "object",
+      "required": ["decision", "consumer_review_required", "credentials_allowed", "one_shot_read_allowed", "production_allowed"],
+      "properties": {
+        "decision": { "const": "AWAITING_JARVIS_V0_3_3_CREDENTIALLESS_PREFLIGHT_REVIEW" },
+        "consumer_review_required": { "const": true },
+        "credentials_allowed": { "const": false },
+        "one_shot_read_allowed": { "const": false },
+        "production_allowed": { "const": false }
+      },
+      "additionalProperties": false
+    }
+  }
+}

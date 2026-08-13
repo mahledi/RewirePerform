@@ -1,0 +1,31 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-staging-postdeploy-assurance-package-v2",
+  "package_status": "SANITIZED_UNSIGNED_AWAITING_CONSUMER_POSTDEPLOY_REVIEW",
+  "package_sha256": "fb66f15bbbee206401596482e42090f4c6ee5d4d211227f317251cf98eda1bac",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-postdeploy-assurance-v0.2/postdeploy-evidence.json",
+      "sha256": "bdd2d9a98e26b7bf16df5ba385fb39fab33acd9b195b62d433ce1c8ebf72c73c"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-postdeploy-assurance-v0.2/evidence.schema.json",
+      "sha256": "85e7fbf2ef913e693e815f9cbd63b944bd09a869d59afa6575d74e69fe640c4c"
+    },
+    {
+      "path": "scripts/generate-feedback-staging-postdeploy-assurance-v0-2.mjs",
+      "sha256": "9c06fa8354817f989651901dec5328bed1a5703f3065b4cf2a729ef0938319d5"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceStagingPostdeployAssuranceV02.test.ts",
+      "sha256": "fb3aec78639bb2a17133a875b374e71b38b01ddd745ba64bf0be332fae840288"
+    },
+    {
+      "path": "docs/feedback-intelligence/REMOTE_STAGING_POSTDEPLOY_ASSURANCE_V0_2_2026-08-09.md",
+      "sha256": "e7df650fcec4ae78c6e3274a5ab348afcd6c07beb72e6359a541c9dacb408801"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/remote-staging-postdeploy-result-2026-08-09.json",
+      "sha256": "087ed49f622cc6eca77177c31229601c1dafb72ba005365c2c14098518f48fb0"
+    }
+  ]
+}

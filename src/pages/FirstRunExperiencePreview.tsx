@@ -63,7 +63,7 @@ const scenes: Scene[] = [
   {
     id: "tasks",
     eyebrow: "Daily Flow · 4 von 5",
-    title: "Drei konkrete Aufgaben bringen ihn in deinen Alltag.",
+    title: "Eine klare Mission bringt ihn in deinen Alltag.",
     position: { x: 900, y: -420, scale: 0.96 },
   },
   {
@@ -296,13 +296,13 @@ const TodayScreen = () => (
               <span className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/48">Training</span>
             </div>
             <p className="mt-3 max-w-[185px] text-[22px] font-semibold leading-[1.05] tracking-[-0.04em]">
-              Dein Prozess ist dein Arbeitsfokus
+              Nimm das vollständige Bild wieder auf
             </p>
           </div>
           <ProgramDayRingPreview />
         </div>
         <p className="relative mt-4 line-clamp-3 text-[10px] leading-4 text-white/58">
-          Wenn alles enger, lauter oder wichtiger wird, brauchst du einen verlässlichen Ort zum Arbeiten: deinen Prozess.
+          Wenn ein Problem fast alles verdeckt, holst du das Funktionierende und deine Möglichkeiten wieder mit ins Bild.
         </p>
         <div className="relative mt-4 flex min-h-[58px] items-center justify-between rounded-2xl bg-primary px-3.5 py-3 text-left text-[#08110E] shadow-[0_14px_35px_-18px_rgba(46,173,137,0.7)]">
           <span className="flex min-w-0 items-center gap-3">
@@ -311,7 +311,7 @@ const TodayScreen = () => (
             </span>
             <span>
               <span className="block text-[11px] font-semibold">Daily Flow starten</span>
-              <span className="mt-0.5 block text-[8px] text-black/65">10 Tages-Puls-Fragen · 3 Aufgaben</span>
+              <span className="mt-0.5 block text-[8px] text-black/65">10 Tages-Puls-Fragen · eine Mission</span>
             </span>
           </span>
           <ArrowRight className="h-4 w-4 shrink-0 text-black/60" />
@@ -330,13 +330,13 @@ const TodayScreen = () => (
           icon={Dumbbell}
           eyebrow="Vor dem Training"
           title="Pre-Training"
-          detail="Training · heutige Linse und 3 Aufgaben"
+          detail="Training · heutigen Fokus aktiv erinnern"
         />
         <DashboardActionRowPreview
           icon={BookOpen}
           eyebrow="Nach dem Tag"
           title="Tagesjournal"
-          detail="4 Tagesfragen · privat"
+          detail="Tagesfragen · privat"
         />
         <DashboardActionRowPreview
           icon={Calendar}
@@ -406,7 +406,7 @@ const ScienceScreen = () => (
         <div>
           <p className="mb-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Science Bite</p>
           <h2 id="preview-science-title" className="text-[19px] font-bold leading-tight">
-            Ein System bleibt stabiler, wenn es weiß, wohin es zurückkehrt
+            Nimm das vollständige Bild wieder auf
           </h2>
         </div>
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
@@ -415,13 +415,13 @@ const ScienceScreen = () => (
       </div>
       <div className="space-y-3 p-4">
         <p className="text-[10px] leading-4 text-muted-foreground">
-          Viele Athleten verlieren unter Druck, nach Fehlern oder in hektischen Phasen nicht nur ihre Ruhe, sondern auch ihren inneren Arbeitsort.
+          Ein enger Blick ist nicht automatisch falsch – nur unvollständig.
         </p>
         <p className="text-[10px] leading-4 text-muted-foreground">
-          Ein Prozessanker gibt deiner Aufmerksamkeit einen klaren Punkt, der beeinflussbar, konkret und handlungsnah ist.
+          Unter Belastung kann ein Problem fast deine gesamte Aufmerksamkeit einnehmen. Andere reale Informationen verschwinden dadurch aus deinem Arbeitsbild.
         </p>
         <p className="text-[10px] leading-4 text-muted-foreground">
-          Prozess ist ein Ort, an dem dein System wieder arbeiten kann, wenn anderes zu laut wird.
+          Den Blick zu öffnen heißt nicht, positiv zu denken. Es heißt, mehr von der tatsächlichen Situation wahrzunehmen.
         </p>
       </div>
     </div>
@@ -431,7 +431,7 @@ const ScienceScreen = () => (
         <div>
           <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-primary">Heute als Training</p>
           <p className="mt-1 text-[10px] leading-4 text-foreground">
-            Sobald Druck oder Ergebnisgedanken dich aus der Aufgabe ziehen, kehrst du an deinen klaren Prozesspunkt zurück.
+            Wenn ein Problem fast alles verdeckt, holst du das Funktionierende und deine Möglichkeiten wieder mit ins Bild.
           </p>
         </div>
       </div>
@@ -443,34 +443,38 @@ const ScienceScreen = () => (
 );
 
 const TasksScreen = () => (
-  <FlowScreen title="Deine Aufgaben" step={3} labelledBy="preview-tasks-title">
+  <FlowScreen title="Deine Mission" step={3} labelledBy="preview-tasks-title">
     <h2 id="preview-tasks-title" className="text-[20px] font-bold">Heute im Fokus</h2>
-    <p className="mt-1 text-[9px] text-muted-foreground">Tag 22 · Dein Prozess ist dein Arbeitsfokus</p>
+    <p className="mt-1 text-[9px] text-muted-foreground">Tag 22 · Nimm das vollständige Bild wieder auf</p>
     <p className="mt-3 text-[9px] leading-4 text-muted-foreground">
-      Öffne jede Aufgabe und markiere sie erst, wenn du weißt, wie du sie heute konkret nutzt.
+      Eine Mission. Die Schritte gehören zusammen und führen dich zu einer Handlung.
     </p>
-    <div className="mt-4 space-y-3">
-      {[
-        { icon: Target, title: "Lege deinen Prozessanker fest", when: "Vor dem Training oder vor einer wichtigen Phase" },
-        { icon: RotateCcw, title: "Kehre an den Arbeitsort zurück", when: "Wenn Druck, Drift oder Ergebnisdenken hochgehen" },
-        { icon: ArrowRight, title: "Arbeite von dort aus weiter", when: "In der direkt nächsten Handlung" },
-      ].map((task) => {
-        const Icon = task.icon;
+    <div className="mt-4 rounded-2xl border border-border/50 bg-gradient-card p-4">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+          <Target className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-[10px] font-semibold">Drei Teile ins Bild holen</p>
+          <p className="mt-1 text-[8px] leading-3 text-muted-foreground">Wenn ein Problem fast die ganze Situation bestimmt.</p>
+        </div>
+      </div>
+      <div className="mt-4 space-y-2.5">
+        {[
+          "Benenne das reale Problem.",
+          "Frag: Was funktioniert oder ist außerdem möglich?",
+          "Wähle aus dem ganzen Bild deine nächste Handlung.",
+        ].map((step, index) => {
         return (
-          <div key={task.title} className="rounded-2xl border border-border/50 bg-gradient-card p-4">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
-                <Icon className="h-4 w-4" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold">{task.title}</p>
-                <p className="mt-1 text-[8px] leading-3 text-muted-foreground">{task.when}</p>
-              </div>
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
+          <div key={step} className="flex items-center gap-3 rounded-xl bg-secondary/35 px-3 py-2.5">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[8px] font-semibold text-primary">
+              {index + 1}
+            </span>
+            <p className="text-[9px] leading-3.5 text-foreground">{step}</p>
           </div>
         );
       })}
+      </div>
     </div>
   </FlowScreen>
 );
@@ -479,16 +483,15 @@ const CheckScreen = () => (
   <FlowScreen title="Verständnis-Check" step={4} labelledBy="preview-check-title">
     <h2 id="preview-check-title" className="text-[20px] font-bold">Kurzer Verständnis-Check</h2>
     <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
-      Drei Fragen zur heutigen Linse. Kein Test — nur Festigung.
+      Eine kurze Frage zum heutigen Fokus. Kein Test — nur Festigung.
     </p>
     <div className="mt-5">
-      <p className="text-[11px] font-semibold leading-4">Was heißt „Prozess als Heimat“?</p>
+      <p className="text-[11px] font-semibold leading-4">Was ist heute ausdrücklich nicht das Ziel?</p>
       <div className="mt-4 space-y-2">
         {[
-          "Ein klarer Prozess dient dir als verlässlicher Ankerpunkt, wenn Druck aufkommt.",
-          "Du musst dich voll auf den Prozess konzentrieren, um deine Leistung zu steigern.",
-          "Du optimierst deinen Prozess so, dass keine Fehler mehr passieren.",
-          "Du nutzt nur Prozesse, die sich immer sicher und gut anfühlen.",
+          "Das Problem durch positives Denken wegzureden.",
+          "Weitere reale Informationen wahrzunehmen.",
+          "Möglichkeiten und Unterstützung mit ins Bild zu nehmen.",
         ].map((answer, index) => (
           <div
             key={answer}
@@ -546,13 +549,13 @@ const AnchorScreen = () => (
         <div className="flex items-start gap-3">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <div>
-            <p className="text-[8px] uppercase tracking-[0.14em] text-muted-foreground">Heutige Linse</p>
-            <p className="mt-1 text-[11px] font-semibold">Dein Prozess ist dein Arbeitsfokus</p>
-            <p className="mt-1 text-[9px] leading-4 text-muted-foreground">
-              Wenn alles enger, lauter oder wichtiger wird, brauche ich einen verlässlichen Ort zum Arbeiten.
-            </p>
-            <p className="mt-3 text-[8px] leading-3.5 text-muted-foreground">
-              Sobald Druck oder Ergebnisgedanken dich aus der Aufgabe ziehen, kehrst du an deinen klaren Prozesspunkt zurück.
+          <p className="text-[8px] uppercase tracking-[0.14em] text-muted-foreground">Heutiger Fokus</p>
+          <p className="mt-1 text-[11px] font-semibold">Nimm das vollständige Bild wieder auf</p>
+          <p className="mt-1 text-[9px] leading-4 text-muted-foreground">
+            Ein Problem ist real. Es ist aber selten die ganze Situation.
+          </p>
+          <p className="mt-3 text-[8px] leading-3.5 text-muted-foreground">
+            Nenne mindestens eine weitere reale Information und handle dann aus dem ganzen Bild.
             </p>
           </div>
         </div>
@@ -560,9 +563,9 @@ const AnchorScreen = () => (
 
       <div className="mt-4 space-y-2.5">
         {[
-          ["1", "Lege deinen Prozessanker fest", "Bestimme genau einen klaren Prozessanker, auf den du heute immer wieder zurückkommst."],
-          ["2", "Kehre an den Arbeitsort zurück", "Nutze den Anker, sobald Druck, Drift oder Ergebnisdenken dich herausziehen."],
-          ["3", "Arbeite von dort aus weiter", "Setze deinen Prozesspunkt direkt in der nächsten Handlung um."],
+          ["1", "Erinnere dich aktiv", "Welche Frage öffnet deinen Blick, wenn ein Problem alles andere verdeckt?"],
+          ["2", "Prüfe deine Erinnerung", "Danach siehst du den heutigen Satz noch einmal klar und groß."],
+          ["3", "Nimm ihn mit", "Nutze das vollständige Bild in deiner nächsten Handlung."],
         ].map(([number, title, copy]) => (
           <div key={title} className="flex gap-3 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-3">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[9px] font-semibold text-primary">
@@ -587,7 +590,7 @@ const AnchorScreen = () => (
 const JournalScreen = () => (
   <AppScreen labelledBy="preview-journal-title" chrome="none">
     <ScreenHeaderPreview
-      title="Wo war heute mein Arbeitsort — und wann habe ich ihn verloren?"
+      title="Was war außerdem Teil der Situation?"
       eyebrow="Tag 22 · Training · 29. Juli"
       trailing={(
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -599,15 +602,15 @@ const JournalScreen = () => (
       <div className="rounded-2xl bg-gradient-card border-glow p-4">
         <p className="mb-2 text-[8px] uppercase tracking-widest text-primary">Heute im Fokus</p>
         <h2 id="preview-journal-title" className="text-[11px] font-semibold leading-snug">
-          Dein Prozess ist dein Arbeitsfokus
+          Nimm das vollständige Bild wieder auf
         </h2>
         <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
-          Wenn alles enger, lauter oder wichtiger wird, brauche ich einen verlässlichen Ort zum Arbeiten.
+          Ein enger Blick ist nicht automatisch falsch – nur unvollständig.
         </p>
         <div className="mt-3 flex items-start gap-2 border-t border-border/50 pt-3">
           <Dumbbell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
           <p className="text-[8px] leading-3.5 text-muted-foreground">
-            Reflektiere, wie verlässlich du heute an deinen Arbeitsort zurückkehren konntest.
+            Schau auf eine konkrete Szene und hole das ganze Bild zurück.
           </p>
         </div>
       </div>
@@ -637,8 +640,8 @@ const JournalScreen = () => (
 
       <div className="mt-4 space-y-4">
         {[
-          ["Was war heute mein klarer Prozessanker?", "Benenne ihn so konkret wie möglich."],
-          ["In welchen Momenten hat mein System diesen Arbeitsort besonders leicht verloren?", "Druck, Fehler, Drift, Ergebnisgedanken …"],
+          ["Welches Problem hat deinen Blick eng gemacht?", "Benenne es, ohne es kleinzureden."],
+          ["Was war außerdem real vorhanden?", "Etwas Funktionierendes, Unterstützung oder eine Möglichkeit."],
         ].map(([question, placeholder]) => (
           <div key={question}>
             <p className="text-[9px] font-medium leading-3.5">{question}</p>
@@ -827,7 +830,7 @@ const TeamScreen = () => (
       <p className="mt-4 text-[8px] font-semibold uppercase tracking-[0.15em] text-white/52">Dienstag, 29. Juli</p>
       <div className="mt-2 border-l border-white/10 pl-4">
         {[
-          ["Heute", Brain, "Daily Flow", "10 Tages-Puls-Fragen, Aufgaben und Verständnis-Check", true],
+          ["Heute", Brain, "Daily Flow", "10 Tages-Puls-Fragen, eine Mission und Verständnis-Check", true],
           ["17:30", Dumbbell, "Pre-Training", "Teamtraining · deine heutige Vorbereitung", true],
           ["Später", BookOpen, "Tagesjournal", "4 Tagesfragen · privat", false],
         ].map(([time, Icon, title, detail, active], index) => {
@@ -1079,20 +1082,22 @@ const FirstRunExperiencePreview = ({
             ))}
           </div>
 
-          <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#0B0C10]/80 px-3 py-2 backdrop-blur-xl" aria-label={`Schritt ${step + 1} von ${scenes.length}`}>
-            {scenes.map((item, index) => (
-              <span
-                key={item.id}
-                aria-hidden="true"
-                className="flex h-2 min-w-2 items-center justify-center"
-              >
-                <span className={cn(
-                  "block h-1.5 rounded-full transition-all",
-                  index === step ? "w-5 bg-primary" : "w-1.5 bg-white/18",
-                )} />
-              </span>
-            ))}
-          </div>
+          {!isLast && (
+            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/[0.08] bg-[#0B0C10]/80 px-3 py-2 backdrop-blur-xl" aria-label={`Schritt ${step + 1} von ${scenes.length}`}>
+              {scenes.map((item, index) => (
+                <span
+                  key={item.id}
+                  aria-hidden="true"
+                  className="flex h-2 min-w-2 items-center justify-center"
+                >
+                  <span className={cn(
+                    "block h-1.5 rounded-full transition-all",
+                    index === step ? "w-5 bg-primary" : "w-1.5 bg-white/18",
+                  )} />
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

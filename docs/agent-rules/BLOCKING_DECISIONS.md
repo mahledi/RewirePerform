@@ -6,7 +6,7 @@ Diese Entscheidungen dokumentieren geklaerte Zuordnungen und weiterhin offene Ga
 
 - Status: am 14. Juli 2026 durch Mahle verbindlich bestaetigt und ueber die Supabase-Projektmetadaten read-only verifiziert.
 - Production: `bqsbxesmybthwtxmowfz` (`RewirePerform real`, `eu-central-1`).
-- Staging/Nicht-Production: derzeit kein Projekt freigegeben. `towgvykgezrmkbyudjen` ist laut Mahle ein altes, stillgelegtes Projekt und darf nicht mehr verwendet werden.
+- Staging/Nicht-Production: `zbeswjipayspgvcipzmx` (`RewirePerform Staging`, `eu-central-1`) wurde am 6. August 2026 von Mahle als kostenloses, vollstaendig getrenntes Projekt fuer ausschliesslich synthetische Tests freigegeben und ueber die Supabase-Projektmetadaten verifiziert. `towgvykgezrmkbyudjen` bleibt stillgelegt und gesperrt.
 - CI: ausschliesslich synthetischer Ref `abcdefghijklmnopqrst`; der historische Lovable-Ref bleibt gesperrt.
 - Die Projektzuordnung ist nicht mehr blockiert. Production-Writes, Migrationen, Function-Deploys und Env-Aenderungen benoetigen weiterhin ihre eigene konkrete Freigabe und Verifikation.
 

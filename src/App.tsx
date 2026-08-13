@@ -17,12 +17,16 @@ import AppLoadingShell from "./components/AppLoadingShell";
 import ConnectionStatus from "./components/ConnectionStatus";
 import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardingGate";
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
+import AppScrollReset from "./components/app/AppScrollReset";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
   || import.meta.env.VITE_ENABLE_EVIDENCE_PREVIEW === "true";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
+const FirstRunRoleEntry = lazy(() => import("./pages/FirstRunRoleEntry.tsx"));
+const AthleteFirstRunEntry = lazy(() => import("./pages/AthleteFirstRunEntry.tsx"));
+const CoachFirstRunEntry = lazy(() => import("./pages/CoachFirstRunEntry.tsx"));
 const Demo = lazy(() => import("./demo/DemoPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
@@ -47,6 +51,8 @@ const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Imprint = lazy(() => import("./pages/Imprint.tsx"));
 const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
+const OrganizationAccess = lazy(() => import("./pages/OrganizationAccess.tsx"));
+const OrganizationInvite = lazy(() => import("./pages/OrganizationInvite.tsx"));
 const MinorConsent = lazy(() => import("./pages/MinorConsent.tsx"));
 const GuardianDecision = lazy(() => import("./pages/GuardianDecision.tsx"));
 const EvidencePreview = evidencePreviewEnabled
@@ -61,6 +67,21 @@ const MinorConsentPreview = evidencePreviewEnabled
 const FirstRunExperiencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/FirstRunExperiencePreview.tsx"))
   : null;
+const CoachFirstRunExperiencePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/CoachFirstRunExperience.tsx"))
+  : null;
+const FeedbackIntelligencePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/FeedbackIntelligencePreview.tsx"))
+  : null;
+const FeedbackCheckpointGate = lazy(
+  () => import("./components/feedback-intelligence/FeedbackCheckpointGate.tsx"),
+);
+const GoldenDaysPreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/GoldenDaysPreview.tsx"))
+  : null;
+const ProgramContentPreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/ProgramContentPreview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -74,11 +95,23 @@ const AppRoutes = () => {
   const isMinorConsentPreview = MinorConsentPreview !== null && location.pathname === "/internal/minor-consent-preview";
   const isFirstRunExperiencePreview = FirstRunExperiencePreview !== null
     && location.pathname === "/internal/first-run-preview";
+  const isCoachFirstRunExperiencePreview = CoachFirstRunExperiencePreview !== null
+    && location.pathname === "/internal/coach-first-run-preview";
+  const isFeedbackIntelligencePreview = FeedbackIntelligencePreview !== null
+    && location.pathname === "/internal/feedback-intelligence-preview";
+  const isGoldenDaysPreview = GoldenDaysPreview !== null
+    && location.pathname === "/internal/golden-days-preview";
+  const isProgramContentPreview = ProgramContentPreview !== null
+    && location.pathname === "/internal/program-content-preview";
   const isDemoRoute = location.pathname === "/demo"
     || isEvidencePreview
     || isEmailPreview
     || isMinorConsentPreview
-    || isFirstRunExperiencePreview;
+    || isFirstRunExperiencePreview
+    || isCoachFirstRunExperiencePreview
+    || isFeedbackIntelligencePreview
+    || isGoldenDaysPreview
+    || isProgramContentPreview;
 
   if (isDemoRoute) {
     return (
@@ -93,6 +126,18 @@ const AppRoutes = () => {
             {MinorConsentPreview && <Route path="/internal/minor-consent-preview" element={<MinorConsentPreview />} />}
             {FirstRunExperiencePreview && (
               <Route path="/internal/first-run-preview" element={<FirstRunExperiencePreview />} />
+            )}
+            {CoachFirstRunExperiencePreview && (
+              <Route path="/internal/coach-first-run-preview" element={<CoachFirstRunExperiencePreview />} />
+            )}
+            {FeedbackIntelligencePreview && (
+              <Route path="/internal/feedback-intelligence-preview" element={<FeedbackIntelligencePreview />} />
+            )}
+            {GoldenDaysPreview && (
+              <Route path="/internal/golden-days-preview" element={<GoldenDaysPreview />} />
+            )}
+            {ProgramContentPreview && (
+              <Route path="/internal/program-content-preview" element={<ProgramContentPreview />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -114,13 +159,19 @@ const AppRoutes = () => {
           <IosInputPolish />
           <ConnectionStatus />
           <Suspense fallback={<PageFallback />}>
+            <Suspense fallback={null}><FeedbackCheckpointGate /></Suspense>
             <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/start" element={<FirstRunRoleEntry />} />
+            <Route path="/start/athlete" element={<AthleteFirstRunEntry />} />
+            <Route path="/start/coach" element={<CoachFirstRunEntry />} />
             <Route path="/presentation" element={<Presentation />} />
             <Route path="/coach-pitch" element={<Presentation />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/imprint" element={<Imprint />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/team-access" element={<OrganizationAccess />} />
+            <Route path="/organization/invite" element={<OrganizationInvite />} />
             <Route path="/guardian/decision" element={<GuardianDecision />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
             <Route path="/join" element={<TeamInvite />} />
@@ -191,6 +242,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <BrowserRouter>
+        <AppScrollReset />
         <AppRoutes />
       </BrowserRouter>
     </ErrorBoundary>

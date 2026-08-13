@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getProgramModeInfo } from "@/lib/programMode";
+import {
+  clearCachedProgramModeInfo,
+  getCachedProgramModeInfo,
+  getProgramModeInfo,
+} from "@/lib/programMode";
 
 const mocks = vi.hoisted(() => ({
   from: vi.fn(),
@@ -39,6 +43,7 @@ const query = (result: QueryResult) => {
 describe("program mode resolution", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearCachedProgramModeInfo();
   });
 
   it("keeps an active run's team and start date paired", async () => {
@@ -70,6 +75,11 @@ describe("program mode resolution", () => {
       teamStartDate: "2026-07-15",
       soloStartDate: null,
       effectiveStartDate: "2026-07-15",
+    });
+    expect(getCachedProgramModeInfo("athlete-1")).toMatchObject({
+      mode: "team",
+      teamId: "active-run-team",
+      teamStartDate: "2026-07-15",
     });
   });
 

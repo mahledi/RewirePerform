@@ -41,9 +41,6 @@ describe("coach team member count", () => {
           error: null,
         });
       }
-      if (table === "assessments") {
-        return queryResult({ data: [], error: null });
-      }
       throw new Error(`Unexpected table: ${table}`);
     });
     mocks.invoke.mockResolvedValue({
@@ -54,21 +51,32 @@ describe("coach team member count", () => {
       },
       error: null,
     });
-    mocks.rpc.mockResolvedValue({
-      data: Array.from({ length: 6 }, (_, index) => ({
-        user_id: `athlete-${index + 1}`,
-        full_name: `Athlet ${index + 1}`,
-        last_activity_at: null,
-        days_completed: 0,
-        days_available: 0,
-        completion_rate: null,
-        current_streak: 0,
-        checkins_last_7d: 0,
-        last_checkin_date: null,
-        journal_entries_count: 0,
-        inactive_risk: false,
-      })),
-      error: null,
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === "compute_team_outcomes") {
+        return Promise.resolve({
+          data: { assessment_completion: { pre_n: 5, mid_n: 0, post_n: 0 } },
+          error: null,
+        });
+      }
+      if (name === "get_coach_team_activity_status") {
+        return Promise.resolve({
+          data: Array.from({ length: 6 }, (_, index) => ({
+            user_id: `athlete-${index + 1}`,
+            full_name: `Athlet ${index + 1}`,
+            last_activity_at: null,
+            days_completed: 0,
+            days_available: 0,
+            completion_rate: null,
+            current_streak: 0,
+            checkins_last_7d: 0,
+            last_checkin_date: null,
+            journal_entries_count: 0,
+            inactive_risk: false,
+          })),
+          error: null,
+        });
+      }
+      throw new Error(`Unexpected RPC: ${name}`);
     });
   });
 

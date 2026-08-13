@@ -1,12 +1,14 @@
 import { safeInternalRoute } from "@/lib/internalRoute";
+import { parseOrganizationInviteUrl } from "@/lib/organizationInvite";
 
 export const NATIVE_AUTH_RETURN_ORIGIN = "https://rewireperform.com";
 export const NATIVE_SIGNUP_RETURN_PATH = "/auth";
 
 type NativeSignupContext = {
-  intent: "solo" | "join";
+  intent: "solo" | "join" | "organization";
   teamCode: string | null;
   redirect: string | null;
+  intro: "athlete" | "coach" | null;
 };
 
 export type NativeSignupReturn =
@@ -18,16 +20,34 @@ export type NativeSignupReturn =
 const readParams = (value: string) => new URLSearchParams(value.replace(/^[?#]/u, ""));
 
 const readSignupContext = (url: URL): NativeSignupContext | null => {
-  const intent = url.searchParams.get("intent") === "join" ? "join" : "solo";
+  const requestedIntent = url.searchParams.get("intent");
+  const intent = requestedIntent === "join"
+    ? "join"
+    : requestedIntent === "organization"
+      ? "organization"
+      : "solo";
+  const requestedIntro = url.searchParams.get("intro");
+  const intro = requestedIntro === "athlete" || requestedIntro === "coach" ? requestedIntro : null;
   const teamCode = url.searchParams.get("team")?.trim().toUpperCase() ?? null;
   if (intent === "join" && (!teamCode || !/^[A-Z0-9]{6}$/u.test(teamCode))) return null;
+  if (intent === "organization" && intro && intro !== "coach") return null;
+  if (intent !== "organization" && intro && intro !== "athlete") return null;
+
+  let redirect = safeInternalRoute(url.searchParams.get("redirect"), {
+    blockedPathPrefixes: ["/guardian/decision"],
+  });
+  if (intent === "organization") {
+    if (!redirect) return null;
+    const invitation = parseOrganizationInviteUrl(new URL(redirect, NATIVE_AUTH_RETURN_ORIGIN).toString());
+    if (invitation.kind !== "invite") return null;
+    redirect = invitation.route;
+  }
 
   return {
     intent,
     teamCode: intent === "join" ? teamCode : null,
-    redirect: safeInternalRoute(url.searchParams.get("redirect"), {
-      blockedPathPrefixes: ["/guardian/decision"],
-    }),
+    redirect,
+    intro,
   };
 };
 
@@ -75,8 +95,9 @@ export const parseNativeSignupReturn = (rawUrl: string): NativeSignupReturn => {
 };
 
 export const nativeSignupContinuationRoute = (
-  _value: Extract<NativeSignupReturn, { kind: "session" | "code" }>,
+  value: Extract<NativeSignupReturn, { kind: "session" | "code" }>,
 ) => {
+  if (value.intent === "organization" && value.redirect) return value.redirect;
   const nextRoute = "/questionnaire";
   return `/minor-consent?next=${encodeURIComponent(nextRoute)}`;
 };

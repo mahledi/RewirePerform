@@ -5,6 +5,10 @@ import {
   parseTeamInviteUrl,
   teamInviteAuthRoute,
 } from "@/lib/teamInvite";
+import {
+  buildAthleteTeamInvitation,
+  buildCoachInvitationShare,
+} from "@/lib/invitationShare";
 
 describe("team invite links", () => {
   it("builds one canonical HTTPS link and one internal join route", () => {
@@ -46,7 +50,34 @@ describe("team invite links", () => {
 
   it("keeps coach sharing on the canonical app-and-web link", () => {
     const teamManagement = readFileSync("src/components/coach/TeamManagement.tsx", "utf8");
-    expect(teamManagement).toContain("buildTeamInviteUrl(team.access_code)");
+    expect(teamManagement).toContain("buildAthleteTeamInvitation(team.name, team.access_code)");
     expect(teamManagement).not.toContain("/auth?intent=join&code=${team.access_code}");
+  });
+
+  it("builds a professional athlete share payload without hiding the canonical link", () => {
+    expect(buildAthleteTeamInvitation("SV Beispiel U19", "abc123")).toEqual({
+      title: "SV Beispiel U19 lädt dich zu RewirePerform ein",
+      text: "Tritt SV Beispiel U19 in RewirePerform bei. Dein Teamcode: ABC123",
+      url: "https://rewireperform.com/join?team=ABC123",
+      message: [
+        "SV Beispiel U19 lädt dich zu RewirePerform ein",
+        "",
+        "Öffne deine Team-Einladung:",
+        "https://rewireperform.com/join?team=ABC123",
+        "",
+        "Teamcode: ABC123",
+        "Der Link öffnet die App oder führt dich sicher zur Registrierung.",
+      ].join("\n"),
+    });
+    expect(buildAthleteTeamInvitation("SV Beispiel", "BAD/12")).toBeNull();
+  });
+
+  it("keeps a coach invitation concise while sharing its exact one-time URL", () => {
+    const url = "https://rewireperform.com/organization/invite?token=secure-token";
+    expect(buildCoachInvitationShare(url)).toMatchObject({
+      title: "Deine persönliche RewirePerform Coach-Einladung",
+      url,
+    });
+    expect(buildCoachInvitationShare(url).message).toContain(url);
   });
 });

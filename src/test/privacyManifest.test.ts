@@ -8,13 +8,18 @@ const privacyManifest = readFileSync(
 );
 
 describe("iOS privacy manifest", () => {
-  it("declares only the diagnostics collected by the final app", () => {
+  it("excludes crash data but declares retained operational diagnostics", () => {
     expect(privacyManifest).not.toContain(
       "NSPrivacyCollectedDataTypeCrashData",
     );
     expect(privacyManifest).toContain(
       "NSPrivacyCollectedDataTypeOtherDiagnosticData",
     );
+  });
+
+  it("declares the optional inquiry phone number and stored age band", () => {
+    expect(privacyManifest).toContain("NSPrivacyCollectedDataTypePhoneNumber");
+    expect(privacyManifest).toContain("NSPrivacyCollectedDataTypeOtherDataTypes");
   });
 
   it("does not declare cross-app tracking", () => {

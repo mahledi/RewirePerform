@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -59,36 +59,19 @@ export const AthleteBottomNavigation = ({ active, onPlan }: AthleteBottomNavigat
   const navigate = useNavigate();
   const location = useLocation();
   const [visualActive, setVisualActive] = useState(active);
-  const navigationTimer = useRef<number | null>(null);
 
   useEffect(() => {
     setVisualActive(active);
   }, [active]);
 
-  useEffect(() => () => {
-    if (navigationTimer.current !== null) window.clearTimeout(navigationTimer.current);
-  }, []);
-
   const selectSection = (section: (typeof appSections)[number]) => {
-    if (navigationTimer.current !== null) {
-      window.clearTimeout(navigationTimer.current);
-      navigationTimer.current = null;
-    }
     setVisualActive(section.id);
     if (section.id === "plan" && onPlan) {
       onPlan();
       return;
     }
     if (`${location.pathname}${location.hash}` !== section.path) {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduceMotion) {
-        navigate(section.path);
-        return;
-      }
-      navigationTimer.current = window.setTimeout(() => {
-        navigationTimer.current = null;
-        navigate(section.path);
-      }, 150);
+      navigate(section.path);
     }
   };
 

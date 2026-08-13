@@ -4,7 +4,7 @@ import { LineChart, CheckCircle2, TrendingUp } from "lucide-react";
 const stats = [
   { label: "Tage", value: "56" },
   { label: "Assessments", value: "Pre · Mid · Post" },
-  { label: "Anonymisiert", value: "n≥5" },
+  { label: "Teamaggregate", value: "n≥5" },
   { label: "Dranbleiben", value: "Tracked" },
   { label: "Comprehension", value: "Tracked" },
 ];
@@ -13,7 +13,7 @@ const cards = [
   {
     icon: LineChart,
     title: "Assessment Layer",
-    text: "SMTQ, CSAI-2R und Flow bilden Pre-, Mid- und Post-Vergleiche — aggregiert, anonymisiert und teambezogen.",
+    text: "Versionierte Messpunkte bilden Pre-, Mid- und Post-Vergleiche. Teamansichten erscheinen nur aggregiert und bei ausreichender Gruppengröße.",
   },
   {
     icon: CheckCircle2,
@@ -23,7 +23,7 @@ const cards = [
   {
     icon: TrendingUp,
     title: "Beobachtete Entwicklung",
-    text: "Das System zeigt Veränderung im Verlauf — ohne unbelegte Heilungs- oder Garantieversprechen.",
+    text: "Selbstauskünfte und Programmaktivität dokumentieren beobachtete Veränderungen im Verlauf — ohne daraus eine garantierte Wirkung abzuleiten.",
   },
 ];
 
@@ -46,8 +46,9 @@ const EvidenceSection = () => {
             <span className="text-gradient">sichtbar machen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            RewirePerform misst Nutzung, Verständnis, Dranbleiben und beobachtete
-            Veränderungen über 56 Tage — als ehrlicher Outcome-Layer für Teams.
+            RewirePerform dokumentiert Nutzung, Verständnis, Dranbleiben und
+            Selbstauskünfte über 56 Tage — als ehrlichen Verlaufs-Layer für
+            Teams.
           </p>
         </motion.div>
 
@@ -92,12 +93,11 @@ const EvidenceSection = () => {
         >
           <p className="text-sm text-muted-foreground leading-relaxed text-center">
             <span className="text-foreground font-medium">Science Guardrail.</span>{" "}
-            RewirePerform ersetzt keine wissenschaftliche Studie. Das System ist
-            neu. Aber seine Bausteine sind bewusst aus erforschten Mechanismen
-            zusammengesetzt: Wiederholung, Reflexion, Aufmerksamkeit,
-            Selbstregulation, Dankbarkeit, Feedback und Verhalten unter Druck.
-            Genau daraus entsteht ein Umfeld, das neuroplastische Anpassung und
-            mentale Entwicklung unterstützen kann.
+            RewirePerform ersetzt keine wissenschaftliche Studie. Seine
+            Gestaltung orientiert sich an erforschten Prinzipien wie
+            Wiederholung, Reflexion, Aufmerksamkeit, Selbstregulation und
+            Feedback. Ob und wie stark das Gesamtsystem im Sportalltag hilft,
+            prüfen wir kontrolliert im Pilot.
           </p>
         </motion.div>
       </div>

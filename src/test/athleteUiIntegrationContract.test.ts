@@ -63,7 +63,7 @@ describe("V1 athlete UI integration contract", () => {
     expect(chrome).not.toContain("max-w-[560px]");
     expect(chrome).toContain("visualActive");
     expect(chrome).toContain("setVisualActive(section.id)");
-    expect(chrome).toContain('prefers-reduced-motion: reduce');
+    expect(chrome).not.toContain("navigationTimer");
   });
 
   it("keeps the start focused and renders Plan from real calendar data", () => {
@@ -113,6 +113,14 @@ describe("V1 athlete UI integration contract", () => {
   it("keeps missed-program-day review capped at three in cached and refreshed state", () => {
     const dashboard = readSource("src/pages/Dashboard.tsx");
     expect(dashboard.match(/reviews\.length < 3/g)).toHaveLength(2);
+    expect(dashboard).toContain("missedDayReviews: MissedDayReview[]");
+    expect(dashboard).toContain("setMissedDayReviews(cache.missedDayReviews)");
+  });
+
+  it("shows the complete current topic instead of clipping long titles", () => {
+    const dashboard = readSource("src/pages/Dashboard.tsx");
+    expect(dashboard).toContain("[overflow-wrap:anywhere]");
+    expect(dashboard).not.toContain('line-clamp-3 max-w-[270px]');
   });
 
   it("stores assessments without presenting athlete-facing scores or inferred improvement", () => {

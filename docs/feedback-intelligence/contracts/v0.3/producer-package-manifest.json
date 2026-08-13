@@ -1,0 +1,116 @@
+{
+  "schema_version": "rewireperform-feedback-semantics-producer-package-manifest-v1",
+  "contract_version": "0.3.3-draft",
+  "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "generated_at": "2026-08-10T17:55:50+02:00",
+  "producer_branch": "codex/feedback-visualization-contract-v1-1-20260810",
+  "producer_base_commit": "33de9bb0f65a2eac573b80831f3a71b554cb3750",
+  "producer_worktree_dirty": false,
+  "package_signed": false,
+  "package_status": "LOCAL_COMMITTED_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "release_scope": {
+    "jurisdiction": "DE",
+    "language": "de-DE",
+    "non_de_status": "OUT_OF_SCOPE_FAIL_CLOSED"
+  },
+  "digest_algorithm": "sha256",
+  "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
+  "package_sha256": "c5df75dd0ddbf717b039e1c809d9e06b06219b7e55e1d4384886a07496e210d5",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.schema.json",
+      "sha256": "d3e541965430c165ddbddd284d6ee462d129b028046a50361a14a9df3844a766"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/construct-catalog.json",
+      "sha256": "f8a15bedd179c2f6dc4176a8296437e87b175d6e5747d8faa187154b8eee9c4a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/producer-decisions.json",
+      "sha256": "ef2036db75dbb70fead5ec4359783ddf914d3577a83c5d5d22d913d285c332ab"
+    },
+    {
+      "path": "src/content/feedbackIntelligenceV1.ts",
+      "sha256": "1783af6bfbf635df32b526dfc7e13b8858995aee9780b178244313c19649472a"
+    },
+    {
+      "path": "src/content/feedbackIntelligenceSemanticsV03.ts",
+      "sha256": "a2d29007d4137f4a6d4db6e3a2f3b9401bfbe5f0cbc29e56f33dcc3bfccf305e"
+    },
+    {
+      "path": "supabase/migrations/20260805103600_feedback_intelligence_v1_registry.sql",
+      "sha256": "1dfbaafe2115d009ea16db5567a316e1daa827d0b4aad4040720a89a56822b28"
+    },
+    {
+      "path": "supabase/migrations/20260806110000_feedback_intelligence_rest_visualization_v1_1.sql",
+      "sha256": "f724676847e4fd8c915248cba55c150646c89110ef6ecd243e958e6800f39ced"
+    },
+    {
+      "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceContent.test.ts",
+      "sha256": "43084bfca418e338ced32e835326bcb3f290561dcbe914e2dab3741f0fe88928"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceSemanticsV03.test.ts",
+      "sha256": "ca8a4b50f03554d95583d94046647f4ae8a644f5f8347fd308151f851b0cd7e3"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCER_SEMANTICS_HANDOFF_V0_3_DRAFT.md",
+      "sha256": "7b1dd7feac6ace1ee28d97fe1ad3eb7d7f3cab38d52cf85aff68511987e6406b"
+    },
+    {
+      "path": "docs/feedback-intelligence/REST_DAY_VISUALIZATION_FEEDBACK_HANDOFF_V1_1.md",
+      "sha256": "49b05eeab93752bbfa6d2784143c613e04a83244709abf70cb92f1765db0267b"
+    },
+    {
+      "path": "src/content/guardianFeedbackTextPolicy.ts",
+      "sha256": "6aa932e896de5e5a477c9c4663fb022295f9338fdf46355293584afd6e122090"
+    },
+    {
+      "path": "supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql",
+      "sha256": "50eea80f6977972c921429db697e295dfe6134c74ea8a480c937537f549e9f6f"
+    },
+    {
+      "path": "supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql",
+      "sha256": "3663a7f385cbf168aac2d200ced3a7aa68906de5f736a1a768e401480e1788d1"
+    },
+    {
+      "path": "docs/feedback-intelligence/CONSENT_UX_ACTIVATION_PACKET_V1_1.md",
+      "sha256": "bd6e0087e57fda0b3a9def60ae483aaa43cfef9908425164499ce1ffa345244d"
+    }
+  ],
+  "catalog_evidence": {
+    "questions": 55,
+    "constructs": 29,
+    "item_families": 32,
+    "scales": 27,
+    "synthetic_question_ids": 0,
+    "user_or_activity_records": 0
+  },
+  "activation": {
+    "consumer_catalog_accepted": false,
+    "consumer_execute_granted": false,
+    "machine_credential_ready": false,
+    "network_transport_ready": false,
+    "production_export_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false
+  },
+  "open_release_gates": [
+    "CONSUMER_BYTE_REVIEW_AND_ADAPTATION",
+    "VERSIONED_CONSENT_AND_GUARDIAN_CONSUMER_ACCEPTANCE",
+    "QUALIFIED_GERMAN_LEGAL_AND_PRIVACY_APPROVAL",
+    "FIXED_RAW_TEXT_RETENTION_AND_AUTOMATED_DELETION",
+    "DE_UNDER_16_GUARDIAN_NOTICE_AND_AUTHORIZATION_APPROVAL",
+    "NAMED_MACHINE_PROCESSOR_AND_DATA_PROCESSING_SCOPE",
+    "SIGNED_COMMITTED_PRODUCER_AND_CONSUMER_PACKAGES",
+    "DEDICATED_MACHINE_ACTOR_AND_CREDENTIAL",
+    "SYNTHETIC_STAGING_READ",
+    "NATIVE_DEVICE_VALIDATION",
+    "SEPARATE_PUSH_MERGE_DEPLOYMENT_AND_PRODUCTION_APPROVALS"
+  ]
+}

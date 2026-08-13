@@ -56,6 +56,7 @@ if (files.info.includes("<string>armv7</string>")) {
 for (const dataType of [
   "NSPrivacyCollectedDataTypeName",
   "NSPrivacyCollectedDataTypeEmailAddress",
+  "NSPrivacyCollectedDataTypePhoneNumber",
   "NSPrivacyCollectedDataTypeUserID",
   "NSPrivacyCollectedDataTypeHealth",
   "NSPrivacyCollectedDataTypeFitness",
@@ -63,6 +64,7 @@ for (const dataType of [
   "NSPrivacyCollectedDataTypeCustomerSupport",
   "NSPrivacyCollectedDataTypeProductInteraction",
   "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+  "NSPrivacyCollectedDataTypeOtherDataTypes",
 ]) {
   requireText("Privacy manifest", files.privacy, `<string>${dataType}</string>`);
 }
@@ -98,9 +100,14 @@ if (
       "?": { team: "??????" },
       comment: "RewirePerform athlete team invitation",
     },
+    {
+      "/": "/organization/invite",
+      "?": { token: "????????????????????????????????????????????????????????????????" },
+      comment: "RewirePerform personal coach invitation",
+    },
   ])
 ) {
-  failures.push("AASA: expected the exact RewirePerform signup and team-invite universal-link contract");
+  failures.push("AASA: expected the exact RewirePerform signup, athlete-invite and personal coach-invite universal-link contract");
 }
 
 for (const dependency of [

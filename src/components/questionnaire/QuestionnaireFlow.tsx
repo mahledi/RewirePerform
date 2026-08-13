@@ -449,7 +449,6 @@ const QuestionnaireFlow = ({
               current={flowState.globalIndex}
               total={totalQuestions}
               categoryTitle={getCurrentCategoryForQuestion(flowState.globalIndex).title}
-              categoryIcon={getCurrentCategoryForQuestion(flowState.globalIndex).icon}
             />
           )}
           {flowState.type === "category-intro" && (

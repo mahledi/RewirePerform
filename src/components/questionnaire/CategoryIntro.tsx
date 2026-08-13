@@ -19,7 +19,6 @@ const CategoryIntro = ({ categoryId, onContinue, showInlineButton = true }: Cate
       className="min-h-[45vh] md:min-h-[60vh] flex items-center justify-center"
     >
       <div className="max-w-lg text-center">
-        <span className="text-5xl mb-6 block">{category.icon}</span>
         <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
           {category.title}
         </h2>

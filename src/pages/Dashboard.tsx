@@ -44,6 +44,11 @@ import {
   athleteAppViewport,
 } from "@/components/app/AthleteAppChrome";
 import { getAthleteGreeting } from "@/lib/athleteGreeting";
+import {
+  canOpenRestVisualization,
+  readRestVisualizationIntent,
+  type NativeRestVisualizationIntent,
+} from "@/lib/nativeRestVisualizationIntent";
 
 type EventType = "training" | "rest" | "competition";
 type SetupState = "ready" | "setup" | "waiting";
@@ -285,6 +290,7 @@ interface DashboardMemoryCache {
   baselineDone: boolean;
   retestDone: boolean;
   flameStats: FlameStats | null;
+  missedDayReviews: MissedDayReview[];
   effectiveTodayIso: string;
 }
 
@@ -634,6 +640,8 @@ const Dashboard = () => {
   const [newEventType, setNewEventType] = useState<EventType>("training");
   const [newEventTitle, setNewEventTitle] = useState("");
   const [showCheckin, setShowCheckin] = useState(false);
+  const [pendingRestVisualization, setPendingRestVisualization] = useState<NativeRestVisualizationIntent | null>(null);
+  const [checkinInitialFocus, setCheckinInitialFocus] = useState<"rest-visualization" | undefined>();
   const [setupMode, setSetupMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
@@ -692,6 +700,7 @@ const Dashboard = () => {
     setBaselineDone(cache.baselineDone);
     setRetestDone(cache.retestDone);
     setFlameStats(cache.flameStats);
+    setMissedDayReviews(cache.missedDayReviews);
     setEffectiveToday(new Date(cache.effectiveTodayIso));
     setLoading(false);
   };
@@ -706,6 +715,13 @@ const Dashboard = () => {
       navigate("/coach");
     }
   }, [role, navigate]);
+
+  useEffect(() => {
+    const intent = readRestVisualizationIntent(location.state);
+    if (!intent) return;
+    setPendingRestVisualization(intent);
+    navigate("/dashboard", { replace: true, state: null });
+  }, [location.state, navigate]);
 
   useEffect(() => {
     if (loading) return;
@@ -876,6 +892,7 @@ const Dashboard = () => {
       baselineDone,
       retestDone,
       flameStats,
+      missedDayReviews,
       effectiveTodayIso: effectiveToday.toISOString(),
     };
   }, [
@@ -902,6 +919,7 @@ const Dashboard = () => {
     baselineDone,
     retestDone,
     flameStats,
+    missedDayReviews,
     effectiveToday,
   ]);
 
@@ -1478,6 +1496,34 @@ const Dashboard = () => {
     })
     .slice(0, 3);
   const dailyCompletionCount = Number(todayCheckinDone) + Number(todayJournalDone);
+
+  useEffect(() => {
+    if (!pendingRestVisualization || loading || checkinStatusLoading) return;
+    const currentDate = format(effectiveToday, "yyyy-MM-dd");
+    if (canOpenRestVisualization({
+      intent: pendingRestVisualization,
+      currentDate,
+      eventType: todayEventType,
+      checkinCompleted: todayCheckinDone,
+    })) {
+      setDashboardSection("today");
+      setCheckinInitialFocus("rest-visualization");
+      setShowCheckin(true);
+    } else if (todayCheckinDone && pendingRestVisualization.scheduledDate === currentDate) {
+      toast.success("Deine Visualisierung ist für heute bereits abgeschlossen.");
+    } else {
+      toast.error("Diese Visualisierung gehört nicht zu deinem heutigen Ruhetag.");
+    }
+    setPendingRestVisualization(null);
+  }, [
+    checkinStatusLoading,
+    effectiveToday,
+    loading,
+    pendingRestVisualization,
+    todayCheckinDone,
+    todayEventType,
+  ]);
+
   const openPlan = () => {
     setDashboardSection("plan");
     setSelectedDate((current) => current ?? effectiveToday);
@@ -1595,8 +1641,10 @@ const Dashboard = () => {
       <DailyCheckin
         eventType={todayEventType as EventType}
         date={effectiveToday}
+        initialFocus={checkinInitialFocus}
         onClose={async () => {
           setShowCheckin(false);
+          setCheckinInitialFocus(undefined);
           await checkTodayCheckin();
           await upsertTodaySnapshot(user!.id).catch(() => {});
           await loadFlameStats();
@@ -1788,7 +1836,7 @@ const Dashboard = () => {
                     </>
                   )}
                 </div>
-                <h2 className="mt-4 line-clamp-3 max-w-[270px] text-[clamp(1.6rem,7vw,1.9rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
+                <h2 className="mt-4 break-words text-[clamp(1.45rem,6vw,1.9rem)] font-semibold leading-[1.08] tracking-[-0.04em] [overflow-wrap:anywhere]">
                   {todayResolved?.content.title
                     ?? todayResolved?.content.lens
                     ?? todayResolved?.matrix.lens
@@ -1824,8 +1872,10 @@ const Dashboard = () => {
                     <span className="block text-sm font-semibold">Daily Flow starten</span>
                     <span className="mt-0.5 block text-xs text-black/65">
                       {todayResolved
-                        ? `10 Tages-Puls-Fragen · ${todayResolved.content.tasks.length} Aufgaben`
-                        : "Tages-Puls, Aufgaben und Verständnis-Check"}
+                        ? todayEventType === "rest"
+                          ? "10 Tages-Puls-Fragen · Visualisierung"
+                          : "10 Tages-Puls-Fragen · eine Mission"
+                        : "Tages-Puls, Mission und Verständnis-Check"}
                     </span>
                   </span>
                 </span>
@@ -2019,18 +2069,24 @@ const Dashboard = () => {
             <DashboardActionRow
               icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
               eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
-              title={todayEventType === "rest" ? "Heute kein Pre-Training" : "Pre-Training"}
+              title={todayEventType === "rest" ? "Visualisierung" : "Pre-Training"}
               detail={
                 todayEventType === "rest"
-                  ? "Für Ruhetage ist keine Vorbereitung vorgesehen."
+                  ? todayCheckinDone
+                    ? "Deine Visualisierung für heute ist abgeschlossen."
+                    : "Geführte Visualisierung · passend zum heutigen Werkzeug"
                   : todayEventType
                     ? todayResolved
-                      ? `${eventConfig[todayEventType].label} · heutige Linse und ${todayResolved.content.tasks.length} Aufgaben`
+                      ? `${eventConfig[todayEventType].label} · aktives Erinnern und dein Satz`
                       : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
                     : "Sobald dein heutiger Termin feststeht."
               }
-              disabled={!todayEventType || todayEventType === "rest"}
-              onClick={() => navigate("/pre-training")}
+              disabled={!todayEventType || (todayEventType === "rest" && todayCheckinDone)}
+              done={todayEventType === "rest" && todayCheckinDone}
+              onClick={() => {
+                if (todayEventType === "rest") setShowCheckin(true);
+                else navigate("/pre-training");
+              }}
             />
             <DashboardActionRow
               icon={BookOpen}
@@ -2194,7 +2250,7 @@ const Dashboard = () => {
                     time="Heute"
                     icon={Brain}
                     title="Daily Flow"
-                    detail={todayCheckinDone ? "Tages-Puls und Aufgaben gespeichert" : "10 Tages-Puls-Fragen, Aufgaben und Verständnis-Check"}
+                    detail={todayCheckinDone ? "Tages-Puls und Mission gespeichert" : "10 Tages-Puls-Fragen, eine Mission und Verständnis-Check"}
                     active={!todayCheckinDone}
                     done={todayCheckinDone}
                     onClick={() => setShowCheckin(true)}

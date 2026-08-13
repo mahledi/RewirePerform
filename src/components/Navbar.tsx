@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { BrandLockup } from "@/components/brand/BrandLogo";
+import AppStoreBanner from "@/components/AppStoreBanner";
 
 const Navbar = () => {
   const navigate = useNavigate();
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
-      <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+    <nav className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/90 backdrop-blur-xl">
+      <AppStoreBanner />
+      <div className="container mx-auto flex h-16 items-center justify-between px-6">
         <button
           type="button"
           onClick={() => navigate("/")}

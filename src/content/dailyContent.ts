@@ -13,6 +13,10 @@ import { MATRIX_DAYS } from "./matrixDays";
 import type { DailyContent, DailyTask, DailyJournal } from "./matrixDayTypes";
 import { PLAYER_DAYS, mapPlayerDayToDailyContent } from "./playerDays";
 import { scienceBitesByDay } from "./scienceBites";
+import {
+  drawProgramV11ComprehensionQuestions,
+  getProgramV11Content,
+} from "./programV11";
 
 // ─────────── Generic Placeholder Builder ───────────
 // Wird verwendet, solange finale Tagesinhalte nicht eingepflegt sind.
@@ -2460,8 +2464,15 @@ for (const [dayStr, scienceBite] of Object.entries(scienceBitesByDay)) {
   if (DAILY_CONTENT[n]) DAILY_CONTENT[n].scienceBite = { fact: scienceBite };
 }
 
-export const getDailyContent = (dayNumber: number): DailyContent | null =>
-  DAILY_CONTENT[dayNumber] ?? null;
+/**
+ * Kanonische V1.1-Quelle. Der frühere breite Content bleibt vorerst nur als
+ * Migrationsreferenz in dieser Datei; alle echten Consumer erhalten denselben
+ * redaktionell freigegebenen 56-Tage-Stand wie die interne Vorschau.
+ */
+export const getDailyContent = (dayNumber: number): DailyContent | null => {
+  const matrix = MATRIX_DAYS.find((day) => day.dayNumber === dayNumber);
+  return matrix ? getProgramV11Content(dayNumber, matrix, "training") : null;
+};
 
 /**
  * Wählt 3-5 Fragen aus dem Pool (random, deterministisch via seed möglich).
@@ -2469,10 +2480,6 @@ export const getDailyContent = (dayNumber: number): DailyContent | null =>
  */
 export const drawComprehensionQuestions = (
   dayNumber: number,
-  count = 3
-): NonNullable<DailyContent["comprehensionPool"]> => {
-  const pool = DAILY_CONTENT[dayNumber]?.comprehensionPool ?? [];
-  if (pool.length === 0) return [];
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, Math.min(count, shuffled.length));
-};
+  _count = 1
+): NonNullable<DailyContent["comprehensionPool"]> =>
+  drawProgramV11ComprehensionQuestions(dayNumber);

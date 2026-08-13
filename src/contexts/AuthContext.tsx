@@ -346,9 +346,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [authInitialized, fetchUserContext, sessionUserId]);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const previousUserId = activeUserIdRef.current;
-    await supabase.auth.signOut();
+    authGenerationRef.current += 1;
     contextInFlightRef.current?.controller.abort();
     contextInFlightRef.current = null;
     activeUserIdRef.current = null;
@@ -356,12 +356,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setRoleVerified(false);
     setRoleLoading(false);
     setIsTestUser(false);
+    setLoading(true);
+
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setAuthInitialized(true);
+      setLoading(false);
+      return;
+    }
+
+    setSession(null);
+    setAuthInitialized(true);
+    setLoading(false);
     try { window.localStorage.removeItem("cached_user_role"); } catch { /* noop */ }
     try { window.localStorage.removeItem("cached_user_id"); } catch { /* noop */ }
     if (previousUserId) {
       try { window.localStorage.removeItem(roleCacheKey(previousUserId)); } catch { /* noop */ }
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{

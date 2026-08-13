@@ -153,6 +153,33 @@ def create_social_image(symbol_png: Path, output: Path) -> None:
     canvas.save(output, "PNG", optimize=True)
 
 
+def create_invitation_social_image(symbol_png: Path, output: Path) -> None:
+    canvas = Image.new("RGB", (1200, 1500), MIDNIGHT)
+    draw = ImageDraw.Draw(canvas)
+    heading = brand_font(82, bold=True)
+    body = brand_font(38)
+
+    with Image.open(symbol_png).convert("RGBA") as symbol:
+        symbol = symbol.resize((330, 330), Image.Resampling.LANCZOS)
+        canvas.paste(symbol, (435, 250), symbol)
+
+    brand_text = "RewirePerform"
+    brand_box = draw.textbbox((0, 0), brand_text, font=heading)
+    brand_width = brand_box[2] - brand_box[0]
+    draw.text(((canvas.width - brand_width) // 2, 650), brand_text, font=heading, fill=OFF_WHITE)
+    draw.rounded_rectangle((480, 785, 720, 797), radius=6, fill=GREEN)
+
+    line_one = "Deine Einladung."
+    line_two = "Ein klarer Weg in dein Team."
+    for text, y in ((line_one, 865), (line_two, 925)):
+        box = draw.textbbox((0, 0), text, font=body)
+        width = box[2] - box[0]
+        draw.text(((canvas.width - width) // 2, y), text, font=body, fill=(190, 198, 202))
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(output, "PNG", optimize=True)
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -262,6 +289,7 @@ def main() -> None:
         shutil.copyfile(source, destination)
 
     create_social_image(dark_symbol_512, ROOT / "public/og-image.png")
+    create_invitation_social_image(dark_symbol_512, ROOT / "public/og-invite.png")
     splash_targets = [
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",

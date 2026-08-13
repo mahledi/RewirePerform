@@ -6,17 +6,17 @@ const cards = [
   {
     icon: BookOpen,
     title: "Journaling & Reflexion",
-    text: "Reflexion hilft Athlet:innen, Muster zu erkennen, Abstand zu Gedanken zu gewinnen und Verhalten bewusster zu steuern.",
+    text: "Reflexion kann Athlet:innen helfen, Muster zu erkennen, Erfahrungen einzuordnen und die nächste Handlung bewusster zu wählen.",
   },
   {
     icon: Heart,
     title: "Dankbarkeit",
-    text: "Dankbarkeit lenkt Aufmerksamkeit auf Ressourcen, Verbindung und Bedeutung — ein Gegengewicht zu Druck, Vergleich und Defizitfokus.",
+    text: "Der Dankbarkeitsblock richtet Aufmerksamkeit bewusst auf konkrete Ressourcen, Verbindung und Bedeutung des Tages.",
   },
   {
     icon: CheckCircle2,
     title: "Comprehension",
-    text: "Athlet:innen wiederholen, was sie tun sollen. Dadurch wird aus Information ein klarer Handlungsplan.",
+    text: "Der kurze Verständnis-Check prüft, ob aus dem Tagesinhalt eine klare nächste Handlung geworden ist.",
   },
 ];
 
@@ -39,14 +39,14 @@ const MechanismSection = () => {
             <span className="text-gradient">Mechanismen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-            Jeder Teil von RewirePerform hat eine Funktion: Reflexion stärkt
-            Selbstwahrnehmung, Dankbarkeit verändert Aufmerksamkeit,
-            Comprehension verwandelt Wissen in Anwendung.
+            Jeder Teil von RewirePerform hat eine klare Aufgabe: Erfahrungen
+            einordnen, Aufmerksamkeit bewusst ausrichten und prüfen, ob die
+            nächste Handlung verständlich ist.
           </p>
           <p className="text-sm text-muted-foreground/80 italic">
-            Das Tool ist neu. Die Mechanismen dahinter sind nicht zufällig: Sie
-            stammen aus Sportpsychologie, Verhaltenswissenschaft, Neurowissenschaft
-            und jahrzehntealter Reflexionspraxis.
+            Das Gesamtsystem ist neu. Seine Gestaltung orientiert sich an
+            Prinzipien aus Sportpsychologie, Lernforschung, Neurowissenschaft
+            und strukturierter Reflexionspraxis.
           </p>
         </motion.div>
 

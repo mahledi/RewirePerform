@@ -3,11 +3,10 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowLeft, BookOpen, Check, Dumbbell, Heart, Loader2, Mic, Moon, Sparkles, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Dumbbell, Loader2, Mic, Moon, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import VoiceInput from "@/components/VoiceInput";
 import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
@@ -20,43 +19,30 @@ import { upsertTodaySnapshot } from "@/lib/programProgress";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 
-const GRATITUDE_COUNT = 5;
-const GRATITUDE_MIN_LETTERS = 6;
-
 const journalContextConfig: Record<CalendarEventType, { icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
   rest: { icon: Moon, color: "text-blue-400", bg: "bg-blue-400/10" },
   competition: { icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10" },
 };
 
-const emptyGratitudeList = (): string[] => Array.from({ length: GRATITUDE_COUNT }, () => "");
-
-const parseGratitude = (raw: unknown): string[] => {
-  const list = emptyGratitudeList();
+const parseGratitude = (raw: unknown): string => {
   if (Array.isArray(raw)) {
-    raw.slice(0, GRATITUDE_COUNT).forEach((v, i) => {
-      list[i] = typeof v === "string" ? v : "";
-    });
-    return list;
+    return raw.filter((value): value is string => typeof value === "string")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join("\n");
   }
-  if (typeof raw === "string" && raw.trim().length > 0) {
-    const parts = raw.split("\n");
-    parts.slice(0, GRATITUDE_COUNT).forEach((v, i) => {
-      list[i] = v;
-    });
-  }
-  return list;
+  return typeof raw === "string" ? raw : "";
 };
 
-const serializeGratitude = (list: string[]): string =>
-  list.map((line) => line.trim()).join("\n");
-
-const countLetters = (value: string): number => (value.match(/\p{L}/gu) ?? []).length;
+const countWords = (value: string): number =>
+  value.trim() ? value.trim().split(/\s+/u).length : 0;
 
 interface JournalDraft {
   answers: Record<string, string>;
   gratitude: string[] | string;
   freeReflection: string;
+  journalStep?: number;
   savedAt: string;
 }
 
@@ -67,8 +53,9 @@ const Journal = () => {
   const [saving, setSaving] = useState(false);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [gratitudeList, setGratitudeList] = useState<string[]>(emptyGratitudeList);
+  const [gratitude, setGratitude] = useState("");
   const [freeReflection, setFreeReflection] = useState("");
+  const [journalStep, setJournalStep] = useState(0);
   const [done, setDone] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
@@ -136,7 +123,7 @@ const Journal = () => {
 
     if (existing) {
       setAnswers((existing.answers as Record<string, string>) ?? {});
-      setGratitudeList(parseGratitude(existing.gratitude));
+      setGratitude(parseGratitude(existing.gratitude));
       setFreeReflection(existing.free_reflection ?? "");
       setDone(true);
     } else {
@@ -147,8 +134,9 @@ const Journal = () => {
         ?? readLocalDraft<JournalDraft>(`journal:${user.id}:${r.date}`);
       if (local) {
         setAnswers(local.answers ?? {});
-        setGratitudeList(parseGratitude(local.gratitude));
+        setGratitude(parseGratitude(local.gratitude));
         setFreeReflection(local.freeReflection ?? "");
+        setJournalStep(local.journalStep ?? 0);
       }
     }
     setLoading(false);
@@ -158,27 +146,32 @@ const Journal = () => {
     if (!draftKey || done) return;
     const hasDraft =
       Object.values(answers).some((value) => value.trim().length > 0) ||
-      gratitudeList.some((line) => line.trim().length > 0) ||
+      gratitude.trim().length > 0 ||
       freeReflection.trim().length > 0;
     if (!hasDraft) return;
     writeLocalDraft<JournalDraft>(draftKey, {
       answers,
-      gratitude: gratitudeList,
+      gratitude,
       freeReflection,
+      journalStep,
       savedAt: new Date().toISOString(),
     });
-  }, [answers, gratitudeList, freeReflection, draftKey, done]);
-
-  const incompleteCount = gratitudeList.filter(
-    (line) => countLetters(line) < GRATITUDE_MIN_LETTERS,
-  ).length;
-  const gratitudeReady = incompleteCount === 0;
+  }, [answers, gratitude, freeReflection, journalStep, draftKey, done]);
 
   const handleSave = async () => {
     if (!user?.id || !resolved || saving) return;
-    if (!gratitudeReady) {
+    const allQuestionsReady = resolved.content.journal.questions.every(
+      (question) => (answers[question.id] ?? "").trim().length > 0,
+    );
+    if (!allQuestionsReady) {
+      toast.error("Beantworte zuerst die offenen Fragen deines Tages.");
+      setJournalStep(0);
+      return;
+    }
+    const gratitudeMinWords = resolved.content.journal.gratitudeMinWords ?? 8;
+    if (countWords(gratitude) < gratitudeMinWords) {
       toast.error(
-        `Bitte alle 5 Dankbarkeiten ausfüllen (mind. ${GRATITUDE_MIN_LETTERS} Buchstaben je Zeile).`,
+        `Schreib bitte mindestens ${gratitudeMinWords} Wörter zu dem, was heute gut, hilfreich oder tragend war.`,
       );
       return;
     }
@@ -192,14 +185,13 @@ const Journal = () => {
         throw new Error("active_program_instance_required");
       }
       hasProgramInstance = true;
-      const serializedGratitude = serializeGratitude(gratitudeList);
       const payload = {
         user_id: user.id,
         date: resolved.date,
         day_number: resolved.matrix.dayNumber,
         journal_title: resolved.content.journal.journalTitle,
         answers,
-        gratitude: serializedGratitude || null,
+        gratitude: gratitude.trim() || null,
         free_reflection: freeReflection || null,
         program_instance_id: instance.id,
       };
@@ -309,6 +301,20 @@ const Journal = () => {
   const ContextIcon = contextConfig.icon;
   const displayTitle = content.title ?? matrix.lens;
   const displayLens = content.lens ?? matrix.practiceFocus;
+  const questionCount = j.questions.length;
+  const gratitudeStep = questionCount;
+  const totalJournalSteps = questionCount + 1;
+  const safeJournalStep = Math.min(journalStep, gratitudeStep);
+  const activeQuestion = j.questions[safeJournalStep];
+  const isGratitudeStep = safeJournalStep === gratitudeStep;
+  const gratitudeMinWords = j.gratitudeMinWords ?? 8;
+  const gratitudeWords = countWords(gratitude);
+  const currentAnswerReady = activeQuestion
+    ? (answers[activeQuestion.id] ?? "").trim().length > 0
+    : false;
+  const allQuestionsReady = j.questions.every(
+    (question) => (answers[question.id] ?? "").trim().length > 0,
+  );
 
   return (
     <div className="min-h-screen min-h-[100dvh] bg-[#0D0E12] text-[#EEF0F2]">
@@ -381,109 +387,116 @@ const Journal = () => {
           </div>
         )}
 
-        {/* Questions */}
-        {j.questions.map((q, i) => (
+        <div className="flex items-center gap-2" aria-label={`Schritt ${safeJournalStep + 1} von ${totalJournalSteps}`}>
+          {Array.from({ length: totalJournalSteps }, (_, index) => (
+            <span
+              key={index}
+              className={`h-1.5 flex-1 rounded-full ${index <= safeJournalStep ? "bg-primary" : "bg-white/[0.07]"}`}
+            />
+          ))}
+          <span className="ml-1 text-[10px] tabular-nums text-white/38">{safeJournalStep + 1}/{totalJournalSteps}</span>
+        </div>
+
+        {activeQuestion && (
           <motion.div
-            key={q.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 * i }}
-            className="space-y-2"
+            key={activeQuestion.id}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-4 rounded-[24px] border border-white/[0.065] bg-white/[0.025] p-5"
           >
-            <label className="text-sm font-medium text-foreground block">{q.question}</label>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
+              Frage {safeJournalStep + 1} von {questionCount}
+            </p>
+            <label className="block text-xl font-semibold leading-7 text-foreground">{activeQuestion.question}</label>
             <Textarea
-              value={answers[q.id] ?? ""}
-              onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
-              placeholder={q.placeholder ?? ""}
-              className="min-h-[90px] bg-secondary/40 border-border/40 resize-none"
+              value={answers[activeQuestion.id] ?? ""}
+              onChange={(event) => setAnswers((previous) => ({
+                ...previous,
+                [activeQuestion.id]: event.target.value,
+              }))}
+              placeholder={activeQuestion.placeholder ?? ""}
+              className="min-h-32 resize-none border-primary/10 bg-black/15 focus-visible:ring-primary"
             />
             <VoiceInput
-              currentValue={answers[q.id] ?? ""}
-              onTranscript={(text) => setAnswers((prev) => ({ ...prev, [q.id]: text }))}
+              currentValue={answers[activeQuestion.id] ?? ""}
+              onTranscript={(text) => setAnswers((previous) => ({ ...previous, [activeQuestion.id]: text }))}
               showHint={false}
             />
           </motion.div>
-        ))}
+        )}
 
-        {/* Gratitude — 5 Pflichtzeilen */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 p-5 rounded-2xl bg-secondary/30 border border-border/30">
-          <div className="flex items-center gap-2">
-            <Heart className="w-4 h-4 text-primary" />
-            <label className="text-sm font-medium">Dankbarkeit</label>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {j.gratitudeInstruction}
-          </p>
-          <div className="space-y-2">
-            {gratitudeList.map((value, idx) => {
-              const ok = countLetters(value) >= GRATITUDE_MIN_LETTERS;
-              return (
-                <div key={idx} className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground w-5 shrink-0 tabular-nums">
-                    {idx + 1}.
-                  </span>
-                  <Input
-                    value={value}
-                    onChange={(e) =>
-                      setGratitudeList((prev) => {
-                        const next = [...prev];
-                        next[idx] = e.target.value;
-                        return next;
-                      })
-                    }
-                    placeholder="Eine konkrete Sache …"
-                    className={`flex-1 bg-background/60 border-border/40 h-10 ${
-                      ok ? "" : ""
-                    }`}
-                  />
-                  <VoiceInput
-                    currentValue={value}
-                    onTranscript={(text) =>
-                      setGratitudeList((prev) => {
-                        const next = [...prev];
-                        next[idx] = text;
-                        return next;
-                      })
-                    }
-                    showHint={false}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Free reflection (optional) */}
-        {j.freeReflectionPrompt && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-            <label className="text-xs text-muted-foreground block">{j.freeReflectionPrompt}</label>
+        {isGratitudeStep && (
+          <motion.div
+            key="gratitude"
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-4 rounded-[24px] border border-primary/15 bg-primary/[0.045] p-5"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Blick öffnen</p>
+            <label className="block text-xl font-semibold leading-7">Was war heute gut, hilfreich oder tragend?</label>
+            <p className="text-sm leading-6 text-white/48">{j.gratitudeInstruction}</p>
             <Textarea
-              value={freeReflection}
-              onChange={(e) => setFreeReflection(e.target.value)}
-              placeholder="Optional …"
-              className="min-h-[70px] bg-secondary/30 border-border/40 resize-none"
+              value={gratitude}
+              onChange={(event) => setGratitude(event.target.value)}
+              placeholder="Schreib einen konkreten Satz …"
+              className="min-h-32 resize-none border-primary/15 bg-black/15 focus-visible:ring-primary"
             />
-            <VoiceInput currentValue={freeReflection} onTranscript={setFreeReflection} showHint={false} />
+            <div className="flex items-center justify-between gap-3">
+              <VoiceInput currentValue={gratitude} onTranscript={setGratitude} showHint={false} />
+              <span className={`text-xs ${gratitudeWords >= gratitudeMinWords ? "text-primary" : "text-white/35"}`}>
+                {gratitudeWords}/{gratitudeMinWords} Wörter
+              </span>
+            </div>
+
+            {j.freeReflectionPrompt && (
+              <div className="space-y-2 border-t border-white/[0.06] pt-4">
+                <label className="block text-xs text-muted-foreground">{j.freeReflectionPrompt}</label>
+                <Textarea
+                  value={freeReflection}
+                  onChange={(event) => setFreeReflection(event.target.value)}
+                  placeholder="Optional …"
+                  className="min-h-20 resize-none bg-black/10"
+                />
+                <VoiceInput
+                  currentValue={freeReflection}
+                  onTranscript={setFreeReflection}
+                  showHint={false}
+                />
+              </div>
+            )}
           </motion.div>
         )}
 
-        {/* Save */}
-        <motion.button
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          onClick={handleSave}
-          disabled={saving || !gratitudeReady}
-          className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold bg-primary text-primary-foreground hover:shadow-glow transition-all disabled:opacity-60"
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {saving
-            ? "Speichert..."
-            : !gratitudeReady
-              ? `Noch ${incompleteCount} Dankbarkeit${incompleteCount === 1 ? "" : "en"} ausfüllen`
-              : saveError
-                ? "Erneut speichern"
-                : "Tag abschließen"}
-        </motion.button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setJournalStep((current) => Math.max(0, current - 1))}
+            disabled={safeJournalStep === 0}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/[0.075] px-4 text-sm font-semibold text-white/55 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ArrowLeft className="h-4 w-4" /> Zurück
+          </button>
+          {isGratitudeStep ? (
+            <motion.button
+              whileTap={{ scale: 0.99 }}
+              onClick={handleSave}
+              disabled={saving || !allQuestionsReady || gratitudeWords < gratitudeMinWords}
+              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 font-heading text-sm font-semibold text-primary-foreground transition-all disabled:bg-white/[0.06] disabled:text-white/30"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              {saving ? "Speichert …" : saveError ? "Erneut speichern" : "Tag abschließen"}
+            </motion.button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setJournalStep((current) => Math.min(gratitudeStep, current + 1))}
+              disabled={!currentAnswerReady}
+              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:bg-white/[0.06] disabled:text-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Weiter <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

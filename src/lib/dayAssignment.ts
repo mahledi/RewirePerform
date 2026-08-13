@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
-import { drawComprehensionQuestions } from "@/content/dailyContent";
+import { drawProgramV11ComprehensionQuestions } from "@/content/programV11";
 import type { CalendarEventType, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 
 export interface AssignmentRecord {
@@ -193,4 +193,7 @@ export async function upsertComprehension(args: {
   return supabase.from("comprehension_check_instances").insert(insert);
 }
 
-export { drawComprehensionQuestions };
+export const drawComprehensionQuestions = (
+  dayNumber: number,
+  _count = 1,
+) => drawProgramV11ComprehensionQuestions(dayNumber);
