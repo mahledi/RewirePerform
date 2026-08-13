@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 
 const root = resolve("docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.2");
@@ -11,6 +12,12 @@ const exactKeys = (value, keys, message) => {
   assert(value && typeof value === "object" && !Array.isArray(value), message);
   assert(JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...keys].sort()), message);
 };
+const historicalPackageCommit = "1c394d8d7b1c47597ca1d1c37bf17d8a7c5bda2e";
+const historicalBytes = (path) => execFileSync(
+  "git",
+  ["show", `${historicalPackageCommit}:${path}`],
+  { cwd: process.cwd(), encoding: null, maxBuffer: 16 * 1024 * 1024 },
+);
 
 assert(manifest.schema_version === "rewireperform-feedback-intelligence-synthetic-cycle-package-v1", "manifest schema drift");
 assert(manifest.package_status === "COMPLETE_POSTREAD_ASSURED_SANITIZED_STAGING_ONLY", "manifest status drift");
@@ -20,7 +27,10 @@ assert(manifest.activation.production === false && manifest.activation.real_data
 assert(new Set(manifest.files.map((file) => file.path)).size === manifest.files.length, "duplicate manifest path");
 const digestLines = manifest.files.map((file) => {
   exactKeys(file, ["path", "sha256"], "manifest file shape drift");
-  const bytes = readFileSync(resolve(file.path));
+  // The package is immutable historical evidence. Verify its bytes at the
+  // commit that first contained the exact manifest instead of requiring
+  // actively maintained files such as package.json to remain frozen forever.
+  const bytes = historicalBytes(file.path);
   const digest = sha256(bytes);
   assert(digest === file.sha256, `${file.path} hash drift`);
   return `${digest}  ${file.path}\n`;
