@@ -49,6 +49,7 @@ const parseArgs = (argv) => {
     database: value("--database"),
     file: value("--file"),
     caFile: value("--ca-file"),
+    operation: value("--operation"),
   };
   if (parsed.host !== expected.host
       || parsed.port !== expected.port
@@ -57,7 +58,8 @@ const parseArgs = (argv) => {
       || typeof parsed.file !== "string"
       || parsed.file.length === 0
       || typeof parsed.caFile !== "string"
-      || parsed.caFile.length === 0) {
+      || parsed.caFile.length === 0
+      || !["rollback-dry-run", "persistent-apply"].includes(parsed.operation)) {
     throw new Error("DIRECT_QUERY_TARGET_DRIFT");
   }
   return parsed;
@@ -118,7 +120,14 @@ const selectFinalRows = (result) => {
   return final.rows;
 };
 
-export const executeSimpleQuery = async ({ target, password, sql, ca, ClientClass = Client }) => {
+export const executeSimpleQuery = async ({
+  target,
+  password,
+  sql,
+  ca,
+  operation = "rollback-dry-run",
+  ClientClass = Client,
+}) => {
   const client = new ClientClass({
     host: target.host,
     port: target.port,
@@ -126,7 +135,9 @@ export const executeSimpleQuery = async ({ target, password, sql, ca, ClientClas
     database: target.database,
     password,
     ssl: { ca, rejectUnauthorized: true, servername: target.host },
-    application_name: "rewireperform_v11_rollback_dry_run",
+    application_name: operation === "persistent-apply"
+      ? "rewireperform_v11_persistent_apply"
+      : "rewireperform_v11_rollback_dry_run",
     connectionTimeoutMillis: 15_000,
     query_timeout: 210_000,
   });
@@ -152,7 +163,13 @@ if (isMain) {
     const password = parseCredentialInput(readFileSync(0, "utf8"));
     const sql = readFileSync(target.file, "utf8");
     const ca = readPinnedSupabaseCa(target.caFile);
-    const rows = await executeSimpleQuery({ target, password, sql, ca });
+    const rows = await executeSimpleQuery({
+      target,
+      password,
+      sql,
+      ca,
+      operation: target.operation,
+    });
     process.stdout.write(`${JSON.stringify(rows)}\n`);
   } catch (error) {
     process.stderr.write(`${JSON.stringify(sanitizePostgresError(error))}\n`);

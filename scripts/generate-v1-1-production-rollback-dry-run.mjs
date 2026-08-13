@@ -128,7 +128,7 @@ END;
 $dry_run_preflight$;
 `;
 
-const targetAuditSql = `
+export const targetAuditSql = `
 DO $dry_run_target$
 DECLARE
   settings_count integer;
@@ -332,6 +332,14 @@ BEGIN
   END IF;
 END;
 $dry_run_target$;
+`;
+
+export const persistentTargetAuditSql = `${targetAuditSql}
+SELECT json_build_object(
+  'status', 'PASS_V1_1_PERSISTENT_TARGET_METADATA_AUDIT',
+  'application_values_returned', false,
+  'runtime_activation_authorized', false
+) AS v1_1_persistent_target_status;
 `;
 
 const postRollbackDoSql = `

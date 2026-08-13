@@ -343,6 +343,7 @@ describe("V1.1 Production rollback dry-run operator", () => {
     }, "/tmp/query.sql", "/tmp/supabase-root.crt");
     expect(workerArgs).toContain("/tmp/query.sql");
     expect(workerArgs).toContain("/tmp/supabase-root.crt");
+    expect(workerArgs).toContain("rollback-dry-run");
     expect(workerArgs).not.toContain("temporary-test-password");
     expect(workerArgs.join(" ")).not.toContain("password");
   });

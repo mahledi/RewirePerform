@@ -95,6 +95,40 @@ Freigabe des eng begrenzten Teamzeilen-Reads an den kontrollierten
 Production-Dry-run übergeben werden. Sie darf niemals für einen persistenten
 Apply verwendet werden.
 
+## Persistenter Apply-Operator
+
+Der getrennte lokale Generator
+`scripts/generate-v1-1-production-persistent-apply.mjs` pinnt den späteren
+persistent auszuführenden Zielpfad als 25 geordnete Schritte. Jeder normale
+Schritt enthält genau eine Datenbanktransaktion aus den verifizierten
+Production-Ausführungsbytes und dem dazugehörigen Eintrag in
+`supabase_migrations.schema_migrations`. Der Historieneintrag verwendet wie
+Supabase CLI `2.113.0` Version, Dateiname und die PostgreSQL-sicher getrennte
+Liste der wirklich ausgeführten Statements. Schlägt ein Statement oder der
+Historieneintrag fehl, wird dieser Schritt vollständig zurückgerollt und der
+Runner stoppt ohne Retry.
+
+Die synthetische Staging-Gate-open-Version wird als einziger history-only
+Schritt mit leerer Statementliste eingetragen. Ihre gefährlichen SQL-Bytes
+werden weder ausgeführt noch an Production übertragen. Die beiden
+Hosted-Production-Anpassungen verwenden ausschließlich die separat
+SHA-256-gepinnten Execution-Bytes. Alle übrigen 22 Schritte verwenden exakt
+die historischen Quelldateien.
+
+Der Runner `scripts/run-v1-1-production-persistent-apply.mjs` ist absichtlich
+vierfach verriegelt und kann keine Verbindung beginnen, solange nicht
+gleichzeitig (1) der persistente Apply erneut ausdrücklich freigegeben,
+(2) das temporäre direkte Production-Credential freigegeben, (3) der exakt
+geplante Production-Rollback-Dry-run nachweislich grün und (4) ein aktueller
+Backup-/Recovery-Nachweis bestätigt wurde. Eine spätere Ausführung
+benötigt nur eine einmalige unsichtbare Passworteingabe: Der Prozess hält das
+Passwort ausschließlich im Arbeitsspeicher und reicht es über stdin an die
+einzelnen isolierten Child-Prozesse weiter. Nach den 25 Schritten prüft er die
+vollständige Migrationshistorie und in einer frischen Sitzung den weiterhin
+geschlossenen Zielzustand. Edge-Deploy, Feedback-Collection, Minderjährigen-
+Verarbeitung, Jarvis-Read und sonstige Runtime-Aktivierung bleiben danach
+weiterhin separate Gates.
+
 Der erste freigegebene Dry-run-Versuch über den Beta-Endpunkt der Supabase
 Management API wurde vor einem belegbaren PostgreSQL-Fehler abgebrochen. Die
 lokale PostgreSQL-Reproduktion derselben gepinnten SQL-Kette und der frische

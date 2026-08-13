@@ -219,6 +219,7 @@ export const directWorkerArgs = (target, sqlPath, caFile) => [
   "--database", target.database,
   "--file", sqlPath,
   "--ca-file", caFile,
+  "--operation", "rollback-dry-run",
 ];
 
 const defaultRunDirectSession = ({ target, sqlPath, caFile, password, cwd }) => spawnSync(

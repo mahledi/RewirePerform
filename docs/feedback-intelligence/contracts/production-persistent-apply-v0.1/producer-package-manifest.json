@@ -1,28 +1,32 @@
 {
-  "schema_version": "rewireperform-v1.1-production-migration-plan-package-v1",
-  "status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
-  "generated_at": "2026-08-11T10:05:00+02:00",
-  "package_sha256": "de272d077931703575cae012f635e2b0406a3c04be06ceba444b6d294741ba56",
+  "schema_version": "rewireperform-v1.1-production-persistent-apply-package-v1",
+  "status": "LOCAL_PREPARED_EXTERNAL_GATES_CLOSED",
+  "generated_at": "2026-08-13T10:40:00+02:00",
+  "package_sha256": "863c9b4428246ff816786b00adaae23f5a5d37848938dc8a4eafd89dafbd60b0",
   "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/plan.json",
+      "sha256": "e672f4859f0cb7b19c719e314d85cd9badc500b1b555d0317c67e4986c0c74d4"
+    },
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
       "sha256": "feaf15747114f6a9674b3c2aa7f85659f331b6fdceed054d24b72d971e8a655c"
     },
     {
-      "path": ".github/workflows/ci.yml",
-      "sha256": "99ba47fed2bb995252d6bc3a1544fb286e005ed5fd0d8b473943f86a0f40552e"
+      "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/producer-package-manifest.json",
+      "sha256": "255761285f367ba2eeb0897cbda7c02dd81c3837394591f8acc5a7ed75f7e951"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
       "sha256": "3d60524988bb1fc8c70e85e3d705a938aca6e892a8990dc91ea2fcda96802f67"
     },
     {
-      "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "306ac59af238c5c37f5c12ea08d2da3c7e3d3beb38e92ceb45730b01e4fee139"
+      "path": "scripts/generate-v1-1-production-persistent-apply.mjs",
+      "sha256": "a42d3d23cfe29f02d5ebf93aa05c4a260ee71e091ce903574fd52374c29ba523"
     },
     {
-      "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "30d9b69945497449c3aac813fc97b5cea07fe7be67e7c19f035e7636ac3548ee"
+      "path": "scripts/run-v1-1-production-persistent-apply.mjs",
+      "sha256": "abea4d5570ef2f1714141d6a9653d82952143233513fec134674201d463d62ab"
     },
     {
       "path": "scripts/execute-postgres-simple-query.mjs",
@@ -31,6 +35,14 @@
     {
       "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
       "sha256": "229481d9d7a2d0c93889e881aef9549edc549c46507b4f96ba94e3cf3d5bc460"
+    },
+    {
+      "path": "scripts/generate-v1-1-production-migration-plan.mjs",
+      "sha256": "306ac59af238c5c37f5c12ea08d2da3c7e3d3beb38e92ceb45730b01e4fee139"
+    },
+    {
+      "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
+      "sha256": "30d9b69945497449c3aac813fc97b5cea07fe7be67e7c19f035e7636ac3548ee"
     },
     {
       "path": "config/certs/supabase-prod-root-2021.crt",
@@ -45,16 +57,28 @@
       "sha256": "473380ffa329b62ab69946269f1d8da16ae98360c0bd38fcde29b4cf76de3c53"
     },
     {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "99ba47fed2bb995252d6bc3a1544fb286e005ed5fd0d8b473943f86a0f40552e"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ad038e0f60dbe2989d2c775119fe417560bd4ba72fd2055ebbf7fd1ac5364c74"
+    },
+    {
       "path": "src/test/postgresSimpleQueryWorker.test.ts",
       "sha256": "b4126f3226c2b5ce8de86f7d61e3ddb6068d24cea7696a1d9cb5140ab7865bba"
     },
     {
-      "path": "src/test/v11ProductionMigrationPlan.test.ts",
-      "sha256": "2f615f02f3abcc46d4b5d251e2982c9c82e8f3b1722d96218a877eb5a73f7c70"
-    },
-    {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
       "sha256": "37f994ac1814a32f8679ec9991a9de0bf253d5a9746e6114b8635413b305602c"
+    },
+    {
+      "path": "src/test/v11ProductionPersistentApply.test.ts",
+      "sha256": "0217be231f0ddde155b0846191a4a0a9a3c7410b3b7576d946b0d1ed25ad41e9"
+    },
+    {
+      "path": "src/test/v11ProductionPersistentRunner.test.ts",
+      "sha256": "f40d81b562000e23bc4e0a92eb3d3d27d565ed86a7ca1420b0ee08635e1fa569"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",
@@ -158,12 +182,12 @@
     }
   ],
   "activation": {
-    "production_apply": false,
-    "edge_deploy": false,
+    "persistent_apply": false,
     "credentials": false,
-    "data_reads": false,
+    "rollback_dry_run": false,
     "feedback_collection": false,
     "minor_feedback": false,
-    "real_jarvis": false
+    "real_jarvis": false,
+    "edge_deploy": false
   }
 }
