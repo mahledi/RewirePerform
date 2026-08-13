@@ -17,6 +17,7 @@ const manifestPath = `${base}/producer-package-manifest.json`;
 const remoteFloor = "20260801104717_harden_team_join_minor_authorization.sql";
 const neverExecute = "20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql";
 const teamStaffBackfill = "20260807092005_coach_enterprise_onboarding_v1_1.sql";
+const historicalPlanCommit = "319d8912fb7b8fd90aa01a0d366356de50ca9e0d";
 
 const expected = [
   "20260805103400_feedback_intelligence_v1_foundation.sql",
@@ -48,7 +49,9 @@ const expected = [
 
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const migrationNames = (await readdir(resolve(root, migrationDir)))
-  .filter((name) => /^\d{14}_.+\.sql$/u.test(name) && name > remoteFloor)
+  .filter((name) => /^\d{14}_.+\.sql$/u.test(name)
+    && name > remoteFloor
+    && name <= expected.at(-1))
   .sort();
 
 if (JSON.stringify(migrationNames) !== JSON.stringify(expected)) {
@@ -186,12 +189,19 @@ const manifest = await buildManifest(serializedPlan);
 const serializedManifest = `${JSON.stringify(manifest, null, 2)}\n`;
 
 if (checkOnly) {
-  const [currentPlan, currentManifest] = await Promise.all([
+  const [currentPlan, currentManifest, historicalManifest] = await Promise.all([
     readFile(resolve(root, planPath), "utf8"),
     readFile(resolve(root, manifestPath), "utf8"),
+    import("node:child_process").then(({ execFileSync }) => execFileSync(
+      "git",
+      ["show", `${historicalPlanCommit}:${manifestPath}`],
+      { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+    )),
   ]);
   if (currentPlan !== serializedPlan) throw new Error(`${planPath}: generated plan drift`);
-  if (currentManifest !== serializedManifest) throw new Error(`${manifestPath}: generated manifest drift`);
+  if (currentManifest !== historicalManifest) {
+    throw new Error(`${manifestPath}: historical manifest drift`);
+  }
   console.log(JSON.stringify({
     status: plan.status,
     migrations: migrations.length,

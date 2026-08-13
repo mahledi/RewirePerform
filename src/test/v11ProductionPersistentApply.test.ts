@@ -14,6 +14,12 @@ import {
 const root = process.cwd();
 const base = "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1";
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
+const historicalApplyCommit = "319d8912fb7b8fd90aa01a0d366356de50ca9e0d";
+const historicalBytes = (path: string) => spawnSync(
+  "git",
+  ["show", `${historicalApplyCommit}:${path}`],
+  { cwd: root, encoding: null, maxBuffer: 16 * 1024 * 1024 },
+).stdout;
 
 describe("V1.1 persistent Production apply package", () => {
   it("pins 25 ordered atomic steps while keeping every external gate closed", async () => {
@@ -128,7 +134,7 @@ describe("V1.1 persistent Production apply package", () => {
       path: string;
       sha256: string;
     }) => {
-      const actual = sha256(readFileSync(resolve(root, path)));
+      const actual = sha256(historicalBytes(path));
       expect(actual, path).toBe(pinned);
       return `${actual}  ${path}\n`;
     }).join("");

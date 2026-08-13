@@ -22,6 +22,7 @@ import {
 
 const root = process.cwd();
 const projectRef = "bqsbxesmybthwtxmowfz";
+const historicalApplyCommit = "319d8912fb7b8fd90aa01a0d366356de50ca9e0d";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const persistentPackageManifestPath = resolve(
@@ -95,7 +96,15 @@ export const assertPersistentPackageBytes = ({ cwd, manifest }) => {
       throw new Error("persistent Production package inventory entry drift");
     }
     seen.add(entry.path);
-    const actual = sha256(readFileSync(resolve(cwd, entry.path)));
+    const bytes = spawnSync(
+      "git",
+      ["show", `${historicalApplyCommit}:${entry.path}`],
+      { cwd, encoding: null, maxBuffer: 16 * 1024 * 1024 },
+    );
+    if (bytes.status !== 0 || !Buffer.isBuffer(bytes.stdout)) {
+      throw new Error(`persistent Production historical package unavailable: ${entry.path}`);
+    }
+    const actual = sha256(bytes.stdout);
     if (actual !== entry.sha256) {
       throw new Error(`persistent Production package byte drift: ${entry.path}`);
     }

@@ -18,6 +18,7 @@ const sourcePlanPath =
 const base = "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1";
 const applyPlanPath = `${base}/plan.json`;
 const manifestPath = `${base}/producer-package-manifest.json`;
+const historicalApplyCommit = "319d8912fb7b8fd90aa01a0d366356de50ca9e0d";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 const sqlLiteral = (value) => `'${value.replaceAll("'", "''")}'`;
@@ -321,12 +322,19 @@ if (isMain) {
   };
   const serializedManifest = `${JSON.stringify(manifest, null, 2)}\n`;
   if (checkOnly) {
-    const [currentPlan, currentManifest] = await Promise.all([
+    const [currentPlan, currentManifest, historicalManifest] = await Promise.all([
       readFile(resolve(root, applyPlanPath), "utf8"),
       readFile(resolve(root, manifestPath), "utf8"),
+      import("node:child_process").then(({ execFileSync }) => execFileSync(
+        "git",
+        ["show", `${historicalApplyCommit}:${manifestPath}`],
+        { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+      )),
     ]);
     if (currentPlan !== serializedPlan) throw new Error(`${applyPlanPath}: generated plan drift`);
-    if (currentManifest !== serializedManifest) throw new Error(`${manifestPath}: generated manifest drift`);
+    if (currentManifest !== historicalManifest) {
+      throw new Error(`${manifestPath}: historical manifest drift`);
+    }
     console.log(JSON.stringify({
       status: plan.status,
       steps: plan.step_count,

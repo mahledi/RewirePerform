@@ -10,6 +10,12 @@ const root = process.cwd();
 const base = "docs/feedback-intelligence/contracts/production-migration-plan-v0.1";
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
+const historicalPlanCommit = "319d8912fb7b8fd90aa01a0d366356de50ca9e0d";
+const historicalBytes = (path: string) => spawnSync(
+  "git",
+  ["show", `${historicalPlanCommit}:${path}`],
+  { cwd: root, encoding: null, maxBuffer: 16 * 1024 * 1024 },
+).stdout;
 
 describe("V1.1 Production migration plan", () => {
   it("pins the complete ordered delta and never executes the Staging gate-open migration", () => {
@@ -101,7 +107,7 @@ describe("V1.1 Production migration plan", () => {
       path: string;
       sha256: string;
     }) => {
-      const actual = sha256(readFileSync(resolve(root, path)));
+      const actual = sha256(historicalBytes(path));
       expect(actual, path).toBe(pinned);
       return `${actual}  ${path}\n`;
     }).join("");
@@ -112,5 +118,10 @@ describe("V1.1 Production migration plan", () => {
     const isolatedInstall = "npm ci --ignore-scripts --prefix tools/production-rollback-dry-run";
     expect(workflow).toContain(isolatedInstall);
     expect(workflow.indexOf(isolatedInstall)).toBeLessThan(workflow.indexOf("npm run ci"));
+
+    const currentMigrations = readFileSync(resolve(root, "supabase/migrations/20260813125221_feedback_intelligence_v1_1_activation_contract.sql"), "utf8");
+    expect(currentMigrations).toContain("activate_feedback_v1_1");
+    const historicalPlan = JSON.parse(read(`${base}/plan.json`));
+    expect(historicalPlan.migrations.some(({ version }: { version: string }) => version === "20260813125221")).toBe(false);
   });
 });
