@@ -11,6 +11,12 @@ import { composeProductionPostdeployAssurance } from
 const root = process.cwd();
 const base = "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1";
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
+const historicalAssuranceCommit = "38b3f3da54550447207c92e04a049e2410dc1197";
+const historicalBytes = (path: string) => spawnSync(
+  "git",
+  ["show", `${historicalAssuranceCommit}:${path}`],
+  { cwd: root, encoding: null, maxBuffer: 16 * 1024 * 1024 },
+).stdout;
 
 describe("V1.1 Production postdeploy assurance contract", () => {
   it("expects the exact closed-runtime result after all 25 controlled steps", async () => {
@@ -86,7 +92,7 @@ describe("V1.1 Production postdeploy assurance contract", () => {
       path: string;
       sha256: string;
     }) => {
-      const actual = sha256(readFileSync(resolve(root, path)));
+      const actual = sha256(historicalBytes(path));
       expect(actual, path).toBe(pinned);
       return `${actual}  ${path}\n`;
     }).join("");

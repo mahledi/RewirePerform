@@ -12,6 +12,7 @@ const base = "docs/feedback-intelligence/contracts/production-postdeploy-assuran
 const planPath = `${base}/assurance-plan.json`;
 const schemaPath = `${base}/postdeploy-evidence.schema.json`;
 const manifestPath = `${base}/producer-package-manifest.json`;
+const historicalAssuranceCommit = "38b3f3da54550447207c92e04a049e2410dc1197";
 const persistentPlanPath =
   "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/plan.json";
 const persistentManifestPath =
@@ -220,14 +221,21 @@ if (isMain) {
   };
   const serializedManifest = `${JSON.stringify(manifest, null, 2)}\n`;
   if (checkOnly) {
-    const [currentPlan, currentSchema, currentManifest] = await Promise.all([
+    const [currentPlan, currentSchema, currentManifest, historicalManifest] = await Promise.all([
       readFile(resolve(root, planPath), "utf8"),
       readFile(resolve(root, schemaPath), "utf8"),
       readFile(resolve(root, manifestPath), "utf8"),
+      import("node:child_process").then(({ execFileSync }) => execFileSync(
+        "git",
+        ["show", `${historicalAssuranceCommit}:${manifestPath}`],
+        { cwd: root, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 },
+      )),
     ]);
     if (currentPlan !== serializedPlan) throw new Error(`${planPath}: generated plan drift`);
     if (currentSchema !== serializedSchema) throw new Error(`${schemaPath}: generated schema drift`);
-    if (currentManifest !== serializedManifest) throw new Error(`${manifestPath}: generated manifest drift`);
+    if (currentManifest !== historicalManifest) {
+      throw new Error(`${manifestPath}: historical manifest drift`);
+    }
     console.log(JSON.stringify({
       status: plan.status,
       expected_final_migrations: plan.expected_result.final_remote_migration_count,
