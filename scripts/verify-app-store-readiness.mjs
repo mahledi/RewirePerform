@@ -56,6 +56,7 @@ if (files.info.includes("<string>armv7</string>")) {
 for (const dataType of [
   "NSPrivacyCollectedDataTypeName",
   "NSPrivacyCollectedDataTypeEmailAddress",
+  "NSPrivacyCollectedDataTypePhoneNumber",
   "NSPrivacyCollectedDataTypeUserID",
   "NSPrivacyCollectedDataTypeHealth",
   "NSPrivacyCollectedDataTypeFitness",
@@ -63,6 +64,7 @@ for (const dataType of [
   "NSPrivacyCollectedDataTypeCustomerSupport",
   "NSPrivacyCollectedDataTypeProductInteraction",
   "NSPrivacyCollectedDataTypeOtherDiagnosticData",
+  "NSPrivacyCollectedDataTypeOtherDataTypes",
 ]) {
   requireText("Privacy manifest", files.privacy, `<string>${dataType}</string>`);
 }

@@ -160,12 +160,13 @@ Alle genannten Typen: `Tracking = No`.
 | Name | Yes | App Functionality |
 | Email Address | Yes | App Functionality |
 | Phone Number | Yes | App Functionality |
-| Health | Yes | App Functionality; Analytics |
+| Health | Yes | App Functionality; Product Personalization; Analytics |
 | Fitness | Yes | App Functionality; Product Personalization |
 | Other User Content | Yes | App Functionality; Analytics |
 | User ID | Yes | App Functionality; Analytics |
 | Product Interaction | Yes | App Functionality; Analytics |
 | Customer Support | Yes | App Functionality |
+| Other Diagnostic Data | Yes | App Functionality |
 | Other Data Types | Yes | App Functionality |
 
 Erläuterung:
@@ -180,13 +181,13 @@ Erläuterung:
 - `Fitness` umfasst Trainings-/Wettkampf-/Ruhetagskontext und Kalender.
 - `Product Interaction` umfasst Programm- und Aufgabenfortschritt,
   Checkpoint-Antworten und minimierte Aktivitätszählungen.
+- `Other Diagnostic Data` umfasst pseudonymisierte operative Fehlerereignisse
+  mit Fehlercode und Route; keine Crash-Dumps oder freien Fehlertexte.
 - Keine Crash Data, solange der finale Binary-/Network-Report keinen
   Crash-Collector zeigt.
 - Keine Audio Data, solange RewirePerform keine Audiodatei überträgt oder
   speichert und die native Spracheingabe ausschließlich lokal in Text
   umwandelt.
-- `Other Diagnostic Data` nur ergänzen, falls der finale Network-Report eine
-  lesbar aufbewahrte technische Diagnostik bestätigt.
 
 ### Exaktes Feedback-/Jarvis-Delta
 
