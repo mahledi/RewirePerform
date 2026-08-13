@@ -1,0 +1,70 @@
+{
+  "schema_version": "rewireperform-feedback-v1.1-production-activation-synthetic-smoke-package-v1",
+  "package_status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
+  "source_base_commit": "acae4d643984f77fcd009804d69cfd114ab970e0",
+  "package_sha256": "571e0198d506d54b633c822d1dbb81780e3e49ccd9026394b2dc8b048bafffbf",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-activation-synthetic-smoke-v0.1/activation-smoke-plan.json",
+      "sha256": "125991d15c10931a1b40f02be24960157a8137f2f235086db66a81df6b1a7c3f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-activation-synthetic-smoke-v0.1/activation-smoke-plan.schema.json",
+      "sha256": "26e45304da69b40ec2ef936785cf16a558e28b3b6df159cf9a9d443d42a90832"
+    },
+    {
+      "path": "supabase/migrations/20260813115737_feedback_consent_guardian_de_v1_1_final_contract.sql",
+      "sha256": "6a2933e3d33a41fe0c35523be795160c04f030dfccf3f4579078fabb0784eba9"
+    },
+    {
+      "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9"
+    },
+    {
+      "path": "supabase/migrations/20260813125221_feedback_intelligence_v1_1_activation_contract.sql",
+      "sha256": "960d5809ed248c05c5f7e64b36fdf0f12a160f9e9f7b3a3c663bda434e375ba4"
+    },
+    {
+      "path": "supabase/migrations/20260813125222_feedback_intelligence_v1_1_reclose_contract.sql",
+      "sha256": "be999f2f69b9c6c75abde320a8d3521ca4425c2db0426cf32c629c918205278b"
+    },
+    {
+      "path": "scripts/generate-feedback-v1-1-activation-smoke.mjs",
+      "sha256": "db2ed4806133d2afbf5812b23042cf40f9a5a0eb8704930a501c9b748d4365ef"
+    },
+    {
+      "path": "scripts/run-feedback-v1-1-activation-synthetic-smoke.mjs",
+      "sha256": "8dd6929f4197f63e5d39fb70b5091c7478a535f2709a1d25481cf0a4dee49d39"
+    },
+    {
+      "path": "scripts/verify-feedback-intelligence-sql.mjs",
+      "sha256": "88ae23ec0eb16e615f3ea80c1b1e3ae439bcc07d9e613d728522ace42c6f58df"
+    },
+    {
+      "path": "scripts/verify-guardian-feedback-text-sql.mjs",
+      "sha256": "27216c37625dff37dce7c3493e4a6cd5250db60f206863b8296b56d1be29f7f5"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceProductionActivationSmoke.test.ts",
+      "sha256": "5c57b356b880b596bb56f17fd7f249bafe5bbd495a58e97235e0adca02aef0d4"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCTION_ACTIVATION_SYNTHETIC_SMOKE_V0_1.md",
+      "sha256": "f41a6f314fedea6edf7ac81317c9b59a6ebcad5993e0427ed349dc7bd13805e4"
+    }
+  ],
+  "external_gates": {
+    "qualified_legal_reference_supplied": false,
+    "production_activation_approved": false,
+    "production_database_credential_approved": false,
+    "synthetic_smoke_approved": false,
+    "real_athlete_data": false,
+    "real_comment_text": false,
+    "jarvis_credential": false,
+    "jarvis_read": false,
+    "push": false,
+    "merge": false,
+    "deploy": false,
+    "app_store_action": false
+  }
+}
