@@ -237,7 +237,7 @@ export const composePersistentApplyPlan = async ({ cwd = root } = {}) => {
   }
   if (steps.length !== 25
       || steps.filter(({ history_only }) => history_only).length !== 1
-      || steps.filter(({ action }) => action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES").length !== 2) {
+      || steps.filter(({ action }) => action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES").length !== 4) {
     throw new Error("Production persistent apply inventory drift");
   }
   return {
@@ -251,6 +251,8 @@ export const composePersistentApplyPlan = async ({ cwd = root } = {}) => {
       credential_approved: false,
       rollback_dry_run_verified: false,
       backup_and_recovery_verified: false,
+      fresh_preapply_baseline_required: true,
+      runtime_query_timeout_gate_verified: false,
       stop_on_first_error: true,
       retry_allowed: false,
       one_password_prompt_supported: true,

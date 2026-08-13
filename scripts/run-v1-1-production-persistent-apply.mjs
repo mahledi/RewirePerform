@@ -29,6 +29,56 @@ const persistentPackageManifestPath = resolve(
   "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json",
 );
 
+export const persistentPreapplyBaselineSql = `
+DO $v1_1_persistent_preapply$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles
+    WHERE rolname IN ('mahleos_feedback_reader', 'mahleos_feedback_production_reader')
+  ) THEN
+    RAISE EXCEPTION 'v1_1_persistent_reader_role_must_be_absent';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_namespace
+    WHERE nspname IN (
+      'feedback_core', 'feedback_consent', 'feedback_raw', 'feedback_analysis',
+      'feedback_machine', 'feedback_machine_production'
+    )
+  ) THEN
+    RAISE EXCEPTION 'v1_1_persistent_feedback_schema_must_be_absent';
+  END IF;
+  IF EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_proc procedure
+    JOIN pg_catalog.pg_namespace namespace ON namespace.oid = procedure.pronamespace
+    WHERE namespace.nspname = 'public'
+      AND procedure.proname = ANY (ARRAY[
+        'claim_my_feedback_checkpoint',
+        'dismiss_my_feedback_checkpoint',
+        'start_my_feedback_submission',
+        'get_my_feedback_draft',
+        'save_my_feedback_draft',
+        'submit_my_feedback',
+        'get_admin_feedback_intelligence_insights',
+        'list_my_feedback_text_consents',
+        'withdraw_my_feedback_text',
+        'guardian_feedback_text_decision_status',
+        'guardian_feedback_text_decide',
+        'guardian_feedback_text_management_status',
+        'guardian_feedback_text_management_decide',
+        'read_feedback_intelligence_v0_2_draft'
+      ]::name[])
+  ) THEN
+    RAISE EXCEPTION 'v1_1_persistent_feedback_rpc_must_be_absent';
+  END IF;
+END;
+$v1_1_persistent_preapply$;
+SELECT json_build_object(
+  'status', 'PASS_V1_1_PERSISTENT_PREAPPLY_BASELINE',
+  'application_values_returned', false
+) AS v1_1_persistent_preapply_status;
+`;
+
 export const assertPersistentPackageBytes = ({ cwd, manifest }) => {
   if (!Array.isArray(manifest.files) || manifest.files.length === 0) {
     throw new Error("persistent Production package file inventory drift");
@@ -127,6 +177,20 @@ const validateTargetAudit = (stdout) => {
   }
 };
 
+const validatePreapplyBaseline = (stdout) => {
+  const row = parseRows(stdout, "persistent-preapply-baseline");
+  if (JSON.stringify(Object.keys(row).sort())
+      !== JSON.stringify(["v1_1_persistent_preapply_status"])) {
+    throw new Error("persistent-preapply-baseline: unexpected result keys");
+  }
+  if (JSON.stringify(row.v1_1_persistent_preapply_status) !== JSON.stringify({
+    status: "PASS_V1_1_PERSISTENT_PREAPPLY_BASELINE",
+    application_values_returned: false,
+  })) {
+    throw new Error("persistent-preapply-baseline: status drift");
+  }
+};
+
 const sanitizedStepError = (step, result) => new Error(
   `Production persistent apply stopped at step ${step.ordinal}: `
   + JSON.stringify({
@@ -195,8 +259,10 @@ export const runProductionPersistentApply = async ({
 
   const tempRoot = mkdtempSync(resolve(tmpdir(), "rewire-v11-production-persistent-"));
   const historyPath = resolve(tempRoot, "history.sql");
+  const baselinePath = resolve(tempRoot, "preapply-baseline.sql");
   const auditPath = resolve(tempRoot, "target-audit.sql");
   writeFileSync(historyPath, `SELECT version::text AS remote\nFROM supabase_migrations.schema_migrations\nORDER BY version;\n`, { encoding: "utf8", mode: 0o600 });
+  writeFileSync(baselinePath, persistentPreapplyBaselineSql, { encoding: "utf8", mode: 0o600 });
   writeFileSync(auditPath, persistentTargetAuditSql, { encoding: "utf8", mode: 0o600 });
   const completed = [];
   try {
@@ -213,6 +279,17 @@ export const runProductionPersistentApply = async ({
         !== JSON.stringify(expectedFloor)) {
       throw new Error("fresh Production migration floor drift");
     }
+
+    const baseline = runDirectSession({
+      target, sqlPath: baselinePath, caFile: directSessionCaPath,
+      password: directSessionPassword, cwd,
+    });
+    if (baseline.status !== 0) throw sanitizedStepError({
+      ordinal: 0, version: "preapply-baseline",
+      transaction_sql_sha256: sha256(persistentPreapplyBaselineSql),
+      transaction_sql_bytes: Buffer.byteLength(persistentPreapplyBaselineSql),
+    }, baseline);
+    validatePreapplyBaseline(baseline.stdout);
 
     for (const step of plan.steps) {
       const source = readFileSync(resolve(cwd, `supabase/migrations/${step.file}`), "utf8");

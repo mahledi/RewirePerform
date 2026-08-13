@@ -2,31 +2,31 @@
   "schema_version": "rewireperform-v1.1-production-persistent-apply-package-v1",
   "status": "LOCAL_PREPARED_EXTERNAL_GATES_CLOSED",
   "generated_at": "2026-08-13T10:40:00+02:00",
-  "package_sha256": "05644a862adab7117b301f0bb0a666bbb5ca71e243d811ef45d719d808b19b50",
+  "package_sha256": "dffeace2c2e26436f6ceffba71a4938b7cafab26425b9a722be5136650c0657a",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/plan.json",
-      "sha256": "e672f4859f0cb7b19c719e314d85cd9badc500b1b555d0317c67e4986c0c74d4"
+      "sha256": "f2cef8f1c44415e341cfe28fdc22a35d049191423ea475c374f47d1adaaa3f20"
     },
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json",
-      "sha256": "feaf15747114f6a9674b3c2aa7f85659f331b6fdceed054d24b72d971e8a655c"
+      "sha256": "f0e857b2b8e2d2f57ed7093ce5609a54bd34ea74d560639a9e59c386cf88fe83"
     },
     {
       "path": "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/producer-package-manifest.json",
-      "sha256": "255761285f367ba2eeb0897cbda7c02dd81c3837394591f8acc5a7ed75f7e951"
+      "sha256": "18c22a35a8adc799834582406981f80003a40244806ce694d993429f6e9877ff"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_MIGRATION_PLAN_V1_1.md",
-      "sha256": "3d60524988bb1fc8c70e85e3d705a938aca6e892a8990dc91ea2fcda96802f67"
+      "sha256": "c3194c4e70e6cf57dfe186a2bab0cdb6f89ab7dae92d044ba81349536e69ef26"
     },
     {
       "path": "scripts/generate-v1-1-production-persistent-apply.mjs",
-      "sha256": "a42d3d23cfe29f02d5ebf93aa05c4a260ee71e091ce903574fd52374c29ba523"
+      "sha256": "4463db04f8c55c2d0701e8fcade745aace577c5bbba1c3cc7f925913e8dabd67"
     },
     {
       "path": "scripts/run-v1-1-production-persistent-apply.mjs",
-      "sha256": "a40fd3d118f4fe171058e678fa13abbe03fd404303baeaefbb7c1c50f842df99"
+      "sha256": "c21bf8ac2779b252b1805811f1da09cbe1cee8d44b86792c24dd1c32d73f266d"
     },
     {
       "path": "scripts/execute-postgres-simple-query.mjs",
@@ -38,11 +38,11 @@
     },
     {
       "path": "scripts/generate-v1-1-production-migration-plan.mjs",
-      "sha256": "306ac59af238c5c37f5c12ea08d2da3c7e3d3beb38e92ceb45730b01e4fee139"
+      "sha256": "96c6e3e513a55edc72d3972b926840749397e53ab3a62c9beb3b0c31c1f9bd37"
     },
     {
       "path": "scripts/generate-v1-1-production-rollback-dry-run.mjs",
-      "sha256": "30d9b69945497449c3aac813fc97b5cea07fe7be67e7c19f035e7636ac3548ee"
+      "sha256": "daa3d7f6cb2804e6c2fde492d757f383247e2d0883f2f39f259fa8f65c88276f"
     },
     {
       "path": "config/certs/supabase-prod-root-2021.crt",
@@ -70,15 +70,15 @@
     },
     {
       "path": "src/test/v11ProductionRollbackDryRun.test.ts",
-      "sha256": "37f994ac1814a32f8679ec9991a9de0bf253d5a9746e6114b8635413b305602c"
+      "sha256": "999a5dcbfd3ea6c25844fd164f151d93a3f5452e9373048c608ee6b7ac20e5a7"
     },
     {
       "path": "src/test/v11ProductionPersistentApply.test.ts",
-      "sha256": "0217be231f0ddde155b0846191a4a0a9a3c7410b3b7576d946b0d1ed25ad41e9"
+      "sha256": "0823bb849989cad2ab1a5cf4e36bc82e1f731e98743aaa9ecd1c957d0c6de1d0"
     },
     {
       "path": "src/test/v11ProductionPersistentRunner.test.ts",
-      "sha256": "b5ed688dcf8d883ec5db7301f5a5d335af37e7ccc931a457d1d4b70a15adebc6"
+      "sha256": "c7123078e31e8aeecbd8c567ad5c7f0603a5097f33670a6fe84964da49831a16"
     },
     {
       "path": "supabase/migrations/20260805103400_feedback_intelligence_v1_foundation.sql",

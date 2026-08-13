@@ -18,8 +18,8 @@ describe("V1.1 Production migration plan", () => {
     expect(plan.observed_remote_state.latest_applied_migration).toBe("20260801104717");
     expect(plan.migration_count).toBe(25);
     expect(plan.apply_count).toBe(24);
-    expect(plan.exact_apply_count).toBe(22);
-    expect(plan.hosted_adapted_apply_count).toBe(2);
+    expect(plan.exact_apply_count).toBe(20);
+    expect(plan.hosted_adapted_apply_count).toBe(4);
     expect(plan.history_only_count).toBe(1);
     expect(plan.execution_contract).toMatchObject({
       bulk_db_push_allowed: false,
@@ -59,7 +59,9 @@ describe("V1.1 Production migration plan", () => {
       action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES"
     );
     expect(adapted.map(({ file }: { file: string }) => file)).toEqual([
+      "20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
       "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql",
+      "20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql",
       "20260811071836_feedback_intelligence_production_gateway_v0_1.sql",
     ]);
     for (const migration of adapted) {

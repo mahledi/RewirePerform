@@ -61,6 +61,8 @@ describe("V1.1 Production rollback dry-run operator", () => {
       "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql";
     const productionRole =
       "20260811071836_feedback_intelligence_production_gateway_v0_1.sql";
+    const transferPulse =
+      "20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql";
     const readMigration = (file: string) => normalizeOuterTransaction(
       readFileSync(resolve(root, "supabase/migrations", file), "utf8"),
       file,
@@ -68,7 +70,8 @@ describe("V1.1 Production rollback dry-run operator", () => {
 
     const stagingSql = adaptHostedRoleAdministration(readMigration(stagingRole), stagingRole);
     expect(stagingSql).toContain("CREATE ROLE mahleos_feedback_reader");
-    expect(stagingSql).toContain("ALTER ROLE mahleos_feedback_reader SET");
+    expect(stagingSql).not.toContain("ALTER ROLE mahleos_feedback_reader");
+    expect(stagingSql).not.toContain("COMMENT ON ROLE mahleos_feedback_reader");
 
     const remediationSql = adaptHostedRoleAdministration(
       readMigration(stagingRemediation),
@@ -77,12 +80,20 @@ describe("V1.1 Production rollback dry-run operator", () => {
     expect(remediationSql).not.toContain("REVOKE mahleos_feedback_reader FROM postgres");
     expect(remediationSql).toContain("ALTER DEFAULT PRIVILEGES FOR ROLE postgres");
 
+    const transferSql = adaptHostedRoleAdministration(
+      readMigration(transferPulse),
+      transferPulse,
+    );
+    expect(transferSql).not.toContain("COMMENT ON ROLE mahleos_feedback_reader");
+    expect(transferSql).toContain("CREATE OR REPLACE FUNCTION public.read_feedback_intelligence_v0_2_draft");
+
     const productionSql = adaptHostedRoleAdministration(
       readMigration(productionRole),
       productionRole,
     );
     expect(productionSql).toContain("CREATE ROLE mahleos_feedback_production_reader");
-    expect(productionSql).toContain("ALTER ROLE mahleos_feedback_production_reader");
+    expect(productionSql).not.toContain("ALTER ROLE mahleos_feedback_production_reader");
+    expect(productionSql).not.toContain("COMMENT ON ROLE mahleos_feedback_production_reader");
     expect(productionSql).not.toContain("membership record");
     expect(productionSql).toContain(
       "REVOKE ALL ON FUNCTION public.read_feedback_intelligence_v0_2_draft",
@@ -130,7 +141,7 @@ describe("V1.1 Production rollback dry-run operator", () => {
     expect(sql).toContain("text_collection_enabled = false");
     expect(sql).not.toContain("pg_catalog.pg_authid");
     expect(sql).toContain("CREATE ROLE mahleos_feedback_production_reader");
-    expect(sql).toContain("ALTER ROLE mahleos_feedback_production_reader PASSWORD NULL");
+    expect(sql).not.toContain("ALTER ROLE mahleos_feedback_production_reader");
     expect(sql).toContain("PASS_V1_1_TARGET_STATE_BEFORE_ROLLBACK");
     expect(sql).toContain("ROLLBACK;");
     expect(sql).toContain("PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT");

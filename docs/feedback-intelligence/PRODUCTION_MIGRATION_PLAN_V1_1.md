@@ -15,8 +15,8 @@ Status: lokal vorbereitet; alle externen Gates geschlossen
 ## Verbindliche Sequenz
 
 Der Plan pinnt alle 25 lokalen Migrationen nach dem remote Stand bytegenau.
-24 davon sind in exakter Reihenfolge anzuwenden: 22 als unveränderte Bytes und
-zwei über einen ebenfalls byte- und hashgepinnten Hosted-Production-Adapter.
+24 davon sind in exakter Reihenfolge anzuwenden: 20 als unveränderte Bytes und
+vier über einen ebenfalls byte- und hashgepinnten Hosted-Production-Adapter.
 Die historischen Quelldateien bleiben dabei unverändert. Die Migration
 `20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql`
 darf in Production niemals ausgeführt werden, weil sie ausschließlich für den
@@ -55,12 +55,15 @@ Transaktionsgrenze deterministisch: Er prüft vor der Ausgabe jede Migration
 gegen ihren SHA-256-Pin und entfernt ausschließlich die jeweils genau einmal
 vorhandenen, alleinstehenden äußeren Zeilen `BEGIN;` und `COMMIT;`. Der übrige
 SQL-Inhalt bleibt grundsätzlich unverändert und wird in eine einzige äußere
-Transaktion eingebettet. Zwei zusätzlich bytegenau erwartete, ausschließlich
-Production-spezifische Anpassungen bilden den realen Hosted-Supabase-Vertrag
-ab: Die historische Staging-Anweisung, die den von `supabase_admin` erzeugten
-Creator-Admin-Edge des Readers entfernen will, und der entsprechende dynamische
-Revoke-Block des neuen Production-Readers werden im Rollback-Test und im
-späteren kontrollierten Production-Apply ausgelassen. Zusätzlich entzieht der
+Transaktion eingebettet. Vier zusätzlich bytegenau erwartete, ausschließlich
+Production-spezifische Anpassungen bilden den realen Hosted-Supabase-PG17-Vertrag
+ab: Nach der sicheren Erstellung beider passwortloser Reader werden die dort
+nicht erlaubten nachträglichen `ALTER ROLE`- und `COMMENT ON ROLE`-Anweisungen
+ausgelassen. Die vollständigen Sicherheitsattribute bleiben bereits in den
+beiden `CREATE ROLE`-Anweisungen enthalten. Außerdem werden die historische
+Staging-Anweisung, die den von `supabase_admin` erzeugten Creator-Admin-Edge
+des Readers entfernen will, und der entsprechende dynamische Revoke-Block des
+neuen Production-Readers ausgelassen. Zusätzlich entzieht der
 Adapter dem historischen synthetischen Staging-Reader seinen öffentlichen
 Gateway-Aufruf und dessen direkte `public`-Schema-Nutzung; Production verwendet
 ausschließlich den privaten Production-Reader. PostgreSQL 17 erzeugt diese Management-Edges bei einem
@@ -83,9 +86,8 @@ nicht persistiert sind.
 Der öffentliche Systemkatalog `pg_roles` blendet Passwortwerte aus und wird
 deshalb nicht als scheinbarer Passwortnachweis verwendet. Passwortlosigkeit
 folgt im Dry-run aus dem fail-closed geprüften Nichtvorhandensein beider Rollen
-vor Beginn, der bytegepinnnten Erstellung mit `PASSWORD NULL`, dem zusätzlichen
-Production-`ALTER ROLE ... PASSWORD NULL` und dem Ausschluss jeder späteren
-Passwortvergabe in der gepinnten Sequenz. Ein echtes Runtime-Credential bleibt
+vor Beginn, der bytegepinnnten Erstellung mit `PASSWORD NULL` und dem Ausschluss
+jeder späteren Passwortvergabe in der gepinnten Sequenz. Ein echtes Runtime-Credential bleibt
 ein nachgelagerter, separat freizugebender Gate.
 
 Der Operator autorisiert oder startet selbst keine Verbindung und keinen
@@ -110,9 +112,9 @@ Runner stoppt ohne Retry.
 
 Die synthetische Staging-Gate-open-Version wird als einziger history-only
 Schritt mit leerer Statementliste eingetragen. Ihre gefährlichen SQL-Bytes
-werden weder ausgeführt noch an Production übertragen. Die beiden
+werden weder ausgeführt noch an Production übertragen. Die vier
 Hosted-Production-Anpassungen verwenden ausschließlich die separat
-SHA-256-gepinnten Execution-Bytes. Alle übrigen 22 Schritte verwenden exakt
+SHA-256-gepinnten Execution-Bytes. Alle übrigen 20 Schritte verwenden exakt
 die historischen Quelldateien.
 
 Der Runner `scripts/run-v1-1-production-persistent-apply.mjs` ist absichtlich
@@ -128,6 +130,21 @@ vollständige Migrationshistorie und in einer frischen Sitzung den weiterhin
 geschlossenen Zielzustand. Edge-Deploy, Feedback-Collection, Minderjährigen-
 Verarbeitung, Jarvis-Read und sonstige Runtime-Aktivierung bleiben danach
 weiterhin separate Gates.
+
+Unmittelbar vor dem ersten persistenten Schritt prüft eine eigene frische
+Metadatensitzung zusätzlich fail-closed, dass beide Readerrollen, sämtliche
+Feedback-Schemas und alle vorgesehenen öffentlichen Feedback-RPCs noch nicht
+existieren. Eine vorhandene Rolle oder ein vorhandenes Feedback-Objekt stoppt
+den Lauf vor jeder Migration. Dadurch kann kein unerwarteter Altzustand durch
+`CREATE ... IF NOT EXISTS` übernommen werden.
+
+Die im Hosted-PG17-Pfad ausgelassenen rollenweiten Standardwerte für
+`statement_timeout`, `lock_timeout` und
+`idle_in_transaction_session_timeout` werden nicht still als vorhanden
+behauptet. Vor jedem späteren Production-Runtime-Credential bleibt deshalb ein
+separater, aktuell geschlossener Gate für nachweislich begrenzte Runtime-
+Abfragen erforderlich. Das blockiert die Migrationsvorbereitung, öffnet aber
+weder Credentials noch einen Datenread.
 
 Der erste freigegebene Dry-run-Versuch über den Beta-Endpunkt der Supabase
 Management API wurde vor einem belegbaren PostgreSQL-Fehler abgebrochen. Die

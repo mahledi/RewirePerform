@@ -38,8 +38,8 @@
   },
   "migration_count": 25,
   "apply_count": 24,
-  "exact_apply_count": 22,
-  "hosted_adapted_apply_count": 2,
+  "exact_apply_count": 20,
+  "hosted_adapted_apply_count": 4,
   "history_only_count": 1,
   "migrations": [
     {
@@ -167,8 +167,10 @@
       "file": "20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
       "path": "supabase/migrations/20260807090000_feedback_intelligence_machine_gateway_v0_1.sql",
       "sha256": "9b570f125ebf43d39ed413e7d88d01fb1dee47b1f5c81e780ed0dba48819e3bd",
-      "action": "APPLY_EXACT_BYTES",
-      "production_execution_sha256": "9b570f125ebf43d39ed413e7d88d01fb1dee47b1f5c81e780ed0dba48819e3bd",
+      "action": "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES",
+      "production_adapted_sha256": "61cacfc0e71b2705434b3468d7cad96fbb508bf3af07333e63d4563f7a0ca5b2",
+      "production_adaptation_contract": "Preserve the pinned historical source while omitting only hosted-PG17-disallowed post-create role administration, retaining safe CREATE ROLE attributes, preserving required hosted management memberships, and retiring the synthetic Staging reader from callable Production access.",
+      "production_execution_sha256": "61cacfc0e71b2705434b3468d7cad96fbb508bf3af07333e63d4563f7a0ca5b2",
       "rationale": "Required ordered V1.1 schema or hardening delta.",
       "application_data_impact": "No existing application-row backfill is executed by this migration."
     },
@@ -209,7 +211,7 @@
       "sha256": "ee53b73a5459c32ee5d4ed54b94bf9c0cecb02a7c4a123d4225cdcba33c17205",
       "action": "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES",
       "production_adapted_sha256": "7d8354a176622035e5706146b81d6391bfc51844656dbf122a93e496f358a7a7",
-      "production_adaptation_contract": "Preserve the pinned historical source while omitting only hosted-role membership revocation and retiring the synthetic Staging reader from callable Production access.",
+      "production_adaptation_contract": "Preserve the pinned historical source while omitting only hosted-PG17-disallowed post-create role administration, retaining safe CREATE ROLE attributes, preserving required hosted management memberships, and retiring the synthetic Staging reader from callable Production access.",
       "production_execution_sha256": "7d8354a176622035e5706146b81d6391bfc51844656dbf122a93e496f358a7a7",
       "rationale": "Required ordered V1.1 schema or hardening delta.",
       "application_data_impact": "No existing application-row backfill is executed by this migration."
@@ -269,8 +271,10 @@
       "file": "20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql",
       "path": "supabase/migrations/20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql",
       "sha256": "463bf24d04eb981fa6509b47e0ce97487d8f51061f4ba514f652052399ab06e6",
-      "action": "APPLY_EXACT_BYTES",
-      "production_execution_sha256": "463bf24d04eb981fa6509b47e0ce97487d8f51061f4ba514f652052399ab06e6",
+      "action": "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES",
+      "production_adapted_sha256": "6bf1d4bd48a9d6b7846673d97bb45b0342235af32399586580b4129bba30ac46",
+      "production_adaptation_contract": "Preserve the pinned historical source while omitting only hosted-PG17-disallowed post-create role administration, retaining safe CREATE ROLE attributes, preserving required hosted management memberships, and retiring the synthetic Staging reader from callable Production access.",
+      "production_execution_sha256": "6bf1d4bd48a9d6b7846673d97bb45b0342235af32399586580b4129bba30ac46",
       "rationale": "Required ordered V1.1 schema or hardening delta.",
       "application_data_impact": "No existing application-row backfill is executed by this migration."
     },
@@ -290,9 +294,9 @@
       "path": "supabase/migrations/20260811071836_feedback_intelligence_production_gateway_v0_1.sql",
       "sha256": "178a02a6695c5aa150e93911a6175b0ee34e02bc7821c83d7064c150c6081578",
       "action": "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES",
-      "production_adapted_sha256": "3165a278bea78077f7e5bc0303b00c771311f16db446891d56d19b108d6fc4cc",
-      "production_adaptation_contract": "Preserve the pinned historical source while omitting only hosted-role membership revocation and retiring the synthetic Staging reader from callable Production access.",
-      "production_execution_sha256": "3165a278bea78077f7e5bc0303b00c771311f16db446891d56d19b108d6fc4cc",
+      "production_adapted_sha256": "9300b37cc7ea3ab90bd46b465416f33a8549e3e8ae449c3ecac88fadafad68be",
+      "production_adaptation_contract": "Preserve the pinned historical source while omitting only hosted-PG17-disallowed post-create role administration, retaining safe CREATE ROLE attributes, preserving required hosted management memberships, and retiring the synthetic Staging reader from callable Production access.",
+      "production_execution_sha256": "9300b37cc7ea3ab90bd46b465416f33a8549e3e8ae449c3ecac88fadafad68be",
       "rationale": "Required ordered V1.1 schema or hardening delta.",
       "application_data_impact": "No existing application-row backfill is executed by this migration."
     }

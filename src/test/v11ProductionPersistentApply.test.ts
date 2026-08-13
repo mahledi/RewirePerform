@@ -27,6 +27,8 @@ describe("V1.1 persistent Production apply package", () => {
         credential_approved: false,
         rollback_dry_run_verified: false,
         backup_and_recovery_verified: false,
+        fresh_preapply_baseline_required: true,
+        runtime_query_timeout_gate_verified: false,
         stop_on_first_error: true,
         retry_allowed: false,
         one_password_prompt_supported: true,
@@ -44,7 +46,7 @@ describe("V1.1 persistent Production apply package", () => {
     );
     expect(plan.steps.filter(({ action }) =>
       action === "APPLY_HOSTED_PRODUCTION_ADAPTED_BYTES"
-    )).toHaveLength(2);
+    )).toHaveLength(4);
   });
 
   it("records each migration atomically and never executes the Staging gate-open SQL", () => {

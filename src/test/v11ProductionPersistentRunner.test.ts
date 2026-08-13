@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { expectedRemoteMigrationVersions } from "../../scripts/run-v1-1-production-rollback-dry-run.mjs";
 import {
   assertPersistentPackageBytes,
+  persistentPreapplyBaselineSql,
   persistentWorkerArgs,
   runProductionPersistentApply,
 } from "../../scripts/run-v1-1-production-persistent-apply.mjs";
@@ -14,6 +15,10 @@ const rollbackStatus = {
   status: "PASS_V1_1_PERSISTENT_TARGET_METADATA_AUDIT",
   application_values_returned: false,
   runtime_activation_authorized: false,
+};
+const preapplyStatus = {
+  status: "PASS_V1_1_PERSISTENT_PREAPPLY_BASELINE",
+  application_values_returned: false,
 };
 
 describe("V1.1 guarded persistent Production runner", () => {
@@ -50,6 +55,11 @@ describe("V1.1 guarded persistent Production runner", () => {
         return { status: 0, stdout: JSON.stringify(
           [...floor, ...applied].map((remote) => ({ remote })),
         ) };
+      }
+      if (sqlPath.endsWith("preapply-baseline.sql")) {
+        return { status: 0, stdout: JSON.stringify([{
+          v1_1_persistent_preapply_status: preapplyStatus,
+        }]) };
       }
       if (sqlPath.endsWith("target-audit.sql")) {
         return { status: 0, stdout: JSON.stringify([{
@@ -92,7 +102,7 @@ describe("V1.1 guarded persistent Production runner", () => {
       credential_persisted_by_operator: false,
       runtime_activation_authorized: false,
     });
-    expect(calls).toHaveLength(28);
+    expect(calls).toHaveLength(29);
     expect(calls.filter(({ sqlPath }) => /step-\d+\.sql$/u.test(String(sqlPath)))).toHaveLength(25);
     expect(String(calls.at(-1)?.sqlPath)).toMatch(/target-audit\.sql$/u);
   });
@@ -106,9 +116,14 @@ describe("V1.1 guarded persistent Production runner", () => {
         return { status: 0, stdout: JSON.stringify(floor.map((remote) => ({ remote }))) };
       }
       if (calls === 2) {
-        return { status: 1, stderr: JSON.stringify({ sqlstate: "42501" }), stdout: "" };
+        return { status: 0, stdout: JSON.stringify([{
+          v1_1_persistent_preapply_status: preapplyStatus,
+        }]) };
       }
       if (calls === 3) {
+        return { status: 1, stderr: JSON.stringify({ sqlstate: "42501" }), stdout: "" };
+      }
+      if (calls === 4) {
         return { status: 0, stdout: JSON.stringify(floor.map((remote) => ({ remote }))) };
       }
       throw new Error("unexpected migration retry");
@@ -123,7 +138,7 @@ describe("V1.1 guarded persistent Production runner", () => {
       directSessionPassword: "temporary-test-password",
       directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
     })).rejects.toThrow(/FAILED_STEP_NOT_RECORDED/u);
-    expect(calls).toBe(3);
+    expect(calls).toBe(4);
   });
 
   it("detects a committed step after a response failure without retrying it", async () => {
@@ -138,8 +153,13 @@ describe("V1.1 guarded persistent Production runner", () => {
       if (calls === 1) {
         return { status: 0, stdout: JSON.stringify(floor.map((remote) => ({ remote }))) };
       }
-      if (calls === 2) return { status: 1, stderr: "{}", stdout: "" };
-      if (calls === 3) {
+      if (calls === 2) {
+        return { status: 0, stdout: JSON.stringify([{
+          v1_1_persistent_preapply_status: preapplyStatus,
+        }]) };
+      }
+      if (calls === 3) return { status: 1, stderr: "{}", stdout: "" };
+      if (calls === 4) {
         return { status: 0, stdout: JSON.stringify(
           [...floor, plan.steps[0].version].map((remote) => ({ remote })),
         ) };
@@ -156,7 +176,42 @@ describe("V1.1 guarded persistent Production runner", () => {
       directSessionPassword: "temporary-test-password",
       directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
     })).rejects.toThrow(/FAILED_STEP_RECORDED_BEFORE_RESPONSE_FAILURE/u);
-    expect(calls).toBe(3);
+    expect(calls).toBe(4);
+  });
+
+  it("stops before every migration when a reader role or feedback object already exists", async () => {
+    const floor = expectedRemoteMigrationVersions(root);
+    const calls: string[] = [];
+    const runDirectSession = (input: Record<string, unknown>) => {
+      const sqlPath = String(input.sqlPath);
+      calls.push(sqlPath);
+      if (sqlPath.endsWith("history.sql")) {
+        return { status: 0, stdout: JSON.stringify(floor.map((remote) => ({ remote }))) };
+      }
+      if (sqlPath.endsWith("preapply-baseline.sql")) {
+        return {
+          status: 1,
+          stderr: JSON.stringify({ sqlstate: "P0001" }),
+          stdout: "",
+        };
+      }
+      throw new Error("migration must not start after baseline drift");
+    };
+    await expect(runProductionPersistentApply({
+      cwd: root,
+      runDirectSession,
+      persistentApplyApproved: true,
+      directSessionCredentialApproved: true,
+      rollbackDryRunVerified: true,
+      backupAndRecoveryVerified: true,
+      directSessionPassword: "temporary-test-password",
+      directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
+    })).rejects.toThrow(/preapply-baseline/u);
+    expect(calls).toHaveLength(2);
+    expect(calls.some((path) => /step-\d+\.sql$/u.test(path))).toBe(false);
+    expect(persistentPreapplyBaselineSql).toContain("mahleos_feedback_reader");
+    expect(persistentPreapplyBaselineSql).toContain("feedback_machine_production");
+    expect(persistentPreapplyBaselineSql).toContain("read_feedback_intelligence_v0_2_draft");
   });
 
   it("uses only the pinned direct worker and persistent operation marker", () => {

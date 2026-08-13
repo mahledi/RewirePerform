@@ -75,7 +75,7 @@ for (const file of expected) {
     ...(isHostedAdapted ? {
       production_adapted_sha256: sha256(productionAdapted),
       production_adaptation_contract:
-        "Preserve the pinned historical source while omitting only hosted-role membership revocation and retiring the synthetic Staging reader from callable Production access.",
+        "Preserve the pinned historical source while omitting only hosted-PG17-disallowed post-create role administration, retaining safe CREATE ROLE attributes, preserving required hosted management memberships, and retiring the synthetic Staging reader from callable Production access.",
     } : {}),
     production_execution_sha256: file === neverExecute
       ? null

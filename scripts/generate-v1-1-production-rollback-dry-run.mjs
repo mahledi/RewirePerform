@@ -9,15 +9,21 @@ const root = process.cwd();
 const planPath = "docs/feedback-intelligence/contracts/production-migration-plan-v0.1/plan.json";
 const remoteFloor = "20260801104717";
 const skippedMigration = "20260808074346_feedback_intelligence_synthetic_staging_read_gate_v0_1.sql";
+const stagingReaderMigration =
+  "20260807090000_feedback_intelligence_machine_gateway_v0_1.sql";
 const stagingRoleRemediationMigration =
   "20260808093000_feedback_intelligence_machine_gateway_privilege_remediation.sql";
+const transferPulseMigration =
+  "20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql";
 const productionReaderMigration =
   "20260811071836_feedback_intelligence_production_gateway_v0_1.sql";
 const productionFunction = "read_feedback_intelligence_production_v0_2_draft";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 export const hostedProductionAdaptedMigrations = new Set([
+  stagingReaderMigration,
   stagingRoleRemediationMigration,
+  transferPulseMigration,
   productionReaderMigration,
 ]);
 
@@ -57,13 +63,48 @@ export const normalizeOuterTransaction = (source, file = "migration.sql") => {
 
 export const adaptHostedRoleAdministration = (source, file) => {
   let adapted = source;
-  if (file === stagingRoleRemediationMigration) {
-    const membershipRevoke = "REVOKE mahleos_feedback_reader FROM postgres;";
-    if (adapted.split(membershipRevoke).length !== 2) {
-      throw new Error(`${file}: expected hosted reader membership revoke is missing`);
+  const removeUnique = (needle, label) => {
+    if (adapted.split(needle).length !== 2) {
+      throw new Error(`${file}: expected unique ${label} is missing`);
     }
-    adapted = adapted.replace(membershipRevoke, "");
+    adapted = adapted.replace(needle, "");
+  };
+  const removeRoleComment = (role) => {
+    const pattern = new RegExp(
+      `COMMENT ON ROLE ${role} IS\\n  '[^'\\n]*';\\n?`,
+      "u",
+    );
+    const matches = adapted.match(new RegExp(pattern.source, "gu")) ?? [];
+    if (matches.length !== 1) {
+      throw new Error(`${file}: expected unique hosted role comment is missing`);
+    }
+    adapted = adapted.replace(pattern, "");
+  };
+
+  if (file === stagingReaderMigration) {
+    removeUnique(
+      "ALTER ROLE mahleos_feedback_reader SET statement_timeout = '12s';\n"
+        + "ALTER ROLE mahleos_feedback_reader SET lock_timeout = '2s';\n"
+        + "ALTER ROLE mahleos_feedback_reader SET idle_in_transaction_session_timeout = '5s';\n",
+      "hosted reader role defaults",
+    );
+    removeRoleComment("mahleos_feedback_reader");
+  } else if (file === stagingRoleRemediationMigration) {
+    const membershipRevoke = "REVOKE mahleos_feedback_reader FROM postgres;";
+    removeUnique(membershipRevoke, "hosted reader membership revoke");
+  } else if (file === transferPulseMigration) {
+    removeRoleComment("mahleos_feedback_reader");
   } else if (file === productionReaderMigration) {
+    removeUnique(
+      "ALTER ROLE mahleos_feedback_production_reader PASSWORD NULL;\n"
+        + "ALTER ROLE mahleos_feedback_production_reader\n"
+        + "  WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;\n"
+        + "ALTER ROLE mahleos_feedback_production_reader RESET ALL;\n"
+        + "ALTER ROLE mahleos_feedback_production_reader SET statement_timeout = '12s';\n"
+        + "ALTER ROLE mahleos_feedback_production_reader SET lock_timeout = '2s';\n"
+        + "ALTER ROLE mahleos_feedback_production_reader SET idle_in_transaction_session_timeout = '5s';\n",
+      "hosted Production reader re-hardening block",
+    );
     const membershipCleanupStart = "DO $$\nDECLARE\n  membership record;";
     const start = adapted.indexOf(membershipCleanupStart);
     const end = adapted.indexOf("$$;", start);
@@ -71,16 +112,20 @@ export const adaptHostedRoleAdministration = (source, file) => {
       throw new Error(`${file}: expected hosted Production membership cleanup is missing`);
     }
     adapted = `${adapted.slice(0, start)}${adapted.slice(end + 3)}`;
+    removeRoleComment("mahleos_feedback_production_reader");
 
-    const roleComment = "COMMENT ON ROLE mahleos_feedback_production_reader IS";
-    if (adapted.split(roleComment).length !== 2) {
-      throw new Error(`${file}: expected unique Production reader comment marker is missing`);
+    const privateSchemaComment = "COMMENT ON SCHEMA feedback_machine_production IS";
+    if (adapted.split(privateSchemaComment).length !== 2) {
+      throw new Error(`${file}: expected unique Production schema comment marker is missing`);
     }
     const retireStagingReader = `-- Production never uses the historical synthetic Staging reader.\n`
       + `REVOKE ALL ON FUNCTION public.read_feedback_intelligence_v0_2_draft(text, text, text, text)\n`
       + `  FROM mahleos_feedback_reader;\n`
       + `REVOKE USAGE ON SCHEMA public FROM mahleos_feedback_reader;\n\n`;
-    adapted = adapted.replace(roleComment, `${retireStagingReader}${roleComment}`);
+    adapted = adapted.replace(
+      privateSchemaComment,
+      `${retireStagingReader}${privateSchemaComment}`,
+    );
   }
   return adapted;
 };
