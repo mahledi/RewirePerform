@@ -43,6 +43,12 @@ if (env.VITE_SUPABASE_PROJECT_ID !== expectedRef) {
 if (env.VITE_SUPABASE_URL !== expectedUrl) {
   failures.push(`VITE_SUPABASE_URL must select the confirmed ${expected} project`);
 }
+if (
+  expected === "production"
+  && env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED !== "true"
+) {
+  failures.push("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be true for the V1.1 production client");
+}
 if (env.VITE_SUPABASE_URL === `https://${retiredStagingRef}.supabase.co`) {
   failures.push(`retired Staging project ${retiredStagingRef} is permanently blocked`);
 }

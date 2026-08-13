@@ -20,6 +20,7 @@ const runValidation = (overrides: Record<string, string>) =>
         VITE_SUPABASE_URL: `https://${productionRef}.supabase.co`,
         VITE_SUPABASE_PUBLISHABLE_KEY:
           "sb_publishable_123456789012345678901234567890",
+        VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED: "true",
         ...overrides,
       },
     },
@@ -92,5 +93,14 @@ describe("release target validation", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("valid Supabase publishable");
+  });
+
+  it("rejects a V1.1 Production client without the feedback checkpoint UI", () => {
+    const result = runValidation({ VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED: "false" });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be true for the V1.1 production client",
+    );
   });
 });
