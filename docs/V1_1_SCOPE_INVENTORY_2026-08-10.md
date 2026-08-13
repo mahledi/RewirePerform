@@ -2,7 +2,11 @@
 
 Stand: 13. August 2026
 
-Exakt getesteter lokaler Code- und Buildstand: `74fd4ee`
+Exakt vollständig CI-getesteter lokaler Stand: `cbcb5db`
+
+Letzter nativer Production-Buildstand: `74fd4ee`. Die danach hinzugekommenen
+Commits verändern ausschließlich Release-Verträge, Operatoren, Evidenz,
+Tests und Dokumentation; die ausgelieferten App-Quellen sind bytegleich.
 
 ## Ziel B
 
@@ -194,6 +198,17 @@ Production-Target `bqsbxesmybthwtxmowfz`, Capacitor-iOS-Sync und eingebettetes
 iOS-Production-Ziel. `npm audit --omit=dev` meldet null Befunde. Der Build ist
 ein lokaler technischer Nachweis; finaler signierter Build, letzter physischer
 Gerätetest und Live-Aktivierung bleiben offen.
+
+Auf `cbcb5db` lief anschließend die vollständige CI erneut grün: 152 von 152
+Testdateien und 858 von 858 Tests, einschließlich aller SQL-, Privacy-, Minor-,
+Guardian-, Security- und App-Store-Gates. Der vorbereitete Production-
+Postdeploy-Vertrag unterscheidet jetzt ausdrücklich zwischen dem einmaligen,
+eng begrenzten Migrationsread aus `public.teams(id, created_by)` und
+`public.user_roles(user_id, role)` und dem nachgelagerten metadata-only Audit
+ohne Anwendungszeilen. Evidence darf keine dieser Anwendungswerte enthalten.
+Fünf exakte Production-Secret-Namen, zwei exakte Edge-Slugs, Beobachtungsquelle
+und SHA-Provenienz sind verpflichtend; der spätere Apply-Operator berechnet vor
+einer Verbindung sämtliche Paketbytes selbst erneut.
 
 ## No-False-Green-Regel
 

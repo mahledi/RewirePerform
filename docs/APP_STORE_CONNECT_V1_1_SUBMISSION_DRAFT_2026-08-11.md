@@ -183,6 +183,11 @@ Erläuterung:
 
 ## Vor Eintragung zu verifizieren
 
+- [ ] Production-Rollback-Dry-run exakt einmal grün, ohne persistente Änderung;
+- [ ] aktueller Backup-/Recovery-Nachweis und kontrollierter 25-Schritt-Apply;
+- [ ] Postdeploy-Evidence bestätigt exakt 104 Migrationen, geschlossene
+      Runtime-Gates, fünf geprüfte Production-Secret-Namen und beide erwarteten
+      Edge-Slugs mit SHA-Provenienz;
 - [ ] finaler aktivierter Feedback-/Kommentar-/Jarvis-Umfang;
 - [ ] qualifizierte DE-Rechts-/Privacy-/Minor-Freigabe;
 - [ ] Production-Turnstile und Organisationseingang;
@@ -194,3 +199,14 @@ Erläuterung:
 - [ ] iPhone- und iPad-Kernwege grün;
 - [ ] App-Privacy-Antworten erst nach Freeze veröffentlicht;
 - [ ] manuelle Veröffentlichung beibehalten.
+
+## Sichere Fortsetzung ohne Mac-Zugriff
+
+Solange Mahle nicht am Mac ist, bleiben Production-Passwort, persistenter
+Apply, Edge-Deploy, Feature-Gates, TestFlight und App-Store-Eintragung
+geschlossen. Lokal können Code, Build, Tests, Verträge, Store-Texte und
+Review-Evidence vollständig vorbereitet werden. Beim nächsten Mac-Zugriff ist
+der erste externe Schritt ausschließlich der bereits gepinnte Rollback-
+Dry-run mit einer einmaligen unsichtbaren Passworteingabe. Das Passwort wird
+nicht gespeichert. Ein grüner Dry-run autorisiert den persistenten Apply nicht
+automatisch; dieser bleibt ein nachgelagerter, getrennt freizugebender Schritt.
