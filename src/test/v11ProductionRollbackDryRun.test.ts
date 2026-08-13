@@ -255,61 +255,59 @@ describe("V1.1 Production rollback dry-run operator", () => {
       }
       return { status: 0, stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]) };
     };
-    try {
-      const result = await runProductionRollbackDryRun({
-        cwd: root,
-        runDirectSession,
-        directSessionCredentialApproved: true,
-        directSessionPassword: "temporary-test-password",
-        directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
-      });
-      expect(result).toMatchObject({
-        status: "PASS_V1_1_PRODUCTION_ROLLBACK_DRY_RUN",
-        dry_run_request_count: 1,
-        postrollback_audit_request_count: 1,
-        retry_count: 0,
-        persistent_mutation_detected: false,
-      });
-      expect(directCalls).toHaveLength(3);
-      expect(directCalls[1]).toMatchObject({
-        target: {
-          host: "aws-1-eu-central-1.pooler.supabase.com",
-          port: "5432",
-          user: "postgres.bqsbxesmybthwtxmowfz",
-          database: "postgres",
-        },
-        password: "temporary-test-password",
-        cwd: root,
-      });
-      expect(directCalls[0].sqlPath).not.toBe(directCalls[1].sqlPath);
-      expect(directCalls[1].sqlPath).not.toBe(directCalls[2].sqlPath);
+    const result = await runProductionRollbackDryRun({
+      cwd: root,
+      runDirectSession,
+      directSessionCredentialApproved: true,
+      directSessionPassword: "temporary-test-password",
+      directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
+    });
+    expect(result).toMatchObject({
+      status: "PASS_V1_1_PRODUCTION_ROLLBACK_DRY_RUN",
+      dry_run_request_count: 1,
+      postrollback_audit_request_count: 1,
+      retry_count: 0,
+      persistent_mutation_detected: false,
+    });
+    expect(directCalls).toHaveLength(3);
+    expect(directCalls[1]).toMatchObject({
+      target: {
+        host: "aws-1-eu-central-1.pooler.supabase.com",
+        port: "5432",
+        user: "postgres.bqsbxesmybthwtxmowfz",
+        database: "postgres",
+      },
+      password: "temporary-test-password",
+      cwd: root,
+    });
+    expect(directCalls[0].sqlPath).not.toBe(directCalls[1].sqlPath);
+    expect(directCalls[1].sqlPath).not.toBe(directCalls[2].sqlPath);
 
-      directCalls.length = 0;
-      const failingRunDirectSession = (input: Record<string, unknown>) => {
-        directCalls.push(input);
-        if (directCalls.length === 1) {
-          return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
-        }
-        if (directCalls.length === 2) {
-          return {
-            status: 1,
-            stdout: "",
-            stderr: JSON.stringify({ sqlstate: "57014", raw_error_persisted: false }),
-          };
-        }
-        return { status: 0, stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]) };
-      };
-      await expect(runProductionRollbackDryRun({
-        cwd: root,
-        runDirectSession: failingRunDirectSession,
-        directSessionCredentialApproved: true,
-        directSessionPassword: "temporary-test-password",
-        directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
-      })).rejects.toThrow(
-        /rollback dry-run query failed: .*"raw_output_persisted":false,"output_digest_persisted":false,"cli_output_forwarded_by_runner":false/u,
-      );
-      expect(directCalls).toHaveLength(3);
-    } finally {}
+    directCalls.length = 0;
+    const failingRunDirectSession = (input: Record<string, unknown>) => {
+      directCalls.push(input);
+      if (directCalls.length === 1) {
+        return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
+      }
+      if (directCalls.length === 2) {
+        return {
+          status: 1,
+          stdout: "",
+          stderr: JSON.stringify({ sqlstate: "57014", raw_error_persisted: false }),
+        };
+      }
+      return { status: 0, stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]) };
+    };
+    await expect(runProductionRollbackDryRun({
+      cwd: root,
+      runDirectSession: failingRunDirectSession,
+      directSessionCredentialApproved: true,
+      directSessionPassword: "temporary-test-password",
+      directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
+    })).rejects.toThrow(
+      /rollback dry-run query failed: .*"raw_output_persisted":false,"output_digest_persisted":false,"cli_output_forwarded_by_runner":false/u,
+    );
+    expect(directCalls).toHaveLength(3);
   });
 
   it("pins the passwordless target and removes ambient PostgreSQL configuration", () => {
@@ -367,34 +365,32 @@ describe("V1.1 Production rollback dry-run operator", () => {
       status: "PASS_V1_1_POST_ROLLBACK_METADATA_AUDIT",
     };
     let directCalls = 0;
-    try {
-      await expect(runProductionRollbackDryRun({
-        cwd: root,
-        directSessionCredentialApproved: true,
-        directSessionPassword: "temporary-test-password",
-        directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
-        runDirectSession: () => {
-          directCalls += 1;
-          if (directCalls === 1) {
-            return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
-          }
-          if (directCalls === 2) {
-            return {
-              status: null,
-              signal: "SIGKILL",
-              error: { code: "ETIMEDOUT" },
-              stdout: "",
-              stderr: "",
-            };
-          }
+    await expect(runProductionRollbackDryRun({
+      cwd: root,
+      directSessionCredentialApproved: true,
+      directSessionPassword: "temporary-test-password",
+      directSessionCaPath: "config/certs/supabase-prod-root-2021.crt",
+      runDirectSession: () => {
+        directCalls += 1;
+        if (directCalls === 1) {
+          return { status: 0, stdout: JSON.stringify(versions.map((remote) => ({ remote }))) };
+        }
+        if (directCalls === 2) {
           return {
-            status: 0,
-            stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]),
+            status: null,
+            signal: "SIGKILL",
+            error: { code: "ETIMEDOUT" },
+            stdout: "",
+            stderr: "",
           };
-        },
-      })).rejects.toThrow(/CLI_PROCESS_ERROR/u);
-      expect(directCalls).toBe(3);
-    } finally {}
+        }
+        return {
+          status: 0,
+          stdout: JSON.stringify([{ v1_1_dry_run_rollback_status: rollback }]),
+        };
+      },
+    })).rejects.toThrow(/CLI_PROCESS_ERROR/u);
+    expect(directCalls).toBe(3);
   });
 
   it("rejects malformed, duplicate, or unordered remote migration inventories", () => {
