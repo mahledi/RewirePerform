@@ -62,6 +62,9 @@ und einem kontrollierten internen Jarvis-Auswertungspfad.
   verifiziert und anschließend lokal verworfen; es wurde nicht hochgeladen.
 - Öffentliche Desktop- und Mobile-Routen `/`, `/privacy` und `/support`: 6/6
   Checks grün.
+- Vollständige Browser-/Viewport-Matrix: 81 Tests auf Desktop, iPhone Hoch- und
+  Querformat sowie iPad Hoch- und Querformat grün; vier plattformbedingt nicht
+  zutreffende Offline-PWA-Fälle übersprungen, null Fehler.
 - Git-Diff sauber; einzig der private untracked Operatorbereich
   `.rewire-local/` ist ausdrücklich kein Bestandteil des Releases.
 
