@@ -56,7 +56,7 @@ und einem kontrollierten internen Jarvis-Auswertungspfad.
   `bqsbxesmybthwtxmowfz` grün.
 - Capacitor-iOS-Sync und eingebettetes Production-Ziel grün.
 - Xcode-Readiness: 8/8 Checks grün; Bundle-ID `com.rewireperform.app`, Version
-  1.1, lokaler Build 5, Team `F7A976G38N`.
+  1.1, finaler Uploadkandidat Build 6, Team `F7A976G38N`.
 - Signing-Readiness: 10/10 Checks grün. Ein lokales signiertes Release-Archive
   für `com.rewireperform.app`, Version 1.1, Build 5 wurde erfolgreich erzeugt,
   verifiziert und anschließend lokal verworfen; es wurde nicht hochgeladen.
@@ -105,8 +105,8 @@ und einem kontrollierten internen Jarvis-Auswertungspfad.
    bringen und die Live-Links prüfen.
 6. Stabile synthetische App-Review-Konten für Athlete, Coach und den
    Minderjährigen-/Guardian-Testweg erzeugen; keine echten Spielerdaten nutzen.
-7. In App Store Connect prüfen, ob Build 5 noch frei ist. Falls nicht, vor dem
-   Archive auf Build 6 erhöhen.
+7. Build 6 verwenden. Damit wird ein möglicher Konflikt mit dem bereits lokal
+   archivierten oder in App Store Connect reservierten Build 5 vermieden.
 8. Exakten finalen Merge-SHA erneut signiert archivieren, auf iPhone und iPad
    sowie anschließend als denselben TestFlight-Build durch die Golden Flows
    testen. Der lokale Signing-/Archive-Pfad ist bereits technisch grün; die
