@@ -57,6 +57,9 @@ und einem kontrollierten internen Jarvis-Auswertungspfad.
 - Capacitor-iOS-Sync und eingebettetes Production-Ziel grün.
 - Xcode-Readiness: 8/8 Checks grün; Bundle-ID `com.rewireperform.app`, Version
   1.1, lokaler Build 5, Team `F7A976G38N`.
+- Signing-Readiness: 10/10 Checks grün. Ein lokales signiertes Release-Archive
+  für `com.rewireperform.app`, Version 1.1, Build 5 wurde erfolgreich erzeugt,
+  verifiziert und anschließend lokal verworfen; es wurde nicht hochgeladen.
 - Öffentliche Desktop- und Mobile-Routen `/`, `/privacy` und `/support`: 6/6
   Checks grün.
 - Git-Diff sauber; einzig der private untracked Operatorbereich
@@ -72,7 +75,9 @@ und einem kontrollierten internen Jarvis-Auswertungspfad.
   Datenschutzhinweise und der positive Production-Smoke zusammen freigegeben
   und geprüft sind.
 - Der neue Website-/AASA-/Preview-Stand ist lokal fertig, aber noch nicht auf
-  Production ausgerollt.
+  Production ausgerollt. Der Live-AASA-Endpunkt liefert HTTP 200 und
+  `application/json`, enthält am 13. August aber weiterhin nur `/auth` und
+  `/join`, noch nicht `/organization/invite`.
 - Es wurde noch kein finaler signierter V1.1-Build zu TestFlight oder App Store
   Connect hochgeladen.
 
@@ -99,8 +104,10 @@ und einem kontrollierten internen Jarvis-Auswertungspfad.
    Minderjährigen-/Guardian-Testweg erzeugen; keine echten Spielerdaten nutzen.
 7. In App Store Connect prüfen, ob Build 5 noch frei ist. Falls nicht, vor dem
    Archive auf Build 6 erhöhen.
-8. Exakten finalen Merge-SHA signiert archivieren, auf iPhone und iPad sowie
-   anschließend als denselben TestFlight-Build durch die Golden Flows testen.
+8. Exakten finalen Merge-SHA erneut signiert archivieren, auf iPhone und iPad
+   sowie anschließend als denselben TestFlight-Build durch die Golden Flows
+   testen. Der lokale Signing-/Archive-Pfad ist bereits technisch grün; die
+   registrierten Geräte waren beim Abschlussaudit nicht verbunden.
 9. App-Privacy, Review Notes, Screenshots und „Neu in dieser Version“ gegen den
    tatsächlich aktivierten Umfang final eintragen und V1.1 manuell einreichen.
 
