@@ -13,7 +13,8 @@ const manifestPath = `${base}/producer-package-manifest.json`;
 const generatorPath = "scripts/generate-v1-1-production-post-edge-deploy-preflight.mjs";
 const testPath = "src/test/v11ProductionPostEdgeDeployPreflight.test.ts";
 const handoffPath = "docs/feedback-intelligence/PRODUCTION_POST_EDGE_DEPLOY_PREFLIGHT_V1_1.md";
-const observedAt = "2026-08-13T11:56:56Z";
+const observedAt = "2026-08-13T11:59:14Z";
+const readerObservedAt = "2026-08-13T11:20:16Z";
 const projectRef = "bqsbxesmybthwtxmowfz";
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -100,6 +101,8 @@ const evidence = {
     unrelated_secret_names_persisted: false,
   },
   reader_boundary: {
+    observed_at: readerObservedAt,
+    observation_reused_after_edge_only_deploy: true,
     role_name: "mahleos_feedback_production_reader",
     password_is_null: true,
     login: true,
@@ -122,6 +125,13 @@ const evidence = {
       function: "submit-organization-access-request",
       condition: "allowed_origin_runtime_closed",
       origin: "https://rewireperform.com",
+      http_status: 503,
+      response_code: "service_not_available",
+    },
+    {
+      function: "submit-organization-access-request",
+      condition: "www_allowed_origin_runtime_closed",
+      origin: "https://www.rewireperform.com",
       http_status: 503,
       response_code: "service_not_available",
     },
@@ -220,6 +230,8 @@ const schema = {
       required: Object.keys(evidence.reader_boundary),
       properties: {
         role_name: { const: evidence.reader_boundary.role_name },
+        observed_at: { const: readerObservedAt },
+        observation_reused_after_edge_only_deploy: { const: true },
         password_is_null: { const: true }, login: { const: true },
         superuser: { const: false }, inherit: { const: false }, bypassrls: { const: false },
         callable_rpc_count: { const: 1 }, relation_privilege_count: { const: 0 },

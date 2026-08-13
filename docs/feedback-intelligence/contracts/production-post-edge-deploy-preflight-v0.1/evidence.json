@@ -1,7 +1,7 @@
 {
   "schema_version": "rewireperform-v1.1-production-post-edge-deploy-preflight-v1",
   "status": "PASS_PRODUCTION_EDGE_DEPLOYED_CREDENTIALLESS_RUNTIME_CLOSED",
-  "observed_at": "2026-08-13T11:56:56Z",
+  "observed_at": "2026-08-13T11:59:14Z",
   "project_ref": "bqsbxesmybthwtxmowfz",
   "migration_state": {
     "remote_migration_count": 104,
@@ -55,6 +55,8 @@
     "unrelated_secret_names_persisted": false
   },
   "reader_boundary": {
+    "observed_at": "2026-08-13T11:20:16Z",
+    "observation_reused_after_edge_only_deploy": true,
     "role_name": "mahleos_feedback_production_reader",
     "password_is_null": true,
     "login": true,
@@ -77,6 +79,13 @@
       "function": "submit-organization-access-request",
       "condition": "allowed_origin_runtime_closed",
       "origin": "https://rewireperform.com",
+      "http_status": 503,
+      "response_code": "service_not_available"
+    },
+    {
+      "function": "submit-organization-access-request",
+      "condition": "www_allowed_origin_runtime_closed",
+      "origin": "https://www.rewireperform.com",
       "http_status": 503,
       "response_code": "service_not_available"
     },

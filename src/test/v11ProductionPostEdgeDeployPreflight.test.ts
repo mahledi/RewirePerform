@@ -38,6 +38,8 @@ describe("V1.1 Production post-Edge-deploy credentialless preflight", () => {
       unrelated_secret_names_persisted: false,
     });
     expect(evidence.reader_boundary).toMatchObject({
+      observed_at: "2026-08-13T11:20:16Z",
+      observation_reused_after_edge_only_deploy: true,
       password_is_null: true,
       superuser: false,
       inherit: false,
@@ -63,6 +65,7 @@ describe("V1.1 Production post-Edge-deploy credentialless preflight", () => {
     expect(evidence.negative_http_matrix).toEqual(expect.arrayContaining([
       expect.objectContaining({ condition: "missing_machine_key", http_status: 503 }),
       expect.objectContaining({ condition: "allowed_origin_runtime_closed", http_status: 503 }),
+      expect.objectContaining({ condition: "www_allowed_origin_runtime_closed", http_status: 503 }),
       expect.objectContaining({ condition: "foreign_origin", http_status: 403 }),
     ]));
     expect(evidence.privacy).toMatchObject({

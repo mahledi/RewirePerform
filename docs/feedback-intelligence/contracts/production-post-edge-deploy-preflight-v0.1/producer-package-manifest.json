@@ -1,28 +1,28 @@
 {
   "schema_version": "rewireperform-v1.1-production-post-edge-deploy-preflight-package-v1",
   "status": "PASS_PRODUCTION_EDGE_DEPLOYED_CREDENTIALLESS_RUNTIME_CLOSED",
-  "observed_at": "2026-08-13T11:56:56Z",
-  "package_sha256": "6418935d49cda5719b79106c400303dd9b7ddc17d946c44fd42762701310dc9e",
+  "observed_at": "2026-08-13T11:59:14Z",
+  "package_sha256": "15a30cbc5caf508338c033f89cf87e3bc1cb62b7bb2cfa5ac93686a3c57a99f9",
   "files": [
     {
       "path": "docs/feedback-intelligence/contracts/production-post-edge-deploy-preflight-v0.1/evidence.json",
-      "sha256": "47621420118298b090980d77e0c3d59d764f7728867c184a19c135fab1a8d9f4"
+      "sha256": "a49fa4b8685d4772463edd2bc3a214709083809b77f591c68aefba4fa87c29d4"
     },
     {
       "path": "docs/feedback-intelligence/contracts/production-post-edge-deploy-preflight-v0.1/evidence.schema.json",
-      "sha256": "0a2ab85b3896a513ed39cfa47169cf093c56a264717945cd8096ebfaa70d5255"
+      "sha256": "34efdf25ea40ff1a12cc6774baaffac89e9dd9a437e911b04d936221e3328839"
     },
     {
       "path": "scripts/generate-v1-1-production-post-edge-deploy-preflight.mjs",
-      "sha256": "c35855aa12e2d9204d87d112f17cd3d23f5275d9ddd13cc41147a826a1e3be82"
+      "sha256": "7dbffeb79b9d6f4ef2f83eab9d5bc218a5b1a0cdd22cc25e2e8e0b7361df465e"
     },
     {
       "path": "src/test/v11ProductionPostEdgeDeployPreflight.test.ts",
-      "sha256": "7f015a93f4e61d5da75fa340e28b542404396512f10950e4deb7cfa378ab313f"
+      "sha256": "cd972ebf7507ff7de21610b3492324f384ad1c333d8896202a39f36d94033294"
     },
     {
       "path": "docs/feedback-intelligence/PRODUCTION_POST_EDGE_DEPLOY_PREFLIGHT_V1_1.md",
-      "sha256": "459d2e97a6e27568325adb133156f5414d11069502eeb99d46853a09deea7769"
+      "sha256": "4b9f15346f61cdf0389b30598f942f5f6138801a7053a279e3461f7cfc7fb22c"
     }
   ],
   "gates": {

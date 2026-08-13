@@ -25,7 +25,7 @@
       "const": "PASS_PRODUCTION_EDGE_DEPLOYED_CREDENTIALLESS_RUNTIME_CLOSED"
     },
     "observed_at": {
-      "const": "2026-08-13T11:56:56Z"
+      "const": "2026-08-13T11:59:14Z"
     },
     "project_ref": {
       "const": "bqsbxesmybthwtxmowfz"
@@ -250,6 +250,8 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "observed_at",
+        "observation_reused_after_edge_only_deploy",
         "role_name",
         "password_is_null",
         "login",
@@ -264,6 +266,12 @@
       "properties": {
         "role_name": {
           "const": "mahleos_feedback_production_reader"
+        },
+        "observed_at": {
+          "const": "2026-08-13T11:20:16Z"
+        },
+        "observation_reused_after_edge_only_deploy": {
+          "const": true
         },
         "password_is_null": {
           "const": true
@@ -306,6 +314,13 @@
           "function": "submit-organization-access-request",
           "condition": "allowed_origin_runtime_closed",
           "origin": "https://rewireperform.com",
+          "http_status": 503,
+          "response_code": "service_not_available"
+        },
+        {
+          "function": "submit-organization-access-request",
+          "condition": "www_allowed_origin_runtime_closed",
+          "origin": "https://www.rewireperform.com",
           "http_status": 503,
           "response_code": "service_not_available"
         },
