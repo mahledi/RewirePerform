@@ -36,15 +36,15 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
     try {
       const next = await getCoachEvidenceReviewContext(teamId);
       setContext(next);
-      const eligibleAthletes = next.athletes.filter((athlete) => athlete.eligible);
+      const observableAthletes = next.athletes.filter((athlete) => athlete.observationAvailable);
       setSelectedAthleteId((current) => (
-        eligibleAthletes.some((athlete) => athlete.programInstanceId === current)
+        observableAthletes.some((athlete) => athlete.programInstanceId === current)
           ? current
-          : eligibleAthletes[0]?.programInstanceId ?? ""
+          : observableAthletes[0]?.programInstanceId ?? ""
       ));
       setMode((current) => {
-        if (current === "team" && !next.teamEligible && eligibleAthletes.length > 0) return "athlete";
-        if (current === "athlete" && eligibleAthletes.length === 0) return "team";
+        if (current === "team" && !next.teamEligible && observableAthletes.length > 0) return "athlete";
+        if (current === "athlete" && observableAthletes.length === 0) return "team";
         return current;
       });
     } catch (loadError) {
@@ -56,7 +56,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
         metadata: { action: "load_weekly_review" },
       });
       setContext(null);
-      setError("Die Beobachtungsfreigabe konnte gerade nicht geladen werden.");
+      setError("Die Wochenbeobachtung konnte gerade nicht geladen werden.");
     } finally {
       setLoading(false);
     }
@@ -66,11 +66,11 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
     void load();
   }, [load]);
 
-  const eligibleAthletes = useMemo(
-    () => context?.athletes.filter((athlete) => athlete.eligible) ?? [],
+  const observableAthletes = useMemo(
+    () => context?.athletes.filter((athlete) => athlete.observationAvailable) ?? [],
     [context],
   );
-  const selectedAthlete = eligibleAthletes.find(
+  const selectedAthlete = observableAthletes.find(
     (athlete) => athlete.programInstanceId === selectedAthleteId,
   ) ?? null;
   const activeReview = mode === "team" ? context?.teamReview ?? null : selectedAthlete?.review ?? null;
@@ -136,7 +136,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
         <div>
           <p className="text-sm font-semibold text-foreground">Wöchentliche Beobachtung noch nicht aktiv</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Sie wird mit einem aktiven Mannschaftslauf und den notwendigen Teilnahmefreigaben verfügbar.
+            Sie wird verfügbar, sobald für dieses Team ein aktiver Mannschaftslauf besteht.
           </p>
         </div>
       </section>
@@ -159,9 +159,9 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
         </div>
         <div className="shrink-0 text-left sm:text-right">
           <p className="text-xs font-medium text-foreground">
-            {context.eligibleAthleteCount} von {context.athleteCount} freigegeben
+            {context.athleteCount} {context.athleteCount === 1 ? "Athlet" : "Athleten"} im aktiven Lauf
           </p>
-          <p className="mt-1 text-[11px] text-muted-foreground">Keine privaten Athletenantworten sichtbar</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Einzelbeobachtung ohne private Athleteninhalte</p>
         </div>
       </div>
 
@@ -169,8 +169,9 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
         <div className="mt-5 flex items-start gap-3 rounded-md border border-amber-400/25 bg-amber-400/5 px-4 py-3">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Eine Teambeobachtung ist erst möglich, wenn alle Athletinnen und Athleten dieses Laufs freigegeben sind.
-            Minderjährige werden dabei ausschließlich über die aktuelle altersgerechte Pilot-Freigabe zugelassen.
+            Die individuelle Coach-Beobachtung bleibt für alle aktiven Athleten verfügbar. Die gemeinsame
+            Team-Evidence bleibt getrennt und wird erst mit vollständiger Teilnahmefreigabe aktiviert
+            ({context.eligibleAthleteCount} von {context.athleteCount}).
           </p>
         </div>
       )}
@@ -188,7 +189,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
             <ToggleGroupItem value="team" disabled={!context.teamEligible} className="h-11 gap-2 data-[state=on]:bg-card">
               <Users className="h-4 w-4" aria-hidden="true" /> Team
             </ToggleGroupItem>
-            <ToggleGroupItem value="athlete" disabled={eligibleAthletes.length === 0} className="h-11 gap-2 data-[state=on]:bg-card">
+            <ToggleGroupItem value="athlete" disabled={observableAthletes.length === 0} className="h-11 gap-2 data-[state=on]:bg-card">
               <UserRound className="h-4 w-4" aria-hidden="true" /> Einzel
             </ToggleGroupItem>
           </ToggleGroup>
@@ -202,7 +203,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
                 <SelectValue placeholder="Athlet auswählen" />
               </SelectTrigger>
               <SelectContent>
-                {eligibleAthletes.map((athlete) => (
+                {observableAthletes.map((athlete) => (
                   <SelectItem key={athlete.programInstanceId} value={athlete.programInstanceId}>
                     {athlete.fullName}
                   </SelectItem>
@@ -238,7 +239,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
           />
         </div>
       ) : (
-        <p className="mt-6 text-sm text-muted-foreground">Für diese Ebene liegt noch keine zulässige Teilnahmefreigabe vor.</p>
+        <p className="mt-6 text-sm text-muted-foreground">Für diese Ebene ist aktuell keine Beobachtung verfügbar.</p>
       )}
     </section>
   );

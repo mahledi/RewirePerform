@@ -125,6 +125,8 @@ def main() -> int:
 
     verify_integrated_png(ROOT / "public/og-image.png", (1200, 630), "RGB")
     verify_integrated_png(ROOT / "public/og-invite.png", (1200, 1500), "RGB")
+    verify_integrated_png(ROOT / "public/og-team-invite.png", (1200, 630), "RGB")
+    verify_integrated_png(ROOT / "public/og-coach-invite.png", (1200, 630), "RGB")
     splash_paths = [
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",

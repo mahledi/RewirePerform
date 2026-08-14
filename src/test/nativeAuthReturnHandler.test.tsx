@@ -125,6 +125,20 @@ describe("native auth return handler", () => {
     expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
   });
 
+  it("opens a cold-start shareable Co-Coach code without changing the auth session", async () => {
+    const code = "A1B2C3D4E5F60718293A";
+    mocks.getLaunchUrl.mockResolvedValue({
+      url: `https://rewireperform.com/organization/invite?coach=${code}`,
+    });
+    renderHandler();
+
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(
+      `/organization/invite?coach=${code}`,
+    ));
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(mocks.exchangeCodeForSession).not.toHaveBeenCalled();
+  });
+
   it("fails closed for a malformed personal coach invitation", async () => {
     renderHandler();
     await waitFor(() => expect(mocks.appUrlOpen).toBeTypeOf("function"));

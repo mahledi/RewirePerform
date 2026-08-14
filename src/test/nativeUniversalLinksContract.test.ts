@@ -32,7 +32,12 @@ describe("native universal links contract", () => {
       {
         "/": "/organization/invite",
         "?": { token: "?".repeat(64) },
-        comment: "RewirePerform personal coach invitation",
+        comment: "RewirePerform legacy email-bound coach invitation",
+      },
+      {
+        "/": "/organization/invite",
+        "?": { coach: "?".repeat(20) },
+        comment: "RewirePerform shareable Co-Coach invitation",
       },
     ]);
   });

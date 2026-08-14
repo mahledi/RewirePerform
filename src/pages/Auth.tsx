@@ -34,6 +34,11 @@ import {
   queuePostAuthorizationTeamJoin,
 } from "@/lib/postSignupOnboarding";
 import { normalizeTeamInviteCode } from "@/lib/teamInvite";
+import {
+  formatCoachInviteCode,
+  ORGANIZATION_INVITE_ORIGIN,
+  parseOrganizationInviteUrl,
+} from "@/lib/organizationInvite";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join" | "organization";
@@ -46,6 +51,15 @@ const Auth = () => {
   const forceSwitch = searchParams.get("switch") === "1";
   const redirectTo = searchParams.get("redirect");
   const safeRedirect = safeInternalRoute(redirectTo);
+  const parsedOrganizationInvite = safeRedirect
+    ? parseOrganizationInviteUrl(new URL(safeRedirect, ORGANIZATION_INVITE_ORIGIN).toString())
+    : null;
+  const organizationInvite = parsedOrganizationInvite?.kind === "invite"
+    ? parsedOrganizationInvite
+    : null;
+  const coachInviteCode = organizationInvite?.inviteType === "coach_code"
+    ? formatCoachInviteCode(organizationInvite.coachCode)
+    : null;
   const urlIntent = searchParams.get("intent");
   const authFlow = searchParams.get("flow");
   const inviteLinkInvalid = searchParams.get("invite_error") === "invalid";
@@ -60,8 +74,7 @@ const Auth = () => {
   const authLinkError = parseAuthLinkError(window.location.search, window.location.hash);
   const confirmedTeamJoinCode = urlCode?.trim().toUpperCase() ?? "";
   const isConfirmedTeamJoinReturn = urlIntent === "join" && Boolean(confirmedTeamJoinCode);
-  const isOrganizationInvite = urlIntent === "organization"
-    && Boolean(safeRedirect?.startsWith("/organization/invite"));
+  const isOrganizationInvite = urlIntent === "organization" && organizationInvite !== null;
   const { user, role, roleVerified, loading: authLoading, verifyRole, signOut } = useAuth();
   const [switching, setSwitching] = useState(forceSwitch);
   const [teamJoinStatus, setTeamJoinStatus] = useState<TeamJoinStatus>("idle");
@@ -841,12 +854,15 @@ const Auth = () => {
               {intent === "join"
                 ? "Melde dich an, um den Teambeitritt mit deinem Code abzuschließen."
                 : intent === "organization"
-                  ? "Melde dich mit der eingeladenen E-Mail-Adresse an, um den Organisationszugang zu bestätigen."
+                  ? coachInviteCode
+                    ? "Melde dich an. Dein persönlicher Coach-Code ist bereits eingetragen."
+                    : "Melde dich mit der eingeladenen E-Mail-Adresse an, um den Organisationszugang zu bestätigen."
                 : "Melde dich an, um dein Programm fortzusetzen."}
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+            {coachInviteCode && <CoachInviteCodeCard code={coachInviteCode} />}
             {intent === "join" && (
               <div>
                 <div className="relative">
@@ -901,11 +917,13 @@ const Auth = () => {
   const intentTitle =
     intent === "solo" ? "Du startest allein."
     : intent === "join" ? "Du trittst einem Team bei."
-    : "Dein Organisationszugang.";
+    : coachInviteCode ? "Dein Coach-Zugang." : "Dein Organisationszugang.";
   const intentSub =
     intent === "solo" ? "Dein personalisiertes Mental-Performance-Programm beginnt gleich."
     : intent === "join" ? "Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast."
-    : "Registriere dich mit der persönlich eingeladenen E-Mail-Adresse. Danach bestätigst du deine freigegebene Rolle.";
+    : coachInviteCode
+      ? "Registriere dich als Coach. Dein persönlicher Code bleibt bis zur Team-Verbindung eingetragen."
+      : "Registriere dich mit der persönlich eingeladenen E-Mail-Adresse. Danach bestätigst du deine freigegebene Rolle.";
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
@@ -934,6 +952,7 @@ const Auth = () => {
         )}
 
         <form onSubmit={handleSignup} className="space-y-4">
+          {coachInviteCode && <CoachInviteCodeCard code={coachInviteCode} />}
           <div className="relative">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -992,6 +1011,16 @@ const Auth = () => {
 };
 
 // ─── small subcomponents ───
+const CoachInviteCodeCard = ({ code }: { code: string }) => (
+  <div className="flex min-h-14 items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3">
+    <KeyRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+    <span className="min-w-0">
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Coach-Code · bereits eingetragen</span>
+      <span className="mt-1 block break-all font-mono text-sm font-semibold tracking-[0.08em] text-foreground">{code}</span>
+    </span>
+  </div>
+);
+
 const IntentCard = ({
   icon, title, description, onClick,
 }: { icon: React.ReactNode; title: string; description: string; onClick: () => void }) => (

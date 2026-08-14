@@ -72,12 +72,15 @@ describe("team invite links", () => {
     expect(buildAthleteTeamInvitation("SV Beispiel", "BAD/12")).toBeNull();
   });
 
-  it("keeps a coach invitation concise while sharing its exact one-time URL", () => {
-    const url = "https://rewireperform.com/organization/invite?token=secure-token";
-    expect(buildCoachInvitationShare(url)).toMatchObject({
-      title: "Deine persönliche RewirePerform Coach-Einladung",
-      url,
+  it("builds the Co-Coach share payload from the same canonical app-and-web code link", () => {
+    const code = "A1B2C3D4E5F60718293A";
+    const invitation = buildCoachInvitationShare("SV Beispiel U19", code);
+    expect(invitation).toMatchObject({
+      title: "SV Beispiel U19 lädt dich als Co-Coach zu RewirePerform ein",
+      url: `https://rewireperform.com/organization/invite?coach=${code}`,
     });
-    expect(buildCoachInvitationShare(url).message).toContain(url);
+    expect(invitation?.message).toContain("Coach-Code: A1B2-C3D4-E5F6-0718-293A");
+    expect(invitation?.message).toContain(`https://rewireperform.com/organization/invite?coach=${code}`);
+    expect(buildCoachInvitationShare("SV Beispiel", "BAD-CODE")).toBeNull();
   });
 });

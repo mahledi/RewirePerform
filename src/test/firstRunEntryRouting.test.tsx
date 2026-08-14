@@ -85,6 +85,19 @@ describe("role-first introduction routing", () => {
     );
   });
 
+  it("preserves a strict Co-Coach code through the Coach introduction", () => {
+    const code = "A1B2C3D4E5F60718293A";
+    const redirect = encodeURIComponent(`/organization/invite?coach=${code}`);
+    renderRoute(`/start/coach?redirect=${redirect}`, "coach");
+
+    expect(screen.getByText("Persönliche Einladung")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Coachflug abschließen" }));
+
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      `/auth?mode=signup&intent=organization&redirect=%2Forganization%2Finvite%3Fcoach%3D${code}&intro=coach`,
+    );
+  });
+
   it("fails closed to the existing access request when no valid coach invitation exists", () => {
     renderRoute("/start/coach?redirect=https://example.com/organization/invite?token=bad", "coach");
 

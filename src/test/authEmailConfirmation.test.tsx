@@ -242,6 +242,16 @@ describe("auth email confirmation", () => {
     expect(screen.getByText("Coach-Einführung geöffnet")).toBeInTheDocument();
   });
 
+  it("shows the preserved Co-Coach code as already entered on registration", () => {
+    const code = "A1B2C3D4E5F60718293A";
+    const redirect = encodeURIComponent(`/organization/invite?coach=${code}`);
+    renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}&intro=coach`);
+
+    expect(screen.getByRole("heading", { name: "Dein Coach-Zugang." })).toBeInTheDocument();
+    expect(screen.getByText("Coach-Code · bereits eingetragen")).toBeInTheDocument();
+    expect(screen.getByText("A1B2-C3D4-E5F6-0718-293A")).toBeInTheDocument();
+  });
+
   it("opens a team invite signup and still requires a real team code", () => {
     renderAuth("/auth?mode=signup&intent=join&intro=athlete");
 

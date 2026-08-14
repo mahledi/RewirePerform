@@ -180,6 +180,61 @@ def create_invitation_social_image(symbol_png: Path, output: Path) -> None:
     canvas.save(output, "PNG", optimize=True)
 
 
+def create_role_invitation_social_image(symbol_png: Path, output: Path, audience: str) -> None:
+    canvas = Image.new("RGB", (1200, 630), MIDNIGHT)
+    draw = ImageDraw.Draw(canvas)
+    brand = brand_font(48, bold=True)
+    eyebrow = brand_font(19, bold=True)
+    heading = brand_font(55, bold=True)
+    body = brand_font(24)
+    card_heading = brand_font(20, bold=True)
+    card_body = brand_font(19)
+
+    with Image.open(symbol_png).convert("RGBA") as symbol:
+        symbol = symbol.resize((132, 132), Image.Resampling.LANCZOS)
+        canvas.paste(symbol, (58, 42), symbol)
+
+    draw.text((192, 72), "RewirePerform", font=brand, fill=OFF_WHITE)
+    draw.rounded_rectangle((62, 205, 318, 244), radius=19, fill=(31, 54, 50), outline=GREEN, width=2)
+    invite_label = "CO-COACH-EINLADUNG" if audience == "coach" else "TEAM-EINLADUNG"
+    draw.text((83, 214), invite_label, font=eyebrow, fill=GREEN)
+
+    draw.text((62, 278), "Mentale Performance.", font=heading, fill=OFF_WHITE)
+    draw.text((62, 343), "Im Team trainierbar.", font=heading, fill=OFF_WHITE)
+    description = (
+        "Dein persönlicher Zugang zum Coach-System."
+        if audience == "coach"
+        else "Dein persönlicher Zugang zum mentalen Training."
+    )
+    draw.text((65, 430), description, font=body, fill=(190, 198, 202))
+    draw.rounded_rectangle((65, 492, 462, 547), radius=17, fill=GREEN)
+    action = "Coach-Einführung starten" if audience == "coach" else "Team-Einladung öffnen"
+    draw.text((90, 508), action, font=card_heading, fill=MIDNIGHT)
+
+    draw.rounded_rectangle((820, 128, 1136, 538), radius=32, fill=(20, 23, 28), outline=(58, 65, 72), width=2)
+    draw.ellipse((856, 170, 900, 214), fill=GREEN)
+    panel_title = "COACH-SYSTEM" if audience == "coach" else "DEIN TRAINING"
+    draw.text((920, 178), panel_title, font=card_heading, fill=OFF_WHITE)
+    rows = (
+        ("Aktivität", "Team im Blick"),
+        ("Entwicklung", "Klar strukturiert"),
+        ("Coach-Team", "Sicher verbunden"),
+    ) if audience == "coach" else (
+        ("Fokus", "Täglich trainierbar"),
+        ("Druck", "Klar regulieren"),
+        ("Team", "Direkt verbunden"),
+    )
+    row_y = 254
+    for label, value in rows:
+        draw.rounded_rectangle((854, row_y, 1102, row_y + 70), radius=16, fill=(30, 34, 40))
+        draw.text((875, row_y + 12), label, font=card_heading, fill=OFF_WHITE)
+        draw.text((875, row_y + 40), value, font=card_body, fill=(154, 164, 172))
+        row_y += 86
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(output, "PNG", optimize=True)
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -290,6 +345,8 @@ def main() -> None:
 
     create_social_image(dark_symbol_512, ROOT / "public/og-image.png")
     create_invitation_social_image(dark_symbol_512, ROOT / "public/og-invite.png")
+    create_role_invitation_social_image(dark_symbol_512, ROOT / "public/og-team-invite.png", "athlete")
+    create_role_invitation_social_image(dark_symbol_512, ROOT / "public/og-coach-invite.png", "coach")
     splash_targets = [
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",

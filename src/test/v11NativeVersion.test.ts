@@ -10,10 +10,11 @@ const project = readFileSync(
 describe("V1.1 native release identity", () => {
   it("uses version 1.1 and the next unused build number in every App configuration", () => {
     expect(project.match(/MARKETING_VERSION = 1\.1;/g)).toHaveLength(2);
-    expect(project.match(/CURRENT_PROJECT_VERSION = 6;/g)).toHaveLength(2);
+    expect(project.match(/CURRENT_PROJECT_VERSION = 7;/g)).toHaveLength(2);
     expect(project).not.toContain("MARKETING_VERSION = 1.0;");
     expect(project).not.toContain("CURRENT_PROJECT_VERSION = 4;");
     expect(project).not.toContain("CURRENT_PROJECT_VERSION = 5;");
+    expect(project).not.toContain("CURRENT_PROJECT_VERSION = 6;");
   });
 
   it("keeps the production bundle identifier unchanged", () => {

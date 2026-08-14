@@ -26,7 +26,7 @@
       "destination": "/coach-invite-preview.html"
     },
     {
-      "source": "/((?!\\.well-known/|assets/|app-icon.png|og-image.png|og-invite.png|team-invite-preview.html|coach-invite-preview.html|robots.txt|offline.html|sw.js|workbox-|manifest.webmanifest|site.webmanifest).*)",
+      "source": "/((?!\\.well-known/|assets/|app-icon.png|og-image.png|og-invite.png|og-team-invite.png|og-coach-invite.png|team-invite-preview.html|coach-invite-preview.html|robots.txt|offline.html|sw.js|workbox-|manifest.webmanifest|site.webmanifest).*)",
       "destination": "/index.html"
     }
   ],

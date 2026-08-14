@@ -37,14 +37,15 @@ describe("public App Store distribution", () => {
 
     expect(athletePreview).toContain("Deine RewirePerform Team-Einladung");
     expect(athletePreview).toContain("Öffne RewirePerform und verbinde dich direkt mit deinem Team.");
-    expect(coachPreview).toContain("Deine persönliche RewirePerform Coach-Einladung");
-    expect(coachPreview).toContain("verbinde dich mit deinem Coach-Team");
+    expect(coachPreview).toContain("Deine persönliche RewirePerform Co-Coach-Einladung");
+    expect(coachPreview).toContain("Coach-Einführung");
 
+    expect(athletePreview).toContain("https://rewireperform.com/og-team-invite.png?v=2");
+    expect(coachPreview).toContain("https://rewireperform.com/og-coach-invite.png?v=2");
     for (const preview of [athletePreview, coachPreview]) {
       expect(preview).toContain('content="noindex, nofollow"');
-      expect(preview).toContain("https://rewireperform.com/og-invite.png?v=1");
       expect(preview).toContain('property="og:image:width" content="1200"');
-      expect(preview).toContain('property="og:image:height" content="1500"');
+      expect(preview).toContain('property="og:image:height" content="630"');
     }
   });
 
@@ -83,6 +84,8 @@ describe("public App Store distribution", () => {
     const fallback = vercel.rewrites.at(-1);
     expect(fallback?.destination).toBe("/index.html");
     expect(fallback?.source).toContain("og-invite.png");
+    expect(fallback?.source).toContain("og-team-invite.png");
+    expect(fallback?.source).toContain("og-coach-invite.png");
     expect(fallback?.source).toContain("team-invite-preview.html");
     expect(fallback?.source).toContain("coach-invite-preview.html");
   });

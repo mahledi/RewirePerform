@@ -62,6 +62,10 @@ Coach-visible individual data is operational only:
 - check-ins in the last 7 days,
 - journal entry count only,
 - inactive-risk flag.
+- the entering coach's own structured observation of five directly observable
+  sport-behaviour domains. It is separate from athlete evidence consent, can be
+  reopened only by that coach, and is excluded from website, AI, standard and
+  external evidence exports.
 
 Coach-hidden data:
 
@@ -70,6 +74,34 @@ Coach-hidden data:
 - raw questionnaire answers,
 - individual psychological scores,
 - private development labels.
+
+## V1.1 Co-Coach codes and observation boundary
+
+- A shareable Co-Coach invitation contains a random 20-hex-character code.
+  The database stores only its SHA-256 digest in `app_private`; browser roles
+  have no direct table access.
+- The code is one-time and valid for seven days. Its digest is deleted
+  immediately after acceptance; expired and replaced codes are purged by the
+  daily retention job.
+- Acceptance requires an authenticated account with confirmed email and
+  server-side role conversion. Existing athlete accounts with athlete data or
+  a minor-authorization record remain fail-closed for deliberate admin review.
+- Successful acceptance grants the normal active organization-coach and team
+  Co-Coach memberships. The link itself never grants a role.
+- Individual Coach observations contain exactly five structured, directly
+  observable sport-behaviour ratings and no free text. Athlete journals, raw
+  answers, individual check-in values and psychological scores are neither read
+  nor returned by this path.
+- Athlete consent continues to control athlete evidence pulses, team evidence
+  and aggregates. It no longer controls whether a coach can enter their own
+  individual operational observation for an active team athlete.
+
+Technical minimization and access controls do not constitute legal advice, but
+an additional external legal review is not a technical release gate for this
+bounded V1.1 flow. App Store Connect privacy answers and the public privacy
+notice must match the exact activated backend and signed release build. Jarvis
+and other machine consumers remain excluded from athlete free text; any later
+activation of that separate data path requires its own review.
 
 ## iOS/WebView Submit Checklist
 
