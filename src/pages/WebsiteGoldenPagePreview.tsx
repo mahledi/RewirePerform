@@ -588,7 +588,7 @@ const WebsiteGoldenPagePreview = () => {
                   <div className="relative z-10 xl:-translate-x-20"><CoachShot sceneId="console" /></div>
                 </div>
               </ProductProof>
-              <p className="mx-auto mt-2 max-w-xl text-center text-xs leading-5 text-white/28">Interne Golden-Page-Vorschau: freigegebene Zieloberfläche mit realen Coach-Funktionen. Das bestehende Coach-Dashboard wird vor einer öffentlichen Übernahme auf dieses Niveau angeglichen.</p>
+              <p className="mx-auto mt-2 max-w-xl text-center text-xs leading-5 text-white/28">Beispielansicht mit realen Coach-Funktionen. Private Inhalte bleiben geschützt.</p>
             </div>
           </div>
         </div>
@@ -640,7 +640,7 @@ const WebsiteGoldenPagePreview = () => {
 
           <div className="mx-auto mt-8 flex max-w-xl items-start justify-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-left">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p className="text-xs leading-5 text-white/36">Interne Vorschau mit gekennzeichneten Beispieldaten. Keine Konten, Rollen oder Produktdaten werden verändert.</p>
+            <p className="text-xs leading-5 text-white/36">Interaktive Produktvorschau mit gekennzeichneten Beispieldaten.</p>
           </div>
 
           <div className="mx-auto mt-14 max-w-5xl pt-10 text-left sm:mt-16 sm:pt-12">
