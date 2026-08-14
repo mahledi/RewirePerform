@@ -1,8 +1,14 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import AthleteFirstRunEntry from "@/pages/AthleteFirstRunEntry";
 import CoachFirstRunEntry from "@/pages/CoachFirstRunEntry";
+
+const nativePlatform = vi.hoisted(() => ({ value: false }));
+
+vi.mock("@capacitor/core", () => ({
+  Capacitor: { isNativePlatform: () => nativePlatform.value },
+}));
 
 vi.mock("@/pages/FirstRunExperiencePreview", async () => {
   const React = await import("react");
@@ -11,14 +17,17 @@ vi.mock("@/pages/FirstRunExperiencePreview", async () => {
       initialMode,
       onComplete,
       onLogin,
+      fitCameraToViewport,
     }: {
       initialMode: "solo" | "team";
       onComplete: (mode: "solo" | "team") => void;
       onLogin: () => void;
+      fitCameraToViewport: boolean;
     }) => React.createElement(
       "div",
       null,
       React.createElement("span", null, `Athlet: ${initialMode}`),
+      React.createElement("span", null, `Athlet fit: ${fitCameraToViewport}`),
       React.createElement("button", { type: "button", onClick: () => onComplete(initialMode) }, "Athletenflug abschließen"),
       React.createElement("button", { type: "button", onClick: onLogin }, "Athlet anmelden"),
     ),
@@ -32,14 +41,17 @@ vi.mock("@/pages/CoachFirstRunExperience", async () => {
       invitation,
       onComplete,
       onLogin,
+      fitCameraToViewport,
     }: {
       invitation: boolean;
       onComplete: () => void;
       onLogin: () => void;
+      fitCameraToViewport: boolean;
     }) => React.createElement(
       "div",
       null,
       React.createElement("span", null, invitation ? "Persönliche Einladung" : "Coach-Anfrage"),
+      React.createElement("span", null, `Coach fit: ${fitCameraToViewport}`),
       React.createElement("button", { type: "button", onClick: onComplete }, "Coachflug abschließen"),
       React.createElement("button", { type: "button", onClick: onLogin }, "Coach anmelden"),
     ),
@@ -61,6 +73,29 @@ const renderRoute = (entry: string, kind: "athlete" | "coach") => render(
 );
 
 describe("role-first introduction routing", () => {
+  beforeEach(() => {
+    nativePlatform.value = false;
+  });
+
+  it("uses the responsive camera fit only for the website role flights", () => {
+    nativePlatform.value = false;
+    const athleteWeb = renderRoute("/start/athlete", "athlete");
+    expect(screen.getByText("Athlet fit: true")).toBeInTheDocument();
+    athleteWeb.unmount();
+
+    const coachWeb = renderRoute("/start/coach", "coach");
+    expect(screen.getByText("Coach fit: true")).toBeInTheDocument();
+    coachWeb.unmount();
+
+    nativePlatform.value = true;
+    const athleteNative = renderRoute("/start/athlete", "athlete");
+    expect(screen.getByText("Athlet fit: false")).toBeInTheDocument();
+    athleteNative.unmount();
+
+    const coachNative = renderRoute("/start/coach", "coach");
+    expect(screen.getByText("Coach fit: false")).toBeInTheDocument();
+  });
+
   it("preserves athlete team intent and code through the flight without changing role truth", () => {
     renderRoute("/start/athlete?intent=join&team=AB12CD&auth_mode=login", "athlete");
 

@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CoachFirstRunExperience from "@/pages/CoachFirstRunExperience";
@@ -32,6 +33,7 @@ const CoachFirstRunEntry = () => {
 
   return (
     <CoachFirstRunExperience
+      fitCameraToViewport={!Capacitor.isNativePlatform()}
       invitation={Boolean(invitationRoute)}
       onComplete={() => {
         if (invitationRoute) navigate(invitationAuthRoute(requestedMode));
