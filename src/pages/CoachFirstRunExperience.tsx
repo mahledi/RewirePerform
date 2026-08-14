@@ -558,7 +558,7 @@ const CoachFirstRunExperience = ({
   const goTo = (next: number) => setStep(Math.max(0, Math.min(scenes.length - 1, next)));
 
   return (
-    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] px-4 pb-[max(18px,env(safe-area-inset-bottom))] pt-[max(14px,env(safe-area-inset-top))] text-[#EEF0F2] sm:px-7">
+    <main className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0D0E12] px-4 pb-[max(18px,env(safe-area-inset-bottom))] pt-[max(14px,env(safe-area-inset-top))] text-[#EEF0F2] sm:px-7 md:pb-[max(10px,env(safe-area-inset-bottom))] md:pt-[max(10px,env(safe-area-inset-top))]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_12%,rgba(46,173,137,0.13),transparent_30%),radial-gradient(circle_at_10%_80%,rgba(46,173,137,0.065),transparent_28%)]" />
       <header className="relative z-20 mx-auto flex w-full max-w-6xl items-center justify-between">
         <BrandLockup symbolSize={27} textClassName="text-[13px] tracking-[-0.02em]" />
@@ -570,7 +570,7 @@ const CoachFirstRunExperience = ({
         </div>
       </header>
 
-      <section ref={stageRef} data-testid="coach-first-run-stage" className="relative z-10 mx-auto mt-4 flex min-h-0 w-full max-w-6xl flex-1 flex-col overflow-y-auto overscroll-y-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mt-6 md:grid md:grid-cols-[minmax(230px,320px)_1fr] md:items-center md:gap-6 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-10">
+      <section ref={stageRef} data-testid="coach-first-run-stage" className="relative z-10 mx-auto mt-4 flex min-h-0 w-full max-w-6xl flex-1 flex-col overflow-y-auto overscroll-y-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mt-2 md:grid md:grid-cols-[minmax(230px,320px)_1fr] md:items-center md:gap-6 lg:grid-cols-[minmax(260px,360px)_1fr] lg:gap-10">
         <div className="relative z-20 order-2 mt-4 md:order-1 md:mt-0">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div key={scene.id} initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }} transition={{ duration: reduceMotion ? 0.01 : 0.34, ease: [0.22, 1, 0.36, 1] }}>
@@ -580,7 +580,7 @@ const CoachFirstRunExperience = ({
           </AnimatePresence>
         </div>
 
-        <div ref={cameraViewportRef} className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] shrink overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-[min(68dvh,700px)] [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]">
+        <div ref={cameraViewportRef} className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] shrink overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-full md:min-h-0 md:max-h-[700px] [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]">
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#0D0E12]/40 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#0D0E12]/35 to-transparent" />
           <div data-testid="coach-first-run-camera" className="absolute inset-0">
@@ -598,7 +598,7 @@ const CoachFirstRunExperience = ({
         </div>
       </section>
 
-      <footer data-testid="coach-first-run-footer" className="relative z-30 mx-auto mt-4 w-full max-w-6xl shrink-0">
+      <footer data-testid="coach-first-run-footer" className="relative z-30 mx-auto mt-4 w-full max-w-6xl shrink-0 md:mt-2">
         <div className="grid w-full grid-cols-[3rem_1fr] gap-3 md:ml-auto md:max-w-[650px]">
           <button type="button" onClick={() => goTo(step - 1)} disabled={step === 0} aria-label="Zurück" className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/62 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><ArrowLeft className="h-4 w-4" /></button>
           <button type="button" onClick={() => { if (isLast) { if (onComplete) onComplete(); else goTo(0); } else goTo(step + 1); }} className="flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-[#07110E] shadow-[0_16px_35px_-18px_rgba(46,173,137,0.78)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
