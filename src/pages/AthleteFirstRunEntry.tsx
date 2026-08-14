@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import FirstRunExperiencePreview, { type FirstRunMode } from "@/pages/FirstRunExperiencePreview";
 import { normalizeTeamInviteCode } from "@/lib/teamInvite";
@@ -23,6 +24,7 @@ const AthleteFirstRunEntry = () => {
 
   return (
     <FirstRunExperiencePreview
+      fitCameraToViewport={!Capacitor.isNativePlatform()}
       initialMode={initialMode}
       onComplete={finish}
       onLogin={() => navigate(authRoute("login", initialMode))}
