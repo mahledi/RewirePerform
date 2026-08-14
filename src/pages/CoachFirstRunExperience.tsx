@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { BrandLockup, BrandSymbol } from "@/components/brand/BrandLogo";
+import { useFirstRunCameraFit } from "@/lib/firstRunCameraFit";
 import { cn } from "@/lib/utils";
 
 type CoachPreviewSection = "overview" | "state" | "development" | "toolkit" | "team";
@@ -37,6 +38,7 @@ type CoachFirstRunExperienceProps = {
   onLogin?: () => void;
   onClose?: () => void;
   completionLabel?: string;
+  fitCameraToViewport?: boolean;
 };
 
 export type CoachFirstRunSceneId =
@@ -534,6 +536,7 @@ const CoachFirstRunExperience = ({
   onLogin,
   onClose,
   completionLabel,
+  fitCameraToViewport = false,
 }: CoachFirstRunExperienceProps) => {
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
@@ -542,6 +545,12 @@ const CoachFirstRunExperience = ({
   const cameraViewportRef = useRef<HTMLDivElement>(null);
   const scene = scenes[step];
   const isLast = step === scenes.length - 1;
+  const cameraFit = useFirstRunCameraFit(
+    cameraViewportRef,
+    fitCameraToViewport,
+    isLast ? 0 : 48,
+  );
+  const sceneScale = scene.position.scale * cameraFit;
 
   useEffect(() => {
     if (cameraViewportRef.current) {
@@ -580,12 +589,24 @@ const CoachFirstRunExperience = ({
           </AnimatePresence>
         </div>
 
-        <div ref={cameraViewportRef} className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] shrink overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-full md:min-h-0 md:max-h-[700px] [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]">
+        <div
+          ref={cameraViewportRef}
+          className={cn(
+            "relative order-1 mx-auto w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-full md:min-h-0 md:max-h-[700px]",
+            fitCameraToViewport
+              ? "h-auto min-h-0 flex-1"
+              : "h-[min(64dvh,650px)] min-h-[430px] shrink [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]",
+          )}
+        >
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#0D0E12]/40 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#0D0E12]/35 to-transparent" />
-          <div data-testid="coach-first-run-camera" className="absolute inset-0">
+          <div
+            data-testid="coach-first-run-camera"
+            data-camera-fit={cameraFit.toFixed(4)}
+            className={cn("absolute inset-x-0 top-0", fitCameraToViewport && !isLast ? "bottom-12" : "bottom-0")}
+          >
             {worldScreens.map((screen) => (
-              <motion.div key={screen.id} className="absolute inset-0 flex items-center justify-center" animate={reduceMotion ? { x: 0, y: 0, scale: 0.9, opacity: screen.id === scene.id ? 1 : 0 } : { x: (screen.x - scene.position.x) * scene.position.scale, y: (screen.y - scene.position.y) * scene.position.scale, scale: scene.position.scale, opacity: screen.id === scene.id ? 1 : 0.28 }} transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 74, damping: 19, mass: 0.82 }} aria-hidden={screen.id !== scene.id}>
+              <motion.div key={screen.id} className="absolute inset-0 flex items-center justify-center" animate={reduceMotion ? { x: 0, y: 0, scale: 0.9 * cameraFit, opacity: screen.id === scene.id ? 1 : 0 } : { x: (screen.x - scene.position.x) * sceneScale, y: (screen.y - scene.position.y) * sceneScale, scale: sceneScale, opacity: screen.id === scene.id ? 1 : 0.28 }} transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 74, damping: 19, mass: 0.82 }} aria-hidden={screen.id !== scene.id}>
                 <CoachFirstRunSceneVisual sceneId={screen.id} invitation={invitation} />
               </motion.div>
             ))}

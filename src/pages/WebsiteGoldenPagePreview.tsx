@@ -77,9 +77,9 @@ const FlightOverlay = ({ flight, onClose }: { flight: Exclude<Flight, null>; onC
     transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
   >
     {flight === "athlete" ? (
-      <FirstRunExperiencePreview onComplete={onClose} onClose={onClose} completionLabel="Zurück zur Website" />
+      <FirstRunExperiencePreview fitCameraToViewport onComplete={onClose} onClose={onClose} completionLabel="Zurück zur Website" />
     ) : (
-      <CoachFirstRunExperience onComplete={onClose} onClose={onClose} completionLabel="Zurück zur Website" />
+      <CoachFirstRunExperience fitCameraToViewport onComplete={onClose} onClose={onClose} completionLabel="Zurück zur Website" />
     )}
   </motion.div>
 );
