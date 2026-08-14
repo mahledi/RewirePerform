@@ -34,10 +34,10 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Trainiere das System");
-  await expect(page.getByRole("button", { name: "Demo ansehen" }).first()).toBeVisible();
-  await expect(page.getByRole("complementary", { name: "RewirePerform im App Store" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Im App Store/ })).toHaveAttribute(
+  await expect(page.locator("#golden-hero-title")).toContainText("Trainiere das System");
+  await expect(page.getByRole("button", { name: "System verstehen" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "RewirePerform im App Store laden" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "RewirePerform im App Store laden" }).first()).toHaveAttribute(
     "href",
     "https://apps.apple.com/de/app/rewireperform/id6795463263",
   );
