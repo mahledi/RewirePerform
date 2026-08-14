@@ -350,7 +350,7 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
             </div>
           </div>
 
-          <TeamStaffInvitation teamId={team.id} />
+          <TeamStaffInvitation teamId={team.id} teamName={team.name} />
 
           <TeamTrainingSchedule teamId={team.id} />
 

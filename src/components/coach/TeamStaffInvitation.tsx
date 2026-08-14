@@ -1,17 +1,25 @@
 import { useEffect, useState } from "react";
-import { Check, Copy, Loader2, Share2, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { Check, Copy, Link2, Loader2, MessageCircle, Share2, UserPlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { buildCoachInvitationShare } from "@/lib/invitationShare";
+import { formatCoachInviteCode } from "@/lib/organizationInvite";
 
-const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
+type TeamCoachInvitationRpcClient = {
+  rpc: (
+    name: "create_team_coach_invitation",
+    args: { _team_id: string },
+  ) => Promise<{
+    data: { invitation_code?: unknown; expires_at?: unknown } | null;
+    error: { message?: string } | null;
+  }>;
+};
+
+const TeamStaffInvitation = ({ teamId, teamName }: { teamId: string; teamName: string }) => {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [canInvite, setCanInvite] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -26,34 +34,39 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
   }, [teamId]);
 
   const createInvite = async () => {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail.includes("@") || loading) return;
+    if (loading) return;
     setLoading(true);
-    // Draft RPC is unavailable until the reviewed migration is activated.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc("create_team_staff_invitation", {
-      _team_id: teamId,
-      _email: normalizedEmail,
-      _team_role: "co_coach",
-    });
+    const { data, error } = await (
+      supabase as unknown as TeamCoachInvitationRpcClient
+    ).rpc("create_team_coach_invitation", { _team_id: teamId });
     setLoading(false);
-    if (error || !data?.invitation_token) {
+
+    const code = typeof data?.invitation_code === "string" ? data.invitation_code : "";
+    if (error || !formatCoachInviteCode(code)) {
       toast.error("Die Co-Coach-Einladung konnte nicht sicher erstellt werden.");
       return;
     }
-    setInviteUrl(`${window.location.origin}/organization/invite?token=${encodeURIComponent(String(data.invitation_token))}`);
-    toast.success("Einmalige Co-Coach-Einladung vorbereitet.");
+    setInviteCode(code);
+    toast.success("Co-Coach-Einladung ist bereit.");
+  };
+
+  const invitation = inviteCode ? buildCoachInvitationShare(teamName, inviteCode) : null;
+  const formattedCode = inviteCode ? formatCoachInviteCode(inviteCode) : null;
+
+  const copyCode = async () => {
+    if (!formattedCode) return;
+    await navigator.clipboard.writeText(formattedCode);
+    toast.success("Coach-Code kopiert.");
   };
 
   const copyInvite = async () => {
-    if (!inviteUrl) return;
-    await navigator.clipboard.writeText(inviteUrl);
+    if (!invitation) return;
+    await navigator.clipboard.writeText(invitation.url);
     toast.success("Einladungslink kopiert.");
   };
 
   const shareInvite = async () => {
-    if (!inviteUrl) return;
-    const invitation = buildCoachInvitationShare(inviteUrl);
+    if (!invitation) return;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -68,6 +81,15 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
     }
     await navigator.clipboard.writeText(invitation.message);
     toast.success("Einladungstext kopiert.");
+  };
+
+  const shareWhatsApp = () => {
+    if (!invitation) return;
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(invitation.message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   return (
@@ -88,9 +110,18 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
 
       {open && (
         <div className="mt-4 space-y-3 border-t border-border/60 pt-4">
-          <div className="space-y-2"><Label htmlFor={`co-coach-${teamId}`}>Bestätigte berufliche E-Mail</Label><div className="flex flex-col gap-2 sm:flex-row"><Input id={`co-coach-${teamId}`} type="email" value={email} onChange={(event) => { setEmail(event.target.value); setInviteUrl(null); }} placeholder="coach@verein.de" /><Button type="button" onClick={() => void createInvite()} disabled={loading || !email.includes("@")} className="shrink-0">{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}Einladung erstellen</Button></div></div>
-          <p className="text-xs leading-relaxed text-muted-foreground">Der Link ist einmalig, sieben Tage gültig und funktioniert ausschließlich mit der eingeladenen bestätigten E-Mail-Adresse.</p>
-          {inviteUrl && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
+              Erstelle einen einmaligen Coach-Code. Danach kannst du die Einladung genauso direkt über WhatsApp,
+              Teilen oder als Link weitergeben wie eine Athleten-Einladung.
+            </p>
+            <Button type="button" onClick={() => void createInvite()} disabled={loading} className="shrink-0">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+              {inviteCode ? "Neuen Code erstellen" : "Einladung erstellen"}
+            </Button>
+          </div>
+
+          {invitation && formattedCode && (
             <div className="rounded-2xl border border-primary/25 bg-primary/[0.06] p-4">
               <div className="flex items-start gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
@@ -99,18 +130,36 @@ const TeamStaffInvitation = ({ teamId }: { teamId: string }) => {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Einladung ist bereit</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Einmaliger Link · sieben Tage gültig · an {email.trim().toLowerCase()} gebunden
+                    Einmalig · sieben Tage gültig · nach Annahme automatisch mit diesem Team verbunden
                   </p>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <Button type="button" variant="outline" className="min-h-10" onClick={() => void copyInvite()}>
-                  <Copy className="h-4 w-4" />
-                  Link kopieren
+
+              <button
+                type="button"
+                onClick={() => void copyCode()}
+                className="mt-4 flex min-h-12 w-full items-center justify-between rounded-xl border border-border/70 bg-background/70 px-4 text-left"
+                aria-label="Coach-Code kopieren"
+              >
+                <span>
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach-Code</span>
+                  <span className="mt-1 block font-mono text-base font-semibold tracking-[0.08em] text-foreground">{formattedCode}</span>
+                </span>
+                <Copy className="h-4 w-4 text-primary" />
+              </button>
+
+              <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <Button type="button" variant="outline" className="min-h-10 border-[#25D366]/30 text-[#25D366]" onClick={shareWhatsApp}>
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp
                 </Button>
                 <Button type="button" className="min-h-10" onClick={() => void shareInvite()}>
                   <Share2 className="h-4 w-4" />
-                  Einladung teilen
+                  Teilen
+                </Button>
+                <Button type="button" variant="outline" className="min-h-10" onClick={() => void copyInvite()}>
+                  <Link2 className="h-4 w-4" />
+                  Link kopieren
                 </Button>
               </div>
             </div>

@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Building2, Check, Loader2, ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Building2, Check, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  formatCoachInviteCode,
+  ORGANIZATION_INVITE_ORIGIN,
+  parseOrganizationInviteUrl,
+} from "@/lib/organizationInvite";
 
 type InviteState = "idle" | "accepting" | "accepted" | "error";
-type OrganizationInvitationRpcClient = {
+type InvitationRpcClient = {
   rpc: (
-    name: "accept_organization_invitation",
-    args: { _token: string },
+    name: "accept_organization_invitation" | "accept_team_coach_invitation",
+    args: { _token: string } | { _code: string },
   ) => Promise<{ error: { message?: string } | null }>;
 };
 
@@ -18,10 +23,23 @@ const OrganizationInvite = () => {
   const { user, loading, verifyRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const token = new URLSearchParams(location.search).get("token")?.trim() ?? "";
+  const invitation = useMemo(() => {
+    const parsed = parseOrganizationInviteUrl(
+      new URL(`${location.pathname}${location.search}`, ORGANIZATION_INVITE_ORIGIN).toString(),
+    );
+    return parsed.kind === "invite" ? parsed : null;
+  }, [location.pathname, location.search]);
+  const isCoachCode = invitation?.inviteType === "coach_code";
+  const formattedCode = isCoachCode ? formatCoachInviteCode(invitation.coachCode) : null;
   const [state, setState] = useState<InviteState>("idle");
   const [error, setError] = useState("");
   const [roleRefreshPending, setRoleRefreshPending] = useState(false);
+
+  useEffect(() => {
+    setState("idle");
+    setError("");
+    setRoleRefreshPending(false);
+  }, [invitation?.route]);
 
   useEffect(() => {
     if (!loading && user && state === "accepted") {
@@ -31,13 +49,16 @@ const OrganizationInvite = () => {
   }, [loading, navigate, state, user]);
 
   const accept = async () => {
-    if (!user || token.length < 32 || state === "accepting") return;
+    if (!user || !invitation || state === "accepting") return;
     setState("accepting");
     setError("");
+
     if (!roleRefreshPending) {
-      const { error: rpcError } = await (
-        supabase as unknown as OrganizationInvitationRpcClient
-      ).rpc("accept_organization_invitation", { _token: token });
+      const rpcClient = supabase as unknown as InvitationRpcClient;
+      const { error: rpcError } = invitation.inviteType === "coach_code"
+        ? await rpcClient.rpc("accept_team_coach_invitation", { _code: invitation.coachCode })
+        : await rpcClient.rpc("accept_organization_invitation", { _token: invitation.token });
+
       if (rpcError) {
         setState("error");
         setError(
@@ -51,6 +72,7 @@ const OrganizationInvite = () => {
       }
       setRoleRefreshPending(true);
     }
+
     const verifiedRole = await verifyRole(undefined, 5_000);
     if (!verifiedRole.ok || (verifiedRole.value !== "coach" && verifiedRole.value !== "admin")) {
       setState("error");
@@ -61,7 +83,15 @@ const OrganizationInvite = () => {
     setState("accepted");
   };
 
-  const redirect = `/organization/invite?token=${encodeURIComponent(token)}`;
+  const redirect = invitation?.route ?? "/organization/invite";
+  const coachStartRoute = (mode: "signup" | "login") => {
+    const params = new URLSearchParams({ redirect, auth_mode: mode });
+    return `/start/coach?${params.toString()}`;
+  };
+
+  if (!loading && !user && invitation) {
+    return <Navigate to={coachStartRoute("signup")} replace />;
+  }
 
   return (
     <main className="min-h-screen bg-background px-5 py-8 text-foreground">
@@ -69,41 +99,45 @@ const OrganizationInvite = () => {
         <div className="mb-10 flex justify-center"><BrandLockup symbolSize={30} /></div>
         <section className="rounded-3xl border border-border/70 bg-card p-6 shadow-2xl shadow-black/20 sm:p-9">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            {state === "accepted" ? <Check className="h-7 w-7" /> : <Building2 className="h-7 w-7" />}
+            {state === "accepted"
+              ? <Check className="h-7 w-7" />
+              : isCoachCode
+                ? <KeyRound className="h-7 w-7" />
+                : <Building2 className="h-7 w-7" />}
           </div>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Persönliche Einladung</p>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Persönliche Co-Coach-Einladung</p>
           <h1 className="mt-3 font-heading text-3xl font-bold">
-            {state === "accepted" ? "Zugang freigegeben." : "Organisation sicher verbinden."}
+            {state === "accepted" ? "Coach-Team verbunden." : "Gemeinsam Performance entwickeln."}
           </h1>
           <p className="mt-4 leading-relaxed text-muted-foreground">
             {state === "accepted"
-              ? "Du wirst jetzt in deine Coach Console weitergeleitet."
-              : "Der Zugang wird nur für die bestätigte eingeladene E-Mail-Adresse aktiviert."}
+              ? "Du wirst jetzt in dein Coach-Dashboard weitergeleitet."
+              : isCoachCode
+                ? "Dein Coach-Code ist bereits eingetragen. Nach der Coach-Einführung registrierst du dich oder meldest dich an und bestätigst anschließend den Teamzugang."
+                : "Diese persönliche Organisationseinladung ist an die bestätigte eingeladene E-Mail-Adresse gebunden."}
           </p>
 
-          {!token || token.length < 32 ? (
+          {formattedCode && state !== "accepted" && (
+            <div className="mt-6 rounded-2xl border border-primary/25 bg-primary/[0.06] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Coach-Code · bereits eingetragen</p>
+              <p className="mt-1 font-mono text-lg font-semibold tracking-[0.08em] text-foreground">{formattedCode}</p>
+            </div>
+          )}
+
+          {!invitation ? (
             <p role="alert" className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">Der Einladungslink ist unvollständig.</p>
           ) : loading ? (
             <div className="mt-7 flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin text-primary" />Account wird geprüft.</div>
-          ) : !user ? (
-            <div className="mt-7 space-y-3">
-              <Link to={`/auth?mode=signup&intent=organization&redirect=${encodeURIComponent(redirect)}`} className="block">
-                <Button className="min-h-11 w-full">Mit eingeladener E-Mail registrieren</Button>
-              </Link>
-              <Link to={`/auth?mode=login&intent=organization&redirect=${encodeURIComponent(redirect)}`} className="block">
-                <Button variant="outline" className="min-h-11 w-full">Bereits registriert? Anmelden</Button>
-              </Link>
-            </div>
           ) : state !== "accepted" ? (
             <div className="mt-7 space-y-4">
               <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-secondary/25 p-4 text-sm text-muted-foreground">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                Die Annahme aktiviert ausschließlich die freigegebene Organisations- und Teamrolle. Athletendaten anderer Teams bleiben unsichtbar.
+                Die Annahme aktiviert ausschließlich die Coach-Rolle für dieses Team. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar.
               </div>
               {error && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</p>}
               <Button onClick={accept} disabled={state === "accepting"} className="min-h-11 w-full">
                 {state === "accepting" && <Loader2 className="h-4 w-4 animate-spin" />}
-                {roleRefreshPending ? "Zugang auf diesem Gerät bestätigen" : "Einladung verbindlich annehmen"}
+                {roleRefreshPending ? "Zugang auf diesem Gerät bestätigen" : "Als Co-Coach verbinden"}
               </Button>
             </div>
           ) : null}

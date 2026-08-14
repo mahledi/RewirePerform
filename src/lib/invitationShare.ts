@@ -1,4 +1,9 @@
 import { buildTeamInviteUrl, normalizeTeamInviteCode } from "@/lib/teamInvite";
+import {
+  buildCoachInviteUrl,
+  formatCoachInviteCode,
+  normalizeCoachInviteCode,
+} from "@/lib/organizationInvite";
 
 export type SharePayload = {
   title: string;
@@ -31,9 +36,27 @@ export const buildAthleteTeamInvitation = (
   return { title, text, url, message };
 };
 
-export const buildCoachInvitationShare = (url: string): SharePayload => {
-  const title = "Deine persönliche RewirePerform Coach-Einladung";
-  const text = "Öffne die Einladung mit deiner bestätigten beruflichen E-Mail-Adresse.";
-  const message = `${title}\n\n${text}\n${url}`;
+export const buildCoachInvitationShare = (
+  teamName: string,
+  rawCode: string,
+): SharePayload | null => {
+  const code = normalizeCoachInviteCode(rawCode);
+  const formattedCode = formatCoachInviteCode(rawCode);
+  const url = buildCoachInviteUrl(rawCode);
+  if (!code || !formattedCode || !url) return null;
+
+  const normalizedTeamName = teamName.trim() || "Dein Coach-Team";
+  const title = `${normalizedTeamName} lädt dich als Co-Coach zu RewirePerform ein`;
+  const text = `Verbinde dich als Co-Coach mit ${normalizedTeamName}. Dein Coach-Code: ${formattedCode}`;
+  const message = [
+    title,
+    "",
+    "Öffne deine persönliche Coach-Einladung:",
+    url,
+    "",
+    `Coach-Code: ${formattedCode}`,
+    "Der Link öffnet die App oder führt dich sicher durch die Coach-Registrierung.",
+  ].join("\n");
+
   return { title, text, url, message };
 };

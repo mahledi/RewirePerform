@@ -87,6 +87,7 @@ export interface CoachEvidenceAthlete {
   programInstanceId: string;
   userId: string;
   fullName: string;
+  observationAvailable: boolean;
   eligible: boolean;
   eligibilityReason: string;
   review: CoachEvidenceReviewRecord | null;
@@ -165,6 +166,7 @@ export const getCoachEvidenceReviewContext = async (
         programInstanceId: athlete.program_instance_id,
         userId: athlete.user_id,
         fullName: typeof athlete.full_name === "string" ? athlete.full_name : "Athlet",
+        observationAvailable: athlete.observation_available === true,
         eligible: athlete.eligible === true,
         eligibilityReason: typeof athlete.eligibility_reason === "string"
           ? athlete.eligibility_reason
