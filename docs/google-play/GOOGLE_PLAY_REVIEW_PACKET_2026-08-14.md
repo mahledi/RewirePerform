@@ -1,22 +1,24 @@
 # RewirePerform 1.1 — Google-Play-Review-Paket
 
 Stand: 14. August 2026
-Status: lokal vorbereitet; keine Play-Console-Schreibaktion, kein Signing und kein Upload
+Status: Play-App angelegt, Basiseinträge gespeichert und AAB lokal signiert;
+kein Upload, Tester- oder Production-Rollout
 
 ## Releaseidentität
 
-- Kanonische Basis: `997162b85d6982e318cbbcb5ba894d390b491720`
+- integrierte Basis: `3edae2205f51e5248e7190b650313a897a559941`
+- Android-RC: `6ea43fe682d3c9562560f015ec0736aeb6f0fecb`
 - Android-Branch: `codex/android-v1-1-review-ready-20260814`
 - Package: `com.rewireperform.app`
 - Version: `1.1`
 - Android `versionCode`: `1`
-- iOS-Referenz: Version `1.1`, Build `6`
+- iOS-Referenz: Version `1.1`, Build `7`
 - `minSdk` / `compileSdk` / `targetSdk`: `24 / 36 / 36`
 - Production-Frontendziel: `bqsbxesmybthwtxmowfz`
 - Vertrieb: kostenlos, Deutschland, manuelle Veröffentlichung
 
-Die Package-ID ist technisch vorbereitet, aber noch nicht durch eine in der
-Play Console angelegte App reserviert.
+Die App ist in der Play Console angelegt; `com.rewireperform.app` ist dadurch
+für RewirePerform reserviert.
 
 ## Store Listing — deutscher Entwurf
 
@@ -48,7 +50,7 @@ Reflexionsangebot. Die App stellt keine Diagnose oder Behandlung bereit und
 verspricht keine bestimmte sportliche Leistungswirkung.
 ```
 
-Vor der Eintragung bleibt Mahles sprachliche Freigabe erforderlich.
+Die Texte sind als Entwurf in der Play Console gespeichert.
 
 ## Store-Assets
 
@@ -69,12 +71,12 @@ Die lokalen Build-, Manifest-, SDK- und Artefaktprüfungen sind in
 
 | Feld | Entwurf | Restgate |
 | --- | --- | --- |
-| App oder Spiel | App | keines |
-| Kategorie | Sport | Mahle bestätigt die Store-Kategorie |
-| Anzeigen | Nein | finalen AAB/SDK-Audit bestätigen |
+| App oder Spiel | App | gespeichert |
+| Kategorie | Sport | gespeichert |
+| Anzeigen | Nein | gespeichert; finaler AAB/SDK-Audit grün |
 | In-App-Käufe | Nein | keines |
 | App-Zugriff | Login erforderlich | stabile synthetische Review-Konten erst nach separater Production-Freigabe erstellen |
-| Datenschutz-URL | `https://rewireperform.com/privacy` | live und inhaltlich final prüfen |
+| Datenschutz-URL | `https://rewireperform.com/privacy` | gespeichert |
 | Account-Löschung | in der App vorhanden | Website-/Apple-Track bereitet separat `https://rewireperform.com/account-deletion` vor; erst nach Live-200 eintragen |
 | Zielgruppe | Produkt ist 13+; 13–15, 16–17 und 18+ | Google-Families-/DE-Minor-Prüfung vor externer Auswahl |
 | Inhaltsrating | IARC-Fragebogen wahrheitsgemäß ausfüllen | nur in der Play Console möglich |
@@ -101,38 +103,36 @@ Keine Passwörter oder persönlichen Daten in dieses Repository schreiben.
 
 ## Schnellster zulässiger Veröffentlichungsweg
 
-1. Mahle reicht die Identitätsprüfung ein.
-2. Um 14 Uhr: Play-Console-App auf einem nicht gerooteten Android-Gerät ab
-   Android 10 installieren und das Gerät mit dem Owner-Konto verifizieren.
-3. Nach Googles Identitätsfreigabe: Kontakttelefonnummer bestätigen.
-4. App in der Play Console anlegen und `com.rewireperform.app` reservieren.
-5. Play App Signing und privaten Upload-Key separat freigeben.
-6. Signierten Production-AAB hochladen, App-Inhalt und Listing als Entwurf
-   vervollständigen, dann internen Test starten.
-7. Reale Android-Smokes und Pre-launch Report abschließen.
-8. Den Pilot als geschlossenen Test mit mindestens 12 echten, kontinuierlich
+1. Browser-Dateiupload freischalten und Icon, Feature Graphic sowie reale
+   Android-Screenshots hochladen.
+2. Öffentliche Account-Deletion-Seite live schalten und Data Safety fertig
+   ausfüllen.
+3. Stabile synthetische Review-Konten hinterlegen sowie Zielgruppe und IARC-
+   Fragebogen mit Mahles Bestätigung abschließen.
+4. Play App Signing aktivieren und den signierten Production-AAB hochladen.
+5. Reale Android-Smokes und Pre-launch Report abschließen.
+6. Den Pilot als geschlossenen Test mit mindestens 12 echten, kontinuierlich
    angemeldeten Testern starten.
-9. Nach mindestens 14 zusammenhängenden Tagen Production-Zugang beantragen.
-10. Erst nach Googles Freigabe einen kontrollierten Production-Rollout starten.
+7. Nach mindestens 14 zusammenhängenden Tagen Production-Zugang beantragen.
+8. Erst nach Googles Freigabe einen kontrollierten Production-Rollout starten.
 
 ## Externe Blocker
 
-- Entwicklerkonto: Identität, Gerät und danach Telefon noch nicht verifiziert.
-- Google kann die Identitätsprüfung mehrere Tage bearbeiten.
-- `App erstellen` ist bis zur Kontofreigabe gesperrt.
-- Play-Signing-Fingerprint fehlt; deshalb kann `assetlinks.json` noch nicht
-  finalisiert und separat deployed werden.
+- Chrome-Dateiupload ist noch nicht für die Browser-Erweiterung freigeschaltet.
+- Der öffentliche Play-App-Signing-Fingerprint entsteht erst bei Aktivierung
+  von Play App Signing; der lokale Upload-Key-Fingerprint ersetzt ihn nicht für
+  `assetlinks.json`.
 - Öffentliche Account-Deletion-Webseite ist dem Website-/Apple-Track unter
   `https://rewireperform.com/account-deletion` zugeordnet. Der aktuelle
   Live-Aufruf liefert zwar HTTP 200, aber nur den SPA-Fallback/NotFound; die
   echte Seite muss noch separat gebaut, deployed und inhaltlich geprüft werden.
 - Finale Data-Safety-, Zielgruppen-/Families- und Minderjährigenfreigabe fehlt.
-- Das lokale Release-AAB ist absichtlich nicht signiert und nicht uploadfähig;
-  nach der Signing-Freigabe ist ein neuer finaler Build mit erneutem Audit nötig.
-- Review-Konten, Signing, Upload und Play-Console-Einträge sind externe
-  Schreibaktionen mit separater Freigabe.
+- Das finale lokale Release-AAB ist mit dem privaten Upload-Key signiert und
+  verifiziert, aber noch nicht hochgeladen.
+- Review-Konten, finaler Upload, Tester-Rollout und Production bleiben externe
+  Freigaben.
 
 ## Nicht durch dieses Paket autorisiert
 
-Kein Push, Merge, Website-Deploy, Signing-Key, Play-App-Anlage, Console-Write,
-Upload, Tester-Rollout, Production-Rollout, Jarvis-Credential oder Echtdatenread.
+Kein Push, Merge, Website-Deploy, Upload, Tester-Rollout, Production-Rollout,
+Jarvis-Credential oder Echtdatenread.

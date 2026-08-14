@@ -1,8 +1,8 @@
 # RewirePerform 1.1 — Google Play Data Safety Draft
 
 Stand: 14. August 2026
-Status: konservativer Arbeitsentwurf; vor Übermittlung gegen finalen AAB,
-Dienstleisterverträge und aktivierte Production-Gates bestätigen
+Status: konservativer Arbeitsentwurf; finaler signierter AAB lokal auditiert,
+vor Übermittlung Dienstleistereinordnung und aktivierte Production-Gates bestätigen
 
 ## Plattformwahrheit
 
@@ -48,10 +48,9 @@ Keine Crash-Dumps, Audiodateien, Kontakte, Fotos, Videos, Dateien oder präzise
 Standortberechtigung sind im vorbereiteten Android-Manifest vorgesehen. Die
 Spracheingabe darf erst nach dem Geräte-Smoke als rein lokal bezeichnet werden.
 
-Der lokale AAB-/Dependency-Audit enthält keine Werbe-, Billing-, Firebase-/FCM-,
+Der finale signierte AAB-/Dependency-Audit enthält keine Werbe-, Billing-, Firebase-/FCM-,
 Crash- oder Marketing-Analytics-SDKs und keine Mikrofon-, Kamera-, Kontakt-,
-Standort-, Speicher- oder Werbe-ID-Berechtigung. Das bleibt beim final signierten
-Upload-AAB erneut zu bestätigen.
+Standort-, Speicher- oder Werbe-ID-Berechtigung.
 
 ## Jarvis-Grenze
 
@@ -78,14 +77,13 @@ werden.
 
 ## Vor Übermittlung zwingend schließen
 
-1. Finalen signierten AAB und alle eingebetteten SDKs/Manifeste prüfen.
-2. HTTPS und tatsächliche Netzwerkziele auf dem Android-Gerät beobachten.
-3. Dienstleister-/„Shared“-Einordnung und optionale Datentypen juristisch
+1. HTTPS und tatsächliche Netzwerkziele auf dem Android-Gerät beobachten.
+2. Dienstleister-/„Shared“-Einordnung und optionale Datentypen juristisch
    bestätigen.
-4. Die vom Website-/Apple-Track vorbereitete URL
+3. Die vom Website-/Apple-Track vorbereitete URL
    `https://rewireperform.com/account-deletion` separat veröffentlichen und
    erst nach einem Live-HTTP-200- sowie Inhaltscheck in Play eintragen. Aktuell
    ist der HTTP-200 lediglich der SPA-Fallback und die Route zeigt NotFound.
-5. Tatsächlich aktive Feedback-, Kommentar-, Minor- und Jarvis-Gates gegen die
+4. Tatsächlich aktive Feedback-, Kommentar-, Minor- und Jarvis-Gates gegen die
    Erklärung abgleichen; geschlossene Funktionen nicht als aktiv behaupten.
-6. Zielgruppe 13+ und Google-Families-Anforderungen separat bestätigen.
+5. Zielgruppe 13+ und Google-Families-Anforderungen separat bestätigen.

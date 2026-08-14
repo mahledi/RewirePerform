@@ -1,12 +1,13 @@
 # RewirePerform 1.1 — lokale Android-Build-Evidence
 
 Stand: 14. August 2026
-Scope: lokaler, credentialfreier Build; kein Signing-Key, kein Play-Upload,
-kein Console-Write und kein Geräte-Smoke
+Scope: final repinnter lokaler Build mit privatem Upload-Key; kein Play-Upload,
+kein Tester-Rollout und noch kein vollständiger Geräte-Smoke des finalen Builds
 
 ## Identität
 
-- Basis-SHA: `997162b85d6982e318cbbcb5ba894d390b491720`
+- integrierte Basis-SHA: `3edae2205f51e5248e7190b650313a897a559941`
+- Android-RC-SHA: `6ea43fe682d3c9562560f015ec0736aeb6f0fecb`
 - Branch: `codex/android-v1-1-review-ready-20260814`
 - Package: `com.rewireperform.app`
 - `versionName`: `1.1`
@@ -19,7 +20,7 @@ kein Console-Write und kein Geräte-Smoke
 
 - `npm ci`: 838 Pakete installiert, Audit 0.
 - `npm audit --omit=dev`: 0 Schwachstellen.
-- `npm run ci`: 160 Testdateien, 897 Tests, alle grün.
+- `npm run ci`: 163 Testdateien, 919 Tests, alle grün.
 - `npm run app:build:android`: Production-Target, Capacitor-Sync,
   eingebettetes Android-Target und statische Android-Gates grün.
 - Gradle `:app:bundleRelease`: grün.
@@ -38,25 +39,25 @@ keine globale Dependency-Auflösung verändert.
 
 ## Artefakte
 
-### Nicht signiertes Release-AAB
+### Mit privatem Upload-Key signiertes Release-AAB
 
 - Pfad: `android/app/build/outputs/bundle/release/app-release.aab`
-- Größe: 4,3 MB
+- Größe: 5.044.273 Bytes
 - SHA-256:
-  `00b0c6674716d71f2458ce1f612697bce599776e23009e950ab3a07e288ec076`
-- `jarsigner`: nicht signiert
+  `af98a81dfb311720b64adbd45b1abea2ae9e4b7fede0ac4fb58eb665e702fc19`
+- `jarsigner`: verifiziert; SHA-256 / SHA256withRSA, 4096 Bit
 
-Dieses AAB ist ausschließlich lokale Build-Evidence. Es ist nicht das finale
-Upload-Artefakt. Nach separater Freigabe müssen Play App Signing und ein
-privater Upload-Key eingerichtet, der signierte AAB neu gebaut und alle
-Binary-/Data-Safety-Gates erneut geprüft werden.
+Der Upload-Key liegt außerhalb des Repositories; sein Kennwort liegt im
+macOS-Schlüsselbund und wurde weder ausgegeben noch committed. Google Play App
+Signing und der tatsächliche Upload bleiben Console-Gates. Vor dem Upload sind
+die offenen Data-Safety-, Listing- und Geräte-Gates zu schließen.
 
 ### Lokal installierbares QA-APK
 
 - Pfad: `android/app/build/outputs/apk/debug/app-debug.apk`
-- Größe: 5,7 MB
+- Größe: 6.498.497 Bytes
 - SHA-256:
-  `cdd1406f9803dd70f2ccf7ea662b4f9e95b034ea1536bc86eab812d891412463`
+  `e2788a7d5dd9865909f3a0b9abd251be8d9aab271af03ff9ae63b8f6d1f923c5`
 - Signatur: lokaler Android-Debug-Key; niemals in Play hochladen
 
 Dieses APK enthält denselben zuvor validierten Production-Frontend-Build und
@@ -92,4 +93,4 @@ ausgelieferten Web-Bundle referenziert.
 - WebView-Spracheingabe oder sauberer Nicht-unterstützt-Zustand,
 - Auth-, Invite- und Organization-App-Links,
 - Offline/Online-Wechsel, Netzwerkziele und echte Android-Screenshots,
-- Play Pre-launch Report auf dem später signierten Upload-Artefakt.
+- Play Pre-launch Report auf dem signierten Upload-Artefakt.
