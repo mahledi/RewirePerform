@@ -81,10 +81,11 @@ of the implemented boundary, not legal advice.
 - App Store Connect was inspected read-only on 14 August 2026. TestFlight still
   contains only version `1.1`, build `6`, in the internal group. No build `7`
   has been uploaded and no Store version `1.1` exists.
-- Production migration history currently ends at
-  `20260813125222_feedback_intelligence_v1_1_reclose_contract`. The Coach-code
-  migration `20260814100115_coach_invite_code_and_observation_access_v1_1` is
-  not applied. `pg_cron` and `pgcrypto` are installed.
+- Production migration `20260814121023_coach_invite_code_and_observation_access_v1_1`
+  was applied from merge SHA `456495b260b710837d858c1368bcdbe5e1057083`.
+  Its code table, RPC boundaries and daily retention job were verified after
+  apply. Feedback collection, text collection and machine Production export
+  remained closed. `pg_cron` and `pgcrypto` are installed.
 
-No Production apply, web deployment, push, merge, archive upload or App Store
-Connect mutation is covered by this evidence.
+The Production apply and merge are covered by this evidence. Web deployment,
+archive upload and App Store Connect mutation remain separate evidence steps.
