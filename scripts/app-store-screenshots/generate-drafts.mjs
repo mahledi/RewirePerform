@@ -10,9 +10,8 @@ const workspaceRoot = resolve(repositoryRoot, "../..");
 const outputRoot = join(
   workspaceRoot,
   "deliverables",
-  "app-store-screenshots-v1-20260729",
+  "app-store-screenshots-v1-1-20260813",
 );
-const sourceDirectory = join(outputRoot, "sources");
 const iphoneDirectory = join(outputRoot, "iphone-6.9-drafts");
 const ipadDirectory = join(outputRoot, "ipad-13-drafts");
 const chromeExecutable = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -21,6 +20,14 @@ const requestedFormat = process.argv
   .find((argument) => argument.startsWith("--format="))
   ?.split("=")[1];
 const reuseSources = process.argv.includes("--reuse-sources");
+const sourceDirectory = reuseSources
+  ? join(
+      workspaceRoot,
+      "deliverables",
+      "app-store-screenshots-v1-20260729",
+      "sources",
+    )
+  : join(outputRoot, "sources");
 if (requestedFormat && !["iphone", "ipad"].includes(requestedFormat)) {
   throw new Error(`Unsupported screenshot format: ${requestedFormat}`);
 }
@@ -477,42 +484,45 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
         .iphone .support { margin-left: auto; margin-right: auto; max-width: 1080px; }
         .iphone .device-stage {
           left: 50%;
-          top: 950px;
-          width: 1,120px;
-          height: 1,770px;
+          top: 800px;
+          width: 1240px;
+          height: 1980px;
           transform: translateX(-50%);
         }
         .iphone .device {
           left: 50%;
           top: 0;
-          width: 900px;
-          height: 1,596px;
+          width: 1080px;
+          height: 1915px;
           transform: translateX(-50%);
           border-radius: 76px;
           padding: 30px;
         }
         .iphone .device img { border-radius: 50px; }
+        .iphone .device-stage.coach {
+          top: 730px;
+        }
         .iphone .device-stage.coach .device {
-          width: 790px;
-          height: 1,708px;
+          width: 960px;
+          height: 2077px;
           padding: 24px;
           border-radius: 72px;
         }
         .iphone .device-stage.coach .device img { border-radius: 48px; }
         .iphone .device-stage.double .device {
-          top: 120px;
-          width: 660px;
-          height: 1,170px;
+          top: 60px;
+          width: 720px;
+          height: 1276px;
           padding: 22px;
           border-radius: 62px;
         }
         .iphone .device-stage.double .device-1 {
-          left: 40px;
+          left: 20px;
           transform: rotate(-3deg);
         }
         .iphone .device-stage.double .device-2 {
-          left: 430px;
-          top: 360px;
+          left: 500px;
+          top: 320px;
           transform: rotate(3deg);
         }
         .iphone .device-stage.double .device img { border-radius: 40px; }
@@ -523,18 +533,18 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
           border-color: rgba(46,173,137,.28);
         }
         .iphone .device-stage.slide-02-wissen-wird-zur-anwendung .device-1 {
-          left: -510px;
-          top: 120px;
+          left: 20px;
+          top: 60px;
           transform: none;
         }
         .iphone .device-stage.slide-02-wissen-wird-zur-anwendung .device-2 {
-          left: -150px;
-          top: 360px;
+          left: 500px;
+          top: 320px;
           transform: none;
         }
         .iphone .audience {
           left: 50%;
-          bottom: 24px;
+          top: -72px;
           transform: translateX(-50%);
         }
         .ipad .brand { left: 118px; top: 100px; }
@@ -542,7 +552,7 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
         .ipad .copy {
           left: 150px;
           right: 150px;
-          top: 300px;
+          top: 250px;
           width: auto;
           text-align: center;
         }
@@ -556,9 +566,9 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
         }
         .ipad .device-stage {
           left: 50%;
-          top: 810px;
-          width: 1600px;
-          height: 1900px;
+          top: 680px;
+          width: 1800px;
+          height: 2050px;
           transform: translateX(-50%);
         }
         .ipad .ambient {
@@ -568,36 +578,36 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
         }
         .ipad .device {
           left: 50%;
-          top: 130px;
-          width: 980px;
-          height: 1740px;
+          top: 90px;
+          width: 1180px;
+          height: 2093px;
           transform: translateX(-50%);
           border-radius: 74px;
           padding: 28px;
         }
         .ipad .device img { border-radius: 48px; }
         .ipad .device-stage.coach {
-          top: 760px;
+          top: 650px;
         }
         .ipad .device-stage.coach .device {
-          width: 860px;
-          height: 1860px;
+          width: 1040px;
+          height: 2252px;
           padding: 24px;
         }
         .ipad .device-stage.double .device {
-          width: 680px;
-          height: 1206px;
+          width: 760px;
+          height: 1347px;
           padding: 20px;
           border-radius: 58px;
         }
         .ipad .device-stage.double .device-1 {
-          left: 120px;
-          top: 110px;
+          left: 70px;
+          top: 90px;
           transform: none;
         }
         .ipad .device-stage.double .device-2 {
-          left: 800px;
-          top: 410px;
+          left: 970px;
+          top: 360px;
           transform: none;
         }
         .ipad .device-stage.double .device img { border-radius: 38px; }
@@ -608,13 +618,13 @@ const slideHtml = ({ slide, index, sourceMap, logoUrl, format }) => {
           border-color: rgba(46,173,137,.28);
         }
         .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device-1 {
-          left: 120px;
-          top: 110px;
+          left: 70px;
+          top: 90px;
           transform: none;
         }
         .ipad .device-stage.slide-02-wissen-wird-zur-anwendung .device-2 {
-          left: 800px;
-          top: 410px;
+          left: 970px;
+          top: 360px;
           transform: none;
         }
         .ipad .audience {
