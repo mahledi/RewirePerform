@@ -38,4 +38,17 @@ describe("Android native release contract", () => {
     expect(manifest).not.toContain("android.permission.ACCESS_FINE_LOCATION");
     expect(manifest).not.toContain("android.permission.USE_EXACT_ALARM");
   });
+
+  it("keeps the Android launch artwork proportional and centered", () => {
+    const capacitor = read("capacitor.config.ts");
+    const styles = read("android/app/src/main/res/values/styles.xml");
+    const launchBackground = read(
+      "android/app/src/main/res/drawable/launch_background.xml",
+    );
+
+    expect(capacitor).toContain('androidScaleType: "CENTER_CROP"');
+    expect(styles).toContain("@drawable/launch_background");
+    expect(launchBackground).toContain('android:gravity="center"');
+    expect(launchBackground).toContain('android:src="@drawable/splash_logo"');
+  });
 });

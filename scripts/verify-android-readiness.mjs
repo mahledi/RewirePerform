@@ -15,6 +15,7 @@ const files = {
   variables: readText("android/variables.gradle"),
   backup: readText("android/app/src/main/res/xml/backup_rules.xml"),
   extraction: readText("android/app/src/main/res/xml/data_extraction_rules.xml"),
+  styles: readText("android/app/src/main/res/values/styles.xml"),
 };
 
 const failures = [];
@@ -27,6 +28,8 @@ requireText("Capacitor app name", files.capacitor, 'appName: "RewirePerform"');
 requireText("Android WebView background", files.capacitor, 'backgroundColor: "#0D0E12"');
 requireText("Android mixed-content policy", files.capacitor, "allowMixedContent: false");
 requireText("Android bridge policy", files.capacitor, "useLegacyBridge: false");
+requireText("Android splash scaling", files.capacitor, 'androidScaleType: "CENTER_CROP"');
+requireText("Android launch background", files.styles, "@drawable/launch_background");
 requireText("Android application id", files.build, 'applicationId "com.rewireperform.app"');
 requireText("Android version", files.build, 'versionName "1.1"');
 requireText("Android version code", files.build, "versionCode 1");
@@ -87,7 +90,7 @@ const templateHashes = new Set([
   "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff",
 ]);
 
-const verifyPng = (label, relativePath, expectedWidth, expectedHeight) => {
+const verifyPng = (label, relativePath, expectedWidth, expectedHeight, expectedColorType) => {
   const asset = readFileSync(path.join(root, relativePath));
   if (asset.subarray(0, 8).toString("hex") !== pngSignature) {
     failures.push(`${label}: expected a PNG file`);
@@ -98,6 +101,9 @@ const verifyPng = (label, relativePath, expectedWidth, expectedHeight) => {
   if (width !== expectedWidth || height !== expectedHeight) {
     failures.push(`${label}: expected ${expectedWidth}x${expectedHeight}, got ${width}x${height}`);
   }
+  if (expectedColorType !== undefined && asset.readUInt8(25) !== expectedColorType) {
+    failures.push(`${label}: expected PNG color type ${expectedColorType}, got ${asset.readUInt8(25)}`);
+  }
   const digest = createHash("sha256").update(asset).digest("hex");
   if (templateHashes.has(digest)) {
     failures.push(`${label}: default Capacitor template artwork must be replaced`);
@@ -105,7 +111,8 @@ const verifyPng = (label, relativePath, expectedWidth, expectedHeight) => {
 };
 
 verifyPng("Android launcher icon", "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png", 192, 192);
-verifyPng("Android adaptive foreground", "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png", 432, 432);
+verifyPng("Android adaptive foreground", "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png", 432, 432, 6);
+verifyPng("Android launch symbol", "android/app/src/main/res/drawable-xxxhdpi/splash_logo.png", 768, 768, 6);
 verifyPng("Android portrait splash", "android/app/src/main/res/drawable-port-xxxhdpi/splash.png", 1280, 1920);
 verifyPng("Android landscape splash", "android/app/src/main/res/drawable-land-xxxhdpi/splash.png", 1920, 1280);
 
