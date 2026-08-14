@@ -151,7 +151,7 @@ export const buildNativeReminderNotifications = (
 ): LocalNotificationSchema[] => {
   const preferences = validatePreferences(input);
   if (!preferences || !input.userId.trim()) {
-    throw new Error("Ungültige Einstellungen für iOS-Erinnerungen");
+    throw new Error("Ungültige Einstellungen für App-Erinnerungen");
   }
 
   const notifications: LocalNotificationSchema[] = [];
@@ -278,10 +278,10 @@ const cancelPendingNotifications = async (ids: number[]) => {
 
 export const scheduleNativeReminders = async (input: BuildNativeReminderInput) => {
   if (!isNativeNotificationsAvailable()) {
-    throw new Error("iOS-Erinnerungen sind nur in der App verfügbar");
+    throw new Error("Erinnerungen sind nur in der App verfügbar");
   }
   if (!(await hasNativeNotificationPermission())) {
-    throw new Error("Benachrichtigungen sind in den iOS-Einstellungen nicht erlaubt");
+    throw new Error("Benachrichtigungen sind in den Geräteeinstellungen nicht erlaubt");
   }
 
   const notifications = buildNativeReminderNotifications(input);

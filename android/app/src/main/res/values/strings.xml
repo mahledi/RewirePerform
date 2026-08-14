@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RewirePerform</string>
+    <string name="title_activity_main">RewirePerform</string>
+    <string name="package_name">com.rewireperform.app</string>
+    <string name="custom_url_scheme">com.rewireperform.app</string>
+</resources>

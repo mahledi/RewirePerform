@@ -61,7 +61,7 @@ describe("native notification permission boundaries", () => {
     expect(mocks.requestPermissions).not.toHaveBeenCalled();
   });
 
-  it("returns false when iOS keeps notification access denied", async () => {
+  it("returns false when the device keeps notification access denied", async () => {
     mocks.checkPermissions.mockResolvedValue({ display: "prompt" });
     mocks.requestPermissions.mockResolvedValue({ display: "denied" });
 
@@ -73,7 +73,7 @@ describe("native notification permission boundaries", () => {
     mocks.checkPermissions.mockResolvedValue({ display: "denied" });
 
     await expect(scheduleNativeReminders(reminderInput)).rejects.toThrow(
-      "Benachrichtigungen sind in den iOS-Einstellungen nicht erlaubt",
+      "Benachrichtigungen sind in den Geräteeinstellungen nicht erlaubt",
     );
     expect(mocks.getPending).not.toHaveBeenCalled();
     expect(mocks.schedule).not.toHaveBeenCalled();
