@@ -38,6 +38,11 @@ describe("V1 athlete UI integration contract", () => {
     expect(dailyCheckin).toContain("writeLocalDraft");
     expect(dailyCheckin).toContain("<ComprehensionCheck");
     expect(dailyCheckin).toContain("tasks.every");
+    expect(dailyCheckin).not.toContain("daily-state-reflection");
+    expect(dailyCheckin).not.toContain("Schreibe frei oder sprich ein");
+    expect(dailyCheckin).not.toContain("<VoiceInput");
+    expect(dailyCheckin).toContain("setStep(activeTransferPulse ? 2 : 3)");
+    expect(dailyCheckin).toContain("step === 2 && activeTransferPulse");
   });
 
   it("keeps real Journal persistence, voice and private history", () => {

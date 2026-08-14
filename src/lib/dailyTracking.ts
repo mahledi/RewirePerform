@@ -18,7 +18,8 @@ export interface DailyTrackingInput {
   variantUsed: string;
   programInstanceId: string;
   completedTaskTitles: string[];
-  reflection: string | null;
+  /** Legacy RPC parameter. The Daily Flow no longer supplies free reflection text. */
+  reflection?: string | null;
   moodBefore: number | null;
   energyLevel: number | null;
   focusRating: number | null;
@@ -66,7 +67,7 @@ export const buildDailyTrackingV2RpcArgs = (input: DailyTrackingInput) => ({
     _variant_used: input.variantUsed,
     _program_instance_id: input.programInstanceId,
     _tasks_completed: input.completedTaskTitles as unknown as Json,
-    _reflection: input.reflection,
+    _reflection: input.reflection ?? null,
     _mood_before: input.moodBefore,
     _energy_level: input.energyLevel,
     _focus_rating: input.focusRating,

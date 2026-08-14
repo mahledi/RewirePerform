@@ -10,7 +10,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import VoiceInput from "@/components/VoiceInput";
 import TaskDetail from "@/components/daily/TaskDetail";
 import ComprehensionCheck from "@/components/daily/ComprehensionCheck";
 import RestDayMission, { type RestDayPlanMode } from "@/components/daily/RestDayMission";
@@ -38,7 +37,6 @@ import {
   getTransferPulseForDay,
   isTransferPulseResponse,
   normalizeEvidenceDurationMs,
-  shouldPreserveReflectionDraft,
   type TransferPulseResponse,
 } from "@/lib/performanceEvidence";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
@@ -60,7 +58,6 @@ interface DailyCheckinProps {
 interface CheckinDraft {
   step: number;
   completedTasks: string[];
-  reflection: string;
   moodBefore: number | null;
   energyLevel: number | null;
   focusClarity: number | null;
@@ -114,7 +111,6 @@ const DailyCheckin = ({
   const navigate = useNavigate();
   const [step, setStep] = useState(initialFocus === "rest-visualization" ? 3 : 0);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
-  const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const [resolved, setResolved] = useState<ResolvedDay | null>(null);
@@ -179,6 +175,14 @@ const DailyCheckin = ({
       transferPulseStartedAtRef.current = performance.now();
     }
   }, [activeTransferPulse, evidenceStatus?.locked, step, transferPulseResponse]);
+
+  // Build-7-Drafts konnten noch auf den entfernten Freitext-Schritt zeigen.
+  // Sobald der Tagesstatus geladen ist, gehen sie direkt zur Mission weiter.
+  useEffect(() => {
+    if (!loadingTasks && step === 2 && !activeTransferPulse) {
+      setStep(3);
+    }
+  }, [activeTransferPulse, loadingTasks, step]);
 
   const selectTransferPulseResponse = (response: TransferPulseResponse) => {
     if (transferPulseResponseDurationMs === null && transferPulseStartedAtRef.current !== null) {
@@ -277,7 +281,6 @@ const DailyCheckin = ({
       if (local) {
         setStep(normalizeDraftStep(local.step));
         setCompletedTasks(Array.from(new Set([...persistedTaskIds, ...(local.completedTasks ?? [])])));
-        setReflection(local.reflection ?? "");
         setMoodBefore(local.moodBefore ?? null);
         setEnergyLevel(local.energyLevel ?? null);
         setFocusClarity(local.focusClarity ?? null);
@@ -312,17 +315,10 @@ const DailyCheckin = ({
             dayNumber: result.resolved.matrix.dayNumber,
             eventType,
           });
-          const preserveExistingReflectionDraft = shouldPreserveReflectionDraft({
-            eligible: status.eligible,
-            existingResponse: status.existingResponse,
-            reflection: local?.reflection,
-          });
-          setEvidenceStatus(preserveExistingReflectionDraft
-            ? { ...status, eligible: false, reason: "reflection_draft_preserved" }
-            : status);
+          setEvidenceStatus(status);
           if (status.existingResponse !== null) {
             setTransferPulseResponse(status.existingResponse);
-          } else if (!preserveExistingReflectionDraft && isTransferPulseResponse(local?.transferPulseResponse)) {
+          } else if (isTransferPulseResponse(local?.transferPulseResponse)) {
             setTransferPulseResponse(local.transferPulseResponse);
           }
         } catch (error) {
@@ -356,7 +352,6 @@ const DailyCheckin = ({
     if (!draftKey || previewMode || step === 5) return;
     const hasDraft =
       completedTasks.length > 0 ||
-      reflection.trim().length > 0 ||
       transferPulseResponse !== null ||
       restPlanMode !== null ||
       restReminderScheduled ||
@@ -366,7 +361,6 @@ const DailyCheckin = ({
     writeLocalDraft<CheckinDraft>(draftKey, {
       step,
       completedTasks,
-      reflection,
       moodBefore,
       energyLevel,
       focusClarity,
@@ -389,7 +383,6 @@ const DailyCheckin = ({
     previewMode,
     step,
     completedTasks,
-    reflection,
     moodBefore,
     energyLevel,
     focusClarity,
@@ -486,7 +479,6 @@ const DailyCheckin = ({
         variantUsed: eventType,
         programInstanceId: instance.id,
         completedTaskTitles: completedTitles,
-        reflection: activeTransferPulse ? null : reflection.trim() || null,
         moodBefore,
         energyLevel,
         focusRating,
@@ -754,27 +746,29 @@ const DailyCheckin = ({
     );
   };
 
-  const flowStepTitles = eventType === "rest"
+  const flowStages = eventType === "rest"
     ? [
-        "Science Bite",
-        "Dein Tages-Puls",
-        activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
-        "Visualisierung",
+        { step: 0, title: "Science Bite" },
+        { step: 1, title: "Dein Tages-Puls" },
+        { step: 3, title: "Visualisierung" },
       ]
     : [
-        "Science Bite",
-        "Dein Tages-Puls",
-        activeTransferPulse ? "Transfer-Pulse" : "Reflexion",
-        "Deine Mission",
-        "Verständnis-Check",
-        "Abgeschlossen",
+        { step: 0, title: "Science Bite" },
+        { step: 1, title: "Dein Tages-Puls" },
+        ...(activeTransferPulse ? [{ step: 2, title: "Transfer-Pulse" }] : []),
+        { step: 3, title: "Deine Mission" },
+        { step: 4, title: "Verständnis-Check" },
       ];
-  const flowStageCount = eventType === "rest" ? 4 : 5;
+  const activeStageIndex = flowStages.findIndex((stage) => stage.step === step);
+  const flowStageCount = flowStages.length;
+  const flowTitle = step === 5
+    ? "Abgeschlossen"
+    : flowStages.find((stage) => stage.step === step)?.title ?? "Daily Flow";
 
   return (
     <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[#0D0E12] text-[#EEF0F2]">
       <AthleteScreenHeader
-        title={flowStepTitles[step] ?? "Daily Flow"}
+        title={flowTitle}
         eyebrow={`Daily Flow · ${config.label}`}
         onBack={handleBack}
         backLabel="Im Daily Flow zurück"
@@ -787,18 +781,22 @@ const DailyCheckin = ({
       />
       <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
         <div className="mx-auto flex max-w-lg items-center gap-2">
-          {Array.from({ length: flowStageCount }, (_, index) => (
+          {flowStages.map((stage, index) => (
             <div
-              key={index}
+              key={stage.step}
               className={`h-1 flex-1 rounded-full ${
-                step > index || step === 5 ? "bg-primary" : step === index ? "bg-primary/55" : "bg-white/[0.065]"
+                step === 5 || index < activeStageIndex
+                  ? "bg-primary"
+                  : index === activeStageIndex
+                    ? "bg-primary/55"
+                    : "bg-white/[0.065]"
               }`}
             />
           ))}
           <span className="ml-1 text-[10px] tabular-nums text-white/42">
             {step === 5
               ? `${flowStageCount}/${flowStageCount}`
-              : `${Math.min(step + 1, flowStageCount)}/${flowStageCount}`}
+              : `${Math.max(1, activeStageIndex + 1)}/${flowStageCount}`}
           </span>
         </div>
       </div>
@@ -877,8 +875,7 @@ const DailyCheckin = ({
                     </div>
                   </motion.div>
                 )}
-                {step === 2 && (
-                  activeTransferPulse ? (
+                {step === 2 && activeTransferPulse && (
                     <motion.div
                       key="transfer-pulse"
                       initial={{ opacity: 0, x: 50 }}
@@ -896,35 +893,6 @@ const DailyCheckin = ({
                         zusammengefasste Auswertungen einfließen.
                       </p>
                     </motion.div>
-                  ) : (
-                    <motion.div key="reflection" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                      <h2 className="font-heading text-2xl font-bold mb-2">
-                        Optional: {resolved?.context.checkin.reflectionTitle ?? "Was beeinflusst deinen Zustand heute?"}
-                      </h2>
-                      <p className="text-muted-foreground mb-2 text-sm">
-                        {resolved?.context.checkin.reflectionDescription}
-                      </p>
-                      <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15 flex items-start gap-2">
-                        <Moon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          <span className="text-foreground font-medium">Heute Abend:</span>{" "}
-                          {resolved?.context.checkin.journalReminder}
-                        </p>
-                      </div>
-                      <VoiceInput
-                        currentValue={reflection}
-                        onTranscript={(val) => setReflection(val)}
-                        placeholder="Schreibe frei oder sprich ein..."
-                      />
-                      <textarea
-                        data-testid="daily-state-reflection"
-                        value={reflection}
-                        onChange={(e) => setReflection(e.target.value)}
-                        placeholder="Optional. Nur für dich sichtbar."
-                        className="w-full h-32 mt-3 px-5 py-4 rounded-2xl bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                    </motion.div>
-                  )
                 )}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
@@ -992,7 +960,7 @@ const DailyCheckin = ({
         </div>
       </div>
 
-      {(step === 1 || step === 2 || (step === 3 && eventType !== "rest")) && !selectedTask && (
+      {(step === 1 || (step === 2 && Boolean(activeTransferPulse)) || (step === 3 && eventType !== "rest")) && !selectedTask && (
         <div className="sticky bottom-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <button onClick={handleBack} className="flex min-h-12 items-center gap-2 rounded-xl px-4 py-3 text-white/52 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -1016,7 +984,7 @@ const DailyCheckin = ({
                   whileTap={!blocked ? { scale: 0.98 } : undefined}
                   onClick={() => {
                     if (blocked) return;
-                    if (step === 1) setStep(2);
+                    if (step === 1) setStep(activeTransferPulse ? 2 : 3);
                     else if (step === 2) setStep(3);
                     else if (step === 3 && tasksComplete) setStep(4);
                   }}
