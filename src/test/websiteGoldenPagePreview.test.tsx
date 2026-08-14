@@ -49,6 +49,9 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(source).toContain('<span className="text-primary">die nächste Handlung.</span>');
     expect(source).toContain('<span className="text-primary">Dann prüfen.</span>');
     expect(source).toContain('<span className="text-primary">mental ausführen.</span>');
+    expect(source).not.toContain("Interne Golden-Page-Vorschau");
+    expect(source).not.toContain("Interne Vorschau");
+    expect(source).toContain("Interaktive Produktvorschau mit gekennzeichneten Beispieldaten.");
     expect(source).not.toMatch(/SystemCoreVisual|LearningNetworkVisual|EvidenceBar/);
   });
 
