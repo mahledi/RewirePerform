@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { Users, UsersRound, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { captureAppError } from "@/lib/monitoring";
+import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 
 interface TeamStats {
   member_count: number;
@@ -27,7 +28,13 @@ interface ActivityRow {
 
 const MIN_AGGREGATE_SAMPLE = 5;
 
-const TeamOverview = ({ teamId }: { teamId: string }) => {
+interface TeamOverviewProps {
+  teamId: string;
+  teamName?: string;
+  programStartDate?: string | null;
+}
+
+const TeamOverview = ({ teamId, teamName = "Dein Team", programStartDate = null }: TeamOverviewProps) => {
   const [stats, setStats] = useState<TeamStats | null>(null);
   const [activityRows, setActivityRows] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -239,10 +246,14 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
     );
   }
 
+  const programDay = getCurrentProgramDay(programStartDate);
+  const progress = programDay ? Math.round((programDay.dayNumber / 56) * 100) : 0;
+  const week = programDay ? Math.ceil(programDay.dayNumber / 7) : null;
+
   return (
-    <div className="w-full min-w-0 space-y-4">
+    <div className="w-full min-w-0 space-y-5">
       {partialWarnings.length > 0 && (
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-muted-foreground">
+        <div className="rounded-[20px] border border-amber-400/20 bg-amber-400/[0.055] p-4 text-sm text-white/52">
           <div className="mb-2 flex items-center gap-2 font-medium text-foreground">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             Einzelne Teamdaten sind gerade nicht vollständig verfügbar.
@@ -263,37 +274,72 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
-          <Users className="w-5 h-5 text-primary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-foreground">{stats.member_count}</p>
-          <p className="text-xs text-muted-foreground">Sportler im Team</p>
+      <section className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(28,31,36,0.97),rgba(15,17,21,0.99))] p-5 shadow-[0_28px_80px_-45px_rgba(0,0,0,0.95)] sm:p-6">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/[0.11] blur-3xl" />
+        <div className="relative flex min-w-0 items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
+              {programDay ? `Woche ${week}` : "Programmstatus"}
+            </p>
+            <h2 className="mt-2 truncate text-[clamp(1.35rem,4vw,1.85rem)] font-semibold tracking-[-0.04em] text-[#EEF0F2]">
+              {teamName}
+            </h2>
+            <p className="mt-2 text-xs leading-5 text-white/42">
+              {programDay
+                ? `Tag ${programDay.dayNumber} im 56-Tage-Programm`
+                : "Das Programm wurde für dieses Team noch nicht gestartet."}
+            </p>
+          </div>
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[17px] border border-primary/20 bg-primary/[0.10] text-primary">
+            <UsersRound className="h-5 w-5" strokeWidth={1.8} />
+          </span>
         </div>
-        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center">
-          <Activity className="w-5 h-5 text-primary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-foreground">
+        <div className="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-700"
+            style={{ width: `${progress}%` }}
+            aria-label={programDay ? `Programmfortschritt ${programDay.dayNumber} von 56 Tagen` : "Programm noch nicht gestartet"}
+          />
+        </div>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-4 sm:p-5">
+          <Users className="h-4 w-4 text-primary" strokeWidth={1.8} />
+          <p className="mt-4 text-3xl font-semibold leading-none tracking-[-0.045em] text-[#EEF0F2]">{stats.member_count}</p>
+          <p className="mt-2 text-xs text-white/38">Sportler im Team</p>
+        </div>
+        <div className="rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-4 sm:p-5">
+          <Activity className="h-4 w-4 text-primary" strokeWidth={1.8} />
+          <p className="mt-4 text-3xl font-semibold leading-none tracking-[-0.045em] text-[#EEF0F2]">
             {detailsLoading && stats.checkins_last_week === 0 ? "..." : stats.checkins_last_week}
           </p>
-          <p className="text-xs text-muted-foreground">Aktive Sportler (7 Tage)</p>
-        </div>
-        <div className="bg-card border border-border/50 rounded-2xl p-5 text-center sm:col-span-2">
-          <ClipboardCheck className="w-5 h-5 text-primary mx-auto mb-2" />
-          <p className="text-2xl font-bold text-foreground">
-            {detailsLoading && stats.assessments_completed === 0 ? "..." : stats.assessments_completed}
-          </p>
-          <p className="text-xs text-muted-foreground">Assessments abgeschlossen (gesamt)</p>
+          <p className="mt-2 text-xs text-white/38">in 7 Tagen aktiv</p>
         </div>
       </div>
 
+      <div className="flex min-w-0 items-center gap-3 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-4">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-primary/[0.085] text-primary">
+          <ClipboardCheck className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-[#EEF0F2]">Messungen im Programm</p>
+          <p className="mt-1 text-xs text-white/38">Start-, Zwischen- und Abschlussmessungen</p>
+        </div>
+        <p className="shrink-0 text-2xl font-semibold tracking-[-0.04em] text-[#EEF0F2]">
+            {detailsLoading && stats.assessments_completed === 0 ? "..." : stats.assessments_completed}
+        </p>
+      </div>
+
       {(detailsLoading || activityRows.length > 0) && (
-        <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border/50">
-            <p className="text-sm font-medium text-foreground">Teilnahme pro Sportler</p>
-            <p className="text-xs text-muted-foreground">
+        <section className="overflow-hidden rounded-[24px] border border-white/[0.065] bg-white/[0.02]">
+          <div className="border-b border-white/[0.055] px-4 py-4 sm:px-5">
+            <p className="text-sm font-semibold text-[#EEF0F2]">Teilnahme pro Sportler</p>
+            <p className="mt-1 text-xs leading-5 text-white/38">
               Nur Aktivitätsstatus. Keine Antworten, keine Stimmungswerte, keine Journale.
             </p>
           </div>
-          <div className="min-w-0 divide-y divide-border/50">
+          <div className="min-w-0 divide-y divide-white/[0.05]">
             {detailsLoading && activityRows.length === 0 ? (
               <div className="space-y-3 px-4 py-4">
                 {[0, 1, 2].map((item) => (
@@ -301,8 +347,11 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
                 ))}
               </div>
             ) : activityRows.map((row) => (
-              <div key={row.user_id} className="flex min-w-0 flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                <div className="min-w-0">
+              <div key={row.user_id} className="flex min-w-0 items-center gap-3 px-4 py-3.5 sm:px-5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/[0.075] bg-white/[0.035] text-[10px] font-semibold text-white/62">
+                  {(row.full_name ?? "Sportler").split(" ").slice(0, 2).map((part) => part[0]).join("")}
+                </span>
+                <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-foreground truncate">
                       {row.full_name ?? "Sportler"}
@@ -318,7 +367,7 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
                     {row.days_completed ?? 0}/{row.days_available ?? 0} Tage · {row.checkins_last_7d} Check-ins in 7 Tagen
                   </p>
                 </div>
-                <div className="shrink-0 text-left sm:text-right">
+                <div className="shrink-0 text-right">
                   <p className="text-sm font-semibold text-foreground">
                     {row.completion_rate != null ? `${Math.round(row.completion_rate * 100)}%` : "–"}
                   </p>
@@ -329,10 +378,10 @@ const TeamOverview = ({ teamId }: { teamId: string }) => {
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+      <div className="flex min-w-0 items-start gap-3 rounded-[20px] border border-primary/15 bg-primary/[0.045] p-4">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Privatsphäre geschützt</p>
