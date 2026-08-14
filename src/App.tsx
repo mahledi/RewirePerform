@@ -82,6 +82,9 @@ const GoldenDaysPreview = evidencePreviewEnabled
 const ProgramContentPreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/ProgramContentPreview.tsx"))
   : null;
+const WebsiteGoldenPagePreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/WebsiteGoldenPagePreview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => (
@@ -103,6 +106,8 @@ const AppRoutes = () => {
     && location.pathname === "/internal/golden-days-preview";
   const isProgramContentPreview = ProgramContentPreview !== null
     && location.pathname === "/internal/program-content-preview";
+  const isWebsiteGoldenPagePreview = WebsiteGoldenPagePreview !== null
+    && location.pathname === "/internal/website-golden-page-preview";
   const isDemoRoute = location.pathname === "/demo"
     || isEvidencePreview
     || isEmailPreview
@@ -111,7 +116,8 @@ const AppRoutes = () => {
     || isCoachFirstRunExperiencePreview
     || isFeedbackIntelligencePreview
     || isGoldenDaysPreview
-    || isProgramContentPreview;
+    || isProgramContentPreview
+    || isWebsiteGoldenPagePreview;
 
   if (isDemoRoute) {
     return (
@@ -138,6 +144,9 @@ const AppRoutes = () => {
             )}
             {ProgramContentPreview && (
               <Route path="/internal/program-content-preview" element={<ProgramContentPreview />} />
+            )}
+            {WebsiteGoldenPagePreview && (
+              <Route path="/internal/website-golden-page-preview" element={<WebsiteGoldenPagePreview />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>

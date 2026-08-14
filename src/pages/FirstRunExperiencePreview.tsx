@@ -35,13 +35,26 @@ type FirstRunExperiencePreviewProps = {
   onComplete?: (mode: FirstRunMode) => void;
   onLogin?: () => void;
   onClose?: () => void;
+  completionLabel?: string;
   replay?: boolean;
   postSignup?: boolean;
   initialMode?: FirstRunMode;
 };
 
+export type AthleteFirstRunSceneId =
+  | "today"
+  | "science"
+  | "tasks"
+  | "check"
+  | "anchor"
+  | "journal"
+  | "development"
+  | "measurement"
+  | "team"
+  | "start";
+
 type Scene = {
-  id: string;
+  id: AthleteFirstRunSceneId;
   eyebrow: string;
   title: string;
   position: { x: number; y: number; scale: number };
@@ -925,10 +938,32 @@ const StartScreen = ({ mode, postSignup }: { mode: FirstRunMode; postSignup: boo
   </AppScreen>
 );
 
+export const AthleteFirstRunSceneVisual = ({
+  sceneId,
+  mode = "solo",
+  postSignup = false,
+}: {
+  sceneId: AthleteFirstRunSceneId;
+  mode?: FirstRunMode;
+  postSignup?: boolean;
+}) => {
+  if (sceneId === "today") return <TodayScreen />;
+  if (sceneId === "science") return <ScienceScreen />;
+  if (sceneId === "tasks") return <TasksScreen />;
+  if (sceneId === "check") return <CheckScreen />;
+  if (sceneId === "anchor") return <AnchorScreen />;
+  if (sceneId === "journal") return <JournalScreen />;
+  if (sceneId === "development") return <DevelopmentScreen />;
+  if (sceneId === "measurement") return <MeasurementScreen />;
+  if (sceneId === "team") return <TeamScreen />;
+  return <StartScreen mode={mode} postSignup={postSignup} />;
+};
+
 const FirstRunExperiencePreview = ({
   onComplete,
   onLogin,
   onClose,
+  completionLabel,
   replay = false,
   postSignup = false,
   initialMode = "solo",
@@ -1068,16 +1103,7 @@ const FirstRunExperiencePreview = ({
                   : { type: "spring", stiffness: 74, damping: 19, mass: 0.82 }}
                 aria-hidden={screen.id !== scene.id}
               >
-                {screen.id === "today" && <TodayScreen />}
-                {screen.id === "science" && <ScienceScreen />}
-                {screen.id === "tasks" && <TasksScreen />}
-                {screen.id === "check" && <CheckScreen />}
-                {screen.id === "anchor" && <AnchorScreen />}
-                {screen.id === "journal" && <JournalScreen />}
-                {screen.id === "development" && <DevelopmentScreen />}
-                {screen.id === "measurement" && <MeasurementScreen />}
-                {screen.id === "team" && <TeamScreen />}
-                {screen.id === "start" && <StartScreen mode={mode} postSignup={postSignup} />}
+                <AthleteFirstRunSceneVisual sceneId={screen.id} mode={mode} postSignup={postSignup} />
               </motion.div>
             ))}
           </div>
@@ -1132,13 +1158,13 @@ const FirstRunExperiencePreview = ({
           >
             {isLast ? (
               <>
-                {onComplete
+                {completionLabel ?? (onComplete
                   ? replay
                     ? "Zurück zu den Einstellungen"
                     : postSignup
                       ? "Fragebogen starten"
                       : "Registrierung starten"
-                  : "Vorschau erneut ansehen"}
+                  : "Vorschau erneut ansehen")}
                 {onComplete ? <ArrowRight className="ml-2 h-4 w-4" /> : <RotateCcw className="ml-2 h-4 w-4" />}
               </>
             ) : (
