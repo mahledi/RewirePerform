@@ -26,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { BrandLockup, BrandSymbol } from "@/components/brand/BrandLogo";
+import { useFirstRunCameraFit } from "@/lib/firstRunCameraFit";
 import { cn } from "@/lib/utils";
 
 type PreviewSection = "today" | "plan" | "progress" | "more";
@@ -39,6 +40,7 @@ type FirstRunExperiencePreviewProps = {
   replay?: boolean;
   postSignup?: boolean;
   initialMode?: FirstRunMode;
+  fitCameraToViewport?: boolean;
 };
 
 export type AthleteFirstRunSceneId =
@@ -967,6 +969,7 @@ const FirstRunExperiencePreview = ({
   replay = false,
   postSignup = false,
   initialMode = "solo",
+  fitCameraToViewport = false,
 }: FirstRunExperiencePreviewProps = {}) => {
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
@@ -976,6 +979,12 @@ const FirstRunExperiencePreview = ({
   const cameraViewportRef = useRef<HTMLDivElement>(null);
   const scene = scenes[step];
   const isLast = step === scenes.length - 1;
+  const cameraFit = useFirstRunCameraFit(
+    cameraViewportRef,
+    fitCameraToViewport,
+    isLast ? 0 : 48,
+  );
+  const sceneScale = scene.position.scale * cameraFit;
 
   useEffect(() => {
     if (cameraViewportRef.current) {
@@ -1076,11 +1085,20 @@ const FirstRunExperiencePreview = ({
 
         <div
           ref={cameraViewportRef}
-          className="relative order-1 mx-auto h-[min(64dvh,650px)] min-h-[430px] w-full max-w-[650px] shrink overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-full md:min-h-0 md:max-h-[700px] [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]"
+          className={cn(
+            "relative order-1 mx-auto w-full max-w-[650px] overflow-clip rounded-[32px] border border-white/[0.065] bg-black/15 md:order-2 md:h-full md:min-h-0 md:max-h-[700px]",
+            fitCameraToViewport
+              ? "h-auto min-h-0 flex-1"
+              : "h-[min(64dvh,650px)] min-h-[430px] shrink [@media(max-height:800px)]:min-h-[350px] [@media(max-height:700px)]:h-[350px] [@media(max-height:500px)]:!h-[210px] [@media(max-height:500px)]:!min-h-[210px]",
+          )}
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#0D0E12]/40 to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-[#0D0E12]/35 to-transparent" />
-          <div data-testid="first-run-camera" className="absolute inset-0">
+          <div
+            data-testid="first-run-camera"
+            data-camera-fit={cameraFit.toFixed(4)}
+            className={cn("absolute inset-x-0 top-0", fitCameraToViewport && !isLast ? "bottom-12" : "bottom-0")}
+          >
             {worldScreens.map((screen) => (
               <motion.div
                 key={screen.id}
@@ -1089,13 +1107,13 @@ const FirstRunExperiencePreview = ({
                   ? {
                       x: 0,
                       y: 0,
-                      scale: 0.9,
+                      scale: 0.9 * cameraFit,
                       opacity: screen.id === scene.id ? 1 : 0,
                     }
                   : {
-                      x: (screen.x - scene.position.x) * scene.position.scale,
-                      y: (screen.y - scene.position.y) * scene.position.scale,
-                      scale: scene.position.scale,
+                      x: (screen.x - scene.position.x) * sceneScale,
+                      y: (screen.y - scene.position.y) * sceneScale,
+                      scale: sceneScale,
                       opacity: screen.id === scene.id ? 1 : 0.28,
                     }}
                 transition={reduceMotion

@@ -53,6 +53,8 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(source).not.toContain("Interne Vorschau");
     expect(source).toContain("Interaktive Produktvorschau mit gekennzeichneten Beispieldaten.");
     expect(source).not.toMatch(/SystemCoreVisual|LearningNetworkVisual|EvidenceBar/);
+    expect(source).toContain("<FirstRunExperiencePreview fitCameraToViewport");
+    expect(source).toContain("<CoachFirstRunExperience fitCameraToViewport");
   });
 
   it("reuses the real athlete and coach introductions from the role cards", async () => {
