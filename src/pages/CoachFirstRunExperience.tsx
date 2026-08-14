@@ -36,10 +36,23 @@ type CoachFirstRunExperienceProps = {
   onComplete?: () => void;
   onLogin?: () => void;
   onClose?: () => void;
+  completionLabel?: string;
 };
 
+export type CoachFirstRunSceneId =
+  | "console"
+  | "state"
+  | "activity"
+  | "program"
+  | "practice"
+  | "review"
+  | "development"
+  | "team"
+  | "privacy"
+  | "start";
+
 type Scene = {
-  id: string;
+  id: CoachFirstRunSceneId;
   eyebrow: string;
   title: string;
   position: { x: number; y: number; scale: number };
@@ -496,11 +509,31 @@ const StartScreen = ({ invitation }: { invitation: boolean }) => (
   </CoachAppScreen>
 );
 
+export const CoachFirstRunSceneVisual = ({
+  sceneId,
+  invitation = false,
+}: {
+  sceneId: CoachFirstRunSceneId;
+  invitation?: boolean;
+}) => {
+  if (sceneId === "console") return <ConsoleScreen />;
+  if (sceneId === "state") return <StateScreen />;
+  if (sceneId === "activity") return <ActivityScreen />;
+  if (sceneId === "program") return <ProgramScreen />;
+  if (sceneId === "practice") return <PracticeScreen />;
+  if (sceneId === "review") return <ReviewScreen />;
+  if (sceneId === "development") return <DevelopmentScreen />;
+  if (sceneId === "team") return <TeamScreen />;
+  if (sceneId === "privacy") return <PrivacyScreen />;
+  return <StartScreen invitation={invitation} />;
+};
+
 const CoachFirstRunExperience = ({
   invitation = false,
   onComplete,
   onLogin,
   onClose,
+  completionLabel,
 }: CoachFirstRunExperienceProps) => {
   const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
@@ -553,16 +586,7 @@ const CoachFirstRunExperience = ({
           <div data-testid="coach-first-run-camera" className="absolute inset-0">
             {worldScreens.map((screen) => (
               <motion.div key={screen.id} className="absolute inset-0 flex items-center justify-center" animate={reduceMotion ? { x: 0, y: 0, scale: 0.9, opacity: screen.id === scene.id ? 1 : 0 } : { x: (screen.x - scene.position.x) * scene.position.scale, y: (screen.y - scene.position.y) * scene.position.scale, scale: scene.position.scale, opacity: screen.id === scene.id ? 1 : 0.28 }} transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 74, damping: 19, mass: 0.82 }} aria-hidden={screen.id !== scene.id}>
-                {screen.id === "console" && <ConsoleScreen />}
-                {screen.id === "state" && <StateScreen />}
-                {screen.id === "activity" && <ActivityScreen />}
-                {screen.id === "program" && <ProgramScreen />}
-                {screen.id === "practice" && <PracticeScreen />}
-                {screen.id === "review" && <ReviewScreen />}
-                {screen.id === "development" && <DevelopmentScreen />}
-                {screen.id === "team" && <TeamScreen />}
-                {screen.id === "privacy" && <PrivacyScreen />}
-                {screen.id === "start" && <StartScreen invitation={invitation} />}
+                <CoachFirstRunSceneVisual sceneId={screen.id} invitation={invitation} />
               </motion.div>
             ))}
           </div>
@@ -578,7 +602,7 @@ const CoachFirstRunExperience = ({
         <div className="grid w-full grid-cols-[3rem_1fr] gap-3 md:ml-auto md:max-w-[650px]">
           <button type="button" onClick={() => goTo(step - 1)} disabled={step === 0} aria-label="Zurück" className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-white/62 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><ArrowLeft className="h-4 w-4" /></button>
           <button type="button" onClick={() => { if (isLast) { if (onComplete) onComplete(); else goTo(0); } else goTo(step + 1); }} className="flex min-h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-[#07110E] shadow-[0_16px_35px_-18px_rgba(46,173,137,0.78)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-            {isLast ? <>{onComplete ? invitation ? "Einladung fortsetzen" : "Zugang anfragen" : "Vorschau erneut ansehen"}{onComplete ? <ArrowRight className="ml-2 h-4 w-4" /> : <RotateCcw className="ml-2 h-4 w-4" />}</> : <>Weiter<ArrowRight className="ml-2 h-4 w-4" /></>}
+            {isLast ? <>{completionLabel ?? (onComplete ? invitation ? "Einladung fortsetzen" : "Zugang anfragen" : "Vorschau erneut ansehen")}{onComplete ? <ArrowRight className="ml-2 h-4 w-4" /> : <RotateCcw className="ml-2 h-4 w-4" />}</> : <>Weiter<ArrowRight className="ml-2 h-4 w-4" /></>}
           </button>
         </div>
       </footer>
