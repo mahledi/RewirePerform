@@ -1,14 +1,13 @@
 # RewirePerform 1.1 — lokale Android-Build-Evidence
 
 Stand: 14. August 2026
-Scope: final repinnter lokaler Build mit privatem Upload-Key und fokussiertem
-Redmi-Geräte-Smoke; kein Play-Upload, kein Tester-Rollout und noch kein
-vollständiger Geräte-Smoke des finalen Builds
+Scope: final repinnter lokaler Build mit privatem Upload-Key. Kein Play-Upload,
+kein Tester-Rollout und noch kein vollständiger Geräte-Smoke des finalen Builds.
 
 ## Identität
 
-- integrierte Basis-SHA: `3edae2205f51e5248e7190b650313a897a559941`
-- Android-RC-SHA: `6ea43fe682d3c9562560f015ec0736aeb6f0fecb`
+- integrierte Basis-SHA: `cd8812c` (nach Löschseiten-Merge `2edeb6c`)
+- Android-RC-SHA: `212c81a`
 - Branch: `codex/android-v1-1-review-ready-20260814`
 - Package: `com.rewireperform.app`
 - `versionName`: `1.1`
@@ -21,7 +20,7 @@ vollständiger Geräte-Smoke des finalen Builds
 
 - `npm ci`: 838 Pakete installiert, Audit 0.
 - `npm audit --omit=dev`: 0 Schwachstellen.
-- `npm run ci`: 163 Testdateien, 920 Tests, alle grün.
+- `npm run ci`: auf dem repinnten Kandidaten grün.
 - `npm run app:build:android`: Production-Target, Capacitor-Sync,
   eingebettetes Android-Target und statische Android-Gates grün.
 - Gradle `:app:bundleRelease`: grün.
@@ -45,7 +44,7 @@ keine globale Dependency-Auflösung verändert.
 - Pfad: `android/app/build/outputs/bundle/release/app-release.aab`
 - Größe: 5.044.305 Bytes
 - SHA-256:
-  `f505c526fea4d96dc3a0c749b831c787c3f29fab8253168aad8a17d4aa795814`
+  `d9d1b8f3434983bc72a65149881dd68c25541b92c2f58a792260e28b0798a2fe`
 - `jarsigner`: verifiziert; SHA-256 / SHA256withRSA, 4096 Bit
 
 Der Upload-Key liegt außerhalb des Repositories; sein Kennwort liegt im
@@ -58,7 +57,7 @@ die offenen Data-Safety-, Listing- und Geräte-Gates zu schließen.
 - Pfad: `android/app/build/outputs/apk/debug/app-debug.apk`
 - Größe: 6.811.331 Bytes
 - SHA-256:
-  `15932a662a068c90258b3f6ca538f91d36571ca48e0de8ff3eca84c41e580970`
+  `3e2dee541660ef0c229eafb770cbb13f8542366078de07663040ce5234f81486`
 - Signatur: lokaler Android-Debug-Key; niemals in Play hochladen
 
 Dieses APK enthält denselben zuvor validierten Production-Frontend-Build und
@@ -89,8 +88,8 @@ ausgelieferten Web-Bundle referenziert.
 ## Fokussierter physischer Android-Smoke
 
 Auf einem Redmi Note 7 mit Android 10, MIUI 12.5.1 und Android System WebView
-150 wurde der neue Debug-Build als Paketupdate installiert und kalt gestartet.
-Der gemeldete P1-Tastaturfehler ist geschlossen:
+150 wurde der unmittelbar vor dem Repin erstellte Debug-Build als Paketupdate
+installiert und kalt gestartet. Der gemeldete P1-Tastaturfehler ist geschlossen:
 
 - Gboard laeuft nicht im Vollbild-/Extract-Modus.
 - Vor dem Fix verkleinerte Capacitor 8 den bereits durch `adjustResize`
@@ -105,6 +104,10 @@ Der gemeldete P1-Tastaturfehler ist geschlossen:
 
 ## Physisch offen
 
+- Der Debug-APK dieses final repinnten Builds wurde per ADB zur Installation
+  angeboten, aber MIUI meldete `INSTALL_FAILED_USER_RESTRICTED` (am Gerät
+  abgebrochen). Vor Upload muss er einmal direkt am Gerät bestätigt und der
+  fokussierte Tastatur-Smoke wiederholt werden.
 - Warmstart und Android-System-Zurück,
 - weitere Safe-Area-, Schriftgrößen-, Dark-Mode- und Rotations-Smokes,
 - Reminder-Permission, Zustellung und Boot-Restore,
