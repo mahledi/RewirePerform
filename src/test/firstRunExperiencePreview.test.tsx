@@ -30,6 +30,10 @@ describe("first run experience preview", () => {
       resolve(process.cwd(), "src/pages/FirstRunExperiencePreview.tsx"),
       "utf8",
     );
+    const coachPreview = readFileSync(
+      resolve(process.cwd(), "src/pages/CoachFirstRunExperience.tsx"),
+      "utf8",
+    );
     const app = readFileSync(resolve(process.cwd(), "src/App.tsx"), "utf8");
     const welcome = readFileSync(resolve(process.cwd(), "src/pages/Welcome.tsx"), "utf8");
 
@@ -38,6 +42,7 @@ describe("first run experience preview", () => {
     expect(preview).toContain("cameraViewportRef.current.scrollTop = 0");
     expect(preview).toContain("h-[100dvh]");
     expect(preview).toContain("pb-[max(18px,env(safe-area-inset-bottom))]");
+    expect(preview).toContain("md:pb-[max(10px,env(safe-area-inset-bottom))]");
     expect(preview).toContain('data-testid="first-run-stage"');
     expect(preview).toContain("flex min-h-0");
     expect(preview).toContain('data-testid="first-run-footer"');
@@ -47,6 +52,12 @@ describe("first run experience preview", () => {
     expect(preview).toContain("[@media(max-height:800px)]:min-h-[350px]");
     expect(preview).toContain("[@media(max-height:700px)]:h-[350px]");
     expect(preview).toContain("[@media(max-height:500px)]:!h-[210px]");
+    expect(preview).toContain("md:h-full md:min-h-0 md:max-h-[700px]");
+    expect(preview).not.toContain("md:h-[min(68dvh,700px)]");
+    expect(coachPreview).toContain("pb-[max(18px,env(safe-area-inset-bottom))]");
+    expect(coachPreview).toContain("md:pb-[max(10px,env(safe-area-inset-bottom))]");
+    expect(coachPreview).toContain("md:h-full md:min-h-0 md:max-h-[700px]");
+    expect(coachPreview).not.toContain("md:h-[min(68dvh,700px)]");
     expect(preview).not.toContain('id: "pulse"');
     expect(preview).not.toContain('id: "reflection"');
     expect(preview).not.toContain("onClick={() => goTo(index)}");

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import { BrandLockup, BrandSymbol } from "@/components/brand/BrandLogo";
@@ -10,6 +11,7 @@ const FirstRunRoleEntry = () => {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const { user, role, roleVerified, loading } = useAuth();
+  const isNativeApp = Capacitor.isNativePlatform();
 
   useEffect(() => {
     if (loading || !user || !roleVerified || !role) return;
@@ -42,13 +44,27 @@ const FirstRunRoleEntry = () => {
       <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col">
         <header className="flex items-center justify-between">
           <BrandLockup symbolSize={28} textClassName="text-[13px] tracking-[-0.02em]" />
-          <button
-            type="button"
-            onClick={() => navigate("/auth?mode=login")}
-            className="flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          >
-            Anmelden
-          </button>
+          <div className="flex items-center gap-1 sm:gap-2">
+            {!isNativeApp && (
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                aria-label="Zurück zur Website"
+                className="flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[11px] font-semibold text-white/58 transition-colors hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3 sm:text-xs"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="sm:hidden">Website</span>
+                <span className="hidden sm:inline">Zurück zur Website</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate("/auth?mode=login")}
+              className="flex min-h-11 items-center rounded-xl px-2 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3 sm:text-xs"
+            >
+              Anmelden
+            </button>
+          </div>
         </header>
 
         <section className="flex flex-1 items-center py-5 [@media(max-height:700px)]:py-2 sm:py-12">

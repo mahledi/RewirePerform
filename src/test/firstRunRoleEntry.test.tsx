@@ -11,10 +11,12 @@ const authState = vi.hoisted(() => ({
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => authState }));
+vi.mock("@capacitor/core", () => ({ Capacitor: { isNativePlatform: () => false } }));
 
 const renderEntry = () => render(
   <MemoryRouter initialEntries={["/start"]}>
     <Routes>
+      <Route path="/" element={<div>Website geöffnet</div>} />
       <Route path="/start" element={<FirstRunRoleEntry />} />
       <Route path="/start/athlete" element={<div>Athletenflug geöffnet</div>} />
       <Route path="/start/coach" element={<div>Coach-Flug geöffnet</div>} />
@@ -44,6 +46,13 @@ describe("role-first entry", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Ich bin Coach/ }));
     expect(screen.getByText("Coach-Flug geöffnet")).toBeInTheDocument();
+  });
+
+  it("returns web visitors to the public website without changing their role or auth state", () => {
+    renderEntry();
+
+    fireEvent.click(screen.getByRole("button", { name: "Zurück zur Website" }));
+    expect(screen.getByText("Website geöffnet")).toBeInTheDocument();
   });
 
   it("keeps returning users on their server-verified role route", async () => {
