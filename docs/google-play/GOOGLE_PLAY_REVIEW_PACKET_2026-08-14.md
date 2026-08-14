@@ -1,13 +1,14 @@
 # RewirePerform 1.1 — Google-Play-Review-Paket
 
 Stand: 14. August 2026
-Status: Play-App angelegt, Basiseinträge gespeichert und AAB lokal signiert;
+Status: Play-App angelegt, Basiseinträge gespeichert, Lösch-URL in Data Safety
+eingetragen und AAB lokal signiert;
 kein Upload, Tester- oder Production-Rollout
 
 ## Releaseidentität
 
-- integrierte Basis: `3edae2205f51e5248e7190b650313a897a559941`
-- Android-RC: `6ea43fe682d3c9562560f015ec0736aeb6f0fecb`
+- integrierte Basis: `cd8812c` (nach Löschseiten-Merge `2edeb6c`)
+- Android-RC: `0df72ae`
 - Android-Branch: `codex/android-v1-1-review-ready-20260814`
 - Package: `com.rewireperform.app`
 - Version: `1.1`
@@ -77,7 +78,7 @@ Die lokalen Build-, Manifest-, SDK- und Artefaktprüfungen sind in
 | In-App-Käufe | Nein | keines |
 | App-Zugriff | Login erforderlich | stabile synthetische Review-Konten erst nach separater Production-Freigabe erstellen |
 | Datenschutz-URL | `https://rewireperform.com/privacy` | gespeichert |
-| Account-Löschung | in der App vorhanden | Website-/Apple-Track bereitet separat `https://rewireperform.com/account-deletion` vor; erst nach Live-200 eintragen |
+| Account-Löschung | in der App vorhanden | öffentliche URL `https://rewireperform.com/account-deletion` ist live und in Data Safety eingetragen |
 | Zielgruppe | Produkt ist 13+; 13–15, 16–17 und 18+ | Google-Families-/DE-Minor-Prüfung vor externer Auswahl |
 | Inhaltsrating | IARC-Fragebogen wahrheitsgemäß ausfüllen | nur in der Play Console möglich |
 | Datenweitergabe | keine Werbung, Datenbroker oder Tracking | Dienstleister-Einordnung im Data-Safety-Draft final bestätigen |
@@ -122,10 +123,9 @@ Keine Passwörter oder persönlichen Daten in dieses Repository schreiben.
 - Der öffentliche Play-App-Signing-Fingerprint entsteht erst bei Aktivierung
   von Play App Signing; der lokale Upload-Key-Fingerprint ersetzt ihn nicht für
   `assetlinks.json`.
-- Öffentliche Account-Deletion-Webseite ist dem Website-/Apple-Track unter
-  `https://rewireperform.com/account-deletion` zugeordnet. Der aktuelle
-  Live-Aufruf liefert zwar HTTP 200, aber nur den SPA-Fallback/NotFound; die
-  echte Seite muss noch separat gebaut, deployed und inhaltlich geprüft werden.
+- Öffentliche Account-Deletion-Webseite ist unter
+  `https://rewireperform.com/account-deletion` live; HTTPS/HTTP 200,
+  Löschanleitung, Mailto und mobile Route wurden geprüft.
 - Finale Data-Safety-, Zielgruppen-/Families- und Minderjährigenfreigabe fehlt.
 - Das finale lokale Release-AAB ist mit dem privaten Upload-Key signiert und
   verifiziert, aber noch nicht hochgeladen.

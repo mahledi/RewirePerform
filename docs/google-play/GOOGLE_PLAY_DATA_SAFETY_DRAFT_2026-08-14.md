@@ -80,10 +80,9 @@ werden.
 1. HTTPS und tatsächliche Netzwerkziele auf dem Android-Gerät beobachten.
 2. Dienstleister-/„Shared“-Einordnung und optionale Datentypen juristisch
    bestätigen.
-3. Die vom Website-/Apple-Track vorbereitete URL
-   `https://rewireperform.com/account-deletion` separat veröffentlichen und
-   erst nach einem Live-HTTP-200- sowie Inhaltscheck in Play eintragen. Aktuell
-   ist der HTTP-200 lediglich der SPA-Fallback und die Route zeigt NotFound.
+3. Die kanonische URL
+   `https://rewireperform.com/account-deletion` ist live mit HTTP 200 und
+   sichtbarer Löschanleitung geprüft und in Play eingetragen.
 4. Tatsächlich aktive Feedback-, Kommentar-, Minor- und Jarvis-Gates gegen die
    Erklärung abgleichen; geschlossene Funktionen nicht als aktiv behaupten.
 5. Zielgruppe 13+ und Google-Families-Anforderungen separat bestätigen.
