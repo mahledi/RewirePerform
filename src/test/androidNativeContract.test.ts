@@ -51,4 +51,17 @@ describe("Android native release contract", () => {
     expect(launchBackground).toContain('android:gravity="center"');
     expect(launchBackground).toContain('android:src="@drawable/splash_logo"');
   });
+
+  it("keeps keyboard resizing single-counted and the native window dark", () => {
+    const capacitor = read("capacitor.config.ts");
+    const manifest = read("android/app/src/main/AndroidManifest.xml");
+    const styles = read("android/app/src/main/res/values/styles.xml");
+
+    expect(manifest).toContain('android:windowSoftInputMode="adjustResize"');
+    expect(capacitor).toContain('insetsHandling: "disable"');
+    expect(styles).toContain(
+      '<item name="android:windowBackground">@color/colorPrimaryDark</item>',
+    );
+    expect(styles).not.toContain('<item name="android:background">@null</item>');
+  });
 });

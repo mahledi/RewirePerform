@@ -1,8 +1,9 @@
 # RewirePerform 1.1 — lokale Android-Build-Evidence
 
 Stand: 14. August 2026
-Scope: final repinnter lokaler Build mit privatem Upload-Key; kein Play-Upload,
-kein Tester-Rollout und noch kein vollständiger Geräte-Smoke des finalen Builds
+Scope: final repinnter lokaler Build mit privatem Upload-Key und fokussiertem
+Redmi-Geräte-Smoke; kein Play-Upload, kein Tester-Rollout und noch kein
+vollständiger Geräte-Smoke des finalen Builds
 
 ## Identität
 
@@ -20,7 +21,7 @@ kein Tester-Rollout und noch kein vollständiger Geräte-Smoke des finalen Build
 
 - `npm ci`: 838 Pakete installiert, Audit 0.
 - `npm audit --omit=dev`: 0 Schwachstellen.
-- `npm run ci`: 163 Testdateien, 919 Tests, alle grün.
+- `npm run ci`: 163 Testdateien, 920 Tests, alle grün.
 - `npm run app:build:android`: Production-Target, Capacitor-Sync,
   eingebettetes Android-Target und statische Android-Gates grün.
 - Gradle `:app:bundleRelease`: grün.
@@ -42,9 +43,9 @@ keine globale Dependency-Auflösung verändert.
 ### Mit privatem Upload-Key signiertes Release-AAB
 
 - Pfad: `android/app/build/outputs/bundle/release/app-release.aab`
-- Größe: 5.044.273 Bytes
+- Größe: 5.044.305 Bytes
 - SHA-256:
-  `af98a81dfb311720b64adbd45b1abea2ae9e4b7fede0ac4fb58eb665e702fc19`
+  `f505c526fea4d96dc3a0c749b831c787c3f29fab8253168aad8a17d4aa795814`
 - `jarsigner`: verifiziert; SHA-256 / SHA256withRSA, 4096 Bit
 
 Der Upload-Key liegt außerhalb des Repositories; sein Kennwort liegt im
@@ -55,9 +56,9 @@ die offenen Data-Safety-, Listing- und Geräte-Gates zu schließen.
 ### Lokal installierbares QA-APK
 
 - Pfad: `android/app/build/outputs/apk/debug/app-debug.apk`
-- Größe: 6.498.497 Bytes
+- Größe: 6.811.331 Bytes
 - SHA-256:
-  `e2788a7d5dd9865909f3a0b9abd251be8d9aab271af03ff9ae63b8f6d1f923c5`
+  `15932a662a068c90258b3f6ca538f91d36571ca48e0de8ff3eca84c41e580970`
 - Signatur: lokaler Android-Debug-Key; niemals in Play hochladen
 
 Dieses APK enthält denselben zuvor validierten Production-Frontend-Build und
@@ -85,10 +86,27 @@ erwartete Supabase-Production-Ziel. Die transitive Build-Abhängigkeit
 `workbox-google-analytics` wird vom App-Build nicht verwendet und ist nicht im
 ausgelieferten Web-Bundle referenziert.
 
+## Fokussierter physischer Android-Smoke
+
+Auf einem Redmi Note 7 mit Android 10, MIUI 12.5.1 und Android System WebView
+150 wurde der neue Debug-Build als Paketupdate installiert und kalt gestartet.
+Der gemeldete P1-Tastaturfehler ist geschlossen:
+
+- Gboard laeuft nicht im Vollbild-/Extract-Modus.
+- Vor dem Fix verkleinerte Capacitor 8 den bereits durch `adjustResize`
+  verkleinerten WebView ein zweites Mal: 630 px WebView-Hoehe und eine grosse
+  native weisse Flaeche vor der Tastatur.
+- Der Android-Shell-Fix deaktiviert ausschliesslich diese doppelte
+  SystemBars-Inset-Behandlung und setzt den nativen Fensterhintergrund auf die
+  gesperrte Markenfarbe `#0D0E12`.
+- Nach dem Fix verbleiben bei geoeffneter Tastatur korrekt 1.445 px
+  WebView-Hoehe. Login-E-Mail und Registrierungs-Name wurden fokussiert; App,
+  Eingabefelder und CTA reichen ohne weisse Zwischenflaeche direkt bis Gboard.
+
 ## Physisch offen
 
-- Installation, Kalt-/Warmstart und Android-System-Zurück,
-- Tastatur, Safe Areas, Schriftgröße, Dark Mode und Rotation,
+- Warmstart und Android-System-Zurück,
+- weitere Safe-Area-, Schriftgrößen-, Dark-Mode- und Rotations-Smokes,
 - Reminder-Permission, Zustellung und Boot-Restore,
 - WebView-Spracheingabe oder sauberer Nicht-unterstützt-Zustand,
 - Auth-, Invite- und Organization-App-Links,

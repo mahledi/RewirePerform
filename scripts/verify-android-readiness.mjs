@@ -28,8 +28,14 @@ requireText("Capacitor app name", files.capacitor, 'appName: "RewirePerform"');
 requireText("Android WebView background", files.capacitor, 'backgroundColor: "#0D0E12"');
 requireText("Android mixed-content policy", files.capacitor, "allowMixedContent: false");
 requireText("Android bridge policy", files.capacitor, "useLegacyBridge: false");
+requireText("Android inset policy", files.capacitor, 'insetsHandling: "disable"');
 requireText("Android splash scaling", files.capacitor, 'androidScaleType: "CENTER_CROP"');
 requireText("Android launch background", files.styles, "@drawable/launch_background");
+requireText(
+  "Android window background",
+  files.styles,
+  '<item name="android:windowBackground">@color/colorPrimaryDark</item>',
+);
 requireText("Android application id", files.build, 'applicationId "com.rewireperform.app"');
 requireText("Android version", files.build, 'versionName "1.1"');
 requireText("Android version code", files.build, "versionCode 1");

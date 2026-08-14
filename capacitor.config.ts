@@ -23,6 +23,11 @@ const config: CapacitorConfig = {
     limitsNavigationsToAppBoundDomains: false,
   },
   plugins: {
+    SystemBars: {
+      // adjustResize already accounts for the IME. Capacitor's CSS inset bridge
+      // otherwise adds the keyboard height a second time on Android 10 WebView.
+      insetsHandling: "disable",
+    },
     SplashScreen: {
       launchShowDuration: 900,
       launchAutoHide: false,
