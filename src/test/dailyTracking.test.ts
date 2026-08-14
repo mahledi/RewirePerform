@@ -84,6 +84,14 @@ describe("daily tracking orchestration", () => {
     });
   });
 
+  it("defaults the legacy reflection RPC parameter to null when the Daily Flow omits it", () => {
+    const { reflection: _reflection, ...dailyFlowInput } = input;
+
+    expect(buildDailyTrackingRpcArgs(dailyFlowInput)).toMatchObject({
+      _reflection: null,
+    });
+  });
+
   it("keeps ordinary and minor-safe daily saves free of evidence fields", () => {
     expect(buildDailyTrackingRpcArgs(input)).toMatchObject({
       _evidence_protocol_version: null,

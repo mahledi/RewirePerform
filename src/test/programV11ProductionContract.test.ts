@@ -72,7 +72,8 @@ describe("V1.1 production content contract", () => {
     expect(checkin).toContain('initialFocus === "rest-visualization" ? 3 : 0');
     expect(checkin).toContain("handleRestVisualizationComplete");
     expect(checkin).toContain("saveCheckin(undefined, completedTaskIds)");
-    expect(checkin).toContain('const flowStageCount = eventType === "rest" ? 4 : 5');
+    expect(checkin).toContain('{ step: 3, title: "Visualisierung" }');
+    expect(checkin).toContain("const flowStageCount = flowStages.length");
     expect(checkin).not.toContain('if (initialFocus === "rest-visualization") setStep(4)');
     expect(checkin).not.toContain('if (initialFocus === "rest-visualization") onClose()');
     expect(checkin).not.toContain('navigate("/journal")');
