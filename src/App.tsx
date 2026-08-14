@@ -40,6 +40,7 @@ const DeepProfile = lazy(() => import("./pages/DeepProfile.tsx"));
 const Progress = lazy(() => import("./pages/Progress.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings.tsx"));
+const AccountDeletion = lazy(() => import("./pages/AccountDeletion.tsx"));
 const AccountDeleted = lazy(() => import("./pages/AccountDeleted.tsx"));
 const Journal = lazy(() => import("./pages/Journal.tsx"));
 const JournalHistory = lazy(() => import("./pages/JournalHistory.tsx"));
@@ -182,6 +183,7 @@ const AppRoutes = () => {
             <Route path="/team-access" element={<OrganizationAccess />} />
             <Route path="/organization/invite" element={<OrganizationInvite />} />
             <Route path="/guardian/decision" element={<GuardianDecision />} />
+            <Route path="/account-deletion" element={<AccountDeletion />} />
             <Route path="/account-deleted" element={<AccountDeleted />} />
             <Route path="/join" element={<TeamInvite />} />
             <Route path="/welcome" element={

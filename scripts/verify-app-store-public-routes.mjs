@@ -14,6 +14,7 @@ const routes = [
   { path: "/", heading: null },
   { path: "/privacy", heading: "RewirePerform Datenschutz" },
   { path: "/support", heading: "RewirePerform Support" },
+  { path: "/account-deletion", heading: "RewirePerform-Konto löschen" },
 ];
 
 const viewports = [
@@ -67,6 +68,13 @@ try {
     const supportHref = await page.locator('a[href="mailto:support@rewireperform.com"]').first().getAttribute("href");
     if (supportHref !== "mailto:support@rewireperform.com") {
       failures.push(`${viewport.name} /support: monitored support email link is missing`);
+    }
+
+    const deletionUrl = new URL("/account-deletion", baseUrl);
+    await page.goto(deletionUrl.toString(), { waitUntil: "domcontentloaded", timeout: 30_000 });
+    const deletionRequestHref = await page.locator('a[href^="mailto:support@rewireperform.com?subject="]').first().getAttribute("href");
+    if (!deletionRequestHref?.includes("Kontol%C3%B6schung%20RewirePerform")) {
+      failures.push(`${viewport.name} /account-deletion: external deletion request link is missing`);
     }
 
     if (pageErrors.length > 0) {
