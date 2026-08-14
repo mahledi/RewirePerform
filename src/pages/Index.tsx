@@ -1,20 +1,10 @@
 import { useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Link, useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import WhySection from "@/components/WhySection";
-import ProcessSection from "@/components/ProcessSection";
-import BrainSection from "@/components/BrainSection";
-import MechanismSection from "@/components/MechanismSection";
-import SpeakingSection from "@/components/SpeakingSection";
-import CoachSection from "@/components/CoachSection";
-import EvidenceSection from "@/components/EvidenceSection";
-import CTASection from "@/components/CTASection";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLoadingShell from "@/components/AppLoadingShell";
-import { BrandLockup } from "@/components/brand/BrandLogo";
 import { pendingPostSignupIntent } from "@/lib/postSignupOnboarding";
+import WebsiteGoldenPagePreview from "@/pages/WebsiteGoldenPagePreview";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -37,46 +27,7 @@ const Index = () => {
     return <AppLoadingShell subtitle="Öffne deinen Bereich..." />;
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <HeroSection />
-      <div id="why">
-        <WhySection />
-      </div>
-      <div id="process">
-        <ProcessSection />
-      </div>
-      <div id="science">
-        <BrainSection />
-      </div>
-      <div id="mechanisms">
-        <MechanismSection />
-      </div>
-      <div id="speaking" className="scroll-mt-20">
-        <SpeakingSection />
-      </div>
-      <div id="coaches">
-        <CoachSection />
-      </div>
-      <div id="evidence">
-        <EvidenceSection />
-      </div>
-      <CTASection />
-      <footer className="py-8 border-t border-border">
-        <div className="container mx-auto flex flex-col items-center gap-4 px-6 text-center text-sm text-muted-foreground">
-          <BrandLockup symbolSize={28} textClassName="text-base text-foreground" />
-          <span>© 2026 RewirePerform. Alle Rechte vorbehalten.</span>
-          <nav aria-label="Rechtliches" className="flex flex-wrap justify-center gap-4 text-xs">
-            <Link to="/team-access" className="hover:text-foreground">Teams &amp; Organisationen</Link>
-            <Link to="/privacy" className="hover:text-foreground">Datenschutz</Link>
-            <Link to="/imprint" className="hover:text-foreground">Impressum</Link>
-            <Link to="/support" className="hover:text-foreground">Support</Link>
-          </nav>
-        </div>
-      </footer>
-    </div>
-  );
+  return <WebsiteGoldenPagePreview />;
 };
 
 export default Index;

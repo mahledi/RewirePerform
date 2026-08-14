@@ -14,11 +14,19 @@ describe("WebsiteGoldenPagePreview", () => {
     vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
   });
 
-  it("keeps the Golden Page behind the existing development evidence gate", () => {
+  it("keeps the separate internal preview route behind the existing development evidence gate", () => {
     const appSource = readFileSync(resolve(process.cwd(), "src/App.tsx"), "utf8");
 
     expect(appSource).toContain("WebsiteGoldenPagePreview = evidencePreviewEnabled");
     expect(appSource).toContain('/internal/website-golden-page-preview');
+  });
+
+  it("serves the Golden Page as the public web home without changing native startup routing", () => {
+    const indexSource = readFileSync(resolve(process.cwd(), "src/pages/Index.tsx"), "utf8");
+
+    expect(indexSource).toContain('import WebsiteGoldenPagePreview from "@/pages/WebsiteGoldenPagePreview"');
+    expect(indexSource).toContain("return <WebsiteGoldenPagePreview />");
+    expect(indexSource).toContain('navigate("/start", { replace: true })');
   });
 
   it("stays presentational and does not introduce auth, storage, or network side effects", () => {
