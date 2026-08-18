@@ -108,7 +108,7 @@ const OrganizationInvite = () => {
     navigate(coachAuthRoute("login"), { replace: true });
   };
 
-  if (!loading && !user && invitation) {
+  if (!loading && !user && invitation && !isCoachCode) {
     return <Navigate to={coachStartRoute("signup")} replace />;
   }
 
@@ -125,15 +125,17 @@ const OrganizationInvite = () => {
                 : <Building2 className="h-7 w-7" />}
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            {isCoachCode ? "Einmalige Co-Coach-Einladung" : "Persönlicher Coach-Zugang"}
+            {isCoachCode ? "Co-Coach-Einladung" : "Persönlicher Coach-Zugang"}
           </p>
           <h1 className="mt-3 font-heading text-3xl font-bold">
-            {state === "accepted" ? "Coach-Team verbunden." : "Gemeinsam Performance entwickeln."}
+            {state === "accepted" ? "Coach-Team verbunden." : !user && isCoachCode ? "Willkommen im Coach-Team." : "Gemeinsam Performance entwickeln."}
           </h1>
           <p className="mt-4 leading-relaxed text-muted-foreground">
             {state === "accepted"
               ? "Du wirst jetzt in dein Coach-Dashboard weitergeleitet."
-              : isCoachCode
+              : !user && isCoachCode
+                ? "Du wurdest als Co-Coach eingeladen. Lerne zuerst die Coach-Ansicht kennen; danach erstellst du dein persönliches Konto oder meldest dich an, bestätigst deine E-Mail und verbindest dich mit dem Team."
+                : isCoachCode
                 ? "Dein Coach-Code ist bereits eingetragen. Nach der Coach-Einführung registrierst du dich oder meldest dich an und bestätigst anschließend den Teamzugang."
                 : "Diese persönliche Organisationseinladung ist an die bestätigte eingeladene E-Mail-Adresse gebunden."}
           </p>
@@ -149,12 +151,25 @@ const OrganizationInvite = () => {
             <p role="alert" className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">Der Einladungslink ist unvollständig.</p>
           ) : loading ? (
             <div className="mt-7 flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin text-primary" />Account wird geprüft.</div>
+          ) : !user && isCoachCode ? (
+            <div className="mt-7 space-y-4">
+              <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-secondary/25 p-4 text-sm text-muted-foreground">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                Der Lead Coach verwaltet diesen Team-Link. Jede eingeladene Person nutzt einen eigenen Coach-Login; Journale, Freitext und individuelle Antworten bleiben auch für Co-Coaches privat.
+              </div>
+              <Button type="button" onClick={() => navigate(coachStartRoute("signup"))} className="min-h-11 w-full">
+                Coach-Einführung starten
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate(coachStartRoute("login"))} className="min-h-11 w-full">
+                Ich habe bereits einen Coach-Account
+              </Button>
+            </div>
           ) : state !== "accepted" ? (
             <div className="mt-7 space-y-4">
               <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-secondary/25 p-4 text-sm text-muted-foreground">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 {isCoachCode
-                  ? "Die Annahme verbindet dein persönliches Konto einmalig als Co-Coach mit diesem Team. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar."
+                  ? "Die Annahme verbindet dein persönliches Konto als Co-Coach mit diesem Team. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar."
                   : "Die Annahme aktiviert deinen persönlichen Coach-Zugang. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar."}
               </div>
               <div className="rounded-xl border border-border/70 bg-background/45 p-4 text-sm text-muted-foreground">

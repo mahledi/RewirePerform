@@ -2,7 +2,7 @@
   "schema_version": "rewireperform-coach-invitation-privacy-delta-v1",
   "delta_version": "coach-invitation-privacy-delta-v1.1.0",
   "status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
-  "purpose": "personal, admin-approved Coach access after a public team or organization request",
+  "purpose": "personal, admin-approved Coach access and Lead-managed reusable Co-Coach team access",
   "processor": {
     "name": "Resend",
     "data_categories": [
@@ -21,11 +21,20 @@
     ]
   },
   "invitation_boundary": {
-    "trigger": "personal admin approval",
-    "email_bound": true,
-    "one_time": true,
-    "expires_after": "7 days",
-    "co_coach_share_code_included": false
+    "personal_admin_invitation": {
+      "trigger": "personal admin approval",
+      "email_bound": true,
+      "one_time": true,
+      "expires_after": "7 days"
+    },
+    "co_coach_team_link": {
+      "trigger": "Lead Coach shares the active team link",
+      "email_bound": false,
+      "reusable_for_fresh_confirmed_coach_accounts": true,
+      "expires_after": null,
+      "lead_coach_can_renew": true,
+      "existing_team_members_rejected": true
+    }
   },
   "historical_boundary": {
     "feedback_consent_package": "unchanged historical package at e50d6e68a0bbd25064e3752f94eed1ad9d5ff552",
@@ -40,11 +49,27 @@
     "feedback_or_jarvis_activated": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "6a6dc148507909bf2e3145678f8758ceee7d80aec868f4b273adfe285c2a8fc8",
+  "package_sha256": "c437b66b1c1d938ea929db7561770d29b9e7d83c75195a906d1ed2aa42f9029e",
   "files": [
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "64129844dd12afa1bf14c16285a0ca1fdd79fca52f5c2efd642867eefa4b7f9f"
+      "sha256": "7c2a880eef9396fdcfcd1b209f90987ce007879f93c7a1b1ab7bba62bb6be0d1"
+    },
+    {
+      "path": "src/components/coach/TeamStaffInvitation.tsx",
+      "sha256": "f1f1c2f66d4c7db684f5e58daa23194918cf0c0eeab5a0ecb7937c3245bb6077"
+    },
+    {
+      "path": "src/pages/OrganizationInvite.tsx",
+      "sha256": "d55ce651c17a8859306d415ea898c9216db7f573f29629fd21d6dcfc6af3bc69"
+    },
+    {
+      "path": "src/pages/CoachFirstRunExperience.tsx",
+      "sha256": "f26bfb3043bef0a078b2c8e0b7b5643520187cea5984a0c987e53436a0957af7"
+    },
+    {
+      "path": "supabase/migrations/20260818130641_persistent_team_coach_invitation_v1_1.sql",
+      "sha256": "8285c0fd7b38cc5a8e64788e95fcdf334fa0a190a10f2944d832849075ae9fb2"
     },
     {
       "path": "supabase/functions/send-organization-access-invitation/index.ts",
@@ -60,11 +85,23 @@
     },
     {
       "path": "docs/V1_1_RELEASE_OPERATIONS_2026-08-09.md",
-      "sha256": "025cb5ffd92c2979fa26d5a4581a1875a5741797978ff149c7278ff2a3a8008a"
+      "sha256": "57682c1e2412538783714af226b723bab2ff03aa79a3ed20967922d1e1974fa7"
     },
     {
       "path": "src/test/organizationInvitationDeliveryContract.test.ts",
-      "sha256": "5b7b036e66acf66fe37e9988eb424192adcf39fd3c0f489ac302f3a2519486e9"
+      "sha256": "adf04a2440c8b1ef0e253b684d5818a957496dd20cc047b16c47f0f167742def"
+    },
+    {
+      "path": "src/test/organizationInvite.test.tsx",
+      "sha256": "9ec7fac81cf9c8f049e6186be4155372329aba33b4ed893bc8ab2a69ef30e5a6"
+    },
+    {
+      "path": "src/test/teamStaffInvitation.test.tsx",
+      "sha256": "840f69b81e1a68fd6b25ddf015e5bb8469aeb1eba44c8b05cb3130327fa97e88"
+    },
+    {
+      "path": "src/test/persistentCoachInvitationMigration.test.ts",
+      "sha256": "b4b474a2b84a9ac83343b81647758f0b04e746bd76ee120058d0ece4f8bdf38d"
     }
   ]
 }

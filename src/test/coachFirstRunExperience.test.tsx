@@ -53,7 +53,7 @@ describe("coach first-run experience", () => {
 
     next();
     expect(screen.getByRole("heading", { name: "Du steuerst Einladungen und Programmstart." })).toBeInTheDocument();
-    expect(screen.getByText(/Einmaliger Link · 7 Tage gültig/)).toBeInTheDocument();
+    expect(screen.getByText(/Team-Link teilen · eigenes bestätigtes Konto/)).toBeInTheDocument();
 
     next();
     expect(screen.getByRole("heading", { name: "Überblick entsteht, ohne Vertrauen zu brechen." })).toBeInTheDocument();

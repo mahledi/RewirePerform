@@ -9,11 +9,18 @@ const checkOnly = process.argv.includes("--check");
 const manifestPath = "docs/feedback-intelligence/contracts/coach-invitation-privacy-delta-v1.1/producer-package-manifest.json";
 const packageFiles = [
   "src/pages/Privacy.tsx",
+  "src/components/coach/TeamStaffInvitation.tsx",
+  "src/pages/OrganizationInvite.tsx",
+  "src/pages/CoachFirstRunExperience.tsx",
+  "supabase/migrations/20260818130641_persistent_team_coach_invitation_v1_1.sql",
   "supabase/functions/send-organization-access-invitation/index.ts",
   "src/components/admin/OrganizationRequestManager.tsx",
   "supabase/config.toml",
   "docs/V1_1_RELEASE_OPERATIONS_2026-08-09.md",
   "src/test/organizationInvitationDeliveryContract.test.ts",
+  "src/test/organizationInvite.test.tsx",
+  "src/test/teamStaffInvitation.test.tsx",
+  "src/test/persistentCoachInvitationMigration.test.ts",
 ];
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const files = [];
@@ -38,7 +45,7 @@ const manifest = {
   schema_version: "rewireperform-coach-invitation-privacy-delta-v1",
   delta_version: "coach-invitation-privacy-delta-v1.1.0",
   status: "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
-  purpose: "personal, admin-approved Coach access after a public team or organization request",
+  purpose: "personal, admin-approved Coach access and Lead-managed reusable Co-Coach team access",
   processor: {
     name: "Resend",
     data_categories: [
@@ -57,11 +64,20 @@ const manifest = {
     ],
   },
   invitation_boundary: {
-    trigger: "personal admin approval",
-    email_bound: true,
-    one_time: true,
-    expires_after: "7 days",
-    co_coach_share_code_included: false,
+    personal_admin_invitation: {
+      trigger: "personal admin approval",
+      email_bound: true,
+      one_time: true,
+      expires_after: "7 days",
+    },
+    co_coach_team_link: {
+      trigger: "Lead Coach shares the active team link",
+      email_bound: false,
+      reusable_for_fresh_confirmed_coach_accounts: true,
+      expires_after: null,
+      lead_coach_can_renew: true,
+      existing_team_members_rejected: true,
+    },
   },
   historical_boundary: {
     feedback_consent_package: "unchanged historical package at e50d6e68a0bbd25064e3752f94eed1ad9d5ff552",
