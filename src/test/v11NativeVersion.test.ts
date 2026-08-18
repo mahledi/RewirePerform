@@ -10,7 +10,7 @@ const project = readFileSync(
 describe("V1.1 native release identity", () => {
   it("uses version 1.1 and the next unused build number in every App configuration", () => {
     expect(project.match(/MARKETING_VERSION = 1\.1;/g)).toHaveLength(2);
-    expect(project.match(/CURRENT_PROJECT_VERSION = 10;/g)).toHaveLength(2);
+    expect(project.match(/CURRENT_PROJECT_VERSION = 11;/g)).toHaveLength(2);
     expect(project).toContain('CODE_SIGN_IDENTITY = "Apple Distribution";');
     expect(project).toContain("CODE_SIGN_STYLE = Manual;");
     expect(project).toContain(
