@@ -118,68 +118,6 @@ const splitList = (value: string) => value
   .filter(Boolean)
   .slice(0, 12);
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (element: HTMLElement, options: {
-        sitekey: string;
-        theme: "dark";
-        action: "organization_access_request";
-        callback: (token: string) => void;
-        "expired-callback": () => void;
-        "error-callback": () => void;
-      }) => string;
-      remove: (widgetId: string) => void;
-    };
-  }
-}
-
-const TurnstileVerification = ({ onToken }: { onToken: (token: string) => void }) => {
-  const elementRef = useRef<HTMLDivElement>(null);
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
-
-  useEffect(() => {
-    if (!siteKey || !elementRef.current) return;
-    let widgetId: string | null = null;
-    let cancelled = false;
-
-    const render = () => {
-      if (cancelled || !elementRef.current || !window.turnstile || widgetId) return;
-      widgetId = window.turnstile.render(elementRef.current, {
-        sitekey: siteKey,
-        theme: "dark",
-        action: "organization_access_request",
-        callback: onToken,
-        "expired-callback": () => onToken(""),
-        "error-callback": () => onToken(""),
-      });
-    };
-
-    const existing = document.querySelector<HTMLScriptElement>('script[data-rewire-turnstile="true"]');
-    if (existing) {
-      if (window.turnstile) render();
-      else existing.addEventListener("load", render, { once: true });
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      script.dataset.rewireTurnstile = "true";
-      script.addEventListener("load", render, { once: true });
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      cancelled = true;
-      if (widgetId && window.turnstile) window.turnstile.remove(widgetId);
-      onToken("");
-    };
-  }, [onToken, siteKey]);
-
-  if (!siteKey) return null;
-  return <div ref={elementRef} className="min-h-[65px]" aria-label="Sicherheitsprüfung" />;
-};
-
 const ChoiceButton = ({
   active,
   children,
@@ -251,13 +189,11 @@ const OrganizationAccess = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [referenceCode, setReferenceCode] = useState<string | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const previousStepRef = useRef(step);
 
   const source = searchParams.get("source") === "ios" || window.location.protocol === "capacitor:" ? "ios" : "web";
-  const publicSubmissionEnabled = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
   const totalSteps = inquiryPath === "single_team" ? 2 : 3;
   const finalStep = totalSteps - 1;
   const journeyOverview = inquiryPath === "single_team"
@@ -304,7 +240,6 @@ const OrganizationAccess = () => {
     setInquiryPath(path);
     setStep(0);
     setError(null);
-    setTurnstileToken("");
     setForm(path === "single_team"
       ? { ...initialForm, teamCountBand: "1", rolloutScope: "single_team" }
       : initialForm);
@@ -329,11 +264,6 @@ const OrganizationAccess = () => {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (!inquiryPath || submitting || !canContinue) return;
-    if (!publicSubmissionEnabled) {
-      setError("Die sichere Anfrageannahme ist in diesem lokalen Entwurf noch nicht extern aktiviert.");
-      return;
-    }
-
     setSubmitting(true);
     setError(null);
     const { data, error: invokeError } = await supabase.functions.invoke("submit-organization-access-request", {
@@ -363,7 +293,6 @@ const OrganizationAccess = () => {
         locale: navigator.language || "de-DE",
         privacy_version: ORGANIZATION_INQUIRY_PRIVACY_VERSION,
         public_research_notice_acknowledged: true,
-        turnstile_token: turnstileToken,
         website_field: "",
       },
     });
@@ -749,7 +678,6 @@ const OrganizationAccess = () => {
                   </div>
                 </div>
               </div>
-              {publicSubmissionEnabled && <TurnstileVerification onToken={setTurnstileToken} />}
               {error && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
             </div>
           )}
@@ -767,7 +695,7 @@ const OrganizationAccess = () => {
                 Weiter <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button type="submit" className="min-h-11 min-w-0 px-3" disabled={!canContinue || submitting || !publicSubmissionEnabled || !turnstileToken}>
+              <Button type="submit" className="min-h-11 min-w-0 px-3" disabled={!canContinue || submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
                 Anfrage absenden
               </Button>

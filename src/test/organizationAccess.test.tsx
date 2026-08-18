@@ -70,7 +70,7 @@ describe("team and organization access inquiry", () => {
     expect(screen.getByText("Mentale Routinen im Alltag verankern")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Datenschutz zur Anfrage ansehen" })).toBeEnabled();
     expect(screen.queryByText(/Teststand:/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Anfrage absenden" })).toBeEnabled();
   });
 
   it("keeps a single-team request to two focused steps and requires a team name", async () => {
@@ -95,7 +95,7 @@ describe("team and organization access inquiry", () => {
     fireEvent.click(screen.getByRole("button", { name: /mentale routinen im alltag verankern/i }));
     fireEvent.click(screen.getByRole("button", { name: "Persönliche Einführung" }));
     expect(screen.getByText("U17 · Volleyball")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Anfrage absenden" })).toBeEnabled();
   });
 
   it("requires a phone number only when telephone is selected", () => {
