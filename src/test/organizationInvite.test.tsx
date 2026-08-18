@@ -6,7 +6,8 @@ import OrganizationInvite from "@/pages/OrganizationInvite";
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   verifyRole: vi.fn(),
-  authState: { user: { id: "coach-1" } as { id: string } | null, loading: false },
+  signOut: vi.fn(),
+  authState: { user: { id: "coach-1", email: "coach@example.test" } as { id: string; email: string } | null, loading: false },
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -17,6 +18,7 @@ vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
     user: mocks.authState.user,
     loading: mocks.authState.loading,
+    signOut: mocks.signOut,
     verifyRole: mocks.verifyRole,
   }),
 }));
@@ -40,7 +42,7 @@ const renderInvite = (entry: string) => render(
 describe("organization invitation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.authState.user = { id: "coach-1" };
+    mocks.authState.user = { id: "coach-1", email: "coach@example.test" };
     mocks.authState.loading = false;
     mocks.rpc.mockResolvedValue({ data: { success: true }, error: null });
     mocks.verifyRole.mockResolvedValue({ ok: true, value: "coach" });
@@ -57,7 +59,7 @@ describe("organization invitation", () => {
 
   it("accepts once and verifies the authoritative role before showing success", async () => {
     renderInvite(`/organization/invite?token=${token}`);
-    fireEvent.click(screen.getByRole("button", { name: "Als Co-Coach verbinden" }));
+    fireEvent.click(screen.getByRole("button", { name: "Coach-Zugang aktivieren" }));
 
     await screen.findByRole("heading", { name: "Coach-Team verbunden." });
     expect(mocks.rpc).toHaveBeenCalledWith("accept_organization_invitation", { _token: token });
@@ -70,7 +72,7 @@ describe("organization invitation", () => {
       .mockResolvedValueOnce({ ok: true, value: "coach" });
 
     renderInvite(`/organization/invite?token=${token}`);
-    fireEvent.click(screen.getByRole("button", { name: "Als Co-Coach verbinden" }));
+    fireEvent.click(screen.getByRole("button", { name: "Coach-Zugang aktivieren" }));
 
     expect(await screen.findByText(/konnte auf diesem gerät aber noch nicht bestätigt werden/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Zugang auf diesem Gerät bestätigen" }));
@@ -78,6 +80,18 @@ describe("organization invitation", () => {
     await waitFor(() => expect(screen.getByRole("heading", { name: "Coach-Team verbunden." })).toBeInTheDocument());
     expect(mocks.rpc).toHaveBeenCalledTimes(1);
     expect(mocks.verifyRole).toHaveBeenCalledTimes(2);
+  });
+
+  it("makes the existing personal account explicit and preserves the invitation when switching accounts", async () => {
+    renderInvite(`/organization/invite?coach=A1B2C3D4E5F60718293A`);
+
+    expect(screen.getByText(/angemeldet als coach@example.test/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Anderes Konto verwenden" }));
+
+    await waitFor(() => expect(mocks.signOut).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth?mode=login&intent=organization&redirect=%2Forganization%2Finvite%3Fcoach%3DA1B2C3D4E5F60718293A&intro=coach",
+    );
   });
 
   it("shows the prefilled Coach-Code and accepts the shareable invitation RPC", async () => {
@@ -90,5 +104,14 @@ describe("organization invitation", () => {
 
     await screen.findByRole("heading", { name: "Coach-Team verbunden." });
     expect(mocks.rpc).toHaveBeenCalledWith("accept_team_coach_invitation", { _code: code });
+  });
+
+  it("explains that an already connected account cannot consume the Co-Coach code", async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: "already_team_member" } });
+    renderInvite(`/organization/invite?coach=A1B2C3D4E5F60718293A`);
+
+    fireEvent.click(screen.getByRole("button", { name: "Als Co-Coach verbinden" }));
+
+    expect(await screen.findByText(/gehört bereits zu diesem team/i)).toBeInTheDocument();
   });
 });

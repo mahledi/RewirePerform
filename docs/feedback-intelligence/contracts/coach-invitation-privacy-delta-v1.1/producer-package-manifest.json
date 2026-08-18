@@ -1,0 +1,70 @@
+{
+  "schema_version": "rewireperform-coach-invitation-privacy-delta-v1",
+  "delta_version": "coach-invitation-privacy-delta-v1.1.0",
+  "status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
+  "purpose": "personal, admin-approved Coach access after a public team or organization request",
+  "processor": {
+    "name": "Resend",
+    "data_categories": [
+      "recipient email address",
+      "transactional email content including one-time personal access link",
+      "delivery metadata"
+    ],
+    "exclusions": [
+      "athlete data",
+      "check-ins",
+      "journals",
+      "private reflections",
+      "feedback comments",
+      "Jarvis data",
+      "open and click tracking"
+    ]
+  },
+  "invitation_boundary": {
+    "trigger": "personal admin approval",
+    "email_bound": true,
+    "one_time": true,
+    "expires_after": "7 days",
+    "co_coach_share_code_included": false
+  },
+  "historical_boundary": {
+    "feedback_consent_package": "unchanged historical package at e50d6e68a0bbd25064e3752f94eed1ad9d5ff552",
+    "feedback_or_jarvis_scope_changed": false
+  },
+  "activation": {
+    "production_edge_function_deployed": false,
+    "production_email_sender_configured": false,
+    "resend_tracking_disabled_verified": false,
+    "live_invitation_delivery_verified": false,
+    "production_database_mutated_by_this_delta": false,
+    "feedback_or_jarvis_activated": false
+  },
+  "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
+  "package_sha256": "6a6dc148507909bf2e3145678f8758ceee7d80aec868f4b273adfe285c2a8fc8",
+  "files": [
+    {
+      "path": "src/pages/Privacy.tsx",
+      "sha256": "64129844dd12afa1bf14c16285a0ca1fdd79fca52f5c2efd642867eefa4b7f9f"
+    },
+    {
+      "path": "supabase/functions/send-organization-access-invitation/index.ts",
+      "sha256": "ad05b41b69445b313efc077506a13824f89dbd1da062daf987b1e2948ab36017"
+    },
+    {
+      "path": "src/components/admin/OrganizationRequestManager.tsx",
+      "sha256": "5fa78a4008fb7fb2fc32968bcc8584da06ae52c3d1e7c6a86b95f87b0eff2fae"
+    },
+    {
+      "path": "supabase/config.toml",
+      "sha256": "e8999a530035e0c3c2d364278e45794f52fb882f37a0345eeb189b4bbb8bbe4d"
+    },
+    {
+      "path": "docs/V1_1_RELEASE_OPERATIONS_2026-08-09.md",
+      "sha256": "025cb5ffd92c2979fa26d5a4581a1875a5741797978ff149c7278ff2a3a8008a"
+    },
+    {
+      "path": "src/test/organizationInvitationDeliveryContract.test.ts",
+      "sha256": "5b7b036e66acf66fe37e9988eb424192adcf39fd3c0f489ac302f3a2519486e9"
+    }
+  ]
+}

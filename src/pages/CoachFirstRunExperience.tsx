@@ -34,6 +34,7 @@ type CoachPreviewSection = "overview" | "state" | "development" | "toolkit" | "t
 
 type CoachFirstRunExperienceProps = {
   invitation?: boolean;
+  invitationKind?: "coach_code" | "personal";
   onComplete?: () => void;
   onLogin?: () => void;
   onClose?: () => void;
@@ -462,7 +463,7 @@ const TeamScreen = () => (
         </div>
 
         <div className="rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-4">
-          <div className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.10] text-primary"><MailCheck className="h-4 w-4" /></span><div><p className="text-[10px] font-semibold">Coach persönlich einladen</p><p className="mt-1 text-[8px] leading-3.5 text-white/38">Einmaliger Link · 7 Tage gültig · an eine bestätigte E-Mail gebunden.</p></div></div>
+          <div className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.10] text-primary"><MailCheck className="h-4 w-4" /></span><div><p className="text-[10px] font-semibold">Co-Coach einladen</p><p className="mt-1 text-[8px] leading-3.5 text-white/38">Einmaliger Link · 7 Tage gültig · beim bestätigten persönlichen Konto einlösen.</p></div></div>
         </div>
 
         <div className="rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-4">
@@ -491,17 +492,26 @@ const PrivacyScreen = () => (
   </CoachAppScreen>
 );
 
-const StartScreen = ({ invitation }: { invitation: boolean }) => (
+const StartScreen = ({
+  invitation,
+  invitationKind,
+}: {
+  invitation: boolean;
+  invitationKind?: "coach_code" | "personal";
+}) => {
+  const isCoCoachInvitation = invitationKind === "coach_code";
+
+  return (
   <CoachAppScreen labelledBy="coach-preview-start-title" chrome={false}>
     <div className="flex h-full flex-col items-center px-5 pt-9 text-center">
       <div className="relative"><div className="absolute inset-0 rounded-full bg-primary/25 blur-2xl" /><span className="relative flex h-20 w-20 items-center justify-center rounded-[28px] border border-primary/25 bg-primary/[0.10]"><BrandSymbol size={42} /></span></div>
       <p className="mt-7 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">RewirePerform Coach</p>
-      <h2 id="coach-preview-start-title" className="mt-3 text-[28px] font-semibold leading-[1.02] tracking-[-0.05em]">{invitation ? "Deine Einladung ist bereit." : "Bereit für dein Team?"}</h2>
-      <p className="mt-4 max-w-[268px] text-[10px] leading-4 text-white/45">{invitation ? "Registriere dich mit der eingeladenen E-Mail-Adresse. Danach wird dein Coach-Zugang sicher geprüft." : "Starte mit einer persönlichen Anfrage. Teams und Rollen werden nicht automatisch freigeschaltet."}</p>
+      <h2 id="coach-preview-start-title" className="mt-3 text-[28px] font-semibold leading-[1.02] tracking-[-0.05em]">{invitation ? (isCoCoachInvitation ? "Deine Co-Coach-Einladung ist bereit." : "Deine Einladung ist bereit.") : "Bereit für dein Team?"}</h2>
+      <p className="mt-4 max-w-[268px] text-[10px] leading-4 text-white/45">{invitation ? (isCoCoachInvitation ? "Registriere dich oder melde dich als Coach an. Danach verbindest du dein persönliches Konto einmalig mit dem Team." : "Registriere dich mit der eingeladenen E-Mail-Adresse. Danach wird dein Coach-Zugang sicher geprüft.") : "Starte mit einer persönlichen Anfrage. Teams und Rollen werden nicht automatisch freigeschaltet."}</p>
 
       <div className="mt-7 w-full rounded-[20px] border border-primary/22 bg-primary/[0.065] p-4 text-left">
-        <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.12] text-primary">{invitation ? <KeyRound className="h-4 w-4" /> : <UsersRound className="h-4 w-4" />}</span><div><p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-primary">Dein nächster Schritt</p><p className="mt-1 text-[11px] font-semibold">{invitation ? "Persönliche Einladung bestätigen" : "Teamzugang anfragen"}</p></div></div>
-        <p className="mt-3 text-[8px] leading-3.5 text-white/40">{invitation ? "Einmaliger Link · bestätigte E-Mail · serverseitige Rollenprüfung" : "Ein Team, Verein oder eine Organisation kontrolliert einführen"}</p>
+        <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.12] text-primary">{invitation ? <KeyRound className="h-4 w-4" /> : <UsersRound className="h-4 w-4" />}</span><div><p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-primary">Dein nächster Schritt</p><p className="mt-1 text-[11px] font-semibold">{invitation ? (isCoCoachInvitation ? "Co-Coach-Einladung fortsetzen" : "Persönliche Einladung bestätigen") : "Teamzugang anfragen"}</p></div></div>
+        <p className="mt-3 text-[8px] leading-3.5 text-white/40">{invitation ? (isCoCoachInvitation ? "Einmaliger Link · 7 Tage gültig · persönliches Konto · serverseitige Rollenprüfung" : "Einmaliger Link · bestätigte E-Mail · serverseitige Rollenprüfung") : "Ein Team, Verein oder eine Organisation kontrolliert einführen"}</p>
       </div>
 
       {!invitation && <div className="mt-4 flex w-full items-start gap-2 rounded-[16px] border border-white/[0.06] bg-white/[0.02] p-3 text-left"><MailCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" /><p className="text-[8px] leading-3.5 text-white/38">Schon als Coach eingeladen? Öffne den persönlichen Link aus deiner Einladung.</p></div>}
@@ -509,14 +519,17 @@ const StartScreen = ({ invitation }: { invitation: boolean }) => (
       <p className="mt-5 text-[8px] font-medium text-primary">Der nächste Schritt öffnet deinen passenden Zugangsweg.</p>
     </div>
   </CoachAppScreen>
-);
+  );
+};
 
 export const CoachFirstRunSceneVisual = ({
   sceneId,
   invitation = false,
+  invitationKind,
 }: {
   sceneId: CoachFirstRunSceneId;
   invitation?: boolean;
+  invitationKind?: "coach_code" | "personal";
 }) => {
   if (sceneId === "console") return <ConsoleScreen />;
   if (sceneId === "state") return <StateScreen />;
@@ -527,11 +540,12 @@ export const CoachFirstRunSceneVisual = ({
   if (sceneId === "development") return <DevelopmentScreen />;
   if (sceneId === "team") return <TeamScreen />;
   if (sceneId === "privacy") return <PrivacyScreen />;
-  return <StartScreen invitation={invitation} />;
+  return <StartScreen invitation={invitation} invitationKind={invitationKind} />;
 };
 
 const CoachFirstRunExperience = ({
   invitation = false,
+  invitationKind,
   onComplete,
   onLogin,
   onClose,
@@ -607,7 +621,7 @@ const CoachFirstRunExperience = ({
           >
             {worldScreens.map((screen) => (
               <motion.div key={screen.id} className="absolute inset-0 flex items-center justify-center" animate={reduceMotion ? { x: 0, y: 0, scale: 0.9 * cameraFit, opacity: screen.id === scene.id ? 1 : 0 } : { x: (screen.x - scene.position.x) * sceneScale, y: (screen.y - scene.position.y) * sceneScale, scale: sceneScale, opacity: screen.id === scene.id ? 1 : 0.28 }} transition={reduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 74, damping: 19, mass: 0.82 }} aria-hidden={screen.id !== scene.id}>
-                <CoachFirstRunSceneVisual sceneId={screen.id} invitation={invitation} />
+                <CoachFirstRunSceneVisual sceneId={screen.id} invitation={invitation} invitationKind={invitationKind} />
               </motion.div>
             ))}
           </div>

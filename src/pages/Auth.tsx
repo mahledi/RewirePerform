@@ -855,7 +855,7 @@ const Auth = () => {
                 ? "Melde dich an, um den Teambeitritt mit deinem Code abzuschließen."
                 : intent === "organization"
                   ? coachInviteCode
-                    ? "Melde dich an. Dein persönlicher Coach-Code ist bereits eingetragen."
+                    ? "Melde dich an. Dein Co-Coach-Code ist bereits eingetragen."
                     : "Melde dich mit der eingeladenen E-Mail-Adresse an, um den Organisationszugang zu bestätigen."
                 : "Melde dich an, um dein Programm fortzusetzen."}
             </p>
@@ -922,7 +922,7 @@ const Auth = () => {
     intent === "solo" ? "Dein personalisiertes Mental-Performance-Programm beginnt gleich."
     : intent === "join" ? "Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast."
     : coachInviteCode
-      ? "Registriere dich als Coach. Dein persönlicher Code bleibt bis zur Team-Verbindung eingetragen."
+      ? "Registriere dich als Coach. Dein Co-Coach-Code bleibt bis zur Team-Verbindung eingetragen."
       : "Registriere dich mit der persönlich eingeladenen E-Mail-Adresse. Danach bestätigst du deine freigegebene Rolle.";
 
   return (

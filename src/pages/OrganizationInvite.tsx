@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Building2, Check, KeyRound, Loader2, ShieldCheck } from "lucide-react";
+import { Building2, Check, KeyRound, Loader2, LogOut, ShieldCheck } from "lucide-react";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +20,7 @@ type InvitationRpcClient = {
 };
 
 const OrganizationInvite = () => {
-  const { user, loading, verifyRole } = useAuth();
+  const { user, loading, signOut, verifyRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const invitation = useMemo(() => {
@@ -34,6 +34,7 @@ const OrganizationInvite = () => {
   const [state, setState] = useState<InviteState>("idle");
   const [error, setError] = useState("");
   const [roleRefreshPending, setRoleRefreshPending] = useState(false);
+  const [switchingAccount, setSwitchingAccount] = useState(false);
 
   useEffect(() => {
     setState("idle");
@@ -64,6 +65,8 @@ const OrganizationInvite = () => {
         setError(
           rpcError.message?.includes("email_mismatch")
             ? "Diese Einladung gehört zu einer anderen bestätigten E-Mail-Adresse."
+            : rpcError.message?.includes("already_team_member")
+              ? "Dieses persönliche Konto gehört bereits zu diesem Team. Bitte nutze die Einladung nur für den vorgesehenen Co-Coach."
             : rpcError.message?.includes("existing_athlete")
               ? "Dieser bestehende Athletenaccount kann nicht automatisch in einen Coach-Zugang umgewandelt werden. Bitte nutze den Support."
               : "Die Einladung ist ungültig, abgelaufen oder bereits verwendet.",
@@ -88,6 +91,22 @@ const OrganizationInvite = () => {
     const params = new URLSearchParams({ redirect, auth_mode: mode });
     return `/start/coach?${params.toString()}`;
   };
+  const coachAuthRoute = (mode: "signup" | "login") => {
+    const params = new URLSearchParams({
+      mode,
+      intent: "organization",
+      redirect,
+      intro: "coach",
+    });
+    return `/auth?${params.toString()}`;
+  };
+
+  const useDifferentAccount = async () => {
+    if (switchingAccount) return;
+    setSwitchingAccount(true);
+    await signOut();
+    navigate(coachAuthRoute("login"), { replace: true });
+  };
 
   if (!loading && !user && invitation) {
     return <Navigate to={coachStartRoute("signup")} replace />;
@@ -105,7 +124,9 @@ const OrganizationInvite = () => {
                 ? <KeyRound className="h-7 w-7" />
                 : <Building2 className="h-7 w-7" />}
           </div>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Persönliche Co-Coach-Einladung</p>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            {isCoachCode ? "Einmalige Co-Coach-Einladung" : "Persönlicher Coach-Zugang"}
+          </p>
           <h1 className="mt-3 font-heading text-3xl font-bold">
             {state === "accepted" ? "Coach-Team verbunden." : "Gemeinsam Performance entwickeln."}
           </h1>
@@ -132,12 +153,30 @@ const OrganizationInvite = () => {
             <div className="mt-7 space-y-4">
               <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-secondary/25 p-4 text-sm text-muted-foreground">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                Die Annahme aktiviert ausschließlich die Coach-Rolle für dieses Team. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar.
+                {isCoachCode
+                  ? "Die Annahme verbindet dein persönliches Konto einmalig als Co-Coach mit diesem Team. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar."
+                  : "Die Annahme aktiviert deinen persönlichen Coach-Zugang. Private Athleteninhalte wie Journals, Freitext und individuelle Antworten bleiben unsichtbar."}
+              </div>
+              <div className="rounded-xl border border-border/70 bg-background/45 p-4 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Du bist angemeldet als {user.email ?? "dieses persönliche Konto"}.</p>
+                <p className="mt-1 leading-relaxed">Nutze diese Einladung nur, wenn dieses Konto dir gehört. Jeder Coach verwendet einen eigenen Zugang; Teamdaten werden über Rollen geteilt, Logins nicht.</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => void useDifferentAccount()}
+                  disabled={switchingAccount || state === "accepting"}
+                  className="mt-2 min-h-10 px-0 text-primary hover:bg-transparent hover:text-primary"
+                >
+                  {switchingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                  Anderes Konto verwenden
+                </Button>
               </div>
               {error && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</p>}
               <Button onClick={accept} disabled={state === "accepting"} className="min-h-11 w-full">
                 {state === "accepting" && <Loader2 className="h-4 w-4 animate-spin" />}
-                {roleRefreshPending ? "Zugang auf diesem Gerät bestätigen" : "Als Co-Coach verbinden"}
+                {roleRefreshPending
+                  ? "Zugang auf diesem Gerät bestätigen"
+                  : isCoachCode ? "Als Co-Coach verbinden" : "Coach-Zugang aktivieren"}
               </Button>
             </div>
           ) : null}

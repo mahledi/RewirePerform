@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveDay } from "@/lib/getDayContent";
@@ -9,6 +10,7 @@ import {
 } from "@/content/coachToolkit";
 import { BookOpen, ShieldCheck, NotebookPen, Loader2, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import type { CalendarEventType } from "@/content/matrixDayTypes";
 
 interface Props {
   teamId: string;
@@ -49,6 +51,7 @@ const CoachToolkit = ({ teamId }: Props) => {
   const { user } = useAuth();
   const [team, setTeam] = useState<TeamRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [todayContext, setTodayContext] = useState<CalendarEventType>("training");
 
   // Journal state
   const [weekNumber, setWeekNumber] = useState(1);
@@ -79,11 +82,26 @@ const CoachToolkit = ({ teamId }: Props) => {
     };
   }, [teamId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const today = format(new Date(), "yyyy-MM-dd");
+    supabase
+      .from("team_calendar_events")
+      .select("event_type")
+      .eq("team_id", teamId)
+      .eq("date", today)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setTodayContext((data?.event_type as CalendarEventType | undefined) ?? "training");
+      });
+    return () => { cancelled = true; };
+  }, [teamId]);
+
   const dayInfo = team?.program_start_date
     ? getCurrentProgramDay(team.program_start_date)
     : null;
   const resolved = dayInfo
-    ? resolveDay(dayInfo.dayNumber, new Date(), "training")
+    ? resolveDay(dayInfo.dayNumber, new Date(), todayContext)
     : null;
 
   // Calc current program week (1..8) for journal prefill
@@ -172,7 +190,7 @@ const CoachToolkit = ({ teamId }: Props) => {
                 {resolved.content.coreShift || resolved.content.title || resolved.content.lens || resolved.matrix.lens}
               </div>
               <div className="text-xs text-muted-foreground mt-1">
-                Linie: {resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
+                {resolved.context.label} · Linie: {resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
               </div>
             </div>
 

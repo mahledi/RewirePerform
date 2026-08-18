@@ -14,6 +14,9 @@ Korrekturen.
 - Die finale Consent-/Guardian-Registrierung `20260813123955` ist angewendet.
 - Kampagnen, Guardian-Policy, Collection und Jarvis-Read bleiben bis zur
   separaten Aktivierungsentscheidung geschlossen.
+- Der finale V1.1-Client erzwingt `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED=false`:
+  keine Feedback-Checkpoints, keine strukturierte Feedback-Collection, keine
+  freiwilligen Athleten-Kommentare und kein Jarvis-Read.
 - Beide Production-Edge-Functions sind credentiallos deployed und fail-closed.
 
 ## App Privacy
@@ -39,6 +42,7 @@ Release-Gate erzwingt dieselben vier Datentypen.
 ## Noch nicht als aktive Praxis in Review Notes behaupten
 
 - echten Jarvis-Production-Read,
+- aktive strukturierte Feedback-Checkpoints,
 - aktive Feedback-Kommentare,
 - aktive Minderjährigen-Feedbackkampagnen,
 - öffentlich aktive Organisationsannahme.
