@@ -49,7 +49,7 @@
     "feedback_or_jarvis_activated": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "c437b66b1c1d938ea929db7561770d29b9e7d83c75195a906d1ed2aa42f9029e",
+  "package_sha256": "c4094ddafaa771678a2c611cada5bb09b784124053a26d166a1b1249ad8bfb02",
   "files": [
     {
       "path": "src/pages/Privacy.tsx",
@@ -69,7 +69,7 @@
     },
     {
       "path": "supabase/migrations/20260818130641_persistent_team_coach_invitation_v1_1.sql",
-      "sha256": "8285c0fd7b38cc5a8e64788e95fcdf334fa0a190a10f2944d832849075ae9fb2"
+      "sha256": "c9899c486944989bec57d32a8015b3abfb682475953f349c974215ad91f8c5a7"
     },
     {
       "path": "supabase/functions/send-organization-access-invitation/index.ts",

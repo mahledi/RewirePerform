@@ -255,7 +255,11 @@ BEGIN
     OR EXISTS (SELECT 1 FROM public.assessments assessment WHERE assessment.user_id = actor_id)
     OR EXISTS (SELECT 1 FROM public.deep_profile_assessments profile_assessment WHERE profile_assessment.user_id = actor_id)
     OR EXISTS (SELECT 1 FROM public.user_day_completion completion WHERE completion.user_id = actor_id)
-    OR EXISTS (SELECT 1 FROM minor_auth.participant_authorizations authorization WHERE authorization.user_id = actor_id)
+    OR EXISTS (
+      SELECT 1
+      FROM minor_auth.participant_authorizations participant_authorization
+      WHERE participant_authorization.user_id = actor_id
+    )
   ) THEN
     RAISE EXCEPTION 'existing_athlete_account_requires_admin_review' USING ERRCODE = '42501';
   END IF;
