@@ -49,7 +49,7 @@
     "feedback_or_jarvis_activated": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "c4094ddafaa771678a2c611cada5bb09b784124053a26d166a1b1249ad8bfb02",
+  "package_sha256": "3296f8f84e3d287b5d47c85298e9458aa9c833daf2c7883ed73bc5597d79ddbc",
   "files": [
     {
       "path": "src/pages/Privacy.tsx",
@@ -73,7 +73,7 @@
     },
     {
       "path": "supabase/functions/send-organization-access-invitation/index.ts",
-      "sha256": "ad05b41b69445b313efc077506a13824f89dbd1da062daf987b1e2948ab36017"
+      "sha256": "3365d9f9c96d2b73a85409da68dcaea887ddccd0b2d65edee371ad3921f619fe"
     },
     {
       "path": "src/components/admin/OrganizationRequestManager.tsx",
@@ -89,7 +89,7 @@
     },
     {
       "path": "src/test/organizationInvitationDeliveryContract.test.ts",
-      "sha256": "adf04a2440c8b1ef0e253b684d5818a957496dd20cc047b16c47f0f167742def"
+      "sha256": "3c9b1aa70453c416f6867ca948bfafc80bb83f99458ddefecc5295c77b1a9b75"
     },
     {
       "path": "src/test/organizationInvite.test.tsx",
