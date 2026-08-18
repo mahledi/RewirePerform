@@ -2,7 +2,6 @@ import { readBoundedRequestText, RequestBodyTooLargeError } from "../_shared/bou
 import { serviceClient } from "../_shared/supabaseService.ts";
 
 const MAXIMUM_BODY_BYTES = 24_000;
-const TURNSTILE_ACTION = "organization_access_request";
 const ORGANIZATION_INQUIRY_PRIVACY_VERSION = "organization-inquiry-v1.1-2026-08-10";
 const ALLOWED_KEYS = new Set([
   "contact_name", "work_email", "phone", "job_title", "preferred_contact",
@@ -10,7 +9,7 @@ const ALLOWED_KEYS = new Set([
   "athlete_age_groups", "performance_levels", "team_count_band", "athlete_count_band",
   "coach_count_band", "rollout_scope", "desired_start", "goals", "support_needs",
   "context_note", "source", "locale", "privacy_version",
-  "public_research_notice_acknowledged", "turnstile_token", "website_field",
+  "public_research_notice_acknowledged", "website_field",
 ]);
 
 const ORGANIZATION_TYPES = new Set([
@@ -93,33 +92,6 @@ const enumText = (body: JsonRecord, key: string, allowed: Set<string>) => {
   return value;
 };
 
-const verifyTurnstile = async (
-  token: string,
-  remoteIp: string | null,
-  expectedHostname: string,
-) => {
-  const secret = Deno.env.get("TURNSTILE_SECRET_KEY")?.trim();
-  if (!secret) throw new Error("service_not_configured");
-  const form = new FormData();
-  form.set("secret", secret);
-  form.set("response", token);
-  if (remoteIp) form.set("remoteip", remoteIp);
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    body: form,
-    signal: AbortSignal.timeout(8_000),
-  });
-  if (!response.ok) return false;
-  const result = await response.json() as {
-    success?: unknown;
-    hostname?: unknown;
-    action?: unknown;
-  };
-  return result.success === true
-    && result.hostname === expectedHostname
-    && result.action === TURNSTILE_ACTION;
-};
-
 Deno.serve(async (request) => {
   const origin = originForRequest(request);
   if (request.method === "OPTIONS") {
@@ -152,15 +124,6 @@ Deno.serve(async (request) => {
     }
     if (typeof parsed.website_field !== "string" || parsed.website_field !== "") {
       return jsonResponse(202, { ok: true, reference_code: "RP-RECEIVED" }, origin);
-    }
-
-    const turnstileToken = text(parsed, "turnstile_token", 10, 2048);
-    const remoteIp = request.headers.get("CF-Connecting-IP");
-    const expectedTurnstileHostname = origin === "capacitor://localhost"
-      ? "localhost"
-      : new URL(origin).hostname;
-    if (!await verifyTurnstile(turnstileToken, remoteIp, expectedTurnstileHostname)) {
-      return jsonResponse(400, { error: "verification_failed" }, origin);
     }
 
     const workEmail = text(parsed, "work_email", 5, 254).toLowerCase();

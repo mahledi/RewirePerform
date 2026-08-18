@@ -28,15 +28,12 @@ describe("organization inquiry edge boundary", () => {
     );
   });
 
-  it("fails closed behind Turnstile and a honeypot", () => {
-    expect(source).toContain("verifyTurnstile(turnstileToken, remoteIp, expectedTurnstileHostname)");
-    expect(source).toContain("result.hostname === expectedHostname");
-    expect(source).toContain("result.action === TURNSTILE_ACTION");
-    expect(source).toContain('origin === "capacitor://localhost"');
-    expect(clientSource).toContain('action: "organization_access_request"');
+  it("keeps the pilot request free of Turnstile while retaining the honeypot", () => {
+    expect(source).not.toContain("TURNSTILE_SECRET_KEY");
+    expect(source).not.toContain("turnstile_token");
+    expect(clientSource).not.toContain("VITE_TURNSTILE_SITE_KEY");
+    expect(clientSource).not.toContain("challenges.cloudflare.com/turnstile");
     expect(source).toContain("parsed.website_field");
-    expect(source).toContain('error: "verification_failed"');
-    expect(source).toContain('throw new Error("service_not_configured")');
   });
 
   it("pins the public request to the approved DE scope and privacy notice", () => {
