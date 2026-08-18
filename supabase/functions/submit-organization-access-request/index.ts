@@ -93,6 +93,7 @@ const enumText = (body: JsonRecord, key: string, allowed: Set<string>) => {
 };
 
 Deno.serve(async (request) => {
+  const requestedOrigin = request.headers.get("Origin");
   const origin = originForRequest(request);
   if (request.method === "OPTIONS") {
     return origin
@@ -100,7 +101,10 @@ Deno.serve(async (request) => {
       : jsonResponse(403, { error: "origin_not_allowed" }, null);
   }
   if (request.method !== "POST") return jsonResponse(405, { error: "method_not_allowed" }, origin);
-  if (!origin) return jsonResponse(403, { error: "origin_not_allowed" }, null);
+  // CapacitorHttp performs native iOS requests outside the browser CORS layer,
+  // so those requests legitimately contain no Origin header. Web callers still
+  // have to match the explicit allowlist.
+  if (requestedOrigin && !origin) return jsonResponse(403, { error: "origin_not_allowed" }, null);
   if (Deno.env.get("ORGANIZATION_INQUIRY_PUBLIC_ENABLED") !== "true") {
     return jsonResponse(503, { error: "service_not_available" }, origin);
   }

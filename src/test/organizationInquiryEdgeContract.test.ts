@@ -12,12 +12,13 @@ const clientSource = readFileSync(
 );
 
 describe("organization inquiry edge boundary", () => {
-  it("is disabled until explicitly configured and accepts only known origins", () => {
+  it("is disabled until explicitly configured, allows native requests without an origin, and accepts only known web origins", () => {
     expect(source).toContain('ORGANIZATION_INQUIRY_PUBLIC_ENABLED") !== "true"');
     expect(source).toContain('"capacitor://localhost"');
     expect(source).toContain('"https://rewireperform.com"');
     expect(source).toContain('"https://www.rewireperform.com"');
     expect(source).toContain('error: "origin_not_allowed"');
+    expect(source).toContain("if (requestedOrigin && !origin)");
   });
 
   it("bounds and allowlists the request before any database write", () => {
