@@ -52,12 +52,14 @@ Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
    `RESEND_API_KEY` und `ORGANIZATION_INVITATION_EMAIL_FROM`; der Versand
    bleibt ohne diese beiden Werte fail-closed und der Admin erhält weiterhin
    den einmaligen Link als manuellen Rückweg;
-7. die Edge Function `send-organization-access-invitation` und die enge
+7. die Edge Function `send-organization-access-invitation`, die enge
    Nachfolge-Migration
-   `20260818103000_coach_invite_existing_member_guard_v1_1.sql` nur zusammen
-   mit dem bereits vorhandenen Co-Coach-Migrationsblock isoliert anwenden;
-   sie verhindert, dass ein Lead Coach auf einem bereits angemeldeten Gerät
-   seine eigene Co-Coach-Einladung verbraucht;
+   `20260818103000_coach_invite_existing_member_guard_v1_1.sql` und danach
+   `20260818130641_persistent_team_coach_invitation_v1_1.sql` nur zusammen
+   mit dem bereits vorhandenen Co-Coach-Migrationsblock isoliert anwenden.
+   Die letzte Migration repariert historische Lead-Coach-Rollen, widerruft
+   nicht wiederherstellbare alte Einmalcodes und erzeugt danach pro Team einen
+   wiederverwendbaren Link, den ausschließlich der Lead Coach erneuern kann;
 8. unmittelbar vor einem echten Coach-Mail-Smoke im Resend-Domainbereich
    bestätigen, dass Open- und Click-Tracking deaktiviert sind. Diese Prüfung
    ist ein Deployment-Gate; keine Tracking-Konfiguration oder Empfängerwerte

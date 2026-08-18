@@ -30,11 +30,14 @@ describe("organization invitation delivery contract", () => {
     expect(source).toContain("organization-invitation-${invitation.id}");
   });
 
-  it("keeps the current Coach-email disclosure separate from historical feedback consent", () => {
+  it("keeps Coach-access disclosures separate from historical feedback consent", () => {
     expect(privacy).toContain("nach persönlicher Freigabe versendete Coach-Zugänge");
     expect(privacy).toContain("einmaligen persönlichen Zugangslinks");
     expect(privacy).toContain("an diese E-Mail-Adresse gebunden, einmalig und sieben Tage gültig");
     expect(privacy).toContain("Öffnungs- und Link-Tracking werden für diesen Versand nicht genutzt");
+    expect(privacy).toContain("Der Lead Coach verwaltet diesen Link");
+    expect(privacy).toContain("bleibt bis zu seiner Erneuerung aktiv");
+    expect(privacy).toContain("nicht über Resend versendet");
     expect(source).not.toContain("jarvis");
 
     const result = spawnSync(

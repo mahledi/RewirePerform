@@ -463,7 +463,7 @@ const TeamScreen = () => (
         </div>
 
         <div className="rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-4">
-          <div className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.10] text-primary"><MailCheck className="h-4 w-4" /></span><div><p className="text-[10px] font-semibold">Co-Coach einladen</p><p className="mt-1 text-[8px] leading-3.5 text-white/38">Einmaliger Link · 7 Tage gültig · beim bestätigten persönlichen Konto einlösen.</p></div></div>
+          <div className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.10] text-primary"><MailCheck className="h-4 w-4" /></span><div><p className="text-[10px] font-semibold">Co-Coach einladen</p><p className="mt-1 text-[8px] leading-3.5 text-white/38">Team-Link teilen · eigenes bestätigtes Konto · der Lead Coach verwaltet Zugänge.</p></div></div>
         </div>
 
         <div className="rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-4">
@@ -507,11 +507,11 @@ const StartScreen = ({
       <div className="relative"><div className="absolute inset-0 rounded-full bg-primary/25 blur-2xl" /><span className="relative flex h-20 w-20 items-center justify-center rounded-[28px] border border-primary/25 bg-primary/[0.10]"><BrandSymbol size={42} /></span></div>
       <p className="mt-7 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">RewirePerform Coach</p>
       <h2 id="coach-preview-start-title" className="mt-3 text-[28px] font-semibold leading-[1.02] tracking-[-0.05em]">{invitation ? (isCoCoachInvitation ? "Deine Co-Coach-Einladung ist bereit." : "Deine Einladung ist bereit.") : "Bereit für dein Team?"}</h2>
-      <p className="mt-4 max-w-[268px] text-[10px] leading-4 text-white/45">{invitation ? (isCoCoachInvitation ? "Registriere dich oder melde dich als Coach an. Danach verbindest du dein persönliches Konto einmalig mit dem Team." : "Registriere dich mit der eingeladenen E-Mail-Adresse. Danach wird dein Coach-Zugang sicher geprüft.") : "Starte mit einer persönlichen Anfrage. Teams und Rollen werden nicht automatisch freigeschaltet."}</p>
+      <p className="mt-4 max-w-[268px] text-[10px] leading-4 text-white/45">{invitation ? (isCoCoachInvitation ? "Registriere dich oder melde dich als Coach an. Danach verbindest du dein persönliches Konto mit dem Team." : "Registriere dich mit der eingeladenen E-Mail-Adresse. Danach wird dein Coach-Zugang sicher geprüft.") : "Starte mit einer persönlichen Anfrage. Teams und Rollen werden nicht automatisch freigeschaltet."}</p>
 
       <div className="mt-7 w-full rounded-[20px] border border-primary/22 bg-primary/[0.065] p-4 text-left">
         <div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-[15px] bg-primary/[0.12] text-primary">{invitation ? <KeyRound className="h-4 w-4" /> : <UsersRound className="h-4 w-4" />}</span><div><p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-primary">Dein nächster Schritt</p><p className="mt-1 text-[11px] font-semibold">{invitation ? (isCoCoachInvitation ? "Co-Coach-Einladung fortsetzen" : "Persönliche Einladung bestätigen") : "Teamzugang anfragen"}</p></div></div>
-        <p className="mt-3 text-[8px] leading-3.5 text-white/40">{invitation ? (isCoCoachInvitation ? "Einmaliger Link · 7 Tage gültig · persönliches Konto · serverseitige Rollenprüfung" : "Einmaliger Link · bestätigte E-Mail · serverseitige Rollenprüfung") : "Ein Team, Verein oder eine Organisation kontrolliert einführen"}</p>
+        <p className="mt-3 text-[8px] leading-3.5 text-white/40">{invitation ? (isCoCoachInvitation ? "Team-Link · persönliches Konto · serverseitige Rollenprüfung" : "Einmaliger Link · bestätigte E-Mail · serverseitige Rollenprüfung") : "Ein Team, Verein oder eine Organisation kontrolliert einführen"}</p>
       </div>
 
       {!invitation && <div className="mt-4 flex w-full items-start gap-2 rounded-[16px] border border-white/[0.06] bg-white/[0.02] p-3 text-left"><MailCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" /><p className="text-[8px] leading-3.5 text-white/38">Schon als Coach eingeladen? Öffne den persönlichen Link aus deiner Einladung.</p></div>}

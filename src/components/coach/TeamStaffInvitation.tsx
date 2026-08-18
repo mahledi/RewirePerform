@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Copy, Link2, Loader2, MessageCircle, Share2, UserPlus, Users } from "lucide-react";
+import { Check, Copy, Link2, Loader2, MessageCircle, RefreshCw, Share2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { formatCoachInviteCode } from "@/lib/organizationInvite";
 
 type TeamCoachInvitationRpcClient = {
   rpc: (
-    name: "create_team_coach_invitation",
+    name: "get_or_create_team_coach_invitation" | "renew_team_coach_invitation",
     args: { _team_id: string },
   ) => Promise<{
     data: { invitation_code?: unknown; expires_at?: unknown } | null;
@@ -17,7 +17,6 @@ type TeamCoachInvitationRpcClient = {
 };
 
 const TeamStaffInvitation = ({ teamId, teamName }: { teamId: string; teamName: string }) => {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [canInvite, setCanInvite] = useState<boolean | null>(null);
@@ -33,22 +32,32 @@ const TeamStaffInvitation = ({ teamId, teamName }: { teamId: string; teamName: s
     return () => { cancelled = true; };
   }, [teamId]);
 
-  const createInvite = async () => {
+  const requestInvite = async (renew = false) => {
     if (loading) return;
     setLoading(true);
     const { data, error } = await (
       supabase as unknown as TeamCoachInvitationRpcClient
-    ).rpc("create_team_coach_invitation", { _team_id: teamId });
+    ).rpc(
+      renew ? "renew_team_coach_invitation" : "get_or_create_team_coach_invitation",
+      { _team_id: teamId },
+    );
     setLoading(false);
 
     const code = typeof data?.invitation_code === "string" ? data.invitation_code : "";
     if (error || !formatCoachInviteCode(code)) {
-      toast.error("Die Co-Coach-Einladung konnte nicht sicher erstellt werden.");
+      toast.error("Der Co-Coach-Link konnte nicht sicher geladen werden.");
       return;
     }
     setInviteCode(code);
-    toast.success("Co-Coach-Einladung ist bereit.");
+    if (renew) toast.success("Der Co-Coach-Link wurde erneuert. Der vorherige Link ist nicht mehr gültig.");
   };
+
+  useEffect(() => {
+    if (canInvite !== true) return;
+    void requestInvite();
+    // The RPC is idempotent: it returns the existing team link rather than creating one per render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canInvite, teamId]);
 
   const invitation = inviteCode ? buildCoachInvitationShare(teamName, inviteCode) : null;
   const formattedCode = inviteCode ? formatCoachInviteCode(inviteCode) : null;
@@ -102,35 +111,26 @@ const TeamStaffInvitation = ({ teamId, teamName }: { teamId: string; teamName: s
         {canInvite === null ? (
           <span className="inline-flex min-h-9 items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin text-primary" />Rolle wird geprüft.</span>
         ) : canInvite ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => setOpen((current) => !current)}><UserPlus className="h-4 w-4" />Co-Coach einladen</Button>
+          <span className="rounded-full border border-primary/25 bg-primary/[0.06] px-3 py-1.5 text-xs font-medium text-primary">Lead Coach</span>
         ) : (
-          <span className="rounded-full border border-border/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">Co-Coach-Zugang</span>
+          <span className="rounded-full border border-border/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">Lead Coach verwaltet Zugänge</span>
         )}
       </div>
 
-      {open && (
+      {canInvite && (
         <div className="mt-4 space-y-3 border-t border-border/60 pt-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
-              Erstelle einen einmaligen Coach-Code. Danach kannst du die Einladung genauso direkt über WhatsApp,
-              Teilen oder als Link weitergeben wie eine Athleten-Einladung.
-            </p>
-            <Button type="button" onClick={() => void createInvite()} disabled={loading} className="shrink-0">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-              {inviteCode ? "Neuen Code erstellen" : "Einladung erstellen"}
-            </Button>
-          </div>
-
-          {invitation && formattedCode && (
+          {loading && !invitation ? (
+            <div className="flex min-h-12 items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin text-primary" />Co-Coach-Link wird geladen.</div>
+          ) : invitation && formattedCode ? (
             <div className="rounded-2xl border border-primary/25 bg-primary/[0.06] p-4">
               <div className="flex items-start gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
                   <Check className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Einladung ist bereit</p>
+                  <p className="text-sm font-semibold text-foreground">Co-Coach-Link ist bereit</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Einmalig · sieben Tage gültig · nach Annahme automatisch mit diesem Team verbunden
+                    Bleibt aktiv, bis du ihn erneuerst. Jeder neue Co-Coach erstellt und bestätigt sein eigenes Konto.
                   </p>
                 </div>
               </div>
@@ -162,8 +162,12 @@ const TeamStaffInvitation = ({ teamId, teamName }: { teamId: string; teamName: s
                   Link kopieren
                 </Button>
               </div>
+              <Button type="button" variant="ghost" className="mt-3 min-h-10 px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground" onClick={() => void requestInvite(true)} disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                Einladungslink erneuern
+              </Button>
             </div>
-          )}
+          ) : <p className="text-xs leading-relaxed text-muted-foreground">Der Co-Coach-Link konnte gerade nicht geladen werden. Bitte prüfe deine Verbindung und versuche es erneut.</p>}
         </div>
       )}
     </section>

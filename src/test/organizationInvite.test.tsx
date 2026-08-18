@@ -57,6 +57,19 @@ describe("organization invitation", () => {
     );
   });
 
+  it("shows the Co-Coach invitation before the Coach flight and preserves its code", () => {
+    const code = "A1B2C3D4E5F60718293A";
+    mocks.authState.user = null;
+    renderInvite(`/organization/invite?coach=${code}`);
+
+    expect(screen.getByRole("heading", { name: "Willkommen im Coach-Team." })).toBeInTheDocument();
+    expect(screen.getByText(/Lerne zuerst die Coach-Ansicht kennen/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Coach-Einführung starten" }));
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      `/start/coach?redirect=%2Forganization%2Finvite%3Fcoach%3D${code}&auth_mode=signup`,
+    );
+  });
+
   it("accepts once and verifies the authoritative role before showing success", async () => {
     renderInvite(`/organization/invite?token=${token}`);
     fireEvent.click(screen.getByRole("button", { name: "Coach-Zugang aktivieren" }));
