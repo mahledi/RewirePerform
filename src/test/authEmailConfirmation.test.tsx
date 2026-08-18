@@ -206,6 +206,38 @@ describe("auth email confirmation", () => {
     expect(pendingPostSignupIntent("user-1")).toBeNull();
   });
 
+  it("gives a Co-Coach code signup the same confirmation, resend and exact return path", async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { user: { id: "user-1" }, session: null },
+      error: null,
+    });
+    const code = "A1B2C3D4E5F60718293A";
+    const redirect = encodeURIComponent(`/organization/invite?coach=${code}`);
+    renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}&intro=coach`);
+
+    fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Co Coach" } });
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "cocoach@verein.de" } });
+    fireEvent.change(screen.getByLabelText("Passwort"), { target: { value: "secure-password" } });
+    fireEvent.click(screen.getByRole("button", { name: "Konto erstellen" }));
+
+    await screen.findByRole("heading", { name: "Bestätige deine E-Mail." });
+    const confirmationUrl = new URL(mocks.signUp.mock.calls[0]?.[0].options.emailRedirectTo);
+    expect(confirmationUrl.searchParams.get("intent")).toBe("organization");
+    expect(confirmationUrl.searchParams.get("intro")).toBe("coach");
+    expect(confirmationUrl.searchParams.get("redirect")).toBe(`/organization/invite?coach=${code}`);
+
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail erneut senden" }));
+    await waitFor(() => expect(mocks.resend).toHaveBeenCalledTimes(1));
+    const resendUrl = new URL(mocks.resend.mock.calls[0]?.[0].options.emailRedirectTo);
+    expect(resendUrl.searchParams.get("redirect")).toBe(`/organization/invite?coach=${code}`);
+
+    fireEvent.change(screen.getByLabelText("Sechsstelliger Sicherheitscode"), { target: { value: "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: "E-Mail bestätigen" }));
+
+    expect(await screen.findByText("Organisationseinladung geöffnet")).toBeInTheDocument();
+    expect(pendingPostSignupIntent("user-1")).toBeNull();
+  });
+
   it("returns a signed-in invited coach to the invitation instead of the generic coach home", async () => {
     mocks.authState.user = { id: "user-1" };
     mocks.authState.role = "coach";

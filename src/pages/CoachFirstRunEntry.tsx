@@ -7,13 +7,15 @@ import { parseOrganizationInviteUrl } from "@/lib/organizationInvite";
 const CoachFirstRunEntry = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const invitationRoute = useMemo(() => {
+  const invitation = useMemo(() => {
     const redirect = searchParams.get("redirect");
     if (!redirect) return null;
     try {
       const parsed = new URL(redirect, "https://rewireperform.com");
       const invitation = parseOrganizationInviteUrl(parsed.toString());
-      return invitation.kind === "invite" ? invitation.route : null;
+      return invitation.kind === "invite"
+        ? { route: invitation.route, kind: invitation.inviteType === "coach_code" ? "coach_code" as const : "personal" as const }
+        : null;
     } catch {
       return null;
     }
@@ -21,11 +23,11 @@ const CoachFirstRunEntry = () => {
   const requestedMode = searchParams.get("auth_mode") === "login" ? "login" : "signup";
 
   const invitationAuthRoute = (mode: "signup" | "login") => {
-    if (!invitationRoute) return `/auth?mode=${mode}&intro=coach`;
+    if (!invitation) return `/auth?mode=${mode}&intro=coach`;
     const params = new URLSearchParams({
       mode,
       intent: "organization",
-      redirect: invitationRoute,
+      redirect: invitation.route,
       intro: "coach",
     });
     return `/auth?${params.toString()}`;
@@ -34,9 +36,10 @@ const CoachFirstRunEntry = () => {
   return (
     <CoachFirstRunExperience
       fitCameraToViewport={!Capacitor.isNativePlatform()}
-      invitation={Boolean(invitationRoute)}
+      invitation={Boolean(invitation)}
+      invitationKind={invitation?.kind}
       onComplete={() => {
-        if (invitationRoute) navigate(invitationAuthRoute(requestedMode));
+        if (invitation) navigate(invitationAuthRoute(requestedMode));
         else navigate("/team-access?scope=single_team");
       }}
       onLogin={() => navigate(invitationAuthRoute("login"))}

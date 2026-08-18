@@ -9,6 +9,7 @@ import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
 import CoachToolkit from "@/components/coach/CoachToolkit";
 import CoachEvidenceReviewPanel from "@/components/coach/CoachEvidenceReviewPanel";
+import { CoachAccountPanel } from "@/components/coach/CoachAccountPanel";
 import {
   CoachAppHeader,
   CoachBottomNavigation,
@@ -72,6 +73,13 @@ const SECTIONS: SectionMeta[] = [
     eyebrow: "Teams und Zugänge",
     title: "Alles, was dein Team verbindet.",
     description: "Einladungen, Programmstart, Kalender und Co-Coaches an einem geschützten Ort.",
+    requiresTeam: false,
+  },
+  {
+    id: "account",
+    eyebrow: "Coach Console",
+    title: "Konto & Feedback",
+    description: "Dein Zugang, Hilfe und direkte Rückmeldung an RewirePerform.",
     requiresTeam: false,
   },
 ];
@@ -196,6 +204,7 @@ const Coach = () => {
     }
 
     if (tab === "manage") return <TeamManagement teams={teams} onTeamCreated={fetchTeams} />;
+    if (tab === "account") return <CoachAccountPanel onBack={() => openTab("overview")} />;
     if (!selectedTeam) return renderEmptyTeam();
 
     return (
@@ -236,28 +245,30 @@ const Coach = () => {
   return (
     <div className={coachAppBackground}>
       <div className="pointer-events-none fixed inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_50%_-18%,rgba(46,173,137,0.13),transparent_56%)]" />
-      <CoachAppHeader onSignOut={handleSignOut} />
+      <CoachAppHeader onOpenAccount={() => openTab("account")} onSignOut={handleSignOut} />
       <main className={coachAppViewport}>
-        <CoachPageIntro
-          eyebrow={activeSection.eyebrow}
-          title={pageTitle}
-          description={tab === "overview" ? activeSection.title : activeSection.description}
-          trailing={teams.length > 1 ? (
-            <label className="relative block min-w-[12rem]">
-              <span className="sr-only">Team auswählen</span>
-              <select
-                value={selectedTeamId ?? ""}
-                onChange={(event) => selectTeam(event.target.value)}
-                className="min-h-11 w-full appearance-none rounded-[15px] border border-white/[0.08] bg-white/[0.035] py-2 pl-4 pr-10 text-sm font-medium text-[#EEF0F2] focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/42" />
-            </label>
-          ) : undefined}
-        />
+        {tab !== "account" && (
+          <CoachPageIntro
+            eyebrow={activeSection.eyebrow}
+            title={pageTitle}
+            description={tab === "overview" ? activeSection.title : activeSection.description}
+            trailing={teams.length > 1 ? (
+              <label className="relative block min-w-[12rem]">
+                <span className="sr-only">Team auswählen</span>
+                <select
+                  value={selectedTeamId ?? ""}
+                  onChange={(event) => selectTeam(event.target.value)}
+                  className="min-h-11 w-full appearance-none rounded-[15px] border border-white/[0.08] bg-white/[0.035] py-2 pl-4 pr-10 text-sm font-medium text-[#EEF0F2] focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/42" />
+              </label>
+            ) : undefined}
+          />
+        )}
 
-        {selectedTeam && teams.length === 1 && tab !== "manage" && (
+        {selectedTeam && teams.length === 1 && tab !== "manage" && tab !== "account" && (
           <p className="mt-5 inline-flex rounded-full border border-white/[0.07] bg-white/[0.025] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
             {selectedTeam.name}
           </p>

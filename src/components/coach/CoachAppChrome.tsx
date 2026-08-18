@@ -12,7 +12,7 @@ import {
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
-export type CoachAppSection = "overview" | "mental" | "evidence" | "toolkit" | "manage";
+export type CoachAppSection = "overview" | "mental" | "evidence" | "toolkit" | "manage" | "account";
 
 const coachSections: Array<{
   id: CoachAppSection;
@@ -26,7 +26,7 @@ const coachSections: Array<{
   { id: "manage", label: "Team", icon: Settings },
 ];
 
-export const CoachAppHeader = ({ onSignOut }: { onSignOut: () => void }) => (
+export const CoachAppHeader = ({ onOpenAccount, onSignOut }: { onOpenAccount: () => void; onSignOut: () => void }) => (
   <header className="sticky top-0 z-40 border-b border-white/[0.055] bg-[#0D0E12]/88 px-5 pb-3 pt-[max(14px,env(safe-area-inset-top))] backdrop-blur-2xl">
     <div className="mx-auto flex min-h-11 w-full max-w-5xl items-center justify-between gap-4">
       <BrandLockup symbolSize={27} textClassName="text-[13px] tracking-[-0.02em]" />
@@ -34,6 +34,15 @@ export const CoachAppHeader = ({ onSignOut }: { onSignOut: () => void }) => (
         <span className="hidden rounded-full border border-primary/15 bg-primary/[0.055] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-primary sm:inline-flex">
           Coach Console
         </span>
+        <button
+          type="button"
+          onClick={onOpenAccount}
+          aria-label="Konto und Feedback"
+          title="Konto und Feedback"
+          className="flex h-11 w-11 items-center justify-center rounded-[15px] border border-white/[0.07] bg-white/[0.025] text-white/48 hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Settings className="h-[18px] w-[18px]" strokeWidth={1.7} />
+        </button>
         <button
           type="button"
           onClick={onSignOut}

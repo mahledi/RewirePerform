@@ -145,8 +145,8 @@ Purposes:
 - App functionality
 - Personalization
 - Analytics of own progress and privacy-safe team aggregates
-- Product improvement for structured checkpoint feedback and separately
-  consented product-feedback comments
+- No Feedback Intelligence, structured checkpoint feedback or product-feedback
+  comments in V1.1; this later scope is explicitly absent from the release
 - Notifications, if enabled
 
 Tracking:
@@ -161,8 +161,9 @@ Sensitive handling:
   individual Development Index answers.
 - Coach views are aggregate/status views only, with privacy thresholds where applicable.
 
-The Feedback Intelligence 1.1 data map, withdrawal path and unresolved activation
-gates are documented in `docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md`.
+The dormant Feedback Intelligence design and its separate future activation
+gates are documented in `docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md`;
+they are not part of the V1.1 App Store submission.
 
 ## App Store Metadata Draft
 

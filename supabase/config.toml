@@ -25,6 +25,12 @@ verify_jwt = false
 [functions.submit-organization-access-request]
 verify_jwt = false
 
+# Founder-only delivery of a previously approved personal coach invitation.
+# The handler verifies the authenticated admin again before it can access
+# Resend or a pending invitation.
+[functions.send-organization-access-invitation]
+verify_jwt = true
+
 # Dedicated synthetic-Staging Feedback Intelligence endpoint. It accepts no
 # Supabase JWT and performs its own separate 64-hex machine authentication.
 # Runtime host, machine and database gates remain fail-closed in source.

@@ -40,7 +40,10 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(source).toContain("Ein Lernziel in drei Tagesformen");
     expect(source).toContain("Erst selbst erinnern.");
     expect(source).toContain("Dann prüfen.");
-    expect(source).toContain('initialScreen="invitation"');
+    expect(source).not.toContain("FeedbackQuestionnairePreview");
+    expect(source).not.toContain("Freies Feedback");
+    expect(source).not.toContain("Kurzes Feedback erscheint zu festgelegten Zeitpunkten");
+    expect(source).toContain('AthleteShot sceneId="development"');
     expect(source).toContain("APP_STORE_PRODUCT_URL");
     expect(source).not.toMatch(/Werkzeug|wird im Pilot geprüft|Eine Frage nach der anderen/);
     expect(source).not.toMatch(/Stabilisierung von Lernspuren|Zentrale mentale Prinzipien tauchen gezielt erneut auf/);

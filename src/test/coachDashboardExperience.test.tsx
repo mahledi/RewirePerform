@@ -63,6 +63,7 @@ vi.mock("@/components/coach/TeamEvidence", () => ({ default: () => <div>Reale En
 vi.mock("@/components/coach/CoachEvidenceReviewPanel", () => ({ default: () => <div>Reale Beobachtung</div> }));
 vi.mock("@/components/coach/CoachToolkit", () => ({ default: () => <div>Reales Toolkit</div> }));
 vi.mock("@/components/coach/TeamManagement", () => ({ default: () => <div>Reale Teamverwaltung</div> }));
+vi.mock("@/components/coach/CoachAccountPanel", () => ({ CoachAccountPanel: () => <div>Coach-Konto und Feedback</div> }));
 
 describe("premium Coach dashboard", () => {
   beforeEach(() => {
@@ -116,5 +117,13 @@ describe("premium Coach dashboard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Abmelden" }));
     await waitFor(() => expect(mocks.signOut).toHaveBeenCalledTimes(1));
     expect(mocks.navigate).toHaveBeenCalledWith("/");
+  });
+
+  it("opens the dedicated coach account and feedback area from the header", async () => {
+    render(<Coach />);
+    await screen.findByText("Reale Übersicht");
+
+    fireEvent.click(screen.getByRole("button", { name: "Konto und Feedback" }));
+    expect(await screen.findByText("Coach-Konto und Feedback")).toBeInTheDocument();
   });
 });

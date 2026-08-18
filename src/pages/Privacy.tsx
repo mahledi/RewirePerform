@@ -63,7 +63,7 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Die kurze Wahrheit zuerst</h2>
             <ul className="space-y-2">
               <li><span className="text-foreground">Deine Journale, privaten Reflexionen und sonstigen freien Antworten werden nicht gelesen, analysiert oder von einer KI verarbeitet.</span> Sie liegen zugriffsgeschützt in deinem Konto, damit <em>du</em> sie später wieder sehen kannst.</li>
-              <li><span className="text-foreground">Die eng begrenzte Ausnahme sind freiwillige Produktfeedback-Kommentare.</span> Sie entstehen nur, wenn du in einem Feedback-Checkpoint bewusst „+ Kurz etwas dazu sagen“ öffnest und davor separat zustimmst. Ohne dieses Ja öffnet sich kein Kommentarfeld; deine Auswahlantworten bleiben trotzdem nutzbar.</li>
+              <li><span className="text-foreground">Feedback Intelligence ist nicht Teil dieser V1.1-Auslieferung.</span> In V1.1 werden keine Feedback-Checkpoints, keine freiwilligen Produktfeedback-Kommentare und keine hierfür vorgesehenen Analysedaten erhoben oder verarbeitet.</li>
               <li><span className="text-foreground">Trainer sehen keine privaten Athleteninhalte.</span> Keine Stimmungswerte, keine Journale, keine Einzelantworten und keine psychologischen Bezeichnungen. Trainer können nur eigene, strukturierte Beobachtungen zu sichtbarem Sportverhalten erfassen.</li>
               <li><span className="text-foreground">Gruppierte Fortschrittsdaten ohne direkte Identifikatoren</span> können beobachtete Veränderungen und Datenqualität dokumentieren - <em>aber nur, wenn du aktiv zustimmst</em>. Du entscheidest. Du kannst jederzeit widerrufen.</li>
             </ul>
@@ -80,8 +80,8 @@ const Privacy = () => {
               Erhoben wird ausschließlich, was für vier klar getrennte Zwecke nötig ist:
               <span className="text-foreground"> (1)</span> dein Programm sauber durchzuführen,
               <span className="text-foreground"> (2)</span> dir am Ende ehrlich zu zeigen, was sich verändert hat, und
-              <span className="text-foreground"> (3)</span> - wenn du zustimmst - beobachtete Veränderungen gruppiert und mit klaren Aussagegrenzen auszuwerten, und
-              <span className="text-foreground"> (4)</span> RewirePerform mithilfe freiwilliger, ausdrücklich als Produktfeedback gekennzeichneter Antworten verständlicher, hilfreicher und nutzerfreundlicher zu machen.
+              <span className="text-foreground"> (3)</span> - wenn du zustimmst - beobachtete Veränderungen gruppiert und mit klaren Aussagegrenzen auszuwerten.
+              Eine spätere, getrennt freizugebende Feedback-Intelligence-Funktion ist nicht Teil dieser V1.1-Auslieferung.
             </p>
           </section>
 
@@ -90,7 +90,7 @@ const Privacy = () => {
             <ul className="space-y-2">
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
               <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Soweit du selbst vorvertragliche Schritte anfragst, erfolgt die Bearbeitung auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Soweit du eine Organisation vertrittst, stützen wir die angefragte geschäftliche Kommunikation und die angemessene Vorbereitung auf Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse besteht darin, die von dir initiierte Anfrage sicher und passend zu beantworten. Der technische Missbrauchsschutz und die Prüfung offensichtlicher Fake-/Spam-Anfragen beruhen ebenfalls auf diesem Sicherheitsinteresse.</li>
-              <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. Eine davon getrennte, freiwillige Einwilligung gilt für die individuelle Analyse ausdrücklich abgegebener Produktfeedback-Kommentare. <span className="text-foreground">Ohne dein aktives Ja wird kein Feedback-Kommentar gespeichert.</span></li>
+              <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. Feedback Intelligence, Feedback-Kommentare und ein Jarvis-Zugriff sind nicht Teil dieser V1.1-Auslieferung.</li>
               <li><span className="text-foreground">Art. 9 Abs. 2 lit. a DSGVO - ausdrückliche Einwilligung:</span> Soweit psychologisch sensible Angaben verarbeitet werden, ist dafür eine gesonderte, ausdrückliche Einwilligung erforderlich.</li>
               <li><span className="text-foreground">Minderjährige und Länderumfang:</span> RewirePerform ist ab 13 Jahren vorgesehen und wird derzeit ausschließlich für Deutschland angeboten. Von 13 bis einschließlich 15 werden datenabhängige Programmfunktionen erst freigeschaltet, wenn eine sorgeberechtigte Person und der Jugendliche selbst der aktuellen Version zugestimmt haben. Mit 16 oder 17 entscheidet der Jugendliche selbst. Zugriffe aus nicht freigegebenen Ländern bleiben technisch gesperrt. Bei einer späteren internationalen Einführung werden Rechts-, Datenschutz- und Store-Anforderungen erneut für den dann vorgesehenen Umfang geprüft. Der Verein ist an diesem Freigabeprozess nicht beteiligt.</li>
             </ul>
@@ -105,7 +105,7 @@ const Privacy = () => {
               <li>Trainer und Verein sehen weder die E-Mail-Adresse der sorgeberechtigten Person noch ihre Entscheidung oder einen Ablehnungsgrund.</li>
               <li>Die Programmfreigabe und die getrennte Pilot-Auswertung können über den persönlichen Widerrufslink, in der App oder über den Datenschutzkontakt widerrufen werden.</li>
               <li>Die Pilot-Auswertung wird nur aktiviert, wenn die altersgerechten Entscheidungen in der aktuellen Textversion vorliegen: von 13 bis einschließlich 15 durch die sorgeberechtigte Person und den Jugendlichen, mit 16 oder 17 durch den Jugendlichen selbst.</li>
-              <li>Die individuelle Analyse freiwilliger Produktfeedback-Kommentare ist davon getrennt. Von 13 bis einschließlich 15 braucht sie im vorgesehenen Deutschland-Flow zusätzlich die passende Freigabe der sorgeberechtigten Person. Ohne Kommentar bleiben alle strukturierten Auswahlfragen vollständig nutzbar.</li>
+              <li>Feedback Intelligence mit Checkpoints, Kommentaren oder einem Jarvis-Zugriff ist nicht Teil dieser V1.1-Auslieferung. Dafür wird in V1.1 keine zusätzliche Minderjährigen-Freigabe erhoben oder genutzt.</li>
               <li>Eine externe wissenschaftliche Studie oder weitergehende Forschungsnutzung würde eine neue, getrennte Information und Entscheidung erfordern.</li>
             </ul>
           </section>
@@ -120,8 +120,7 @@ const Privacy = () => {
               <li><span className="text-foreground">Strukturierte Transfer-Beobachtungen:</span> An ausgewählten Tagen eine kurze Antwort zu einem konkreten Verhalten in Training oder Wettkampf. Sie ersetzt die optionale freie Reflexion und enthält keinen Freitext.</li>
               <li><span className="text-foreground">Trainer-Beobachtungen:</span> Strukturierte Bewertungen direkt beobachtbaren Sportverhaltens. Sie enthalten keine Diagnose und keinen Pflicht-Freitext.</li>
               <li><span className="text-foreground">Journale, private Reflexionen und sonstige freie Antworten:</span> werden ausschließlich gespeichert, damit du sie wiederfindest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer KI gelesen, nicht in Gruppenwerte einbezogen und nicht für Personalisierung verwendet.</span></li>
-              <li><span className="text-foreground">Feedback-Checkpoints an Tag 10, 24, 39 und 55:</span> strukturierte Auswahlantworten, Fragebogen- und Inhaltsversion, Programmtag und ein minimierter Aktivitäts-Snapshot, zum Beispiel abgeschlossene Programmtage, Check-ins, erstellte Journal-<em>Anzahl</em> und erledigte Aufgaben. Journalinhalt, Namen, E-Mail, Team- und Coach-Daten gehören nicht zu diesem Snapshot.</li>
-              <li><span className="text-foreground">Freiwillige Produktfeedback-Kommentare:</span> nur nach einer separaten, nicht vorangekreuzten Einwilligung direkt vor dem ersten Kommentarfeld. Sie dürfen ausschließlich zur Produktverbesserung individuell analysiert werden, nicht für Werbung, Coach-Bewertungen, Personalisierung oder automatisierte Entscheidungen über Athleten.</li>
+              <li><span className="text-foreground">Feedback Intelligence:</span> Die vorgesehenen Checkpoints an Tag 10, 24, 39 und 55, freiwillige Produktfeedback-Kommentare und ein zugehöriger Analyseexport sind nicht Teil dieser V1.1-Auslieferung. Dafür werden in V1.1 keine Daten erhoben.</li>
               <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Name, E-Mail-Adresse, Funktion sowie die angegebenen Team-, Organisations-, Sport- und Projektinformationen. Eine Telefonnummer wird nur in der ausführlichen Organisationsstrecke und nur freiwillig beziehungsweise passend zum gewählten Kontaktweg erhoben. Bitte übermittle dabei keine Namen oder persönlichen Daten von Athleten.</li>
               <li><span className="text-foreground">Trainingszeiten und Benachrichtigungseinstellungen:</span> nur, wenn du Erinnerungen aktivierst.</li>
             </ul>
@@ -139,8 +138,7 @@ const Privacy = () => {
             <p className="mt-3">
               Gespeichert wird nur der übernommene und weiterhin bearbeitbare Text - genauso, als hättest du ihn
               getippt. Für Journale und private Reflexionen gelten anschließend unverändert die privaten
-              Schutzregeln dieser Erklärung. Ein ausdrücklich gekennzeichneter Produktfeedback-Kommentar
-              folgt dagegen nur der dafür separat erteilten Einwilligung. Unterstützt ein iPhone die lokale Erkennung nicht,
+              Schutzregeln dieser Erklärung. Ein Produktfeedback-Kommentarfeld ist nicht Teil dieser V1.1-Auslieferung. Unterstützt ein iPhone die lokale Erkennung nicht,
               erfolgt kein automatischer Server-Fallback; Tippen bleibt jederzeit möglich.
             </p>
             <p className="mt-3">
@@ -168,10 +166,8 @@ const Privacy = () => {
               Trainer sehen sie nie — auch nicht in Ausschnitten, auch nicht in Stichwörtern, auch nicht gruppiert.
             </p>
             <p className="mt-3">
-              Das gilt nicht für Text, den du bewusst in einem als Produktfeedback markierten Feld „+ Kurz etwas dazu sagen“
-              eingibst. Dieses Feld öffnet sich erst nach einer eigenen freiwilligen Zustimmung. Ein Nein ist gleichwertig,
-              verändert dein Programm nicht und lässt deine strukturierte Antwort bestehen. Die Zustimmung kannst du in
-              „Einstellungen → Konto & Daten“ für jeden Feedback-Checkpoint widerrufen.
+              In V1.1 gibt es keine als Produktfeedback markierten Felder, Feedback-Checkpoints oder freiwilligen
+              Produktfeedback-Kommentare. Für deine Journale und privaten Reflexionen gibt es damit keine Ausnahme.
             </p>
             <p className="mt-3">
               Reflexion funktioniert nur, wenn sie ehrlich ist. Ehrlich wird sie nur, wenn sie sicher ist.
@@ -190,7 +186,6 @@ const Privacy = () => {
               <li>– Veränderungen zwischen Anfang und Ende aus freigegebenen, versionierten Assessments und Fragebögen</li>
               <li>– zeitliche Entwicklungen bei Stimmung, Energie und Fokus</li>
               <li>– strukturierte Transfer-Antworten und Teambeobachtungen von Trainern</li>
-              <li>– strukturierte Feedback-Antworten und minimierte Aktivitätszahlen, um nicht-kausale Zusammenhänge zwischen Nutzung und Selbsteinschätzung zu untersuchen</li>
             </ul>
             <p className="mt-3 text-foreground">Was niemals einfließt — auch nicht mit deiner Zustimmung:</p>
             <ul className="mt-2 space-y-1">
@@ -200,10 +195,9 @@ const Privacy = () => {
               <li>– Werte aus Gruppen mit weniger als fünf freigegebenen Personen</li>
             </ul>
             <p className="mt-3">
-              Freiwillige Produktfeedback-Kommentare sind eine separate, eng gekennzeichnete Ausnahme und benötigen eine
-              eigene Einwilligung. Sie fließen nie in normale Gruppenaggregate, Coach-Ansichten, Client-Analytics, Logs oder
-              Standardexporte ein. Ein späterer, besonders begrenzter Analysezugriff muss die Einwilligung beim Export erneut
-              prüfen und behandelt jeden Text als nicht vertrauenswürdige Nutzereingabe, niemals als System- oder Codeanweisung.
+              Feedback Intelligence mit strukturierten Checkpoints, Kommentaren oder einem Analyseexport ist nicht Teil dieser
+              V1.1-Auslieferung. Aus diesem späteren Funktionsbereich fließen in V1.1 keine Daten in Gruppenaggregate,
+              Coach-Ansichten, Client-Analytics, Logs oder Standardexporte ein.
             </p>
             <p className="mt-3">
               Gruppenaggregate werden erst ab mindestens fünf freigegebenen Personen ausgegeben und enthalten keine Namen oder E-Mail-Adressen. Die Einwilligung
@@ -221,7 +215,7 @@ const Privacy = () => {
               deinen Vergleich zwischen Anfang und Ende auf. Der feste 56-Tage-Inhalt und seine Missionen werden
               nicht von einer KI erzeugt. Kurze, deterministische Einordnungen können den Programmtag, den
               Kalenderkontext und strukturierte Angaben zu Sport, Rolle oder Tageszustand berücksichtigen — <span className="text-foreground">nie
-              Journaltexte, private Reflexionen oder Produktfeedback-Kommentare</span>.
+              Journaltexte oder private Reflexionen</span>.
             </p>
           </section>
 
@@ -234,7 +228,7 @@ const Privacy = () => {
             </p>
             <p className="mt-3">
               Ausdrücklich nicht sichtbar für Trainer: einzelne Werte zu Stimmung, Energie oder Fokus, Journaltexte,
-              private Freitextantworten, Produktfeedback-Kommentare, individuelle Assessment-Ergebnisse oder persönliche Entwicklungsbezeichnungen.
+              private Freitextantworten, individuelle Assessment-Ergebnisse oder persönliche Entwicklungsbezeichnungen.
             </p>
             <p className="mt-3">
               Ein Trainer kann zusätzlich eigene strukturierte Team- oder Einzelbeobachtungen zu fünf direkt sichtbaren
@@ -278,7 +272,7 @@ const Privacy = () => {
               <li>– interne technische Fehlerereignisse: höchstens 30 Tage</li>
               <li>– Push-Zustellprotokolle: höchstens 90 Tage nach ihrer Erstellung</li>
               <li>– personenbezogene Pilot-Auswertungsdaten: bis zum dokumentierten Ende des jeweiligen freigegebenen Pilotprotokolls; bei Widerruf werden personenbezogene Transferdaten unmittelbar aus der Pilot-Auswertung entfernt</li>
-              <li>– freiwillige Produktfeedback-Kommentare und personenbeziehbare Analyseableitungen: höchstens 365 Tage; vorherige Löschung bei Widerruf, Kontolöschung oder Ende des konkreten Produktverbesserungszwecks</li>
+              <li>– Feedback-Checkpoints, Produktfeedback-Kommentare und personenbeziehbare Analyseableitungen: nicht Teil dieser V1.1-Auslieferung; dafür werden in V1.1 keine Daten gespeichert</li>
               <li>– abgelehnte, zurückgezogene oder nicht weiterverfolgte Team- und Organisationsanfragen: spätestens zwölf Monate nach Abschluss; bestätigte Fake- oder Spam-Anfragen können sofort vollständig gelöscht werden</li>
               <li>– bei einer Zusammenarbeit: nur die für Organisation, Vertrag und laufende Betreuung erforderlichen Angaben nach den dafür geltenden gesetzlichen und vertraglichen Fristen; die ursprüngliche Anfrage wird nicht unbegrenzt als separater Interessenten-Datensatz weitergeführt</li>
               <li>– vollständig anonyme Aggregate: solange sie keinen Personenbezug mehr besitzen</li>
@@ -291,21 +285,16 @@ const Privacy = () => {
               <li><span className="text-foreground">Supabase:</span> Authentifizierung, Datenbank und Edge Functions. Das bestätigte Hauptprojekt liegt in Frankfurt (eu-central-1). Technische Betriebs- und Sicherheitsdaten können nach Anbieterbedingungen und Auftragsverarbeitungsvertrag verarbeitet werden.</li>
               <li><span className="text-foreground">Vercel:</span> Auslieferung der Website und Web-App. Dabei fallen technisch notwendige Anfrage- und Sicherheitsmetadaten an. Soweit Daten außerhalb des EWR verarbeitet werden, stützt sich der Anbieter unter anderem auf die vereinbarten Standardvertragsklauseln.</li>
               <li><span className="text-foreground">Cloudflare Turnstile:</span> Missbrauchsschutz für das öffentliche Team- und Organisationsformular. Dabei werden ausschließlich die für die Sicherheitsprüfung notwendigen technischen Anfrage- und Gerätedaten verarbeitet; Turnstile wird nicht für Werbung, Nutzerprofile oder appübergreifendes Tracking eingesetzt.</li>
-              <li><span className="text-foreground">Resend:</span> ausschließlich für transaktionale E-Mails an sorgeberechtigte Personen. Verarbeitet werden Empfängeradresse, Nachrichteninhalt und Zustellmetadaten. Öffnungs- und Link-Tracking werden für diesen Versand nicht genutzt.</li>
+              <li><span className="text-foreground">Resend:</span> ausschließlich für transaktionale E-Mails an sorgeberechtigte Personen sowie für nach persönlicher Freigabe versendete Coach-Zugänge. Verarbeitet werden Empfängeradresse, Nachrichteninhalt einschließlich eines einmaligen persönlichen Zugangslinks und Zustellmetadaten. Die per E-Mail versendete Coach-Einladung ist an diese E-Mail-Adresse gebunden, einmalig und sieben Tage gültig. Öffnungs- und Link-Tracking werden für diesen Versand nicht genutzt.</li>
               <li><span className="text-foreground">Push-Infrastruktur:</span> Browser- beziehungsweise Betriebssystemanbieter transportieren optionale Benachrichtigungen. Private Journal- oder Antwortinhalte werden nicht in Push-Nachrichten aufgenommen.</li>
             </ul>
             <p className="mt-3">
-              Für Feedback Intelligence ist eine eng begrenzte Auswertung über das intern und lokal auf Mahles Mac
-              betriebene Jarvis-System vorgesehen. Der Analyseexport enthält weder Namen noch E-Mail-Adressen oder
-              direkte Nutzerkennungen. Jarvis verarbeitet die freigegebenen Daten nur während der Analyse und speichert
-              weder den Rohkommentar noch eine zweite personenbezogene Rohtextkopie; erhalten bleiben ausschließlich
-              zusammengefasste Auswertungen und Berichte. Der echte Produktdatenzugriff bleibt bis zur gesonderten
-              technischen, datenschutzrechtlichen und minderjährigenbezogenen Freigabe geschlossen.
+              Feedback Intelligence und ein Jarvis-Zugriff sind nicht Teil dieser V1.1-Auslieferung. Es gibt dafür keinen
+              Produktdatenexport, keinen Reader und keine Verarbeitung von Athletendaten.
             </p>
             <p className="mt-3">
-              Kein externer KI-Anbieter erhält echte Produktfeedback-Kommentare. Bevor sich das ändert, wird der konkrete
-              Empfänger samt Verarbeitungsort und Schutzgrundlage hier benannt, die Einwilligungsinformation versioniert
-              und die Freischaltung erneut geprüft. Ohne diese Voraussetzungen bleibt eine externe Übermittlung gesperrt.
+              Kein externer KI-Anbieter erhält in V1.1 Produktdaten. Vor einer späteren Änderung werden konkreter Empfänger,
+              Verarbeitungsort, Schutzgrundlage und die notwendige Einwilligungsinformation getrennt benannt und geprüft.
             </p>
             <p className="mt-3">Es findet keine Weitergabe an Werbenetzwerke oder Datenhändler statt. Sentry ist nicht mehr mit der App verbunden und erhält keine neuen App-Ereignisse.</p>
           </section>

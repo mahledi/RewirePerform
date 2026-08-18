@@ -48,7 +48,21 @@ Die öffentliche Organisationsanfrage benötigt in Production weiterhin:
    denselben zentralen Webweg über Apples vorgesehenen In-App-Browser;
 5. Turnstile-Secret und `ORGANIZATION_INQUIRY_PUBLIC_ENABLED=true` nur in der
    Zielumgebung;
-6. vor öffentlicher Staging-Aktivierung noch den positiven Turnstile-E2E-Smoke
+6. für die persönliche, erst nach Founder-Freigabe ausgelöste Coach-Einladung:
+   `RESEND_API_KEY` und `ORGANIZATION_INVITATION_EMAIL_FROM`; der Versand
+   bleibt ohne diese beiden Werte fail-closed und der Admin erhält weiterhin
+   den einmaligen Link als manuellen Rückweg;
+7. die Edge Function `send-organization-access-invitation` und die enge
+   Nachfolge-Migration
+   `20260818103000_coach_invite_existing_member_guard_v1_1.sql` nur zusammen
+   mit dem bereits vorhandenen Co-Coach-Migrationsblock isoliert anwenden;
+   sie verhindert, dass ein Lead Coach auf einem bereits angemeldeten Gerät
+   seine eigene Co-Coach-Einladung verbraucht;
+8. unmittelbar vor einem echten Coach-Mail-Smoke im Resend-Domainbereich
+   bestätigen, dass Open- und Click-Tracking deaktiviert sind. Diese Prüfung
+   ist ein Deployment-Gate; keine Tracking-Konfiguration oder Empfängerwerte
+   werden im Repository gespeichert;
+9. vor öffentlicher Staging-Aktivierung noch den positiven Turnstile-E2E-Smoke
    und die Admin-Sichtprüfung; die Negativmatrix, Datenbankpfade und der
    Retention-Job sind bereits Staging-verifiziert.
 

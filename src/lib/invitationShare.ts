@@ -51,7 +51,7 @@ export const buildCoachInvitationShare = (
   const message = [
     title,
     "",
-    "Öffne deine persönliche Coach-Einladung:",
+    "Öffne deine Co-Coach-Einladung:",
     url,
     "",
     `Coach-Code: ${formattedCode}`,

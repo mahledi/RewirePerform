@@ -45,9 +45,9 @@ if (env.VITE_SUPABASE_URL !== expectedUrl) {
 }
 if (
   expected === "production"
-  && env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED !== "true"
+  && env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED !== "false"
 ) {
-  failures.push("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be true for the V1.1 production client");
+  failures.push("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be false for the V1.1 production client");
 }
 if (env.VITE_SUPABASE_URL === `https://${retiredStagingRef}.supabase.co`) {
   failures.push(`retired Staging project ${retiredStagingRef} is permanently blocked`);

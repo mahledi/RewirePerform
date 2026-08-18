@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -19,6 +20,7 @@ import {
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { resolveDay } from "@/lib/getDayContent";
 import { captureAppError } from "@/lib/monitoring";
+import type { CalendarEventType } from "@/content/matrixDayTypes";
 
 interface TrendPoint {
   week: string;
@@ -136,6 +138,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [todayContext, setTodayContext] = useState<CalendarEventType>("training");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -180,6 +183,21 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
 
     fetchData();
   }, [teamId, session, reloadKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const today = format(new Date(), "yyyy-MM-dd");
+    supabase
+      .from("team_calendar_events")
+      .select("event_type")
+      .eq("team_id", teamId)
+      .eq("date", today)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setTodayContext((data?.event_type as CalendarEventType | undefined) ?? "training");
+      });
+    return () => { cancelled = true; };
+  }, [teamId]);
 
   if (loading) {
     return (
@@ -258,7 +276,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const hasToday = Boolean(today?.sufficient_data);
   const minN = data.min_n ?? 5;
   const dayInfo = team?.program_start_date ? getCurrentProgramDay(team.program_start_date) : null;
-  const resolvedToday = dayInfo ? resolveDay(dayInfo.dayNumber, new Date(), "training") : null;
+  const resolvedToday = dayInfo ? resolveDay(dayInfo.dayNumber, new Date(), todayContext) : null;
 
   const dailyMetrics: Array<{
     key: WellbeingKey;

@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import heroImage from "@/assets/hero-athlete.jpg";
 import { BrandLockup } from "@/components/brand/BrandLogo";
-import { FeedbackQuestionnairePreview } from "@/components/feedback-intelligence/FeedbackQuestionnairePreview";
 import CoachFirstRunExperience, {
   CoachFirstRunSceneVisual,
   type CoachFirstRunSceneId,
@@ -598,17 +597,17 @@ const WebsiteGoldenPagePreview = () => {
         <div className="mx-auto max-w-[1380px]">
           <div className="grid items-start gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
             <div className="lg:sticky lg:top-28">
-              <SectionHeading eyebrow="07 · Messung und Weiterentwicklung" title={<>Nutzung sichtbar machen. <span className="text-primary">Das System verbessern.</span></>} id="evidence-title">
-                <p>Start-, Zwischen- und Abschlussmessung, Programmaktivität, Verständnis und strukturierte Rückmeldungen ergeben einen nachvollziehbaren Verlauf.</p>
-                <p>Dieser Verlauf beschreibt Nutzung und Selbstauskünfte – keine Bewertung der Person und keinen automatischen Wirksamkeitsbeweis. Er schafft die Grundlage, RewirePerform kontinuierlich mit Athleten und Coaches weiterzuentwickeln.</p>
+              <SectionHeading eyebrow="07 · Entwicklung und Orientierung" title={<>Entwicklung sichtbar machen. <span className="text-primary">Den Alltag einordnen.</span></>} id="evidence-title">
+                <p>Start-, Zwischen- und Abschlussmessung, Programmaktivität und Verständnis ergeben einen nachvollziehbaren Verlauf.</p>
+                <p>Dieser Verlauf beschreibt Nutzung und Selbstauskünfte – keine Bewertung der Person und keinen automatischen Wirksamkeitsbeweis. Er hilft Athleten und Coaches, den nächsten Schritt sinnvoll einzuordnen.</p>
               </SectionHeading>
               <div className="mt-8 flex flex-wrap gap-2">
-                {["Pre · Mid · Post", "Aktivität", "Verständnis", "Freies Feedback"].map((label) => <span key={label} className="rounded-full border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-[10px] font-semibold text-white/44">{label}</span>)}
+                {["Pre · Mid · Post", "Aktivität", "Verständnis", "Entwicklung"].map((label) => <span key={label} className="rounded-full border border-white/[0.07] bg-white/[0.025] px-3 py-2 text-[10px] font-semibold text-white/44">{label}</span>)}
               </div>
             </div>
             <div className="grid gap-6 xl:grid-cols-2">
               <div className="relative flex min-h-[580px] items-start justify-center overflow-visible px-4 pt-10 sm:min-h-[700px] sm:px-6"><ProductLight className="-top-24 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 opacity-75" /><div className="relative z-10"><AthleteShot sceneId="measurement" /></div></div>
-              <div className="relative overflow-visible p-2 [&_button]:min-h-11 sm:p-5"><ProductLight className="-top-24 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 opacity-70" /><div className="relative z-10"><p className="mb-5 text-sm font-medium text-white/44">Kurzes Feedback erscheint zu festgelegten Zeitpunkten – transparent, freiwillig und Schritt für Schritt.</p><FeedbackQuestionnairePreview day={24} initialScreen="invitation" /></div></div>
+              <div className="relative overflow-visible p-2 sm:p-5"><ProductLight className="-top-24 left-1/2 h-[26rem] w-[26rem] -translate-x-1/2 opacity-70" /><div className="relative z-10"><p className="mb-5 text-sm font-medium text-white/44">Dein Verlauf verbindet Start, Alltag und Abschluss – ohne dich auf eine Zahl zu reduzieren.</p><AthleteShot sceneId="development" /></div></div>
             </div>
           </div>
         </div>

@@ -157,8 +157,6 @@ const OrganizationRequestManager = () => {
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [tier, setTier] = useState<"community" | "partner" | "enterprise">("community");
-  const [teamName, setTeamName] = useState("");
-  const [teamSport, setTeamSport] = useState("");
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
   const selected = useMemo(
@@ -186,8 +184,6 @@ const OrganizationRequestManager = () => {
 
   useEffect(() => {
     if (!selected) return;
-    setTeamName(selected.organization_name);
-    setTeamSport(selected.sports[0] ?? "");
     setNote("");
     setInviteUrl(null);
   }, [selected?.id]);
@@ -211,14 +207,14 @@ const OrganizationRequestManager = () => {
   };
 
   const approve = async () => {
-    if (!selected || saving || teamName.trim().length < 2) return;
+    if (!selected || saving) return;
     setSaving(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error: rpcError } = await (supabase as any).rpc("approve_organization_access_request", {
       _request_id: selected.id,
       _access_tier: tier,
-      _team_name: teamName.trim(),
-      _team_sport: teamSport.trim() || null,
+      _team_name: null,
+      _team_sport: null,
     });
     setSaving(false);
     if (rpcError || !data?.invitation_token) {
@@ -226,7 +222,17 @@ const OrganizationRequestManager = () => {
       return;
     }
     const url = `${window.location.origin}/organization/invite?token=${encodeURIComponent(String(data.invitation_token))}`;
-    toast.success("Freigabe vorbereitet. Die Einladung wurde noch nicht automatisch versendet.");
+    const { error: emailError } = await supabase.functions.invoke("send-organization-access-invitation", {
+      body: {
+        recipient_email: selected.work_email,
+        invitation_token: String(data.invitation_token),
+      },
+    });
+    if (emailError) {
+      toast.error("Freigabe ist vorbereitet, aber die E-Mail konnte nicht gesendet werden. Teile den Link persönlich.");
+    } else {
+      toast.success("Freigabe vorbereitet und persönliche Einladung per E-Mail gesendet.");
+    }
     await load();
     setInviteUrl(url);
   };
@@ -378,22 +384,20 @@ const OrganizationRequestManager = () => {
                 </section>}
 
                 {approvableStatuses.has(selected.status) ? <section className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
-                  <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" /><div><p className="font-semibold">Zugang vorbereiten</p><p className="mt-1 text-sm text-muted-foreground">Erstellt Organisation, erstes Team und eine einmalige Einladung. Kein Versand und keine Zahlung erfolgen automatisch.</p></div></div>
-                  <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" /><div><p className="font-semibold">Zugang vorbereiten</p><p className="mt-1 text-sm text-muted-foreground">Erstellt den freigegebenen Organisationszugang und eine einmalige persönliche Einladung. Das erste Team legt der Coach anschließend selbst im Dashboard an.</p></div></div>
+                  <div className="max-w-xs space-y-2">
                     <div className="space-y-2"><Label htmlFor="partner-tier">Klasse</Label><select id="partner-tier" value={tier} onChange={(e) => setTier(e.target.value as typeof tier)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="community">Community</option><option value="partner">Partner</option><option value="enterprise">Enterprise</option></select></div>
-                    <div className="space-y-2"><Label htmlFor="partner-team">Erstes Team</Label><Input id="partner-team" value={teamName} onChange={(e) => setTeamName(e.target.value)} /></div>
-                    <div className="space-y-2"><Label htmlFor="partner-sport">Sport</Label><Input id="partner-sport" value={teamSport} onChange={(e) => setTeamSport(e.target.value)} /></div>
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground">Die Klasse beschreibt Umfang, Begleitung, Anpassung und Integrationsbedarf – nicht die vermutete Zahlungsfähigkeit der Organisation.</p>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button disabled={saving || teamName.trim().length < 2}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />}Persönlich freigeben</Button>
+                      <Button disabled={saving}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Building2 className="h-4 w-4" />}Persönlich freigeben</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>{selected.organization_name} verbindlich vorbereiten?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Es werden die Organisation, das Team „{teamName.trim()}“ und eine einmalige Einladung für {selected.work_email} als {tierLabels[tier]} angelegt. Es wird noch keine E-Mail versendet und keine Zahlung ausgelöst.
+                          Es werden der Organisationszugang und eine einmalige Einladung für {selected.work_email} als {tierLabels[tier]} angelegt. Die persönliche Zugangs-E-Mail wird anschließend ausschließlich an diese Adresse gesendet. Der Coach erstellt sein erstes Team nach der Anmeldung selbst. Es wird noch keine Zahlung ausgelöst.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -402,7 +406,6 @@ const OrganizationRequestManager = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                  {inviteUrl && <div className="rounded-xl border border-border bg-background p-3"><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Einmalige Einladung</p><div className="mt-2 flex gap-2"><Input readOnly value={inviteUrl} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label="Einladungslink kopieren" onClick={() => { void navigator.clipboard.writeText(inviteUrl); toast.success("Einladungslink kopiert."); }}><Clipboard className="h-4 w-4" /></Button></div></div>}
                 </section> : (
                   <section className="rounded-2xl border border-border/70 bg-secondary/20 p-5">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Vorgang dokumentiert</p>
@@ -410,6 +413,7 @@ const OrganizationRequestManager = () => {
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Diese Anfrage ist nicht mehr im Entscheidungsmodus. Bestehende Organisationen und Rollen werden separat verwaltet.</p>
                   </section>
                 )}
+                {inviteUrl && <section className="rounded-2xl border border-border/70 bg-secondary/20 p-4 sm:p-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Einmalige Einladung</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Die Einladung wurde für {selected.work_email} vorbereitet. Falls der E-Mail-Versand nicht ankommt, kannst du diesen persönlichen Link gezielt weitergeben.</p><div className="mt-3 flex gap-2"><Input readOnly value={inviteUrl} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label="Einladungslink kopieren" onClick={() => { void navigator.clipboard.writeText(inviteUrl); toast.success("Einladungslink kopiert."); }}><Clipboard className="h-4 w-4" /></Button></div></section>}
               </CardContent>
             </Card>
           )}
