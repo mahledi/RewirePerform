@@ -11,6 +11,7 @@ const privacy = readFileSync(resolve(process.cwd(), "src/pages/Privacy.tsx"), "u
 
 describe("organization invitation delivery contract", () => {
   it("accepts delivery only from an authenticated founder admin", () => {
+    expect(source).toContain("if (origin && !allowedOrigin)");
     expect(source).toContain("admin.auth.getUser(token)");
     expect(source).toContain('.eq("role", "admin")');
     expect(source).toContain('return response(403, { error: "admin_required" }');

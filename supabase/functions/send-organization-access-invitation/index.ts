@@ -43,7 +43,10 @@ Deno.serve(async (request) => {
   const allowedOrigin = origin && allowedOrigins.has(origin) ? origin : null;
   if (request.method === "OPTIONS") return allowedOrigin ? response(200, { ok: true }, allowedOrigin) : response(403, { error: "origin_not_allowed" }, null);
   if (request.method !== "POST") return response(405, { error: "method_not_allowed" }, allowedOrigin);
-  if (!allowedOrigin) return response(403, { error: "origin_not_allowed" }, null);
+  // CapacitorHttp performs native iOS requests outside the browser CORS layer,
+  // so those authenticated requests legitimately contain no Origin header.
+  // Web callers that send an Origin still have to match the explicit allowlist.
+  if (origin && !allowedOrigin) return response(403, { error: "origin_not_allowed" }, null);
 
   try {
     const authorization = request.headers.get("Authorization") ?? "";
