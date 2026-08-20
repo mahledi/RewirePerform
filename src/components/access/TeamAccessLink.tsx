@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { Link } from "react-router-dom";
 
 type TeamAccessScope = "single_team" | "organization";
+type NativeTeamAccessPlatform = "ios" | "android";
 
 type TeamAccessLinkProps = {
   children: React.ReactNode;
@@ -18,10 +19,13 @@ export const buildTeamAccessPath = (scope?: TeamAccessScope) => {
   return `/team-access${query}`;
 };
 
-export const buildPublicTeamAccessUrl = (scope?: TeamAccessScope) => {
+export const buildPublicTeamAccessUrl = (
+  scope?: TeamAccessScope,
+  platform?: NativeTeamAccessPlatform,
+) => {
   const url = new URL(PUBLIC_TEAM_ACCESS_URL);
   if (scope) url.searchParams.set("scope", scope);
-  url.searchParams.set("source", "ios");
+  if (platform) url.searchParams.set("source", platform);
   return url.toString();
 };
 
@@ -30,7 +34,11 @@ const TeamAccessLink = ({ children, className, scope, "aria-label": ariaLabel }:
     if (!Capacitor.isNativePlatform()) return;
 
     event.preventDefault();
-    const url = buildPublicTeamAccessUrl(scope);
+    const platform = Capacitor.getPlatform();
+    const nativeSource = platform === "ios" || platform === "android"
+      ? platform
+      : undefined;
+    const url = buildPublicTeamAccessUrl(scope, nativeSource);
     void Browser.open({
       url,
       presentationStyle: "fullscreen",

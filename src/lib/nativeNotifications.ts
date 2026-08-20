@@ -16,6 +16,7 @@ const LAST_REST_VISUALIZATION_NOTIFICATION_ID = REST_VISUALIZATION_NOTIFICATION_
 
 const STORAGE_PREFIX = "rewire_native_reminders:";
 const OWNER_STORAGE_KEY = "rewire_native_reminders_owner";
+const REMINDER_CHANNEL_ID = "rewireperform-reminders-v1";
 
 export type NativeReminderKind = "morning" | "evening" | "pre_training" | "rest_visualization";
 
@@ -151,7 +152,7 @@ export const buildNativeReminderNotifications = (
 ): LocalNotificationSchema[] => {
   const preferences = validatePreferences(input);
   if (!preferences || !input.userId.trim()) {
-    throw new Error("Ungültige Einstellungen für iOS-Erinnerungen");
+    throw new Error("Ungültige Einstellungen für App-Erinnerungen");
   }
 
   const notifications: LocalNotificationSchema[] = [];
@@ -168,6 +169,7 @@ export const buildNativeReminderNotifications = (
           },
         },
         threadIdentifier: "rewireperform-reminders",
+        channelId: REMINDER_CHANNEL_ID,
         interruptionLevel: "active",
         extra: reminderExtra(input.userId, "/dashboard", "morning"),
       },
@@ -182,6 +184,7 @@ export const buildNativeReminderNotifications = (
           },
         },
         threadIdentifier: "rewireperform-reminders",
+        channelId: REMINDER_CHANNEL_ID,
         interruptionLevel: "active",
         extra: reminderExtra(input.userId, "/journal", "evening"),
       },
@@ -220,6 +223,7 @@ export const buildNativeReminderNotifications = (
       body: "Dein kurzer Pre-Training-Flow ist bereit.",
       schedule: { at: reminderAt },
       threadIdentifier: "rewireperform-reminders",
+      channelId: REMINDER_CHANNEL_ID,
       interruptionLevel: "active",
       extra: reminderExtra(
         input.userId,
@@ -276,14 +280,27 @@ const cancelPendingNotifications = async (ids: number[]) => {
   });
 };
 
+const ensureNativeReminderChannel = async () => {
+  if (Capacitor.getPlatform?.() !== "android") return;
+  await LocalNotifications.createChannel({
+    id: REMINDER_CHANNEL_ID,
+    name: "Erinnerungen",
+    description: "Check-in, Training und Tagesabschluss",
+    importance: 4,
+    visibility: 0,
+    vibration: true,
+  });
+};
+
 export const scheduleNativeReminders = async (input: BuildNativeReminderInput) => {
   if (!isNativeNotificationsAvailable()) {
-    throw new Error("iOS-Erinnerungen sind nur in der App verfügbar");
+    throw new Error("Erinnerungen sind nur in der App verfügbar");
   }
   if (!(await hasNativeNotificationPermission())) {
-    throw new Error("Benachrichtigungen sind in den iOS-Einstellungen nicht erlaubt");
+    throw new Error("Benachrichtigungen sind in den Geräteeinstellungen nicht erlaubt");
   }
 
+  await ensureNativeReminderChannel();
   const notifications = buildNativeReminderNotifications(input);
   const pendingBefore = await getRecurringPendingNotifications();
   if (notifications.length > 0) {
@@ -341,6 +358,7 @@ export const buildRestVisualizationNotification = (
     body: "Die App führt dich jetzt Schritt für Schritt durch deine Visualisierung.",
     schedule: { at },
     threadIdentifier: "rewireperform-rest-visualization",
+    channelId: REMINDER_CHANNEL_ID,
     interruptionLevel: "active",
     extra: reminderExtra(
       input.userId,
@@ -361,6 +379,7 @@ export const scheduleRestVisualizationReminder = async (
   if (!permission) {
     throw new Error("Benachrichtigungen sind in den Einstellungen nicht erlaubt");
   }
+  await ensureNativeReminderChannel();
   const notification = buildRestVisualizationNotification(input);
   await LocalNotifications.cancel({ notifications: [{ id: notification.id }] });
   await LocalNotifications.schedule({ notifications: [notification] });

@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   cancel: vi.fn(),
   checkPermissions: vi.fn(),
+  createChannel: vi.fn(),
+  getPlatform: vi.fn(),
   getPending: vi.fn(),
   isNativePlatform: vi.fn(),
   requestPermissions: vi.fn(),
@@ -10,7 +12,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@capacitor/core", () => ({
-  Capacitor: { isNativePlatform: mocks.isNativePlatform },
+  Capacitor: {
+    getPlatform: mocks.getPlatform,
+    isNativePlatform: mocks.isNativePlatform,
+  },
 }));
 
 vi.mock("@capacitor/local-notifications", () => ({
@@ -18,6 +23,7 @@ vi.mock("@capacitor/local-notifications", () => ({
     addListener: vi.fn(),
     cancel: mocks.cancel,
     checkPermissions: mocks.checkPermissions,
+    createChannel: mocks.createChannel,
     getPending: mocks.getPending,
     requestPermissions: mocks.requestPermissions,
     schedule: mocks.schedule,
@@ -48,9 +54,11 @@ describe("native notification permission boundaries", () => {
     vi.clearAllMocks();
     window.localStorage.clear();
     mocks.isNativePlatform.mockReturnValue(true);
+    mocks.getPlatform.mockReturnValue("android");
     mocks.getPending.mockResolvedValue({ notifications: [] });
     mocks.schedule.mockResolvedValue(undefined);
     mocks.cancel.mockResolvedValue(undefined);
+    mocks.createChannel.mockResolvedValue(undefined);
   });
 
   it("does not request notification access outside the native app", async () => {
@@ -61,7 +69,7 @@ describe("native notification permission boundaries", () => {
     expect(mocks.requestPermissions).not.toHaveBeenCalled();
   });
 
-  it("returns false when iOS keeps notification access denied", async () => {
+  it("returns false when the device keeps notification access denied", async () => {
     mocks.checkPermissions.mockResolvedValue({ display: "prompt" });
     mocks.requestPermissions.mockResolvedValue({ display: "denied" });
 
@@ -73,7 +81,7 @@ describe("native notification permission boundaries", () => {
     mocks.checkPermissions.mockResolvedValue({ display: "denied" });
 
     await expect(scheduleNativeReminders(reminderInput)).rejects.toThrow(
-      "Benachrichtigungen sind in den iOS-Einstellungen nicht erlaubt",
+      "Benachrichtigungen sind in den Geräteeinstellungen nicht erlaubt",
     );
     expect(mocks.getPending).not.toHaveBeenCalled();
     expect(mocks.schedule).not.toHaveBeenCalled();
@@ -85,5 +93,19 @@ describe("native notification permission boundaries", () => {
 
     await expect(requestNativeNotificationPermission()).resolves.toBe(true);
     expect(mocks.requestPermissions).not.toHaveBeenCalled();
+  });
+
+  it("uses a visible Android reminder channel before scheduling", async () => {
+    mocks.checkPermissions.mockResolvedValue({ display: "granted" });
+
+    await expect(scheduleNativeReminders(reminderInput)).resolves.toBe(2);
+    expect(mocks.createChannel).toHaveBeenCalledWith(expect.objectContaining({
+      id: "rewireperform-reminders-v1",
+      importance: 4,
+      vibration: true,
+    }));
+    expect(mocks.createChannel.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.schedule.mock.invocationCallOrder[0],
+    );
   });
 });
