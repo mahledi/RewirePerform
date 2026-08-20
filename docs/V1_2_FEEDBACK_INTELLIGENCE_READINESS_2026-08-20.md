@@ -1,6 +1,6 @@
 # RewirePerform V1.2 – Feedback Intelligence Readiness
 
-Stand: 20. August 2026  
+Stand: 20. August 2026
 Status: lokal vorbereitet; keine Production-, Jarvis- oder App-Store-Aktivierung
 
 ## Verbindlicher V1.2-Scope
@@ -11,8 +11,9 @@ Status: lokal vorbereitet; keine Production-, Jarvis- oder App-Store-Aktivierung
 - ein Nein zum Freitext lässt Auswahlfragen, Programm und sportliche Teilnahme unverändert;
 - keine Journale, privaten Reflexionen, Supporttexte, Namen, E-Mail-Adressen, Team- oder Coach-IDs;
 - kein Coach-Zugriff auf Einzelantworten oder Kommentare;
-- Jarvis darf ausschließlich bewusst freigegebene Produktfeedback-Kommentare zusammen mit den zugehörigen
-  Auswahlantworten und minimierten Aktivitätszahlen intern auswerten;
+- bewusst freigegebene Produktfeedback-Kommentare sind ausschließlich in der geschützten, pseudonymisierten
+  und nur lesenden Admin-Ansicht zugänglich;
+- Jarvis erhält in dieser V1.2-Auslieferung keine Produktfeedbackdaten;
 - kein externer KI-Anbieter und kein zweiter Rohtextspeicher.
 
 ## Technische Gates
@@ -46,8 +47,7 @@ Rückschlussmöglichkeit bestehen bleiben.
 2. echte Verantwortlichenentscheidung zu Rechtsgrundlage, Zweck, Datenumfang, Empfängern, Aufbewahrung,
    Widerruf und Minderjährigenweg unter einer finalen Controller-Assessment-Referenz dokumentieren;
 3. synthetischen Staging-Smoke für Erwachsene, 16–17, unter 16 mit Guardian, Ablehnung, Widerruf und Löschung;
-4. minimierten Jarvis-Reader gegen echte Daten technisch geschlossen lassen, bis sein eigener read-only Vertrag
-   und die Datenminimierung separat verifiziert sind;
+4. sämtliche Jarvis-/Machine-Reader gegen echte Daten technisch geschlossen lassen;
 5. neuen bytegenauen iOS-Build erstellen und auf iPhone und iPad physisch testen;
 6. erst danach den owner-only Production-Aufruf freigeben.
 

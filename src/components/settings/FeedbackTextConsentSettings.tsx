@@ -84,7 +84,7 @@ export const FeedbackTextConsentSettings = () => {
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">
         Deine Auswahlantworten bleiben unabhängig davon erhalten. Hier kannst du nur die separate Erlaubnis
-        für individuell analysierbare Kommentare widerrufen. Private Journale und Reflexionen sind davon nie betroffen.
+        für intern geprüfte Kommentare widerrufen. Private Journale und Reflexionen sind davon nie betroffen.
       </p>
 
       {loading ? (
@@ -104,7 +104,7 @@ export const FeedbackTextConsentSettings = () => {
         </div>
       ) : receipts.length === 0 ? (
         <div className="rounded-lg border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-          Du hast bisher keine Feedback-Kommentare zur individuellen Analyse freigegeben.
+          Du hast bisher keine Feedback-Kommentare zur internen Produktprüfung freigegeben.
         </div>
       ) : (
         <div className="space-y-3">
@@ -139,7 +139,7 @@ export const FeedbackTextConsentSettings = () => {
       )}
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        Beim Widerruf werden der Kommentar und personenbeziehbare Analyseableitungen gelöscht. Deine strukturierten
+        Beim Widerruf werden der Kommentar und personenbeziehbare Prüfergebnisse gelöscht. Deine strukturierten
         Antworten bleiben für datenschutzsichere Gruppenauswertungen erhalten.
       </p>
 
@@ -148,7 +148,7 @@ export const FeedbackTextConsentSettings = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Freitext-Einwilligung widerrufen?</AlertDialogTitle>
             <AlertDialogDescription>
-              Der freiwillige Kommentar zu Tag {withdrawTarget?.checkpointDay} und personenbeziehbare Ableitungen
+              Der freiwillige Kommentar zu Tag {withdrawTarget?.checkpointDay} und personenbeziehbare Prüfergebnisse
               werden gelöscht. Deine Auswahlantworten und dein Programm bleiben unverändert.
             </AlertDialogDescription>
           </AlertDialogHeader>

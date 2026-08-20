@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { feedbackTextConsentCopyV11 } from "@/content/feedbackTextConsentV11";
+import { feedbackTextConsentCopyV12 } from "@/content/feedbackTextConsentV12";
 import {
   getFeedbackCheckpoint,
   isFeedbackQuestionVisible,
@@ -701,19 +701,19 @@ export const FeedbackQuestionnairePreview = ({
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <DialogTitle className="text-xl leading-tight">{feedbackTextConsentCopyV11.title}</DialogTitle>
+            <DialogTitle className="text-xl leading-tight">{feedbackTextConsentCopyV12.title}</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-2 pt-2 text-left text-sm leading-6 text-muted-foreground">
-                {feedbackTextConsentCopyV11.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                {feedbackTextConsentCopyV12.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
             </DialogDescription>
           </DialogHeader>
           <div className="mt-1 grid gap-2">
             <Button className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={acceptTextConsent}>
-              {feedbackTextConsentCopyV11.acceptLabel}
+              {feedbackTextConsentCopyV12.acceptLabel}
             </Button>
             <Button variant="outline" className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={declineTextConsent}>
-              {feedbackTextConsentCopyV11.declineLabel}
+              {feedbackTextConsentCopyV12.declineLabel}
             </Button>
           </div>
         </DialogContent>

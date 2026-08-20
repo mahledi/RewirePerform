@@ -20,8 +20,8 @@ describe("feedback intelligence synthetic preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText(/intern betriebenen Jarvis-System/)).toBeInTheDocument();
-    expect(screen.getByText(/kein externer KI-Anbieter/)).toBeInTheDocument();
+    expect(screen.getByText(/geschützten, pseudonymisierten und nur lesenden Admin-Ansicht/)).toBeInTheDocument();
+    expect(screen.getByText(/Jarvis und externe KI-Anbieter erhalten ihn nicht/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Ohne Kommentar fortfahren" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

@@ -8,7 +8,8 @@
     "separate_text_consent": true,
     "under_16_guardian_plus_athlete_gate": true,
     "max_raw_text_retention_days": 365,
-    "internal_jarvis_only": true,
+    "protected_admin_read_only_review": true,
+    "jarvis_product_feedback_access": false,
     "external_ai_processor": false,
     "journals_or_private_reflections": false,
     "coach_individual_access": false
@@ -21,7 +22,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "79a2ad64a396ef687643ef40ae767389fdf9da998eb9dbeeb152375a48d3739f",
+  "package_sha256": "39105d2465ee9abbb42fb73e4a1096ed41fa216a51b9adca014db8914a26cd94",
   "files": [
     {
       "path": ".env.example",
@@ -33,15 +34,15 @@
     },
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "06161801b6069269bad4e82396be29d47d6b29013f1ca1c752d5673b8552990d"
+      "sha256": "e821d372c0dd768e9edb1c793b8fa93e0e874898d0f32138406155f8b2fdf563"
     },
     {
-      "path": "src/content/feedbackTextConsentV11.ts",
-      "sha256": "2cf7c8c620efb78e860eff7899cc6ea336641729e439f2a09334bb3c8c727ce2"
+      "path": "src/content/feedbackTextConsentV12.ts",
+      "sha256": "8930662508e2029363e86c70dc32ec74f87f5035ea3fa4fe5899b567a42f8145"
     },
     {
-      "path": "src/content/guardianFeedbackTextPolicyV11.ts",
-      "sha256": "c8df458dc8669aae014183a2b3527bde05b653ff25067fd88e9ccd4c54a65a78"
+      "path": "src/content/guardianFeedbackTextPolicyV12.ts",
+      "sha256": "7284723360d44b025f7c6e81df4c1bc5d936e63e7b9e66aae6ff06d0e0fbb322"
     },
     {
       "path": "src/lib/feedbackIntelligenceApi.ts",
@@ -57,27 +58,39 @@
     },
     {
       "path": "src/components/feedback-intelligence/FeedbackQuestionnairePreview.tsx",
-      "sha256": "e389064547ce9fa004e813e007c8acaae72534c87a76db4a3f46551bd12a9c92"
+      "sha256": "2790e580a4414fb97794347aae0c40b2f46b63b24978e666268c41d95804fdf0"
     },
     {
       "path": "src/components/settings/FeedbackTextConsentSettings.tsx",
-      "sha256": "d0732d5132c4cd905bf0e5067145836511a81c071bbd904c0248961d34249098"
+      "sha256": "9ed5e187f9e8527cf61ec65a093481f36b7f3ad5846cff1d0745b89865601463"
     },
     {
       "path": "src/pages/AccountSettings.tsx",
       "sha256": "12a2b63a55c57a23ad75931f642dcca0e1d280b9d3c8a719fdb3823213e32434"
     },
     {
+      "path": "src/components/admin/AdminFeedbackIntelligenceComments.tsx",
+      "sha256": "641c249725183ed81ba333f15c294116870946d59d6f016bab55c449f1fbfd94"
+    },
+    {
+      "path": "src/lib/adminFeedbackComments.ts",
+      "sha256": "a20b7b5d07a45c7f5499c7076146b15a028cb75ca845e9f397a05e749c3842b9"
+    },
+    {
+      "path": "supabase/migrations/20260814141647_admin_feedback_comment_review_v1_1.sql",
+      "sha256": "be4cd3be2cc8396d13e7d105b1fa8417c66d24c5b046ff309a8594c6f589f300"
+    },
+    {
       "path": "supabase/migrations/20260820080207_structured_feedback_v1_2_activation_contract.sql",
-      "sha256": "a0dc9ffe655e4f6c58e349fcf0ef33ce9537b749b9f2c73dc5145f7d9fe6e358"
+      "sha256": "e11d535cf6111b55a767a317be7537c0547b19aa5905f7524eb0db00ebae84ea"
     },
     {
       "path": "docs/V1_2_FEEDBACK_INTELLIGENCE_READINESS_2026-08-20.md",
-      "sha256": "b007a8811f02478f972af67c56c2db2ebdcad8e01621680136037d8d67baddce"
+      "sha256": "59e65ece032e6079377bd10674270d21c3531b6f61c2875fcfad074c8ea88eec"
     },
     {
       "path": "src/test/feedbackPrivacyV12.test.ts",
-      "sha256": "a32e249bffee7778e08655075d8356ac34f29bb4caae33775a74dae2b2a17af0"
+      "sha256": "4c60f3bf7cff5521299b20fc5d967df4d52dfb45386a25d3d75367bbb8fe8140"
     },
     {
       "path": "src/test/releaseTarget.test.ts",
@@ -89,15 +102,15 @@
     },
     {
       "path": "src/test/feedbackIntelligencePreview.test.tsx",
-      "sha256": "bfaaf0666b886c7c6f4a5eb18f3b4a6de387b4fb8217f1787ff5d772f4a19229"
+      "sha256": "8ea8406cc570999ca9fa6360115c088f36096c3fd802753e1e99496356acc054"
     },
     {
       "path": "src/test/feedbackTextConsentSettings.test.tsx",
-      "sha256": "118923b8bde91148ab26ce4ea02ae1d628534019ebbd8bdad863d0ecca21f494"
+      "sha256": "a6ec35351c1ce7a7665549fcc689dede78e220706ed1a3d37c05789d0aaba6f2"
     },
     {
       "path": "src/test/feedbackV12ActivationContract.test.ts",
-      "sha256": "1b9113b05eb6ce7b2d8d7f70fb8d1f35130a403d8041beb19b59a74416f2bbcc"
+      "sha256": "3937cf29ff23293c83d4ffa8d112e2f84fb28daeee76f4b5173c43b6e9f8a762"
     },
     {
       "path": "src/test/feedbackV12ActivationSmoke.test.ts",

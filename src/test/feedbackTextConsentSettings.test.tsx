@@ -30,8 +30,8 @@ const receipt = {
   campaignReference: "feedback-day-24-v1",
   checkpointDay: 24 as const,
   state: "granted" as const,
-  scope: "product-improvement-individual-text-ai-analysis-v1",
-  consentVersion: "feedback-text-consent-v1.1.0",
+  scope: "product-improvement-internal-admin-review-v1",
+  consentVersion: "feedback-text-consent-v1.2.0",
   grantedAt: "2026-08-05T10:00:00.000Z",
   withdrawnAt: null,
 };

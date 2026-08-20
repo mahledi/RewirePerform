@@ -3,8 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const privacy = readFileSync(resolve(process.cwd(), "src/pages/Privacy.tsx"), "utf8");
-const consent = readFileSync(resolve(process.cwd(), "src/content/feedbackTextConsentV11.ts"), "utf8");
-const guardian = readFileSync(resolve(process.cwd(), "src/content/guardianFeedbackTextPolicyV11.ts"), "utf8");
+const consent = readFileSync(resolve(process.cwd(), "src/content/feedbackTextConsentV12.ts"), "utf8");
+const guardian = readFileSync(resolve(process.cwd(), "src/content/guardianFeedbackTextPolicyV12.ts"), "utf8");
 
 describe("V1.2 Feedback Intelligence privacy contract", () => {
   it("keeps V1.1 closed while disclosing the separately gated V1.2 path", () => {
@@ -19,9 +19,8 @@ describe("V1.2 Feedback Intelligence privacy contract", () => {
       "zusätzlichen ausdrücklichen Einwilligung",
       "jederzeit ohne Nachteil widerrufbar",
       "höchstens 365 Tage",
-      "kein externer Empfänger",
       "Kein externer KI-Anbieter",
-      "Journale, private Reflexionen, Supporttexte, Team- und Coach-Daten bleiben ausgeschlossen",
+      "Journale, private Reflexionen, Supporttexte sowie Team- und Coach-IDs bleiben ausgeschlossen",
       "Dein Coach sieht keine Einzelantworten",
     ]) {
       expect(privacy).toContain(text);
@@ -29,14 +28,15 @@ describe("V1.2 Feedback Intelligence privacy contract", () => {
   });
 
   it("keeps the athlete and guardian consent documents aligned", () => {
-    expect(consent).toContain("product-improvement-individual-text-ai-analysis-v1");
-    expect(consent).toContain("feedback-text-consent-v1.1.0");
+    expect(consent).toContain("product-improvement-internal-admin-review-v1");
+    expect(consent).toContain("feedback-text-consent-v1.2.0");
     for (const source of [consent, guardian]) {
-      expect(source).toMatch(/kein externer KI-Anbieter/i);
+      expect(source).toMatch(/externe KI-Anbieter erhalten/i);
+      expect(source).toMatch(/nur lesenden Admin-Ansicht/i);
     }
-    expect(guardian).toContain("FEEDBACK_TEXT_CONSENT_SCOPE_V11");
-    expect(guardian).toContain("FEEDBACK_TEXT_CONSENT_VERSION_V11");
-    expect(guardian).toContain("RETENTION_DAYS_V11 = 365");
+    expect(guardian).toContain("FEEDBACK_TEXT_CONSENT_SCOPE_V12");
+    expect(guardian).toContain("FEEDBACK_TEXT_CONSENT_VERSION_V12");
+    expect(guardian).toContain("RETENTION_DAYS_V12 = 365");
     expect(guardian).toContain("Die Entscheidung ist freiwillig");
   });
 });
