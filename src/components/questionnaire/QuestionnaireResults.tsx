@@ -13,6 +13,7 @@ import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft } from "@/lib/localDrafts";
 import type { Json } from "@/integrations/supabase/types";
 import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
+import QuestionnaireNotificationOnboarding from "@/components/questionnaire/QuestionnaireNotificationOnboarding";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
@@ -57,6 +58,7 @@ const QuestionnaireResults = ({
   const [error, setError] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
   const [retryTick, setRetryTick] = useState(0);
+  const [saveCompleted, setSaveCompleted] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,6 +68,7 @@ const QuestionnaireResults = ({
     const saveQuestionnaire = async () => {
       setError(null);
       setIsSaving(true);
+      setSaveCompleted(false);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         const userId = user?.id || null;
@@ -151,8 +154,8 @@ const QuestionnaireResults = ({
 
         clearLocalDraft(draftStorageKey);
         clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
-        await new Promise((r) => setTimeout(r, 600));
-        navigate("/dashboard", { replace: true });
+        await new Promise((r) => setTimeout(r, 300));
+        setSaveCompleted(true);
       } catch (err) {
         console.error("Questionnaire save error:", err);
         void captureAppError({
@@ -181,6 +184,14 @@ const QuestionnaireResults = ({
   }, [answers, draftStorageKey, navigate, retryTick]);
 
   const answeredCount = Object.keys(answers).length;
+
+  if (saveCompleted) {
+    return (
+      <QuestionnaireNotificationOnboarding
+        onContinue={() => navigate("/dashboard", { replace: true })}
+      />
+    );
+  }
 
   if (isSaving) {
     return (

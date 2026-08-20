@@ -110,8 +110,8 @@ Deno.serve(async (req) => {
   if (subsError) return jsonResponse({ error: subsError.message }, 500);
 
   const payload = {
-    title: "Programmstart morgen",
-    body: "Euer 56-Tage-Programm startet morgen. Heute reicht: App installiert lassen und Push aktiv halten.",
+    title: "Dein Programm startet morgen",
+    body: "Dein Coach hat das Programm gestartet. Dein erster Tag beginnt morgen.",
     url: "/dashboard",
     notificationType: "program_start",
     teamId,
