@@ -1,117 +1,102 @@
-# RewirePerform 1.1 — lokale Android-Build-Evidence
+# RewirePerform 1.1 — Android Release Evidence
 
-Stand: 14. August 2026
-Scope: final repinnter lokaler Build mit privatem Upload-Key. Kein Play-Upload,
-kein Tester-Rollout und noch kein vollständiger Geräte-Smoke des finalen Builds.
+Stand: 20. August 2026
+Status: finaler lokaler, mit privatem Upload-Key signierter Play-Kandidat;
+noch kein Play-Upload und kein Test-Release veröffentlicht
 
 ## Identität
 
-- integrierte Basis-SHA: `cd8812c` (nach Löschseiten-Merge `2edeb6c`)
-- Android-RC-SHA: `212c81a`
+- integrierte Basis: `origin/main` `07ae1c0579432de220c8098079d17eb4f26f1bea`
+- Android-Build-SHA: `02f5a9011532be8e0583ffe1b431f253dcc495cd`
 - Branch: `codex/android-v1-1-review-ready-20260814`
 - Package: `com.rewireperform.app`
 - `versionName`: `1.1`
-- `versionCode`: `1`
+- `versionCode`: `2`
 - `minSdk` / `compileSdk` / `targetSdk`: `24 / 36 / 36`
-- Capacitor: `8.4.1`
-- eingebettetes Production-Ziel: `bqsbxesmybthwtxmowfz`
+- Production-Ziel: `bqsbxesmybthwtxmowfz`
+- Feedback Intelligence/Jarvis: im ausgelieferten Client geschlossen
+
+`versionCode 2` ist absichtlich monoton höher als der erste lokale Kandidat.
+Die sichtbare Produktversion bleibt `1.1`.
 
 ## Grüne Gates
 
-- `npm ci`: 838 Pakete installiert, Audit 0.
-- `npm audit --omit=dev`: 0 Schwachstellen.
-- `npm run ci`: auf dem repinnten Kandidaten grün.
-- `npm run app:build:android`: Production-Target, Capacitor-Sync,
-  eingebettetes Android-Target und statische Android-Gates grün.
-- Gradle `:app:bundleRelease`: grün.
-- Gradle `:app:lintRelease`: grün, 0 Fehler und 26 nicht blockierende
-  Warnungen aus dem Capacitor-Scaffold beziehungsweise Launcher-/Splash-
-  Ressourcen.
-- Gradle `:app:testReleaseUnitTest`: grün.
-- Gradle `:app:assembleAndroidTest`: grün.
-- Gradle `:app:assembleDebug`: grün.
-
-Der zunächst verwendete projektweite Sammelbefehl `assembleAndroidTest` baute
-auch die leere Testvariante des generierten Cordova-Kompatibilitätsmoduls und
-traf dort auf parallele Kotlin-Stdlib-Generationen. Der app-spezifische,
-tatsächlich relevante Task `:app:assembleAndroidTest` ist grün. Deshalb wurde
-keine globale Dependency-Auflösung verändert.
+- vollständiges `npm run app:build:android`: grün
+- 169 Testdateien / 948 Tests: grün
+- TypeScript: grün
+- Production- und eingebettetes Android-Ziel: grün
+- `npm audit --omit=dev`: 0 Schwachstellen
+- Gradle `:app:bundleRelease`: grün
+- Gradle `:app:lintRelease`: grün, 0 Fehler und 27 nicht blockierende
+  Scaffold-/Dependency-/Icon-Warnungen
+- Gradle `:app:testReleaseUnitTest`: grün
+- Gradle `:app:assembleAndroidTest`: grün
+- Gradle `:app:assembleDebug`: grün
+- AAB-Signatur: `jarsigner` verifiziert
 
 ## Artefakte
 
-### Mit privatem Upload-Key signiertes Release-AAB
+### Signiertes Release-AAB — ausschließlich für Google Play
 
 - Pfad: `android/app/build/outputs/bundle/release/app-release.aab`
-- Größe: 5.044.305 Bytes
+- Größe: 4.969.559 Bytes
 - SHA-256:
-  `d9d1b8f3434983bc72a65149881dd68c25541b92c2f58a792260e28b0798a2fe`
-- `jarsigner`: verifiziert; SHA-256 / SHA256withRSA, 4096 Bit
+  `af77fa91bd81e152799f5ae7169f38c384085bf7decaecbec2d8c7982a08c22f`
+- Signiert mit dem privaten RewirePerform-Upload-Key außerhalb des Repositories
 
-Der Upload-Key liegt außerhalb des Repositories; sein Kennwort liegt im
-macOS-Schlüsselbund und wurde weder ausgegeben noch committed. Google Play App
-Signing und der tatsächliche Upload bleiben Console-Gates. Vor dem Upload sind
-die offenen Data-Safety-, Listing- und Geräte-Gates zu schließen.
+Der selbstsignierte Upload-Key ist für Play App Signing vorgesehen. Schlüssel
+und Kennwort wurden weder ausgegeben noch committed. Google erzeugt nach dem
+Upload die eigentliche App-Signing-Identität.
 
-### Lokal installierbares QA-APK
+### QA-APK — niemals bei Google Play hochladen
 
 - Pfad: `android/app/build/outputs/apk/debug/app-debug.apk`
-- Größe: 6.811.331 Bytes
+- Größe: 6.284.241 Bytes
 - SHA-256:
-  `3e2dee541660ef0c229eafb770cbb13f8542366078de07663040ce5234f81486`
-- Signatur: lokaler Android-Debug-Key; niemals in Play hochladen
+  `cc6712d0b57a530c0e57190d269fc3553e51b014c7eec8fc395fe7a7aa9d06dc`
+- verifizierte Metadaten: `com.rewireperform.app`, Code `2`, Version `1.1`,
+  `minSdk 24`, `targetSdk 36`
 
-Dieses APK enthält denselben zuvor validierten Production-Frontend-Build und
-ist nur für den fokussierten physischen Geräte-Smoke vorgesehen.
+## Binary-/SDK-Audit
 
-## Manifest- und SDK-Audit
-
-Das gemergte Release-Manifest enthält:
-
-- `INTERNET`,
-- `POST_NOTIFICATIONS`,
-- `RECEIVE_BOOT_COMPLETED` und `WAKE_LOCK` für lokale Reminder,
-- die appinterne Signaturberechtigung für nicht exportierte Receiver.
-
-Nicht enthalten sind Mikrofon-, Kamera-, Kontakt-, Standort-, Speicher- oder
-Werbe-ID-Berechtigungen. Cleartext-Traffic und Android-Backups sind deaktiviert.
-Die drei App-Link-Pfade `/auth`, `/join` und `/organization/invite` sind mit
-`autoVerify=true` registriert; die Website-Verifikation bleibt bis zum
-separaten `assetlinks.json`-Deploy offen.
+Das gemergte Release-Manifest enthält nur `INTERNET`,
+`POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` und `WAKE_LOCK` sowie die
+appinterne nicht exportierte Receiver-Berechtigung. Es enthält keine Mikrofon-,
+Kamera-, Kontakt-, Standort-, Speicher- oder Werbe-ID-Berechtigung.
+Cleartext-Traffic und Android-Backups sind deaktiviert.
 
 Im ausgelieferten Dependency-/Bundle-Audit wurden keine Werbe-, Billing-,
-Firebase-/FCM-, Crash- oder Marketing-Analytics-SDKs gefunden.
-`google-services.json` ist nicht vorhanden. Das eingebettete Bundle enthält das
-erwartete Supabase-Production-Ziel. Die transitive Build-Abhängigkeit
-`workbox-google-analytics` wird vom App-Build nicht verwendet und ist nicht im
-ausgelieferten Web-Bundle referenziert.
+Firebase-/FCM-, Crash- oder Marketing-Analytics-SDKs gefunden. Sentry und
+`google-services.json` sind nicht enthalten. Spracheingabe läuft über das
+lokale Android-Spracherkennungs-Plugin; die App fordert keine eigene
+Mikrofonberechtigung an und speichert keine Audiodatei.
 
-## Fokussierter physischer Android-Smoke
+## Physische Android-Evidence
 
-Auf einem Redmi Note 7 mit Android 10, MIUI 12.5.1 und Android System WebView
-150 wurde der unmittelbar vor dem Repin erstellte Debug-Build als Paketupdate
-installiert und kalt gestartet. Der gemeldete P1-Tastaturfehler ist geschlossen:
+Gerät: Redmi Note 7, Android 10, MIUI 12.5.1, Android System WebView 150.
 
-- Gboard laeuft nicht im Vollbild-/Extract-Modus.
-- Vor dem Fix verkleinerte Capacitor 8 den bereits durch `adjustResize`
-  verkleinerten WebView ein zweites Mal: 630 px WebView-Hoehe und eine grosse
-  native weisse Flaeche vor der Tastatur.
-- Der Android-Shell-Fix deaktiviert ausschliesslich diese doppelte
-  SystemBars-Inset-Behandlung und setzt den nativen Fensterhintergrund auf die
-  gesperrte Markenfarbe `#0D0E12`.
-- Nach dem Fix verbleiben bei geoeffneter Tastatur korrekt 1.445 px
-  WebView-Hoehe. Login-E-Mail und Registrierungs-Name wurden fokussiert; App,
-  Eingabefelder und CTA reichen ohne weisse Zwischenflaeche direkt bis Gboard.
+Auf dem funktional identischen Android-1.1-Kandidaten wurden durch Mahle
+physisch geprüft: Start/Splash, Anmeldung und Registrierung, Athleten- und
+Coach-Dashboard, Teambeitritt und Coach-/Athleten-Verbindung, Minderjährigen-
+und Guardian-Weg, E-Mail-Flows, Kernprogramm, Kontoeinstellungen sowie die
+mobile Darstellung. Die große weiße Fläche über der Tastatur ist geschlossen.
+Der finale Launcher-Safe-Zone-Stand mit 60-Prozent-Foreground wurde auf dem
+Redmi ausdrücklich visuell freigegeben.
 
-## Physisch offen
+ADB bestätigt für das installierte Paket den neuen Kanal
+`rewireperform-reminders-v1` mit Wichtigkeit 4 und aktivierter Vibration. Eine
+lokale Erinnerung wurde vom System erzeugt; die abschließende sichtbare
+Heads-up-Zustellung des neuen Kanals bleibt ein fokussierter letzter
+Gerätesmoke. Der einzige Runtime-Unterschied zum hier gebauten Code-2-Artefakt
+ist die monotone Versionsnummer.
 
-- Der Debug-APK dieses final repinnten Builds wurde per ADB zur Installation
-  angeboten, aber MIUI meldete `INSTALL_FAILED_USER_RESTRICTED` (am Gerät
-  abgebrochen). Vor Upload muss er einmal direkt am Gerät bestätigt und der
-  fokussierte Tastatur-Smoke wiederholt werden.
-- Warmstart und Android-System-Zurück,
-- weitere Safe-Area-, Schriftgrößen-, Dark-Mode- und Rotations-Smokes,
-- Reminder-Permission, Zustellung und Boot-Restore,
-- WebView-Spracheingabe oder sauberer Nicht-unterstützt-Zustand,
-- Auth-, Invite- und Organization-App-Links,
-- Offline/Online-Wechsel, Netzwerkziele und echte Android-Screenshots,
-- Play Pre-launch Report auf dem signierten Upload-Artefakt.
+## Bis zum Teststart offen
+
+- AAB in Play App Signing hochladen, aber Release noch nicht veröffentlichen
+- Play Pre-launch Report prüfen
+- Google-App-Signing-SHA-256 übernehmen und `assetlinks.json` veröffentlichen;
+  erst dann öffnen `/auth`, `/join` und `/organization/invite` verlässlich die App
+- mindestens zwei echte, datenschutzsaubere Android-Screenshots hochladen
+- Data Safety, App-Zugriff, Zielgruppe und Inhaltsrating final speichern
+- finaler Heads-up-Reminder-Smoke auf dem Redmi
+- Tester und Track erst nach separater Freigabe konfigurieren/veröffentlichen

@@ -1,8 +1,8 @@
 # RewirePerform 1.1 — Google Play Data Safety Draft
 
-Stand: 14. August 2026
-Status: konservativer Arbeitsentwurf; finaler signierter AAB lokal auditiert,
-vor Übermittlung Dienstleistereinordnung und aktivierte Production-Gates bestätigen
+Stand: 20. August 2026
+Status: finaler Code-/Binary-Entwurf für die Play-Eingabe; noch nicht an Google
+übermittelt
 
 ## Plattformwahrheit
 
@@ -23,9 +23,9 @@ nicht nur den engeren Jarvis-Export.
 | --- | --- | --- |
 | Erhebt oder teilt die App Nutzerdaten? | Ja | Konto-, Programm-, Inhalts- und Interaktionsdaten werden an Supabase übertragen |
 | Alle Daten bei Übertragung verschlüsselt? | Ja | ausschließlich HTTPS; finalen Binary-/Network-Smoke bestätigen |
-| Können Nutzer Löschung anfordern? | Ja, technisch | In-App-Self-Service ist vorhanden; öffentliche Request-URL noch ergänzen |
+| Können Nutzer Löschung anfordern? | Ja | In-App-Self-Service und `https://rewireperform.com/account-deletion` sind live |
 | Tracking? | Nein | keine Werbung, kein Datenbroker, kein appübergreifendes Tracking |
-| Daten „geteilt“? | voraussichtlich Nein | nur wenn Supabase, Vercel, Cloudflare und Resend vertraglich als zweckgebundene Dienstleister unter Googles Definition fallen; final juristisch bestätigen |
+| Daten „geteilt“? | Nein | Supabase, Vercel, Cloudflare und Resend sind in der veröffentlichten Datenschutzerklärung als weisungsgebundene Auftragsverarbeiter/Dienstanbieter beschrieben; keine Werbung, Datenbroker oder unabhängige Drittverwendung |
 
 ## Zu deklarierende Datentypen
 
@@ -34,19 +34,21 @@ nicht nur den engeren Jarvis-Export.
 | Personenbezogene Daten | Name | Ja | App-Funktionalität | für Konto/Profil erforderlich |
 | Personenbezogene Daten | E-Mail-Adresse | Ja | Konto, Auth, Einladungen, Support | erforderlich; Guardian-E-Mail nur im U16-Weg |
 | Personenbezogene Daten | Nutzer-IDs | Ja | Auth, Datenzuordnung, Sicherheit | erforderlich |
-| Personenbezogene Daten | Telefonnummer | Bedingt | Organisationskontakt | optional, nur ausführliche Anfrage |
-| Gesundheit und Fitness | Gesundheitsinformationen | Ja | Tages-Check-ins, Assessments, App-Funktionalität und bei Einwilligung interne Analyse | funktionsabhängig |
-| Gesundheit und Fitness | Fitnessinformationen | Ja | Sportprofil, Trainings-/Wettkampf-/Ruhetagskontext, Personalisierung | funktionsabhängig |
-| Nutzerinhalte | Sonstige nutzergenerierte Inhalte | Ja | private Journale/Reflexionen, Anfragehinweise und gegebenenfalls separat consentierte Feedback-Kommentare | überwiegend optional |
-| Nutzerinhalte | Kundensupport | Bedingt | Bearbeitung freiwilliger Supportanfragen | optional; finalen tatsächlichen In-App-Weg bestätigen |
-| App-Aktivität | App-Interaktionen | Ja | Fortschritt, Aufgaben, Check-ins, Checkpoints, Aktivitätszählungen, App-Funktionalität; bei Einwilligung Analytics | funktionsabhängig |
-| App-Informationen und -Leistung | Sonstige Leistungsdaten | Ja | pseudonymisierte operative Fehlercodes und Route, Fehlerbehebung | automatisch, maximal 30 Tage laut Privacy-Text |
-| Geräte- oder andere IDs | Geräte- oder andere IDs | Zu prüfen | Auth-/Sicherheits- und Turnstile-Metadaten | finaler SDK-/Network-Audit erforderlich |
-| Standort | Ungefährer Standort | Zu prüfen | nur falls ein Dienstleister aus IP-/Gerätedaten Standort ableitet | Provider-/Network-Audit erforderlich |
+| Personenbezogene Daten | Telefonnummer | Bedingt | App-Funktionen, Mitteilungen des Entwicklers | optional, nur bei freiwilliger Organisationsanfrage |
+| Personenbezogene Daten | Sonstige Daten | Ja | Altersgruppe, Rolle, Sport-/Organisationsprofil; App-Funktionen und Personalisierung | teils erforderlich; kein Geburtsdatum |
+| Gesundheit und Fitness | Gesundheitsdaten | Ja | strukturierte Tageszustände und Assessments; App-Funktionen, Personalisierung und nur bei Einwilligung Analyse | funktionsabhängig |
+| Gesundheit und Fitness | Fitnessdaten | Ja | Sportprofil und Trainings-/Wettkampf-/Ruhetagskontext; App-Funktionen, Personalisierung und nur bei Einwilligung Analyse | funktionsabhängig |
+| App-Aktivitäten | Andere von Nutzern erstellte Inhalte | Ja | private Journale/Reflexionen und freiwillige Anfragehinweise; ausschließlich App-Funktionen | optional; ausdrücklich nicht für Analytics/Jarvis |
+| App-Aktivitäten | App-Interaktionen | Ja | Fortschritt, Aufgaben, Check-ins und Funktionsnutzung; App-Funktionen und Analyse | automatisch/funktionsabhängig |
+| App-Informationen und -Leistung | Diagnosedaten | Ja | minimierte Fehlercodes, Route und Funktionsstatus; Analyse/Fehlerbehebung | automatisch, maximal 30 Tage |
+| Geräte- oder andere IDs | Geräte- oder andere IDs | Nein | kein Advertising-ID-, Firebase-Installation-ID- oder eigenes Geräte-ID-SDK im AAB | nicht auswählen |
+| Standort | Ungefährer/genauer Standort | Nein | keine Standortberechtigung und keine Standortfunktion; aus IP abgeleitete Standortdaten werden von RewirePerform nicht als Produktdatum verwendet | nicht auswählen |
 
-Keine Crash-Dumps, Audiodateien, Kontakte, Fotos, Videos, Dateien oder präzise
-Standortberechtigung sind im vorbereiteten Android-Manifest vorgesehen. Die
-Spracheingabe darf erst nach dem Geräte-Smoke als rein lokal bezeichnet werden.
+Keine Crash-Dumps, Audiodateien, Kontakte, Fotos, Videos, Dateien oder
+Standortdaten werden durch den ausgelieferten App-Code erhoben. Das Manifest
+enthält keine entsprechenden Berechtigungen. Die Spracheingabe verwendet die
+lokale Android-Spracherkennung; die App speichert oder überträgt keine
+Audiodatei.
 
 Der finale signierte AAB-/Dependency-Audit enthält keine Werbe-, Billing-, Firebase-/FCM-,
 Crash- oder Marketing-Analytics-SDKs und keine Mikrofon-, Kamera-, Kontakt-,
@@ -77,12 +79,23 @@ werden.
 
 ## Vor Übermittlung zwingend schließen
 
-1. HTTPS und tatsächliche Netzwerkziele auf dem Android-Gerät beobachten.
-2. Dienstleister-/„Shared“-Einordnung und optionale Datentypen juristisch
-   bestätigen.
+1. In Schritt 3 der Play Console `Sonstige personenbezogene Daten` ergänzen;
+   `Andere von Nutzern erstellte Inhalte` ist bereits korrekt ausgewählt.
+   Außerdem `Andere App-Leistungsdaten` durch `Diagnosedaten` ersetzen.
+2. Für alle ausgewählten Typen die oben festgelegten Zwecke, `erhoben: ja`,
+   `geteilt: nein` und erforderlich/optional exakt eintragen.
 3. Die kanonische URL
    `https://rewireperform.com/account-deletion` ist live mit HTTP 200 und
    sichtbarer Löschanleitung geprüft und in Play eingetragen.
-4. Tatsächlich aktive Feedback-, Kommentar-, Minor- und Jarvis-Gates gegen die
-   Erklärung abgleichen; geschlossene Funktionen nicht als aktiv behaupten.
-5. Zielgruppe 13+ und Google-Families-Anforderungen separat bestätigen.
+4. Feedback Intelligence und Jarvis bleiben für V1.1 geschlossen und werden
+   nicht als aktive Datennutzung deklariert.
+5. Zielgruppe 13+ und Google-Families-Antworten separat bestätigen.
+
+## Play-Console-Zwischenstand am 20. August
+
+Schritt 4 ist begonnen. `Name`, `E-Mail-Adresse`, `Nutzer-IDs` und
+`Telefonnummer` stehen auf „Abgeschlossen“. Unter App-Aktivitäten sind
+`App-Interaktionen` und `Andere von Nutzern erstellte Inhalte` korrekt
+ausgewählt. Offen sind deren Einzelantworten, beide Typen unter
+Gesundheit/Fitness sowie der korrigierte Diagnosedatentyp. Vor dem Weitergehen
+muss `Sonstige personenbezogene Daten` ergänzt werden.

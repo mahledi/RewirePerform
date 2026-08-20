@@ -1,19 +1,18 @@
 # RewirePerform 1.1 — Google-Play-Review-Paket
 
-Stand: 14. August 2026
-Status: Play-App angelegt, Basiseinträge gespeichert, Lösch-URL in Data Safety
-eingetragen und AAB lokal signiert;
-kein Upload, Tester- oder Production-Rollout
+Stand: 20. August 2026
+Status: Play-App angelegt, Basiseinträge und Lösch-URL gespeichert, finaler
+Code-2-AAB lokal signiert; kein Upload und kein Test- oder Production-Rollout
 
 ## Releaseidentität
 
-- integrierte Basis: `cd8812c` (nach Löschseiten-Merge `2edeb6c`)
-- Android-RC: `0df72ae`
+- integrierte Basis: `07ae1c0579432de220c8098079d17eb4f26f1bea`
+- Android-Build: `02f5a9011532be8e0583ffe1b431f253dcc495cd`
 - Android-Branch: `codex/android-v1-1-review-ready-20260814`
 - Package: `com.rewireperform.app`
 - Version: `1.1`
-- Android `versionCode`: `1`
-- iOS-Referenz: Version `1.1`, Build `7`
+- Android `versionCode`: `2`
+- iOS-Referenz: freigegebene Produktversion `1.1`
 - `minSdk` / `compileSdk` / `targetSdk`: `24 / 36 / 36`
 - Production-Frontendziel: `bqsbxesmybthwtxmowfz`
 - Vertrieb: kostenlos, Deutschland, manuelle Veröffentlichung
@@ -51,7 +50,8 @@ Reflexionsangebot. Die App stellt keine Diagnose oder Behandlung bereit und
 verspricht keine bestimmte sportliche Leistungswirkung.
 ```
 
-Die Texte sind als Entwurf in der Play Console gespeichert.
+Die Texte sind als Entwurf in der Play Console gespeichert. Vor dem ersten
+Test-Release werden sie noch einmal gegen den finalen App-Stand gelesen.
 
 ## Store-Assets
 
@@ -79,7 +79,7 @@ Die lokalen Build-, Manifest-, SDK- und Artefaktprüfungen sind in
 | App-Zugriff | Login erforderlich | stabile synthetische Review-Konten erst nach separater Production-Freigabe erstellen |
 | Datenschutz-URL | `https://rewireperform.com/privacy` | gespeichert |
 | Account-Löschung | in der App vorhanden | öffentliche URL `https://rewireperform.com/account-deletion` ist live und in Data Safety eingetragen |
-| Zielgruppe | Produkt ist 13+; 13–15, 16–17 und 18+ | Google-Families-/DE-Minor-Prüfung vor externer Auswahl |
+| Zielgruppe | Produkt ist 13+; 13–15, 16–17 und 18+ | Auswahl und Families-Antworten final speichern |
 | Inhaltsrating | IARC-Fragebogen wahrheitsgemäß ausfüllen | nur in der Play Console möglich |
 | Datenweitergabe | keine Werbung, Datenbroker oder Tracking | Dienstleister-Einordnung im Data-Safety-Draft final bestätigen |
 
@@ -104,35 +104,39 @@ Keine Passwörter oder persönlichen Daten in dieses Repository schreiben.
 
 ## Schnellster zulässiger Veröffentlichungsweg
 
-1. Browser-Dateiupload freischalten und Icon, Feature Graphic sowie reale
-   Android-Screenshots hochladen.
-2. Öffentliche Account-Deletion-Seite live schalten und Data Safety fertig
-   ausfüllen.
-3. Stabile synthetische Review-Konten hinterlegen sowie Zielgruppe und IARC-
-   Fragebogen mit Mahles Bestätigung abschließen.
-4. Play App Signing aktivieren und den signierten Production-AAB hochladen.
-5. Reale Android-Smokes und Pre-launch Report abschließen.
-6. Den Pilot als geschlossenen Test mit mindestens 12 echten, kontinuierlich
-   angemeldeten Testern starten.
-7. Nach mindestens 14 zusammenhängenden Tagen Production-Zugang beantragen.
-8. Erst nach Googles Freigabe einen kontrollierten Production-Rollout starten.
+1. Google-Identität im offenen Console-Tab erneut bestätigen.
+2. App-Inhalte/Data Safety vervollständigen und mindestens zwei echte Android-
+   Screenshots sowie die vorbereiteten Store-Assets hochladen.
+3. Play App Signing aktivieren und den signierten Code-2-AAB als noch nicht
+   veröffentlichten internen Testentwurf hochladen.
+4. App-Signing-Fingerprint in `assetlinks.json` übernehmen und live prüfen.
+5. Pre-launch Report und den letzten Redmi-Heads-up-Smoke prüfen.
+6. Erst nach separater Freigabe Tester hinzufügen und den internen Test
+   veröffentlichen. Dieser Track ist der schnellste Pilot-Zugang; das Data-
+   Safety-Formular wird dennoch jetzt vollständig für den späteren Closed Test
+   vorbereitet.
+7. Ein erforderlicher Production-Zugangstest wird ausschließlich mit echten
+   Testern durchgeführt; keine Fake-Konten.
 
 ## Externe Blocker
 
-- Chrome-Dateiupload ist noch nicht für die Browser-Erweiterung freigeschaltet.
+- Ein neuer Play-Console-Tab verlangt aktuell eine erneute Google-
+  Identitätsbestätigung.
 - Der öffentliche Play-App-Signing-Fingerprint entsteht erst bei Aktivierung
   von Play App Signing; der lokale Upload-Key-Fingerprint ersetzt ihn nicht für
   `assetlinks.json`.
 - Öffentliche Account-Deletion-Webseite ist unter
   `https://rewireperform.com/account-deletion` live; HTTPS/HTTP 200,
   Löschanleitung, Mailto und mobile Route wurden geprüft.
-- Finale Data-Safety-, Zielgruppen-/Families- und Minderjährigenfreigabe fehlt.
+- Data Safety ist in Schritt 4 teilweise ausgefüllt: Name, E-Mail, Nutzer-ID
+  und Telefonnummer sind abgeschlossen; Gesundheit/Fitness, App-Aktivität und
+  App-Leistung sowie die Prüfung der nutzergenerierten Inhalte sind offen.
 - Das finale lokale Release-AAB ist mit dem privaten Upload-Key signiert und
   verifiziert, aber noch nicht hochgeladen.
-- Review-Konten, finaler Upload, Tester-Rollout und Production bleiben externe
-  Freigaben.
+- Finaler Upload, Play-Formularübermittlung, Tester-Rollout und Production
+  bleiben externe Console-Aktionen.
 
 ## Nicht durch dieses Paket autorisiert
 
-Kein Push, Merge, Website-Deploy, Upload, Tester-Rollout, Production-Rollout,
-Jarvis-Credential oder Echtdatenread.
+Kein Tester wurde hinzugefügt und kein Test- oder Production-Release wurde
+veröffentlicht. Jarvis-Credentials und Echtdatenreads bleiben geschlossen.
