@@ -2,10 +2,24 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, Copy, Link2, Loader2, Share2, MessageCircle, Rocket, CalendarCheck, ClipboardCheck, AlertTriangle, Building2, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Building2,
+  CalendarCheck,
+  CalendarDays,
+  ClipboardCheck,
+  Copy,
+  Link2,
+  Loader2,
+  MessageCircle,
+  Plus,
+  Rocket,
+  Share2,
+  ShieldCheck,
+} from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
-import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
 import TeamStaffInvitation from "@/components/coach/TeamStaffInvitation";
 import TeamAccessLink from "@/components/access/TeamAccessLink";
 import { buildAthleteTeamInvitation, type SharePayload } from "@/lib/invitationShare";
@@ -33,6 +47,8 @@ interface Team {
 interface TeamManagementProps {
   teams: Team[];
   onTeamCreated: () => void;
+  onOpenCalendar: (teamId: string) => void;
+  programStartFocus?: { teamId: string; requestKey: number } | null;
 }
 
 interface OrganizationOption {
@@ -40,7 +56,12 @@ interface OrganizationOption {
   name: string;
 }
 
-const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
+const TeamManagement = ({
+  teams,
+  onTeamCreated,
+  onOpenCalendar,
+  programStartFocus = null,
+}: TeamManagementProps) => {
   const { user } = useAuth();
   const [creating, setCreating] = useState(false);
   const [teamName, setTeamName] = useState("");
@@ -265,6 +286,16 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
     else setReadinessLoading(false);
   }, [teams]);
 
+  useEffect(() => {
+    if (!programStartFocus) return;
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(`program-start-${programStartFocus.teamId}`);
+      target?.scrollIntoView({ behavior: "auto", block: "start" });
+      target?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [programStartFocus]);
+
   const activateProgram = async (team: Team) => {
     if (!user) return;
     const r = readiness[team.id];
@@ -352,10 +383,28 @@ const TeamManagement = ({ teams, onTeamCreated }: TeamManagementProps) => {
 
           <TeamStaffInvitation teamId={team.id} teamName={team.name} />
 
-          <TeamTrainingSchedule teamId={team.id} />
+          <button
+            type="button"
+            onClick={() => onOpenCalendar(team.id)}
+            className="group mt-4 flex min-h-20 w-full min-w-0 items-center gap-4 rounded-[18px] border border-white/[0.07] bg-white/[0.025] p-4 text-left transition-colors hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-primary/[0.09] text-primary">
+              <CalendarDays className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-foreground">Teamkalender öffnen</span>
+              <span className="mt-1 block text-xs leading-5 text-muted-foreground">Training, Ruhetage und Wettkämpfe in der großen Kalenderansicht planen.</span>
+            </span>
+            <ArrowRight className="h-5 w-5 shrink-0 text-white/30 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" aria-hidden="true" />
+          </button>
 
           {/* Program Start Activation */}
-          <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+          <div
+            id={`program-start-${team.id}`}
+            tabIndex={-1}
+            aria-label={`Programmstart für ${team.name}`}
+            className="mt-4 scroll-mt-28 space-y-3 border-t border-border/50 pt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+          >
             {team.program_start_date ? (
               <div className="space-y-2">
                 <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-sm text-primary sm:flex-row sm:items-center">

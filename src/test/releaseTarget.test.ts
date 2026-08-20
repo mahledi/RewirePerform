@@ -20,7 +20,9 @@ const runValidation = (overrides: Record<string, string>) =>
         VITE_SUPABASE_URL: `https://${productionRef}.supabase.co`,
         VITE_SUPABASE_PUBLISHABLE_KEY:
           "sb_publishable_123456789012345678901234567890",
+        VITE_RELEASE_LINE: "1.1",
         VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED: "false",
+        VITE_FEEDBACK_TEXT_V1_ENABLED: "false",
         ...overrides,
       },
     },
@@ -101,6 +103,29 @@ describe("release target validation", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain(
       "VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be false for the V1.1 production client",
+    );
+  });
+
+  it("accepts the complete V1.2 Feedback Intelligence production client", () => {
+    const result = runValidation({
+      VITE_RELEASE_LINE: "1.2",
+      VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED: "true",
+      VITE_FEEDBACK_TEXT_V1_ENABLED: "true",
+    });
+
+    expect(result.status).toBe(0);
+  });
+
+  it("rejects a V1.2 production client that silently omits the agreed text path", () => {
+    const result = runValidation({
+      VITE_RELEASE_LINE: "1.2",
+      VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED: "true",
+      VITE_FEEDBACK_TEXT_V1_ENABLED: "false",
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      "VITE_FEEDBACK_TEXT_V1_ENABLED must be true for the separately consented V1.2 text path",
     );
   });
 });

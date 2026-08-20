@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 type EventType = "training" | "rest" | "competition";
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -45,6 +46,7 @@ type LocalEvent = {
 
 interface TeamTrainingScheduleProps {
   teamId: string;
+  variant?: "embedded" | "full";
 }
 
 const eventConfig: Record<EventType, { label: string; icon: typeof Dumbbell; dot: string; bg: string; text: string }> = {
@@ -81,8 +83,9 @@ const errorMessage = (err: unknown, fallback = "Speichern fehlgeschlagen") =>
       ? err.message
       : fallback;
 
-const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
+const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingScheduleProps) => {
   const { user } = useAuth();
+  const isFull = variant === "full";
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedTool, setSelectedTool] = useState<EventType>("training");
@@ -247,12 +250,22 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
   };
 
   return (
-    <div className="mt-4 rounded-2xl border border-border/50 bg-secondary/20 p-4">
-      <div className="mb-4 flex items-start gap-3">
-        <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
+    <div className={cn(
+      "border border-border/50 bg-secondary/20",
+      isFull
+        ? "relative overflow-hidden rounded-[28px] p-4 shadow-[0_28px_80px_-48px_rgba(0,0,0,0.95)] sm:p-6"
+        : "mt-4 rounded-2xl p-4",
+    )}>
+      {isFull && <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/[0.09] blur-3xl" />}
+      <div className="relative mb-5 flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-primary/20 bg-primary/[0.09] text-primary">
+          <CalendarDays className="h-5 w-5" aria-hidden="true" />
+        </span>
         <div className="min-w-0">
-          <h4 className="font-heading text-sm font-semibold text-foreground">Teamkalender</h4>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          <h4 className={cn("font-heading font-semibold text-foreground", isFull ? "text-lg tracking-[-0.02em]" : "text-sm")}>
+            Teamkalender
+          </h4>
+          <p className={cn("mt-1 leading-relaxed text-muted-foreground", isFull ? "max-w-xl text-sm" : "text-xs")}>
             Plane Training, Ruhetage und Wettkämpfe für bekannte Zeiträume. Du kannst jederzeit weitere Tage ergänzen.
           </p>
         </div>
@@ -263,7 +276,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="relative space-y-5">
           <div className="grid grid-cols-3 gap-2">
             {(Object.entries(eventConfig) as [EventType, typeof eventConfig.training][]).map(([type, config]) => {
               const Icon = config.icon;
@@ -272,7 +285,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                   key={type}
                   type="button"
                   onClick={() => setSelectedTool(type)}
-                  className={`rounded-xl p-3 text-center text-xs font-semibold transition-all ${
+                  className={`min-h-12 rounded-xl p-2.5 text-center text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     selectedTool === type
                       ? `${config.bg} ${config.text} ring-1 ring-current`
                       : "bg-background/70 text-muted-foreground hover:bg-secondary"
@@ -285,12 +298,16 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
             })}
           </div>
 
-          <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+          <div className={cn("grid gap-4", isFull && "lg:grid-cols-[minmax(0,1.08fr)_minmax(18rem,0.92fr)] lg:items-start")}>
+          <div className={cn(
+            "border border-border/50 bg-background/60",
+            isFull ? "-mx-4 rounded-none border-x-0 p-2 sm:mx-0 sm:rounded-[20px] sm:border-x sm:p-4" : "rounded-xl p-3",
+          )}>
             <div className="mb-3 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="rounded-lg p-2 transition-colors hover:bg-secondary"
+                className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Vorheriger Monat"
               >
                 <ChevronLeft className="h-4 w-4 text-muted-foreground" />
@@ -301,7 +318,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
               <button
                 type="button"
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="rounded-lg p-2 transition-colors hover:bg-secondary"
+                className="flex h-11 w-11 items-center justify-center rounded-xl transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Nächster Monat"
               >
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -325,7 +342,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                     key={key}
                     type="button"
                     onClick={() => upsertDay(day)}
-                    className={`relative aspect-square rounded-lg text-xs transition-all ${
+                    className={`relative aspect-square min-h-11 rounded-lg text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       !inMonth ? "opacity-30" : ""
                     } ${isToday(day) ? "ring-1 ring-primary" : ""} ${
                       isSelected ? "ring-2 ring-primary" : "hover:bg-secondary"
@@ -343,8 +360,8 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
             </div>
           </div>
 
-          {selectedDate && (
-            <div className="rounded-xl border border-border/50 bg-background/60 p-3">
+          {selectedDate ? (
+            <div className={cn("border border-border/50 bg-background/60 p-4", isFull ? "rounded-[20px]" : "rounded-xl")}>
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold">
@@ -358,7 +375,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                   <button
                     type="button"
                     onClick={removeSelectedEvent}
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     aria-label="Event entfernen"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -382,7 +399,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                     value={selectedEvent.title}
                     onChange={(e) => updateSelectedEvent({ title: e.target.value })}
                     placeholder="Titel"
-                    className="w-full rounded-xl border border-border/50 bg-secondary/50 px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="min-h-11 w-full rounded-xl border border-border/50 bg-secondary/50 px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   {selectedEvent.event_type !== "rest" && (
                     <Select
@@ -396,7 +413,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                         });
                       }}
                     >
-                      <SelectTrigger className="bg-secondary/50">
+                      <SelectTrigger className="min-h-11 bg-secondary/50 focus:ring-2 focus:ring-primary">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -413,13 +430,19 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
                 <button
                   type="button"
                   onClick={() => upsertDay(selectedDate)}
-                  className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+                  className="min-h-12 w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   {eventConfig[selectedTool].label} für diesen Tag setzen
                 </button>
               )}
             </div>
+          ) : (
+            <div className="hidden rounded-[20px] border border-border/50 bg-background/60 p-4 lg:block">
+              <p className="text-sm font-semibold text-foreground">Tag auswählen</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">Wähle im Kalender einen Tag und ordne Training, Ruhetag oder Wettkampf zu.</p>
+            </div>
           )}
+          </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
             <span>{eventsByDate.size} Team-Events geplant</span>
@@ -434,7 +457,7 @@ const TeamTrainingSchedule = ({ teamId }: TeamTrainingScheduleProps) => {
             type="button"
             onClick={save}
             disabled={saveState === "saving"}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:shadow-glow disabled:opacity-50"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
           >
             {saveState === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}
             {saveState === "saved" && <Check className="h-4 w-4" />}

@@ -74,6 +74,9 @@ const CoachFirstRunExperiencePreview = evidencePreviewEnabled
 const FeedbackIntelligencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/FeedbackIntelligencePreview.tsx"))
   : null;
+const AdminFeedbackCommentsPreview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/AdminFeedbackCommentsPreview.tsx"))
+  : null;
 const FeedbackCheckpointGate = lazy(
   () => import("./components/feedback-intelligence/FeedbackCheckpointGate.tsx"),
 );
@@ -103,6 +106,8 @@ const AppRoutes = () => {
     && location.pathname === "/internal/coach-first-run-preview";
   const isFeedbackIntelligencePreview = FeedbackIntelligencePreview !== null
     && location.pathname === "/internal/feedback-intelligence-preview";
+  const isAdminFeedbackCommentsPreview = AdminFeedbackCommentsPreview !== null
+    && location.pathname === "/internal/admin-feedback-comments-preview";
   const isGoldenDaysPreview = GoldenDaysPreview !== null
     && location.pathname === "/internal/golden-days-preview";
   const isProgramContentPreview = ProgramContentPreview !== null
@@ -116,6 +121,7 @@ const AppRoutes = () => {
     || isFirstRunExperiencePreview
     || isCoachFirstRunExperiencePreview
     || isFeedbackIntelligencePreview
+    || isAdminFeedbackCommentsPreview
     || isGoldenDaysPreview
     || isProgramContentPreview
     || isWebsiteGoldenPagePreview;
@@ -139,6 +145,9 @@ const AppRoutes = () => {
             )}
             {FeedbackIntelligencePreview && (
               <Route path="/internal/feedback-intelligence-preview" element={<FeedbackIntelligencePreview />} />
+            )}
+            {AdminFeedbackCommentsPreview && (
+              <Route path="/internal/admin-feedback-comments-preview" element={<AdminFeedbackCommentsPreview />} />
             )}
             {GoldenDaysPreview && (
               <Route path="/internal/golden-days-preview" element={<GoldenDaysPreview />} />

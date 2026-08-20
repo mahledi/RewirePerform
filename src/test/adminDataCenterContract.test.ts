@@ -33,6 +33,14 @@ describe("admin data center information architecture", () => {
     expect(pilotSource).toContain("Production ohne QA");
   });
 
+  it("separates consented Feedback Intelligence comments from support messages", () => {
+    const source = read("src/pages/Admin.tsx");
+
+    expect(source).toContain("<AdminFeedbackIntelligenceComments />");
+    expect(source).toContain("Support & technische Hinweise");
+    expect(source).toContain("Diese Texte werden nicht mit Feedback Intelligence vermischt.");
+  });
+
   it("never flashes an admin-only error while the active account is changing", () => {
     const source = read("src/pages/Admin.tsx");
 

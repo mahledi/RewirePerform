@@ -1,7 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Cloud, CloudOff, Loader2, Pause } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { questions, categories, getQuestionsByCategory } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -24,7 +23,13 @@ interface QuestionnaireFlowProps {
   initialGlobalIndex?: number;
   draftId?: string | null;
   draftStorageKey?: string;
-  onPauseExit?: () => void | Promise<void>;
+  onPauseExit: (draft: QuestionnairePauseDraft) => void | Promise<void>;
+}
+
+export interface QuestionnairePauseDraft {
+  answers: Record<string, string | string[] | number>;
+  lastCategoryIndex: number;
+  lastGlobalIndex?: number;
 }
 
 type FlowState =
@@ -44,12 +49,12 @@ const QuestionnaireFlow = ({
   draftStorageKey = LEGACY_QUESTIONNAIRE_DRAFT_KEY,
   onPauseExit,
 }: QuestionnaireFlowProps) => {
-  const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>(initialAnswers);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [pausing, setPausing] = useState(false);
   const draftIdRef = useRef<string | null>(draftId);
   const isSavingRef = useRef<boolean>(false);
   const pendingSaveRef = useRef<{ answers: Record<string, string | string[] | number>; categoryIndex: number; silent: boolean } | null>(null);
@@ -352,22 +357,33 @@ const QuestionnaireFlow = ({
 
   // Pause: save current state and exit
   const handlePause = async () => {
+    if (pausing) return;
     const currentCatIndex =
       flowState.type === "category-intro"
         ? flowState.categoryIndex
         : categories.findIndex(
             (c) => c.id === orderedQuestions[flowState.globalIndex].category
           );
-    await saveDraft(answers, currentCatIndex);
-    toast({
-      title: "Fortschritt gespeichert",
-      description: "Du kannst jederzeit zurückkommen und weitermachen.",
+    const pauseDraft: QuestionnairePauseDraft = {
+      answers,
+      lastCategoryIndex: currentCatIndex,
+      lastGlobalIndex: flowState.type === "question" ? flowState.globalIndex : undefined,
+    };
+    setPausing(true);
+    writeLocalDraft(draftStorageKey, {
+      ...pauseDraft,
+      savedAt: new Date().toISOString(),
     });
-    if (onPauseExit) {
-      await onPauseExit();
-      return;
+    try {
+      await saveDraft(answers, currentCatIndex);
+      toast({
+        title: "Fortschritt gespeichert",
+        description: "Du bleibst angemeldet und kannst jederzeit weitermachen.",
+      });
+      await onPauseExit(pauseDraft);
+    } finally {
+      setPausing(false);
     }
-    navigate("/auth?switch=1", { replace: true });
   };
 
   // Auto-save on answer change (debounced, silent)
@@ -434,11 +450,11 @@ const QuestionnaireFlow = ({
             </div>
             <button
               onClick={handlePause}
-              disabled={submitting}
-              className="flex items-center gap-2 rounded-xl border border-border bg-secondary/70 px-3 py-2 text-xs font-medium text-secondary-foreground hover:bg-muted transition-colors disabled:opacity-60"
+              disabled={submitting || pausing}
+              className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-secondary/70 px-3 py-2 text-xs font-medium text-secondary-foreground hover:bg-muted transition-colors disabled:opacity-60"
             >
-              <Pause className="w-3.5 h-3.5" />
-              Speichern &amp; Pause
+              {pausing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pause className="h-3.5 w-3.5" />}
+              {pausing ? "Wird gespeichert…" : "Speichern & Pause"}
             </button>
           </div>
           <p className="mb-2 text-[11px] leading-snug text-muted-foreground md:text-xs">

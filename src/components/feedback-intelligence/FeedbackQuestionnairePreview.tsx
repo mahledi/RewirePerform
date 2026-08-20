@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { feedbackTextConsentCopyV11 } from "@/content/feedbackTextConsentV11";
+import { feedbackTextConsentCopyV12 } from "@/content/feedbackTextConsentV12";
 import {
   getFeedbackCheckpoint,
   isFeedbackQuestionVisible,
@@ -485,8 +485,21 @@ export const FeedbackQuestionnairePreview = ({
               </p>
               <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-sm text-white/58">
                 <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
-                <span>{checkpoint.durationLabel} · Fragen können übersprungen werden</span>
+                <span>
+                  Freiwillig · {checkpoint.durationLabel} · Fragen können übersprungen werden. Deine Auswahlantworten
+                  dienen nur der Produktverbesserung; dein Coach sieht keine Einzelantworten.
+                </span>
               </div>
+              {mode === "live" && (
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex text-xs font-medium text-primary hover:underline"
+                >
+                  Datenschutz zum Feedback
+                </a>
+              )}
             </div>
             <div className="grid gap-3">
               <motion.div whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}>
@@ -496,7 +509,7 @@ export const FeedbackQuestionnairePreview = ({
                   onClick={() => void startExperience()}
                   disabled={busy}
                 >
-                  {busy ? "Wird geöffnet …" : "Feedback starten"} <ArrowRight className="h-4 w-4" />
+                  {busy ? "Wird geöffnet …" : "Freiwilliges Feedback starten"} <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
               {mode === "live" && (
@@ -534,7 +547,9 @@ export const FeedbackQuestionnairePreview = ({
                 {checkpoint.intro.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
               <p className="mt-6 text-sm leading-6 text-white/45">
-                Die Auswahlantworten funktionieren unabhängig davon, ob du zusätzlich etwas schreibst.
+                {textEnabled
+                  ? "Die Auswahlantworten funktionieren unabhängig davon, ob du zusätzlich etwas schreibst."
+                  : "Gespeichert werden nur deine Auswahlantworten. Du kannst jede Frage überspringen."}
               </p>
             </div>
             <Button size="lg" className="h-12 w-full rounded-2xl" onClick={() => setScreen("questions")}>
@@ -604,10 +619,12 @@ export const FeedbackQuestionnairePreview = ({
             </button>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Zum Abschluss</p>
             <h1 className="mt-3 text-2xl font-semibold leading-tight tracking-[-0.03em]">
-              {checkpoint.closingTextPrompt}
+              {textEnabled ? checkpoint.closingTextPrompt : "Dein Zwischenstand ist bereit."}
             </h1>
             <p className="mt-4 text-sm leading-6 text-white/50">
-              Optional. Deine bisherigen Auswahlantworten bleiben auch ohne Freitext erhalten.
+              {textEnabled
+                ? "Optional. Deine bisherigen Auswahlantworten bleiben auch ohne Freitext erhalten."
+                : "Beim Abschließen werden ausschließlich deine Auswahlantworten gespeichert."}
             </p>
             <OptionalComment
               commentId={CLOSING_COMMENT_ID}
@@ -684,19 +701,19 @@ export const FeedbackQuestionnairePreview = ({
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <DialogTitle className="text-xl leading-tight">{feedbackTextConsentCopyV11.title}</DialogTitle>
+            <DialogTitle className="text-xl leading-tight">{feedbackTextConsentCopyV12.title}</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-2 pt-2 text-left text-sm leading-6 text-muted-foreground">
-                {feedbackTextConsentCopyV11.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                {feedbackTextConsentCopyV12.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
             </DialogDescription>
           </DialogHeader>
           <div className="mt-1 grid gap-2">
             <Button className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={acceptTextConsent}>
-              {feedbackTextConsentCopyV11.acceptLabel}
+              {feedbackTextConsentCopyV12.acceptLabel}
             </Button>
             <Button variant="outline" className="h-auto min-h-12 whitespace-normal rounded-2xl px-4 py-3" onClick={declineTextConsent}>
-              {feedbackTextConsentCopyV11.declineLabel}
+              {feedbackTextConsentCopyV12.declineLabel}
             </Button>
           </div>
         </DialogContent>

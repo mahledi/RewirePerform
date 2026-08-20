@@ -56,6 +56,23 @@ describe("feedback intelligence athlete API adapter", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("claim_my_feedback_checkpoint", undefined);
   });
 
+  it("keeps text closed unless both client and server gates are enabled", async () => {
+    vi.stubEnv("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED", "true");
+    mocks.rpc.mockResolvedValue({
+      error: null,
+      data: {
+        eligible: true,
+        checkpoint_day: 10,
+        text_enabled: true,
+      },
+    });
+
+    await expect(claimMyFeedbackCheckpoint()).resolves.toMatchObject({ textEnabled: false });
+
+    vi.stubEnv("VITE_FEEDBACK_TEXT_V1_ENABLED", "true");
+    await expect(claimMyFeedbackCheckpoint()).resolves.toMatchObject({ textEnabled: true });
+  });
+
   it("forwards only the versioned draft payload to the save RPC", async () => {
     mocks.rpc.mockResolvedValue({
       error: null,

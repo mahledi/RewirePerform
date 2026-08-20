@@ -6,6 +6,9 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   signOut: vi.fn(),
   overviewProps: vi.fn(),
+  managementProps: vi.fn(),
+  calendarProps: vi.fn(),
+  programStartDate: "2026-08-01" as string | null,
   user: { id: "coach-1", user_metadata: { full_name: "Nina Beispiel" } },
 }));
 
@@ -41,7 +44,7 @@ vi.mock("@/integrations/supabase/client", () => ({
             name: "U17",
             sport: "Fußball",
             access_code: "TEAM01",
-            program_start_date: "2026-08-01",
+            program_start_date: mocks.programStartDate,
             program_activated_at: "2026-08-01T09:00:00Z",
           }],
           error: null,
@@ -53,21 +56,47 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 vi.mock("@/components/coach/TeamOverview", () => ({
-  default: (props: unknown) => {
+  default: (props: {
+    onPrepareProgramStart: () => void;
+    onOpenCalendar: () => void;
+  }) => {
     mocks.overviewProps(props);
-    return <div>Reale Übersicht</div>;
+    return (
+      <div>
+        <p>Reale Übersicht</p>
+        <button type="button" onClick={props.onPrepareProgramStart}>Programmstart vorbereiten</button>
+        <button type="button" onClick={props.onOpenCalendar}>Teamkalender öffnen</button>
+      </div>
+    );
   },
 }));
 vi.mock("@/components/coach/TeamMentalState", () => ({ default: () => <div>Realer Teamzustand</div> }));
 vi.mock("@/components/coach/TeamEvidence", () => ({ default: () => <div>Reale Entwicklung</div> }));
 vi.mock("@/components/coach/CoachEvidenceReviewPanel", () => ({ default: () => <div>Reale Beobachtung</div> }));
 vi.mock("@/components/coach/CoachToolkit", () => ({ default: () => <div>Reales Toolkit</div> }));
-vi.mock("@/components/coach/TeamManagement", () => ({ default: () => <div>Reale Teamverwaltung</div> }));
+vi.mock("@/components/coach/TeamManagement", () => ({
+  default: (props: { onOpenCalendar: (teamId: string) => void }) => {
+    mocks.managementProps(props);
+    return (
+      <div>
+        <p>Reale Teamverwaltung</p>
+        <button type="button" onClick={() => props.onOpenCalendar("team-1")}>Kalender aus Team öffnen</button>
+      </div>
+    );
+  },
+}));
+vi.mock("@/components/coach/TeamTrainingSchedule", () => ({
+  default: (props: { teamId: string; variant?: string }) => {
+    mocks.calendarProps(props);
+    return <div>Realer Teamkalender</div>;
+  },
+}));
 vi.mock("@/components/coach/CoachAccountPanel", () => ({ CoachAccountPanel: () => <div>Coach-Konto und Feedback</div> }));
 
 describe("premium Coach dashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.programStartDate = "2026-08-01";
     mocks.signOut.mockResolvedValue(undefined);
     Object.defineProperty(window, "scrollTo", {
       configurable: true,
@@ -108,6 +137,48 @@ describe("premium Coach dashboard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Team" }));
     expect(await screen.findByText("Reale Teamverwaltung")).toBeInTheDocument();
+  });
+
+  it("opens the existing management start area from the prominent overview action", async () => {
+    mocks.programStartDate = null;
+    render(<Coach />);
+    await screen.findByText("Reale Übersicht");
+
+    fireEvent.click(screen.getByRole("button", { name: "Programmstart vorbereiten" }));
+
+    expect(await screen.findByText("Reale Teamverwaltung")).toBeInTheDocument();
+    expect(mocks.managementProps).toHaveBeenLastCalledWith(expect.objectContaining({
+      programStartFocus: { teamId: "team-1", requestKey: 1 },
+    }));
+  });
+
+  it("uses a dedicated calendar view and returns without losing the previous coach area", async () => {
+    render(<Coach />);
+    await screen.findByText("Reale Übersicht");
+
+    fireEvent.click(screen.getByRole("button", { name: "Teamkalender öffnen" }));
+    expect(await screen.findByText("Realer Teamkalender")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Coach-Navigation" })).not.toBeInTheDocument();
+    expect(mocks.calendarProps).toHaveBeenLastCalledWith(expect.objectContaining({
+      teamId: "team-1",
+      variant: "full",
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Zurück" }));
+    expect(await screen.findByText("Reale Übersicht")).toBeVisible();
+    expect(screen.getByRole("navigation", { name: "Coach-Navigation" })).toBeInTheDocument();
+  });
+
+  it("opens the same calendar view from team management", async () => {
+    render(<Coach />);
+    await screen.findByText("Reale Übersicht");
+
+    fireEvent.click(screen.getByRole("button", { name: "Team" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Kalender aus Team öffnen" }));
+    expect(await screen.findByText("Realer Teamkalender")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Zurück" }));
+    expect(await screen.findByText("Reale Teamverwaltung")).toBeVisible();
   });
 
   it("signs out through the existing auth action", async () => {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, Users } from "lucide-react";
+import { ArrowLeft, ChevronDown, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import TeamOverview from "@/components/coach/TeamOverview";
@@ -9,6 +9,7 @@ import TeamMentalState from "@/components/coach/TeamMentalState";
 import TeamEvidence from "@/components/coach/TeamEvidence";
 import CoachToolkit from "@/components/coach/CoachToolkit";
 import CoachEvidenceReviewPanel from "@/components/coach/CoachEvidenceReviewPanel";
+import TeamTrainingSchedule from "@/components/coach/TeamTrainingSchedule";
 import { CoachAccountPanel } from "@/components/coach/CoachAccountPanel";
 import {
   CoachAppHeader,
@@ -76,6 +77,13 @@ const SECTIONS: SectionMeta[] = [
     requiresTeam: false,
   },
   {
+    id: "calendar",
+    eyebrow: "Teamkalender",
+    title: "Jeder Tag. Klar geplant.",
+    description: "Training, Ruhetage und Wettkämpfe für dein ausgewähltes Team an einem Ort.",
+    requiresTeam: true,
+  },
+  {
     id: "account",
     eyebrow: "Coach Console",
     title: "Konto & Feedback",
@@ -99,6 +107,8 @@ const Coach = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [visitedTabs, setVisitedTabs] = useState<Set<CoachAppSection>>(new Set(["overview"]));
+  const [calendarReturnTab, setCalendarReturnTab] = useState<CoachAppSection>("overview");
+  const [programStartFocus, setProgramStartFocus] = useState<{ teamId: string; requestKey: number } | null>(null);
 
   const fetchTeams = async () => {
     if (!user) return;
@@ -170,6 +180,23 @@ const Coach = () => {
     if (user) coachTeamsCache.set(user.id, { teams, selectedTeam: teamId });
   };
 
+  const openProgramStart = (teamId: string) => {
+    selectTeam(teamId);
+    setProgramStartFocus((current) => ({
+      teamId,
+      requestKey: (current?.requestKey ?? 0) + 1,
+    }));
+    openTab("manage");
+  };
+
+  const openCalendar = (teamId: string) => {
+    selectTeam(teamId);
+    setCalendarReturnTab(tab === "calendar" || tab === "account" ? "overview" : tab);
+    openTab("calendar");
+  };
+
+  const closeCalendar = () => openTab(calendarReturnTab);
+
   const renderEmptyTeam = () => (
     <section className="relative overflow-hidden rounded-[26px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(28,31,36,0.96),rgba(15,17,21,0.98))] px-5 py-10 text-center sm:px-8">
       <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-primary/[0.09] blur-3xl" />
@@ -203,35 +230,55 @@ const Coach = () => {
       );
     }
 
-    if (tab === "manage") return <TeamManagement teams={teams} onTeamCreated={fetchTeams} />;
     if (tab === "account") return <CoachAccountPanel onBack={() => openTab("overview")} />;
-    if (!selectedTeam) return renderEmptyTeam();
+    if (!selectedTeam && tab !== "manage") return renderEmptyTeam();
 
     return (
       <div className="min-w-0">
-        {visitedTabs.has("overview") && (
+        {selectedTeam && visitedTabs.has("overview") && (
           <div className={tab === "overview" ? "block" : "hidden"}>
             <TeamOverview
               key={`overview-${selectedTeam.id}`}
               teamId={selectedTeam.id}
               teamName={selectedTeam.name}
               programStartDate={selectedTeam.program_start_date}
+              onPrepareProgramStart={() => openProgramStart(selectedTeam.id)}
+              onOpenCalendar={() => openCalendar(selectedTeam.id)}
             />
           </div>
         )}
-        {visitedTabs.has("mental") && (
+        {selectedTeam && visitedTabs.has("mental") && (
           <div className={tab === "mental" ? "block" : "hidden"}>
             <TeamMentalState key={`mental-${selectedTeam.id}`} teamId={selectedTeam.id} />
           </div>
         )}
-        {visitedTabs.has("evidence") && (
+        {selectedTeam && visitedTabs.has("evidence") && (
           <div className={tab === "evidence" ? "block" : "hidden"}>
             <EvidenceSection key={`evidence-${selectedTeam.id}`} teamId={selectedTeam.id} />
           </div>
         )}
-        {visitedTabs.has("toolkit") && (
+        {selectedTeam && visitedTabs.has("toolkit") && (
           <div className={tab === "toolkit" ? "block" : "hidden"}>
             <CoachToolkit key={`toolkit-${selectedTeam.id}`} teamId={selectedTeam.id} />
+          </div>
+        )}
+        {visitedTabs.has("manage") && (
+          <div className={tab === "manage" ? "block" : "hidden"}>
+            <TeamManagement
+              teams={teams}
+              onTeamCreated={fetchTeams}
+              onOpenCalendar={openCalendar}
+              programStartFocus={programStartFocus}
+            />
+          </div>
+        )}
+        {selectedTeam && visitedTabs.has("calendar") && (
+          <div className={tab === "calendar" ? "block" : "hidden"}>
+            <TeamTrainingSchedule
+              key={`calendar-${selectedTeam.id}`}
+              teamId={selectedTeam.id}
+              variant="full"
+            />
           </div>
         )}
       </div>
@@ -247,6 +294,16 @@ const Coach = () => {
       <div className="pointer-events-none fixed inset-x-0 top-0 h-[28rem] bg-[radial-gradient(circle_at_50%_-18%,rgba(46,173,137,0.13),transparent_56%)]" />
       <CoachAppHeader onOpenAccount={() => openTab("account")} onSignOut={handleSignOut} />
       <main className={coachAppViewport}>
+        {tab === "calendar" && (
+          <button
+            type="button"
+            onClick={closeCalendar}
+            className="mb-5 inline-flex min-h-11 items-center gap-2 rounded-[15px] border border-white/[0.07] bg-white/[0.025] px-3 text-sm font-medium text-white/58 transition-colors hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Zurück
+          </button>
+        )}
         {tab !== "account" && (
           <CoachPageIntro
             eyebrow={activeSection.eyebrow}
@@ -276,7 +333,7 @@ const Coach = () => {
 
         <div className="mt-6 md:mt-8">{renderSection()}</div>
       </main>
-      <CoachBottomNavigation active={tab} onSelect={openTab} />
+      {tab !== "calendar" && <CoachBottomNavigation active={tab} onSelect={openTab} />}
     </div>
   );
 };

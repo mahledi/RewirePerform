@@ -18,6 +18,7 @@ import NlzPilotReadiness from "@/components/admin/NlzPilotReadiness";
 import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationGate";
 import AdminCommandCenter from "@/components/admin/AdminCommandCenter";
 import OrganizationRequestManager from "@/components/admin/OrganizationRequestManager";
+import AdminFeedbackIntelligenceComments from "@/components/admin/AdminFeedbackIntelligenceComments";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
@@ -337,7 +338,7 @@ const Admin = () => {
     { id: "pilot", title: "Pilotsteuerung", description: "Programmläufe, Zuordnung und operative Startbereitschaft.", icon: ShieldCheck },
     { id: "evidence", title: "Daten & Exporte", description: "Ergebnisse, Exporte und internes Programmverständnis.", icon: BarChart3 },
     { id: "days", title: "Tage", description: "Athleten-Vorschau jedes Programmtags.", icon: CalendarDays },
-    { id: "feedback", title: "Feedback", description: "Nutzerfeedback prüfen und beantworten.", icon: MessageSquare },
+    { id: "feedback", title: "Feedback", description: "Freiwillige Programmkommentare und Support getrennt prüfen.", icon: MessageSquare },
     { id: "health", title: "Datenqualität & System", description: "Operative Vollständigkeit, Systemgesundheit und Launch-Ops.", icon: HeartPulse },
   ];
   const activeAdminSection = ADMIN_SECTIONS.find((s) => s.id === tab);
@@ -1397,11 +1398,14 @@ const Admin = () => {
           </TabsContent>
 
           {/* FEEDBACK */}
-          <TabsContent value="feedback" className="mt-4">
+          <TabsContent value="feedback" className="mt-4 space-y-5">
+            <AdminFeedbackIntelligenceComments />
             <Card>
               <CardHeader>
-                <CardTitle>Feedback / Support</CardTitle>
-                <CardDescription>Eingereichte Nachrichten von Nutzern.</CardDescription>
+                <CardTitle>Support & technische Hinweise</CardTitle>
+                <CardDescription>
+                  Separater Kanal für direkt eingereichte Supportnachrichten. Diese Texte werden nicht mit Feedback Intelligence vermischt.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {feedback.length === 0 ? (

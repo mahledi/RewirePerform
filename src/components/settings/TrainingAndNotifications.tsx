@@ -9,6 +9,15 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { getCachedProgramModeInfo, getProgramModeInfo } from "@/lib/programMode";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import {
+  EVENING_REMINDER_OPTIONS as eveningOptions,
+  MORNING_REMINDER_OPTIONS as morningOptions,
+  formatReminderTime as formatHM,
+  localToUtcReminderTime as localToUtc,
+  parseReminderTime as parseTimeValue,
+  utcToLocalReminderTime as utcToLocal,
+  type LocalReminderTime as LocalTime,
+} from "@/lib/reminderTime";
 
 const DAYS = [
   { idx: 1, label: "Mo" },
@@ -21,7 +30,6 @@ const DAYS = [
 ];
 
 type SaveState = "idle" | "saving" | "saved" | "error";
-type LocalTime = { h: number; m: number };
 type ScheduleMap = Record<number, LocalTime | null>;
 
 const TRAINING_TIMES = (() => {
@@ -33,26 +41,6 @@ const TRAINING_TIMES = (() => {
   return out;
 })();
 
-// Local hour helpers (for stored UTC -> local display)
-const utcToLocal = (h: number, m: number) => {
-  const d = new Date();
-  d.setUTCHours(h, m, 0, 0);
-  return { h: d.getHours(), m: d.getMinutes() };
-};
-const localToUtc = (h: number, m: number) => {
-  const d = new Date();
-  d.setHours(h, m, 0, 0);
-  return { h: d.getUTCHours(), m: d.getUTCMinutes() };
-};
-
-const formatHM = (h: number, m: number) =>
-  `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-
-const parseTimeValue = (value: string): LocalTime => {
-  const [h, m] = value.split(":").map(Number);
-  return { h, m };
-};
-
 const emptySchedule = (): ScheduleMap => {
   const map: ScheduleMap = {};
   DAYS.forEach((day) => {
@@ -63,17 +51,6 @@ const emptySchedule = (): ScheduleMap => {
 
 const errorMessage = (err: unknown, fallback = "Fehler") =>
   err instanceof Error ? err.message : fallback;
-
-const morningOptions = (() => {
-  const out: { h: number; m: number }[] = [];
-  for (let h = 6; h <= 10; h++) for (const m of [0, 30]) out.push({ h, m });
-  return out;
-})();
-const eveningOptions = (() => {
-  const out: { h: number; m: number }[] = [];
-  for (let h = 18; h <= 23; h++) for (const m of [0, 30]) out.push({ h, m });
-  return out;
-})();
 
 export const TrainingAndNotifications = () => {
   const { user } = useAuth();

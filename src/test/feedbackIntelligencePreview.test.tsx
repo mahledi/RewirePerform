@@ -20,8 +20,8 @@ describe("feedback intelligence synthetic preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "+ Kurz etwas dazu sagen" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText(/intern betriebenen Jarvis-System/)).toBeInTheDocument();
-    expect(screen.getByText(/kein externer KI-Anbieter/)).toBeInTheDocument();
+    expect(screen.getByText(/geschützten, pseudonymisierten und nur lesenden Admin-Ansicht/)).toBeInTheDocument();
+    expect(screen.getByText(/Jarvis und externe KI-Anbieter erhalten ihn nicht/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Ohne Kommentar fortfahren" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -89,6 +89,29 @@ describe("feedback intelligence synthetic preview", () => {
     await openFirstQuestion();
 
     expect(screen.queryByRole("button", { name: "+ Kurz etwas dazu sagen" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("explains the voluntary structured use before a live checkpoint starts", () => {
+    render(<FeedbackQuestionnairePreview day={10} mode="live" textEnabled />);
+
+    expect(screen.getByText(/Freiwillig.*Produktverbesserung.*Coach sieht keine Einzelantworten/s)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Datenschutz zum Feedback" })).toHaveAttribute("href", "/privacy");
+  });
+
+  it("finishes the structured-only flow without asking for a written response", async () => {
+    render(
+      <FeedbackQuestionnairePreview
+        day={10}
+        mode="live"
+        textEnabled={false}
+        initialScreen="closing"
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Dein Zwischenstand ist bereit." })).toBeInTheDocument();
+    expect(screen.getByText(/ausschließlich deine Auswahlantworten gespeichert/)).toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 

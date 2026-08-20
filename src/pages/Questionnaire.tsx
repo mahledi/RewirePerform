@@ -3,6 +3,7 @@ import { Loader2, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import QuestionnaireIntro from "@/components/questionnaire/QuestionnaireIntro";
 import QuestionnaireFlow from "@/components/questionnaire/QuestionnaireFlow";
+import type { QuestionnairePauseDraft } from "@/components/questionnaire/QuestionnaireFlow";
 import QuestionnaireResults from "@/components/questionnaire/QuestionnaireResults";
 import { supabase } from "@/integrations/supabase/client";
 import { ONBOARDING_V2_INSTRUMENT_ID } from "@/content/questionnaireV2";
@@ -155,6 +156,17 @@ const Questionnaire = () => {
     window.scrollTo(0, 0);
   };
 
+  const handleQuestionnairePause = (pausedDraft: QuestionnairePauseDraft) => {
+    setAnswers(pausedDraft.answers);
+    setDraft({
+      id: draft?.id ?? "",
+      ...pausedDraft,
+      source: "local",
+    });
+    setPhase("resume");
+    window.scrollTo(0, 0);
+  };
+
   const startFresh = async () => {
     // Discard existing draft if user chose to restart
     if (draft?.id) {
@@ -261,7 +273,7 @@ const Questionnaire = () => {
           draftStorageKey={draftStorageKey}
           onComplete={handleComplete}
           onBack={() => setPhase("intro")}
-          onPauseExit={handleSignOutToStart}
+          onPauseExit={handleQuestionnairePause}
         />
       )}
       {phase === "results" && <QuestionnaireResults answers={answers} draftStorageKey={draftStorageKey} />}

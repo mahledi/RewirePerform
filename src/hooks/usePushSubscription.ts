@@ -157,7 +157,7 @@ export const usePushSubscription = () => {
 
     if (support.mode === "native") {
       if (!(await requestNativeNotificationPermission())) {
-        throw new Error("Benachrichtigungen wurden in iOS nicht erlaubt");
+        throw new Error("Benachrichtigungen wurden auf diesem Gerät nicht erlaubt");
       }
       await syncNativeRemindersForUser(user.id, nextTimes);
       applyReminderTimes(nextTimes);

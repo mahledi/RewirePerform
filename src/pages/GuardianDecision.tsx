@@ -42,7 +42,7 @@ import {
   withdrawGuardianDataContribution,
   type GuardianLinkStatus,
 } from "@/lib/minorAuthorization";
-import { guardianFeedbackTextPolicyCopyV11 } from "@/content/guardianFeedbackTextPolicyV11";
+import { guardianFeedbackTextPolicyCopyV12 } from "@/content/guardianFeedbackTextPolicyV12";
 import {
   guardianPolicyCopy,
   guardianPolicyDetails,
@@ -273,7 +273,7 @@ const GuardianDecision = () => {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Freiwillige Feedback-Kommentare erlauben?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {guardianFeedbackTextPolicyCopyV11.detail} {guardianFeedbackTextPolicyCopyV11.retention}
+                        {guardianFeedbackTextPolicyCopyV12.detail} {guardianFeedbackTextPolicyCopyV12.retention}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -470,7 +470,7 @@ const GuardianDecision = () => {
                 {status.feedback_text_authorization_available === true && (
                   <p className="mt-4 border-l-2 border-primary/50 pl-3 text-sm leading-6 text-muted-foreground">
                     <span className="font-semibold text-foreground">Klare Ausnahme: </span>
-                    {guardianFeedbackTextPolicyCopyV11.privateContentClarification}
+                    {guardianFeedbackTextPolicyCopyV12.privateContentClarification}
                   </p>
                 )}
               </AccordionContent>
@@ -495,13 +495,13 @@ const GuardianDecision = () => {
                 <AccordionTrigger className="text-left text-sm">Was bedeutet die Feedback-Kommentar-Freigabe?</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-3 text-sm leading-6 text-muted-foreground">
-                    <p>{guardianFeedbackTextPolicyCopyV11.purpose}</p>
-                    <p>{guardianFeedbackTextPolicyCopyV11.athleteChoice}</p>
-                    <p>{guardianFeedbackTextPolicyCopyV11.includedData}</p>
-                    <p>{guardianFeedbackTextPolicyCopyV11.excludedData}</p>
-                    <p>{guardianFeedbackTextPolicyCopyV11.processor}</p>
-                    <p>{guardianFeedbackTextPolicyCopyV11.retention}</p>
-                    <p>{guardianFeedbackTextPolicyCopyV11.withdrawal}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.purpose}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.athleteChoice}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.includedData}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.excludedData}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.processor}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.retention}</p>
+                    <p>{guardianFeedbackTextPolicyCopyV12.withdrawal}</p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -566,8 +566,8 @@ const GuardianDecision = () => {
                   className="mt-0.5"
                 />
                 <Label htmlFor="guardian-feedback-text" className="min-h-11 min-w-0 flex-1 cursor-pointer">
-                  <span className="block text-sm font-semibold">{guardianFeedbackTextPolicyCopyV11.label}</span>
-                  <span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{guardianFeedbackTextPolicyCopyV11.detail}</span>
+                  <span className="block text-sm font-semibold">{guardianFeedbackTextPolicyCopyV12.label}</span>
+                  <span className="mt-1 block text-sm font-normal leading-5 text-muted-foreground">{guardianFeedbackTextPolicyCopyV12.detail}</span>
                 </Label>
               </div>
             )}
