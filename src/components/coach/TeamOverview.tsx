@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, UsersRound, ClipboardCheck, Activity, Lock, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  CalendarDays,
+  ClipboardCheck,
+  Loader2,
+  Lock,
+  RefreshCw,
+  Rocket,
+  Users,
+  UsersRound,
+} from "lucide-react";
 import { captureAppError } from "@/lib/monitoring";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 
@@ -32,9 +44,17 @@ interface TeamOverviewProps {
   teamId: string;
   teamName?: string;
   programStartDate?: string | null;
+  onPrepareProgramStart?: () => void;
+  onOpenCalendar?: () => void;
 }
 
-const TeamOverview = ({ teamId, teamName = "Dein Team", programStartDate = null }: TeamOverviewProps) => {
+const TeamOverview = ({
+  teamId,
+  teamName = "Dein Team",
+  programStartDate = null,
+  onPrepareProgramStart,
+  onOpenCalendar,
+}: TeamOverviewProps) => {
   const [stats, setStats] = useState<TeamStats | null>(null);
   const [activityRows, setActivityRows] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,18 +254,6 @@ const TeamOverview = ({ teamId, teamName = "Dein Team", programStartDate = null 
     );
   }
 
-  if (stats.member_count === 0) {
-    return (
-      <div className="text-center py-12">
-        <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">Noch keine Sportler im Team.</p>
-        <p className="text-muted-foreground text-sm mt-1">
-          Teile den Zugangscode, damit Sportler beitreten können.
-        </p>
-      </div>
-    );
-  }
-
   const programDay = getCurrentProgramDay(programStartDate);
   const progress = programDay ? Math.round((programDay.dayNumber / 56) * 100) : 0;
   const week = programDay ? Math.ceil(programDay.dayNumber / 7) : null;
@@ -274,34 +282,83 @@ const TeamOverview = ({ teamId, teamName = "Dein Team", programStartDate = null 
         </div>
       )}
 
-      <section className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(28,31,36,0.97),rgba(15,17,21,0.99))] p-5 shadow-[0_28px_80px_-45px_rgba(0,0,0,0.95)] sm:p-6">
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/[0.11] blur-3xl" />
-        <div className="relative flex min-w-0 items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
-              {programDay ? `Woche ${week}` : "Programmstatus"}
-            </p>
-            <h2 className="mt-2 truncate text-[clamp(1.35rem,4vw,1.85rem)] font-semibold tracking-[-0.04em] text-[#EEF0F2]">
-              {teamName}
-            </h2>
-            <p className="mt-2 text-xs leading-5 text-white/42">
-              {programDay
-                ? `Tag ${programDay.dayNumber} im 56-Tage-Programm`
-                : "Das Programm wurde für dieses Team noch nicht gestartet."}
-            </p>
+      {programDay ? (
+        <section className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(28,31,36,0.97),rgba(15,17,21,0.99))] p-5 shadow-[0_28px_80px_-45px_rgba(0,0,0,0.95)] sm:p-6">
+          <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/[0.11] blur-3xl" />
+          <div className="relative flex min-w-0 items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">Woche {week}</p>
+              <h2 className="mt-2 truncate text-[clamp(1.35rem,4vw,1.85rem)] font-semibold tracking-[-0.04em] text-[#EEF0F2]">
+                {teamName}
+              </h2>
+              <p className="mt-2 text-xs leading-5 text-white/42">Tag {programDay.dayNumber} im 56-Tage-Programm</p>
+            </div>
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[17px] border border-primary/20 bg-primary/[0.10] text-primary">
+              <UsersRound className="h-5 w-5" strokeWidth={1.8} />
+            </span>
           </div>
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[17px] border border-primary/20 bg-primary/[0.10] text-primary">
-            <UsersRound className="h-5 w-5" strokeWidth={1.8} />
-          </span>
-        </div>
-        <div className="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-700"
-            style={{ width: `${progress}%` }}
-            aria-label={programDay ? `Programmfortschritt ${programDay.dayNumber} von 56 Tagen` : "Programm noch nicht gestartet"}
-          />
-        </div>
-      </section>
+          <div className="relative mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-700"
+              style={{ width: `${progress}%` }}
+              aria-label={`Programmfortschritt ${programDay.dayNumber} von 56 Tagen`}
+            />
+          </div>
+        </section>
+      ) : (
+        <section className="relative overflow-hidden rounded-[28px] border border-primary/20 bg-[linear-gradient(145deg,rgba(22,39,36,0.98),rgba(13,18,19,0.99))] p-5 shadow-[0_28px_80px_-45px_rgba(46,173,137,0.72)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-primary/[0.17] blur-3xl" />
+          <div className="relative flex min-w-0 items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[17px] border border-primary/25 bg-primary/[0.12] text-primary">
+              <Rocket className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary/75">Programmstatus</p>
+              <h2 className="mt-2 text-[clamp(1.35rem,4vw,1.85rem)] font-semibold tracking-[-0.04em] text-[#EEF0F2]">
+                Programm noch nicht gestartet.
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-white/50">
+                Prüfe, ob alle Athlet:innen bereit sind, und bereite den gemeinsamen Start vor.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onPrepareProgramStart}
+            className="relative mt-6 flex min-h-12 w-full items-center justify-between gap-3 rounded-[17px] bg-primary px-4 text-left text-sm font-semibold text-primary-foreground shadow-[0_18px_45px_-24px_rgba(46,173,137,0.9)] transition-transform active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#101516]"
+          >
+            <span>
+              Programmstart vorbereiten
+              <span className="mt-0.5 block text-[11px] font-medium opacity-70">Der erste Programmtag beginnt nach dem Start am Folgetag.</span>
+            </span>
+            <ArrowRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+          </button>
+        </section>
+      )}
+
+      <button
+        type="button"
+        onClick={onOpenCalendar}
+        className="group flex min-h-20 w-full min-w-0 items-center gap-4 rounded-[22px] border border-white/[0.07] bg-white/[0.025] p-4 text-left transition-colors hover:bg-white/[0.045] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-primary/[0.09] text-primary">
+          <CalendarDays className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-[#EEF0F2]">Teamkalender</span>
+          <span className="mt-1 block text-xs leading-5 text-white/38">Training, Ruhetage und Wettkämpfe planen.</span>
+        </span>
+        <ArrowRight className="h-5 w-5 shrink-0 text-white/32 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" aria-hidden="true" />
+      </button>
+
+      {stats.member_count === 0 ? (
+        <section className="rounded-[22px] border border-white/[0.065] bg-white/[0.02] px-5 py-8 text-center">
+          <Users className="mx-auto h-10 w-10 text-white/24" aria-hidden="true" />
+          <p className="mt-4 text-sm font-medium text-[#EEF0F2]">Noch keine Sportler im Team.</p>
+          <p className="mt-1 text-xs leading-5 text-white/38">Teile den Zugangscode, damit Sportler beitreten können.</p>
+        </section>
+      ) : (
+        <>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-4 sm:p-5">
@@ -398,6 +455,8 @@ const TeamOverview = ({ teamId, teamName = "Dein Team", programStartDate = null 
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

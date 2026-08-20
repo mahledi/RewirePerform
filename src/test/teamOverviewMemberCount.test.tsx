@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import TeamOverview from "@/components/coach/TeamOverview";
 
@@ -87,5 +87,37 @@ describe("coach team member count", () => {
       expect(screen.getByText("Sportler im Team").previousElementSibling).toHaveTextContent("6");
     });
     expect(await screen.findByText("Athlet 6")).toBeInTheDocument();
+  });
+
+  it("makes an unstarted program prominent and routes through the provided real start action", async () => {
+    const onPrepareProgramStart = vi.fn();
+    render(
+      <TeamOverview
+        teamId="team-1"
+        teamName="U17"
+        programStartDate={null}
+        onPrepareProgramStart={onPrepareProgramStart}
+      />,
+    );
+
+    expect(await screen.findByRole("heading", { name: "Programm noch nicht gestartet." })).toBeInTheDocument();
+    const action = screen.getByRole("button", { name: /Programmstart vorbereiten/ });
+    expect(action).toHaveTextContent("Der erste Programmtag beginnt nach dem Start am Folgetag.");
+    fireEvent.click(action);
+    expect(onPrepareProgramStart).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the real day and progress view for an already started team", async () => {
+    render(
+      <TeamOverview
+        teamId="team-1"
+        teamName="U17"
+        programStartDate="2026-08-01"
+      />,
+    );
+
+    expect(await screen.findByRole("heading", { name: "U17" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Programmfortschritt .* von 56 Tagen/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Programmstart vorbereiten/ })).not.toBeInTheDocument();
   });
 });

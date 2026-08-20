@@ -12,7 +12,7 @@ import {
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 
-export type CoachAppSection = "overview" | "mental" | "evidence" | "toolkit" | "manage" | "account";
+export type CoachAppSection = "overview" | "mental" | "evidence" | "toolkit" | "manage" | "calendar" | "account";
 
 const coachSections: Array<{
   id: CoachAppSection;
