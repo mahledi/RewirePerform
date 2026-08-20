@@ -29,6 +29,7 @@ describe("native reminder scheduling", () => {
 
     expect(notifications).toHaveLength(2);
     expect(notifications[0].schedule?.on).toEqual({ hour: 7, minute: 30 });
+    expect(notifications[0].channelId).toBe("rewireperform-reminders-v1");
     expect(notifications[0].extra).toMatchObject({
       userId: "athlete-1",
       route: "/dashboard",
