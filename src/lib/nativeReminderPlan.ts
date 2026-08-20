@@ -36,6 +36,19 @@ const formatLocalDate = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+export const isNativeReminderProgramActive = (
+  instanceStart: string | null | undefined,
+  effectiveStart: string | null | undefined,
+  now = new Date(),
+) => {
+  const startDate = (instanceStart ?? effectiveStart)?.slice(0, 10);
+  return Boolean(
+    startDate
+    && /^\d{4}-\d{2}-\d{2}$/.test(startDate)
+    && startDate <= formatLocalDate(now),
+  );
+};
+
 const parseLocalDate = (date: string) => {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(year, month - 1, day, 12, 0, 0, 0);
@@ -131,8 +144,13 @@ export const loadNativeReminderPlan = async (
     .limit(1)
     .maybeSingle();
   const instance = requireData(instanceResult.data, instanceResult.error);
-  const programActive = Boolean(
-    instance?.started_at && new Date(instance.started_at).getTime() <= now.getTime(),
+  // Keep native reminders aligned with the dashboard's canonical program
+  // start. Existing team athletes can have a valid active run/legacy start
+  // even when their tracking instance has not been materialized yet.
+  const programActive = isNativeReminderProgramActive(
+    instance?.started_at,
+    modeInfo.effectiveStartDate,
+    now,
   );
   if (!programActive) return { programActive: false, trainingMoments: [] };
 

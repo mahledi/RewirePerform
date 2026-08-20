@@ -3,7 +3,10 @@ import {
   buildNativeReminderNotifications,
   buildRestVisualizationNotification,
 } from "@/lib/nativeNotifications";
-import { buildNativeTrainingMoments } from "@/lib/nativeReminderPlan";
+import {
+  buildNativeTrainingMoments,
+  isNativeReminderProgramActive,
+} from "@/lib/nativeReminderPlan";
 
 const basePreferences = {
   enabled: true,
@@ -90,6 +93,21 @@ describe("native reminder scheduling", () => {
 });
 
 describe("native training plan", () => {
+  it("keeps reminders active for a started team program without a tracking instance", () => {
+    const now = new Date(2026, 7, 20, 11, 45);
+
+    expect(isNativeReminderProgramActive(null, "2026-07-07", now)).toBe(true);
+    expect(isNativeReminderProgramActive(null, "2026-08-21", now)).toBe(false);
+  });
+
+  it("prefers the active tracking instance when both starts exist", () => {
+    const now = new Date(2026, 7, 20, 11, 45);
+
+    expect(
+      isNativeReminderProgramActive("2026-08-21", "2026-07-07", now),
+    ).toBe(false);
+  });
+
   it("suppresses rest days and lets a timed competition override the weekly plan", () => {
     const moments = buildNativeTrainingMoments({
       dates: ["2026-07-13", "2026-07-14", "2026-07-15"],
