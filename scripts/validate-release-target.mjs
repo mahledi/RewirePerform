@@ -26,6 +26,7 @@ const expectedRef = targets[expected];
 const expectedUrl = `https://${expectedRef}.supabase.co`;
 const failures = [];
 const publishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+const releaseLine = env.VITE_RELEASE_LINE ?? "1.1";
 const usesCurrentPublishableKey =
   publishableKey.startsWith("sb_publishable_") && publishableKey.length >= 40;
 const jwtParts = publishableKey.split(".");
@@ -43,11 +44,24 @@ if (env.VITE_SUPABASE_PROJECT_ID !== expectedRef) {
 if (env.VITE_SUPABASE_URL !== expectedUrl) {
   failures.push(`VITE_SUPABASE_URL must select the confirmed ${expected} project`);
 }
-if (
-  expected === "production"
-  && env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED !== "false"
-) {
-  failures.push("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be false for the V1.1 production client");
+if (expected === "production" && !["1.1", "1.2"].includes(releaseLine)) {
+  failures.push("VITE_RELEASE_LINE must be 1.1 or 1.2 for a production client");
+}
+if (expected === "production" && releaseLine === "1.1") {
+  if (env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED !== "false") {
+    failures.push("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be false for the V1.1 production client");
+  }
+  if (env.VITE_FEEDBACK_TEXT_V1_ENABLED !== "false") {
+    failures.push("VITE_FEEDBACK_TEXT_V1_ENABLED must be false for the V1.1 production client");
+  }
+}
+if (expected === "production" && releaseLine === "1.2") {
+  if (env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED !== "true") {
+    failures.push("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED must be true for the V1.2 Feedback Intelligence client");
+  }
+  if (env.VITE_FEEDBACK_TEXT_V1_ENABLED !== "true") {
+    failures.push("VITE_FEEDBACK_TEXT_V1_ENABLED must be true for the separately consented V1.2 text path");
+  }
 }
 if (env.VITE_SUPABASE_URL === `https://${retiredStagingRef}.supabase.co`) {
   failures.push(`retired Staging project ${retiredStagingRef} is permanently blocked`);

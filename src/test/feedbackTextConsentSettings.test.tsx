@@ -7,12 +7,14 @@ const mocks = vi.hoisted(() => ({
   list: vi.fn(),
   withdraw: vi.fn(),
   enabled: vi.fn(() => true),
+  textEnabled: vi.fn(() => true),
   success: vi.fn(),
   error: vi.fn(),
 }));
 
 vi.mock("@/lib/feedbackIntelligenceApi", () => ({
   isFeedbackIntelligenceClientEnabled: mocks.enabled,
+  isFeedbackTextClientEnabled: mocks.textEnabled,
   listMyFeedbackTextConsents: mocks.list,
   withdrawMyFeedbackText: mocks.withdraw,
 }));
@@ -38,10 +40,20 @@ describe("feedback text consent settings", () => {
   afterEach(() => {
     vi.clearAllMocks();
     mocks.enabled.mockReturnValue(true);
+    mocks.textEnabled.mockReturnValue(true);
   });
 
   it("stays hidden and makes no RPC call while the release switch is closed", () => {
     mocks.enabled.mockReturnValue(false);
+
+    const { container } = render(<FeedbackTextConsentSettings />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
+
+  it("stays hidden when only the independent text release switch is closed", () => {
+    mocks.textEnabled.mockReturnValue(false);
 
     const { container } = render(<FeedbackTextConsentSettings />);
 
@@ -56,7 +68,7 @@ describe("feedback text consent settings", () => {
       /\{role === "athlete" && \(\s*<motion\.section[\s\S]*?Alters- und Freigabestatus/u,
     );
     expect(accountSettings).toMatch(
-      /\{role === "athlete" && isFeedbackIntelligenceClientEnabled\(\) && \(\s*<motion\.div[\s\S]*?<FeedbackTextConsentSettings \/>/u,
+      /\{role === "athlete" && isFeedbackIntelligenceClientEnabled\(\) && isFeedbackTextClientEnabled\(\) && \(\s*<motion\.div[\s\S]*?<FeedbackTextConsentSettings \/>/u,
     );
   });
 

@@ -100,6 +100,9 @@ const callFeedbackRpc = async (
 export const isFeedbackIntelligenceClientEnabled = () =>
   import.meta.env.VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED === "true";
 
+export const isFeedbackTextClientEnabled = () =>
+  import.meta.env.VITE_FEEDBACK_TEXT_V1_ENABLED === "true";
+
 export const claimMyFeedbackCheckpoint = async (): Promise<FeedbackCheckpointClaim> => {
   if (!isFeedbackIntelligenceClientEnabled()) {
     return { eligible: false, reason: "client_disabled" };
@@ -123,7 +126,9 @@ export const claimMyFeedbackCheckpoint = async (): Promise<FeedbackCheckpointCla
     questionnaireVersion: optionalString(result.questionnaire_version),
     contentVersion: optionalString(result.content_version),
     questionnaireManifestHash: optionalString(result.questionnaire_manifest_hash),
-    textEnabled: optionalBoolean(result.text_enabled),
+    // Text needs two independent approvals: the byte-pinned client and the
+    // current server claim. Either closed gate keeps every text affordance off.
+    textEnabled: isFeedbackTextClientEnabled() && optionalBoolean(result.text_enabled) === true,
     clientSubmissionId: result.client_submission_id === null
       ? null
       : optionalString(result.client_submission_id),

@@ -43,7 +43,7 @@ describe("organization invitation delivery contract", () => {
 
     const result = spawnSync(
       process.execPath,
-      ["scripts/generate-coach-invitation-privacy-delta-v1-1.mjs", "--check"],
+      ["scripts/verify-coach-invitation-privacy-v1-1-historical-package.mjs"],
       { cwd: process.cwd(), encoding: "utf8" },
     );
     expect(result.status, result.stderr || result.stdout).toBe(0);

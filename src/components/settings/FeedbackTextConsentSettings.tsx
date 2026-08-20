@@ -3,6 +3,7 @@ import { FileText, Loader2, RotateCcw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
   isFeedbackIntelligenceClientEnabled,
+  isFeedbackTextClientEnabled,
   listMyFeedbackTextConsents,
   withdrawMyFeedbackText,
   type FeedbackTextConsentReceiptSummary,
@@ -26,7 +27,7 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("de-DE", {
 }).format(new Date(value));
 
 export const FeedbackTextConsentSettings = () => {
-  const enabled = isFeedbackIntelligenceClientEnabled();
+  const enabled = isFeedbackIntelligenceClientEnabled() && isFeedbackTextClientEnabled();
   const [receipts, setReceipts] = useState<FeedbackTextConsentReceiptSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);

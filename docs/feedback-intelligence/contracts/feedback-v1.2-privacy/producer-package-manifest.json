@@ -1,0 +1,107 @@
+{
+  "schema_version": "rewireperform-feedback-v1.2-privacy-package-v1",
+  "package_version": "feedback-v1.2-privacy-v1.0.0",
+  "status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
+  "scope": {
+    "structured_checkpoints": true,
+    "optional_product_feedback_text": true,
+    "separate_text_consent": true,
+    "under_16_guardian_plus_athlete_gate": true,
+    "max_raw_text_retention_days": 365,
+    "internal_jarvis_only": true,
+    "external_ai_processor": false,
+    "journals_or_private_reflections": false,
+    "coach_individual_access": false
+  },
+  "activation": {
+    "production_database_activated": false,
+    "production_feedback_collection_enabled": false,
+    "production_text_collection_enabled": false,
+    "production_jarvis_reader_enabled": false,
+    "app_store_v1_2_submitted": false
+  },
+  "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
+  "package_sha256": "79a2ad64a396ef687643ef40ae767389fdf9da998eb9dbeeb152375a48d3739f",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "78edb30af020617209450c86129504b3f769d0ba6bf9b6309a8ea342715a052f"
+    },
+    {
+      "path": "scripts/validate-release-target.mjs",
+      "sha256": "c6648e53f5e90a87af1e00cd8667c34b7b9da04fde3d94e92e89a96e811bd4e0"
+    },
+    {
+      "path": "src/pages/Privacy.tsx",
+      "sha256": "06161801b6069269bad4e82396be29d47d6b29013f1ca1c752d5673b8552990d"
+    },
+    {
+      "path": "src/content/feedbackTextConsentV11.ts",
+      "sha256": "2cf7c8c620efb78e860eff7899cc6ea336641729e439f2a09334bb3c8c727ce2"
+    },
+    {
+      "path": "src/content/guardianFeedbackTextPolicyV11.ts",
+      "sha256": "c8df458dc8669aae014183a2b3527bde05b653ff25067fd88e9ccd4c54a65a78"
+    },
+    {
+      "path": "src/lib/feedbackIntelligenceApi.ts",
+      "sha256": "3c28319a29270ebafc8e89ec8b72381b642d9e4de4cc74d299689120d7f2d849"
+    },
+    {
+      "path": "src/lib/feedbackIntelligencePersistence.ts",
+      "sha256": "e049a323a12c138b9768aab09d3fc907bb1a5d22786c0687dcda0424a07d2a49"
+    },
+    {
+      "path": "src/components/feedback-intelligence/FeedbackCheckpointGate.tsx",
+      "sha256": "405ff8e4ccd64685f15362b9c5487f20b25f8637b708239ea9f56f599165f3f7"
+    },
+    {
+      "path": "src/components/feedback-intelligence/FeedbackQuestionnairePreview.tsx",
+      "sha256": "e389064547ce9fa004e813e007c8acaae72534c87a76db4a3f46551bd12a9c92"
+    },
+    {
+      "path": "src/components/settings/FeedbackTextConsentSettings.tsx",
+      "sha256": "d0732d5132c4cd905bf0e5067145836511a81c071bbd904c0248961d34249098"
+    },
+    {
+      "path": "src/pages/AccountSettings.tsx",
+      "sha256": "12a2b63a55c57a23ad75931f642dcca0e1d280b9d3c8a719fdb3823213e32434"
+    },
+    {
+      "path": "supabase/migrations/20260820080207_structured_feedback_v1_2_activation_contract.sql",
+      "sha256": "a0dc9ffe655e4f6c58e349fcf0ef33ce9537b749b9f2c73dc5145f7d9fe6e358"
+    },
+    {
+      "path": "docs/V1_2_FEEDBACK_INTELLIGENCE_READINESS_2026-08-20.md",
+      "sha256": "b007a8811f02478f972af67c56c2db2ebdcad8e01621680136037d8d67baddce"
+    },
+    {
+      "path": "src/test/feedbackPrivacyV12.test.ts",
+      "sha256": "a32e249bffee7778e08655075d8356ac34f29bb4caae33775a74dae2b2a17af0"
+    },
+    {
+      "path": "src/test/releaseTarget.test.ts",
+      "sha256": "f5ab6b900bfe48c91863de34651dc7e5baeae91e2661dd20a7c78b229c695d06"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceApi.test.ts",
+      "sha256": "13d4b828253818d702e1a28b7a2aea21cb17fd6cd2bc92ef37473beeb0d7ab60"
+    },
+    {
+      "path": "src/test/feedbackIntelligencePreview.test.tsx",
+      "sha256": "bfaaf0666b886c7c6f4a5eb18f3b4a6de387b4fb8217f1787ff5d772f4a19229"
+    },
+    {
+      "path": "src/test/feedbackTextConsentSettings.test.tsx",
+      "sha256": "118923b8bde91148ab26ce4ea02ae1d628534019ebbd8bdad863d0ecca21f494"
+    },
+    {
+      "path": "src/test/feedbackV12ActivationContract.test.ts",
+      "sha256": "1b9113b05eb6ce7b2d8d7f70fb8d1f35130a403d8041beb19b59a74416f2bbcc"
+    },
+    {
+      "path": "src/test/feedbackV12ActivationSmoke.test.ts",
+      "sha256": "2902a62765f669d72cea61db48d2ba6a410d9e67c599b7163dad9055d4c0ae1f"
+    }
+  ]
+}

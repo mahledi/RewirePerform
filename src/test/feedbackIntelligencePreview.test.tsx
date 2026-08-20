@@ -92,6 +92,29 @@ describe("feedback intelligence synthetic preview", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("explains the voluntary structured use before a live checkpoint starts", () => {
+    render(<FeedbackQuestionnairePreview day={10} mode="live" textEnabled />);
+
+    expect(screen.getByText(/Freiwillig.*Produktverbesserung.*Coach sieht keine Einzelantworten/s)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Datenschutz zum Feedback" })).toHaveAttribute("href", "/privacy");
+  });
+
+  it("finishes the structured-only flow without asking for a written response", async () => {
+    render(
+      <FeedbackQuestionnairePreview
+        day={10}
+        mode="live"
+        textEnabled={false}
+        initialScreen="closing"
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Dein Zwischenstand ist bereit." })).toBeInTheDocument();
+    expect(screen.getByText(/ausschließlich deine Auswahlantworten gespeichert/)).toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("submits the full live snapshot before showing completion", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     render(
