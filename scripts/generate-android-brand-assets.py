@@ -13,6 +13,7 @@ LOCKED = ROOT / "design/brand/logo-finalization-20260718/final/exports"
 ANDROID_RES = ROOT / "android/app/src/main/res"
 
 MIDNIGHT = "#0D0E12"
+ADAPTIVE_ICON_FOREGROUND_RATIO = 0.80
 SPLASH_SYMBOL_CANVAS_RATIO = 0.336
 
 DENSITIES = {
@@ -51,13 +52,29 @@ def save(image: Image.Image, relative_path: str) -> None:
 def generate_launcher_icons(app_icon: Image.Image, symbol: Image.Image) -> None:
     for density, scale in DENSITIES.items():
         legacy_size = round(48 * scale)
-        foreground_size = round(108 * scale)
+        foreground_canvas_size = round(108 * scale)
+        foreground_symbol_size = round(
+            foreground_canvas_size * ADAPTIVE_ICON_FOREGROUND_RATIO
+        )
 
         legacy = resize(app_icon, (legacy_size, legacy_size)).convert("RGB")
         save(legacy, f"mipmap-{density}/ic_launcher.png")
         save(legacy, f"mipmap-{density}/ic_launcher_round.png")
 
-        foreground = resize(symbol, (foreground_size, foreground_size))
+        foreground = Image.new(
+            "RGBA",
+            (foreground_canvas_size, foreground_canvas_size),
+            (0, 0, 0, 0),
+        )
+        rendered_symbol = resize(
+            symbol,
+            (foreground_symbol_size, foreground_symbol_size),
+        )
+        foreground_offset = (
+            (foreground_canvas_size - foreground_symbol_size) // 2,
+            (foreground_canvas_size - foreground_symbol_size) // 2,
+        )
+        foreground.paste(rendered_symbol, foreground_offset, rendered_symbol)
         save(foreground, f"mipmap-{density}/ic_launcher_foreground.png")
 
 

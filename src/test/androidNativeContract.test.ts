@@ -52,6 +52,14 @@ describe("Android native release contract", () => {
     expect(launchBackground).toContain('android:src="@drawable/splash_logo"');
   });
 
+  it("keeps the adaptive launcher symbol inside Android's safe foreground zone", () => {
+    const generator = read("scripts/generate-android-brand-assets.py");
+
+    expect(generator).toContain("ADAPTIVE_ICON_FOREGROUND_RATIO = 0.80");
+    expect(generator).toContain("foreground_canvas_size * ADAPTIVE_ICON_FOREGROUND_RATIO");
+    expect(generator).toContain("foreground.paste(rendered_symbol, foreground_offset");
+  });
+
   it("keeps keyboard resizing single-counted and the native window dark", () => {
     const capacitor = read("capacitor.config.ts");
     const manifest = read("android/app/src/main/AndroidManifest.xml");
