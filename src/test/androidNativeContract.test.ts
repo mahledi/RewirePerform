@@ -14,7 +14,7 @@ describe("Android native release contract", () => {
     expect(build).toContain('versionName "1.1"');
     expect(variables).toContain("compileSdkVersion = 36");
     expect(variables).toContain("targetSdkVersion = 36");
-    expect(iosProject.match(/CURRENT_PROJECT_VERSION = 7;/g)).toHaveLength(2);
+    expect(iosProject.match(/CURRENT_PROJECT_VERSION = 11;/g)).toHaveLength(2);
   });
 
   it("binds only the native auth, athlete invite and coach invite paths to verified HTTPS App Links", () => {
