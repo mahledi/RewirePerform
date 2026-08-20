@@ -55,7 +55,7 @@ describe("Android native release contract", () => {
   it("keeps the adaptive launcher symbol inside Android's safe foreground zone", () => {
     const generator = read("scripts/generate-android-brand-assets.py");
 
-    expect(generator).toContain("ADAPTIVE_ICON_FOREGROUND_RATIO = 0.80");
+    expect(generator).toContain("ADAPTIVE_ICON_FOREGROUND_RATIO = 0.60");
     expect(generator).toContain("foreground_canvas_size * ADAPTIVE_ICON_FOREGROUND_RATIO");
     expect(generator).toContain("foreground.paste(rendered_symbol, foreground_offset");
   });
