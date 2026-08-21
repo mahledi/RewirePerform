@@ -26,6 +26,14 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   verifyRole: vi.fn(),
+  platform: "web",
+}));
+
+vi.mock("@capacitor/core", () => ({
+  Capacitor: {
+    getPlatform: () => mocks.platform,
+    isNativePlatform: () => mocks.platform !== "web",
+  },
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -121,6 +129,7 @@ describe("auth email confirmation", () => {
     mocks.authState.role = null;
     mocks.authState.roleVerified = true;
     mocks.authState.loading = false;
+    mocks.platform = "web";
     mocks.resend.mockResolvedValue({ error: null });
     mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
     mocks.signOut.mockResolvedValue({ error: null });
@@ -168,6 +177,21 @@ describe("auth email confirmation", () => {
       rewireperform_post_signup_onboarding_intent: "solo",
     });
     expect(signUpCall.options.data).not.toHaveProperty("role");
+  });
+
+  it("sends Android auth emails to the app callback while leaving the browser contract separate", async () => {
+    mocks.platform = "android";
+    mocks.signUp.mockResolvedValue({
+      data: { user: { id: "user-1" }, session: null },
+      error: null,
+    });
+
+    renderAuth();
+    submitSoloSignup();
+    await screen.findByRole("heading", { name: "Bestätige deine E-Mail." });
+
+    expect(mocks.signUp.mock.calls[0]?.[0].options.emailRedirectTo)
+      .toBe("com.rewireperform.app://auth?flow=signup&intro=athlete");
   });
 
   it("keeps an invited coach out of athlete onboarding and returns to the invitation after email confirmation", async () => {
@@ -409,6 +433,19 @@ describe("auth email confirmation", () => {
     expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(
       "test@example.com",
       { redirectTo: "http://localhost:3000/auth/reset-password" },
+    );
+  });
+
+  it("returns Android password recovery to the native reset route", async () => {
+    mocks.platform = "android";
+    renderAuth("/auth?mode=forgot");
+    fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Reset-E-Mail senden" }));
+
+    await screen.findByRole("heading", { name: "Prüfe deine E-Mails." });
+    expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(
+      "test@example.com",
+      { redirectTo: "com.rewireperform.app://auth/reset-password?flow=recovery" },
     );
   });
 

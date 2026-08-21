@@ -1,5 +1,6 @@
 export const MIN_ACCOUNT_PASSWORD_LENGTH = 8;
 export const PRODUCTION_APP_ORIGIN = "https://rewireperform.com";
+export const ANDROID_AUTH_CALLBACK_ORIGIN = "com.rewireperform.app://auth";
 
 type AuthErrorLike = {
   code?: string;
@@ -71,4 +72,17 @@ export const publicAuthOrigin = ({ origin, protocol }: { origin: string; protoco
   protocol === "http:" || protocol === "https:" ? origin : PRODUCTION_APP_ORIGIN
 );
 
-export const passwordResetRedirectUrl = (origin: string) => new URL("/auth/reset-password", origin).toString();
+export const authEmailRedirectUrl = (origin: string, platform: string) => (
+  platform === "android"
+    ? new URL(ANDROID_AUTH_CALLBACK_ORIGIN)
+    : new URL("/auth", origin)
+);
+
+export const passwordResetRedirectUrl = (origin: string, platform = "web") => {
+  if (platform === "android") {
+    const redirectUrl = new URL("/reset-password", ANDROID_AUTH_CALLBACK_ORIGIN);
+    redirectUrl.searchParams.set("flow", "recovery");
+    return redirectUrl.toString();
+  }
+  return new URL("/auth/reset-password", origin).toString();
+};
