@@ -40,8 +40,8 @@ describe("public App Store distribution", () => {
     expect(coachPreview).toContain("Deine persönliche RewirePerform Co-Coach-Einladung");
     expect(coachPreview).toContain("Coach-Einführung");
 
-    expect(athletePreview).toContain("https://rewireperform.com/og-team-invite.png?v=2");
-    expect(coachPreview).toContain("https://rewireperform.com/og-coach-invite.png?v=2");
+    expect(athletePreview).toContain("https://rewireperform.com/og-team-invite.png?v=3");
+    expect(coachPreview).toContain("https://rewireperform.com/og-coach-invite.png?v=3");
     for (const preview of [athletePreview, coachPreview]) {
       expect(preview).toContain('content="noindex, nofollow"');
       expect(preview).toContain('property="og:image:width" content="1200"');

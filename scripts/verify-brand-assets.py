@@ -15,6 +15,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 KIT = ROOT / "design/brand/logo-finalization-20260718/final"
+SOCIAL_SHARE_DIR = ROOT / "design/brand/social-share-v2"
 MASTER = KIT / "master/rewireperform-symbol-v1.svg"
 FAILURES: list[str] = []
 
@@ -127,6 +128,13 @@ def main() -> int:
     verify_integrated_png(ROOT / "public/og-invite.png", (1200, 1500), "RGB")
     verify_integrated_png(ROOT / "public/og-team-invite.png", (1200, 630), "RGB")
     verify_integrated_png(ROOT / "public/og-coach-invite.png", (1200, 630), "RGB")
+    for filename in ("og-image.png", "og-team-invite.png", "og-coach-invite.png"):
+        source = SOCIAL_SHARE_DIR / filename
+        integrated = ROOT / "public" / filename
+        require(source.is_file(), f"missing approved social-share source: {source.relative_to(ROOT)}")
+        if source.is_file() and integrated.is_file():
+            require(digest(source) == digest(integrated), f"social-share asset drift: public/{filename}")
+            require(source.stat().st_size < 300_000, f"social-share asset exceeds 300 KB: {source.relative_to(ROOT)}")
     splash_paths = [
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",

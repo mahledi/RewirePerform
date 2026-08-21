@@ -16,6 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 KIT = ROOT / "design/brand/logo-finalization-20260718/final"
+SOCIAL_SHARE_DIR = ROOT / "design/brand/social-share-v2"
 MASTER_DIR = KIT / "master"
 EXPORT_DIR = KIT / "exports"
 MASTER = MASTER_DIR / "rewireperform-symbol-v1.svg"
@@ -343,10 +344,10 @@ def main() -> None:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, destination)
 
-    create_social_image(dark_symbol_512, ROOT / "public/og-image.png")
+    shutil.copyfile(SOCIAL_SHARE_DIR / "og-image.png", ROOT / "public/og-image.png")
     create_invitation_social_image(dark_symbol_512, ROOT / "public/og-invite.png")
-    create_role_invitation_social_image(dark_symbol_512, ROOT / "public/og-team-invite.png", "athlete")
-    create_role_invitation_social_image(dark_symbol_512, ROOT / "public/og-coach-invite.png", "coach")
+    shutil.copyfile(SOCIAL_SHARE_DIR / "og-team-invite.png", ROOT / "public/og-team-invite.png")
+    shutil.copyfile(SOCIAL_SHARE_DIR / "og-coach-invite.png", ROOT / "public/og-coach-invite.png")
     splash_targets = [
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png",
         ROOT / "ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732-1.png",
