@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
+import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import GuardianDecision from "@/pages/GuardianDecision";
 
 const api = vi.hoisted(() => ({
@@ -33,7 +33,42 @@ describe("guardian decision production flow", () => {
     });
   });
 
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    window.history.replaceState({}, "", "/");
+  });
+
+  it("keeps a pending 48-hour decision link usable after an accidental page reload", async () => {
+    api.submitGuardianDecision.mockResolvedValue({
+      state: "declined",
+      receiptDelivery: "not_required",
+      manageUrl: null,
+    });
+    window.history.replaceState({}, "", "/guardian/decision#token=secure-decision-token");
+
+    const firstLoad = render(
+      <BrowserRouter>
+        <GuardianDecision />
+      </BrowserRouter>,
+    );
+    expect(await screen.findByRole("button", { name: "Zugang erlauben" })).toBeInTheDocument();
+    expect(window.location.hash).toBe("#token=secure-decision-token");
+    firstLoad.unmount();
+
+    render(
+      <BrowserRouter>
+        <GuardianDecision />
+      </BrowserRouter>,
+    );
+    expect(await screen.findByRole("button", { name: "Zugang erlauben" })).toBeInTheDocument();
+    expect(api.inspectGuardianDecision).toHaveBeenNthCalledWith(1, "secure-decision-token");
+    expect(api.inspectGuardianDecision).toHaveBeenNthCalledWith(2, "secure-decision-token");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Ich bestätige, dass ich.*sorgeberechtigt/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Nicht erlauben" }));
+    await screen.findByRole("heading", { name: "Freigabe nicht erteilt" });
+    await waitFor(() => expect(window.location.hash).toBe(""));
+  });
 
   it("requires separate guardian and product confirmations before approval", async () => {
     api.submitGuardianDecision.mockResolvedValue({

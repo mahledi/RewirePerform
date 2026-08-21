@@ -123,9 +123,9 @@ const GuardianDecision = () => {
   const [result, setResult] = useState<{ state: string; receiptDelivery?: string; manageUrl?: string | null } | null>(null);
 
   useEffect(() => {
-    if (!location.hash) return;
+    if (!result || !location.hash) return;
     window.history.replaceState(window.history.state, "", `${location.pathname}${location.search}`);
-  }, [location.hash, location.pathname, location.search]);
+  }, [location.hash, location.pathname, location.search, result]);
 
   useEffect(() => {
     let active = true;

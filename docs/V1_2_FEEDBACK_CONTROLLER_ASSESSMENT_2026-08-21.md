@@ -1,6 +1,6 @@
 # V1.2 Feedback Intelligence – Controller Assessment
 
-Stand: 21. August 2026  
+Stand: 21. August 2026
 Controller-Referenz: `controller-assessment-de-feedback-v1.2:mahle-herzog-final-2026-08-21`
 
 ## Entscheidung

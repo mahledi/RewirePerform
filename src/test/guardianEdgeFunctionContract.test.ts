@@ -8,6 +8,7 @@ const config = read("supabase/config.toml");
 const userFunction = read("supabase/functions/minor-guardian-user/index.ts");
 const publicFunction = read("supabase/functions/minor-guardian-public/index.ts");
 const shared = read("supabase/functions/_shared/minorGuardian.ts");
+const guardianMigration = read("supabase/migrations/20260718122735_minor_guardian_authorization_v1.sql");
 
 describe("guardian Edge Function contract", () => {
   it("keeps the athlete endpoint JWT protected and the token endpoint self-authenticated", () => {
@@ -50,5 +51,12 @@ describe("guardian Edge Function contract", () => {
     expect(shared).toContain("if (raw.length > 8_192)");
     expect(shared).toContain("npm:@supabase/supabase-js@2.99.3");
     expect(shared).toContain('"Cache-Control": "no-store"');
+  });
+
+  it("creates a fresh 48-hour link when the athlete resends the guardian invitation", () => {
+    expect(userFunction).toContain('if (action === "start" || action === "resend")');
+    expect(userFunction).toContain("const token = randomToken()");
+    expect(userFunction).toContain("guardian-invitation-${challengeId}");
+    expect(guardianMigration).toContain("now() + interval '48 hours'");
   });
 });
