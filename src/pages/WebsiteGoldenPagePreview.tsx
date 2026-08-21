@@ -457,7 +457,7 @@ const WebsiteGoldenPagePreview = () => {
             <p className="text-xs font-medium text-white/46 sm:text-sm">Mentale Performance · täglich trainiert</p>
             <h1 id="golden-hero-title" className="mt-5 text-[clamp(3.35rem,7.5vw,7.4rem)] font-semibold leading-[0.88] tracking-[-0.072em]">
               Trainiere das System
-              <span className="mt-[0.07em] block text-primary sm:mt-0">hinter deiner Performance.</span>
+              <span className="mt-[0.14em] block text-primary sm:mt-0">hinter deiner Performance.</span>
             </h1>
             <p className="mt-7 max-w-[680px] text-base leading-7 text-white/64 sm:text-lg sm:leading-8">
               RewirePerform bringt mentale Fähigkeiten aus einzelnen Gesprächen in eine klare tägliche Praxis – für Athleten, Coaches und Teams.
