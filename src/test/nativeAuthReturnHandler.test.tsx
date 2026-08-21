@@ -54,6 +54,9 @@ const renderHandler = () => render(
 const nativeSessionUrl = (query = "flow=signup") =>
   `https://rewireperform.com/auth?${query}#access_token=access-secret&refresh_token=refresh-secret&type=signup`;
 
+const nativeRecoveryUrl = (credentials = "#access_token=recovery-access&refresh_token=recovery-refresh&type=recovery") =>
+  `com.rewireperform.app://auth/reset-password?flow=recovery${credentials}`;
+
 describe("native auth return handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -79,6 +82,52 @@ describe("native auth return handler", () => {
     );
     expect(screen.getByTestId("location")).not.toHaveTextContent("secret");
     expect(pendingPostSignupIntent("athlete-1")).toBe("solo");
+  });
+
+  it("opens a cold-start Android password recovery inside the app without exposing credentials", async () => {
+    mocks.getLaunchUrl.mockResolvedValue({ url: nativeRecoveryUrl() });
+    renderHandler();
+
+    await waitFor(() => expect(mocks.setSession).toHaveBeenCalledWith({
+      access_token: "recovery-access",
+      refresh_token: "recovery-refresh",
+    }));
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth/reset-password?verified=1",
+    );
+    expect(screen.getByTestId("location")).not.toHaveTextContent("recovery-access");
+    expect(pendingPostSignupIntent("athlete-1")).toBeNull();
+  });
+
+  it("handles a warm Android recovery code exactly once and never starts signup onboarding", async () => {
+    renderHandler();
+    await waitFor(() => expect(mocks.appUrlOpen).toBeTypeOf("function"));
+    const url = nativeRecoveryUrl("&code=recovery-code");
+
+    await act(async () => {
+      mocks.appUrlOpen?.({ url });
+      mocks.appUrlOpen?.({ url });
+    });
+
+    await waitFor(() => expect(mocks.exchangeCodeForSession).toHaveBeenCalledWith("recovery-code"));
+    expect(mocks.exchangeCodeForSession).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth/reset-password?verified=1",
+    );
+    expect(pendingPostSignupIntent("athlete-1")).toBeNull();
+  });
+
+  it("fails closed for a crossed Android recovery callback", async () => {
+    mocks.getLaunchUrl.mockResolvedValue({
+      url: nativeRecoveryUrl("#access_token=private&refresh_token=private&type=signup"),
+    });
+    renderHandler();
+
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth/reset-password?error_code=invalid_callback",
+    ));
+    expect(mocks.setSession).not.toHaveBeenCalled();
+    expect(screen.getByTestId("location")).not.toHaveTextContent("private");
   });
 
   it("handles an already-open app, queues the team code and ignores callback replay", async () => {

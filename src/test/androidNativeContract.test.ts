@@ -10,14 +10,14 @@ describe("Android native release contract", () => {
     const iosProject = read("ios/App/App.xcodeproj/project.pbxproj");
 
     expect(build).toContain('applicationId "com.rewireperform.app"');
-    expect(build).toContain("versionCode 2");
+    expect(build).toContain("versionCode 3");
     expect(build).toContain('versionName "1.1"');
     expect(variables).toContain("compileSdkVersion = 36");
     expect(variables).toContain("targetSdkVersion = 36");
     expect(iosProject.match(/CURRENT_PROJECT_VERSION = 11;/g)).toHaveLength(2);
   });
 
-  it("binds only the native auth, athlete invite and coach invite paths to verified HTTPS App Links", () => {
+  it("keeps verified HTTPS App Links and adds one exact Android auth callback host", () => {
     const manifest = read("android/app/src/main/AndroidManifest.xml");
 
     expect(manifest.match(/android:autoVerify="true"/g)).toHaveLength(3);
@@ -26,6 +26,8 @@ describe("Android native release contract", () => {
     expect(manifest).toContain('android:path="/auth"');
     expect(manifest).toContain('android:path="/join"');
     expect(manifest).toContain('android:path="/organization/invite"');
+    expect(manifest.match(/android:scheme="com\.rewireperform\.app"/g)).toHaveLength(1);
+    expect(manifest.match(/android:host="auth"/g)).toHaveLength(1);
     expect(manifest).not.toContain('android:scheme="http"');
   });
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  authEmailRedirectUrl,
   authErrorMessage,
   MIN_ACCOUNT_PASSWORD_LENGTH,
   parseAuthLinkError,
@@ -27,6 +28,20 @@ describe("auth email flow helpers", () => {
 
   it("builds the exact reset callback path", () => {
     expect(passwordResetRedirectUrl("https://rewireperform.com")).toBe("https://rewireperform.com/auth/reset-password");
+  });
+
+  it("uses the native callback only on Android and preserves the HTTPS contract on iOS and web", () => {
+    expect(authEmailRedirectUrl("https://rewireperform.com", "android").toString())
+      .toBe("com.rewireperform.app://auth");
+    expect(passwordResetRedirectUrl("https://rewireperform.com", "android"))
+      .toBe("com.rewireperform.app://auth/reset-password?flow=recovery");
+
+    for (const platform of ["ios", "web"]) {
+      expect(authEmailRedirectUrl("https://rewireperform.com", platform).toString())
+        .toBe("https://rewireperform.com/auth");
+      expect(passwordResetRedirectUrl("https://rewireperform.com", platform))
+        .toBe("https://rewireperform.com/auth/reset-password");
+    }
   });
 
   it("keeps browser origins but never emits an internal Capacitor URL into email", () => {

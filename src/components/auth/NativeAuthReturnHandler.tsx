@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   nativeSignupContinuationRoute,
+  parseNativeRecoveryReturn,
   parseNativeSignupReturn,
+  type NativeRecoveryReturn,
   type NativeSignupReturn,
 } from "@/lib/nativeAuthReturn";
 import {
@@ -21,7 +23,11 @@ const safeErrorCode = (code: string) =>
 
 const callbackIdentity = (
   value: Extract<NativeSignupReturn, { kind: "session" | "code" }>,
-) => value.kind === "session" ? value.refreshToken : value.authCode;
+) => `signup:${value.kind === "session" ? value.refreshToken : value.authCode}`;
+
+const recoveryCallbackIdentity = (
+  value: Extract<NativeRecoveryReturn, { kind: "session" | "code" }>,
+) => `recovery:${value.kind === "session" ? value.refreshToken : value.authCode}`;
 
 const NativeAuthReturnHandler = () => {
   const navigate = useNavigate();
@@ -56,6 +62,47 @@ const NativeAuthReturnHandler = () => {
       }
       if (invite.kind === "invalid") {
         navigateRef.current("/auth?mode=signup&intent=join&invite_error=invalid", { replace: true });
+        return;
+      }
+
+      const recovery = parseNativeRecoveryReturn(rawUrl);
+      if (recovery.kind !== "ignore") {
+        if (recovery.kind === "error") {
+          navigateRef.current(
+            `/auth/reset-password?error_code=${encodeURIComponent(safeErrorCode(recovery.errorCode))}`,
+            { replace: true },
+          );
+          return;
+        }
+
+        const identity = recoveryCallbackIdentity(recovery);
+        if (handledCallbacks.current.has(identity)) return;
+        handledCallbacks.current.add(identity);
+
+        let result: Awaited<ReturnType<typeof supabase.auth.setSession>>;
+        try {
+          result = recovery.kind === "session"
+            ? await supabase.auth.setSession({
+                access_token: recovery.accessToken,
+                refresh_token: recovery.refreshToken,
+              })
+            : await supabase.auth.exchangeCodeForSession(recovery.authCode);
+        } catch {
+          handledCallbacks.current.delete(identity);
+          if (!disposed) {
+            navigateRef.current("/auth/reset-password?error_code=invalid_callback", { replace: true });
+          }
+          return;
+        }
+
+        if (disposed) return;
+        if (result.error || !result.data.session) {
+          handledCallbacks.current.delete(identity);
+          navigateRef.current("/auth/reset-password?error_code=invalid_callback", { replace: true });
+          return;
+        }
+
+        navigateRef.current("/auth/reset-password?verified=1", { replace: true });
         return;
       }
 

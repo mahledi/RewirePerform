@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   nativeSignupContinuationRoute,
+  parseNativeRecoveryReturn,
   parseNativeSignupReturn,
 } from "@/lib/nativeAuthReturn";
 
@@ -27,6 +28,24 @@ describe("native signup auth return", () => {
       sessionUrl("https://www.rewireperform.com"),
       "https://rewireperform.com/auth/reset-password?flow=signup#access_token=a&refresh_token=b&type=signup",
       sessionUrl("https://rewireperform.com", "flow=recovery"),
+    ]) {
+      expect(parseNativeSignupReturn(url)).toEqual({ kind: "ignore" });
+    }
+  });
+
+  it("accepts the exact Android signup callback without broadening the iOS HTTPS route", () => {
+    expect(parseNativeSignupReturn(
+      "com.rewireperform.app://auth?flow=signup&intro=athlete#access_token=access-secret&refresh_token=refresh-secret&type=signup",
+    )).toMatchObject({
+      kind: "session",
+      intent: "solo",
+      intro: "athlete",
+    });
+
+    for (const url of [
+      "com.rewireperform.app://evil?flow=signup#access_token=a&refresh_token=b&type=signup",
+      "com.rewireperform.app://auth/reset-password?flow=signup#access_token=a&refresh_token=b&type=signup",
+      "other.app://auth?flow=signup#access_token=a&refresh_token=b&type=signup",
     ]) {
       expect(parseNativeSignupReturn(url)).toEqual({ kind: "ignore" });
     }
@@ -118,6 +137,10 @@ describe("native signup auth return", () => {
         fragment,
       ))).toEqual({ kind: "error", errorCode: "invalid_callback" });
     }
+
+    expect(parseNativeSignupReturn(
+      "com.rewireperform.app://auth?flow=signup&code=one-time-code#access_token=a&refresh_token=b&type=signup",
+    )).toEqual({ kind: "error", errorCode: "invalid_callback" });
   });
 
   it("rejects manipulated team and redirect values and retains safe Supabase link errors", () => {
@@ -139,5 +162,38 @@ describe("native signup auth return", () => {
     expect(parseNativeSignupReturn(
       "https://rewireperform.com/auth?flow=signup#error=access_denied&error_code=otp_expired",
     )).toEqual({ kind: "error", errorCode: "otp_expired" });
+  });
+});
+
+describe("native password recovery return", () => {
+  it("accepts only the exact Android recovery route", () => {
+    expect(parseNativeRecoveryReturn(
+      "com.rewireperform.app://auth/reset-password?flow=recovery#access_token=access-secret&refresh_token=refresh-secret&type=recovery",
+    )).toEqual({
+      kind: "session",
+      accessToken: "access-secret",
+      refreshToken: "refresh-secret",
+    });
+    expect(parseNativeRecoveryReturn(
+      "com.rewireperform.app://auth/reset-password?flow=recovery&code=one-time-code",
+    )).toEqual({ kind: "code", authCode: "one-time-code" });
+
+    for (const url of [
+      "https://rewireperform.com/auth/reset-password?flow=recovery#access_token=a&refresh_token=b&type=recovery",
+      "com.rewireperform.app://auth?flow=recovery#access_token=a&refresh_token=b&type=recovery",
+      "com.rewireperform.app://auth/reset-password?flow=signup#access_token=a&refresh_token=b&type=recovery",
+    ]) {
+      expect(parseNativeRecoveryReturn(url)).toEqual({ kind: "ignore" });
+    }
+  });
+
+  it("fails closed for crossed, incomplete and mixed recovery credentials", () => {
+    for (const url of [
+      "com.rewireperform.app://auth/reset-password?flow=recovery#access_token=a&refresh_token=b&type=signup",
+      "com.rewireperform.app://auth/reset-password?flow=recovery#access_token=a&type=recovery",
+      "com.rewireperform.app://auth/reset-password?flow=recovery&code=one-time-code#access_token=a&refresh_token=b&type=recovery",
+    ]) {
+      expect(parseNativeRecoveryReturn(url)).toEqual({ kind: "error", errorCode: "invalid_callback" });
+    }
   });
 });

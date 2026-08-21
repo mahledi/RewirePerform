@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Capacitor } from "@capacitor/core";
 import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
@@ -19,6 +20,7 @@ import {
 } from "@/components/auth/AuthStatusLayout";
 import {
   authErrorMessage,
+  authEmailRedirectUrl,
   isEmailNotConfirmedError,
   MIN_ACCOUNT_PASSWORD_LENGTH,
   parseAuthLinkError,
@@ -148,7 +150,10 @@ const Auth = () => {
     : null;
 
   const emailRedirectTo = () => {
-    const redirectUrl = new URL("/auth", publicAuthOrigin(window.location));
+    const redirectUrl = authEmailRedirectUrl(
+      publicAuthOrigin(window.location),
+      Capacitor.getPlatform(),
+    );
     redirectUrl.searchParams.set("flow", "signup");
     if (intent === "join") {
       redirectUrl.searchParams.set("intent", "join");
@@ -463,7 +468,10 @@ const Auth = () => {
     else setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-      redirectTo: passwordResetRedirectUrl(publicAuthOrigin(window.location)),
+      redirectTo: passwordResetRedirectUrl(
+        publicAuthOrigin(window.location),
+        Capacitor.getPlatform(),
+      ),
     });
 
     if (error) {
