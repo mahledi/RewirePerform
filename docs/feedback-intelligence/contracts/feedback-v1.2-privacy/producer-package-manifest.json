@@ -22,7 +22,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "c5d914fa0bd28932eeb6671a6f7c10b47b88397b296f6ff15cd7ee9a21d0a5e5",
+  "package_sha256": "8b9110ff807d7e19e5e977454b474abf086ba23a2bc21162d7cb268d7c1a4d9d",
   "files": [
     {
       "path": ".env.example",
@@ -98,7 +98,7 @@
     },
     {
       "path": "src/test/feedbackIntelligenceApi.test.ts",
-      "sha256": "13d4b828253818d702e1a28b7a2aea21cb17fd6cd2bc92ef37473beeb0d7ab60"
+      "sha256": "768982dfafb44fc6c895690bb042cdea398e33997aaf78a3f4516b04a24f37ac"
     },
     {
       "path": "src/test/feedbackIntelligencePreview.test.tsx",

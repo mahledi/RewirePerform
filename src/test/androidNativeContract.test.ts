@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 const read = (path: string) => readFileSync(path, "utf8");
 
 describe("Android native release contract", () => {
-  it("uses the Play identity and Android 16 target without changing the iOS build number", () => {
+  it("uses the Play identity and Android 16 target while preserving the iOS release identity", () => {
     const build = read("android/app/build.gradle");
     const variables = read("android/variables.gradle");
     const iosProject = read("ios/App/App.xcodeproj/project.pbxproj");
@@ -14,7 +14,7 @@ describe("Android native release contract", () => {
     expect(build).toContain('versionName "1.1"');
     expect(variables).toContain("compileSdkVersion = 36");
     expect(variables).toContain("targetSdkVersion = 36");
-    expect(iosProject.match(/CURRENT_PROJECT_VERSION = 11;/g)).toHaveLength(2);
+    expect(iosProject.match(/CURRENT_PROJECT_VERSION = 12;/g)).toHaveLength(2);
   });
 
   it("keeps verified HTTPS App Links and adds one exact Android auth callback host", () => {

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ rpc: vi.fn() }));
 
@@ -15,6 +15,11 @@ import {
 } from "@/lib/feedbackIntelligenceApi";
 
 describe("feedback intelligence athlete API adapter", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED", "false");
+    vi.stubEnv("VITE_FEEDBACK_TEXT_V1_ENABLED", "false");
+  });
+
   afterEach(() => {
     mocks.rpc.mockReset();
     vi.unstubAllEnvs();
