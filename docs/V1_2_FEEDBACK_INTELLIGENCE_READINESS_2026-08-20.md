@@ -1,7 +1,8 @@
 # RewirePerform V1.2 – Feedback Intelligence Readiness
 
 Stand: 20. August 2026
-Status: lokal vorbereitet; keine Production-, Jarvis- oder App-Store-Aktivierung
+Status: in `origin/main` integriert; Staging aktiviert und metadata-only geprüft;
+keine Production-, Jarvis- oder App-Store-Aktivierung
 
 ## Verbindlicher V1.2-Scope
 
@@ -50,6 +51,23 @@ Rückschlussmöglichkeit bestehen bleiben.
 4. sämtliche Jarvis-/Machine-Reader gegen echte Daten technisch geschlossen lassen;
 5. neuen bytegenauen iOS-Build erstellen und auf iPhone und iPad physisch testen;
 6. erst danach den owner-only Production-Aufruf freigeben.
+
+Die verbindliche Verantwortlichenentscheidung für den admin-only V1.2-Datenweg
+ohne Jarvis ist unter
+`controller-assessment-de-feedback-v1.2:mahle-herzog-final-2026-08-21`
+in `docs/V1_2_FEEDBACK_CONTROLLER_ASSESSMENT_2026-08-21.md` dokumentiert.
+
+## Staging-Nachweis vom 21. August 2026
+
+- Zielprojekt: `zbeswjipayspgvcipzmx`;
+- Minor-Enforcement-Preflight: `ready=true`, keine nicht bereiten Athleten oder
+  Datenfreigaben;
+- vier aktive Kampagnen, Athlete- und Text-Collection aktiv;
+- Privacy-, Store- und Minor-Gate aktiv;
+- Admin-Kommentar-RPC installiert, `anon` ohne Execute;
+- sämtliche Machine-/Jarvis-Gates geschlossen;
+- Production `bqsbxesmybthwtxmowfz` unverändert: null aktive Kampagnen und alle
+  Feedback-Runtime-Gates geschlossen.
 
 Eine externe Kanzleiprüfung ist kein technisches Aktivierungsgate. Die Controller-Assessment-Referenz darf aber
 nur auf eine reale, abgeschlossene und zum tatsächlich aktivierten Datenweg passende Verantwortlichenentscheidung
