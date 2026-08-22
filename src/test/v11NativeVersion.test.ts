@@ -14,7 +14,7 @@ describe("V1.2 native release identity", () => {
     expect(project).toContain('CODE_SIGN_IDENTITY = "Apple Distribution";');
     expect(project).toContain("CODE_SIGN_STYLE = Manual;");
     expect(project).toContain(
-      'PROVISIONING_PROFILE_SPECIFIER = "RewirePerform App Store 2026-07-30";',
+      'PROVISIONING_PROFILE_SPECIFIER = "RewirePerform App Store 2026-08-22";',
     );
     expect(project).not.toContain("MARKETING_VERSION = 1.0;");
     expect(project).not.toContain("CURRENT_PROJECT_VERSION = 4;");
