@@ -14,6 +14,13 @@
             "comment": "RewirePerform signup confirmation only"
           },
           {
+            "/": "/auth/reset-password",
+            "?": {
+              "flow": "recovery"
+            },
+            "comment": "RewirePerform password recovery confirmation"
+          },
+          {
             "/": "/join",
             "?": {
               "team": "??????"
