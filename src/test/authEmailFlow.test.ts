@@ -27,7 +27,7 @@ describe("auth email flow helpers", () => {
   });
 
   it("builds the exact reset callback path", () => {
-    expect(passwordResetRedirectUrl("https://rewireperform.com")).toBe("https://rewireperform.com/auth/reset-password");
+    expect(passwordResetRedirectUrl("https://rewireperform.com")).toBe("https://rewireperform.com/auth/reset-password?flow=recovery");
   });
 
   it("uses the native callback only on Android and preserves the HTTPS contract on iOS and web", () => {
@@ -40,7 +40,7 @@ describe("auth email flow helpers", () => {
       expect(authEmailRedirectUrl("https://rewireperform.com", platform).toString())
         .toBe("https://rewireperform.com/auth");
       expect(passwordResetRedirectUrl("https://rewireperform.com", platform))
-        .toBe("https://rewireperform.com/auth/reset-password");
+        .toBe("https://rewireperform.com/auth/reset-password?flow=recovery");
     }
   });
 

@@ -16,7 +16,11 @@ type RecoveryState = "checking" | "ready" | "invalid" | "success";
 const hasRecoveryHint = () => {
   const query = new URLSearchParams(window.location.search);
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  return query.get("verified") === "1" || query.get("type") === "recovery" || hash.get("type") === "recovery";
+  return window.location.pathname === "/auth/reset-password"
+    || query.get("verified") === "1"
+    || query.get("flow") === "recovery"
+    || query.get("type") === "recovery"
+    || hash.get("type") === "recovery";
 };
 
 const ResetPassword = () => {

@@ -432,7 +432,7 @@ describe("auth email confirmation", () => {
     expect(screen.getByText(/Falls ein Konto/)).toBeInTheDocument();
     expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(
       "test@example.com",
-      { redirectTo: "http://localhost:3000/auth/reset-password" },
+      { redirectTo: "http://localhost:3000/auth/reset-password?flow=recovery" },
     );
   });
 
