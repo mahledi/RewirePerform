@@ -31,6 +31,7 @@ const Demo = lazy(() => import("./demo/DemoPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const TeamInvite = lazy(() => import("./pages/TeamInvite.tsx"));
+const AuthEmailAction = lazy(() => import("./pages/AuthEmailAction.tsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 const Questionnaire = lazy(() => import("./pages/Questionnaire.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
@@ -199,6 +200,7 @@ const AppRoutes = () => {
               <ProtectedRoute><MinorAuthorizationGate><Welcome /></MinorAuthorizationGate></ProtectedRoute>
             } />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/confirm" element={<AuthEmailAction />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/minor-consent" element={
               <ProtectedRoute><MinorConsent /></ProtectedRoute>
