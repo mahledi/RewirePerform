@@ -9,12 +9,22 @@ import {
 const athleteReference = (firstName: string | null | undefined) =>
   firstName ?? "die minderjährige Person";
 
+// Guardian links must always open in the browser. The signed iOS app only
+// associates the apex host, so using www avoids an app-link handoff that can
+// drop the fragment-held, one-time token before the decision page loads.
+const guardianWebOrigin = (appUrl: string) => {
+  const url = new URL(appUrl);
+  return url.hostname === "rewireperform.com"
+    ? "https://www.rewireperform.com"
+    : url.origin;
+};
+
 export const buildGuardianInvitationEmail = (
   appUrl: string,
   token: string,
   firstName?: string | null,
 ) => {
-  const decisionUrl = `${appUrl}/guardian/decision#token=${encodeURIComponent(token)}`;
+  const decisionUrl = `${guardianWebOrigin(appUrl)}/guardian/decision#token=${encodeURIComponent(token)}`;
   const privacyUrl = `${appUrl}/privacy`;
   const athlete = athleteReference(firstName);
   const title = firstName
@@ -70,7 +80,7 @@ export const buildGuardianReceiptEmail = (
   managementToken: string,
   firstName?: string | null,
 ) => {
-  const manageUrl = `${appUrl}/guardian/decision#manage=${encodeURIComponent(managementToken)}`;
+  const manageUrl = `${guardianWebOrigin(appUrl)}/guardian/decision#manage=${encodeURIComponent(managementToken)}`;
   const privacyUrl = `${appUrl}/privacy`;
   const athlete = athleteReference(firstName);
   const title = firstName

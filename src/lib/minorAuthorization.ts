@@ -333,8 +333,45 @@ export interface GuardianLinkStatus {
 }
 
 const invokePublic = async <T extends object>(body: Record<string, unknown>): Promise<T> => {
-  const { data, error } = await supabase.functions.invoke("minor-guardian-public", { body });
-  if (error) throw new MinorAuthorizationError("link_unavailable");
+  const rawUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!rawUrl || !publishableKey) throw new MinorAuthorizationError("link_unavailable");
+
+  let functionUrl: string;
+  try {
+    const url = new URL(rawUrl);
+    if (
+      url.protocol !== "https:"
+      || url.username
+      || url.password
+      || url.search
+      || url.hash
+      || (url.pathname !== "/" && url.pathname !== "")
+    ) throw new Error("invalid");
+    functionUrl = `${url.origin}/functions/v1/minor-guardian-public`;
+  } catch {
+    throw new MinorAuthorizationError("link_unavailable");
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        apikey: publishableKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+      credentials: "omit",
+      cache: "no-store",
+      referrerPolicy: "no-referrer",
+    });
+  } catch {
+    throw new MinorAuthorizationError("link_unavailable");
+  }
+
+  if (!response.ok) throw new MinorAuthorizationError("link_unavailable");
+  const data = await response.json().catch(() => null) as unknown;
   if (!data || typeof data !== "object") throw new MinorAuthorizationError("invalid_response");
   return data as T;
 };
