@@ -166,7 +166,7 @@ describe("native signup auth return", () => {
 });
 
 describe("native password recovery return", () => {
-  it("accepts only the exact Android recovery route", () => {
+  it("accepts only the exact iOS universal-link and Android recovery routes", () => {
     expect(parseNativeRecoveryReturn(
       "com.rewireperform.app://auth/reset-password?flow=recovery#access_token=access-secret&refresh_token=refresh-secret&type=recovery",
     )).toEqual({
@@ -177,9 +177,17 @@ describe("native password recovery return", () => {
     expect(parseNativeRecoveryReturn(
       "com.rewireperform.app://auth/reset-password?flow=recovery&code=one-time-code",
     )).toEqual({ kind: "code", authCode: "one-time-code" });
+    expect(parseNativeRecoveryReturn(
+      "https://rewireperform.com/auth/reset-password?flow=recovery#access_token=ios-access&refresh_token=ios-refresh&type=recovery",
+    )).toEqual({
+      kind: "session",
+      accessToken: "ios-access",
+      refreshToken: "ios-refresh",
+    });
 
     for (const url of [
-      "https://rewireperform.com/auth/reset-password?flow=recovery#access_token=a&refresh_token=b&type=recovery",
+      "https://evil.example/auth/reset-password?flow=recovery#access_token=a&refresh_token=b&type=recovery",
+      "https://rewireperform.com/reset-password?flow=recovery#access_token=a&refresh_token=b&type=recovery",
       "com.rewireperform.app://auth?flow=recovery#access_token=a&refresh_token=b&type=recovery",
       "com.rewireperform.app://auth/reset-password?flow=signup#access_token=a&refresh_token=b&type=recovery",
     ]) {

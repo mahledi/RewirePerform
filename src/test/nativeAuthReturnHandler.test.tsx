@@ -57,6 +57,9 @@ const nativeSessionUrl = (query = "flow=signup") =>
 const nativeRecoveryUrl = (credentials = "#access_token=recovery-access&refresh_token=recovery-refresh&type=recovery") =>
   `com.rewireperform.app://auth/reset-password?flow=recovery${credentials}`;
 
+const iosRecoveryUrl = (credentials = "#access_token=ios-recovery-access&refresh_token=ios-recovery-refresh&type=recovery") =>
+  `https://rewireperform.com/auth/reset-password?flow=recovery${credentials}`;
+
 describe("native auth return handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -96,6 +99,21 @@ describe("native auth return handler", () => {
       "/auth/reset-password?verified=1",
     );
     expect(screen.getByTestId("location")).not.toHaveTextContent("recovery-access");
+    expect(pendingPostSignupIntent("athlete-1")).toBeNull();
+  });
+
+  it("opens a cold-start iOS password recovery universal link inside the app", async () => {
+    mocks.getLaunchUrl.mockResolvedValue({ url: iosRecoveryUrl() });
+    renderHandler();
+
+    await waitFor(() => expect(mocks.setSession).toHaveBeenCalledWith({
+      access_token: "ios-recovery-access",
+      refresh_token: "ios-recovery-refresh",
+    }));
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "/auth/reset-password?verified=1",
+    );
+    expect(screen.getByTestId("location")).not.toHaveTextContent("ios-recovery-access");
     expect(pendingPostSignupIntent("athlete-1")).toBeNull();
   });
 

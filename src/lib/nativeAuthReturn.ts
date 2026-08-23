@@ -5,6 +5,7 @@ import { ANDROID_AUTH_CALLBACK_ORIGIN } from "@/lib/authEmailFlow";
 export const NATIVE_AUTH_RETURN_ORIGIN = "https://rewireperform.com";
 export const NATIVE_SIGNUP_RETURN_PATH = "/auth";
 export const NATIVE_RECOVERY_RETURN_PATH = "/reset-password";
+export const NATIVE_IOS_RECOVERY_RETURN_PATH = "/auth/reset-password";
 
 type NativeSignupContext = {
   intent: "solo" | "join" | "organization";
@@ -42,6 +43,11 @@ const isSignupEndpoint = (url: URL) => (
   (url.origin === NATIVE_AUTH_RETURN_ORIGIN && url.pathname === NATIVE_SIGNUP_RETURN_PATH)
   || isAndroidAuthEndpoint(url, "")
   || isAndroidAuthEndpoint(url, "/")
+);
+
+const isRecoveryEndpoint = (url: URL) => (
+  (url.origin === NATIVE_AUTH_RETURN_ORIGIN && url.pathname === NATIVE_IOS_RECOVERY_RETURN_PATH)
+  || isAndroidAuthEndpoint(url, NATIVE_RECOVERY_RETURN_PATH)
 );
 
 const readSignupContext = (url: URL): NativeSignupContext | null => {
@@ -130,7 +136,7 @@ export const parseNativeRecoveryReturn = (rawUrl: string): NativeRecoveryReturn 
   }
 
   if (
-    !isAndroidAuthEndpoint(url, NATIVE_RECOVERY_RETURN_PATH)
+    !isRecoveryEndpoint(url)
     || url.searchParams.get("flow") !== "recovery"
   ) {
     return { kind: "ignore" };
