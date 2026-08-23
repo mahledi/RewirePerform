@@ -97,6 +97,16 @@ describe("release target validation", () => {
     expect(result.stderr).toContain("valid Supabase publishable");
   });
 
+  it("rejects a valid-shaped Staging key on a Production build", () => {
+    const result = runValidation({
+      VITE_SUPABASE_PUBLISHABLE_KEY:
+        "sb_publishable_098765432109876543210987654321",
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("must match the confirmed production project");
+  });
+
   it("rejects a V1.1 Production client that would activate Feedback Intelligence", () => {
     const result = runValidation({ VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED: "true" });
 

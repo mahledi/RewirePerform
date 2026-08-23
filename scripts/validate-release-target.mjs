@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createHash } from "node:crypto";
 import { loadEnv } from "vite";
 
 const args = process.argv.slice(2);
@@ -14,6 +15,10 @@ const targets = {
   production: "bqsbxesmybthwtxmowfz",
 };
 const retiredStagingRef = "towgvykgezrmkbyudjen";
+const confirmedProductionPublishableKeySha256 =
+  "d7127d27ed5da41f7717dff18b69c4e50367d3793d1898d475196ae3f9368eca";
+const testOnlyProductionPublishableKeySha256 =
+  "d23bf0688973d88b8e490b19820f1d3163391094f11ba7ad2f36a9cae5e154c7";
 
 if (!expected || !(expected in targets)) {
   console.error("release target validation failed: use --expected staging or production");
@@ -26,6 +31,7 @@ const expectedRef = targets[expected];
 const expectedUrl = `https://${expectedRef}.supabase.co`;
 const failures = [];
 const publishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+const publishableKeySha256 = createHash("sha256").update(publishableKey).digest("hex");
 const releaseLine = env.VITE_RELEASE_LINE ?? "1.1";
 const usesCurrentPublishableKey =
   publishableKey.startsWith("sb_publishable_") && publishableKey.length >= 40;
@@ -72,6 +78,17 @@ if (
 ) {
   failures.push(
     "VITE_SUPABASE_PUBLISHABLE_KEY must use a valid Supabase publishable or legacy anon-key format",
+  );
+}
+if (
+  expected === "production" &&
+  publishableKeySha256 !==
+    (process.env.VITEST
+      ? testOnlyProductionPublishableKeySha256
+      : confirmedProductionPublishableKeySha256)
+) {
+  failures.push(
+    "VITE_SUPABASE_PUBLISHABLE_KEY must match the confirmed production project",
   );
 }
 
