@@ -96,6 +96,11 @@ if (
       comment: "RewirePerform signup confirmation only",
     },
     {
+      "/": "/auth/reset-password",
+      "?": { flow: "recovery" },
+      comment: "RewirePerform password recovery confirmation",
+    },
+    {
       "/": "/join",
       "?": { team: "??????" },
       comment: "RewirePerform athlete team invitation",
@@ -112,7 +117,7 @@ if (
     },
   ])
 ) {
-  failures.push("AASA: expected the exact RewirePerform signup, athlete-invite, legacy coach-invite and shareable Co-Coach universal-link contract");
+  failures.push("AASA: expected the exact RewirePerform signup, recovery, athlete-invite, legacy coach-invite and shareable Co-Coach universal-link contract");
 }
 
 for (const dependency of [
