@@ -22,11 +22,11 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "40df087a1d99a1f72bdd36110f2b76cffdc8f458c1a7cf5a65de188479666562",
+  "package_sha256": "7b6d0839e7a117d258c721d5e26f9a32a49776030897bb258d4143f90a1c9186",
   "files": [
     {
       "path": ".env.example",
-      "sha256": "78edb30af020617209450c86129504b3f769d0ba6bf9b6309a8ea342715a052f"
+      "sha256": "d7caa1a46a2d8c89efacf437edd930eeb2a3e30233a06cb836dbaee923361534"
     },
     {
       "path": "scripts/validate-release-target.mjs",
@@ -34,7 +34,7 @@
     },
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "e821d372c0dd768e9edb1c793b8fa93e0e874898d0f32138406155f8b2fdf563"
+      "sha256": "aa3e94b08ffa775f37252f027a5ebf8f0dea7b8032760804d11be594ade86300"
     },
     {
       "path": "src/content/feedbackTextConsentV12.ts",

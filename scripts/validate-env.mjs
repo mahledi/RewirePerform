@@ -39,6 +39,7 @@ const optionalEdge = [
 
 const optionalClient = [
   "VITE_APP_ENV",
+  "VITE_WEB_ANALYTICS_ENABLED",
 ];
 
 const allowedAppEnvironments = new Set([

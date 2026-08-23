@@ -7,6 +7,7 @@ import { isFeedbackIntelligenceClientEnabled, isFeedbackTextClientEnabled } from
 const Privacy = () => {
   const navigate = useNavigate();
   const feedbackEnabled = isFeedbackIntelligenceClientEnabled() && isFeedbackTextClientEnabled();
+  const webAnalyticsEnabled = import.meta.env.VITE_WEB_ANALYTICS_ENABLED === "true";
 
   const goBack = () => {
     if (window.history.length > 1) {
@@ -40,7 +41,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: {feedbackEnabled ? "20. August 2026" : "10. August 2026"}. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
+          Stand: {webAnalyticsEnabled ? "23. August 2026" : feedbackEnabled ? "20. August 2026" : "10. August 2026"}. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert.
         </p>
@@ -97,6 +98,7 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Rechtsgrundlage (DSGVO)</h2>
             <ul className="space-y-2">
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Teamzugang, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
+              {webAnalyticsEnabled && <li><span className="text-foreground">Art. 6 Abs. 1 lit. f DSGVO — datensparsame Reichweitenmessung der öffentlichen Website:</span> Wir werten aggregiert aus, welche öffentlichen Seiten aufgerufen werden und über welche Quellen Menschen die Website finden, damit wir die Information über RewirePerform verständlicher machen können. Dafür werden keine RewirePerform-Konten, Trainings-, Gesundheits-, Feedback- oder Freitextdaten verwendet und keine Werbeprofile erstellt.</li>}
               <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Soweit du selbst vorvertragliche Schritte anfragst, erfolgt die Bearbeitung auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Soweit du eine Organisation vertrittst, stützen wir die angefragte geschäftliche Kommunikation und die angemessene Vorbereitung auf Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse besteht darin, die von dir initiierte Anfrage sicher und passend zu beantworten. Der technische Missbrauchsschutz und die Prüfung offensichtlicher Fake-/Spam-Anfragen beruhen ebenfalls auf diesem Sicherheitsinteresse.</li>
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. {feedbackEnabled ? "Dies gilt außerdem für freiwillige Feedback-Checkpoints. Ein Produktfeedback-Kommentar und seine interne Prüfung zur Produktverbesserung erfordern eine zusätzliche ausdrückliche Einwilligung, die jederzeit ohne Nachteil widerrufbar ist." : "Feedback Intelligence, Feedback-Kommentare und ein Jarvis-Zugriff sind nicht Teil dieser V1.1-Auslieferung."}</li>
               <li><span className="text-foreground">Art. 9 Abs. 2 lit. a DSGVO - ausdrückliche Einwilligung:</span> Soweit psychologisch sensible Angaben verarbeitet werden, ist dafür eine gesonderte, ausdrückliche Einwilligung erforderlich.</li>
@@ -294,7 +296,7 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Auftragsverarbeiter</h2>
             <ul className="space-y-2">
               <li><span className="text-foreground">Supabase:</span> Authentifizierung, Datenbank und Edge Functions. Das bestätigte Hauptprojekt liegt in Frankfurt (eu-central-1). Technische Betriebs- und Sicherheitsdaten können nach Anbieterbedingungen und Auftragsverarbeitungsvertrag verarbeitet werden.</li>
-              <li><span className="text-foreground">Vercel:</span> Auslieferung der Website und Web-App. Dabei fallen technisch notwendige Anfrage- und Sicherheitsmetadaten an. Soweit Daten außerhalb des EWR verarbeitet werden, stützt sich der Anbieter unter anderem auf die vereinbarten Standardvertragsklauseln.</li>
+              <li><span className="text-foreground">Vercel:</span> Auslieferung der Website und Web-App. Dabei fallen technisch notwendige Anfrage- und Sicherheitsmetadaten an. {webAnalyticsEnabled ? "Für die öffentliche Website nutzen wir zusätzlich Vercel Web Analytics: cookie-freie, aggregierte Aufrufstatistiken zu Seiten, Referrern sowie groben Geräte-, Browser- und Regionsmerkmalen. Diese Daten werden nicht mit RewirePerform-Konten oder Produktdaten verknüpft und nicht für Werbung, individualisierte Profile oder automatisierte Entscheidungen eingesetzt." : ""} Soweit Daten außerhalb des EWR verarbeitet werden, stützt sich der Anbieter unter anderem auf die vereinbarten Standardvertragsklauseln.</li>
               <li><span className="text-foreground">Cloudflare Turnstile:</span> Missbrauchsschutz für das öffentliche Team- und Organisationsformular. Dabei werden ausschließlich die für die Sicherheitsprüfung notwendigen technischen Anfrage- und Gerätedaten verarbeitet; Turnstile wird nicht für Werbung, Nutzerprofile oder appübergreifendes Tracking eingesetzt.</li>
               <li><span className="text-foreground">Resend:</span> ausschließlich für transaktionale E-Mails an sorgeberechtigte Personen sowie für nach persönlicher Freigabe versendete Coach-Zugänge. Verarbeitet werden Empfängeradresse, Nachrichteninhalt einschließlich eines einmaligen persönlichen Zugangslinks und Zustellmetadaten. Die per E-Mail versendete Coach-Einladung ist an diese E-Mail-Adresse gebunden, einmalig und sieben Tage gültig. Öffnungs- und Link-Tracking werden für diesen Versand nicht genutzt.</li>
               <li><span className="text-foreground">Co-Coach-Teamlink:</span> Der Lead Coach teilt den im geschützten RewirePerform-System geführten Teamlink über einen selbst gewählten Kanal. Er wird nicht über Resend versendet, bleibt bis zu seiner Erneuerung aktiv und kann ein neues, eigenes Coach-Konto nur einmal mit diesem Team verbinden.</li>
