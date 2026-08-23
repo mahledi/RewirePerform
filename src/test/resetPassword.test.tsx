@@ -55,6 +55,13 @@ describe("password recovery", () => {
     expect(mocks.updateUser).toHaveBeenCalledWith({ password: "new-secure-password" });
   });
 
+  it("accepts the recovery session after Supabase has consumed the URL fragment", async () => {
+    window.history.replaceState({}, "", "/auth/reset-password");
+    renderPage();
+
+    expect(await screen.findByRole("heading", { name: "Neues Passwort festlegen." })).toBeInTheDocument();
+  });
+
   it("rejects mismatching passwords before calling Supabase", async () => {
     renderPage();
 

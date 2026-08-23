@@ -84,5 +84,7 @@ export const passwordResetRedirectUrl = (origin: string, platform = "web") => {
     redirectUrl.searchParams.set("flow", "recovery");
     return redirectUrl.toString();
   }
-  return new URL("/auth/reset-password", origin).toString();
+  const redirectUrl = new URL("/auth/reset-password", origin);
+  redirectUrl.searchParams.set("flow", "recovery");
+  return redirectUrl.toString();
 };
