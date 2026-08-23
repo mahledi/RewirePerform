@@ -35,8 +35,9 @@ describe("Supabase auth email templates", () => {
   it("keeps action links and fallback codes in the two interactive templates", () => {
     for (const filename of ["confirmation.html", "recovery.html"]) {
       const html = readFileSync(resolve(templateRoot, filename), "utf8");
-      expect(html).toContain("{{ .ConfirmationURL }}");
+      expect(html).toContain('href="{{ .SiteURL }}/auth/confirm?confirmation_url={{ .ConfirmationURL }}"');
       expect(html).toContain("{{ .Token }}");
+      expect(html).not.toContain('href="{{ .ConfirmationURL }}"');
     }
   });
 
