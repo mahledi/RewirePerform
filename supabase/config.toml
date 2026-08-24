@@ -44,3 +44,6 @@ verify_jwt = false
 # separately approved operation.
 [functions.mahleos-feedback-intelligence-production-read]
 verify_jwt = false
+
+[functions.mahleos-feedback-structured-production-read]
+verify_jwt = false

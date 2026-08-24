@@ -1,6 +1,6 @@
 {
   "schema_version": "rewireperform-feedback-v1.2-privacy-package-v1",
-  "package_version": "feedback-v1.2-privacy-v1.0.0",
+  "package_version": "feedback-v1.2-privacy-v1.1.0",
   "status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
   "scope": {
     "structured_checkpoints": true,
@@ -9,7 +9,12 @@
     "under_16_guardian_plus_athlete_gate": true,
     "max_raw_text_retention_days": 365,
     "protected_admin_read_only_review": true,
-    "jarvis_product_feedback_access": false,
+    "jarvis_structured_feedback_access": true,
+    "jarvis_product_feedback_text_access": false,
+    "jarvis_minimum_group_size": 5,
+    "jarvis_subject_references_in_memory_only": true,
+    "jarvis_model_training": false,
+    "jarvis_automated_individual_decisions": false,
     "external_ai_processor": false,
     "journals_or_private_reflections": false,
     "coach_individual_access": false
@@ -22,7 +27,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "e855e7b64f8026eb19c0ec9d678d88ba2884ed28948f15547b608d21b14b2df9",
+  "package_sha256": "5167fac0d4f725e484531e4ca15ee6cc3aee1ea1a1731c8ffbffb18ee97b57be",
   "files": [
     {
       "path": ".env.example",
@@ -34,7 +39,7 @@
     },
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "891db4071fd7ccf4969c6a79fbc3b371cab0e014a0c80c37305a1ce87e3e3a3a"
+      "sha256": "b7ca48516a049c2656eb02b04fa8e6f9f3a4db6ece4ba8c90c2c9ec9eeba437f"
     },
     {
       "path": "src/content/feedbackTextConsentV12.ts",
@@ -85,12 +90,68 @@
       "sha256": "e11d535cf6111b55a767a317be7537c0547b19aa5905f7524eb0db00ebae84ea"
     },
     {
+      "path": "supabase/migrations/20260824121000_feedback_jarvis_structured_only_v1_2.sql",
+      "sha256": "0145f375b4ecd89946baa81d3e38d47d9b317351b348463d6bea1d2d8e9abdd4"
+    },
+    {
+      "path": "supabase/migrations/20260824143000_feedback_machine_reader_net_privilege_hardening_v1_2.sql",
+      "sha256": "4b57b6636e8cae3c7a7d55c3689a543b99f742672cbe5a86099626ae9837b953"
+    },
+    {
+      "path": "supabase/migrations/20260824150000_feedback_jarvis_structured_contract_v1_2.sql",
+      "sha256": "25cc6f332c71fbe56ad76631c8c950b6fd3efa6465eb7bb7cf08fa3677ecc519"
+    },
+    {
+      "path": "supabase/functions/mahleos-feedback-structured-production-read/index.ts",
+      "sha256": "d65ae1fb14e7012253a5b52fffd91b07d6ab8e12ce9e6d46bc0f00f39845fa6c"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/structured-export.schema.json",
+      "sha256": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/consumer-contract.json",
+      "sha256": "d1b57de3528f45204e4bedafebb9db8f15f6602b9d4cbe0f812f083cf78fd60e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/jarvis-consumer-package-pin.json",
+      "sha256": "c5569db6cbe84728baccdab0ecf297817d005f3805a347ad5cc3afa093ff8543"
+    },
+    {
       "path": "docs/V1_2_FEEDBACK_INTELLIGENCE_READINESS_2026-08-20.md",
       "sha256": "a98b27ebeacd3236adc712352ca6c6adae7ec0b58bd2ea524c3569bf55ab023f"
     },
     {
+      "path": "docs/V1_2_FEEDBACK_CONTROLLER_ASSESSMENT_2026-08-21.md",
+      "sha256": "7d0e15eb7caa739bb516586f75fed1baf79829ff04681d9a535c06a7cb3d4c84"
+    },
+    {
+      "path": "docs/V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md",
+      "sha256": "052c6b181449bfbb79105e0659d236fa90d737875ff2c38cbf5bcffd63e75f9d"
+    },
+    {
+      "path": "docs/APP_STORE_CONNECT_V1_2_STRUCTURED_JARVIS_DELTA_2026-08-24.md",
+      "sha256": "ab4d5b028dcc3200b5df2b85cb060c4dc98855909c1dede4c6d276ab8e0b7fb6"
+    },
+    {
+      "path": "docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md",
+      "sha256": "58943cf68a8b744bbe1af2407340f5a6641268d69fa11bb63847785898d11d17"
+    },
+    {
       "path": "src/test/feedbackPrivacyV12.test.ts",
-      "sha256": "4c60f3bf7cff5521299b20fc5d967df4d52dfb45386a25d3d75367bbb8fe8140"
+      "sha256": "401ee7c13b9f624248d6149738a502b5bdbf055f3393a05a649cadd8b106a6ee"
+    },
+    {
+      "path": "src/test/feedbackJarvisStructuredOnlyV12.test.ts",
+      "sha256": "294cfd1f96d962a8afd6b25839eb0cb4f7844fd4f25969d12b0fb8dc5521ccec"
+    },
+    {
+      "path": "src/test/feedbackJarvisStructuredContractV12.test.ts",
+      "sha256": "d881d9c87a880faa74b5f83809fcf5f95323d9a9b6bdfe5a47e072546760ad0d"
+    },
+    {
+      "path": "src/test/feedbackMachineReaderNetPrivilegeHardeningV12.test.ts",
+      "sha256": "ad7a3b1ddf5d000ae0452a44b9127a844456603eec65e568f8f2e44dc1d5f693"
     },
     {
       "path": "src/test/releaseTarget.test.ts",

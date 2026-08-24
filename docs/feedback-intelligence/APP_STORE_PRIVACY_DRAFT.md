@@ -3,6 +3,13 @@
 Stand: 2026-08-13
 Status: lokaler Implementierungsentwurf; keine Rechts-, App-Store-, KI- oder Production-Freigabe
 
+> **Historischer Entwurf – nicht für V1.2 übernehmen.** Die damalige Option,
+> Produktfeedback-Kommentare an Jarvis zu übertragen, ist verworfen. Für V1.2
+> gilt ausschließlich der strukturierte Datenweg ohne Freitext aus
+> [`APP_STORE_CONNECT_V1_2_STRUCTURED_JARVIS_DELTA_2026-08-24.md`](../APP_STORE_CONNECT_V1_2_STRUCTURED_JARVIS_DELTA_2026-08-24.md)
+> und
+> [`V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md`](../V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md).
+
 ## Produktwahrheit
 
 Die Checkpoints an Tag 10, 24, 39 und 55 erfassen strukturierte Produktfeedback-Antworten. Zusätzlich kann ein Athlet nach einer separaten, freiwilligen und nicht vorangekreuzten Einwilligung einen ausdrücklich als Produktfeedback markierten Kommentar abgeben.
