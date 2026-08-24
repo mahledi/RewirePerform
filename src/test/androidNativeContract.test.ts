@@ -17,13 +17,14 @@ describe("Android native release contract", () => {
     expect(iosProject.match(/CURRENT_PROJECT_VERSION = 13;/g)).toHaveLength(2);
   });
 
-  it("keeps verified HTTPS App Links and adds one exact Android auth callback host", () => {
+  it("keeps verified HTTPS App Links for the Android auth and recovery return", () => {
     const manifest = read("android/app/src/main/AndroidManifest.xml");
 
-    expect(manifest.match(/android:autoVerify="true"/g)).toHaveLength(3);
-    expect(manifest.match(/android:scheme="https"/g)).toHaveLength(3);
-    expect(manifest.match(/android:host="rewireperform\.com"/g)).toHaveLength(3);
+    expect(manifest.match(/android:autoVerify="true"/g)).toHaveLength(4);
+    expect(manifest.match(/android:scheme="https"/g)).toHaveLength(4);
+    expect(manifest.match(/android:host="rewireperform\.com"/g)).toHaveLength(4);
     expect(manifest).toContain('android:path="/auth"');
+    expect(manifest).toContain('android:path="/auth/reset-password"');
     expect(manifest).toContain('android:path="/join"');
     expect(manifest).toContain('android:path="/organization/invite"');
     expect(manifest.match(/android:scheme="com\.rewireperform\.app"/g)).toHaveLength(1);

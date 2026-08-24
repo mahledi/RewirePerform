@@ -30,11 +30,11 @@ describe("auth email flow helpers", () => {
     expect(passwordResetRedirectUrl("https://rewireperform.com")).toBe("https://rewireperform.com/auth/reset-password?flow=recovery");
   });
 
-  it("uses the native callback only on Android and preserves the HTTPS contract on iOS and web", () => {
+  it("uses the verified HTTPS App Link for new Android callbacks while accepting legacy Android links", () => {
     expect(authEmailRedirectUrl("https://rewireperform.com", "android").toString())
-      .toBe("com.rewireperform.app://auth");
+      .toBe("https://rewireperform.com/auth");
     expect(passwordResetRedirectUrl("https://rewireperform.com", "android"))
-      .toBe("com.rewireperform.app://auth/reset-password?flow=recovery");
+      .toBe("https://rewireperform.com/auth/reset-password?flow=recovery");
 
     for (const platform of ["ios", "web"]) {
       expect(authEmailRedirectUrl("https://rewireperform.com", platform).toString())
