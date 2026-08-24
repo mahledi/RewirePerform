@@ -10,8 +10,8 @@ describe("Android native release contract", () => {
     const iosProject = read("ios/App/App.xcodeproj/project.pbxproj");
 
     expect(build).toContain('applicationId "com.rewireperform.app"');
-    expect(build).toContain("versionCode 3");
-    expect(build).toContain('versionName "1.1"');
+    expect(build).toContain("versionCode 4");
+    expect(build).toContain('versionName "1.2"');
     expect(variables).toContain("compileSdkVersion = 36");
     expect(variables).toContain("targetSdkVersion = 36");
     expect(iosProject.match(/CURRENT_PROJECT_VERSION = 13;/g)).toHaveLength(2);
