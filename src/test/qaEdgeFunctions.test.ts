@@ -25,6 +25,8 @@ describe("QA edge-function safety contracts", () => {
   it("fails and cleans up when QA cohort creation stops midway", () => {
     const source = readFunction("qa-create-cohort");
     expect(source).toContain("profileError");
+    expect(source).toContain('.update({ is_test_user: true })');
+    expect(source).not.toContain('.upsert({ id: uid, full_name: a.full_name');
     expect(source).toContain("roleError");
     expect(source).toContain("memberError");
     expect(source).toContain("instanceError");
