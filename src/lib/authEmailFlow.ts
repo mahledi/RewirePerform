@@ -1,7 +1,8 @@
 export const MIN_ACCOUNT_PASSWORD_LENGTH = 8;
 export const PRODUCTION_APP_ORIGIN = "https://rewireperform.com";
-// Kept only to accept callbacks from Android 1.1 (versionCode 3). New Android
-// emails use the verified HTTPS App Link, matching the iOS handoff safely.
+// Android browsers do not hand an HTTP redirect from Supabase Auth back to an
+// HTTPS App Link. The explicit app scheme is allow-listed in Supabase and is
+// registered only by the Android shell; iOS and web continue to use HTTPS.
 export const ANDROID_AUTH_CALLBACK_ORIGIN = "com.rewireperform.app://auth";
 
 type AuthErrorLike = {
@@ -76,13 +77,13 @@ export const publicAuthOrigin = ({ origin, protocol }: { origin: string; protoco
 
 export const authEmailRedirectUrl = (origin: string, platform: string) => (
   platform === "android"
-    ? new URL("/auth", PRODUCTION_APP_ORIGIN)
+    ? new URL(ANDROID_AUTH_CALLBACK_ORIGIN)
     : new URL("/auth", origin)
 );
 
 export const passwordResetRedirectUrl = (origin: string, platform = "web") => {
   if (platform === "android") {
-    const redirectUrl = new URL("/auth/reset-password", PRODUCTION_APP_ORIGIN);
+    const redirectUrl = new URL("/reset-password", `${ANDROID_AUTH_CALLBACK_ORIGIN}/`);
     redirectUrl.searchParams.set("flow", "recovery");
     return redirectUrl.toString();
   }
