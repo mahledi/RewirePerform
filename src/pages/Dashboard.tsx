@@ -1587,7 +1587,9 @@ const Dashboard = () => {
             Dein Fragebogen ist gespeichert.
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-            Dein Coach hat das Teamprogramm noch nicht freigegeben. Sobald es startet, erscheint hier dein täglicher Flow.
+            {teamProgramStart
+              ? "Dein Coach hat das Teamprogramm gestartet. Morgen früh geht es los – dann erscheint hier dein täglicher Flow."
+              : "Dein Coach hat das Teamprogramm noch nicht freigegeben. Sobald es startet, erscheint hier dein täglicher Flow."}
           </p>
 
           {teamProgramStart && (
