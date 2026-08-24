@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import AdminFeedbackStructuredInsights from "@/components/admin/AdminFeedbackStructuredInsights";
 import {
   getAdminFeedbackCommentPage,
   type AdminFeedbackCommentCursor,
@@ -287,6 +288,8 @@ export default function AdminFeedbackIntelligenceComments({
           </div>
         </CardContent>
       </Card>
+
+      <AdminFeedbackStructuredInsights dataScope={dataScope} />
 
       {loading ? (
         <div className="space-y-3" aria-label="Feedback wird geladen">
