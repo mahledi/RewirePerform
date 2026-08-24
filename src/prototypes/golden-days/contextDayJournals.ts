@@ -26,7 +26,7 @@ const competitionIntro = (draft: GoldenDayDraft): string => {
     return "Denk an deinen Wettkampf und an das ganze Programm. Wähle nur das, was du wirklich weiter nutzen willst.";
   }
   if (draft.stage === "Integration" || draft.stage === "Abschluss") {
-    return "Geh einen klaren Moment aus deinem Wettkampf durch und verbinde ihn mit dem heutigen Werkzeug.";
+    return "Geh einen klaren Moment aus deinem Wettkampf durch und verbinde ihn mit der heutigen Reaktion.";
   }
   return "Geh einen klaren Moment aus deinem Wettkampf durch. Bleib bei dem, was wirklich passiert ist.";
 };

@@ -16,6 +16,8 @@ export type GoldenDayDraft = {
   title: string;
   cue: string;
   purpose: string;
+  /** Freiwillige, leicht verstaendliche Vertiefung hinter „Genauer verstehen“. */
+  detailedExplanation?: string;
   scienceBite: {
     title: string;
     paragraphs: [string, string];

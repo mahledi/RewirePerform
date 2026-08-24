@@ -28,6 +28,10 @@ describe("QA edge-function safety contracts", () => {
     expect(source).toContain('.update({ is_test_user: true })');
     expect(source).not.toContain('.upsert({ id: uid, full_name: a.full_name');
     expect(source).toContain("roleError");
+    expect(source).toContain('admin.rpc("minor_service_action"');
+    expect(source).toContain('_action: "set_age"');
+    expect(source).toContain('_payload: { age_band: "adult" }');
+    expect(source).toContain("authorizationError");
     expect(source).toContain("memberError");
     expect(source).toContain("instanceError");
     expect(source).toContain("overrideError");

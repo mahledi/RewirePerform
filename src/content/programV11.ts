@@ -28,7 +28,7 @@ const buildTask = (draft: GoldenDayDraft, matrix: MatrixDay): DailyTask => ({
   id: `v11-day-${draft.day}-mission`,
   title: draft.mission.title,
   why: draft.mission.why,
-  detailedExplanation: draft.purpose,
+  detailedExplanation: draft.detailedExplanation ?? draft.purpose,
   concreteAction: draft.mission.steps
     .map((step, index) => `${index + 1}. ${step}`)
     .join("\n"),
@@ -116,7 +116,7 @@ const buildContext = (
         reflectionDescription:
           "Halte nur fest, was Druck, Fokus oder Bereitschaft heute deutlich beeinflusst. Deine Antwort bleibt privat.",
         journalReminder:
-          "Nach dem Wettkampf gehst du einen echten Moment mit dem heutigen Werkzeug durch.",
+          "Nach dem Wettkampf gehst du einen echten Moment mit der heutigen Reaktion durch.",
         taskIntro:
           "Nimm eine Mission und einen Satz mit. Im Wettkampf zählt die nächste passende Handlung.",
         completionMessage:
@@ -139,7 +139,7 @@ const buildContext = (
       reflectionDescription:
         "Halte nur fest, was deinen Zustand oder dein Lernen heute deutlich beeinflusst. Deine Antwort bleibt privat.",
       journalReminder:
-        "Im Journal gehst du später einen echten Moment mit dem heutigen Werkzeug durch.",
+        "Im Journal gehst du später einen echten Moment mit der heutigen Reaktion durch.",
       taskIntro:
         "Heute gibt es eine Mission. Die einzelnen Schritte gehören zusammen und führen zu derselben Handlung.",
       completionMessage:

@@ -1,9 +1,14 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Brain, Eye, Flame, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield,
-  Check, Quote,
+  Check, ChevronDown,
 } from "lucide-react";
 import type { DailyTask } from "@/content/matrixDayTypes";
+import {
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+} from "@/components/app/AthleteFlowScene";
 
 const iconMap: Record<string, typeof Brain> = {
   brain: Brain, eye: Eye, flame: Flame, heart: Heart, target: Target,
@@ -17,95 +22,114 @@ interface TaskDetailProps {
 }
 
 const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const Icon = iconMap[task.icon ?? "brain"] ?? Brain;
   const useMoment = task.trigger || task.whenToUse;
-  const momentLines = [
-    task.microReframe || task.reframeStep?.reframe,
-    task.selfTalk || task.reframeStep?.anchor,
-  ].filter(Boolean);
+  const actionSteps = task.concreteAction
+    .split("\n")
+    .map((step) => step.replace(/^\d+\.\s*/, "").trim())
+    .filter(Boolean);
+  const explanationParagraphs = task.detailedExplanation
+    ?.split(/\n\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean) ?? [];
 
   return (
-    <motion.div
-      key="task-detail"
-      initial={{ opacity: 0, x: 30 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
-      className="space-y-6"
-    >
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-          <Icon className="w-6 h-6 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-heading text-2xl font-bold leading-tight">{task.title}</h2>
-          <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
-            Deine Mission
-          </p>
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-gradient-card border border-border/50 overflow-hidden">
-        <div className="p-5 border-b border-border/40">
-          <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Worum es heute geht</p>
-          <p className="text-sm text-foreground leading-relaxed">{task.why}</p>
-        </div>
-
-        <div className="p-5 border-b border-border/40">
-          <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Wann du es nutzt</p>
-          <p className="text-sm text-foreground leading-relaxed">{useMoment}</p>
-        </div>
-
-        <div className="p-5">
-          <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Was du konkret machst</p>
-          <p className="whitespace-pre-line text-sm text-foreground leading-relaxed">{task.concreteAction}</p>
-        </div>
-      </div>
-
-      {momentLines.length > 0 && (
-        <div className="p-5 rounded-2xl bg-secondary/30 border border-border/40 flex gap-3">
-          <Quote className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Satz für den Moment</p>
-            <div className="space-y-2">
-              {momentLines.map((line, index) => (
-                <p key={index} className="text-sm text-foreground/90 leading-relaxed">
-                  {index === momentLines.length - 1 ? `„${line}"` : line}
-                </p>
-              ))}
+    <div className="space-y-6">
+      <section
+        data-testid="daily-mission"
+        className="relative"
+      >
+        <div className="relative">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10">
+              <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
             </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Deine Mission</p>
           </div>
-        </div>
-      )}
 
-      {task.sportSpecificExamples && task.sportSpecificExamples.length > 0 && (
-        <div className="p-4 rounded-2xl bg-secondary/20 space-y-2">
-          <p className="text-xs font-medium text-primary uppercase tracking-wider">Beispiel im Sport</p>
-          {task.sportSpecificExamples.slice(0, 2).map((ex, i) => (
-            <p key={i} className="text-xs text-foreground/80 leading-relaxed">
-              {ex.example}
-            </p>
-          ))}
-        </div>
-      )}
+          <h2 className="font-heading text-3xl font-semibold leading-[1.08] tracking-[-0.04em] text-foreground sm:text-[2rem]">
+            {task.title}
+          </h2>
+          <p className="mt-4 text-[15px] leading-7 text-white/62">{task.why}</p>
 
-      {task.visualizationCue && (
-        <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
-          <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Kurze Visualisierung</p>
-          <p className="text-sm text-foreground leading-relaxed">{task.visualizationCue.scene}</p>
-          <p className="text-xs text-muted-foreground mt-1">{task.visualizationCue.durationSec}s</p>
+          <div className={`mt-7 ${athleteFlowPanel} px-4 py-4`}>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Wenn es passiert</p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/88">{useMoment}</p>
+          </div>
+
+          <div className="mt-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Was du machst</p>
+            <ol className="mt-3 space-y-3">
+              {actionSteps.map((step, index) => (
+                <li key={`${task.id}-step-${index}`} className="flex gap-3 text-[15px] leading-relaxed text-foreground/92">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/14 text-xs font-semibold tabular-nums text-primary">
+                    {index + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {task.selfTalk && (
+            <div className="mt-7 rounded-[24px] border border-primary/20 bg-primary/[0.085] px-5 py-5 text-center shadow-[0_18px_55px_-34px_rgba(46,173,137,0.72)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/80">Dein Satz für den Moment</p>
+              <p className="mt-2 font-heading text-xl font-semibold leading-snug text-primary sm:text-2xl">
+                {task.selfTalk}
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {explanationParagraphs.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
+          <button
+            type="button"
+            aria-expanded={detailsOpen}
+            aria-controls={`task-explanation-${task.id}`}
+            onClick={() => setDetailsOpen((open) => !open)}
+            className="flex min-h-12 w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-foreground transition-colors hover:bg-white/[0.035] active:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Genauer verstehen</span>
+            <ChevronDown
+              className={`h-5 w-5 shrink-0 text-primary transition-transform duration-200 ${detailsOpen ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            />
+          </button>
+          <AnimatePresence initial={false}>
+            {detailsOpen && (
+              <motion.div
+                id={`task-explanation-${task.id}`}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-3 border-t border-white/[0.06] px-5 py-5">
+                  {explanationParagraphs.map((paragraph, index) => (
+                    <p key={`${task.id}-explanation-${index}`} className="text-[15px] leading-7 text-foreground/78">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
       <motion.button
         data-testid={`task-complete-${task.id}`}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={!isCompleted ? { scale: 0.99 } : undefined}
         onClick={onComplete}
         disabled={isCompleted}
-        className={`w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
+        className={`${athleteFlowPrimaryButton} min-h-14 w-full text-base ${
           isCompleted
-            ? "bg-primary/20 text-primary cursor-default"
-            : "bg-primary text-primary-foreground hover:shadow-glow"
+            ? "cursor-default bg-primary/15 text-primary shadow-none"
+            : ""
         }`}
       >
         {isCompleted ? (
@@ -114,7 +138,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
           <><Check className="w-5 h-5" /> Verstanden</>
         )}
       </motion.button>
-    </motion.div>
+    </div>
   );
 };
 

@@ -3,6 +3,13 @@
 Stand: 21. August 2026
 Controller-Referenz: `controller-assessment-de-feedback-v1.2:mahle-herzog-final-2026-08-21`
 
+> **Versionierter Nachtrag:** Diese Entscheidung bleibt die Grundlage für
+> Erhebung und menschliche Admin-Prüfung. Der Satz, dass Jarvis keine
+> Produktfeedbackdaten erhält, wird ausschließlich für strukturierte
+> Auswahlantworten durch
+> [`V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md`](./V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md)
+> erweitert. Freitext bleibt vollständig ausgeschlossen.
+
 ## Entscheidung
 
 RewirePerform darf in der deutschen V1.2-Auslieferung freiwilliges Produktfeedback

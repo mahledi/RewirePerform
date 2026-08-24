@@ -1,0 +1,53 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
+
+describe("V1.2 athlete flow experience contract", () => {
+  it("uses one reduced-motion-aware scene contract across the sequential athlete flows", () => {
+    const scene = readSource("src/components/app/AthleteFlowScene.tsx");
+    const daily = readSource("src/components/dashboard/DailyCheckin.tsx");
+    const journal = readSource("src/pages/Journal.tsx");
+    const preTraining = readSource("src/pages/PreTraining.tsx");
+
+    expect(scene).toContain("useReducedMotion");
+    expect(scene).toContain("y: 14");
+    expect(scene).toContain("scale: 0.992");
+    expect(scene).toContain("y: -10");
+    expect(scene).toContain('ease: "easeOut"');
+    for (const source of [daily, journal, preTraining]) {
+      expect(source).toContain("AthleteFlowScene");
+      expect(source).toContain("AthleteFlowAmbient");
+    }
+    expect(daily).toContain('<AnimatePresence mode="wait">');
+    expect(journal).toContain('<AnimatePresence mode="wait" initial={false}>');
+    expect(preTraining).toContain('<AnimatePresence mode="wait" initial={false}>');
+  });
+
+  it("keeps the real Daily state machine and single-save boundary intact", () => {
+    const daily = readSource("src/components/dashboard/DailyCheckin.tsx");
+
+    expect(daily).toContain("setStep(activeTransferPulse ? 2 : 3)");
+    expect(daily).toContain("step === 2 && activeTransferPulse");
+    expect(daily).toContain("tasks.every");
+    expect(daily).toContain("if (savingRef.current) return false");
+    expect(daily).toContain("saveDailyTracking");
+    expect(daily).toContain("writeLocalDraft");
+    expect(daily).toContain("RestDayMission");
+  });
+
+  it("keeps Journal drafts, voice input and recall-before-reveal behavior", () => {
+    const journal = readSource("src/pages/Journal.tsx");
+    const preTraining = readSource("src/pages/PreTraining.tsx");
+
+    expect(journal).toContain("writeLocalDraft");
+    expect(journal).toContain("<VoiceInput");
+    expect(journal).toContain("safeJournalStep");
+    expect(journal).toContain("allQuestionsReady");
+    expect(preTraining).toContain('key="recall"');
+    expect(preTraining).toContain('key="reveal"');
+    expect(preTraining).toContain("Erinnerung prüfen");
+    expect(preTraining).toContain("disabled={Boolean(resolved.content.preTraining) && !revealed}");
+  });
+});

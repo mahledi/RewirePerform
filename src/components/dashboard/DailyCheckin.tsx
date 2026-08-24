@@ -4,8 +4,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
-  Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
-  CheckCircle2,
+  Brain, Flame, Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +31,13 @@ import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
 import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
+import {
+  AthleteFlowAmbient,
+  AthleteFlowScene,
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+  athleteFlowSecondaryButton,
+} from "@/components/app/AthleteFlowScene";
 import { getMyEvidenceStatus, type MyEvidenceStatus } from "@/lib/evidenceTracking";
 import {
   getTransferPulseForDay,
@@ -75,11 +81,6 @@ interface CheckinDraft {
   restReminderScheduled?: boolean;
   savedAt: string;
 }
-
-const iconMap: Record<string, typeof Brain> = {
-  brain: Brain, eye: Eye, flame: Flame, heart: Heart, target: Target,
-  wind: Wind, sunrise: Sunrise, book: BookOpen, sparkles: Sparkles, shield: Shield,
-};
 
 const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { label: "Trainingstag", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
@@ -587,32 +588,23 @@ const DailyCheckin = ({
     const [headline, ...body] = bite.split("\n\n").filter(Boolean);
 
     return (
-      <motion.div
+      <AthleteFlowScene
         key="science-intro"
-        initial={{ opacity: 0, scale: 0.96, y: 24 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.98, y: -16 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className="min-h-[calc(100dvh-11rem)] flex flex-col justify-center"
+        className="flex min-h-[calc(100dvh-11rem)] flex-col justify-center"
       >
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : (
-          <div className="space-y-4">
-            <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
-              <div className="p-5 border-b border-border/50 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Science Bite</p>
-                  <h2 className="font-heading text-2xl font-bold leading-tight">{headline}</h2>
-                </div>
-                <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                  <Brain className="w-5 h-5 text-primary" />
-                </div>
+          <div className="space-y-7">
+            <div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.09] text-primary shadow-[0_0_34px_-18px_rgba(46,173,137,0.75)]">
+                <Brain className="h-5 w-5" />
               </div>
-
-              <div className="p-5 space-y-4">
+              <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Science Bite</p>
+              <h2 className="mt-3 font-heading text-3xl font-semibold leading-[1.08] tracking-[-0.04em]">{headline}</h2>
+              <div className="mt-5 max-w-[38rem] space-y-4">
                 {body.map((paragraph, index) => (
-                  <p key={index} className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                  <p key={index} className="whitespace-pre-line text-[15px] leading-7 text-white/62">
                     {paragraph}
                   </p>
                 ))}
@@ -620,14 +612,14 @@ const DailyCheckin = ({
             </div>
 
             {resolved && (
-              <div className={`rounded-2xl border border-border/50 p-4 ${config.bg}`}>
+              <div className="border-l border-primary/35 pl-4">
                 <div className="flex items-start gap-3">
                   <config.icon className={`w-5 h-5 mt-0.5 shrink-0 ${config.color}`} />
                   <div>
                     <p className={`text-xs uppercase tracking-[0.16em] font-semibold ${config.color}`}>
                       Heute als {resolved.context.label}
                     </p>
-                    <p className="text-sm text-foreground mt-1 leading-relaxed">
+                    <p className="mt-1 text-sm leading-6 text-white/58">
                       {resolved.context.focus}
                     </p>
                   </div>
@@ -637,16 +629,15 @@ const DailyCheckin = ({
 
             <motion.button
               data-testid="daily-science-ack"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => setStep(1)}
-              className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold text-lg hover:shadow-glow transition-all"
+              className={`${athleteFlowPrimaryButton} w-full min-h-14 text-base`}
             >
               Verstanden <ArrowRight className="w-5 h-5" />
             </motion.button>
           </div>
         )}
-      </motion.div>
+      </AthleteFlowScene>
     );
   };
 
@@ -664,85 +655,50 @@ const DailyCheckin = ({
       }
 
       return (
-        <RestDayMission
-          draft={draft}
-          userId={user?.id ?? null}
-          athleteName={user?.user_metadata?.full_name}
-          date={dateKey}
-          planMode={restPlanMode}
-          reminderTime={restReminderTime}
-          reminderScheduled={restReminderScheduled}
-          completed={completedTasks.includes(missionTask.id)}
-          saving={saving}
-          saveError={saveError}
-          onPlanModeChange={(mode) => {
-            setRestPlanMode(mode);
-            if (mode === "now") setRestReminderScheduled(false);
-          }}
-          onReminderTimeChange={setRestReminderTime}
-          onReminderScheduledChange={setRestReminderScheduled}
-          onComplete={() => handleRestVisualizationComplete(missionTask.id)}
-          onRetrySave={() => void finishRestDay()}
-          onCloseForLater={onClose}
-        />
+        <AthleteFlowScene key="rest-mission">
+          <RestDayMission
+            draft={draft}
+            userId={user?.id ?? null}
+            athleteName={user?.user_metadata?.full_name}
+            date={dateKey}
+            planMode={restPlanMode}
+            reminderTime={restReminderTime}
+            reminderScheduled={restReminderScheduled}
+            completed={completedTasks.includes(missionTask.id)}
+            saving={saving}
+            saveError={saveError}
+            onPlanModeChange={(mode) => {
+              setRestPlanMode(mode);
+              if (mode === "now") setRestReminderScheduled(false);
+            }}
+            onReminderTimeChange={setRestReminderTime}
+            onReminderScheduledChange={setRestReminderScheduled}
+            onComplete={() => handleRestVisualizationComplete(missionTask.id)}
+            onRetrySave={() => void finishRestDay()}
+            onCloseForLater={onClose}
+          />
+        </AthleteFlowScene>
       );
     }
 
     return (
-      <motion.div key="tasks" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-heading text-2xl font-bold">Heute im Fokus</h2>
-        </div>
+      <AthleteFlowScene key="tasks">
         {resolved && (
-          <p className="text-muted-foreground mb-4 text-sm">
+          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">
             Tag {resolved.matrix.dayNumber} · {displayTitle}
           </p>
         )}
 
-        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-          {resolved?.context.checkin.taskIntro}
-        </p>
-
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
-        ) : (
-          <div className="space-y-3">
-            {tasks.map((task) => {
-              const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
-              const taskDone = completedTasks.includes(task.id);
-              return (
-                <button
-                  key={task.id}
-                  data-testid={`task-card-${task.id}`}
-                  onClick={() => setSelectedTask(task)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all active:scale-[0.98] ${
-                    taskDone
-                      ? "bg-primary/10 border-primary/30"
-                      : "bg-gradient-card border-border/50 hover:bg-secondary/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      taskDone ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                    }`}>
-                      {taskDone ? <CheckCircle2 className="w-5 h-5" /> : <IconComp className="w-5 h-5" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${taskDone ? "text-primary" : ""}`}>{task.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.whenToUse}</p>
-                    </div>
-                    {taskDone ? (
-                      <span className="text-xs font-semibold text-primary shrink-0">Verstanden</span>
-                    ) : (
-                      <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
+        ) : tasks[0] ? (
+          <TaskDetail
+            task={tasks[0]}
+            isCompleted={completedTasks.includes(tasks[0].id)}
+            onComplete={() => markTaskComplete(tasks[0].id)}
+          />
+        ) : null}
+      </AthleteFlowScene>
     );
   };
 
@@ -766,7 +722,8 @@ const DailyCheckin = ({
     : flowStages.find((stage) => stage.step === step)?.title ?? "Daily Flow";
 
   return (
-    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[#0D0E12] text-[#EEF0F2]">
+    <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteFlowAmbient />
       <AthleteScreenHeader
         title={flowTitle}
         eyebrow={`Daily Flow · ${config.label}`}
@@ -779,7 +736,7 @@ const DailyCheckin = ({
           </div>
         )}
       />
-      <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
+      <div className="relative border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
         <div className="mx-auto flex max-w-lg items-center gap-2">
           {flowStages.map((stage, index) => (
             <div
@@ -801,7 +758,7 @@ const DailyCheckin = ({
         </div>
       </div>
 
-      <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-5 py-7">
+      <div ref={contentScrollRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-7">
         <div className="mx-auto w-full max-w-lg">
           {saveError && !(eventType === "rest" && step === 3) && (
             <div className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
@@ -819,22 +776,19 @@ const DailyCheckin = ({
               <>
                 {step === 0 && <ScienceBiteIntro />}
                 {step === 1 && (
-                  <motion.div
+                  <AthleteFlowScene
                     key="mood-energy"
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -50 }}
                   >
-                    <h2 className="font-heading text-2xl font-bold mb-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Dein Tages-Puls</p>
+                    <h2 className="mt-3 font-heading text-3xl font-semibold leading-tight tracking-[-0.04em]">
                       {resolved?.context.checkin.pulseTitle ?? "Wohlbefinden & Bereitschaft"}
                     </h2>
-                    <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">Dein Tages-Puls</p>
-                    <p className="text-muted-foreground mb-6 text-sm">
+                    <p className="mb-7 mt-4 text-sm leading-6 text-white/55">
                       {resolved?.context.checkin.pulseDescription} Deine Antworten bleiben privat. Coaches sehen nur
                       geschützte Team-Tendenzen ab mindestens 5 Teilnehmenden.
                     </p>
 
-                    <div className="space-y-7">
+                    <div className="space-y-3">
                       {[
                         { id: "mood", label: "Stimmung", question: pulseQuestionsByContext[eventType].mood, value: moodBefore, set: setMoodBefore, low: "sehr niedrig", high: "sehr gut" },
                         { id: "energy", label: "Energie", question: pulseQuestionsByContext[eventType].energy, value: energyLevel, set: setEnergyLevel, low: "sehr erschöpft", high: "sehr energiegeladen" },
@@ -847,19 +801,20 @@ const DailyCheckin = ({
                         { id: "pressure", label: "Leistungsdruck", question: pulseQuestionsByContext[eventType].pressure, value: pressure, set: setPressure, low: "kaum", high: "sehr stark" },
                         { id: "team", label: "Verbindung zum sportlichen Umfeld", question: pulseQuestionsByContext[eventType].connection, value: teamConnection, set: setTeamConnection, low: "gar nicht verbunden", high: "sehr verbunden" },
                       ].map((q) => (
-                        <div key={q.label}>
-                          <label className="text-sm font-semibold block mb-1">{q.label}</label>
-                          <p className="text-xs text-muted-foreground mb-2">{q.question}</p>
+                        <div key={q.label} className={`${athleteFlowPanel} p-4`}>
+                          <label className="mb-1 block text-sm font-semibold text-white/88">{q.label}</label>
+                          <p className="mb-3 text-xs leading-5 text-white/45">{q.question}</p>
                           <div className="grid grid-cols-5 gap-2">
                             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                               <button
                                 key={n}
                                 data-testid={`pulse-${q.id}-${n}`}
                                 onClick={() => q.set(n)}
-                                className={`min-h-11 rounded-xl text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                aria-pressed={q.value === n}
+                                className={`min-h-11 rounded-xl border text-sm font-semibold transition-[background-color,border-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                   q.value === n
-                                    ? "bg-primary text-primary-foreground shadow-glow"
-                                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                                    ? "border-primary/70 bg-primary/[0.14] text-white shadow-[inset_0_1px_0_rgba(98,198,168,0.16),0_0_24px_-16px_rgba(46,173,137,0.9)]"
+                                    : "border-white/[0.06] bg-white/[0.025] text-white/48 hover:border-white/[0.11] hover:bg-white/[0.045] hover:text-white/72"
                                 }`}
                               >
                                 {n}
@@ -873,14 +828,11 @@ const DailyCheckin = ({
                         </div>
                       ))}
                     </div>
-                  </motion.div>
+                  </AthleteFlowScene>
                 )}
                 {step === 2 && activeTransferPulse && (
-                    <motion.div
+                    <AthleteFlowScene
                       key="transfer-pulse"
-                      initial={{ opacity: 0, x: 50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
                     >
                       <AthleteTransferPulse
                         pulse={activeTransferPulse}
@@ -892,13 +844,14 @@ const DailyCheckin = ({
                         Deine Antwort bleibt für Coaches unsichtbar. Sie kann nur freiwillig und geschützt in
                         zusammengefasste Auswertungen einfließen.
                       </p>
-                    </motion.div>
+                    </AthleteFlowScene>
                 )}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
-                  <motion.div key="comprehension" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}>
-                    <h2 className="font-heading text-2xl font-bold mb-2">Kurzer Verständnis-Check</h2>
-                    <p className="text-muted-foreground mb-6 text-sm">
+                  <AthleteFlowScene key="comprehension">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Zum Abschluss</p>
+                    <h2 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.04em]">Kurzer Verständnis-Check</h2>
+                    <p className="mb-7 mt-4 text-sm leading-6 text-white/52">
                       {comprehensionQuestions.length > 0
                         ? "Eine kurze Frage zur heutigen Linie. Kein Test — nur Festigung."
                         : "Heute kein Check verfügbar. Du kannst direkt abschließen."}
@@ -914,45 +867,46 @@ const DailyCheckin = ({
                         onClick={handleEmptyComprehensionComplete}
                         disabled={saving}
                         whileTap={!saving ? { scale: 0.98 } : undefined}
-                        className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-heading font-semibold transition-all active:scale-[0.98] disabled:opacity-60"
+                        className={`${athleteFlowPrimaryButton} w-full`}
                       >
                         {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                         {saving ? "Speichert..." : "Check-in abschließen"}
                       </motion.button>
                     )}
-                  </motion.div>
+                  </AthleteFlowScene>
                 )}
                 {step === 5 && (
-                  <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-                      <Check className="w-10 h-10 text-primary" />
-                    </motion.div>
-                    <h2 className="font-heading text-2xl font-bold mb-2">Check-in abgeschlossen</h2>
+                  <AthleteFlowScene key="done" duration={0.34} className="flex min-h-[60dvh] flex-col justify-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.1] text-primary shadow-[0_0_36px_-17px_rgba(46,173,137,0.72)]">
+                      <Check className="h-7 w-7" />
+                    </div>
+                    <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Dein Check-in ist gespeichert</p>
+                    <h2 className="mt-3 font-heading text-3xl font-semibold leading-tight tracking-[-0.04em]">Heute ist klar.</h2>
                     {resolved && (
-                      <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-white/42">
                         Tag {resolved.matrix.dayNumber}/56 · {displayTitle}
                       </p>
                     )}
-                    <p className="text-muted-foreground mb-3 text-sm">
+                    <p className="mt-5 max-w-sm text-[15px] leading-7 text-white/60">
                       {resolved?.context.checkin.completionMessage}
                     </p>
-                    <div className="mb-8 max-w-sm mx-auto rounded-2xl bg-primary/5 border border-primary/15 p-4 text-left">
+                    <div className="mt-7 max-w-sm border-l border-primary/30 pl-4 text-left">
                       <div className="flex items-start gap-3">
                         <Flame className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                        <p className="text-xs text-muted-foreground leading-relaxed">
+                        <p className="text-xs leading-5 text-white/48">
                           Die Flamme lebt von Rückkehr. Heute Abend schließt du den Tag mit dem Journal sauber ab.
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                    <div className="mt-9 flex max-w-sm flex-col gap-3">
                       <button
                         onClick={onClose}
-                        className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
+                        className={`${athleteFlowPrimaryButton} w-full`}
                       >
                         Zurück zum Dashboard
                       </button>
                     </div>
-                  </motion.div>
+                  </AthleteFlowScene>
                 )}
               </>
             )}
@@ -961,11 +915,10 @@ const DailyCheckin = ({
       </div>
 
       {(step === 1 || (step === 2 && Boolean(activeTransferPulse)) || (step === 3 && eventType !== "rest")) && !selectedTask && (
-        <div className="sticky bottom-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
-          <div className="max-w-lg mx-auto flex items-center justify-between">
-            <button onClick={handleBack} className="flex min-h-12 items-center gap-2 rounded-xl px-4 py-3 text-white/52 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+        <div className="relative shrink-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
+          <div className="mx-auto grid max-w-lg grid-cols-[auto_1fr] gap-3">
+            <button onClick={handleBack} className={`${athleteFlowSecondaryButton} w-12 px-0`} aria-label="Zurück">
               <ArrowLeft className="w-4 h-4" />
-              Zurück
             </button>
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
@@ -980,8 +933,7 @@ const DailyCheckin = ({
               return (
                 <motion.button
                   data-testid={`daily-next-step-${step}`}
-                  whileHover={!blocked ? { scale: 1.02 } : undefined}
-                  whileTap={!blocked ? { scale: 0.98 } : undefined}
+                  whileTap={!blocked ? { scale: 0.99 } : undefined}
                   onClick={() => {
                     if (blocked) return;
                     if (step === 1) setStep(activeTransferPulse ? 2 : 3);
@@ -989,11 +941,7 @@ const DailyCheckin = ({
                     else if (step === 3 && tasksComplete) setStep(4);
                   }}
                   disabled={blocked}
-                  className={`flex min-h-12 items-center gap-2 whitespace-nowrap rounded-2xl px-5 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    blocked
-                      ? "bg-muted text-muted-foreground cursor-not-allowed"
-                      : "bg-primary text-primary-foreground hover:shadow-glow"
-                  }`}
+                  className={`${athleteFlowPrimaryButton} w-full whitespace-nowrap`}
                 >
                   {step === 3 && !tasksComplete
                     ? eventType === "rest"

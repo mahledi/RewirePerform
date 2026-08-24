@@ -44,7 +44,53 @@ const renderCompletedMission = ({
   );
 };
 
+const renderPlannedMission = () => {
+  if (!draft) throw new Error("Program day draft missing");
+
+  return render(
+    <RestDayMission
+      draft={draft}
+      userId="00000000-0000-4000-8000-000000000001"
+      athleteName="Noah"
+      date="2026-08-08"
+      planMode={null}
+      reminderTime="18:00"
+      reminderScheduled={false}
+      completed={false}
+      saving={false}
+      saveError={null}
+      onPlanModeChange={vi.fn()}
+      onReminderTimeChange={vi.fn()}
+      onReminderScheduledChange={vi.fn()}
+      onComplete={vi.fn()}
+      onRetrySave={vi.fn()}
+      onCloseForLater={vi.fn()}
+    />,
+  );
+};
+
 describe("RestDayMission completion", () => {
+  it("introduces the daily focus and sentence before offering the optional explanation", () => {
+    renderPlannedMission();
+
+    const title = screen.getByRole("heading", { name: draft?.title });
+    const purpose = screen.getByText(draft?.purpose ?? "missing");
+    const cue = screen.getByText(draft?.cue ?? "missing");
+    const explanationButton = screen.getByRole("button", { name: "Genauer verstehen" });
+
+    expect(title.compareDocumentPosition(purpose) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(purpose.compareDocumentPosition(cue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(cue.compareDocumentPosition(explanationButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText("Das visualisierst du")).toBeInTheDocument();
+    expect(screen.getByText(/Du gehst eine passende Sportsituation durch/)).toBeInTheDocument();
+    expect(explanationButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText(draft?.detailedExplanation ?? "missing")).not.toBeInTheDocument();
+
+    fireEvent.click(explanationButton);
+    expect(explanationButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(draft?.detailedExplanation ?? "missing")).toBeInTheDocument();
+  });
+
   it("shows only the quiet save status after the visualization", () => {
     renderCompletedMission({ saving: true });
 

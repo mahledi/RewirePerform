@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Check, X, ArrowRight, Loader2 } from "lucide-react";
 import type { ComprehensionQuestion } from "@/content/matrixDayTypes";
+import { athleteFlowPrimaryButton } from "@/components/app/AthleteFlowScene";
 
 interface Props {
   questions: ComprehensionQuestion[];
@@ -19,6 +20,7 @@ export const shuffleComprehensionOptions = (questions: ComprehensionQuestion[]) 
   });
 
 export default function ComprehensionCheck({ questions, onComplete }: Props) {
+  const reduceMotion = useReducedMotion();
   const shuffledQuestions = useMemo(() => shuffleComprehensionOptions(questions), [questions]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -80,9 +82,10 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
       <AnimatePresence mode="wait">
         <motion.div
           key={q.id}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
+          initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 14, scale: 0.992 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.995 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
         >
           <h3 className="font-heading text-xl font-semibold mb-5 leading-snug">{q.stem}</h3>
 
@@ -97,14 +100,15 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
                   data-testid={`comprehension-option-${opt.id}`}
                   onClick={() => handleSelect(opt.id)}
                   disabled={showFeedback}
-                  className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3 ${
+                  aria-pressed={isSelected}
+                  className={`flex min-h-14 w-full items-start gap-3 rounded-2xl border p-4 text-left transition-[background-color,border-color,box-shadow] ${
                     showState && isCorrectOpt
-                      ? "bg-primary/10 border-primary text-foreground"
+                      ? "border-primary/60 bg-primary/[0.1] text-foreground shadow-[inset_0_1px_0_rgba(98,198,168,0.12)]"
                       : showState && isSelected && !isCorrectOpt
                       ? "bg-destructive/10 border-destructive/50 text-foreground"
                       : isSelected
-                      ? "bg-secondary border-primary/50"
-                      : "bg-secondary/40 border-border/50 hover:bg-secondary/70"
+                      ? "border-primary/50 bg-primary/[0.07]"
+                      : "border-white/[0.07] bg-white/[0.028] hover:border-white/[0.12] hover:bg-white/[0.045]"
                   } ${showFeedback ? "cursor-default" : "active:scale-[0.99]"}`}
                 >
                   <span className="text-sm flex-1">{opt.text}</span>
@@ -118,9 +122,10 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
           <AnimatePresence>
             {showFeedback && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-xl bg-accent/10 border border-accent/20 mb-5"
+                transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+                className="mb-5 rounded-2xl border border-white/[0.07] bg-white/[0.028] p-4"
               >
                 <p className="text-xs text-muted-foreground leading-relaxed">{q.explanation}</p>
               </motion.div>
@@ -131,12 +136,8 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
             data-testid={isLast ? "comprehension-finish" : "comprehension-next"}
             onClick={handleNext}
             disabled={!showFeedback || completing}
-            whileTap={showFeedback && !completing ? { scale: 0.98 } : undefined}
-            className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold transition-all ${
-              showFeedback && !completing
-                ? "bg-primary text-primary-foreground hover:shadow-glow"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
+            whileTap={showFeedback && !completing && !reduceMotion ? { scale: 0.99 } : undefined}
+            className={`${athleteFlowPrimaryButton} w-full`}
           >
             {completing ? (
               <>

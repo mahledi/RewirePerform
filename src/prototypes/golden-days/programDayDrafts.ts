@@ -5,6 +5,8 @@ import {
   type GoldenDayQuestion,
   type GoldenDayStage,
 } from "./goldenDayDrafts";
+import { getProgramDayExplanation } from "@/content/programDayExplanations";
+import { applyProgramDayLanguageV12 } from "@/content/programDayLanguageV12";
 
 type ToolId = GoldenDayDraft["toolId"];
 
@@ -2047,35 +2049,41 @@ const ADDITIONAL_DAY_INPUTS: ProgramDayInput[] = [
 ];
 
 const completeGoldenContextCopy = (draft: GoldenDayDraft): GoldenDayDraft => {
+  const withExplanation = {
+    ...draft,
+    detailedExplanation: getProgramDayExplanation(draft.day) ?? draft.purpose,
+  };
   if (draft.day === 2) {
     return {
-      ...draft,
+      ...withExplanation,
       preTraining: {
         label: "Pre-Training",
         recallPrompt: "Welche Frage bringt dich von deiner Außenwirkung zurück zur Aufgabe?",
-        reveal: draft.cue,
+        reveal: withExplanation.cue,
         application: "Wähle danach eine Qualität, die deine nächste Handlung wirklich braucht.",
       },
     };
   }
   if (draft.day === 15) {
     return {
-      ...draft,
+      ...withExplanation,
       preTraining: {
         label: "Pre-Training",
         recallPrompt: "Welche Frage öffnet deinen Blick, ohne das Problem kleinzureden?",
-        reveal: draft.cue,
+        reveal: withExplanation.cue,
         application: "Nimm Problem, Funktionierendes und Möglichkeiten gemeinsam wahr.",
       },
     };
   }
-  return draft;
+  return withExplanation;
 };
 
 export const PROGRAM_DAY_DRAFTS: GoldenDayDraft[] = [
   ...GOLDEN_DAY_DRAFTS.map(completeGoldenContextCopy),
-  ...ADDITIONAL_DAY_INPUTS.map(buildProgramDay),
-].sort((left, right) => left.day - right.day);
+  ...ADDITIONAL_DAY_INPUTS.map(buildProgramDay).map(completeGoldenContextCopy),
+]
+  .map(applyProgramDayLanguageV12)
+  .sort((left, right) => left.day - right.day);
 
 export type ProgramMissedDaySummary = {
   day: number;

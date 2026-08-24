@@ -107,6 +107,20 @@ describe("complete 56-day V1.1 editorial draft", () => {
     }
   });
 
+  it("provides one bounded, optional plain-language explanation for every day", () => {
+    for (const draft of PROGRAM_DAY_DRAFTS) {
+      const explanation = draft.detailedExplanation?.trim() ?? "";
+      expect(explanation, `Tag ${draft.day} has no detailed explanation`).not.toBe("");
+      expect(words(explanation), `Tag ${draft.day} explanation is too short`).toBeGreaterThanOrEqual(45);
+      expect(words(explanation), `Tag ${draft.day} explanation is too long`).toBeLessThanOrEqual(75);
+      expect(explanation, `Tag ${draft.day} duplicates Science Bite paragraph 1`).not.toContain(draft.scienceBite.paragraphs[0]);
+      expect(explanation, `Tag ${draft.day} duplicates Science Bite paragraph 2`).not.toContain(draft.scienceBite.paragraphs[1]);
+      expect(explanation, `Tag ${draft.day} contains editorial jargon`).not.toMatch(
+        /Prozesspunkt|funktional flach|Lernraum|Grundweite|Ego-Zusatz|Selbstprojekt|automatische Enge|Werkzeugbild|innerer Kampf/iu,
+      );
+    }
+  });
+
   it("keeps every visible instruction scannable instead of rebuilding a text wall", () => {
     for (const draft of PROGRAM_DAY_DRAFTS) {
       expect(words(draft.purpose), `Tag ${draft.day} purpose is too long`).toBeLessThanOrEqual(32);
@@ -200,20 +214,43 @@ describe("complete 56-day V1.1 editorial draft", () => {
     }
   });
 
-  it("preserves the approved Golden-Day copy and only completes its context-independent pre-training variant", () => {
+  it("preserves Golden-Day mechanics while allowing the approved plain-language layer", () => {
     for (const golden of GOLDEN_DAY_DRAFTS) {
       const full = PROGRAM_DAY_DRAFTS.find((draft) => draft.day === golden.day);
       expect(full).toBeDefined();
 
-      const { preTraining: goldenPreTraining, ...goldenCore } = golden;
-      const { preTraining: fullPreTraining, ...fullCore } = full!;
-      expect(fullCore).toEqual(goldenCore);
+      expect(full?.day).toBe(golden.day);
+      expect(full?.toolId).toBe(golden.toolId);
+      expect(full?.stage).toBe(golden.stage);
+      expect(full?.context).toBe(golden.context);
+      expect(full?.cue).toBe(golden.cue);
+      expect(full?.scienceBite.paragraphs).toHaveLength(golden.scienceBite.paragraphs.length);
+      expect(full?.comprehension.correctOptionId).toBe(golden.comprehension.correctOptionId);
+      expect(full?.comprehension.options.map((option) => option.id)).toEqual(
+        golden.comprehension.options.map((option) => option.id),
+      );
+      expect(full?.journal.questions.map((question) => question.id)).toEqual(
+        golden.journal.questions.map((question) => question.id),
+      );
+      expect(full?.journal.gratitudeMinWords).toBe(golden.journal.gratitudeMinWords);
+      expect(Boolean(full?.optionalDepth)).toBe(Boolean(golden.optionalDepth));
+      if (golden.contextChange) {
+        expect(full?.contextChange?.before).toBe(golden.contextChange.before);
+        expect(full?.contextChange?.after).toBe(golden.contextChange.after);
+        expect(full?.contextChange?.message).toContain("Dein Plan wurde geändert");
+        expect(full?.contextChange?.message).not.toMatch(/Werkzeug|\bCue\b/iu);
+      } else {
+        expect(full?.contextChange).toBeUndefined();
+      }
+      expect(full?.missedReviews?.length).toBe(golden.missedReviews?.length);
+      expect(Boolean(full?.measurementBoundary)).toBe(Boolean(golden.measurementBoundary));
+      expect(full?.integrationTools?.map(({ cue }) => cue)).toEqual(
+        golden.integrationTools?.map(({ cue }) => cue),
+      );
 
       if (golden.day === 2 || golden.day === 15) {
-        expect(goldenPreTraining).toBeNull();
-        expect(fullPreTraining).not.toBeNull();
-      } else {
-        expect(fullPreTraining).toEqual(goldenPreTraining);
+        expect(golden.preTraining).toBeNull();
+        expect(full?.preTraining).not.toBeNull();
       }
     }
   });

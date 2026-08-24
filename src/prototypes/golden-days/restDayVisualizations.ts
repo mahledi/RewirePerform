@@ -338,12 +338,12 @@ const EDITORIAL: Record<number, RestEditorial> = {
   28: {
     scene: "Du hängst in einer sportlichen Situation fest und weißt zunächst nicht, was dir helfen kann.",
     moment: "Du öffnest zuerst deinen Blick und erkennst danach genauer, welche Art von Problem vorliegt.",
-    action: "Wähle ein bekanntes Werkzeug und stell dir die daraus folgende Handlung vor.",
-    transfer: "Beim nächsten Festhängen öffnest du den Blick und wählst dann ein Werkzeug.",
-    journalTitle: "Welches Werkzeug passte?",
+    action: "Wähle eine bekannte Reaktion und stell dir die daraus folgende Handlung vor.",
+    transfer: "Beim nächsten Festhängen öffnest du den Blick und wählst dann eine passende Reaktion.",
+    journalTitle: "Welche Reaktion passte?",
     journalQuestions: [
       "Was wurde in deiner Visualisierung sichtbar, nachdem du den Blick geöffnet hast?",
-      "Welches eine Werkzeug willst du in einer ähnlichen echten Situation wählen?",
+      "Welche eine Reaktion willst du in einer ähnlichen echten Situation wählen?",
     ],
   },
   29: {
@@ -492,12 +492,12 @@ const EDITORIAL: Record<number, RestEditorial> = {
   42: {
     scene: "Nach einer schwierigen Sportszene folgen mehrere Gedanken und Gefühle schnell hintereinander.",
     moment: "Du hältst die Szene an dem Punkt an, an dem du nicht weiter weißt.",
-    action: "Wähle genau dort ein bekanntes Werkzeug. Lass die Sportszene mit deiner nächsten Handlung weiterlaufen.",
-    transfer: "Beim nächsten Festhängen suchst du zuerst die genaue Stelle und dann ein Werkzeug.",
+    action: "Wähle genau dort eine bekannte Reaktion. Lass die Sportszene mit deiner nächsten Handlung weiterlaufen.",
+    transfer: "Beim nächsten Festhängen suchst du zuerst die genaue Stelle und dann eine passende Reaktion.",
     journalTitle: "Wo hing ich fest?",
     journalQuestions: [
       "An welcher Stelle der visualisierten Szene bist du festgehangen?",
-      "Welches eine Werkzeug willst du in einer ähnlichen echten Situation nutzen?",
+      "Welche eine Reaktion willst du in einer ähnlichen echten Situation nutzen?",
     ],
   },
   43: {
@@ -645,13 +645,13 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
   56: {
     scene: "Du bist in einer sportlichen Situation und weißt nicht, wie du reagieren sollst.",
-    moment: "Du erkennst zuerst die Art des Problems und gehst deine bekannten Werkzeuge ruhig durch.",
-    action: "Wähle genau ein Werkzeug und stell dir die daraus folgende Handlung vollständig vor.",
-    transfer: "Nach dem Programm nutzt du weiter: erkennen, ein Werkzeug wählen und handeln.",
-    journalTitle: "Welches Werkzeug nehme ich mit?",
+    moment: "Du erkennst zuerst die Art des Problems und gehst deine bekannten Reaktionen ruhig durch.",
+    action: "Wähle genau eine Reaktion und stell dir die daraus folgende Handlung vollständig vor.",
+    transfer: "Nach dem Programm nutzt du weiter: erkennen, eine passende Reaktion wählen und handeln.",
+    journalTitle: "Welche Reaktion nehme ich mit?",
     journalQuestions: [
-      "Welches Werkzeug hast du in deiner Visualisierung gewählt und warum passte es?",
-      "Wie willst du dieses Werkzeug in den nächsten Wochen weiter erinnern?",
+      "Welche Reaktion hast du in deiner Visualisierung gewählt und warum passte sie?",
+      "Wie willst du diese Reaktion in den nächsten Wochen weiter erinnern?",
     ],
   },
 };
