@@ -237,9 +237,7 @@ const QuestionnaireNotificationOnboarding = ({
           Möchtest du erinnert werden?
         </h1>
         <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-          {push.mode === "web"
-            ? "Erinnerungen helfen dir beim Programmstart, beim Check-in, bei deiner mentalen Vorbereitung und beim Journal. Du entscheidest – und kannst alles später ändern."
-            : "Erinnerungen helfen dir beim Check-in, bei deiner mentalen Vorbereitung und beim Journal. Du entscheidest – und kannst alles später ändern."}
+          Erinnerungen helfen dir beim Programmstart, beim Check-in, bei deiner mentalen Vorbereitung und beim Journal. Du entscheidest – und kannst alles später ändern.
         </p>
 
         {push.supported ? (

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
-import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound, Building2 } from "lucide-react";
+import { Mail, MailCheck, Lock, User, ArrowRight, ArrowLeft, Loader2, RefreshCw, Users, UserPlus, Sparkles, CircleAlert, KeyRound, Building2, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getSportAnswerText } from "@/data/questionnaireData";
 import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
@@ -1116,22 +1116,37 @@ const FieldPassword = ({
   value: string;
   onChange: (v: string) => void;
   autoComplete: "current-password" | "new-password";
-}) => (
-  <div className="relative">
-    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-    <input
-      type="password"
-      name="password"
-      autoComplete={autoComplete}
-      aria-label="Passwort"
-      required
-      placeholder="Passwort"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
-    />
-  </div>
-);
+}) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <input
+        type={visible ? "text" : "password"}
+        name="password"
+        autoComplete={autoComplete}
+        aria-label="Passwort"
+        required
+        placeholder="Passwort"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full pl-11 pr-14 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? "Passwort verbergen" : "Passwort anzeigen"}
+        aria-pressed={visible}
+        className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {visible
+          ? <EyeOff className="h-4 w-4" aria-hidden="true" />
+          : <Eye className="h-4 w-4" aria-hidden="true" />}
+      </button>
+    </div>
+  );
+};
 
 const SubmitButton = ({ loading, label }: { loading: boolean; label: string }) => (
   <motion.button

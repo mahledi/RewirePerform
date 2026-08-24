@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { PushNotifications } from "@capacitor/push-notifications";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +9,10 @@ import {
   listenForNativeReminderActions,
 } from "@/lib/nativeNotifications";
 import { refreshEnabledNativeReminders } from "@/lib/nativeReminderPlan";
+import {
+  isNativeRemotePushAvailable,
+  syncNativeRemotePushRegistration,
+} from "@/lib/nativeRemotePush";
 import { createRestVisualizationNavigationState } from "@/lib/nativeRestVisualizationIntent";
 
 const SAFE_NOTIFICATION_ROUTES = new Set([
@@ -24,13 +29,12 @@ export const NativeNotificationRouter = () => {
     if (!isNativeNotificationsAvailable()) return;
     let disposed = false;
     let handle: Awaited<ReturnType<typeof listenForNativeReminderActions>> = null;
+    let remoteHandle: Awaited<ReturnType<typeof PushNotifications.addListener>> | null = null;
 
-    void listenForNativeReminderActions((action) => {
-      if (action.actionId === "dismiss") return;
-      const extra = action.notification.extra as Record<string, unknown> | undefined;
+    const handleRoute = (extra: Record<string, unknown> | undefined, actionId?: string) => {
+      if (actionId === "dismiss") return;
       const route = typeof extra?.route === "string" ? extra.route : null;
-      const reminderUserId =
-        typeof extra?.userId === "string" ? extra.userId : null;
+      const reminderUserId = typeof extra?.userId === "string" ? extra.userId : null;
       if (!route || !SAFE_NOTIFICATION_ROUTES.has(route)) return;
       if (reminderUserId && user && reminderUserId !== user.id) {
         toast.error("Diese Erinnerung gehört zu einem anderen Account.");
@@ -38,14 +42,29 @@ export const NativeNotificationRouter = () => {
       }
       const restVisualizationState = createRestVisualizationNavigationState(extra);
       navigate(route, restVisualizationState ? { state: restVisualizationState } : undefined);
+    };
+
+    void listenForNativeReminderActions((action) => {
+      handleRoute(action.notification.extra as Record<string, unknown> | undefined, action.actionId);
     }).then((listenerHandle) => {
       if (disposed) void listenerHandle?.remove();
       else handle = listenerHandle;
     });
 
+    if (isNativeRemotePushAvailable()) {
+      void PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        const data = action.notification.data as Record<string, unknown> | undefined;
+        handleRoute(data?.rewireperform as Record<string, unknown> | undefined, action.actionId);
+      }).then((listenerHandle) => {
+        if (disposed) void listenerHandle.remove();
+        else remoteHandle = listenerHandle;
+      });
+    }
+
     return () => {
       disposed = true;
       void handle?.remove();
+      void remoteHandle?.remove();
     };
   }, [navigate, user]);
 
@@ -61,7 +80,10 @@ export const NativeNotificationRouter = () => {
       syncing = true;
       try {
         await detachNativeRemindersFromInactiveUser(user?.id ?? null);
-        if (user) await refreshEnabledNativeReminders(user.id);
+        if (user) {
+          await refreshEnabledNativeReminders(user.id);
+          await syncNativeRemotePushRegistration(user.id);
+        }
         lastSyncAt = Date.now();
       } catch (error) {
         console.warn("[native] reminder sync failed", error);

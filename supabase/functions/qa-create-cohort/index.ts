@@ -68,8 +68,11 @@ Deno.serve(async (req) => {
       if (uErr || !u.user) throw new Error(`createUser ${a.email}: ${uErr?.message}`);
       const uid = u.user.id;
       createdUserIds.push(uid);
+      // Auth creates the canonical profile. Only mark this synthetic account here;
+      // rewriting product fields would correctly trip the minor authorization guard.
       const { error: profileError } = await admin.from("profiles")
-        .upsert({ id: uid, full_name: a.full_name, sport: "Football", is_test_user: true }, { onConflict: "id" });
+        .update({ is_test_user: true })
+        .eq("id", uid);
       if (profileError) throw new Error(`profile ${a.email}: ${profileError.message}`);
       const { error: roleError } = await admin.from("user_roles")
         .upsert({ user_id: uid, role: a.role }, { onConflict: "user_id,role" });

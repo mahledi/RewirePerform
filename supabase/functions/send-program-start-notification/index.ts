@@ -33,6 +33,88 @@ type Subscription = {
   auth: string;
 };
 
+type NativePushDevice = {
+  id: string;
+  user_id: string;
+  device_token: string;
+};
+
+const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
+const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID");
+const APNS_AUTH_KEY = Deno.env.get("APNS_AUTH_KEY");
+const APNS_BUNDLE_ID = Deno.env.get("APNS_BUNDLE_ID") ?? "com.rewireperform.app";
+const canSendNativePush = Boolean(APNS_TEAM_ID && APNS_KEY_ID && APNS_AUTH_KEY);
+
+const base64Url = (value: Uint8Array | string) => {
+  const bytes = typeof value === "string" ? new TextEncoder().encode(value) : value;
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+};
+
+const pemToPkcs8 = (pem: string) => {
+  const encoded = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, "");
+  const binary = atob(encoded);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+};
+
+let cachedApnsJwt: { value: string; expiresAt: number } | null = null;
+
+const getApnsJwt = async () => {
+  if (!APNS_TEAM_ID || !APNS_KEY_ID || !APNS_AUTH_KEY) {
+    throw new Error("APNs credentials are not configured");
+  }
+  if (cachedApnsJwt && cachedApnsJwt.expiresAt > Date.now()) return cachedApnsJwt.value;
+
+  const signingKey = await crypto.subtle.importKey(
+    "pkcs8",
+    pemToPkcs8(APNS_AUTH_KEY.replace(/\\n/g, "\n")),
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign"],
+  );
+  const encodedHeader = base64Url(JSON.stringify({ alg: "ES256", kid: APNS_KEY_ID }));
+  const encodedClaims = base64Url(JSON.stringify({ iss: APNS_TEAM_ID, iat: Math.floor(Date.now() / 1000) }));
+  const signingInput = `${encodedHeader}.${encodedClaims}`;
+  const signature = await crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    signingKey,
+    new TextEncoder().encode(signingInput),
+  );
+  const value = `${signingInput}.${base64Url(new Uint8Array(signature))}`;
+  cachedApnsJwt = { value, expiresAt: Date.now() + 50 * 60_000 };
+  return value;
+};
+
+const sendNativeProgramStartPush = async (
+  device: NativePushDevice,
+  userId: string,
+  payload: { title: string; body: string },
+) => {
+  const authorization = `bearer ${await getApnsJwt()}`;
+  const request = async (host: string) => fetch(`${host}/3/device/${device.device_token}`, {
+    method: "POST",
+    headers: {
+      authorization,
+      "apns-topic": APNS_BUNDLE_ID,
+      "apns-push-type": "alert",
+      "apns-priority": "10",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      aps: { alert: { title: payload.title, body: payload.body }, sound: "default" },
+      rewireperform: { route: "/dashboard", userId, notificationType: "program_start" },
+    }),
+  });
+
+  let response = await request("https://api.push.apple.com");
+  // Xcode debug devices use Apple's sandbox gateway; TestFlight uses production.
+  if (response.status === 400 && (await response.clone().json().catch(() => null))?.reason === "BadDeviceToken") {
+    response = await request("https://api.sandbox.push.apple.com");
+  }
+  return response;
+};
+
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -109,6 +191,14 @@ Deno.serve(async (req) => {
     .in("user_id", athleteIds);
   if (subsError) return jsonResponse({ error: subsError.message }, 500);
 
+  const { data: nativeDevices, error: nativeDevicesError } = canSendNativePush
+    ? await supa
+      .from("native_push_devices")
+      .select("id,user_id,device_token")
+      .in("user_id", athleteIds)
+    : { data: [] as NativePushDevice[], error: null };
+  if (nativeDevicesError) return jsonResponse({ error: nativeDevicesError.message }, 500);
+
   const payload = {
     title: "Dein Programm startet morgen",
     body: "Dein Coach hat das Programm gestartet. Dein erster Tag beginnt morgen.",
@@ -119,10 +209,39 @@ Deno.serve(async (req) => {
   };
 
   let sent = 0;
+  let nativeSent = 0;
+  let webSent = 0;
   let skipped = 0;
   const removed: string[] = [];
 
+  const nativeDeliveredUserIds = new Set<string>();
+  for (const device of (nativeDevices ?? []) as NativePushDevice[]) {
+    try {
+      const response = await sendNativeProgramStartPush(device, device.user_id, payload);
+      if (response.ok) {
+        sent += 1;
+        nativeSent += 1;
+        nativeDeliveredUserIds.add(device.user_id);
+        continue;
+      }
+      const reason = (await response.clone().json().catch(() => null))?.reason;
+      if (response.status === 410 || (response.status === 400 && reason === "BadDeviceToken")) {
+        await supa.from("native_push_devices").delete().eq("id", device.id);
+        removed.push(device.id);
+      } else {
+        skipped += 1;
+        console.error("native program start push error", response.status, reason ?? "unknown");
+      }
+    } catch (error) {
+      skipped += 1;
+      console.error("native program start push error", error instanceof Error ? error.message : "unknown");
+    }
+  }
+
   for (const sub of (subs ?? []) as Subscription[]) {
+    // A successfully registered native app receives the native delivery once;
+    // the web channel remains the fallback when APNs cannot confirm delivery.
+    if (nativeDeliveredUserIds.has(sub.user_id)) continue;
     try {
       await webpush.sendNotification(
         {
@@ -132,6 +251,7 @@ Deno.serve(async (req) => {
         JSON.stringify(payload),
       );
       sent += 1;
+      webSent += 1;
     } catch (e: unknown) {
       const pushError = e as PushError;
       const code = pushError.statusCode;
@@ -149,6 +269,8 @@ Deno.serve(async (req) => {
     teamId,
     startDate,
     sent,
+    nativeSent,
+    webSent,
     skipped,
     removed: removed.length,
   });
