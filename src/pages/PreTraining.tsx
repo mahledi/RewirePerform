@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { CheckCircle2, Eye, Loader2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,12 @@ import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { getProgramModeInfo } from "@/lib/programMode";
 import { format } from "date-fns";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
+import {
+  AthleteFlowAmbient,
+  AthleteFlowScene,
+  athleteFlowPrimaryButton,
+  athleteFlowSecondaryButton,
+} from "@/components/app/AthleteFlowScene";
 
 type EventType = "training" | "rest" | "competition";
 
@@ -88,7 +94,8 @@ const PreTraining = () => {
   }, [user, role, isTestUser]);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#0D0E12] text-[#EEF0F2]">
+    <div className="relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteFlowAmbient />
       <AthleteScreenHeader
         title={eventType === "competition" ? "Pre-Wettkampf" : "Pre-Training"}
         eyebrow="Vor deiner Einheit"
@@ -96,7 +103,7 @@ const PreTraining = () => {
         backLabel="Zurück zum Dashboard"
       />
 
-      <div className="mx-auto max-w-2xl px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
+      <div className="relative mx-auto max-w-2xl px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -111,26 +118,22 @@ const PreTraining = () => {
             <Button onClick={() => navigate("/dashboard")} className="mt-6">Zurück</Button>
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
+          <div className="space-y-7">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary mb-3">
                 {eventType === "competition" ? "Pre-Wettkampf" : "Pre-Training"}
               </p>
-              <h1 className="font-heading font-bold text-3xl mb-2">
+              <h1 className="mb-3 font-heading text-3xl font-semibold leading-tight tracking-[-0.04em]">
                 {eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit für die nächste Einheit"}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-[15px] leading-7 text-white/55">
                 {eventType === "competition"
                   ? "Kurz sortieren, klare Linse setzen, dann in deinen Wettkampfmodus."
                   : "Kurz sortieren, klare Linse setzen, dann raus in die Arbeit."}
               </p>
             </div>
 
-            <div className="space-y-3 rounded-[24px] border border-white/[0.065] bg-white/[0.025] p-5">
+            <div className="space-y-3 border-l border-primary/35 pl-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
@@ -149,55 +152,48 @@ const PreTraining = () => {
             </div>
 
             {resolved.content.preTraining ? (
-              <div className="relative overflow-hidden rounded-[26px] border border-primary/15 bg-[#101514] p-5">
-                <div className="pointer-events-none absolute -top-20 left-1/2 h-44 w-64 -translate-x-1/2 rounded-full bg-primary/[0.11] blur-3xl" />
-                <div className="relative">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Erst erinnern</p>
-                  <h2 className="mt-3 text-xl font-semibold leading-7">{resolved.content.preTraining.recallPrompt}</h2>
-                  <textarea
-                    value={recall}
-                    onChange={(event) => setRecall(event.target.value)}
-                    placeholder="Deine kurze Erinnerung …"
-                    aria-label="Deine kurze Erinnerung"
-                    className="mt-5 min-h-24 w-full resize-none rounded-2xl border border-white/[0.075] bg-white/[0.025] px-4 py-3 text-sm text-white placeholder:text-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setRevealed(true)}
-                    className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-primary/45 bg-primary/[0.055] text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                  >
-                    <Eye className="h-4 w-4" /> Erinnerung prüfen
-                  </button>
-
-                  {revealed && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-5 rounded-[22px] border border-primary/25 bg-primary/[0.09] p-5 text-center shadow-[0_0_34px_hsl(var(--primary)/0.10)]"
-                    >
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Dein Satz für heute</p>
-                      <p className="mt-3 text-2xl font-semibold tracking-[-0.03em]">{resolved.content.preTraining.reveal}</p>
-                      <p className="mt-3 text-sm leading-6 text-white/52">{resolved.content.preTraining.application}</p>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
+              <AnimatePresence mode="wait" initial={false}>
+                {!revealed ? (
+                  <AthleteFlowScene key="recall" className="rounded-[26px] border border-white/[0.07] bg-white/[0.028] p-5 sm:p-6">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Erst erinnern</p>
+                    <h2 className="mt-3 text-2xl font-semibold leading-8 tracking-[-0.025em]">{resolved.content.preTraining.recallPrompt}</h2>
+                    <textarea
+                      value={recall}
+                      onChange={(event) => setRecall(event.target.value)}
+                      placeholder="Deine kurze Erinnerung …"
+                      aria-label="Deine kurze Erinnerung"
+                      className="mt-6 min-h-28 w-full resize-none rounded-2xl border border-white/[0.075] bg-black/15 px-4 py-3 text-sm text-white placeholder:text-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    />
+                    <button type="button" onClick={() => setRevealed(true)} className={`${athleteFlowPrimaryButton} mt-4 w-full`}>
+                      <Eye className="h-4 w-4" /> Erinnerung prüfen
+                    </button>
+                  </AthleteFlowScene>
+                ) : (
+                  <AthleteFlowScene key="reveal" className="rounded-[26px] border border-primary/20 bg-primary/[0.075] p-6 text-center shadow-[0_22px_70px_-45px_rgba(46,173,137,0.75)]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Dein Satz für heute</p>
+                    <p className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em]">{resolved.content.preTraining.reveal}</p>
+                    <p className="mt-4 text-[15px] leading-7 text-white/58">{resolved.content.preTraining.application}</p>
+                    <button type="button" onClick={() => setRevealed(false)} className={`${athleteFlowSecondaryButton} mt-6 w-full`}>
+                      Noch einmal erinnern
+                    </button>
+                  </AthleteFlowScene>
+                )}
+              </AnimatePresence>
             ) : (
               <div className="rounded-[22px] border border-white/[0.065] bg-white/[0.025] p-5 text-sm leading-6 text-muted-foreground">
                 Dein heutiger Satz steht bereits im Daily Flow. Nimm ihn mit in die nächste passende Handlung.
               </div>
             )}
 
-            <Button
+            <button
               onClick={() => navigate("/dashboard")}
-              size="lg"
-              className="w-full"
+              className={`${athleteFlowPrimaryButton} w-full`}
               disabled={Boolean(resolved.content.preTraining) && !revealed}
             >
               <Target className="w-4 h-4 mr-2" />
               {eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit fürs Training"}
-            </Button>
-          </motion.div>
+            </button>
+          </div>
         )}
       </div>
     </div>

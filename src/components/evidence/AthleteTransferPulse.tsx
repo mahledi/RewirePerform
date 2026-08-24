@@ -27,11 +27,11 @@ const AthleteTransferPulse = ({
   return (
     <section aria-labelledby="transfer-pulse-title" className="mx-auto w-full max-w-xl">
       <div className="mb-7">
-        <p className="mb-2 text-xs font-semibold uppercase text-primary">Kurzer Rückblick</p>
-        <h2 id="transfer-pulse-title" className="text-xl font-semibold leading-tight text-foreground sm:text-2xl">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Transfer-Pulse</p>
+        <h2 id="transfer-pulse-title" className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.04em] text-foreground">
           {domain.label}
         </h2>
-        <p className="mt-3 text-base leading-relaxed text-foreground/90">{pulse.prompt}</p>
+        <p className="mt-4 text-[15px] leading-7 text-white/62">{pulse.prompt}</p>
       </div>
 
       <fieldset className="grid gap-2.5">
@@ -42,12 +42,12 @@ const AthleteTransferPulse = ({
             <label
               key={option.value}
               className={cn(
-                "relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-left",
+                "relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-[background-color,border-color,box-shadow]",
                 "focus-within:ring-2 focus-within:ring-ring",
                 disabled && "cursor-not-allowed opacity-50",
                 selected
-                  ? "border-primary/80 bg-primary/10 text-foreground shadow-[inset_0_1px_0_hsl(var(--primary)/0.16)]"
-                  : "border-border/70 bg-card/60 text-foreground hover:border-border hover:bg-secondary/55",
+                  ? "border-primary/55 bg-primary/[0.1] text-foreground shadow-[inset_0_1px_0_rgba(98,198,168,0.12),0_0_28px_-20px_rgba(46,173,137,0.9)]"
+                  : "border-white/[0.07] bg-white/[0.028] text-foreground hover:border-white/[0.12] hover:bg-white/[0.045]",
               )}
             >
               <input
@@ -80,12 +80,12 @@ const AthleteTransferPulse = ({
         {notObservedOption && (
           <label
             className={cn(
-              "relative mt-1 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-left",
+              "relative mt-1 flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors",
               "focus-within:ring-2 focus-within:ring-ring",
               disabled && "cursor-not-allowed opacity-50",
               value === "not_observed"
                 ? "border-primary/60 bg-primary/10 text-foreground"
-                : "border-border/60 bg-transparent text-muted-foreground hover:bg-secondary/45 hover:text-foreground",
+                : "border-white/[0.065] bg-transparent text-muted-foreground hover:bg-white/[0.04] hover:text-foreground",
             )}
           >
             <input

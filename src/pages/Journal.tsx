@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -18,6 +18,13 @@ import { captureAppError } from "@/lib/monitoring";
 import { upsertTodaySnapshot } from "@/lib/programProgress";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
+import {
+  AthleteFlowAmbient,
+  AthleteFlowScene,
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+  athleteFlowSecondaryButton,
+} from "@/components/app/AthleteFlowScene";
 
 const journalContextConfig: Record<CalendarEventType, { icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { icon: Dumbbell, color: "text-primary", bg: "bg-primary/10" },
@@ -268,29 +275,25 @@ const Journal = () => {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-6">
-          <Check className="w-8 h-8 text-primary" />
-        </motion.div>
-        <h2 className="font-heading text-2xl font-bold mb-2">Tagesbogen geschlossen.</h2>
-        <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">
-          Tag {resolved.matrix.dayNumber}/56 gespeichert
-        </p>
-        <p className="text-sm text-muted-foreground mb-8 max-w-sm">
-          Deine Reflexion bleibt privat. Morgen wartet die nächste Linse auf dem Dashboard.
-        </p>
-        <button
-          onClick={() => navigate("/journal/history")}
-          className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium"
-        >
-          Einträge ansehen
-        </button>
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="mt-3 px-6 py-3 rounded-xl text-muted-foreground hover:text-foreground font-medium"
-        >
-          Zurück zum Dashboard
-        </button>
+      <div className="relative flex min-h-screen min-h-[100dvh] items-center overflow-hidden bg-[#0D0E12] px-6 text-[#EEF0F2]">
+        <AthleteFlowAmbient />
+        <AthleteFlowScene duration={0.34} className="mx-auto w-full max-w-md">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.1] text-primary shadow-[0_0_36px_-17px_rgba(46,173,137,0.72)]">
+            <Check className="h-7 w-7" />
+          </div>
+          <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Privat gespeichert</p>
+          <h2 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.04em]">Tagesbogen geschlossen.</h2>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-white/42">
+            Tag {resolved.matrix.dayNumber}/56
+          </p>
+          <p className="mt-5 max-w-sm text-[15px] leading-7 text-white/60">
+            Deine Reflexion bleibt privat. Morgen wartet die nächste Linie auf dem Dashboard.
+          </p>
+          <div className="mt-9 grid gap-3">
+            <button onClick={() => navigate("/journal/history")} className={athleteFlowPrimaryButton}>Einträge ansehen</button>
+            <button onClick={() => navigate("/dashboard")} className={athleteFlowSecondaryButton}>Zurück zum Dashboard</button>
+          </div>
+        </AthleteFlowScene>
       </div>
     );
   }
@@ -317,7 +320,8 @@ const Journal = () => {
   );
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-[#0D0E12] text-[#EEF0F2]">
+    <div className="relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#0D0E12] text-[#EEF0F2]">
+      <AthleteFlowAmbient />
       <AthleteScreenHeader
         title={j.journalTitle}
         eyebrow={`Tag ${matrix.dayNumber} · ${resolved.context.label} · ${format(new Date(resolved.date), "d. MMM", { locale: de })}`}
@@ -330,17 +334,17 @@ const Journal = () => {
         )}
       />
 
-      <div className="mx-auto max-w-2xl space-y-6 px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
+      <div className="relative mx-auto max-w-2xl space-y-6 px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+7rem)]">
         {/* Lens reminder */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-card border-glow">
+        <AthleteFlowScene className="border-l border-primary/35 pl-4">
           <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Heute im Fokus</p>
           <p className="text-base font-heading font-semibold leading-snug">{displayTitle}</p>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{displayLens}</p>
-          <div className="mt-4 pt-4 border-t border-border/50 flex items-start gap-3">
+          <p className="mt-2 text-sm leading-6 text-white/55">{displayLens}</p>
+          <div className="mt-3 flex items-start gap-3">
             <ContextIcon className={`w-4 h-4 mt-0.5 shrink-0 ${contextConfig.color}`} />
-            <p className="text-xs text-muted-foreground leading-relaxed">{resolved.context.focus}</p>
+            <p className="text-xs leading-5 text-white/42">{resolved.context.focus}</p>
           </div>
-        </motion.div>
+        </AthleteFlowScene>
 
         <p className="text-sm text-muted-foreground leading-relaxed">
           {resolved.context.journal.intro}
@@ -349,37 +353,32 @@ const Journal = () => {
         <button
           type="button"
           onClick={() => navigate("/journal/history")}
-          className="w-full rounded-2xl border border-border/50 bg-secondary/25 px-5 py-4 text-left transition-colors hover:bg-secondary/40 flex items-center justify-between gap-3"
+          className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-1 text-left text-white/48 transition-colors hover:text-white/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <div className="flex items-center gap-3 min-w-0">
             <BookOpen className="w-5 h-5 text-primary shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm font-heading font-semibold">Frühere Einträge ansehen</p>
-              <p className="text-xs text-muted-foreground">Privater Rückblick, nach Tagen geordnet.</p>
+              <p className="text-sm font-heading font-semibold">Frühere Einträge</p>
+              <p className="text-xs text-white/35">Privater Rückblick</p>
             </div>
           </div>
           <ArrowLeft className="w-4 h-4 text-muted-foreground rotate-180 shrink-0" />
         </button>
 
         {/* Speak-don't-type hint */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20"
-        >
-          <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+        <div className="flex items-start gap-3 border-l border-white/[0.08] pl-4">
+          <div className="p-2 text-primary shrink-0">
             <Mic className="w-4 h-4" />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground leading-snug">
               Sprich deine Antworten ein.
             </p>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            <p className="mt-1 text-xs leading-5 text-white/42">
               Nutze Sprache, wenn du Gedanken damit direkter festhalten kannst. Du kannst den übernommenen Text anschließend bearbeiten oder vollständig tippen.
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {saveError && (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
@@ -397,12 +396,11 @@ const Journal = () => {
           <span className="ml-1 text-[10px] tabular-nums text-white/38">{safeJournalStep + 1}/{totalJournalSteps}</span>
         </div>
 
+        <AnimatePresence mode="wait" initial={false}>
         {activeQuestion && (
-          <motion.div
+          <AthleteFlowScene
             key={activeQuestion.id}
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4 rounded-[24px] border border-white/[0.065] bg-white/[0.025] p-5"
+            className={`space-y-4 ${athleteFlowPanel} p-5`}
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
               Frage {safeJournalStep + 1} von {questionCount}
@@ -422,15 +420,13 @@ const Journal = () => {
               onTranscript={(text) => setAnswers((previous) => ({ ...previous, [activeQuestion.id]: text }))}
               showHint={false}
             />
-          </motion.div>
+          </AthleteFlowScene>
         )}
 
         {isGratitudeStep && (
-          <motion.div
+          <AthleteFlowScene
             key="gratitude"
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4 rounded-[24px] border border-primary/15 bg-primary/[0.045] p-5"
+            className="space-y-4 rounded-[24px] border border-primary/15 bg-primary/[0.045] p-5 shadow-[inset_0_1px_0_rgba(98,198,168,0.06),0_22px_65px_-52px_rgba(46,173,137,0.72)]"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Blick öffnen</p>
             <label className="block text-xl font-semibold leading-7">Was war heute gut, hilfreich oder tragend?</label>
@@ -464,24 +460,26 @@ const Journal = () => {
                 />
               </div>
             )}
-          </motion.div>
+          </AthleteFlowScene>
         )}
+        </AnimatePresence>
 
-        <div className="flex items-center gap-3">
+        <div className="sticky bottom-3 z-20 grid grid-cols-[auto_1fr] gap-3 rounded-[22px] border border-white/[0.07] bg-[#0B0C10]/92 p-2 shadow-[0_18px_60px_-30px_rgba(0,0,0,0.95)] backdrop-blur-2xl">
           <button
             type="button"
             onClick={() => setJournalStep((current) => Math.max(0, current - 1))}
             disabled={safeJournalStep === 0}
-            className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/[0.075] px-4 text-sm font-semibold text-white/55 disabled:opacity-25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={`${athleteFlowSecondaryButton} w-12 px-0 disabled:opacity-25`}
+            aria-label="Zurück"
           >
-            <ArrowLeft className="h-4 w-4" /> Zurück
+            <ArrowLeft className="h-4 w-4" />
           </button>
           {isGratitudeStep ? (
             <motion.button
               whileTap={{ scale: 0.99 }}
               onClick={handleSave}
               disabled={saving || !allQuestionsReady || gratitudeWords < gratitudeMinWords}
-              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 font-heading text-sm font-semibold text-primary-foreground transition-all disabled:bg-white/[0.06] disabled:text-white/30"
+              className={`${athleteFlowPrimaryButton} w-full`}
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               {saving ? "Speichert …" : saveError ? "Erneut speichern" : "Tag abschließen"}
@@ -491,7 +489,7 @@ const Journal = () => {
               type="button"
               onClick={() => setJournalStep((current) => Math.min(gratitudeStep, current + 1))}
               disabled={!currentAnswerReady}
-              className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:bg-white/[0.06] disabled:text-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className={`${athleteFlowPrimaryButton} w-full`}
             >
               Weiter <ArrowRight className="h-4 w-4" />
             </button>
