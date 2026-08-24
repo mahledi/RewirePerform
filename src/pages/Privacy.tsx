@@ -67,7 +67,7 @@ const Privacy = () => {
             <ul className="space-y-2">
               <li><span className="text-foreground">Deine Journale, privaten Reflexionen und sonstigen freien Antworten werden nicht gelesen, analysiert oder von einer KI verarbeitet.</span> Sie liegen zugriffsgeschützt in deinem Konto, damit <em>du</em> sie später wieder sehen kannst.</li>
               {feedbackEnabled ? (
-                <li><span className="text-foreground">Feedback Intelligence ist freiwillig und klar getrennt.</span> An Tag 10, 24, 39 und 55 kannst du überspringbare Auswahlfragen beantworten. Einen klar als Produktfeedback markierten Kommentar verarbeitet RewirePerform nur nach deiner zusätzlichen ausdrücklichen Einwilligung; dein Nein hat keinen Nachteil.</li>
+                <li><span className="text-foreground">Feedback Intelligence ist freiwillig und klar getrennt.</span> An Tag 10, 24, 39 und 55 kannst du überspringbare Auswahlfragen beantworten. Mindestens fünf Antworten können ohne direkte Kennungen intern durch Jarvis zusammengefasst werden. Freitexte erhält Jarvis nicht. Einen klar als Produktfeedback markierten Kommentar verarbeitet RewirePerform nur nach deiner zusätzlichen ausdrücklichen Einwilligung; dein Nein hat keinen Nachteil.</li>
               ) : (
                 <li><span className="text-foreground">Feedback Intelligence ist nicht Teil dieser V1.1-Auslieferung.</span> In V1.1 werden keine Feedback-Checkpoints, keine freiwilligen Produktfeedback-Kommentare und keine hierfür vorgesehenen Analysedaten erhoben oder verarbeitet.</li>
               )}
@@ -304,12 +304,12 @@ const Privacy = () => {
             </ul>
             <p className="mt-3">
               {feedbackEnabled
-                ? "Ausdrücklich freigegebene Produktfeedback-Kommentare sind ausschließlich in einer geschützten, pseudonymisierten und nur lesenden Admin-Ansicht zugänglich. Jarvis erhält in dieser Auslieferung keine Produktfeedbackdaten. Namen, E-Mail-Adressen, Journale, private Reflexionen, Supporttexte sowie Team- und Coach-IDs bleiben ausgeschlossen."
+                ? "Ausdrücklich freigegebene Produktfeedback-Kommentare sind ausschließlich in einer geschützten, pseudonymisierten und nur lesenden Admin-Ansicht zugänglich. Das intern und lokal betriebene Jarvis-System darf ausschließlich zusammengefasste Auswahlantworten und minimierte Aktivitätszahlen ab fünf unterschiedlichen Teilnehmenden verarbeiten. Jarvis erhält keine Produktfeedback-Kommentare. Namen, E-Mail-Adressen und Nutzerkennungen bleiben ausgeschlossen. Journale, private Reflexionen, Supporttexte sowie Team- und Coach-IDs bleiben ausgeschlossen."
                 : "Feedback Intelligence und ein Jarvis-Zugriff sind nicht Teil dieser V1.1-Auslieferung. Es gibt dafür keinen Produktdatenexport, keinen Reader und keine Verarbeitung von Athletendaten."}
             </p>
             <p className="mt-3">
               {feedbackEnabled
-                ? "Kein externer KI-Anbieter erhält Produktfeedback-Kommentare. Eine spätere externe Übermittlung erfordert eine neue konkrete Information, eine neue Empfängerprüfung und, soweit erforderlich, eine neue Einwilligung."
+                ? "Kein externer KI-Anbieter erhält Produktfeedbackdaten oder -kommentare. Eine spätere externe Übermittlung oder Jarvis-Freitextanalyse erfordert eine neue konkrete Information, eine neue Empfängerprüfung und, soweit erforderlich, eine neue Einwilligung."
                 : "Kein externer KI-Anbieter erhält in V1.1 Produktdaten. Vor einer späteren Änderung werden konkreter Empfänger, Verarbeitungsort, Schutzgrundlage und die notwendige Einwilligungsinformation getrennt benannt und geprüft."}
             </p>
             <p className="mt-3">Es findet keine Weitergabe an Werbenetzwerke oder Datenhändler statt. Sentry ist nicht mehr mit der App verbunden und erhält keine neuen App-Ereignisse.</p>

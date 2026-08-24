@@ -231,7 +231,7 @@ export default function AdminFeedbackIntelligenceComments({
               </div>
               <div className="rounded-xl border border-border/60 bg-background/55 p-3">
                 <p className="text-[10px] text-muted-foreground">KI-Export</p>
-                <p className="mt-1 text-sm font-semibold text-primary">Aus</p>
+                <p className="mt-1 text-sm font-semibold text-primary">Nur Struktur</p>
               </div>
             </div>
           </div>

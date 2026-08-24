@@ -22,7 +22,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "7b6d0839e7a117d258c721d5e26f9a32a49776030897bb258d4143f90a1c9186",
+  "package_sha256": "e855e7b64f8026eb19c0ec9d678d88ba2884ed28948f15547b608d21b14b2df9",
   "files": [
     {
       "path": ".env.example",
@@ -34,7 +34,7 @@
     },
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "aa3e94b08ffa775f37252f027a5ebf8f0dea7b8032760804d11be594ade86300"
+      "sha256": "891db4071fd7ccf4969c6a79fbc3b371cab0e014a0c80c37305a1ce87e3e3a3a"
     },
     {
       "path": "src/content/feedbackTextConsentV12.ts",
@@ -70,7 +70,7 @@
     },
     {
       "path": "src/components/admin/AdminFeedbackIntelligenceComments.tsx",
-      "sha256": "641c249725183ed81ba333f15c294116870946d59d6f016bab55c449f1fbfd94"
+      "sha256": "06e77e0045e429df58a780f9284be089517b4cb6fdffc035308855b247f80dd7"
     },
     {
       "path": "src/lib/adminFeedbackComments.ts",
