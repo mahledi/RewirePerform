@@ -6,6 +6,13 @@ import { resolveDay } from "@/lib/getDayContent";
 
 const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
+const visibleStrings = (value: unknown): string[] => {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(visibleStrings);
+  if (value && typeof value === "object") return Object.values(value).flatMap(visibleStrings);
+  return [];
+};
+
 describe("V1.1 production content contract", () => {
   it("uses the same 56-day source for preview and production resolution", () => {
     expect(PROGRAM_V11_DRAFTS).toHaveLength(56);
@@ -25,6 +32,24 @@ describe("V1.1 production content contract", () => {
     const resolver = readSource("src/lib/getDayContent.ts");
     expect(preview).toContain("PROGRAM_V11_DRAFTS");
     expect(resolver).toContain("getProgramV11ResolvedContent");
+  });
+
+  it("keeps the approved everyday-language contract in every production context", () => {
+    const blockedEditorialTerms = /Werkzeug|\bCue(?:s)?\b|inner\w* Kampf|Aufgabenwert|Lernnutzen|Aufgabenqualität|Wertbeweis|Gedankenfreiheit|Blicköffner|Streuung/iu;
+    const brokenReactionGrammar = /\b(?:ein|einen|einem|eines|das|dieses|jedes|welches|kein|keinen|keinem) (?:passendes?|bekanntes?)? ?Reaktion\b/iu;
+
+    for (let day = 1; day <= 56; day += 1) {
+      for (const context of ["training", "rest", "competition"] as const) {
+        const resolvedDay = resolveDay(day, new Date("2026-08-24T12:00:00"), context);
+        const athleteCopy = visibleStrings({
+          content: resolvedDay?.content,
+          context: resolvedDay?.context,
+        }).join(" ");
+
+        expect(athleteCopy, `Tag ${day}/${context} contains editorial jargon`).not.toMatch(blockedEditorialTerms);
+        expect(athleteCopy, `Tag ${day}/${context} contains broken reaction grammar`).not.toMatch(brokenReactionGrammar);
+      }
+    }
   });
 
   it("keeps the ten-question pulse and removes score-driven content personalization", () => {

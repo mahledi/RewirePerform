@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Check, Clock3, Loader2, Play } from "lucide-react";
+import { Bell, Check, ChevronDown, Clock3, Loader2, Play } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import RestDayVisualizationFlow from "@/prototypes/golden-days/RestDayVisualizationFlow";
 import type { GoldenDayDraft } from "@/prototypes/golden-days/goldenDayDrafts";
 import {
@@ -55,6 +56,7 @@ const RestDayMission = ({
 }: Props) => {
   const [scheduling, setScheduling] = useState(false);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
   const nativeAvailable = useMemo(() => isNativeNotificationsAvailable(), []);
 
   useEffect(() => {
@@ -222,6 +224,33 @@ const RestDayMission = ({
         <p className="mt-3 text-sm leading-6 text-white/48">
           Erst atmest du zwei Minuten ruhig. Danach führt dich die App durch eine Sportszene zum heutigen RewirePerform-Satz.
         </p>
+        {draft.detailedExplanation && (
+          <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
+            <button
+              type="button"
+              aria-expanded={showExplanation}
+              onClick={() => setShowExplanation((current) => !current)}
+              className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-white/78 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              Genauer verstehen
+              <ChevronDown className={`h-4 w-4 shrink-0 text-primary transition-transform ${showExplanation ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence initial={false}>
+              {showExplanation && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                >
+                  <p className="border-t border-white/[0.055] px-4 py-4 text-sm leading-6 text-white/67">
+                    {draft.detailedExplanation}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
         <button
           type="button"
           onClick={() => onPlanModeChange("now")}

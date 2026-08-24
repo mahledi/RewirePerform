@@ -183,7 +183,7 @@ const OverviewStage = ({
             })}
           </div>
           <p className="mt-2 text-xs leading-5 text-white/38">
-            Werkzeug und Tagesinhalt bleiben gleich. Nur die ehrliche Ausführungsform folgt dem realen Tag.
+            Tagesinhalt und Satz bleiben gleich. Nur die ehrliche Ausführungsform folgt dem realen Tag.
           </p>
         </div>
       )}
@@ -224,8 +224,13 @@ const MissionStage = ({
   draft: GoldenDayDraft;
   context: GoldenDayContext;
   showContextGuidance?: boolean;
-}) => (
-  <div className="space-y-5">
+}) => {
+  const [showExplanation, setShowExplanation] = useState(false);
+
+  useEffect(() => setShowExplanation(false), [draft.day, context]);
+
+  return (
+    <div className="space-y-5">
     <div>
       <StageEyebrow>Deine Mission</StageEyebrow>
       <h2 className="text-2xl font-semibold tracking-[-0.025em]">{draft.mission.title}</h2>
@@ -250,11 +255,39 @@ const MissionStage = ({
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/38">Warum das hilft</p>
       <p className="mt-2 text-sm leading-6 text-white/62">{draft.mission.why}</p>
     </div>
-    <div className="rounded-2xl border border-primary/20 bg-primary/[0.065] px-4 py-4 text-center text-lg font-semibold text-primary">
-      {draft.cue}
+      <div className="rounded-2xl border border-primary/20 bg-primary/[0.065] px-4 py-4 text-center text-lg font-semibold text-primary">
+        {draft.cue}
+      </div>
+      {draft.detailedExplanation && (
+        <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
+          <button
+            type="button"
+            aria-expanded={showExplanation}
+            onClick={() => setShowExplanation((current) => !current)}
+            className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-white/78 transition-colors hover:bg-white/[0.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
+          >
+            Genauer verstehen
+            <ChevronDown className={cn("h-4 w-4 shrink-0 text-primary transition-transform", showExplanation && "rotate-180")} />
+          </button>
+          <AnimatePresence initial={false}>
+            {showExplanation && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <p className="border-t border-white/[0.055] px-4 py-4 text-sm leading-6 text-white/67">
+                  {draft.detailedExplanation}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 const ComprehensionStage = ({ draft }: { draft: GoldenDayDraft }) => {
   const [selected, setSelected] = useState<string | null>(null);
@@ -383,10 +416,12 @@ const RestPlanStage = ({
   const visualization = useMemo(() => getRestDayVisualization(draft), [draft]);
   const [choice, setChoice] = useState<"now" | "later" | null>(null);
   const [reminderTime, setReminderTime] = useState("18:00");
+  const [showExplanation, setShowExplanation] = useState(false);
 
   useEffect(() => {
     setChoice(null);
     setReminderTime("18:00");
+    setShowExplanation(false);
     onReadyChange(false);
   }, [draft.day, onReadyChange]);
 
@@ -403,6 +438,34 @@ const RestPlanStage = ({
           Etwa {visualization.estimatedMinutes} Minuten. Dein heutiger Satz und dein Lernziel bleiben gleich.
         </p>
       </div>
+
+      {draft.detailedExplanation && (
+        <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
+          <button
+            type="button"
+            aria-expanded={showExplanation}
+            onClick={() => setShowExplanation((current) => !current)}
+            className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-white/78 transition-colors hover:bg-white/[0.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70"
+          >
+            Genauer verstehen
+            <ChevronDown className={cn("h-4 w-4 shrink-0 text-primary transition-transform", showExplanation && "rotate-180")} />
+          </button>
+          <AnimatePresence initial={false}>
+            {showExplanation && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <p className="border-t border-white/[0.055] px-4 py-4 text-sm leading-6 text-white/67">
+                  {draft.detailedExplanation}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <button
@@ -629,7 +692,7 @@ const SpecialStage = ({ draft }: { draft: GoldenDayDraft }) => {
         <Panel>
           <div className="flex items-center gap-3">
             <Layers3 className="h-5 w-5 text-primary" />
-            <p className="font-semibold">Werkzeugbild · erkennen, nicht siebenmal bearbeiten</p>
+            <p className="font-semibold">Dein mentales System · erkennen, nicht alles gleichzeitig bearbeiten</p>
           </div>
           <div className="mt-4 space-y-2">
             {draft.integrationTools.map((tool) => (

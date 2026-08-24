@@ -156,7 +156,7 @@ describe("Golden Days V1.1 internal preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Tag 28" }));
     fireEvent.click(screen.getByRole("button", { name: "Sonderfall" }));
-    expect(screen.getByText("Werkzeugbild · erkennen, nicht siebenmal bearbeiten")).toBeInTheDocument();
+    expect(screen.getByText("Dein mentales System · erkennen, nicht alles gleichzeitig bearbeiten")).toBeInTheDocument();
     expect(screen.getByText("Dein Zwischenstand ist ein Messpunkt, kein Urteil.")).toBeInTheDocument();
     expect(screen.queryByText(/^W[1-7]$/u)).not.toBeInTheDocument();
   });
@@ -175,7 +175,7 @@ describe("complete 56-day V1.1 internal preview", () => {
     expect(PROGRAM_DAY_DRAFTS).toHaveLength(56);
     expect(screen.getByRole("button", { name: "Tag 56" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Tag 56" }));
-    expect(screen.getByRole("heading", { name: "Erkenne, wähle und nutze dein passendes Werkzeug" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Erkenne, was dir hilft, und wende es an" })).toBeInTheDocument();
     expect(screen.getByText("Erkennen. Wählen. Anwenden.")).toBeInTheDocument();
   });
 

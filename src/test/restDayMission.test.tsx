@@ -44,7 +44,44 @@ const renderCompletedMission = ({
   );
 };
 
+const renderPlannedMission = () => {
+  if (!draft) throw new Error("Program day draft missing");
+
+  return render(
+    <RestDayMission
+      draft={draft}
+      userId="00000000-0000-4000-8000-000000000001"
+      athleteName="Noah"
+      date="2026-08-08"
+      planMode={null}
+      reminderTime="18:00"
+      reminderScheduled={false}
+      completed={false}
+      saving={false}
+      saveError={null}
+      onPlanModeChange={vi.fn()}
+      onReminderTimeChange={vi.fn()}
+      onReminderScheduledChange={vi.fn()}
+      onComplete={vi.fn()}
+      onRetrySave={vi.fn()}
+      onCloseForLater={vi.fn()}
+    />,
+  );
+};
+
 describe("RestDayMission completion", () => {
+  it("keeps the canonical daily explanation optional before visualization", () => {
+    renderPlannedMission();
+
+    const explanationButton = screen.getByRole("button", { name: "Genauer verstehen" });
+    expect(explanationButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText(draft?.detailedExplanation ?? "missing")).not.toBeInTheDocument();
+
+    fireEvent.click(explanationButton);
+    expect(explanationButton).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText(draft?.detailedExplanation ?? "missing")).toBeInTheDocument();
+  });
+
   it("shows only the quiet save status after the visualization", () => {
     renderCompletedMission({ saving: true });
 

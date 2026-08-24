@@ -4,8 +4,7 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import {
   ArrowLeft, ArrowRight, Check, Dumbbell, Moon, Trophy,
-  Brain, Flame, Eye, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield, Loader2,
-  CheckCircle2,
+  Brain, Flame, Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -75,11 +74,6 @@ interface CheckinDraft {
   restReminderScheduled?: boolean;
   savedAt: string;
 }
-
-const iconMap: Record<string, typeof Brain> = {
-  brain: Brain, eye: Eye, flame: Flame, heart: Heart, target: Target,
-  wind: Wind, sunrise: Sunrise, book: BookOpen, sparkles: Sparkles, shield: Shield,
-};
 
 const typeConfig: Record<EventType, { label: string; icon: typeof Dumbbell; color: string; bg: string }> = {
   training: { label: "Trainingstag", icon: Dumbbell, color: "text-primary", bg: "bg-primary/20" },
@@ -705,43 +699,13 @@ const DailyCheckin = ({
 
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
-        ) : (
-          <div className="space-y-3">
-            {tasks.map((task) => {
-              const IconComp = iconMap[task.icon ?? "brain"] ?? Brain;
-              const taskDone = completedTasks.includes(task.id);
-              return (
-                <button
-                  key={task.id}
-                  data-testid={`task-card-${task.id}`}
-                  onClick={() => setSelectedTask(task)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all active:scale-[0.98] ${
-                    taskDone
-                      ? "bg-primary/10 border-primary/30"
-                      : "bg-gradient-card border-border/50 hover:bg-secondary/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      taskDone ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                    }`}>
-                      {taskDone ? <CheckCircle2 className="w-5 h-5" /> : <IconComp className="w-5 h-5" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold ${taskDone ? "text-primary" : ""}`}>{task.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{task.whenToUse}</p>
-                    </div>
-                    {taskDone ? (
-                      <span className="text-xs font-semibold text-primary shrink-0">Verstanden</span>
-                    ) : (
-                      <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        ) : tasks[0] ? (
+          <TaskDetail
+            task={tasks[0]}
+            isCompleted={completedTasks.includes(tasks[0].id)}
+            onComplete={() => markTaskComplete(tasks[0].id)}
+          />
+        ) : null}
       </motion.div>
     );
   };
