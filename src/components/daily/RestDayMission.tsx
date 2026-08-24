@@ -219,18 +219,26 @@ const RestDayMission = ({
     <div className="relative overflow-hidden rounded-[30px] bg-[#101216] p-5 sm:p-7">
       <div className="pointer-events-none absolute -top-24 left-1/2 h-52 w-72 -translate-x-1/2 rounded-full bg-primary/[0.11] blur-3xl" />
       <div className="relative">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Ruhetag · Visualisierung</p>
-        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">Deine Visualisierung für heute.</h2>
-        <p className="mt-3 text-sm leading-6 text-white/48">
-          Erst atmest du zwei Minuten ruhig. Danach führt dich die App durch eine Sportszene zum heutigen RewirePerform-Satz.
-        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Ruhetag · Dein Fokus</p>
+        <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">{draft.title}</h2>
+        <p className="mt-3 text-sm leading-6 text-white/58">{draft.purpose}</p>
+
+        <div className="mt-6 border-y border-white/[0.065] py-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Dein Satz für heute</p>
+          <p className="mt-2 text-xl font-semibold leading-8 tracking-[-0.02em] text-white/90">{draft.cue}</p>
+          <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/38">Das visualisierst du</p>
+          <p className="mt-2 text-sm leading-6 text-white/58">
+            Du gehst eine passende Sportsituation durch. Du nutzt diesen Satz und stellst dir vor, wie du danach handeln möchtest.
+          </p>
+        </div>
+
         {draft.detailedExplanation && (
-          <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
+          <div className="overflow-hidden border-b border-white/[0.065]">
             <button
               type="button"
               aria-expanded={showExplanation}
               onClick={() => setShowExplanation((current) => !current)}
-              className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-white/78 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex min-h-14 w-full items-center justify-between gap-3 py-3 text-left text-sm font-semibold text-white/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               Genauer verstehen
               <ChevronDown className={`h-4 w-4 shrink-0 text-primary transition-transform ${showExplanation ? "rotate-180" : ""}`} />
@@ -243,7 +251,7 @@ const RestDayMission = ({
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 >
-                  <p className="border-t border-white/[0.055] px-4 py-4 text-sm leading-6 text-white/67">
+                  <p className="pb-5 text-sm leading-6 text-white/67">
                     {draft.detailedExplanation}
                   </p>
                 </motion.div>
@@ -251,6 +259,10 @@ const RestDayMission = ({
             </AnimatePresence>
           </div>
         )}
+
+        <p className="mt-5 text-xs leading-5 text-white/38">
+          Du startest mit zwei Minuten ruhiger Atmung. Die komplette Einheit dauert ungefähr vier Minuten.
+        </p>
         <button
           type="button"
           onClick={() => onPlanModeChange("now")}

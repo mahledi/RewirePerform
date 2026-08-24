@@ -70,10 +70,19 @@ const renderPlannedMission = () => {
 };
 
 describe("RestDayMission completion", () => {
-  it("keeps the canonical daily explanation optional before visualization", () => {
+  it("introduces the daily focus and sentence before offering the optional explanation", () => {
     renderPlannedMission();
 
+    const title = screen.getByRole("heading", { name: draft?.title });
+    const purpose = screen.getByText(draft?.purpose ?? "missing");
+    const cue = screen.getByText(draft?.cue ?? "missing");
     const explanationButton = screen.getByRole("button", { name: "Genauer verstehen" });
+
+    expect(title.compareDocumentPosition(purpose) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(purpose.compareDocumentPosition(cue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(cue.compareDocumentPosition(explanationButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText("Das visualisierst du")).toBeInTheDocument();
+    expect(screen.getByText(/Du gehst eine passende Sportsituation durch/)).toBeInTheDocument();
     expect(explanationButton).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByText(draft?.detailedExplanation ?? "missing")).not.toBeInTheDocument();
 
