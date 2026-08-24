@@ -319,7 +319,11 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Benachrichtigungen</h2>
             <p>
               Push-Benachrichtigungen sind optional. Wenn du sie aktivierst, speichern wir nur eine
-              technische Push-Berechtigung und deine gewählten Erinnerungszeiten.
+              technische Push-Berechtigung und deine gewählten Erinnerungszeiten. In der iOS-App wird
+              zusätzlich ein technischer APNs-Gerätetoken gespeichert, damit wir dir den Programmstart
+              zustellen können. Der Token enthält weder deinen Namen noch Antworten, Journaltexte oder
+              Standortdaten und wird beim Deaktivieren der Benachrichtigungen oder beim Löschen deines
+              Accounts entfernt.
             </p>
             <p className="mt-3">
               Für den zuverlässigen Versand speichern wir außerdem Benachrichtigungstyp, Versanddatum,

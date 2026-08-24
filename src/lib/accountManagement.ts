@@ -1,6 +1,7 @@
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { disableNativeReminders, isNativeNotificationsAvailable } from "@/lib/nativeNotifications";
+import { unregisterNativeRemotePush } from "@/lib/nativeRemotePush";
 import { clearPostSignupOnboarding } from "@/lib/postSignupOnboarding";
 
 export interface AccountDeletionCandidate {
@@ -191,7 +192,10 @@ export const clearDeletedAccountFromDevice = async (
   programInstanceIds: string[] = [],
 ) => {
   try {
-    if (isNativeNotificationsAvailable()) await disableNativeReminders(userId);
+    if (isNativeNotificationsAvailable()) {
+      await unregisterNativeRemotePush(userId);
+      await disableNativeReminders(userId);
+    }
     else await unsubscribeBrowserPush();
   } catch {
     // The account is already gone server-side; local cleanup must not hide success.

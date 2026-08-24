@@ -141,11 +141,10 @@ describe("questionnaire V1.2 block A", () => {
     expect(await screen.findByRole("heading", { name: "Dein Start ist vorbereitet." })).toBeInTheDocument();
   });
 
-  it("does not promise a remote program-start notification in the native local-reminder flow", () => {
+  it("explains the voluntary program-start reminder in both supported notification flows", () => {
     const { rerender } = render(<QuestionnaireNotificationOnboarding onContinue={vi.fn()} />);
 
-    expect(screen.getByText(/Erinnerungen helfen dir beim Check-in/)).toBeInTheDocument();
-    expect(screen.queryByText(/Erinnerungen helfen dir beim Programmstart/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Erinnerungen helfen dir beim Programmstart/)).toBeInTheDocument();
 
     mocks.push.mode = "web";
     rerender(<QuestionnaireNotificationOnboarding onContinue={vi.fn()} />);

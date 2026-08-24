@@ -10,6 +10,10 @@ import {
   requestNativeNotificationPermission,
 } from "@/lib/nativeNotifications";
 import { syncNativeRemindersForUser } from "@/lib/nativeReminderPlan";
+import {
+  syncNativeRemotePushRegistration,
+  unregisterNativeRemotePush,
+} from "@/lib/nativeRemotePush";
 
 const urlBase64ToUint8Array = (base64String: string) => {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -160,6 +164,7 @@ export const usePushSubscription = () => {
         throw new Error("Benachrichtigungen wurden auf diesem Gerät nicht erlaubt");
       }
       await syncNativeRemindersForUser(user.id, nextTimes);
+      await syncNativeRemotePushRegistration(user.id);
       applyReminderTimes(nextTimes);
       setEnabled(true);
       return;
@@ -213,7 +218,10 @@ export const usePushSubscription = () => {
   const unsubscribe = useCallback(async () => {
     if (!support.supported) return;
     if (support.mode === "native") {
-      if (user) await disableNativeReminders(user.id);
+      if (user) {
+        await unregisterNativeRemotePush(user.id);
+        await disableNativeReminders(user.id);
+      }
       setEnabled(false);
       return;
     }
@@ -238,6 +246,7 @@ export const usePushSubscription = () => {
       };
       if (support.mode === "native") {
         await syncNativeRemindersForUser(user.id, nextTimes);
+        await syncNativeRemotePushRegistration(user.id);
         applyReminderTimes(nextTimes);
         setEnabled(true);
         return;
@@ -272,6 +281,7 @@ export const usePushSubscription = () => {
       eveningMinute,
       preTrainingMinutes,
     });
+    await syncNativeRemotePushRegistration(user.id);
   }, [user, support.mode, enabled, morningHour, morningMinute, eveningHour, eveningMinute, preTrainingMinutes]);
 
   return {

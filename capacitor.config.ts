@@ -46,6 +46,9 @@ const config: CapacitorConfig = {
     LocalNotifications: {
       presentationOptions: ["badge", "banner", "list"],
     },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "banner", "list"],
+    },
   },
 };
 
