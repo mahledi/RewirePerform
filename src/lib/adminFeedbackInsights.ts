@@ -101,7 +101,7 @@ const parseInsights = (value: Json | null): AdminFeedbackInsights => {
       const optionSelections = integer(option?.selections);
       const participantRate = rate(option?.participant_rate);
       const optionLabel = typeof optionId === "string" ? labels.get(optionId) : undefined;
-      if (!optionLabel || optionParticipants === null || optionSelections === null || participantRate === null) {
+      if (typeof optionId !== "string" || !optionLabel || optionParticipants === null || optionSelections === null || participantRate === null) {
         throw new AdminFeedbackInsightsError("admin_feedback_insights_option_drift");
       }
       return { optionId, optionLabel, participants: optionParticipants, selections: optionSelections, participantRate };
