@@ -331,6 +331,20 @@ describe("auth email confirmation", () => {
     expect(screen.queryByRole("link", { name: /Für Teams & Organisationen/ })).not.toBeInTheDocument();
   });
 
+  it("lets users reveal and hide their password without submitting the form", () => {
+    renderAuth("/auth?mode=login");
+
+    const password = screen.getByLabelText("Passwort");
+    expect(password).toHaveAttribute("type", "password");
+
+    fireEvent.click(screen.getByRole("button", { name: "Passwort anzeigen" }));
+    expect(password).toHaveAttribute("type", "text");
+    expect(screen.getByRole("button", { name: "Passwort verbergen" })).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(screen.getByRole("button", { name: "Passwort verbergen" }));
+    expect(password).toHaveAttribute("type", "password");
+  });
+
   it("rebases a warm team link and never carries it into a later normal login", async () => {
     renderWarmAuthNavigation();
     expect(screen.getByRole("heading", { name: "Willkommen zurück." })).toBeInTheDocument();
