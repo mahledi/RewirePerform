@@ -39,7 +39,7 @@ describe("native iOS program-start push V1.2 contract", () => {
   it("includes Apple's required registration bridge and documents revocation", () => {
     expect(entitlements).toContain("aps-environment");
     expect(appDelegate).toContain("capacitorDidRegisterForRemoteNotifications");
-    expect(appDelegate).toContain("capacitorDidFailToRegisterForRemoteNotificationsWithError");
+    expect(appDelegate).toContain("capacitorDidFailToRegisterForRemoteNotifications");
     expect(privacy).toContain("APNs-Gerätetoken");
     expect(privacy).toContain("beim Deaktivieren der Benachrichtigungen oder beim Löschen deines");
   });
