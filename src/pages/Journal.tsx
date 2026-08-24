@@ -19,8 +19,11 @@ import { upsertTodaySnapshot } from "@/lib/programProgress";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 import {
+  AthleteFlowButton,
   AthleteFlowAmbient,
+  AthleteFlowProgress,
   AthleteFlowScene,
+  athleteFlowInput,
   athleteFlowPanel,
   athleteFlowPrimaryButton,
   athleteFlowSecondaryButton,
@@ -263,12 +266,12 @@ const Journal = () => {
         <p className="text-sm text-muted-foreground mb-6">
           Sobald dein 56-Tage-Programm läuft, erscheint hier dein Tagesjournal.
         </p>
-        <button
+        <AthleteFlowButton
           onClick={() => navigate("/dashboard")}
           className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium"
         >
           Zum Dashboard
-        </button>
+        </AthleteFlowButton>
       </div>
     );
   }
@@ -387,12 +390,7 @@ const Journal = () => {
         )}
 
         <div className="flex items-center gap-2" aria-label={`Schritt ${safeJournalStep + 1} von ${totalJournalSteps}`}>
-          {Array.from({ length: totalJournalSteps }, (_, index) => (
-            <span
-              key={index}
-              className={`h-1.5 flex-1 rounded-full ${index <= safeJournalStep ? "bg-primary" : "bg-white/[0.07]"}`}
-            />
-          ))}
+          <AthleteFlowProgress value={((safeJournalStep + 1) / totalJournalSteps) * 100} className="flex-1" />
           <span className="ml-1 text-[10px] tabular-nums text-white/38">{safeJournalStep + 1}/{totalJournalSteps}</span>
         </div>
 
@@ -413,7 +411,7 @@ const Journal = () => {
                 [activeQuestion.id]: event.target.value,
               }))}
               placeholder={activeQuestion.placeholder ?? ""}
-              className="min-h-32 resize-none border-primary/10 bg-black/15 focus-visible:ring-primary"
+              className={`${athleteFlowInput} min-h-32 resize-none`}
             />
             <VoiceInput
               currentValue={answers[activeQuestion.id] ?? ""}
@@ -435,7 +433,7 @@ const Journal = () => {
               value={gratitude}
               onChange={(event) => setGratitude(event.target.value)}
               placeholder="Schreib einen konkreten Satz …"
-              className="min-h-32 resize-none border-primary/15 bg-black/15 focus-visible:ring-primary"
+              className={`${athleteFlowInput} min-h-32 resize-none`}
             />
             <div className="flex items-center justify-between gap-3">
               <VoiceInput currentValue={gratitude} onTranscript={setGratitude} showHint={false} />
@@ -451,7 +449,7 @@ const Journal = () => {
                   value={freeReflection}
                   onChange={(event) => setFreeReflection(event.target.value)}
                   placeholder="Optional …"
-                  className="min-h-20 resize-none bg-black/10"
+                  className={`${athleteFlowInput} min-h-20 resize-none`}
                 />
                 <VoiceInput
                   currentValue={freeReflection}
@@ -465,34 +463,31 @@ const Journal = () => {
         </AnimatePresence>
 
         <div className="sticky bottom-3 z-20 grid grid-cols-[auto_1fr] gap-3 rounded-[22px] border border-white/[0.07] bg-[#0B0C10]/92 p-2 shadow-[0_18px_60px_-30px_rgba(0,0,0,0.95)] backdrop-blur-2xl">
-          <button
-            type="button"
+          <AthleteFlowButton
             onClick={() => setJournalStep((current) => Math.max(0, current - 1))}
             disabled={safeJournalStep === 0}
             className={`${athleteFlowSecondaryButton} w-12 px-0 disabled:opacity-25`}
             aria-label="Zurück"
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
+          </AthleteFlowButton>
           {isGratitudeStep ? (
-            <motion.button
-              whileTap={{ scale: 0.99 }}
+            <AthleteFlowButton
               onClick={handleSave}
               disabled={saving || !allQuestionsReady || gratitudeWords < gratitudeMinWords}
               className={`${athleteFlowPrimaryButton} w-full`}
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               {saving ? "Speichert …" : saveError ? "Erneut speichern" : "Tag abschließen"}
-            </motion.button>
+            </AthleteFlowButton>
           ) : (
-            <button
-              type="button"
+            <AthleteFlowButton
               onClick={() => setJournalStep((current) => Math.min(gratitudeStep, current + 1))}
               disabled={!currentAnswerReady}
               className={`${athleteFlowPrimaryButton} w-full`}
             >
               Weiter <ArrowRight className="h-4 w-4" />
-            </button>
+            </AthleteFlowButton>
           )}
         </div>
       </div>

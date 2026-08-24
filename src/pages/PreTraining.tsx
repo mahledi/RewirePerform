@@ -14,8 +14,11 @@ import { getProgramModeInfo } from "@/lib/programMode";
 import { format } from "date-fns";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 import {
+  AthleteFlowButton,
   AthleteFlowAmbient,
   AthleteFlowScene,
+  athleteFlowInput,
+  athleteFlowPanel,
   athleteFlowPrimaryButton,
   athleteFlowSecondaryButton,
 } from "@/components/app/AthleteFlowScene";
@@ -154,7 +157,7 @@ const PreTraining = () => {
             {resolved.content.preTraining ? (
               <AnimatePresence mode="wait" initial={false}>
                 {!revealed ? (
-                  <AthleteFlowScene key="recall" className="rounded-[26px] border border-white/[0.07] bg-white/[0.028] p-5 sm:p-6">
+                  <AthleteFlowScene key="recall" className={`${athleteFlowPanel} p-5 sm:p-6`}>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Erst erinnern</p>
                     <h2 className="mt-3 text-2xl font-semibold leading-8 tracking-[-0.025em]">{resolved.content.preTraining.recallPrompt}</h2>
                     <textarea
@@ -162,20 +165,20 @@ const PreTraining = () => {
                       onChange={(event) => setRecall(event.target.value)}
                       placeholder="Deine kurze Erinnerung …"
                       aria-label="Deine kurze Erinnerung"
-                      className="mt-6 min-h-28 w-full resize-none rounded-2xl border border-white/[0.075] bg-black/15 px-4 py-3 text-sm text-white placeholder:text-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className={`${athleteFlowInput} mt-6 min-h-28 resize-none`}
                     />
-                    <button type="button" onClick={() => setRevealed(true)} className={`${athleteFlowPrimaryButton} mt-4 w-full`}>
+                    <AthleteFlowButton onClick={() => setRevealed(true)} className={`${athleteFlowPrimaryButton} mt-4 w-full`}>
                       <Eye className="h-4 w-4" /> Erinnerung prüfen
-                    </button>
+                    </AthleteFlowButton>
                   </AthleteFlowScene>
                 ) : (
                   <AthleteFlowScene key="reveal" className="rounded-[26px] border border-primary/20 bg-primary/[0.075] p-6 text-center shadow-[0_22px_70px_-45px_rgba(46,173,137,0.75)]">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Dein Satz für heute</p>
                     <p className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.04em]">{resolved.content.preTraining.reveal}</p>
                     <p className="mt-4 text-[15px] leading-7 text-white/58">{resolved.content.preTraining.application}</p>
-                    <button type="button" onClick={() => setRevealed(false)} className={`${athleteFlowSecondaryButton} mt-6 w-full`}>
+                    <AthleteFlowButton onClick={() => setRevealed(false)} className={`${athleteFlowSecondaryButton} mt-6 w-full`}>
                       Noch einmal erinnern
-                    </button>
+                    </AthleteFlowButton>
                   </AthleteFlowScene>
                 )}
               </AnimatePresence>
@@ -185,14 +188,14 @@ const PreTraining = () => {
               </div>
             )}
 
-            <button
+            <AthleteFlowButton
               onClick={() => navigate("/dashboard")}
               className={`${athleteFlowPrimaryButton} w-full`}
               disabled={Boolean(resolved.content.preTraining) && !revealed}
             >
               <Target className="w-4 h-4 mr-2" />
               {eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit fürs Training"}
-            </button>
+            </AthleteFlowButton>
           </div>
         )}
       </div>
