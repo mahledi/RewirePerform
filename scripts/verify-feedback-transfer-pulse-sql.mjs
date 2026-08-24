@@ -29,6 +29,10 @@ const transactionMigration = readFileSync(
   resolve("supabase/migrations/20260805103700_feedback_intelligence_v1_transaction_api.sql"),
   "utf8",
 );
+const invitationResumeMigration = readFileSync(
+  resolve("supabase/migrations/20260824132500_feedback_invitation_resume_fix.sql"),
+  "utf8",
+);
 const activityMigration = readFileSync(
   resolve("supabase/migrations/20260805103840_feedback_intelligence_v1_activity_snapshot.sql"),
   "utf8",
@@ -258,6 +262,7 @@ try {
   await db.exec(restVisualizationRegistryMigration);
   await db.exec(dachMinorPolicyMigration);
   await db.exec(transactionMigration);
+  await db.exec(invitationResumeMigration);
   await db.exec(activityMigration);
   await db.exec(adminAggregateMigration);
   await db.exec(machineExportMigration);
@@ -927,8 +932,8 @@ try {
   assert(firstClaim.rows[0].result.eligible === true, "exact day 10 checkpoint must be claimable");
   assert(firstClaim.rows[0].result.mode === "invitation", "first checkpoint claim must be an invitation");
   const repeatedClaim = await db.query("SELECT public.claim_my_feedback_checkpoint() AS result");
-  assert(repeatedClaim.rows[0].result.eligible === false, "invitation must be claimed at most once");
-  assert(repeatedClaim.rows[0].result.reason === "already_invited", "repeat claim must explain its closed state");
+  assert(repeatedClaim.rows[0].result.eligible === true, "an open invitation must survive a repeated claim");
+  assert(repeatedClaim.rows[0].result.mode === "invitation", "an open invitation must remain an invitation");
 
   const started = await db.query(`
     SELECT public.start_my_feedback_submission(

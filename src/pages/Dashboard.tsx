@@ -1270,7 +1270,8 @@ const Dashboard = () => {
       const start = new Date(`${startDate}T00:00:00`);
 
       const reviews: MissedDayReview[] = [];
-      for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= 1 && reviews.length < 3; dayNumber -= 1) {
+      const oldestReviewDay = Math.max(1, dayInfo.dayNumber - 3);
+      for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= oldestReviewDay; dayNumber -= 1) {
         if (completedDays.has(dayNumber)) continue;
 
         const dayDate = addDays(start, dayNumber - 1);
@@ -1309,7 +1310,6 @@ const Dashboard = () => {
     acknowledged.add(review.key);
     writeAcknowledgedMissedReviews(user.id, instanceId, acknowledged);
     setMissedDayReviews((prev) => prev.filter((item) => item.key !== review.key));
-    await loadMissedDayReviews(effectiveToday);
   };
 
   const refreshDashboardStatus = async (referenceDate = effectiveToday) => {

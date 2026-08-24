@@ -77,6 +77,16 @@ Deno.serve(async (req) => {
       const { error: roleError } = await admin.from("user_roles")
         .upsert({ user_id: uid, role: a.role }, { onConflict: "user_id,role" });
       if (roleError) throw new Error(`role ${a.email}: ${roleError.message}`);
+      if (a.role === "athlete") {
+        const { error: authorizationError } = await admin.rpc("minor_service_action", {
+          _action: "set_age",
+          _user_id: uid,
+          _payload: { age_band: "adult" },
+        });
+        if (authorizationError) {
+          throw new Error(`authorization ${a.email}: ${authorizationError.message}`);
+        }
+      }
       created.push({ role: a.role, email: a.email, user_id: uid });
     }
 
