@@ -123,6 +123,9 @@ describe("V1 athlete UI integration contract", () => {
     expect(dashboard.match(/reviews\.length < 3/g)).toHaveLength(1);
     expect(dashboard).toContain("missedDayReviews: MissedDayReview[]");
     expect(dashboard).toContain("setMissedDayReviews(cache.missedDayReviews)");
+    expect(dashboard).toContain("removeMissedReviewFromDashboardCache(user.id, review.key)");
+    expect(dashboard).toContain("missedDayReviews: removeMissedReviewByKey(dashboardMemoryCache.missedDayReviews, reviewKey)");
+    expect(dashboard).toContain("setMissedDayReviews((prev) => removeMissedReviewByKey(prev, review.key))");
     expect(dashboard).toContain("const oldestReviewDay = Math.max(1, dayInfo.dayNumber - 3)");
     expect(dashboard).toContain("dayNumber >= oldestReviewDay");
     expect(dashboard).not.toContain("await loadMissedDayReviews(effectiveToday)");
