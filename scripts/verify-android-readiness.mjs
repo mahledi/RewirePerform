@@ -38,7 +38,7 @@ requireText(
 );
 requireText("Android application id", files.build, 'applicationId "com.rewireperform.app"');
 requireText("Android version", files.build, 'versionName "1.2"');
-requireText("Android version code", files.build, "versionCode 4");
+requireText("Android version code", files.build, "versionCode 5");
 requireText("Android compile SDK", files.variables, "compileSdkVersion = 36");
 requireText("Android target SDK", files.variables, "targetSdkVersion = 36");
 requireText("Android minimum SDK", files.variables, "minSdkVersion = 24");

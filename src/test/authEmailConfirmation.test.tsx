@@ -179,7 +179,7 @@ describe("auth email confirmation", () => {
     expect(signUpCall.options.data).not.toHaveProperty("role");
   });
 
-  it("sends Android auth emails to the verified HTTPS app-link callback while leaving the browser contract separate", async () => {
+  it("sends Android auth emails to the registered native callback while leaving the browser contract separate", async () => {
     mocks.platform = "android";
     mocks.signUp.mockResolvedValue({
       data: { user: { id: "user-1" }, session: null },
@@ -191,7 +191,7 @@ describe("auth email confirmation", () => {
     await screen.findByRole("heading", { name: "Bestätige deine E-Mail." });
 
     expect(mocks.signUp.mock.calls[0]?.[0].options.emailRedirectTo)
-      .toBe("https://rewireperform.com/auth?flow=signup&intro=athlete");
+      .toBe("com.rewireperform.app://auth?flow=signup&intro=athlete");
   });
 
   it("keeps an invited coach out of athlete onboarding and returns to the invitation after email confirmation", async () => {
@@ -450,7 +450,7 @@ describe("auth email confirmation", () => {
     );
   });
 
-  it("returns Android password recovery to the verified HTTPS reset route", async () => {
+  it("returns Android password recovery to the registered native reset route", async () => {
     mocks.platform = "android";
     renderAuth("/auth?mode=forgot");
     fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "test@example.com" } });
@@ -459,7 +459,7 @@ describe("auth email confirmation", () => {
     await screen.findByRole("heading", { name: "Prüfe deine E-Mails." });
     expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith(
       "test@example.com",
-      { redirectTo: "https://rewireperform.com/auth/reset-password?flow=recovery" },
+      { redirectTo: "com.rewireperform.app://auth/reset-password?flow=recovery" },
     );
   });
 
