@@ -27,7 +27,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "5167fac0d4f725e484531e4ca15ee6cc3aee1ea1a1731c8ffbffb18ee97b57be",
+  "package_sha256": "4baedf4c6a9109c1564ba0020ca6225be76721b96bb6ee84920fe02ab15547db",
   "files": [
     {
       "path": ".env.example",
@@ -127,11 +127,11 @@
     },
     {
       "path": "docs/V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md",
-      "sha256": "052c6b181449bfbb79105e0659d236fa90d737875ff2c38cbf5bcffd63e75f9d"
+      "sha256": "e84edce0e89022d757bc48eee668692aa2db3f5a1040350cecacc780b21a5324"
     },
     {
       "path": "docs/APP_STORE_CONNECT_V1_2_STRUCTURED_JARVIS_DELTA_2026-08-24.md",
-      "sha256": "ab4d5b028dcc3200b5df2b85cb060c4dc98855909c1dede4c6d276ab8e0b7fb6"
+      "sha256": "d324cef4a4049426428302944fd858b840c2bc924f75760644137fad6a0b323e"
     },
     {
       "path": "docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md",
