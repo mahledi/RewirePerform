@@ -30,21 +30,16 @@ import { pulseQuestionsByContext } from "@/lib/dayContext";
 import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
 import type { CalendarEventType, DailyTask, ResolvedDay, ComprehensionQuestion } from "@/content/matrixDayTypes";
-import AthleteTransferPulse from "@/components/evidence/AthleteTransferPulse";
 import {
+  AthleteFlowButton,
   AthleteFlowAmbient,
+  AthleteFlowProgress,
   AthleteFlowScene,
+  athleteFlowChoice,
   athleteFlowPanel,
   athleteFlowPrimaryButton,
   athleteFlowSecondaryButton,
 } from "@/components/app/AthleteFlowScene";
-import { getMyEvidenceStatus, type MyEvidenceStatus } from "@/lib/evidenceTracking";
-import {
-  getTransferPulseForDay,
-  isTransferPulseResponse,
-  normalizeEvidenceDurationMs,
-  type TransferPulseResponse,
-} from "@/lib/performanceEvidence";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 import { getProgramDayDraft } from "@/content/programV11";
 
@@ -74,8 +69,6 @@ interface CheckinDraft {
   motivation: number | null;
   pressure: number | null;
   teamConnection: number | null;
-  transferPulseResponse?: TransferPulseResponse | null;
-  transferPulseResponseDurationMs?: number | null;
   restPlanMode?: RestDayPlanMode;
   restReminderTime?: string;
   restReminderScheduled?: boolean;
@@ -93,6 +86,7 @@ const normalizeDraftStep = (draftStep: number | null | undefined) => {
 
   // Der alte Flow hatte einen eigenen Pflichtschritt "Wissen zuerst".
   // Bestehende lokale Drafts werden in den neuen, kürzeren Ablauf geschoben.
+  if (safeStep === 2) return 3;
   if (safeStep === 4) return 3;
   if (safeStep === 5) return 4;
   if (safeStep > 5) return 5;
@@ -131,9 +125,6 @@ const DailyCheckin = ({
   const [motivation, setMotivation] = useState<number | null>(null);
   const [pressure, setPressure] = useState<number | null>(null);
   const [teamConnection, setTeamConnection] = useState<number | null>(null);
-  const [transferPulseResponse, setTransferPulseResponse] = useState<TransferPulseResponse | null>(null);
-  const [transferPulseResponseDurationMs, setTransferPulseResponseDurationMs] = useState<number | null>(null);
-  const [evidenceStatus, setEvidenceStatus] = useState<MyEvidenceStatus | null>(null);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [activeInstanceId, setActiveInstanceId] = useState<string | null>(null);
@@ -143,7 +134,6 @@ const DailyCheckin = ({
   const [restReminderTime, setRestReminderTime] = useState("15:00");
   const [restReminderScheduled, setRestReminderScheduled] = useState(false);
   const contentScrollRef = useRef<HTMLDivElement>(null);
-  const transferPulseStartedAtRef = useRef<number | null>(null);
 
   const config = typeConfig[eventType];
   const tasks: DailyTask[] = resolved?.content.tasks ?? [];
@@ -156,43 +146,13 @@ const DailyCheckin = ({
     : legacyDraftKey;
   const getCompletedTaskTitles = (taskIds: string[] = completedTasks) =>
     taskIds.map((id) => tasks.find((t) => t.id === id)?.title ?? id);
-  const scheduledTransferPulse = resolved
-    ? getTransferPulseForDay(resolved.matrix.dayNumber, eventType)
-    : null;
-  const activeTransferPulse = scheduledTransferPulse
-    && evidenceStatus?.eligible
-    && evidenceStatus.domainId === scheduledTransferPulse.domainId
-      ? scheduledTransferPulse
-      : null;
-
+  // Alte lokale Drafts konnten noch auf rückblickende Morgen-Schritte zeigen.
+  // Diese werden ohne Datenverlust direkt zur heutigen Mission weitergeführt.
   useEffect(() => {
-    if (
-      step === 2
-      && activeTransferPulse
-      && !evidenceStatus?.locked
-      && transferPulseResponse === null
-      && transferPulseStartedAtRef.current === null
-    ) {
-      transferPulseStartedAtRef.current = performance.now();
-    }
-  }, [activeTransferPulse, evidenceStatus?.locked, step, transferPulseResponse]);
-
-  // Build-7-Drafts konnten noch auf den entfernten Freitext-Schritt zeigen.
-  // Sobald der Tagesstatus geladen ist, gehen sie direkt zur Mission weiter.
-  useEffect(() => {
-    if (!loadingTasks && step === 2 && !activeTransferPulse) {
+    if (!loadingTasks && step === 2) {
       setStep(3);
     }
-  }, [activeTransferPulse, loadingTasks, step]);
-
-  const selectTransferPulseResponse = (response: TransferPulseResponse) => {
-    if (transferPulseResponseDurationMs === null && transferPulseStartedAtRef.current !== null) {
-      setTransferPulseResponseDurationMs(
-        normalizeEvidenceDurationMs(performance.now() - transferPulseStartedAtRef.current),
-      );
-    }
-    setTransferPulseResponse(response);
-  };
+  }, [loadingTasks, step]);
 
   useLayoutEffect(() => {
     contentScrollRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -205,7 +165,7 @@ const DailyCheckin = ({
       return;
     }
     if (step > 0) {
-      setStep(step - 1);
+      setStep(step === 3 ? 1 : step - 1);
       return;
     }
     setShowExitDialog(true);
@@ -239,10 +199,6 @@ const DailyCheckin = ({
   const loadDay = async () => {
     if (!user?.id) return;
     setLoadingTasks(true);
-    setEvidenceStatus(null);
-    setTransferPulseResponse(null);
-    setTransferPulseResponseDurationMs(null);
-    transferPulseStartedAtRef.current = null;
     const dateStr = format(date, "yyyy-MM-dd");
 
     const result = await ensureAssignment({
@@ -292,9 +248,6 @@ const DailyCheckin = ({
         setMotivation(local.motivation ?? null);
         setPressure(local.pressure ?? null);
         setTeamConnection(local.teamConnection ?? null);
-        setTransferPulseResponseDurationMs(
-          normalizeEvidenceDurationMs(local.transferPulseResponseDurationMs),
-        );
         setRestPlanMode(local.restPlanMode ?? null);
         setRestReminderTime(local.restReminderTime ?? "15:00");
         setRestReminderScheduled(local.restReminderScheduled ?? false);
@@ -308,43 +261,6 @@ const DailyCheckin = ({
         setRestReminderScheduled(false);
       }
 
-      const scheduledPulse = getTransferPulseForDay(result.resolved.matrix.dayNumber, eventType);
-      if (instance?.id && scheduledPulse) {
-        try {
-          const status = await getMyEvidenceStatus({
-            programInstanceId: instance.id,
-            dayNumber: result.resolved.matrix.dayNumber,
-            eventType,
-          });
-          setEvidenceStatus(status);
-          if (status.existingResponse !== null) {
-            setTransferPulseResponse(status.existingResponse);
-          } else if (isTransferPulseResponse(local?.transferPulseResponse)) {
-            setTransferPulseResponse(local.transferPulseResponse);
-          }
-        } catch (error) {
-          setEvidenceStatus({
-            eligible: false,
-            reason: "unavailable",
-            protocolVersion: scheduledPulse.protocolVersion,
-            domainId: scheduledPulse.domainId,
-            existingResponse: null,
-            locked: false,
-          });
-          void captureAppError({
-            eventName: "evidence_status_load_failed",
-            error,
-            role,
-            route: "/dashboard",
-            isTest: isTestUser,
-            metadata: {
-              day_number: result.resolved.matrix.dayNumber,
-              event_type: eventType,
-            },
-          });
-        }
-      }
-
     }
     setLoadingTasks(false);
   };
@@ -353,7 +269,6 @@ const DailyCheckin = ({
     if (!draftKey || previewMode || step === 5) return;
     const hasDraft =
       completedTasks.length > 0 ||
-      transferPulseResponse !== null ||
       restPlanMode !== null ||
       restReminderScheduled ||
       [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection]
@@ -372,8 +287,6 @@ const DailyCheckin = ({
       motivation,
       pressure,
       teamConnection,
-      transferPulseResponse,
-      transferPulseResponseDurationMs,
       restPlanMode,
       restReminderTime,
       restReminderScheduled,
@@ -394,8 +307,6 @@ const DailyCheckin = ({
     motivation,
     pressure,
     teamConnection,
-    transferPulseResponse,
-    transferPulseResponseDurationMs,
     restPlanMode,
     restReminderTime,
     restReminderScheduled,
@@ -494,14 +405,6 @@ const DailyCheckin = ({
           ? comprehensionQuestions as unknown as import("@/integrations/supabase/types").Json
           : undefined,
         comprehensionResults,
-        evidence: activeTransferPulse && transferPulseResponse !== null
-          ? {
-              protocolVersion: activeTransferPulse.protocolVersion,
-              domainId: activeTransferPulse.domainId,
-              response: transferPulseResponse,
-              responseDurationMs: transferPulseResponseDurationMs,
-            }
-          : undefined,
       });
       await trackAppEvent({
         eventName: "daily_checkin_saved",
@@ -627,14 +530,13 @@ const DailyCheckin = ({
               </div>
             )}
 
-            <motion.button
+            <AthleteFlowButton
               data-testid="daily-science-ack"
-              whileTap={{ scale: 0.99 }}
               onClick={() => setStep(1)}
               className={`${athleteFlowPrimaryButton} w-full min-h-14 text-base`}
             >
               Verstanden <ArrowRight className="w-5 h-5" />
-            </motion.button>
+            </AthleteFlowButton>
           </div>
         )}
       </AthleteFlowScene>
@@ -711,7 +613,6 @@ const DailyCheckin = ({
     : [
         { step: 0, title: "Science Bite" },
         { step: 1, title: "Dein Tages-Puls" },
-        ...(activeTransferPulse ? [{ step: 2, title: "Transfer-Pulse" }] : []),
         { step: 3, title: "Deine Mission" },
         { step: 4, title: "Verständnis-Check" },
       ];
@@ -736,20 +637,12 @@ const DailyCheckin = ({
           </div>
         )}
       />
-      <div className="relative border-b border-white/[0.045] bg-[#0D0E12]/88 px-5 py-2">
+      <div className="relative bg-[#0D0E12]/88 px-5 py-3">
         <div className="mx-auto flex max-w-lg items-center gap-2">
-          {flowStages.map((stage, index) => (
-            <div
-              key={stage.step}
-              className={`h-1 flex-1 rounded-full ${
-                step === 5 || index < activeStageIndex
-                  ? "bg-primary"
-                  : index === activeStageIndex
-                    ? "bg-primary/55"
-                    : "bg-white/[0.065]"
-              }`}
-            />
-          ))}
+          <AthleteFlowProgress
+            value={step === 5 ? 100 : ((Math.max(0, activeStageIndex) + 1) / flowStageCount) * 100}
+            className="flex-1"
+          />
           <span className="ml-1 text-[10px] tabular-nums text-white/42">
             {step === 5
               ? `${flowStageCount}/${flowStageCount}`
@@ -806,19 +699,16 @@ const DailyCheckin = ({
                           <p className="mb-3 text-xs leading-5 text-white/45">{q.question}</p>
                           <div className="grid grid-cols-5 gap-2">
                             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                              <button
+                              <AthleteFlowButton
                                 key={n}
                                 data-testid={`pulse-${q.id}-${n}`}
                                 onClick={() => q.set(n)}
                                 aria-pressed={q.value === n}
-                                className={`min-h-11 rounded-xl border text-sm font-semibold transition-[background-color,border-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                                  q.value === n
-                                    ? "border-primary/70 bg-primary/[0.14] text-white shadow-[inset_0_1px_0_rgba(98,198,168,0.16),0_0_24px_-16px_rgba(46,173,137,0.9)]"
-                                    : "border-white/[0.06] bg-white/[0.025] text-white/48 hover:border-white/[0.11] hover:bg-white/[0.045] hover:text-white/72"
-                                }`}
+                                pressScale={0.985}
+                                className={`${athleteFlowChoice(q.value === n)} min-h-11 justify-center rounded-xl px-0 py-0 font-semibold`}
                               >
                                 {n}
-                              </button>
+                              </AthleteFlowButton>
                             ))}
                           </div>
                           <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
@@ -829,22 +719,6 @@ const DailyCheckin = ({
                       ))}
                     </div>
                   </AthleteFlowScene>
-                )}
-                {step === 2 && activeTransferPulse && (
-                    <AthleteFlowScene
-                      key="transfer-pulse"
-                    >
-                      <AthleteTransferPulse
-                        pulse={activeTransferPulse}
-                        value={transferPulseResponse}
-                        onValueChange={selectTransferPulseResponse}
-                        disabled={evidenceStatus?.locked}
-                      />
-                      <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-                        Deine Antwort bleibt für Coaches unsichtbar. Sie kann nur freiwillig und geschützt in
-                        zusammengefasste Auswertungen einfließen.
-                      </p>
-                    </AthleteFlowScene>
                 )}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
@@ -862,16 +736,15 @@ const DailyCheckin = ({
                         onComplete={handleComprehensionComplete}
                       />
                     ) : (
-                      <motion.button
+                      <AthleteFlowButton
                         data-testid="comprehension-empty-finish"
                         onClick={handleEmptyComprehensionComplete}
                         disabled={saving}
-                        whileTap={!saving ? { scale: 0.98 } : undefined}
                         className={`${athleteFlowPrimaryButton} w-full`}
                       >
                         {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                         {saving ? "Speichert..." : "Check-in abschließen"}
-                      </motion.button>
+                      </AthleteFlowButton>
                     )}
                   </AthleteFlowScene>
                 )}
@@ -914,7 +787,7 @@ const DailyCheckin = ({
         </div>
       </div>
 
-      {(step === 1 || (step === 2 && Boolean(activeTransferPulse)) || (step === 3 && eventType !== "rest")) && !selectedTask && (
+      {(step === 1 || (step === 3 && eventType !== "rest")) && !selectedTask && (
         <div className="relative shrink-0 border-t border-white/[0.07] bg-[#0B0C10]/92 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-2xl">
           <div className="mx-auto grid max-w-lg grid-cols-[auto_1fr] gap-3">
             <button onClick={handleBack} className={`${athleteFlowSecondaryButton} w-12 px-0`} aria-label="Zurück">
@@ -923,21 +796,15 @@ const DailyCheckin = ({
             {(() => {
               const pulseComplete = [moodBefore, energyLevel, focusClarity, stress, recovery, sleepQuality, physicalReadiness, motivation, pressure, teamConnection].every((v) => v !== null);
               const tasksComplete = tasks.length === 0 || tasks.every((task) => completedTasks.includes(task.id));
-              const transferPulseIncomplete = step === 2
-                && Boolean(activeTransferPulse)
-                && transferPulseResponse === null;
               const blocked = saving
                 || (step === 1 && !pulseComplete)
-                || transferPulseIncomplete
                 || (step === 3 && !tasksComplete);
               return (
-                <motion.button
+                <AthleteFlowButton
                   data-testid={`daily-next-step-${step}`}
-                  whileTap={!blocked ? { scale: 0.99 } : undefined}
                   onClick={() => {
                     if (blocked) return;
-                    if (step === 1) setStep(activeTransferPulse ? 2 : 3);
-                    else if (step === 2) setStep(3);
+                    if (step === 1) setStep(3);
                     else if (step === 3 && tasksComplete) setStep(4);
                   }}
                   disabled={blocked}
@@ -949,7 +816,7 @@ const DailyCheckin = ({
                       : "Mission offen"
                     : "Weiter"}
                   <ArrowRight className="w-4 h-4" />
-                </motion.button>
+                </AthleteFlowButton>
               );
             })()}
           </div>

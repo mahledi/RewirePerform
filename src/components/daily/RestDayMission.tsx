@@ -8,6 +8,13 @@ import {
   isNativeNotificationsAvailable,
   scheduleRestVisualizationReminder,
 } from "@/lib/nativeNotifications";
+import {
+  AthleteFlowButton,
+  athleteFlowInput,
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+  athleteFlowSecondaryButton,
+} from "@/components/app/AthleteFlowScene";
 
 export type RestDayPlanMode = "now" | "later" | null;
 
@@ -92,7 +99,7 @@ const RestDayMission = ({
 
   if (completed) {
     return (
-      <div className="rounded-[30px] bg-primary/[0.055] p-7 text-center">
+      <div className={`${athleteFlowPanel} bg-primary/[0.055] p-7 text-center`}>
         <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
           <Check className="h-4 w-4" /> Visualisierung abgeschlossen
         </p>
@@ -101,15 +108,14 @@ const RestDayMission = ({
         {saveError ? (
           <div className="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-left">
             <p className="text-xs leading-5 text-amber-100/75">{saveError}</p>
-            <button
-              type="button"
+            <AthleteFlowButton
               onClick={onRetrySave}
               disabled={saving}
-              className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className={`${athleteFlowPrimaryButton} mt-4 w-full`}
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {saving ? "Wird gespeichert …" : "Erneut speichern"}
-            </button>
+            </AthleteFlowButton>
           </div>
         ) : saving ? (
           <div className="mt-6 flex min-h-12 items-center justify-center gap-2 text-sm font-semibold text-white/52" role="status">
@@ -117,13 +123,12 @@ const RestDayMission = ({
             Abschluss wird gespeichert …
           </div>
         ) : (
-          <button
-            type="button"
+          <AthleteFlowButton
             onClick={onRetrySave}
-            className="mt-6 flex min-h-12 w-full items-center justify-center rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={`${athleteFlowPrimaryButton} mt-6 w-full`}
           >
             Zurück zum Dashboard
-          </button>
+          </AthleteFlowButton>
         )}
       </div>
     );
@@ -165,7 +170,7 @@ const RestDayMission = ({
               onReminderScheduledChange(false);
               setScheduleError(null);
             }}
-            className="mt-2 min-h-12 w-full rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 text-base text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={`${athleteFlowInput} mt-2 min-h-12 text-base`}
           />
 
           {scheduleError && (
@@ -183,33 +188,30 @@ const RestDayMission = ({
                   <p className="mt-1 text-xs leading-5 text-white/42">Beim Öffnen landest du wieder bei deinem Daily Flow.</p>
                 </div>
               </div>
-              <button
-                type="button"
+              <AthleteFlowButton
                 onClick={onCloseForLater}
-                className="mt-4 min-h-12 w-full rounded-2xl border border-white/[0.075] text-sm font-semibold text-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className={`${athleteFlowSecondaryButton} mt-4 w-full`}
               >
                 Für jetzt schließen
-              </button>
+              </AthleteFlowButton>
             </div>
           ) : (
-            <button
-              type="button"
+            <AthleteFlowButton
               onClick={scheduleReminder}
               disabled={scheduling || !nativeAvailable}
-              className="mt-5 flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] disabled:bg-white/[0.06] disabled:text-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className={`${athleteFlowPrimaryButton} mt-5 w-full`}
             >
               <Bell className="h-4 w-4" />
               {scheduling ? "Erinnerung wird gesetzt …" : nativeAvailable ? "Erinnerung setzen" : "Nur in der App verfügbar"}
-            </button>
+            </AthleteFlowButton>
           )}
 
-          <button
-            type="button"
+          <AthleteFlowButton
             onClick={() => onPlanModeChange("now")}
-            className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.075] text-sm font-semibold text-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={`${athleteFlowSecondaryButton} mt-3 w-full`}
           >
             <Play className="h-4 w-4" /> Jetzt doch starten
-          </button>
+          </AthleteFlowButton>
         </div>
       </div>
     );
@@ -263,20 +265,18 @@ const RestDayMission = ({
         <p className="mt-5 text-xs leading-5 text-white/38">
           Du startest mit zwei Minuten ruhiger Atmung. Die komplette Einheit dauert ungefähr vier Minuten.
         </p>
-        <button
-          type="button"
+        <AthleteFlowButton
           onClick={() => onPlanModeChange("now")}
-          className="mt-7 flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] shadow-[0_0_30px_hsl(var(--primary)/0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className={`${athleteFlowPrimaryButton} mt-7 min-h-14 w-full`}
         >
           <Play className="h-4 w-4 fill-current" /> Jetzt starten
-        </button>
-        <button
-          type="button"
+        </AthleteFlowButton>
+        <AthleteFlowButton
           onClick={() => onPlanModeChange("later")}
-          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.075] bg-white/[0.025] px-4 text-sm font-semibold text-white/62 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className={`${athleteFlowSecondaryButton} mt-3 w-full`}
         >
           <Clock3 className="h-4 w-4" /> Später erinnern
-        </button>
+        </AthleteFlowButton>
       </div>
     </div>
   );

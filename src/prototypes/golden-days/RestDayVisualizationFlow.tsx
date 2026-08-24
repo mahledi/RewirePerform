@@ -9,6 +9,13 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import {
+  AthleteFlowButton,
+  athleteFlowChoice,
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+  athleteFlowSecondaryButton,
+} from "@/components/app/AthleteFlowScene";
 import type { GoldenDayDraft } from "@/prototypes/golden-days/goldenDayDrafts";
 import {
   getRestDayVisualization,
@@ -301,7 +308,7 @@ const RestDayVisualizationFlow = ({
 
   if (step === "intro") {
     return (
-      <div ref={containerRef} data-testid="rest-visualization-flow" data-step="intro" className="relative overflow-hidden rounded-[30px] bg-[#101216] px-5 py-6 sm:px-8 sm:py-8">
+      <div ref={containerRef} data-testid="rest-visualization-flow" data-step="intro" className={`relative overflow-hidden ${athleteFlowPanel} px-5 py-6 sm:px-8 sm:py-8`}>
         <div className="pointer-events-none absolute -top-28 left-1/2 h-60 w-80 -translate-x-1/2 rounded-full bg-primary/[0.11] blur-3xl" />
         <div className="relative">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Ruhetag · Visualisierung</p>
@@ -330,16 +337,16 @@ const RestDayVisualizationFlow = ({
           </p>
 
           <div className="mt-5">
-            <button
-              type="button"
+            <AthleteFlowButton
               onClick={() => void testSound()}
               disabled={soundTestState === "testing"}
               aria-live="polite"
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-4 text-sm font-semibold text-white/72 transition active:scale-[0.985] disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              pressScale={0.985}
+              className={`${athleteFlowSecondaryButton} w-full disabled:opacity-70`}
             >
               {soundTestState === "played" ? <Check className="h-4 w-4 text-primary" /> : <Volume2 className="h-4 w-4 text-primary" />}
               {soundTestState === "testing" ? "Ton wird gestartet…" : soundTestState === "played" ? "Testton gestartet" : "Abschlusston testen"}
-            </button>
+            </AthleteFlowButton>
           </div>
           <p className="mt-2 text-xs leading-5 text-white/36">Deaktiviere den Lautlosmodus und stell die Medienlautstärke so ein, dass du den Ton mit geschlossenen Augen gut hörst.</p>
 
@@ -348,20 +355,16 @@ const RestDayVisualizationFlow = ({
               <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/34">Interne Klangvorschau</p>
               <div className="mt-2 grid gap-2 sm:grid-cols-3">
                 {VISUALIZATION_CHIME_STYLES.map((style) => (
-                  <button
+                  <AthleteFlowButton
                     key={style}
                     type="button"
                     aria-pressed={soundStyle === style}
                     onClick={() => setSoundStyle(style)}
-                    className={cn(
-                      "min-h-11 rounded-xl border px-3 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      soundStyle === style
-                        ? "border-primary/35 bg-primary/[0.08] text-primary"
-                        : "border-white/[0.07] text-white/46",
-                    )}
+                    pressScale={0.985}
+                    className={cn(athleteFlowChoice(soundStyle === style), "min-h-11 justify-center rounded-xl px-3 text-xs font-semibold")}
                   >
                     {SOUND_LABELS[style]}
-                  </button>
+                  </AthleteFlowButton>
                 ))}
               </div>
             </div>
@@ -376,13 +379,12 @@ const RestDayVisualizationFlow = ({
           <p className="mt-5 text-xs leading-5 text-white/38">
             Atme nur so tief, wie es angenehm ist. Wenn dir schwindelig wird, atme normal weiter oder beende die Einheit.
           </p>
-          <button
-            type="button"
+          <AthleteFlowButton
             onClick={() => void startSession()}
-            className="mt-6 flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] shadow-[0_0_30px_hsl(var(--primary)/0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#101216]"
+            className={`${athleteFlowPrimaryButton} mt-6 min-h-14 w-full`}
           >
             <Play className="h-4 w-4 fill-current" /> Visualisierung starten
-          </button>
+          </AthleteFlowButton>
         </div>
       </div>
     );
@@ -390,7 +392,7 @@ const RestDayVisualizationFlow = ({
 
   if (step === "complete") {
     return (
-      <div ref={containerRef} data-testid="rest-visualization-flow" data-step="complete" className="relative overflow-hidden rounded-[30px] bg-[#101514] px-6 py-8 text-center sm:px-8 sm:py-10">
+      <div ref={containerRef} data-testid="rest-visualization-flow" data-step="complete" className={`relative overflow-hidden ${athleteFlowPanel} bg-primary/[0.055] px-6 py-8 text-center sm:px-8 sm:py-10`}>
         <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-80 -translate-x-1/2 rounded-full bg-primary/[0.11] blur-3xl" />
         <div className="relative">
           <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
@@ -398,23 +400,22 @@ const RestDayVisualizationFlow = ({
           </p>
           <p className="mt-6 text-2xl font-semibold tracking-[-0.03em]">{draft.cue}</p>
           <p className="mt-3 text-sm leading-6 text-white/48">Nimm nur diesen Satz mit zurück in deinen Tag.</p>
-          <button
-            type="button"
+          <AthleteFlowButton
             onClick={() => {
               setStep("intro");
               onCompletionChangeRef.current?.(false);
             }}
-            className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-white/[0.075] px-5 text-sm font-semibold text-white/58 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={`${athleteFlowSecondaryButton} mt-7 w-full`}
           >
             <RotateCcw className="h-4 w-4" /> Visualisierung erneut starten
-          </button>
+          </AthleteFlowButton>
         </div>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} data-testid="rest-visualization-flow" data-step="active" data-phase={phase.id} className="relative overflow-hidden rounded-[30px] bg-[#101216] px-5 py-6 sm:px-8 sm:py-8">
+    <div ref={containerRef} data-testid="rest-visualization-flow" data-step="active" data-phase={phase.id} className={`relative overflow-hidden ${athleteFlowPanel} px-5 py-6 sm:px-8 sm:py-8`}>
       <div className="pointer-events-none absolute -top-28 left-1/2 h-64 w-80 -translate-x-1/2 rounded-full bg-primary/[0.1] blur-3xl" />
       <div className="relative">
         <div>
@@ -447,30 +448,28 @@ const RestDayVisualizationFlow = ({
 
         <div className="mt-5 flex gap-2">
           {!phaseFinished && (
-            <button
-              type="button"
+            <AthleteFlowButton
               onClick={() => running ? pauseTimer() : void startTimer()}
               aria-label={running ? "Timer pausieren" : phase.id === "breathing" ? "Atmung starten" : "Timer starten"}
               className={cn(
-                "flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "min-h-14 w-full",
                 running
-                  ? "border border-white/[0.075] bg-white/[0.025] text-white/60"
-                  : "bg-primary text-[#07110e] shadow-[0_0_26px_hsl(var(--primary)/0.12)]",
+                  ? athleteFlowSecondaryButton
+                  : athleteFlowPrimaryButton,
               )}
             >
               {running ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
               {running ? "Pausieren" : phase.id === "breathing" ? "Atmung starten" : "Augen schließen & starten"}
-            </button>
+            </AthleteFlowButton>
           )}
           {phaseFinished && (
-            <button
-              type="button"
+            <AthleteFlowButton
               onClick={moveToNextPhase}
-              className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110e] shadow-[0_0_26px_hsl(var(--primary)/0.12)] disabled:bg-white/[0.06] disabled:text-white/28 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className={`${athleteFlowPrimaryButton} min-h-14 w-full`}
             >
               {phaseIndex === phases.length - 1 ? "Visualisierung abschließen" : "Nächster Schritt"}
               {phaseIndex < phases.length - 1 && <ChevronRight className="h-4 w-4" />}
-            </button>
+            </AthleteFlowButton>
           )}
         </div>
       </div>

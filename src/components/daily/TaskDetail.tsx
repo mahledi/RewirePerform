@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import type { DailyTask } from "@/content/matrixDayTypes";
 import {
+  AthleteFlowButton,
   athleteFlowPanel,
   athleteFlowPrimaryButton,
 } from "@/components/app/AthleteFlowScene";
@@ -121,9 +122,8 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
         </div>
       )}
 
-      <motion.button
+      <AthleteFlowButton
         data-testid={`task-complete-${task.id}`}
-        whileTap={!isCompleted ? { scale: 0.99 } : undefined}
         onClick={onComplete}
         disabled={isCompleted}
         className={`${athleteFlowPrimaryButton} min-h-14 w-full text-base ${
@@ -137,7 +137,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
         ) : (
           <><Check className="w-5 h-5" /> Verstanden</>
         )}
-      </motion.button>
+      </AthleteFlowButton>
     </div>
   );
 };

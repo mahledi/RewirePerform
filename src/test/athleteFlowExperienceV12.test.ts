@@ -16,6 +16,11 @@ describe("V1.2 athlete flow experience contract", () => {
     expect(scene).toContain("scale: 0.992");
     expect(scene).toContain("y: -10");
     expect(scene).toContain('ease: "easeOut"');
+    expect(scene).toContain("circle_at_50%_-8%");
+    expect(scene).toContain("linear-gradient(90deg,#2EAD89,#62C6A8)");
+    expect(scene).toContain("pressScale = 0.99");
+    expect(scene).toContain("pressScale?: number");
+    expect(scene).toContain("border-primary/55 bg-primary/[0.11]");
     for (const source of [daily, journal, preTraining]) {
       expect(source).toContain("AthleteFlowScene");
       expect(source).toContain("AthleteFlowAmbient");
@@ -28,8 +33,12 @@ describe("V1.2 athlete flow experience contract", () => {
   it("keeps the real Daily state machine and single-save boundary intact", () => {
     const daily = readSource("src/components/dashboard/DailyCheckin.tsx");
 
-    expect(daily).toContain("setStep(activeTransferPulse ? 2 : 3)");
-    expect(daily).toContain("step === 2 && activeTransferPulse");
+    expect(daily).toContain("if (step === 1) setStep(3)");
+    expect(daily).not.toContain("activeTransferPulse");
+    expect(daily).not.toContain("Transfer-Pulse");
+    expect(daily).not.toContain("AthleteTransferPulse");
+    expect(daily).not.toContain("getMyEvidenceStatus");
+    expect(daily).not.toContain("evidence:");
     expect(daily).toContain("tasks.every");
     expect(daily).toContain("if (savingRef.current) return false");
     expect(daily).toContain("saveDailyTracking");
