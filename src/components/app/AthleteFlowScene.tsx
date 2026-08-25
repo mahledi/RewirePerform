@@ -18,6 +18,9 @@ export const athleteFlowSecondaryButton =
 export const athleteFlowPanel =
   "rounded-2xl border border-white/[0.07] bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.035),0_24px_70px_-54px_rgba(0,0,0,0.95)]";
 
+export const athleteFlowStageSurface =
+  "rounded-[28px] border border-white/[0.075] bg-[linear-gradient(155deg,rgba(255,255,255,0.048),rgba(255,255,255,0.018)_44%,rgba(46,173,137,0.025))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_30px_90px_-58px_rgba(0,0,0,0.95),0_0_70px_-54px_rgba(46,173,137,0.72)]";
+
 export const athleteFlowInput =
   "w-full rounded-2xl border border-border/70 bg-card/70 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.025)] transition-[border-color,background-color,box-shadow] focus-visible:border-primary/55 focus-visible:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35";
 
@@ -68,7 +71,7 @@ export const AthleteFlowButton = ({
 export const AthleteFlowAmbient = () => (
   <div
     aria-hidden="true"
-    className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(46,173,137,0.14),transparent_33%)]"
+    className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(46,173,137,0.16),transparent_34%),radial-gradient(circle_at_0%_46%,rgba(46,173,137,0.045),transparent_30%),radial-gradient(circle_at_100%_72%,rgba(46,173,137,0.035),transparent_28%)]"
   />
 );
 

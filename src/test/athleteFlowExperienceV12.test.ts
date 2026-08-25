@@ -21,11 +21,17 @@ describe("V1.2 athlete flow experience contract", () => {
     expect(scene).toContain("pressScale = 0.99");
     expect(scene).toContain("pressScale?: number");
     expect(scene).toContain("border-primary/55 bg-primary/[0.11]");
+    expect(scene).toContain("athleteFlowStageSurface");
+    expect(scene).toContain("circle_at_0%_46%");
     for (const source of [daily, journal, preTraining]) {
       expect(source).toContain("AthleteFlowScene");
       expect(source).toContain("AthleteFlowAmbient");
     }
-    expect(daily).toContain('<AnimatePresence mode="wait">');
+    expect(daily).toContain('<AnimatePresence mode="wait" initial={false}>');
+    expect(daily).toContain('key={selectedTask ? `selected-${selectedTask.id}` : `daily-step-${step}`}');
+    expect(daily).toContain('testId="daily-active-scene"');
+    expect(daily).toContain("title={config.label}");
+    expect(daily).not.toContain('eyebrow={`Daily Flow · ${config.label}`}');
     expect(journal).toContain('<AnimatePresence mode="wait" initial={false}>');
     expect(preTraining).toContain('<AnimatePresence mode="wait" initial={false}>');
   });

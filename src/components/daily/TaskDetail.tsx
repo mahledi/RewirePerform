@@ -9,6 +9,7 @@ import {
   AthleteFlowButton,
   athleteFlowPanel,
   athleteFlowPrimaryButton,
+  athleteFlowStageSurface,
 } from "@/components/app/AthleteFlowScene";
 
 const iconMap: Record<string, typeof Brain> = {
@@ -39,32 +40,32 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
     <div className="space-y-6">
       <section
         data-testid="daily-mission"
-        className="relative"
+        className={`relative overflow-hidden p-5 sm:p-6 ${athleteFlowStageSurface}`}
       >
         <div className="relative">
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 shadow-[0_0_30px_-16px_rgba(46,173,137,0.78)]">
               <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
             </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Deine Mission</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Deine Mission</p>
           </div>
 
-          <h2 className="font-heading text-3xl font-semibold leading-[1.08] tracking-[-0.04em] text-foreground sm:text-[2rem]">
+          <h2 className="font-heading text-[1.75rem] font-semibold leading-[1.12] tracking-[-0.04em] text-foreground sm:text-[2rem]">
             {task.title}
           </h2>
-          <p className="mt-4 text-[15px] leading-7 text-white/62">{task.why}</p>
+          <p className="mt-4 text-[15px] leading-7 text-white/60">{task.why}</p>
 
-          <div className={`mt-7 ${athleteFlowPanel} px-4 py-4`}>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Wenn es passiert</p>
+          <div className={`mt-6 ${athleteFlowPanel} px-4 py-4`}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">Wenn es passiert</p>
             <p className="mt-2 text-sm leading-relaxed text-foreground/88">{useMoment}</p>
           </div>
 
-          <div className="mt-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Was du machst</p>
-            <ol className="mt-3 space-y-3">
+          <div className="mt-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">Was du machst</p>
+            <ol className="mt-3 space-y-2.5">
               {actionSteps.map((step, index) => (
-                <li key={`${task.id}-step-${index}`} className="flex gap-3 text-[15px] leading-relaxed text-foreground/92">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/14 text-xs font-semibold tabular-nums text-primary">
+                <li key={`${task.id}-step-${index}`} className="flex gap-3 text-[14px] leading-6 text-foreground/90 sm:text-[15px]">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold tabular-nums text-primary">
                     {index + 1}
                   </span>
                   <span>{step}</span>
@@ -74,7 +75,7 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
           </div>
 
           {task.selfTalk && (
-            <div className="mt-7 rounded-[24px] border border-primary/20 bg-primary/[0.085] px-5 py-5 text-center shadow-[0_18px_55px_-34px_rgba(46,173,137,0.72)]">
+            <div className="mt-6 rounded-[22px] border border-primary/20 bg-primary/[0.085] px-5 py-5 text-center shadow-[0_18px_55px_-34px_rgba(46,173,137,0.72)]">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/80">Dein Satz für den Moment</p>
               <p className="mt-2 font-heading text-xl font-semibold leading-snug text-primary sm:text-2xl">
                 {task.selfTalk}
