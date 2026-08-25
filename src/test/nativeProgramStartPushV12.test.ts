@@ -6,6 +6,7 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8"
 
 describe("native iOS program-start push V1.2 contract", () => {
   const migration = read("supabase/migrations/20260824080331_native_ios_push_devices_v1_2.sql");
+  const reassignmentMigration = read("supabase/migrations/20260824150435_native_push_device_account_reassignment_v1_2.sql");
   const client = read("src/lib/nativeRemotePush.ts");
   const edge = read("supabase/functions/send-program-start-notification/index.ts");
   const privacy = read("src/pages/Privacy.tsx");
@@ -18,6 +19,14 @@ describe("native iOS program-start push V1.2 contract", () => {
     expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
     expect(migration).toContain("(select auth.uid()) = user_id");
     expect(migration).toContain("platform = 'ios'");
+  });
+
+  it("securely reassigns the same device token after an authenticated account switch", () => {
+    expect(reassignmentMigration).toContain("NEW.user_id IS DISTINCT FROM auth.uid()");
+    expect(reassignmentMigration).toContain("WHERE device_token = NEW.device_token");
+    expect(reassignmentMigration).toContain("SECURITY DEFINER");
+    expect(reassignmentMigration).toContain("REVOKE ALL ON FUNCTION");
+    expect(reassignmentMigration).toContain("BEFORE INSERT ON public.native_push_devices");
   });
 
   it("never prompts or registers before the existing explicit notification opt-in", () => {

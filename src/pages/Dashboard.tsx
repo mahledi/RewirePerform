@@ -302,6 +302,18 @@ const getDashboardMemoryCache = (userId?: string | null) => {
   return dashboardMemoryCache;
 };
 
+const removeMissedReviewByKey = (reviews: MissedDayReview[], reviewKey: string) =>
+  reviews.filter((review) => review.key !== reviewKey);
+
+const removeMissedReviewFromDashboardCache = (userId: string, reviewKey: string) => {
+  if (!dashboardMemoryCache || dashboardMemoryCache.userId !== userId) return;
+  dashboardMemoryCache = {
+    ...dashboardMemoryCache,
+    cachedAt: Date.now(),
+    missedDayReviews: removeMissedReviewByKey(dashboardMemoryCache.missedDayReviews, reviewKey),
+  };
+};
+
 const getMissedReviewStorageKey = (userId: string, instanceId: string | null) =>
   `missed-day-review:${userId}:${instanceId ?? "legacy"}`;
 
@@ -1309,7 +1321,11 @@ const Dashboard = () => {
     const acknowledged = readAcknowledgedMissedReviews(user.id, instanceId);
     acknowledged.add(review.key);
     writeAcknowledgedMissedReviews(user.id, instanceId, acknowledged);
-    setMissedDayReviews((prev) => prev.filter((item) => item.key !== review.key));
+    // Keep the in-memory route cache in sync before React unmounts the
+    // dashboard. Otherwise a quick trip to settings can restore the stale
+    // review card even though its durable acknowledgement is already stored.
+    removeMissedReviewFromDashboardCache(user.id, review.key);
+    setMissedDayReviews((prev) => removeMissedReviewByKey(prev, review.key));
   };
 
   const refreshDashboardStatus = async (referenceDate = effectiveToday) => {
