@@ -1,13 +1,30 @@
 import { CircleAlert, KeyRound, MailCheck, ShieldCheck } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { BrandLockup } from "@/components/brand/BrandLogo";
-import { parseAuthConfirmationUrl } from "@/lib/authConfirmationUrl";
+import {
+  parseAuthConfirmationUrl,
+  shouldAutoOpenAndroidConfirmation,
+} from "@/lib/authConfirmationUrl";
 
 const AuthEmailAction = () => {
+  const autoOpened = useRef(false);
   const confirmation = parseAuthConfirmationUrl(
     window.location.search,
     import.meta.env.VITE_SUPABASE_URL,
   );
+  const shouldAutoOpen = shouldAutoOpenAndroidConfirmation(
+    confirmation,
+    Capacitor.getPlatform(),
+    window.navigator.userAgent,
+  );
+
+  useEffect(() => {
+    if (!shouldAutoOpen || !confirmation || autoOpened.current) return;
+    autoOpened.current = true;
+    window.location.assign(confirmation.url);
+  }, [confirmation, shouldAutoOpen]);
 
   if (!confirmation) {
     return (
