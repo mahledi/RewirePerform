@@ -44,6 +44,7 @@ import {
   athleteAppViewport,
 } from "@/components/app/AthleteAppChrome";
 import { getAthleteGreeting } from "@/lib/athleteGreeting";
+import { getRecentMissedDayReviewWindow } from "@/lib/missedDayReviewWindow";
 import {
   canOpenRestVisualization,
   readRestVisualizationIntent,
@@ -362,7 +363,7 @@ const buildInitialMissedDayReviews = ({
   const start = new Date(`${startDate}T00:00:00`);
   const reviews: MissedDayReview[] = [];
 
-  for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= 1 && reviews.length < 3; dayNumber -= 1) {
+  for (const dayNumber of getRecentMissedDayReviewWindow(dayInfo.dayNumber)) {
     if (completedDays.has(dayNumber)) continue;
     const dayDate = addDays(start, dayNumber - 1);
     const date = format(dayDate, "yyyy-MM-dd");
@@ -1282,8 +1283,7 @@ const Dashboard = () => {
       const start = new Date(`${startDate}T00:00:00`);
 
       const reviews: MissedDayReview[] = [];
-      const oldestReviewDay = Math.max(1, dayInfo.dayNumber - 3);
-      for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= oldestReviewDay; dayNumber -= 1) {
+      for (const dayNumber of getRecentMissedDayReviewWindow(dayInfo.dayNumber)) {
         if (completedDays.has(dayNumber)) continue;
 
         const dayDate = addDays(start, dayNumber - 1);
