@@ -491,10 +491,7 @@ const DailyCheckin = ({
     const [headline, ...body] = bite.split("\n\n").filter(Boolean);
 
     return (
-      <AthleteFlowScene
-        key="science-intro"
-        className="flex min-h-[calc(100dvh-11rem)] flex-col justify-center"
-      >
+      <section className="flex min-h-[calc(100dvh-11rem)] flex-col justify-center">
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : (
@@ -539,7 +536,7 @@ const DailyCheckin = ({
             </AthleteFlowButton>
           </div>
         )}
-      </AthleteFlowScene>
+      </section>
     );
   };
 
@@ -557,7 +554,7 @@ const DailyCheckin = ({
       }
 
       return (
-        <AthleteFlowScene key="rest-mission">
+        <div>
           <RestDayMission
             draft={draft}
             userId={user?.id ?? null}
@@ -579,18 +576,12 @@ const DailyCheckin = ({
             onRetrySave={() => void finishRestDay()}
             onCloseForLater={onClose}
           />
-        </AthleteFlowScene>
+        </div>
       );
     }
 
     return (
-      <AthleteFlowScene key="tasks">
-        {resolved && (
-          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">
-            Tag {resolved.matrix.dayNumber} · {displayTitle}
-          </p>
-        )}
-
+      <div>
         {loadingTasks ? (
           <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
         ) : tasks[0] ? (
@@ -600,7 +591,7 @@ const DailyCheckin = ({
             onComplete={() => markTaskComplete(tasks[0].id)}
           />
         ) : null}
-      </AthleteFlowScene>
+      </div>
     );
   };
 
@@ -618,16 +609,11 @@ const DailyCheckin = ({
       ];
   const activeStageIndex = flowStages.findIndex((stage) => stage.step === step);
   const flowStageCount = flowStages.length;
-  const flowTitle = step === 5
-    ? "Abgeschlossen"
-    : flowStages.find((stage) => stage.step === step)?.title ?? "Daily Flow";
-
   return (
     <div className="relative flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-[#0D0E12] text-[#EEF0F2]">
       <AthleteFlowAmbient />
       <AthleteScreenHeader
-        title={flowTitle}
-        eyebrow={`Daily Flow · ${config.label}`}
+        title={config.label}
         onBack={handleBack}
         backLabel="Im Daily Flow zurück"
         trailing={(
@@ -658,7 +644,11 @@ const DailyCheckin = ({
               {saveError}
             </div>
           )}
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
+            <AthleteFlowScene
+              key={selectedTask ? `selected-${selectedTask.id}` : `daily-step-${step}`}
+              testId="daily-active-scene"
+            >
             {selectedTask ? (
               <TaskDetail
                 task={selectedTask}
@@ -669,9 +659,7 @@ const DailyCheckin = ({
               <>
                 {step === 0 && <ScienceBiteIntro />}
                 {step === 1 && (
-                  <AthleteFlowScene
-                    key="mood-energy"
-                  >
+                  <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Dein Tages-Puls</p>
                     <h2 className="mt-3 font-heading text-3xl font-semibold leading-tight tracking-[-0.04em]">
                       {resolved?.context.checkin.pulseTitle ?? "Wohlbefinden & Bereitschaft"}
@@ -718,11 +706,11 @@ const DailyCheckin = ({
                         </div>
                       ))}
                     </div>
-                  </AthleteFlowScene>
+                  </div>
                 )}
                 {step === 3 && <TaskDashboard />}
                 {step === 4 && (
-                  <AthleteFlowScene key="comprehension">
+                  <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Zum Abschluss</p>
                     <h2 className="mt-3 font-heading text-3xl font-semibold tracking-[-0.04em]">Kurzer Verständnis-Check</h2>
                     <p className="mb-7 mt-4 text-sm leading-6 text-white/52">
@@ -746,10 +734,10 @@ const DailyCheckin = ({
                         {saving ? "Speichert..." : "Check-in abschließen"}
                       </AthleteFlowButton>
                     )}
-                  </AthleteFlowScene>
+                  </div>
                 )}
                 {step === 5 && (
-                  <AthleteFlowScene key="done" duration={0.34} className="flex min-h-[60dvh] flex-col justify-center">
+                  <div className="flex min-h-[60dvh] flex-col justify-center">
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.1] text-primary shadow-[0_0_36px_-17px_rgba(46,173,137,0.72)]">
                       <Check className="h-7 w-7" />
                     </div>
@@ -779,10 +767,11 @@ const DailyCheckin = ({
                         Zurück zum Dashboard
                       </button>
                     </div>
-                  </AthleteFlowScene>
+                  </div>
                 )}
               </>
             )}
+            </AthleteFlowScene>
           </AnimatePresence>
         </div>
       </div>
