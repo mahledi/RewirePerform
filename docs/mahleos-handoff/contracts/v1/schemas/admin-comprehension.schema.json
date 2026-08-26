@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/admin-comprehension.schema.json",
+  "title": "MahleOS admin comprehension v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "summary",
+    "weeks",
+    "days",
+    "questions",
+    "suppressed_groups",
+    "minimum_distinct_participants",
+    "question_text_included",
+    "selected_options_included",
+    "direct_identifiers_included",
+    "private_content_included",
+    "test_data_included"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-admin-comprehension-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "participants",
+        "completed_checks",
+        "question_responses",
+        "correct_responses",
+        "incorrect_responses",
+        "accuracy",
+        "sufficient_data"
+      ],
+      "properties": {
+        "participants": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_checks": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "question_responses": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "correct_responses": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "incorrect_responses": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "accuracy": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sufficient_data": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "weeks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "week_number",
+          "participants",
+          "completed_checks",
+          "question_responses",
+          "correct_responses",
+          "incorrect_responses",
+          "accuracy"
+        ],
+        "properties": {
+          "week_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "participants": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "completed_checks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "question_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "correct_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "incorrect_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "accuracy": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "days": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "day_number",
+          "week_number",
+          "participants",
+          "completed_checks",
+          "question_responses",
+          "correct_responses",
+          "incorrect_responses",
+          "accuracy"
+        ],
+        "properties": {
+          "day_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "week_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "participants": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "completed_checks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "question_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "correct_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "incorrect_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "accuracy": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "day_number",
+          "week_number",
+          "question_id",
+          "question_version_key",
+          "target",
+          "participants",
+          "times_shown",
+          "correct_responses",
+          "incorrect_responses",
+          "accuracy",
+          "needs_content_review"
+        ],
+        "properties": {
+          "day_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "week_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "question_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "question_version_key": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 96
+          },
+          "participants": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "times_shown": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "correct_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "incorrect_responses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "accuracy": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "needs_content_review": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "suppressed_groups": {
+      "type": "object",
+      "required": [
+        "weeks",
+        "days",
+        "questions"
+      ],
+      "properties": {
+        "weeks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "questions": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "minimum_distinct_participants": {
+      "const": 5
+    },
+    "question_text_included": {
+      "const": false
+    },
+    "selected_options_included": {
+      "const": false
+    },
+    "direct_identifiers_included": {
+      "const": false
+    },
+    "private_content_included": {
+      "const": false
+    },
+    "test_data_included": {
+      "const": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,6 +1,6 @@
 {
   "contract_id": "rewireperform-mahleos-machine-read",
-  "contract_version": "1.1.0",
+  "contract_version": "1.2.0",
   "status": "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   "reporting_timezone": "UTC",
   "authentication": {
@@ -27,7 +27,12 @@
       "pilot_readiness",
       "pilot_catalog",
       "solo_readiness",
-      "evidence_status"
+      "evidence_status",
+      "admin_overview",
+      "admin_teams",
+      "admin_comprehension",
+      "admin_feedback_metadata",
+      "admin_partner_requests"
     ]
   },
   "evidence_endpoint": {

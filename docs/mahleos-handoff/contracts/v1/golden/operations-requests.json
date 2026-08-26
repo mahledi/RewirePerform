@@ -24,5 +24,20 @@
   },
   {
     "view": "evidence_status"
+  },
+  {
+    "view": "admin_overview"
+  },
+  {
+    "view": "admin_teams"
+  },
+  {
+    "view": "admin_comprehension"
+  },
+  {
+    "view": "admin_feedback_metadata"
+  },
+  {
+    "view": "admin_partner_requests"
   }
 ]

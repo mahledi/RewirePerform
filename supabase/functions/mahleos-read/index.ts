@@ -21,6 +21,11 @@ const ALLOWED_VIEWS = new Set([
   "pilot_catalog",
   "solo_readiness",
   "evidence_status",
+  "admin_overview",
+  "admin_teams",
+  "admin_comprehension",
+  "admin_feedback_metadata",
+  "admin_partner_requests",
 ]);
 const ALLOWED_BODY_KEYS = new Set(["view", "program_run_id"]);
 

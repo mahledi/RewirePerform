@@ -294,6 +294,152 @@ const feedbackStatusSchema = schema("feedback-status", "MahleOS feedback status 
   },
 ));
 
+const integerMap = {
+  type: "object",
+  propertyNames: { pattern: "^[A-Za-z0-9_.:/-]{1,96}$" },
+  additionalProperties: nonnegativeInteger,
+};
+const nullableMetric = { type: ["integer", "null"], minimum: 0 };
+const nullableAccuracy = { type: ["number", "null"], minimum: 0, maximum: 1 };
+
+const adminOverviewSchema = schema("admin-overview", "MahleOS admin overview v1", strictObject(
+  ["schema_version", "generated_at", "reporting_timezone", "counts", "test_data_included", "privacy_level", "direct_identifiers_included", "private_content_included"],
+  {
+    schema_version: { const: "mahleos-admin-overview-v1" },
+    generated_at: dateTime,
+    reporting_timezone: reportingTimezone,
+    counts: strictObject(
+      ["users", "athletes", "coaches", "admins", "teams", "active_program_runs", "active_program_instances", "completed_days_total", "checkins_total", "assessments_total", "comprehension_checks_completed"],
+      Object.fromEntries(["users", "athletes", "coaches", "admins", "teams", "active_program_runs", "active_program_instances", "completed_days_total", "checkins_total", "assessments_total", "comprehension_checks_completed"].map((key) => [key, nonnegativeInteger])),
+    ),
+    test_data_included: { const: false },
+    privacy_level: { const: "company_counts_only" },
+    direct_identifiers_included: { const: false },
+    private_content_included: { const: false },
+  },
+));
+
+const adminTeamItem = strictObject(
+  ["team_reference", "sport_category", "program_start_date", "athletes", "active_7d", "inactive_7d", "checkins_7d", "completed_days_7d", "pre_n", "mid_n", "post_n", "run_reference", "run_status", "run_started_at"],
+  {
+    team_reference: { type: "string", pattern: "^aggregate-team-[a-f0-9]{16}$" },
+    sport_category: { type: "string", minLength: 1, maxLength: 64 },
+    program_start_date: nullableDate,
+    athletes: nonnegativeInteger,
+    active_7d: nonnegativeInteger,
+    inactive_7d: nonnegativeInteger,
+    checkins_7d: nonnegativeInteger,
+    completed_days_7d: nonnegativeInteger,
+    pre_n: nonnegativeInteger,
+    mid_n: nonnegativeInteger,
+    post_n: nonnegativeInteger,
+    run_reference: { type: ["string", "null"], pattern: "^aggregate-run-[a-f0-9]{16}$" },
+    run_status: { type: ["string", "null"], enum: ["planned", "active", null] },
+    run_started_at: nullableDate,
+  },
+);
+const adminTeamsSchema = schema("admin-teams", "MahleOS admin teams v1", strictObject(
+  ["schema_version", "generated_at", "reporting_timezone", "returned_teams", "truncated", "teams", "test_data_included", "team_names_included", "direct_identifiers_included", "private_content_included"],
+  {
+    schema_version: { const: "mahleos-admin-teams-v1" },
+    generated_at: dateTime,
+    reporting_timezone: reportingTimezone,
+    returned_teams: { type: "integer", minimum: 0, maximum: 50 },
+    truncated: { type: "boolean" },
+    teams: { type: "array", maxItems: 50, items: adminTeamItem },
+    test_data_included: { const: false },
+    team_names_included: { const: false },
+    direct_identifiers_included: { const: false },
+    private_content_included: { const: false },
+  },
+));
+
+const comprehensionAggregate = (dimensions) => strictObject(
+  [...dimensions, "participants", "completed_checks", "question_responses", "correct_responses", "incorrect_responses", "accuracy"],
+  {
+    ...Object.fromEntries(dimensions.map((key) => [key, { type: "integer", minimum: 1 }])),
+    participants: { type: "integer", minimum: 5 },
+    completed_checks: nonnegativeInteger,
+    question_responses: nonnegativeInteger,
+    correct_responses: nonnegativeInteger,
+    incorrect_responses: nonnegativeInteger,
+    accuracy: nullableAccuracy,
+  },
+);
+const comprehensionQuestion = strictObject(
+  ["day_number", "week_number", "question_id", "question_version_key", "target", "participants", "times_shown", "correct_responses", "incorrect_responses", "accuracy", "needs_content_review"],
+  {
+    day_number: { type: "integer", minimum: 1 },
+    week_number: { type: "integer", minimum: 1 },
+    question_id: { type: "string", minLength: 1, maxLength: 160 },
+    question_version_key: { type: "string", pattern: "^[a-f0-9]{32}$" },
+    target: { type: "string", minLength: 1, maxLength: 96 },
+    participants: { type: "integer", minimum: 5 },
+    times_shown: nonnegativeInteger,
+    correct_responses: nonnegativeInteger,
+    incorrect_responses: nonnegativeInteger,
+    accuracy: nullableAccuracy,
+    needs_content_review: { type: "boolean" },
+  },
+);
+const adminComprehensionSchema = schema("admin-comprehension", "MahleOS admin comprehension v1", strictObject(
+  ["schema_version", "generated_at", "reporting_timezone", "summary", "weeks", "days", "questions", "suppressed_groups", "minimum_distinct_participants", "question_text_included", "selected_options_included", "direct_identifiers_included", "private_content_included", "test_data_included"],
+  {
+    schema_version: { const: "mahleos-admin-comprehension-v1" },
+    generated_at: dateTime,
+    reporting_timezone: reportingTimezone,
+    summary: strictObject(
+      ["participants", "completed_checks", "question_responses", "correct_responses", "incorrect_responses", "accuracy", "sufficient_data"],
+      { participants: nonnegativeInteger, completed_checks: nullableMetric, question_responses: nullableMetric, correct_responses: nullableMetric, incorrect_responses: nullableMetric, accuracy: nullableAccuracy, sufficient_data: { type: "boolean" } },
+    ),
+    weeks: arrayOf(comprehensionAggregate(["week_number"])),
+    days: arrayOf(comprehensionAggregate(["day_number", "week_number"])),
+    questions: arrayOf(comprehensionQuestion),
+    suppressed_groups: strictObject(["weeks", "days", "questions"], { weeks: nonnegativeInteger, days: nonnegativeInteger, questions: nonnegativeInteger }),
+    minimum_distinct_participants: { const: 5 },
+    question_text_included: { const: false },
+    selected_options_included: { const: false },
+    direct_identifiers_included: { const: false },
+    private_content_included: { const: false },
+    test_data_included: { const: false },
+  },
+));
+
+const adminFeedbackMetadataSchema = schema("admin-feedback-metadata", "MahleOS admin feedback metadata v1", strictObject(
+  ["schema_version", "generated_at", "reporting_timezone", "counts", "open_by_category", "by_platform", "by_runtime", "by_app_version", "test_data_included", "free_text_included", "admin_notes_included", "direct_identifiers_included"],
+  {
+    schema_version: { const: "mahleos-admin-feedback-metadata-v1" },
+    generated_at: dateTime,
+    reporting_timezone: reportingTimezone,
+    counts: strictObject(["total", "open", "reviewed", "resolved", "new_24h", "new_7d"], Object.fromEntries(["total", "open", "reviewed", "resolved", "new_24h", "new_7d"].map((key) => [key, nonnegativeInteger]))),
+    open_by_category: strictObject(["bug", "suggestion", "general", "other"], Object.fromEntries(["bug", "suggestion", "general", "other"].map((key) => [key, nonnegativeInteger]))),
+    by_platform: integerMap,
+    by_runtime: integerMap,
+    by_app_version: integerMap,
+    test_data_included: { const: false },
+    free_text_included: { const: false },
+    admin_notes_included: { const: false },
+    direct_identifiers_included: { const: false },
+  },
+));
+
+const adminPartnerRequestsSchema = schema("admin-partner-requests", "MahleOS admin partner requests v1", strictObject(
+  ["schema_version", "generated_at", "reporting_timezone", "counts", "by_organization_type", "by_rollout_scope", "by_desired_start", "contact_details_included", "organization_names_included", "notes_or_context_included", "direct_identifiers_included"],
+  {
+    schema_version: { const: "mahleos-admin-partner-requests-v1" },
+    generated_at: dateTime,
+    reporting_timezone: reportingTimezone,
+    counts: strictObject(["total", "submitted", "needs_information", "review_ready", "call_requested", "approved", "activated", "declined_or_withdrawn", "open_older_than_7d"], Object.fromEntries(["total", "submitted", "needs_information", "review_ready", "call_requested", "approved", "activated", "declined_or_withdrawn", "open_older_than_7d"].map((key) => [key, nonnegativeInteger]))),
+    by_organization_type: integerMap,
+    by_rollout_scope: integerMap,
+    by_desired_start: integerMap,
+    contact_details_included: { const: false },
+    organization_names_included: { const: false },
+    notes_or_context_included: { const: false },
+    direct_identifiers_included: { const: false },
+  },
+));
+
 const pilotReadinessFull = strictObject(
   [
     "schema_version",
@@ -709,6 +855,11 @@ const operationsSuccessSchema = schema(
       successBranch("pilot_catalog", "pilot-catalog"),
       successBranch("solo_readiness", "solo-readiness"),
       successBranch("evidence_status", "evidence-status"),
+      successBranch("admin_overview", "admin-overview"),
+      successBranch("admin_teams", "admin-teams"),
+      successBranch("admin_comprehension", "admin-comprehension"),
+      successBranch("admin_feedback_metadata", "admin-feedback-metadata"),
+      successBranch("admin_partner_requests", "admin-partner-requests"),
     ],
   },
 );
@@ -730,6 +881,11 @@ const operationsRequestSchema = schema(
       viewRequest("pilot_catalog"),
       viewRequest("solo_readiness"),
       viewRequest("evidence_status"),
+      viewRequest("admin_overview"),
+      viewRequest("admin_teams"),
+      viewRequest("admin_comprehension"),
+      viewRequest("admin_feedback_metadata"),
+      viewRequest("admin_partner_requests"),
       strictObject(
         ["view", "program_run_id"],
         {
@@ -1154,6 +1310,71 @@ const evidenceStatus = {
   privacy_level: "data_lock_metadata_and_integrity_only",
   privacy_exclusions: evidencePrivacyExclusions,
 };
+const adminOverview = {
+  schema_version: "mahleos-admin-overview-v1",
+  generated_at: generatedAt,
+  reporting_timezone: "UTC",
+  counts: { users: 12, athletes: 9, coaches: 2, admins: 1, teams: 2, active_program_runs: 1, active_program_instances: 9, completed_days_total: 84, checkins_total: 76, assessments_total: 9, comprehension_checks_completed: 42 },
+  test_data_included: false,
+  privacy_level: "company_counts_only",
+  direct_identifiers_included: false,
+  private_content_included: false,
+};
+const adminTeams = {
+  schema_version: "mahleos-admin-teams-v1",
+  generated_at: generatedAt,
+  reporting_timezone: "UTC",
+  returned_teams: 1,
+  truncated: false,
+  teams: [{ team_reference: "aggregate-team-0123456789abcdef", sport_category: "football", program_start_date: "2026-07-14", athletes: 9, active_7d: 8, inactive_7d: 1, checkins_7d: 31, completed_days_7d: 31, pre_n: 9, mid_n: 0, post_n: 0, run_reference: "aggregate-run-fedcba9876543210", run_status: "active", run_started_at: "2026-07-14" }],
+  test_data_included: false,
+  team_names_included: false,
+  direct_identifiers_included: false,
+  private_content_included: false,
+};
+const adminComprehension = {
+  schema_version: "mahleos-admin-comprehension-v1",
+  generated_at: generatedAt,
+  reporting_timezone: "UTC",
+  summary: { participants: 9, completed_checks: 42, question_responses: 126, correct_responses: 101, incorrect_responses: 25, accuracy: 0.8016, sufficient_data: true },
+  weeks: [{ week_number: 1, participants: 9, completed_checks: 42, question_responses: 126, correct_responses: 101, incorrect_responses: 25, accuracy: 0.8016 }],
+  days: [{ day_number: 7, week_number: 1, participants: 9, completed_checks: 9, question_responses: 27, correct_responses: 21, incorrect_responses: 6, accuracy: 0.7778 }],
+  questions: [{ day_number: 7, week_number: 1, question_id: "day7-q1", question_version_key: "0123456789abcdef0123456789abcdef", target: "program_understanding", participants: 9, times_shown: 9, correct_responses: 7, incorrect_responses: 2, accuracy: 0.7778, needs_content_review: false }],
+  suppressed_groups: { weeks: 0, days: 0, questions: 0 },
+  minimum_distinct_participants: 5,
+  question_text_included: false,
+  selected_options_included: false,
+  direct_identifiers_included: false,
+  private_content_included: false,
+  test_data_included: false,
+};
+const adminFeedbackMetadata = {
+  schema_version: "mahleos-admin-feedback-metadata-v1",
+  generated_at: generatedAt,
+  reporting_timezone: "UTC",
+  counts: { total: 7, open: 1, reviewed: 2, resolved: 4, new_24h: 0, new_7d: 1 },
+  open_by_category: { bug: 1, suggestion: 0, general: 0, other: 0 },
+  by_platform: { ios: 3, android: 3, web: 1 },
+  by_runtime: { native: 6, browser: 1 },
+  by_app_version: { "1.2.0": 7 },
+  test_data_included: false,
+  free_text_included: false,
+  admin_notes_included: false,
+  direct_identifiers_included: false,
+};
+const adminPartnerRequests = {
+  schema_version: "mahleos-admin-partner-requests-v1",
+  generated_at: generatedAt,
+  reporting_timezone: "UTC",
+  counts: { total: 3, submitted: 1, needs_information: 0, review_ready: 1, call_requested: 0, approved: 1, activated: 0, declined_or_withdrawn: 0, open_older_than_7d: 1 },
+  by_organization_type: { local_club: 2, academy: 1 },
+  by_rollout_scope: { single_team: 2, pilot: 1 },
+  by_desired_start: { asap: 1, next_4_weeks: 2 },
+  contact_details_included: false,
+  organization_names_included: false,
+  notes_or_context_included: false,
+  direct_identifiers_included: false,
+};
 
 const requestIdFor = (index) => `90000000-0000-4000-8000-${String(500 + index).padStart(12, "0")}`;
 const success = (view, data, index) => ({
@@ -1214,7 +1435,7 @@ const evidenceResponse = {
 
 const manifest = {
   contract_id: "rewireperform-mahleos-machine-read",
-  contract_version: "1.1.0",
+  contract_version: "1.2.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   reporting_timezone: "UTC",
   authentication: {
@@ -1239,6 +1460,11 @@ const manifest = {
       "pilot_catalog",
       "solo_readiness",
       "evidence_status",
+      "admin_overview",
+      "admin_teams",
+      "admin_comprehension",
+      "admin_feedback_metadata",
+      "admin_partner_requests",
     ],
   },
   evidence_endpoint: {
@@ -1323,6 +1549,11 @@ const files = new Map([
   ["schemas/pilot-catalog.schema.json", json(pilotCatalogSchema)],
   ["schemas/solo-readiness.schema.json", json(soloReadinessSchema)],
   ["schemas/evidence-status.schema.json", json(evidenceStatusSchema)],
+  ["schemas/admin-overview.schema.json", json(adminOverviewSchema)],
+  ["schemas/admin-teams.schema.json", json(adminTeamsSchema)],
+  ["schemas/admin-comprehension.schema.json", json(adminComprehensionSchema)],
+  ["schemas/admin-feedback-metadata.schema.json", json(adminFeedbackMetadataSchema)],
+  ["schemas/admin-partner-requests.schema.json", json(adminPartnerRequestsSchema)],
   ["schemas/daily-brief.schema.json", json(dailyBriefSchema)],
   ["schemas/operations-request.schema.json", json(operationsRequestSchema)],
   ["schemas/operations-success.schema.json", json(operationsSuccessSchema)],
@@ -1339,6 +1570,11 @@ const files = new Map([
     { view: "pilot_catalog" },
     { view: "solo_readiness" },
     { view: "evidence_status" },
+    { view: "admin_overview" },
+    { view: "admin_teams" },
+    { view: "admin_comprehension" },
+    { view: "admin_feedback_metadata" },
+    { view: "admin_partner_requests" },
   ])],
   ["golden/evidence-read-requests.json", json([
     { lock_id: lockId },
@@ -1354,6 +1590,11 @@ const files = new Map([
   ["golden/pilot-catalog.success.json", json(success("pilot_catalog", pilotCatalog, 6))],
   ["golden/solo-readiness.success.json", json(success("solo_readiness", soloReadiness, 7))],
   ["golden/evidence-status.success.json", json(success("evidence_status", evidenceStatus, 8))],
+  ["golden/admin-overview.success.json", json(success("admin_overview", adminOverview, 9))],
+  ["golden/admin-teams.success.json", json(success("admin_teams", adminTeams, 10))],
+  ["golden/admin-comprehension.success.json", json(success("admin_comprehension", adminComprehension, 11))],
+  ["golden/admin-feedback-metadata.success.json", json(success("admin_feedback_metadata", adminFeedbackMetadata, 12))],
+  ["golden/admin-partner-requests.success.json", json(success("admin_partner_requests", adminPartnerRequests, 13))],
   ["golden/evidence-read.success.json", json(evidenceResponse)],
   ["golden/error-responses.json", json([
     { error: "invalid_request", request_id: requestIdFor(31) },

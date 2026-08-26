@@ -19,6 +19,11 @@ const schemaFiles = [
   "pilot-catalog",
   "solo-readiness",
   "evidence-status",
+  "admin-overview",
+  "admin-teams",
+  "admin-comprehension",
+  "admin-feedback-metadata",
+  "admin-partner-requests",
   "daily-brief",
   "operations-request",
   "operations-success",
@@ -57,7 +62,7 @@ describe("MahleOS machine-readable handoff", () => {
       privacy_boundaries: { minimum_sensitive_aggregate_n: number; forbidden: string[] };
     }>("manifest.json");
 
-    expect(manifest.contract_version).toBe("1.1.0");
+    expect(manifest.contract_version).toBe("1.2.0");
     expect(manifest.status).toBe("IMPLEMENTED_NOT_PRODUCTION_ACTIVATED");
     expect(manifest.operations_endpoint.method).toBe("POST");
     expect(manifest.operations_endpoint.views).toEqual([
@@ -69,6 +74,11 @@ describe("MahleOS machine-readable handoff", () => {
       "pilot_catalog",
       "solo_readiness",
       "evidence_status",
+      "admin_overview",
+      "admin_teams",
+      "admin_comprehension",
+      "admin_feedback_metadata",
+      "admin_partner_requests",
     ]);
     expect(manifest.retry_policy).toEqual(expect.objectContaining({
       retryable_http_statuses: [429, 503],
@@ -91,6 +101,11 @@ describe("MahleOS machine-readable handoff", () => {
       "pilot-catalog",
       "solo-readiness",
       "evidence-status",
+      "admin-overview",
+      "admin-teams",
+      "admin-comprehension",
+      "admin-feedback-metadata",
+      "admin-partner-requests",
     ]) {
       validateWith(
         "operations-success",

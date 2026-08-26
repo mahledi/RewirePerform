@@ -20,6 +20,10 @@ const hardeningMigration = readFileSync(
   resolve("supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql"),
   "utf8",
 );
+const adminIntelligenceMigration = readFileSync(
+  resolve("supabase/migrations/20260826062312_jarvis_admin_intelligence_read_contract_v1.sql"),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -29,6 +33,11 @@ const contractSchemaNames = [
   "solo-readiness",
   "evidence-status",
   "daily-brief",
+  "admin-overview",
+  "admin-teams",
+  "admin-comprehension",
+  "admin-feedback-metadata",
+  "admin-partner-requests",
   "operations-success",
 ];
 const contractValidator = new Ajv2020({
@@ -162,7 +171,11 @@ try {
     );
     CREATE TABLE public.teams(
       id uuid PRIMARY KEY,
-      is_test_team boolean NOT NULL DEFAULT false
+      sport text,
+      program_start_date date,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      is_test_team boolean NOT NULL DEFAULT false,
+      is_archived boolean NOT NULL DEFAULT false
     );
     CREATE TABLE public.team_members(
       team_id uuid NOT NULL REFERENCES public.teams(id),
@@ -174,7 +187,8 @@ try {
       team_id uuid NOT NULL REFERENCES public.teams(id),
       status text NOT NULL,
       started_at date,
-      ended_at date
+      ended_at date,
+      created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE TABLE public.program_instances(
       id uuid PRIMARY KEY,
@@ -228,7 +242,12 @@ try {
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES auth.users(id),
       program_instance_id uuid REFERENCES public.program_instances(id),
-      created_at timestamptz NOT NULL DEFAULT now()
+      day_number integer NOT NULL DEFAULT 1,
+      generated_questions jsonb NOT NULL DEFAULT '[]'::jsonb,
+      results jsonb NOT NULL DEFAULT '[]'::jsonb,
+      status text NOT NULL DEFAULT 'pending',
+      created_at timestamptz NOT NULL DEFAULT now(),
+      completed_at timestamptz
     );
     CREATE TABLE public.program_progress_snapshots(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -255,7 +274,16 @@ try {
       type text NOT NULL,
       message text NOT NULL,
       status text NOT NULL DEFAULT 'open',
+      technical_context jsonb NOT NULL DEFAULT '{"runtime":"unknown","platform":"unknown","app_version":"unknown"}'::jsonb,
       created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.organization_access_requests(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      status text NOT NULL DEFAULT 'submitted',
+      organization_type text NOT NULL DEFAULT 'other',
+      rollout_scope text NOT NULL DEFAULT 'exploring',
+      desired_start text NOT NULL DEFAULT 'unknown',
+      submitted_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE TABLE public.athlete_transfer_observations(
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -318,6 +346,7 @@ try {
   await db.exec(legacyRunMigration);
   await db.exec(extensionMigration);
   await db.exec(hardeningMigration);
+  await db.exec(adminIntelligenceMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -967,6 +996,25 @@ try {
   `);
   assert(forbiddenColumns.rows.length === 0, "Audit log must not store payloads or user content");
 
+  for (const [index, view] of [
+    "admin_overview",
+    "admin_teams",
+    "admin_comprehension",
+    "admin_feedback_metadata",
+    "admin_partner_requests",
+  ].entries()) {
+    const response = await readAsService({
+      requestId: `91000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+      clientId: `admin-contract-${index + 1}`,
+      view,
+    });
+    assertContractResponse(response, view);
+    assert(
+      JSON.stringify(response.data).includes('"direct_identifiers_included":false'),
+      `${view} must publish its direct-identifier exclusion`,
+    );
+  }
+
   await expectFailure(
     () => db.query(
       "UPDATE public.mahleos_operations_access_log SET outcome = 'not_found' WHERE request_id = $1",
@@ -1000,6 +1048,7 @@ try {
     pilotCatalogCheck: true,
     soloReadinessCheck: true,
     evidenceStatusCheck: true,
+    adminIntelligenceCheck: true,
     publishedSchemaCheck: true,
     auditAppendOnly: true,
     rateLimitCheck: true,

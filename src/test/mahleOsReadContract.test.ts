@@ -15,6 +15,7 @@ const migrationSource = () => [
   "supabase/migrations/20260721082355_add_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql",
+  "supabase/migrations/20260826062312_jarvis_admin_intelligence_read_contract_v1.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
@@ -70,6 +71,11 @@ describe("MahleOS operational read contract", () => {
       "pilot_catalog",
       "solo_readiness",
       "evidence_status",
+      "admin_overview",
+      "admin_teams",
+      "admin_comprehension",
+      "admin_feedback_metadata",
+      "admin_partner_requests",
     ]) {
       expect(migration).toContain(`'${view}'`);
     }
@@ -145,5 +151,31 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("'integrity_status'");
     expect(migration).not.toMatch(/'evidence_payload',\s*edl\./u);
     expect(migration).not.toMatch(/'analysis_manifest',\s*edl\./u);
+  });
+
+  it("adds only fixed privacy-minimized Admin Intelligence producers", () => {
+    const migration = migrationSource();
+
+    for (const helper of [
+      "_mahleos_admin_overview",
+      "_mahleos_admin_teams",
+      "_mahleos_admin_comprehension",
+      "_mahleos_admin_feedback_metadata",
+      "_mahleos_admin_partner_requests",
+    ]) {
+      expect(migration).toContain(`CREATE OR REPLACE FUNCTION public.${helper}()`);
+      expect(migration).toContain(`REVOKE ALL ON FUNCTION public.${helper}()`);
+    }
+    expect(migration).toContain("minimum_distinct_participants', 5");
+    expect(migration).toContain("question_text_included', false");
+    expect(migration).toContain("team_names_included', false");
+    expect(migration).toContain("free_text_included', false");
+    expect(migration).toContain("contact_details_included', false");
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'user_id'/u);
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'team_id'/u);
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'contact_name'/u);
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'work_email'/u);
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'message'/u);
+    expect(migration).not.toMatch(/jsonb_build_object\(\s*'admin_note'/u);
   });
 });
