@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.mahleos-feedback-structured-production-read]
 verify_jwt = false
+
+[functions.mahleos-feedback-structured-production-read-v1-3]
+verify_jwt = false

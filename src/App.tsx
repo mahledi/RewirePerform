@@ -47,6 +47,7 @@ const Journal = lazy(() => import("./pages/Journal.tsx"));
 const JournalHistory = lazy(() => import("./pages/JournalHistory.tsx"));
 const PreTraining = lazy(() => import("./pages/PreTraining.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const AdminJarvis = lazy(() => import("./pages/AdminJarvis.tsx"));
 const AdminContent = lazy(() => import("./pages/AdminContent.tsx"));
 const AdminQA = lazy(() => import("./pages/AdminQA.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
@@ -253,6 +254,9 @@ const AppRoutes = () => {
             } />
             <Route path="/admin" element={
               <ProtectedRoute><Admin /></ProtectedRoute>
+            } />
+            <Route path="/admin/jarvis" element={
+              <ProtectedRoute><AdminJarvis /></ProtectedRoute>
             } />
             <Route path="/admin/content" element={
               <ProtectedRoute><AdminContent /></ProtectedRoute>
