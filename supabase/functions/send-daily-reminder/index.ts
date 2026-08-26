@@ -342,39 +342,75 @@ Deno.serve(async (req) => {
       }
 
       const url = `${payload.url}${payload.url.includes("?") ? "&" : "?"}notification_id=${pending.id}&notification_type=${t}&notification_user_id=${sub.user_id}`;
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
-          },
-          JSON.stringify({ ...payload, url, notificationId: pending.id, notificationType: t }),
-        );
+      const matchingSubscriptions = ((subs ?? []) as Subscription[]).filter((candidate) => {
+        if (candidate.user_id !== sub.user_id) return false;
+        if (t === "morning") {
+          return candidate.morning_hour === sub.morning_hour &&
+            candidate.morning_minute === sub.morning_minute;
+        }
+        if (t === "evening") {
+          return candidate.evening_hour === sub.evening_hour &&
+            candidate.evening_minute === sub.evening_minute;
+        }
+        return candidate.pre_training_minutes === sub.pre_training_minutes;
+      });
+      let deliveredEndpoints = 0;
+      let failedEndpoints = 0;
+      let expiredEndpoints = 0;
+      let lastErrorCode: number | null = null;
+      let lastError = "unknown";
+
+      for (const target of matchingSubscriptions) {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: target.endpoint,
+              keys: { p256dh: target.p256dh, auth: target.auth },
+            },
+            JSON.stringify({ ...payload, url, notificationId: pending.id, notificationType: t }),
+          );
+          deliveredEndpoints++;
+        } catch (e: unknown) {
+          failedEndpoints++;
+          const pushError = e as PushError;
+          const code = pushError.statusCode;
+          lastErrorCode = typeof code === "number" ? code : null;
+          lastError = pushError.body ?? pushError.message ?? "unknown";
+          if (code === 404 || code === 410) {
+            await supa.from("push_subscriptions").delete().eq("id", target.id);
+            expiredEndpoints++;
+            removed.push(target.endpoint);
+          } else {
+            console.error("push error", code, lastError);
+          }
+        }
+      }
+
+      if (deliveredEndpoints > 0) {
         await supa.from("notification_log").update({
           status: "sent",
           sent_at: new Date().toISOString(),
+          metadata: {
+            source: item.source,
+            delivered_endpoints: deliveredEndpoints,
+            failed_endpoints: failedEndpoints,
+          },
         }).eq("id", pending.id);
         sent++;
-      } catch (e: unknown) {
-        const pushError = e as PushError;
-        const code = pushError.statusCode;
-        if (code === 404 || code === 410) {
-          await supa.from("push_subscriptions").delete().eq("id", sub.id);
-          await supa.from("notification_log").update({
-            status: "expired_subscription",
-            failed_at: new Date().toISOString(),
-            error_code: code,
-          }).eq("id", pending.id);
-          removed.push(sub.endpoint);
-        } else {
-          await supa.from("notification_log").update({
-            status: "failed",
-            failed_at: new Date().toISOString(),
-            error_code: typeof code === "number" ? code : null,
-            metadata: { error: pushError.body ?? pushError.message ?? "unknown" },
-          }).eq("id", pending.id);
-          console.error("push error", code, pushError.body ?? pushError.message);
-        }
+      } else {
+        await supa.from("notification_log").update({
+          status: expiredEndpoints > 0 && failedEndpoints === expiredEndpoints
+            ? "expired_subscription"
+            : "failed",
+          failed_at: new Date().toISOString(),
+          error_code: lastErrorCode,
+          metadata: {
+            source: item.source,
+            error: lastError,
+            delivered_endpoints: 0,
+            failed_endpoints: failedEndpoints,
+          },
+        }).eq("id", pending.id);
       }
     }
   }
