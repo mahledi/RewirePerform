@@ -261,8 +261,15 @@ const Settings = () => {
                   <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
                     <li>Öffne RewirePerform in <strong className="text-foreground">Chrome</strong></li>
                     <li>Tippe auf die <strong className="text-foreground">drei Punkte</strong> oben rechts</li>
-                    <li>Wähle <strong className="text-foreground">"Zum Startbildschirm hinzufügen"</strong></li>
-                    <li>Bestätige mit <strong className="text-foreground">"Hinzufügen"</strong></li>
+                    <li>
+                      Wähle <strong className="text-foreground">"Installieren und Verknüpfung erstellen"</strong>. Je nach
+                      Chrome-Version kann dort auch <strong className="text-foreground">"App installieren"</strong> oder
+                      <strong className="text-foreground">"Zum Startbildschirm hinzufügen"</strong> stehen.
+                    </li>
+                    <li>
+                      Wähle möglichst <strong className="text-foreground">"Installieren"</strong> und bestätige. Falls nur
+                      eine Verknüpfung angeboten wird, tippe auf <strong className="text-foreground">"Hinzufügen"</strong>.
+                    </li>
                   </ol>
                 </div>
 

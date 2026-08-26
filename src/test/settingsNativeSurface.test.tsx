@@ -40,6 +40,9 @@ describe("settings native surface", () => {
 
     expect(screen.getByRole("heading", { name: "Als App installieren" })).toBeInTheDocument();
     expect(screen.getByText("Android (Chrome)")).toBeInTheDocument();
+    expect(screen.getByText(/Installieren und Verknüpfung erstellen/)).toBeInTheDocument();
+    expect(screen.getByText('"App installieren"')).toBeInTheDocument();
+    expect(screen.getByText(/Zum Startbildschirm hinzufügen/)).toBeInTheDocument();
   });
 
   it("does not show browser installation instructions inside the native app", () => {
