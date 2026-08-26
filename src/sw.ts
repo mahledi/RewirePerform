@@ -98,10 +98,23 @@ self.addEventListener("push", (event: PushEvent) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/app-icon.png",
-      badge: "/app-icon.png",
-      data: { url: data.url || "/" },
-    })
+      icon: "/app-icon-192.png",
+      badge: "/favicon-64.png",
+      data: {
+        url: data.url || "/",
+        notificationId: data.notificationId,
+        notificationType: data.notificationType,
+      },
+      lang: "de-DE",
+      tag: data.notificationId
+        ? `rewireperform-${data.notificationId}`
+        : `rewireperform-${data.notificationType || "reminder"}`,
+      renotify: true,
+      requireInteraction: true,
+      silent: false,
+      timestamp: Date.now(),
+      vibrate: [240, 120, 240],
+    } as NotificationOptions)
   );
 });
 
