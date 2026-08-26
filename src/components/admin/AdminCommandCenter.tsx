@@ -3,6 +3,7 @@ import { ArrowRight, Building2, Database, ShieldCheck, Sparkles, Users } from "l
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import type { OrganizationRequest } from "@/components/admin/OrganizationRequestManager";
 
 const ActionCard = ({ icon: Icon, eyebrow, title, description, onClick, badge }: {
@@ -23,6 +24,7 @@ const ActionCard = ({ icon: Icon, eyebrow, title, description, onClick, badge }:
 );
 
 const AdminCommandCenter = ({ onNavigate }: { onNavigate: (section: string) => void }) => {
+  const navigate = useNavigate();
   const [newRequests, setNewRequests] = useState<number | null>(null);
 
   const loadRequests = useCallback(async () => {
@@ -63,7 +65,7 @@ const AdminCommandCenter = ({ onNavigate }: { onNavigate: (section: string) => v
         ))}
       </div>
 
-      <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground"><span className="font-semibold text-foreground">Jarvis:</span> aktuell bewusst read-only geschlossen. Nach der separaten Aktivierung werden hier quellenbasierte Vorrecherchen und Entscheidungszusammenfassungen angezeigt; niemals automatische Freigaben oder Preise.</div>
+      <button type="button" onClick={() => navigate("/admin/jarvis")} className="flex w-full items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-left text-sm transition-colors hover:bg-primary/10"><span><span className="font-semibold text-foreground">Jarvis Intelligence:</span> Admin-Daten read-only strukturieren, verbinden und in einfachen Worten abrufen. Kein Freitext, keine automatischen Freigaben.</span><ArrowRight className="h-4 w-4 shrink-0 text-primary" /></button>
     </div>
   );
 };

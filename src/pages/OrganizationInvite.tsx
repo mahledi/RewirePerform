@@ -101,7 +101,7 @@ const OrganizationInvite = () => {
     return `/auth?${params.toString()}`;
   };
 
-  const useDifferentAccount = async () => {
+  const handleDifferentAccount = async () => {
     if (switchingAccount) return;
     setSwitchingAccount(true);
     await signOut();
@@ -178,7 +178,7 @@ const OrganizationInvite = () => {
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => void useDifferentAccount()}
+                  onClick={() => void handleDifferentAccount()}
                   disabled={switchingAccount || state === "accepting"}
                   className="mt-2 min-h-10 px-0 text-primary hover:bg-transparent hover:text-primary"
                 >
