@@ -1,12 +1,11 @@
 # MahleOS Read API Contract
 
-Stand: 21. Juli 2026
+Stand: 26. August 2026
 
-Status: Der V1.1-Produzentenvertrag ist in `main` integriert. Der aktuelle
-Hardening-Branch ergaenzt konservative No-False-Green-Regeln und rekonstruiert
-eine bereits live angewandte Legacy-Migration im Git-Verlauf. Keine MahleOS-
-Migration, Edge Function, Umgebungsvariable oder Verbindung wurde dadurch auf
-Production aktiviert.
+Status: Der V1.1-Produzentenvertrag ist in `main` integriert. Der isolierte
+V1.2-Kandidat ergaenzt fuenf feste Admin-Aggregate. Keine V1.2-Migration, Edge
+Function, Umgebungsvariable oder Verbindung ist dadurch auf Production
+aktiviert.
 
 ## Zweck
 
@@ -165,13 +164,35 @@ Invalidierungsdetails werden hier niemals ausgegeben. Der eigentliche
 freigegebene Payload bleibt ausschliesslich dem separaten `evidence-read`
 Endpunkt vorbehalten.
 
+### Admin Intelligence
+
+Der V1.2-Kandidat ergaenzt genau fuenf weitere feste Ansichten:
+
+- `admin_overview`: Production-Zaehler fuer Nutzerrollen, Teams, aktive
+  Programme, Aktivitaet, Assessments und Programmverstaendnis.
+- `admin_teams`: hoechstens 50 Teams als opake Referenzen mit Sport,
+  Programmstatus, Aktivitaets- und Messabdeckungszaehlern; ohne Teamnamen.
+- `admin_comprehension`: strukturierte Richtig-/Falsch-Aggregate nach Woche,
+  Tag und Frage. Jede ausgegebene Gruppe benoetigt mindestens fuenf
+  unterschiedliche Teilnehmende. Fragetext und ausgewaehlte Optionen fehlen.
+- `admin_feedback_metadata`: Status-, Kategorie-, Plattform-, Runtime- und
+  App-Version-Zaehler. `message` und `admin_note` werden nicht gelesen.
+- `admin_partner_requests`: Status- und feste Segmentzaehler fuer eingehende
+  Organisationsanfragen. Kontakt, Organisationsname, Website und Kontextnotiz
+  werden nicht gelesen.
+
+Alle Ansichten laufen durch denselben `read_mahleos_operational_view`-RPC. Die
+internen Aggregatfunktionen sind auch fuer `service_role` nicht direkt
+ausfuehrbar. Der Edge Reader hat weiterhin keinen Tabellenzugriff und keine
+allgemeinen Filter- oder SQL-Parameter.
+
 ## Maschinenlesbares Handoff
 
 `docs/mahleos-handoff/contracts/v1/` enthaelt:
 
 - Transport- und Privacy-Manifest `manifest.json`
 - JSON-Schemas mit geschlossenen Top-Level-Vertraegen
-- synthetische Golden Responses fuer alle acht Operations-Ansichten
+- synthetische Golden Responses fuer alle 13 Operations-Ansichten
 - Golden Response fuer `evidence-read`
 - vollstaendige dokumentierte Fehlerantworten
 
@@ -275,9 +296,13 @@ Erst nach separater Production-Freigabe in dieser Reihenfolge:
    `20260721181524_harden_mahleos_readiness_statuses.sql` kontrolliert in
    dieser Reihenfolge anwenden. Danach Grants, Funktionskonfiguration, Trigger
    und Security Advisor pruefen.
-4. 256-Bit-Schluessel lokal erzeugen und getrennt als Edge Secret sowie im
+4. Erst danach den V1.2-Kandidaten
+   `20260826062312_jarvis_admin_intelligence_read_contract_v1.sql` anwenden und
+   alle fuenf Admin-Antworten mit Production-Zaehlern sowie den dokumentierten
+   Freitext-/Identifier-Ausschluessen pruefen.
+5. 256-Bit-Schluessel lokal erzeugen und getrennt als Edge Secret sowie im
    MahleOS Keychain hinterlegen.
-5. `mahleos-read` und die aktualisierte `evidence-read` Function deployen.
+6. `mahleos-read` und die aktualisierte `evidence-read` Function deployen.
 6. Ohne Key, mit falschem Key, altem Rotations-Key, unbekannter View,
    unbekanntem Run und Rate Limit negativ testen.
 7. Mit synthetischem Run und synthetischem Data Lock positiv testen.

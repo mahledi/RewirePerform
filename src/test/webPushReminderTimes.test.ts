@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { reminderTimesForStorage, type ReminderTimes } from "@/hooks/usePushSubscription";
 
 const LOCAL_TIMES: ReminderTimes = {
@@ -9,8 +9,21 @@ const LOCAL_TIMES: ReminderTimes = {
   preTrainingMinutes: 60,
 };
 
+const ORIGINAL_TIME_ZONE = process.env.TZ;
+
 describe("web push reminder time storage", () => {
-  afterEach(() => vi.useRealTimers());
+  beforeEach(() => {
+    process.env.TZ = "Europe/Berlin";
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (ORIGINAL_TIME_ZONE === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = ORIGINAL_TIME_ZONE;
+    }
+  });
 
   it("converts a Berlin local time to UTC exactly once at the push boundary", () => {
     vi.useFakeTimers();

@@ -274,6 +274,176 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ok",
+        "request_id",
+        "view",
+        "checksum_algorithm",
+        "response_checksum",
+        "data"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "view": {
+          "const": "admin_overview"
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "response_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "$ref": "https://rewireperform.com/contracts/mahleos/v1/admin-overview.schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ok",
+        "request_id",
+        "view",
+        "checksum_algorithm",
+        "response_checksum",
+        "data"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "view": {
+          "const": "admin_teams"
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "response_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "$ref": "https://rewireperform.com/contracts/mahleos/v1/admin-teams.schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ok",
+        "request_id",
+        "view",
+        "checksum_algorithm",
+        "response_checksum",
+        "data"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "view": {
+          "const": "admin_comprehension"
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "response_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "$ref": "https://rewireperform.com/contracts/mahleos/v1/admin-comprehension.schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ok",
+        "request_id",
+        "view",
+        "checksum_algorithm",
+        "response_checksum",
+        "data"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "view": {
+          "const": "admin_feedback_metadata"
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "response_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "$ref": "https://rewireperform.com/contracts/mahleos/v1/admin-feedback-metadata.schema.json"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ok",
+        "request_id",
+        "view",
+        "checksum_algorithm",
+        "response_checksum",
+        "data"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "view": {
+          "const": "admin_partner_requests"
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "response_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "$ref": "https://rewireperform.com/contracts/mahleos/v1/admin-partner-requests.schema.json"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }
