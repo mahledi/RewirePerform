@@ -76,6 +76,7 @@ describe("questionnaire V1.2 block A", () => {
     mocks.push.mode = "native";
     mocks.push.supportReason = null;
     mocks.subscribe.mockResolvedValue(undefined);
+    Element.prototype.scrollIntoView = vi.fn();
   });
 
   it("neutralizes question 15 without changing its scoring contract", () => {
@@ -159,6 +160,24 @@ describe("questionnaire V1.2 block A", () => {
 
     expect(screen.getByRole("combobox", { name: "Uhrzeit für den Check-in am Morgen" })).toHaveTextContent("07:30 Uhr");
     expect(screen.getByRole("combobox", { name: "Uhrzeit für das Journal am Abend" })).toHaveTextContent("21:00 Uhr");
+  });
+
+  it("passes a selected web reminder time to the push boundary as local time", async () => {
+    mocks.push.mode = "web";
+    render(<QuestionnaireNotificationOnboarding onContinue={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Zeiten auswählen" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "Uhrzeit für den Check-in am Morgen" }));
+    fireEvent.click(await screen.findByRole("option", { name: "09:30 Uhr" }));
+    fireEvent.click(screen.getByRole("button", { name: "Benachrichtigungen erlauben" }));
+
+    await waitFor(() => expect(mocks.subscribe).toHaveBeenCalledWith({
+      morningHour: 9,
+      morningMinute: 30,
+      eveningHour: 21,
+      eveningMinute: 0,
+      preTrainingMinutes: 60,
+    }));
   });
 
   it("shows notification onboarding only after the questionnaire save succeeds", async () => {

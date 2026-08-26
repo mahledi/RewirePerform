@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,7 @@ import {
   syncNativeRemotePushRegistration,
   unregisterNativeRemotePush,
 } from "@/lib/nativeRemotePush";
+import { localToUtcReminderTime } from "@/lib/reminderTime";
 
 const urlBase64ToUint8Array = (base64String: string) => {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -42,6 +43,38 @@ export interface ReminderTimes {
   eveningMinute: number;
   preTrainingMinutes: number;
 }
+
+export const reminderTimesForStorage = (
+  times: ReminderTimes,
+  mode: "native" | "web",
+): ReminderTimes => {
+  if (mode === "native") return times;
+  const morning = localToUtcReminderTime(times.morningHour, times.morningMinute);
+  const evening = localToUtcReminderTime(times.eveningHour, times.eveningMinute);
+  return {
+    morningHour: morning.h,
+    morningMinute: morning.m,
+    eveningHour: evening.h,
+    eveningMinute: evening.m,
+    preTrainingMinutes: times.preTrainingMinutes,
+  };
+};
+
+const reminderTimesMatch = (
+  row: {
+    morning_hour: number;
+    morning_minute: number;
+    evening_hour: number;
+    evening_minute: number;
+    pre_training_minutes: number | null;
+  },
+  expected: ReminderTimes,
+) =>
+  row.morning_hour === expected.morningHour &&
+  row.morning_minute === expected.morningMinute &&
+  row.evening_hour === expected.eveningHour &&
+  row.evening_minute === expected.eveningMinute &&
+  (row.pre_training_minutes ?? 60) === expected.preTrainingMinutes;
 
 type PushSupport =
   | { supported: true; reason: null; mode: "native" | "web" }
@@ -95,6 +128,7 @@ export const usePushSubscription = () => {
   const [eveningHour, setEveningHour] = useState(21);
   const [eveningMinute, setEveningMinute] = useState(0);
   const [preTrainingMinutes, setPreTrainingMinutes] = useState(60);
+  const subscribeInFlight = useRef<Promise<void> | null>(null);
   const support = getPushSupport();
   const applyReminderTimes = useCallback((times: ReminderTimes) => {
     setMorningHour(times.morningHour);
@@ -148,16 +182,13 @@ export const usePushSubscription = () => {
     refresh();
   }, [refresh]);
 
-  const subscribe = useCallback(async (times?: ReminderTimes) => {
+  const subscribe = useCallback(async (localTimes: ReminderTimes) => {
+    if (subscribeInFlight.current) return subscribeInFlight.current;
+
+    const operation = (async () => {
     if (!user || !support.supported) throw new Error("Push nicht unterstützt");
 
-    const nextTimes: ReminderTimes = {
-      morningHour: times?.morningHour ?? morningHour,
-      morningMinute: times?.morningMinute ?? morningMinute,
-      eveningHour: times?.eveningHour ?? eveningHour,
-      eveningMinute: times?.eveningMinute ?? eveningMinute,
-      preTrainingMinutes: times?.preTrainingMinutes ?? preTrainingMinutes,
-    };
+    const nextTimes = reminderTimesForStorage(localTimes, support.mode);
 
     if (support.mode === "native") {
       if (!(await requestNativeNotificationPermission())) {
@@ -194,7 +225,7 @@ export const usePushSubscription = () => {
     const p256dh = arrayBufferToBase64Url(sub.getKey("p256dh"));
     const auth = arrayBufferToBase64Url(sub.getKey("auth"));
 
-    const { error } = await supabase.from("push_subscriptions").upsert(
+    const { data: stored, error } = await supabase.from("push_subscriptions").upsert(
       {
         user_id: user.id,
         endpoint: sub.endpoint,
@@ -209,11 +240,22 @@ export const usePushSubscription = () => {
         timezone: getBrowserTimeZone(),
       },
       { onConflict: "endpoint" },
-    );
+    ).select("morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes").single();
     if (error) throw error;
+    if (!stored || !reminderTimesMatch(stored, nextTimes)) {
+      throw new Error("Erinnerungszeiten konnten nicht verlässlich gespeichert werden");
+    }
     applyReminderTimes(nextTimes);
     setEnabled(true);
-  }, [user, support.supported, support.mode, morningHour, morningMinute, eveningHour, eveningMinute, preTrainingMinutes, applyReminderTimes]);
+    })();
+
+    subscribeInFlight.current = operation;
+    try {
+      await operation;
+    } finally {
+      if (subscribeInFlight.current === operation) subscribeInFlight.current = null;
+    }
+  }, [user, support.supported, support.mode, applyReminderTimes]);
 
   const unsubscribe = useCallback(async () => {
     if (!support.supported) return;
@@ -237,13 +279,15 @@ export const usePushSubscription = () => {
   const saveTimes = useCallback(
     async (mh: number, mm: number, eh: number, em: number, preMinutes: number) => {
       if (!user) return;
-      const nextTimes: ReminderTimes = {
+      const localTimes: ReminderTimes = {
         morningHour: mh,
         morningMinute: mm,
         eveningHour: eh,
         eveningMinute: em,
         preTrainingMinutes: preMinutes,
       };
+      if (!support.supported || !support.mode) throw new Error("Push nicht unterstützt");
+      const nextTimes = reminderTimesForStorage(localTimes, support.mode);
       if (support.mode === "native") {
         await syncNativeRemindersForUser(user.id, nextTimes);
         await syncNativeRemotePushRegistration(user.id);
@@ -251,25 +295,25 @@ export const usePushSubscription = () => {
         setEnabled(true);
         return;
       }
-      setMorningHour(mh);
-      setMorningMinute(mm);
-      setEveningHour(eh);
-      setEveningMinute(em);
-      setPreTrainingMinutes(preMinutes);
-      const { error } = await supabase
+      const { data: storedRows, error } = await supabase
         .from("push_subscriptions")
         .update({
-          morning_hour: mh,
-          morning_minute: mm,
-          evening_hour: eh,
-          evening_minute: em,
-          pre_training_minutes: preMinutes,
+          morning_hour: nextTimes.morningHour,
+          morning_minute: nextTimes.morningMinute,
+          evening_hour: nextTimes.eveningHour,
+          evening_minute: nextTimes.eveningMinute,
+          pre_training_minutes: nextTimes.preTrainingMinutes,
           timezone: getBrowserTimeZone(),
         })
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .select("morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes");
       if (error) throw error;
+      if (!storedRows?.length || storedRows.some((row) => !reminderTimesMatch(row, nextTimes))) {
+        throw new Error("Erinnerungszeiten konnten nicht verlässlich gespeichert werden");
+      }
+      applyReminderTimes(nextTimes);
     },
-    [user, support.mode, applyReminderTimes],
+    [user, support.supported, support.mode, applyReminderTimes],
   );
 
   const resync = useCallback(async () => {

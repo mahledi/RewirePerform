@@ -13,7 +13,6 @@ import {
   EVENING_REMINDER_OPTIONS as eveningOptions,
   MORNING_REMINDER_OPTIONS as morningOptions,
   formatReminderTime as formatHM,
-  localToUtcReminderTime as localToUtc,
   parseReminderTime as parseTimeValue,
   utcToLocalReminderTime as utcToLocal,
   type LocalReminderTime as LocalTime,
@@ -183,17 +182,11 @@ export const TrainingAndNotifications = () => {
 
   const handleEnablePush = async () => {
     try {
-      const m = push.mode === "native"
-        ? morningLocal
-        : localToUtc(morningLocal.h, morningLocal.m);
-      const e = push.mode === "native"
-        ? eveningLocal
-        : localToUtc(eveningLocal.h, eveningLocal.m);
       await push.subscribe({
-        morningHour: m.h,
-        morningMinute: m.m,
-        eveningHour: e.h,
-        eveningMinute: e.m,
+        morningHour: morningLocal.h,
+        morningMinute: morningLocal.m,
+        eveningHour: eveningLocal.h,
+        eveningMinute: eveningLocal.m,
         preTrainingMinutes,
       });
       toast.success("Benachrichtigungen aktiviert.");
@@ -209,13 +202,7 @@ export const TrainingAndNotifications = () => {
   const saveTimes = async () => {
     setTimesSaveState("saving");
     try {
-      const m = push.mode === "native"
-        ? morningLocal
-        : localToUtc(morningLocal.h, morningLocal.m);
-      const e = push.mode === "native"
-        ? eveningLocal
-        : localToUtc(eveningLocal.h, eveningLocal.m);
-      await push.saveTimes(m.h, m.m, e.h, e.m, preTrainingMinutes);
+      await push.saveTimes(morningLocal.h, morningLocal.m, eveningLocal.h, eveningLocal.m, preTrainingMinutes);
       setTimesSaveState("saved");
       toast.success("Zeiten gespeichert.");
     } catch (err: unknown) {

@@ -14,7 +14,6 @@ import {
   MORNING_REMINDER_OPTIONS,
   PRE_TRAINING_REMINDER_OPTIONS,
   formatReminderTime,
-  localToUtcReminderTime,
   parseReminderTime,
   utcToLocalReminderTime,
   type LocalReminderTime,
@@ -65,17 +64,11 @@ const QuestionnaireNotificationOnboarding = ({
     setEnabling(true);
     setError(null);
     try {
-      const storedMorning = push.mode === "web"
-        ? localToUtcReminderTime(morning.h, morning.m)
-        : morning;
-      const storedEvening = push.mode === "web"
-        ? localToUtcReminderTime(evening.h, evening.m)
-        : evening;
       await push.subscribe({
-        morningHour: storedMorning.h,
-        morningMinute: storedMorning.m,
-        eveningHour: storedEvening.h,
-        eveningMinute: storedEvening.m,
+        morningHour: morning.h,
+        morningMinute: morning.m,
+        eveningHour: evening.h,
+        eveningMinute: evening.m,
         preTrainingMinutes,
       });
       setStep("complete");
