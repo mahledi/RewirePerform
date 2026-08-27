@@ -5,6 +5,7 @@ import type {
   AdminFeedbackCommentPage,
   getAdminFeedbackCommentPage,
 } from "@/lib/adminFeedbackComments";
+import type { AdminFeedbackInsights, getAdminFeedbackInsights } from "@/lib/adminFeedbackInsights";
 
 const PREVIEW_COMMENTS: Record<FeedbackCheckpointDay, string> = {
   10: "Die Fragen waren direkt verständlich. Nach einem späten Training wäre etwas weniger Text für mich noch leichter.",
@@ -90,6 +91,40 @@ const previewPageLoader: typeof getAdminFeedbackCommentPage = (input = {}) => {
   return Promise.resolve(page);
 };
 
+const previewStructuredInsightLoader: typeof getAdminFeedbackInsights = (dataScope = "production") => {
+  const questions: AdminFeedbackInsights["questions"] = ([10, 24, 39, 55] as const).flatMap((programDay) =>
+    FEEDBACK_CHECKPOINTS[programDay].questions.slice(0, 2).map((question, questionIndex) => {
+      const options = question.options.slice(0, 3);
+      const participantCounts = questionIndex === 0 ? [6, 2, 1] : [5, 3, 2];
+      return {
+        programDay,
+        questionId: question.id,
+        questionPrompt: question.prompt,
+        participants: 8,
+        selections: participantCounts.reduce((sum, count) => sum + count, 0),
+        sufficientData: true,
+        optionDistribution: options.map((option, optionIndex) => ({
+          optionId: option.id,
+          optionLabel: option.label,
+          participants: participantCounts[optionIndex] ?? 1,
+          selections: participantCounts[optionIndex] ?? 1,
+          participantRate: (participantCounts[optionIndex] ?? 1) / 8,
+        })),
+      };
+    }),
+  );
+  return Promise.resolve({
+    generatedAt: "2026-08-14T14:30:00.000Z",
+    dataScope,
+    participants: 8,
+    submissions: 32,
+    checkpointsWithData: 4,
+    sufficientData: true,
+    minimumDistinctParticipants: 5,
+    questions,
+  });
+};
+
 const AdminFeedbackCommentsPreview = () => (
   <div className="min-h-screen bg-background px-3 py-5 text-foreground sm:px-6 sm:py-8">
     <div className="mx-auto mb-5 max-w-6xl">
@@ -101,7 +136,7 @@ const AdminFeedbackCommentsPreview = () => (
       </p>
     </div>
     <main className="mx-auto max-w-6xl">
-      <AdminFeedbackIntelligenceComments pageLoader={previewPageLoader} />
+      <AdminFeedbackIntelligenceComments pageLoader={previewPageLoader} structuredInsightLoader={previewStructuredInsightLoader} />
     </main>
   </div>
 );

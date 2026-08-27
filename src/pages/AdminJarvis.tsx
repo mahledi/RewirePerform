@@ -28,6 +28,8 @@ const AdminJarvis = () => {
   const [loading, setLoading] = useState(true);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<JarvisAnswer | null>(null);
+  const [feedbackSourceState, setFeedbackSourceState] = useState<SourceState["state"] | null>(null);
+  const [comprehensionSourceState, setComprehensionSourceState] = useState<SourceState["state"] | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,6 +67,12 @@ const AdminJarvis = () => {
     if (!question.trim()) return;
     setAnswer(buildJarvisAnswer(question, data));
   };
+
+  const visibleSources = [
+    ...sources,
+    ...(feedbackSourceState ? [{ label: "Strukturiertes Feedback", state: feedbackSourceState }] : []),
+    ...(comprehensionSourceState ? [{ label: "Programmverständnis", state: comprehensionSourceState }] : []),
+  ];
 
   if (authLoading || roleLoading || (user && !roleVerified)) {
     return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -123,11 +131,11 @@ const AdminJarvis = () => {
           <TabsContent value="overview">
             {loading ? <Card><CardContent className="flex min-h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></CardContent></Card> : <AdminJarvisDashboard data={data} />}
           </TabsContent>
-          <TabsContent value="feedback"><AdminFeedbackStructuredInsights dataScope="production" /></TabsContent>
-          <TabsContent value="comprehension"><AdminComprehensionInsights /></TabsContent>
+          <TabsContent value="feedback"><AdminFeedbackStructuredInsights dataScope="production" onSourceStateChange={setFeedbackSourceState} /></TabsContent>
+          <TabsContent value="comprehension"><AdminComprehensionInsights onSourceStateChange={setComprehensionSourceState} /></TabsContent>
           <TabsContent value="system">
             <div className="grid gap-4 lg:grid-cols-2">
-              <Card><CardHeader><CardTitle>Verbundene Admin-Quellen</CardTitle><CardDescription>{sources.filter((source) => source.state === "CURRENT").length} von {sources.length} Quellen in dieser Browser-Ansicht aktuell erreichbar.</CardDescription></CardHeader><CardContent className="grid gap-2">{sources.map((source) => <div key={source.label} className="flex items-center justify-between rounded-xl border p-3"><span className="text-sm">{source.label}</span><Badge variant={source.state === "CURRENT" ? "default" : "destructive"}>{source.state === "CURRENT" ? "Aktuell" : "Nicht verfügbar"}</Badge></div>)}</CardContent></Card>
+              <Card><CardHeader><CardTitle>Verbundene Admin-Quellen</CardTitle><CardDescription>{visibleSources.filter((source) => source.state === "CURRENT").length} von {visibleSources.length} in dieser Browser-Sitzung geprüften Quellen aktuell erreichbar.</CardDescription></CardHeader><CardContent className="grid gap-2">{visibleSources.map((source) => <div key={source.label} className="flex items-center justify-between rounded-xl border p-3"><span className="text-sm">{source.label}</span><Badge variant={source.state === "CURRENT" ? "default" : "destructive"}>{source.state === "CURRENT" ? "Aktuell" : "Nicht verfügbar"}</Badge></div>)}</CardContent></Card>
               <Card><CardHeader><CardTitle>Wahrheit und Grenzen</CardTitle><CardDescription>Jarvis trennt Messstand, fehlende Quellen und menschliche Entscheidungen.</CardDescription></CardHeader><CardContent className="space-y-3 text-sm text-muted-foreground"><p>Keine Tabellenabfragen, keine Writes und keine automatischen Produktentscheidungen.</p><p>Feedback-Freitext, Journale, Namen, E-Mails und direkte Personenkennungen werden hier nicht geladen.</p><p>Gruppenmetriken bleiben ab n ≥ 5; Solo und Team werden als getrennte Teilnahmeformen behandelt.</p><p>Ursachen, Wirksamkeit und Produktentscheidungen bleiben bei Mahle.</p></CardContent></Card>
             </div>
           </TabsContent>

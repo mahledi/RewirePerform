@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import AdminFeedbackStructuredInsights from "@/components/admin/AdminFeedbackStructuredInsights";
+import { buildAdminFeedbackCheckpointSummaries, type AdminFeedbackInsights } from "@/lib/adminFeedbackInsights";
 
 const sufficient = {
   generatedAt: "2026-08-24T10:00:00.000Z",
@@ -29,11 +30,37 @@ const sufficient = {
 
 describe("admin structured feedback insights", () => {
   it("renders only aggregate checkbox results and their privacy boundary", async () => {
-    render(<AdminFeedbackStructuredInsights dataScope="synthetic" insightLoader={vi.fn().mockResolvedValue(sufficient)} />);
+    const onSourceStateChange = vi.fn();
+    render(<AdminFeedbackStructuredInsights dataScope="synthetic" insightLoader={vi.fn().mockResolvedValue(sufficient)} onSourceStateChange={onSourceStateChange} />);
 
     expect(await screen.findByText("Sehr verständlich")).toBeInTheDocument();
     expect(screen.getByText("67 %")).toBeInTheDocument();
+    expect(screen.getByText("Bericht ab Tag 11")).toBeInTheDocument();
+    expect(screen.getByText(/Am häufigsten: Sehr verständlich · 67 % \(4 Athleten\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Namen, E-Mails, Nutzerkennungen, Journale und Freitexte sind ausgeschlossen/i)).toBeInTheDocument();
+    expect(onSourceStateChange).toHaveBeenCalledWith("CURRENT");
+  });
+
+  it("maps every feedback checkpoint to its next-day Jarvis report without including suppressed questions", () => {
+    const baseQuestion = sufficient.questions[0];
+    const questions = ([10, 24, 39, 55] as const).flatMap((programDay) => [
+      { ...baseQuestion, programDay, questionId: `q-${programDay}`, questionPrompt: `Frage ${programDay}` },
+      { ...baseQuestion, programDay, questionId: `suppressed-${programDay}`, questionPrompt: "gesperrt", participants: 4, sufficientData: false },
+    ]);
+    const summaries = buildAdminFeedbackCheckpointSummaries({
+      ...sufficient,
+      checkpointsWithData: 4,
+      questions,
+    } as AdminFeedbackInsights);
+
+    expect(summaries.map(({ programDay, reportDay }) => [programDay, reportDay])).toEqual([
+      [10, 11],
+      [24, 25],
+      [39, 40],
+      [55, 56],
+    ]);
+    expect(summaries.every(({ questionsEvaluated }) => questionsEvaluated === 1)).toBe(true);
+    expect(summaries.flatMap(({ highlights }) => highlights).some(({ questionPrompt }) => questionPrompt === "gesperrt")).toBe(false);
   });
 
   it("suppresses distributions below five distinct participants", async () => {
@@ -48,7 +75,9 @@ describe("admin structured feedback insights", () => {
   });
 
   it("fails closed when the aggregate RPC cannot be validated", async () => {
-    render(<AdminFeedbackStructuredInsights dataScope="production" insightLoader={vi.fn().mockRejectedValue(new Error("denied"))} />);
+    const onSourceStateChange = vi.fn();
+    render(<AdminFeedbackStructuredInsights dataScope="production" insightLoader={vi.fn().mockRejectedValue(new Error("denied"))} onSourceStateChange={onSourceStateChange} />);
     expect(await screen.findByText(/Strukturierte Antworten konnten nicht sicher geladen werden/i)).toBeInTheDocument();
+    expect(onSourceStateChange).toHaveBeenCalledWith("FAILED");
   });
 });

@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Bot, LockKeyhole, RefreshCcw } from "lucide-react";
+import { BarChart3, Bot, CalendarCheck2, LockKeyhole, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AdminFeedbackDataScope } from "@/lib/adminFeedbackComments";
-import { getAdminFeedbackInsights, type AdminFeedbackInsights } from "@/lib/adminFeedbackInsights";
+import {
+  buildAdminFeedbackCheckpointSummaries,
+  getAdminFeedbackInsights,
+  type AdminFeedbackInsights,
+} from "@/lib/adminFeedbackInsights";
 
 interface Props {
   dataScope: AdminFeedbackDataScope;
   insightLoader?: typeof getAdminFeedbackInsights;
+  onSourceStateChange?: (state: "CURRENT" | "FAILED") => void;
 }
 
 export default function AdminFeedbackStructuredInsights({
   dataScope,
   insightLoader = getAdminFeedbackInsights,
+  onSourceStateChange,
 }: Props) {
   const [insights, setInsights] = useState<AdminFeedbackInsights | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,17 +31,23 @@ export default function AdminFeedbackStructuredInsights({
     setLoading(true);
     setError(false);
     void insightLoader(dataScope).then((result) => {
-      if (active) setInsights(result);
+      if (active) {
+        setInsights(result);
+        onSourceStateChange?.("CURRENT");
+      }
     }).catch(() => {
       if (active) {
         setInsights(null);
         setError(true);
+        onSourceStateChange?.("FAILED");
       }
     }).finally(() => {
       if (active) setLoading(false);
     });
     return () => { active = false; };
-  }, [dataScope, insightLoader, reloadKey]);
+  }, [dataScope, insightLoader, onSourceStateChange, reloadKey]);
+
+  const checkpointSummaries = insights ? buildAdminFeedbackCheckpointSummaries(insights) : [];
 
   return (
     <Card className="border-primary/20">
@@ -89,6 +101,43 @@ export default function AdminFeedbackStructuredInsights({
                 </div>
               ))}
             </div>
+            {checkpointSummaries.length > 0 ? (
+              <section className="space-y-3" aria-label="Jarvis Zusammenfassung der Feedback Checkpoints">
+                <div>
+                  <h3 className="text-sm font-semibold">Auf einen Blick</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Jarvis fasst pro Feedback-Punkt die deutlichsten strukturierten Antwortmuster zusammen. Die vollständigen Verteilungen bleiben darunter sichtbar.
+                  </p>
+                </div>
+                <div className="grid gap-3 xl:grid-cols-2">
+                  {checkpointSummaries.map((summary) => (
+                    <article key={summary.programDay} className="rounded-2xl border border-[#5d5142] bg-[#17140f] p-4 text-[#f4efe6]">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d8c4a8]">Feedback Tag {summary.programDay}</p>
+                          <h4 className="mt-1 flex items-center gap-2 text-sm font-semibold"><CalendarCheck2 className="h-4 w-4 text-[#66d4b1]" />Bericht ab Tag {summary.reportDay}</h4>
+                        </div>
+                        <Badge variant="outline" className="border-[#5d5142] text-[#cfc5b8]">
+                          {summary.participantsMin === summary.participantsMax ? `n = ${summary.participantsMin}` : `n = ${summary.participantsMin}–${summary.participantsMax}`}
+                        </Badge>
+                      </div>
+                      <p className="mt-3 text-xs text-[#a9a095]">{summary.questionsEvaluated} strukturierte Fragen auswertbar · {summary.highlights.length === 1 ? "klarstes Antwortmuster" : `${summary.highlights.length} klarste Antwortmuster`}</p>
+                      <div className="mt-3 space-y-3">
+                        {summary.highlights.map((highlight) => (
+                          <div key={highlight.questionId} className="border-l-2 border-[#66d4b1] pl-3">
+                            <p className="text-xs leading-relaxed text-[#cfc5b8]">{highlight.questionPrompt}</p>
+                            <p className="mt-1 text-sm font-medium text-[#f4efe6]">
+                              Am häufigsten: {highlight.optionLabel}{highlight.tied ? " (gleichauf)" : ""} · {Math.round(highlight.participantRate * 100)} % ({highlight.tied ? "je " : ""}{highlight.participants} Athleten)
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+                <p className="text-[10px] leading-relaxed text-muted-foreground">„Am häufigsten“ beschreibt nur die Antwortverteilung. Es ist keine Ursache, Bewertung oder Handlungsempfehlung.</p>
+              </section>
+            ) : null}
             <div className="space-y-3">
               {insights.questions.filter(({ sufficientData }) => sufficientData).map((question) => (
                 <article key={`${question.programDay}-${question.questionId}`} className="rounded-xl border border-border/60 p-4">

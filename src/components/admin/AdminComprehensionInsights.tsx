@@ -79,9 +79,10 @@ const Metric = ({ label, value }: { label: string; value: string | number }) => 
 
 interface AdminComprehensionInsightsProps {
   payloadOverride?: ComprehensionInsights;
+  onSourceStateChange?: (state: "CURRENT" | "FAILED") => void;
 }
 
-const AdminComprehensionInsights = ({ payloadOverride }: AdminComprehensionInsightsProps) => {
+const AdminComprehensionInsights = ({ payloadOverride, onSourceStateChange }: AdminComprehensionInsightsProps) => {
   const [payload, setPayload] = useState<ComprehensionInsights | null>(payloadOverride ?? null);
   const [loading, setLoading] = useState(!payloadOverride);
 
@@ -89,6 +90,7 @@ const AdminComprehensionInsights = ({ payloadOverride }: AdminComprehensionInsig
     if (payloadOverride) {
       setPayload(payloadOverride);
       setLoading(false);
+      onSourceStateChange?.("CURRENT");
       return;
     }
     setLoading(true);
@@ -98,11 +100,13 @@ const AdminComprehensionInsights = ({ payloadOverride }: AdminComprehensionInsig
     if (error) {
       toast.error(`Verständnisdaten konnten nicht geladen werden: ${error.message}`);
       setPayload(null);
+      onSourceStateChange?.("FAILED");
     } else {
       setPayload(data as unknown as ComprehensionInsights);
+      onSourceStateChange?.("CURRENT");
     }
     setLoading(false);
-  }, [payloadOverride]);
+  }, [onSourceStateChange, payloadOverride]);
 
   useEffect(() => {
     void load();

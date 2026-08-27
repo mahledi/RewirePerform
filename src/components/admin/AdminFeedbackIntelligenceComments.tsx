@@ -20,6 +20,7 @@ import {
   type AdminFeedbackCommentItem,
   type AdminFeedbackDataScope,
 } from "@/lib/adminFeedbackComments";
+import { getAdminFeedbackInsights } from "@/lib/adminFeedbackInsights";
 import type { FeedbackCheckpointDay } from "@/content/feedbackIntelligenceV1";
 
 const CHECKPOINTS: Array<{ value: FeedbackCheckpointDay | null; label: string }> = [
@@ -144,10 +145,12 @@ function FeedbackCommentCard({ item }: { item: AdminFeedbackCommentItem }) {
 
 interface AdminFeedbackIntelligenceCommentsProps {
   pageLoader?: typeof getAdminFeedbackCommentPage;
+  structuredInsightLoader?: typeof getAdminFeedbackInsights;
 }
 
 export default function AdminFeedbackIntelligenceComments({
   pageLoader = getAdminFeedbackCommentPage,
+  structuredInsightLoader = getAdminFeedbackInsights,
 }: AdminFeedbackIntelligenceCommentsProps) {
   const [dataScope, setDataScope] = useState<AdminFeedbackDataScope>("production");
   const [checkpointDay, setCheckpointDay] = useState<FeedbackCheckpointDay | null>(null);
@@ -289,7 +292,7 @@ export default function AdminFeedbackIntelligenceComments({
         </CardContent>
       </Card>
 
-      <AdminFeedbackStructuredInsights dataScope={dataScope} />
+      <AdminFeedbackStructuredInsights dataScope={dataScope} insightLoader={structuredInsightLoader} />
 
       {loading ? (
         <div className="space-y-3" aria-label="Feedback wird geladen">

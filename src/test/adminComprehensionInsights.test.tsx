@@ -79,8 +79,9 @@ describe("admin comprehension insights", () => {
 
   it("loads only production aggregates and explains the interpretation boundary", async () => {
     mocks.rpc.mockResolvedValueOnce({ data: payload, error: null });
+    const onSourceStateChange = vi.fn();
 
-    render(<AdminComprehensionInsights />);
+    render(<AdminComprehensionInsights onSourceStateChange={onSourceStateChange} />);
 
     expect(await screen.findByRole("heading", { name: "Verständnis der Tagesinhalte" })).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledWith("get_admin_comprehension_insights", {
@@ -92,6 +93,7 @@ describe("admin comprehension insights", () => {
     expect(screen.getByText(/bewertet nicht die Qualität der Kontrollfrage/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /csv/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/selectedOptionId/i)).not.toBeInTheDocument();
+    expect(onSourceStateChange).toHaveBeenCalledWith("CURRENT");
   });
 
   it("fails closed when the aggregate RPC is unavailable", async () => {
@@ -99,8 +101,9 @@ describe("admin comprehension insights", () => {
       data: null,
       error: { message: "admin_role_required" },
     });
+    const onSourceStateChange = vi.fn();
 
-    render(<AdminComprehensionInsights />);
+    render(<AdminComprehensionInsights onSourceStateChange={onSourceStateChange} />);
 
     expect(await screen.findByText("Verständnisdaten sind derzeit nicht verfügbar.")).toBeInTheDocument();
     await waitFor(() => {
@@ -108,5 +111,6 @@ describe("admin comprehension insights", () => {
         "Verständnisdaten konnten nicht geladen werden: admin_role_required",
       );
     });
+    expect(onSourceStateChange).toHaveBeenCalledWith("FAILED");
   });
 });
