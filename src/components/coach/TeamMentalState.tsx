@@ -131,6 +131,14 @@ const deltaTone = (delta: number | null, inverse = false) => {
   return positive ? "text-primary" : "text-amber-400";
 };
 
+const getFunctionHttpStatus = (error: unknown) => {
+  if (!error || typeof error !== "object") return null;
+  const candidate = error as { context?: unknown; status?: unknown };
+  if (typeof candidate.status === "number") return candidate.status;
+  if (candidate.context instanceof Response) return candidate.context.status;
+  return null;
+};
+
 const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const { session } = useAuth();
   const [data, setData] = useState<TeamMentalData | null>(null);
@@ -141,18 +149,46 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
   const [todayContext, setTodayContext] = useState<CalendarEventType>("training");
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchData = async () => {
       if (!session?.access_token) return;
       setLoading(true);
       setError(null);
 
       try {
-        const [resp, teamResp] = await Promise.all([
+        const invokeAggregate = (accessToken: string) =>
           supabase.functions.invoke("team-mental-state", {
             body: { team_id: teamId },
-          }),
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+
+        const [initialResp, teamResp] = await Promise.all([
+          invokeAggregate(session.access_token),
           supabase.from("teams").select("id, name, program_start_date").eq("id", teamId).maybeSingle(),
         ]);
+        let resp = initialResp;
+
+        if (getFunctionHttpStatus(resp.error) === 401) {
+          const refreshed = await supabase.auth.refreshSession();
+          const refreshedSession = refreshed.data.session;
+
+          if (
+            !refreshed.error
+            && refreshedSession?.user.id === session.user.id
+            && refreshedSession.access_token !== session.access_token
+          ) {
+            resp = await invokeAggregate(refreshedSession.access_token);
+          } else {
+            const current = await supabase.auth.getSession();
+            if (current.data.session?.access_token === session.access_token) {
+              await supabase.auth.signOut({ scope: "local" });
+            }
+            return;
+          }
+        }
+
+        if (cancelled) return;
 
         if (resp.error) {
           setError("Daten konnten nicht geladen werden.");
@@ -168,6 +204,7 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
           setTeam((teamResp.data as TeamRow | null) ?? null);
         }
       } catch (e) {
+        if (cancelled) return;
         setError("Verbindungsfehler.");
         void captureAppError({
           eventName: "coach_mental_state_load_failed",
@@ -177,12 +214,13 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
           metadata: { source: "team-mental-state" },
         });
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
-    fetchData();
-  }, [teamId, session, reloadKey]);
+    void fetchData();
+    return () => { cancelled = true; };
+  }, [teamId, session?.access_token, session?.user.id, reloadKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -233,6 +271,20 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (data?.insufficient_reason === "no_active_program_run") {
+    return (
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-8 text-center">
+        <Compass className="mx-auto h-9 w-9 text-primary" aria-hidden="true" />
+        <h2 className="mt-4 font-heading text-lg font-semibold text-foreground">
+          Teamzustand ab Programmstart verfügbar
+        </h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+          Sobald das Programm läuft und ausreichend Check-ins vorliegen, erscheint hier das anonymisierte Lagebild deines Teams.
+        </p>
       </div>
     );
   }
