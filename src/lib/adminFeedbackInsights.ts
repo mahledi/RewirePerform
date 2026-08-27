@@ -32,6 +32,24 @@ export interface AdminFeedbackInsights {
   questions: AdminFeedbackQuestionInsight[];
 }
 
+export interface AdminFeedbackCheckpointHighlight {
+  questionId: string;
+  questionPrompt: string;
+  optionLabel: string;
+  participants: number;
+  participantRate: number;
+  tied: boolean;
+}
+
+export interface AdminFeedbackCheckpointSummary {
+  programDay: FeedbackCheckpointDay;
+  reportDay: 11 | 25 | 40 | 56;
+  questionsEvaluated: number;
+  participantsMin: number;
+  participantsMax: number;
+  highlights: AdminFeedbackCheckpointHighlight[];
+}
+
 export class AdminFeedbackInsightsError extends Error {
   constructor(public readonly code: string) {
     super(code);
@@ -53,6 +71,54 @@ const integer = (value: Json | undefined) =>
 const nullableInteger = (value: Json | undefined) => value === null ? null : integer(value);
 const rate = (value: Json | undefined) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
+
+const REPORT_DAY_BY_CHECKPOINT: Record<FeedbackCheckpointDay, AdminFeedbackCheckpointSummary["reportDay"]> = {
+  10: 11,
+  24: 25,
+  39: 40,
+  55: 56,
+};
+
+export const buildAdminFeedbackCheckpointSummaries = (
+  insights: AdminFeedbackInsights,
+): AdminFeedbackCheckpointSummary[] => {
+  const byCheckpoint = new Map<FeedbackCheckpointDay, AdminFeedbackQuestionInsight[]>();
+  for (const question of insights.questions) {
+    if (!question.sufficientData || question.participants < insights.minimumDistinctParticipants) continue;
+    const existing = byCheckpoint.get(question.programDay) ?? [];
+    existing.push(question);
+    byCheckpoint.set(question.programDay, existing);
+  }
+
+  return ([10, 24, 39, 55] as FeedbackCheckpointDay[]).flatMap((programDay) => {
+    const questions = byCheckpoint.get(programDay) ?? [];
+    if (questions.length === 0) return [];
+    const highlights = questions.flatMap((question) => {
+      const highestRate = question.optionDistribution.reduce(
+        (current, option) => Math.max(current, option.participantRate),
+        -1,
+      );
+      const leading = question.optionDistribution.filter(({ participantRate }) => participantRate === highestRate);
+      return leading.length > 0 ? [{
+        questionId: question.questionId,
+        questionPrompt: question.questionPrompt,
+        optionLabel: leading.map(({ optionLabel }) => optionLabel).join(" / "),
+        participants: leading[0].participants,
+        participantRate: leading[0].participantRate,
+        tied: leading.length > 1,
+      }] : [];
+    }).sort((left, right) => right.participantRate - left.participantRate).slice(0, 3);
+    const participantCounts = questions.map(({ participants }) => participants);
+    return [{
+      programDay,
+      reportDay: REPORT_DAY_BY_CHECKPOINT[programDay],
+      questionsEvaluated: questions.length,
+      participantsMin: Math.min(...participantCounts),
+      participantsMax: Math.max(...participantCounts),
+      highlights,
+    }];
+  });
+};
 
 const parseInsights = (value: Json | null): AdminFeedbackInsights => {
   const payload = asObject(value);
