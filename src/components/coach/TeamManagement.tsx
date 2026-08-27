@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import {
   AlertTriangle,
   ArrowRight,
-  Building2,
   CalendarCheck,
   CalendarDays,
   ClipboardCheck,
@@ -16,12 +15,10 @@ import {
   Plus,
   Rocket,
   Share2,
-  ShieldCheck,
 } from "lucide-react";
 import { addDays, format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import TeamStaffInvitation from "@/components/coach/TeamStaffInvitation";
-import TeamAccessLink from "@/components/access/TeamAccessLink";
 import { buildAthleteTeamInvitation, type SharePayload } from "@/lib/invitationShare";
 import {
   AlertDialog,
@@ -597,21 +594,7 @@ const TeamManagement = ({
           <Plus className="w-5 h-5" />
           Neues Team erstellen
         </button>
-      ) : (
-        <section className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary"><Building2 className="h-5 w-5" /></span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-primary"><ShieldCheck className="h-4 w-4" /> Kontrollierter Zugang</div>
-              <h3 className="mt-2 font-heading text-lg font-semibold">Weitere Teams werden persönlich freigegeben.</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">So bleiben Rollen, Datenräume und Betreuung vom ersten Tag an sauber auf deine Organisation zugeschnitten.</p>
-              <TeamAccessLink scope="single_team" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]">
-                Weiteres Team anfragen
-              </TeamAccessLink>
-            </div>
-          </div>
-        </section>
-      )}
+      ) : null}
     </div>
   );
 };

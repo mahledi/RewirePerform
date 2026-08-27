@@ -36,6 +36,7 @@ interface ActivityRow {
   last_checkin_date: string | null;
   journal_entries_count: number;
   inactive_risk: boolean;
+  questionnaire_complete?: boolean;
 }
 
 const MIN_AGGREGATE_SAMPLE = 5;
@@ -133,7 +134,7 @@ const TeamOverview = ({
           setDetailsLoading(true);
         }
 
-        const [outcomesResult, mentalState, activityStatus] = await Promise.all([
+        const [outcomesResult, mentalState, activityStatus, questionnaireStatus] = await Promise.all([
           supabase.rpc("compute_team_outcomes", {
             team_id_param: teamId,
             min_n: MIN_AGGREGATE_SAMPLE,
@@ -142,6 +143,9 @@ const TeamOverview = ({
             body: { team_id: teamId },
           }),
           supabase.rpc("get_coach_team_activity_status", {
+            _team_id: teamId,
+          }),
+          supabase.rpc("get_team_questionnaire_status", {
             _team_id: teamId,
           }),
         ]);
@@ -186,6 +190,23 @@ const TeamOverview = ({
           });
         }
 
+        if (questionnaireStatus.error) {
+          warnings.push("Fragebogenstatus konnte gerade nicht geladen werden.");
+          void captureAppError({
+            eventName: "coach_dashboard_loaded",
+            error: questionnaireStatus.error,
+            role: "coach",
+            route: "/coach",
+            metadata: { stage: "team_overview_questionnaire_status" },
+          });
+        }
+
+        const questionnaireByUser = new Map(
+          ((questionnaireStatus.data ?? []) as Array<{ user_id?: string; is_complete?: boolean }>)
+            .filter((row) => typeof row.user_id === "string")
+            .map((row) => [row.user_id as string, row.is_complete === true]),
+        );
+
         const nextStats: TeamStats = {
           // The aggregate may exclude athletes who have not completed enough
           // tracking yet. Team size must still reflect every athlete member.
@@ -201,7 +222,10 @@ const TeamOverview = ({
 
         if (cancelled) return;
         setStats(nextStats);
-        setActivityRows(activityStatus.error ? [] : ((activityStatus.data ?? []) as ActivityRow[]));
+        setActivityRows(activityStatus.error ? [] : ((activityStatus.data ?? []) as ActivityRow[]).map((row) => ({
+          ...row,
+          questionnaire_complete: questionnaireByUser.get(row.user_id),
+        })));
         setPartialWarnings(warnings);
         setDetailsLoading(false);
       } catch (err) {
@@ -413,10 +437,20 @@ const TeamOverview = ({
                     <p className="text-sm font-medium text-foreground truncate">
                       {row.full_name ?? "Sportler"}
                     </p>
-                    {row.inactive_risk && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
-                        <AlertTriangle className="w-3 h-3" />
-                        inaktiv
+                    {programDay ? (
+                      row.inactive_risk && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-600">
+                          <AlertTriangle className="w-3 h-3" />
+                          inaktiv
+                        </span>
+                      )
+                    ) : (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
+                        row.questionnaire_complete
+                          ? "bg-primary/10 text-primary"
+                          : "bg-amber-500/10 text-amber-600"
+                      }`}>
+                        {row.questionnaire_complete ? "Bereit" : "Fragebogen fehlt"}
                       </span>
                     )}
                   </div>

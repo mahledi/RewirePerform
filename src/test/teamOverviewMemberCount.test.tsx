@@ -76,6 +76,15 @@ describe("coach team member count", () => {
           error: null,
         });
       }
+      if (name === "get_team_questionnaire_status") {
+        return Promise.resolve({
+          data: athleteIds.map((user_id, index) => ({
+            user_id,
+            is_complete: index < 5,
+          })),
+          error: null,
+        });
+      }
       throw new Error(`Unexpected RPC: ${name}`);
     });
   });
