@@ -6,6 +6,19 @@ const data: JarvisReadModel = {
   teams: [{}, {}],
   system: { users_missing_role: 0 },
   operations: { failed_events_24h: 2, critical_failed_events_24h: 0 },
+  presentation: null,
+  study: {
+    summary: { athletes_total: 12 },
+    activation: { active_7d: 8, active_28d: 11 },
+    activity: { checkins_total: 84, completed_days_total: 60, avg_comprehension: 0.78 },
+    data_quality: { athletes_without_program_instance: 1, athletes_without_day_1: 2, athletes_without_any_activity: 3 },
+    measurement_readiness: { validated_assessments_pre_n: 10, validated_assessments_mid_n: 7, validated_assessments_post_n: 5 },
+    team_summaries: [
+      { team: "U17", athlete_count: 8, avg_completion_rate: 0.72, avg_comprehension: 0.81 },
+      { team: "Solo", athlete_count: 3, avg_completion_rate: 0.9, avg_comprehension: 0.88 },
+    ],
+  },
+  solo: { sample: { eligible_participants: 6, total_observations: 24 }, coverage: { transfer_completion_rate: 0.75 } },
 };
 
 describe("Admin Jarvis deterministic answers", () => {
@@ -27,5 +40,32 @@ describe("Admin Jarvis deterministic answers", () => {
     const result = buildJarvisAnswer("Welche Systemfehler gibt es?", data);
     expect(result.answer).toContain("2 fehlgeschlagene Flow-Events");
     expect(result.answer).toContain("noch keine Ursache");
+  });
+
+  it("does not invent an up or down trend from overlapping windows", () => {
+    const result = buildJarvisAnswer("Was geht hoch oder runter?", data);
+    expect(result.answer).toContain("7 Tagen waren 8 Athleten aktiv");
+    expect(result.answer).toContain("Zeitfenster überlappen");
+    expect(result.answer).toContain("keinen Hoch- oder Runter-Trend");
+  });
+
+  it("summarizes data quality without exposing identifiers", () => {
+    const result = buildJarvisAnswer("Welche Datenlücken gibt es?", data);
+    expect(result.answer).toContain("Athleten ohne Programmlauf: 1");
+    expect(result.answer).toContain("ohne gemessene Aktivität: 3");
+    expect(result.answer).not.toMatch(/user|email|name/i);
+  });
+
+  it("counts only team groups that meet n >= 5", () => {
+    const result = buildJarvisAnswer("Wie stehen die Teams?", data);
+    expect(result.answer).toContain("Auswertbare Teamgruppen: 1");
+    expect(result.answer).toContain("n ≥ 5");
+  });
+
+  it("summarizes the privacy-safe solo aggregate", () => {
+    const result = buildJarvisAnswer("Wie stehen die Solo-Athleten?", data);
+    expect(result.answer).toContain("6 Teilnehmende");
+    expect(result.answer).toContain("24");
+    expect(result.answer).toContain("75 %");
   });
 });

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Activity, ArrowLeft, Bot, Database, Loader2, RefreshCcw, Send, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, Bot, Loader2, RefreshCcw, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -10,20 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminComprehensionInsights from "@/components/admin/AdminComprehensionInsights";
 import AdminFeedbackStructuredInsights from "@/components/admin/AdminFeedbackStructuredInsights";
+import AdminJarvisDashboard from "@/components/admin/AdminJarvisDashboard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
 import { buildJarvisAnswer, type JarvisAnswer, type JarvisReadModel } from "@/lib/adminJarvis";
+import { EVIDENCE_PROTOCOL_VERSION } from "@/lib/performanceEvidence";
 
 type SourceState = { label: string; state: "CURRENT" | "FAILED" };
 
 const record = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 
-const metric = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? value : "–";
-
 const AdminJarvis = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, role, roleLoading, roleVerified } = useAuth();
-  const [data, setData] = useState<JarvisReadModel>({ overview: null, teams: null, system: null, operations: null });
+  const [data, setData] = useState<JarvisReadModel>({ overview: null, teams: null, system: null, operations: null, presentation: null, study: null, solo: null });
   const [sources, setSources] = useState<SourceState[]>([]);
   const [loading, setLoading] = useState(true);
   const [question, setQuestion] = useState("");
@@ -39,14 +39,20 @@ const AdminJarvis = () => {
       client.rpc("get_admin_teams_summary", { include_test: false }),
       client.rpc("get_admin_system_health"),
       client.rpc("get_admin_ops_status", { include_test: false }),
+      client.rpc("get_admin_presentation_metrics", { include_test: false }),
+      client.rpc("get_admin_study_overview", { include_test: false }),
+      client.rpc("get_performance_evidence_summary", { _program_run_id: null, _include_test: false, _protocol_version: EVIDENCE_PROTOCOL_VERSION }),
     ]);
-    const labels = ["Admin-Übersicht", "Teams & Aktivität", "Systemgesundheit", "Launch-Ops"];
+    const labels = ["Admin-Übersicht", "Teams & Aktivität", "Systemgesundheit", "Launch-Ops", "Pilot-Metriken", "Pilot-Auswertung", "Solo-Evidence"];
     setSources(results.map((result, index) => ({ label: labels[index], state: result.error ? "FAILED" : "CURRENT" })));
     setData({
       overview: results[0].error ? null : record(results[0].data),
       teams: results[1].error || !Array.isArray(results[1].data) ? null : results[1].data,
       system: results[2].error ? null : record(results[2].data),
       operations: results[3].error ? null : record(results[3].data),
+      presentation: results[4].error ? null : record(results[4].data),
+      study: results[5].error ? null : record(results[5].data),
+      solo: results[6].error ? null : record(results[6].data),
     });
     setLoading(false);
   }, []);
@@ -59,13 +65,6 @@ const AdminJarvis = () => {
     if (!question.trim()) return;
     setAnswer(buildJarvisAnswer(question, data));
   };
-
-  const overviewMetrics = useMemo(() => [
-    ["Athleten", metric(data.overview?.total_athletes), Users],
-    ["Aktive Teams", metric(data.overview?.active_teams), ShieldCheck],
-    ["Check-ins", metric(data.overview?.total_checkins), Activity],
-    ["Programmtage", metric(data.overview?.total_completed_days), Database],
-  ] as const, [data.overview]);
 
   if (authLoading || roleLoading || (user && !roleVerified)) {
     return <div className="flex min-h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -102,16 +101,17 @@ const AdminJarvis = () => {
             <Input value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") ask(); }} placeholder="Zum Beispiel: Wie ist die Aktivität?" className="min-h-12 border-[#4b4338] bg-[#0d0e0c] text-[#f4efe6] placeholder:text-[#8e867b]" />
             <Button onClick={ask} className="min-h-12 bg-[#d8c4a8] text-[#16130f] hover:bg-[#cdb696]"><Send className="mr-2 h-4 w-4" />Frag Jarvis</Button>
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {["Wie ist die Aktivität?", "Was geht hoch oder runter?", "Wie stehen die Solo-Athleten?", "Welche Datenlücken gibt es?", "Wie stehen die Messfenster?"].map((prompt) => (
+              <button key={prompt} type="button" onClick={() => { setQuestion(prompt); setAnswer(buildJarvisAnswer(prompt, data)); }} className="rounded-full border border-[#4b4338] px-3 py-1.5 text-xs text-[#b9b0a4] transition-colors hover:border-[#d8c4a8] hover:text-[#f4efe6]">{prompt}</button>
+            ))}
+          </div>
           {answer ? (
             <div className="mt-5 rounded-2xl border border-[#4b4338] bg-black/20 p-4" aria-live="polite">
               <div className="flex gap-3"><Bot className="mt-0.5 h-5 w-5 shrink-0 text-[#66d4b1]" /><div><p className="leading-relaxed text-[#f4efe6]">{answer.answer}</p><p className="mt-3 text-xs text-[#a9a095]">Quellen: {answer.sourceLabels.join(" · ")} · {answer.boundary}</p></div></div>
             </div>
           ) : null}
         </section>
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {overviewMetrics.map(([label, value, Icon]) => <Card key={label}><CardContent className="flex items-center gap-3 p-4"><span className="rounded-xl bg-primary/10 p-2 text-primary"><Icon className="h-5 w-5" /></span><div><p className="text-xs text-muted-foreground">{label}</p><p className="text-2xl font-semibold">{value}</p></div></CardContent></Card>)}
-        </div>
 
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="h-auto w-full flex-wrap justify-start">
@@ -121,12 +121,15 @@ const AdminJarvis = () => {
             <TabsTrigger value="system">System & Quellen</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
-            <Card><CardHeader><CardTitle>Was Jarvis gerade sieht</CardTitle><CardDescription>Nur bereits freigegebene, strukturierte Admin-RPCs.</CardDescription></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2">{sources.map((source) => <div key={source.label} className="flex items-center justify-between rounded-xl border p-3"><span className="text-sm">{source.label}</span><Badge variant={source.state === "CURRENT" ? "default" : "destructive"}>{source.state === "CURRENT" ? "Aktuell" : "Nicht verfügbar"}</Badge></div>)}</CardContent></Card>
+            {loading ? <Card><CardContent className="flex min-h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></CardContent></Card> : <AdminJarvisDashboard data={data} />}
           </TabsContent>
           <TabsContent value="feedback"><AdminFeedbackStructuredInsights dataScope="production" /></TabsContent>
           <TabsContent value="comprehension"><AdminComprehensionInsights /></TabsContent>
           <TabsContent value="system">
-            <Card><CardHeader><CardTitle>Wahrheit und Grenzen</CardTitle><CardDescription>Jarvis trennt aktiven Messstand, fehlende Quellen und menschliche Entscheidungen.</CardDescription></CardHeader><CardContent className="space-y-3 text-sm text-muted-foreground"><p>Keine Tabellenabfragen, keine Writes und keine automatischen Produktentscheidungen.</p><p>Feedback-Freitext, Journale, Namen, E-Mails und direkte Personenkennungen werden hier nicht geladen.</p><p>Gruppenmetriken bleiben ab n ≥ 5; Solo und Team werden als getrennte Teilnahmeformen behandelt.</p><p>Ursachen, Wirksamkeit und Produktentscheidungen bleiben bei Mahle.</p></CardContent></Card>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card><CardHeader><CardTitle>Verbundene Admin-Quellen</CardTitle><CardDescription>{sources.filter((source) => source.state === "CURRENT").length} von {sources.length} Quellen in dieser Browser-Ansicht aktuell erreichbar.</CardDescription></CardHeader><CardContent className="grid gap-2">{sources.map((source) => <div key={source.label} className="flex items-center justify-between rounded-xl border p-3"><span className="text-sm">{source.label}</span><Badge variant={source.state === "CURRENT" ? "default" : "destructive"}>{source.state === "CURRENT" ? "Aktuell" : "Nicht verfügbar"}</Badge></div>)}</CardContent></Card>
+              <Card><CardHeader><CardTitle>Wahrheit und Grenzen</CardTitle><CardDescription>Jarvis trennt Messstand, fehlende Quellen und menschliche Entscheidungen.</CardDescription></CardHeader><CardContent className="space-y-3 text-sm text-muted-foreground"><p>Keine Tabellenabfragen, keine Writes und keine automatischen Produktentscheidungen.</p><p>Feedback-Freitext, Journale, Namen, E-Mails und direkte Personenkennungen werden hier nicht geladen.</p><p>Gruppenmetriken bleiben ab n ≥ 5; Solo und Team werden als getrennte Teilnahmeformen behandelt.</p><p>Ursachen, Wirksamkeit und Produktentscheidungen bleiben bei Mahle.</p></CardContent></Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
