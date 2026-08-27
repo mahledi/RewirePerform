@@ -15,12 +15,14 @@ import {
 import { de } from "date-fns/locale";
 import {
   CalendarDays,
+  CalendarRange,
   Check,
   ChevronLeft,
   ChevronRight,
   Dumbbell,
   Loader2,
   Moon,
+  Repeat2,
   Trash2,
   Trophy,
 } from "lucide-react";
@@ -28,21 +30,29 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  buildTeamCalendarSeriesPlan,
+  type TeamCalendarSeriesEvent,
+  type TeamCalendarEventType,
+} from "@/lib/teamCalendarSeries";
 import { cn } from "@/lib/utils";
 
-type EventType = "training" | "rest" | "competition";
+type EventType = TeamCalendarEventType;
 type SaveState = "idle" | "saving" | "saved" | "error";
 type LocalTime = { h: number; m: number };
 
-type LocalEvent = {
-  id?: string;
-  date: string;
-  event_type: EventType;
-  title: string;
-  training_local_hour: number | null;
-  training_local_minute: number | null;
-  training_timezone: string | null;
-};
+type LocalEvent = TeamCalendarSeriesEvent;
 
 interface TeamTrainingScheduleProps {
   teamId: string;
@@ -93,6 +103,7 @@ const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingSche
   const [persistedDates, setPersistedDates] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const today = useMemo(() => new Date(), []);
 
   const timezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
@@ -100,6 +111,14 @@ const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingSche
   );
   const selectedKey = selectedDate ? format(selectedDate, "yyyy-MM-dd") : null;
   const selectedEvent = selectedKey ? eventsByDate.get(selectedKey) ?? null : null;
+  const seriesPlan = useMemo(
+    () => buildTeamCalendarSeriesPlan({
+      events: eventsByDate.values(),
+      patternDate: selectedDate ?? today,
+      today,
+    }),
+    [eventsByDate, selectedDate, today],
+  );
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -199,6 +218,22 @@ const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingSche
     setSaveState("idle");
   };
 
+  const applyEightWeekSeries = () => {
+    if (seriesPlan.trainingDaysInPattern === 0) return;
+    if (seriesPlan.additions.length === 0) {
+      toast.info("Der Acht-Wochen-Zeitraum ist bereits vollständig geplant.");
+      return;
+    }
+
+    setEventsByDate((current) => {
+      const next = new Map(current);
+      seriesPlan.additions.forEach((event) => next.set(event.date, event));
+      return next;
+    });
+    setSaveState("idle");
+    toast.success("Acht-Wochen-Plan vorbereitet. Jetzt Teamkalender speichern.");
+  };
+
   const save = async () => {
     if (!user) return;
     setSaveState("saving");
@@ -296,6 +331,62 @@ const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingSche
                 </button>
               );
             })}
+          </div>
+
+          <div className="rounded-[20px] border border-primary/20 bg-primary/[0.06] p-4 sm:p-5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-primary/10 text-primary">
+                <Repeat2 className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-heading text-sm font-semibold text-foreground">Trainingswoche wiederholen</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Nutzt die Woche des ausgewählten Tages als Muster. Nur Trainings werden für acht Wochen wiederholt; freie Tage werden Ruhetage. Wettkämpfe und vorhandene Einträge bleiben unverändert.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    Muster: {format(seriesPlan.patternWeekStart, "dd.MM.")}–{format(seriesPlan.patternWeekEnd, "dd.MM.yyyy")}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarRange className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    Plan: {format(seriesPlan.rangeStart, "dd.MM.")}–{format(seriesPlan.rangeEnd, "dd.MM.yyyy")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  disabled={seriesPlan.trainingDaysInPattern === 0}
+                  className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <Repeat2 className="h-4 w-4" aria-hidden="true" />
+                  {seriesPlan.trainingDaysInPattern === 0
+                    ? "Zuerst Training in dieser Woche eintragen"
+                    : `${seriesPlan.trainingDaysInPattern} Training${seriesPlan.trainingDaysInPattern === 1 ? "" : "stage"} pro Woche übernehmen`}
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Trainingswoche für acht Wochen übernehmen?</AlertDialogTitle>
+                  <AlertDialogDescription className="space-y-2">
+                    <span className="block">
+                      Von {format(seriesPlan.rangeStart, "dd.MM.yyyy")} bis {format(seriesPlan.rangeEnd, "dd.MM.yyyy")} werden aktuell {seriesPlan.trainingDaysAdded} Trainingstage und {seriesPlan.restDaysAdded} Ruhetage ergänzt.
+                    </span>
+                    <span className="block">
+                      {seriesPlan.existingDaysPreserved} vorhandene Tage bleiben unverändert. Wettkämpfe werden niemals wiederholt oder überschrieben.
+                    </span>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                  <AlertDialogAction onClick={applyEightWeekSeries}>Plan vorbereiten</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           <div className={cn("grid gap-4", isFull && "lg:grid-cols-[minmax(0,1.08fr)_minmax(18rem,0.92fr)] lg:items-start")}>
