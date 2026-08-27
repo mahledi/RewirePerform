@@ -11,7 +11,9 @@ describe("coach calendar integration contract", () => {
 
     expect(schedule).toContain('.from("team_calendar_events")');
     expect(schedule).toContain('.upsert(rows, { onConflict: "team_id,date" })');
-    expect(schedule).toContain('type EventType = "training" | "rest" | "competition"');
+    expect(schedule).toContain("type EventType = TeamCalendarEventType");
+    expect(schedule).toContain("buildTeamCalendarSeriesPlan");
+    expect(schedule).toContain("Wettkämpfe werden niemals wiederholt oder überschrieben");
     expect(management).not.toContain("<TeamTrainingSchedule");
     expect(management).toContain("Teamkalender öffnen");
   });

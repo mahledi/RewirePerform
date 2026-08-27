@@ -40,7 +40,7 @@ describe("full coach team calendar", () => {
     render(<TeamTrainingSchedule teamId="team-1" variant="full" />);
 
     expect(await screen.findByRole("heading", { name: "Teamkalender" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Training" })).toHaveClass("min-h-12");
+    expect(await screen.findByRole("button", { name: "Training" })).toHaveClass("min-h-12");
     expect(screen.getByRole("button", { name: "Ruhetag" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wettkampf" })).toBeInTheDocument();
 
@@ -57,5 +57,23 @@ describe("full coach team calendar", () => {
       })],
       { onConflict: "team_id,date" },
     );
+  });
+
+  it("prepares exactly eight weeks from one training day without creating competitions", async () => {
+    render(<TeamTrainingSchedule teamId="team-1" variant="full" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Training für diesen Tag setzen" }));
+    fireEvent.click(screen.getByRole("button", { name: "1 Training pro Woche übernehmen" }));
+
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("Wettkämpfe werden niemals wiederholt oder überschrieben");
+    fireEvent.click(screen.getByRole("button", { name: "Plan vorbereiten" }));
+    fireEvent.click(screen.getByRole("button", { name: "Teamkalender speichern" }));
+
+    await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+    const [rows] = mocks.upsert.mock.calls[0] as [Array<{ event_type: string }>, unknown];
+    expect(rows).toHaveLength(56);
+    expect(rows.filter((row) => row.event_type === "training")).toHaveLength(8);
+    expect(rows.filter((row) => row.event_type === "rest")).toHaveLength(48);
+    expect(rows.some((row) => row.event_type === "competition")).toBe(false);
   });
 });
