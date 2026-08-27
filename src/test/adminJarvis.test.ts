@@ -19,6 +19,13 @@ const data: JarvisReadModel = {
     ],
   },
   solo: { sample: { eligible_participants: 6, total_observations: 24 }, coverage: { transfer_completion_rate: 0.75 } },
+  trends: {
+    segments: [
+      { participation_mode: "all", sample_size: 12, sufficient_data: true, previous_active_athletes: 6, current_active_athletes: 8, active_athlete_delta: 2, direction: "up", previous_checkins: 20, current_checkins: 28, previous_completed_days: 18, current_completed_days: 24 },
+      { participation_mode: "team", sample_size: 8, sufficient_data: true, previous_active_athletes: 5, current_active_athletes: 4, active_athlete_delta: -1, direction: "down", previous_checkins: 14, current_checkins: 12, previous_completed_days: 11, current_completed_days: 10 },
+      { participation_mode: "solo", sample_size: 4, sufficient_data: false, previous_active_athletes: null, current_active_athletes: null, active_athlete_delta: null, direction: "insufficient_data", previous_checkins: null, current_checkins: null, previous_completed_days: null, current_completed_days: null },
+    ],
+  },
 };
 
 describe("Admin Jarvis deterministic answers", () => {
@@ -42,11 +49,14 @@ describe("Admin Jarvis deterministic answers", () => {
     expect(result.answer).toContain("noch keine Ursache");
   });
 
-  it("does not invent an up or down trend from overlapping windows", () => {
+  it("explains equal-window all/team/solo trends without a causal claim", () => {
     const result = buildJarvisAnswer("Was geht hoch oder runter?", data);
-    expect(result.answer).toContain("7 Tagen waren 8 Athleten aktiv");
-    expect(result.answer).toContain("Zeitfenster überlappen");
-    expect(result.answer).toContain("keinen Hoch- oder Runter-Trend");
+    expect(result.answer).toContain("nicht überlappende 7-Tage-Fenster");
+    expect(result.answer).toContain("Gesamt: 6 → 8 aktive Athleten (+2; mehr)");
+    expect(result.answer).toContain("Team: 5 → 4 aktive Athleten (-1; weniger)");
+    expect(result.answer).toContain("Solo: noch keine Freigabe ab n ≥ 5");
+    expect(result.answer).toContain("Testkonten sind serverseitig ausgeschlossen");
+    expect(result.boundary).toContain("ohne Freitext");
   });
 
   it("summarizes data quality without exposing identifiers", () => {

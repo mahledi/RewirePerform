@@ -8,6 +8,7 @@ export type JarvisReadModel = {
   presentation: JarvisRecord | null;
   study: JarvisRecord | null;
   solo: JarvisRecord | null;
+  trends: JarvisRecord | null;
 };
 
 export type JarvisAnswer = {
@@ -26,6 +27,20 @@ export type JarvisTeamMetric = {
   completedDays: number | null;
 };
 
+export type JarvisTrendSegment = {
+  participationMode: "all" | "team" | "solo";
+  sampleSize: number;
+  sufficientData: boolean;
+  previousActiveAthletes: number | null;
+  currentActiveAthletes: number | null;
+  activeAthleteDelta: number | null;
+  direction: "up" | "down" | "flat" | "insufficient_data";
+  previousCheckins: number | null;
+  currentCheckins: number | null;
+  previousCompletedDays: number | null;
+  currentCompletedDays: number | null;
+};
+
 const asRecord = (value: unknown): JarvisRecord | null =>
   value && typeof value === "object" && !Array.isArray(value) ? value as JarvisRecord : null;
 
@@ -38,6 +53,36 @@ const asNumber = (value: unknown) =>
 const number = (record: JarvisRecord | null, key: string) => asNumber(record?.[key]);
 const nested = (record: JarvisRecord | null, key: string) => asRecord(record?.[key]);
 const percent = (value: number | null) => value === null ? "–" : `${Math.round(value * 100)} %`;
+
+export const getJarvisTrendSegments = (data: JarvisReadModel): JarvisTrendSegment[] =>
+  asRecords(data.trends?.segments).flatMap((row) => {
+    const participationMode = row.participation_mode;
+    const direction = row.direction;
+    if (
+      participationMode !== "all" && participationMode !== "team" && participationMode !== "solo"
+      || direction !== "up" && direction !== "down" && direction !== "flat" && direction !== "insufficient_data"
+    ) return [];
+    return [{
+      participationMode,
+      sampleSize: asNumber(row.sample_size) ?? 0,
+      sufficientData: row.sufficient_data === true,
+      previousActiveAthletes: asNumber(row.previous_active_athletes),
+      currentActiveAthletes: asNumber(row.current_active_athletes),
+      activeAthleteDelta: asNumber(row.active_athlete_delta),
+      direction,
+      previousCheckins: asNumber(row.previous_checkins),
+      currentCheckins: asNumber(row.current_checkins),
+      previousCompletedDays: asNumber(row.previous_completed_days),
+      currentCompletedDays: asNumber(row.current_completed_days),
+    }];
+  });
+
+const trendSegmentSentence = (segment: JarvisTrendSegment | undefined, label: string) => {
+  if (!segment || !segment.sufficientData) return `${label}: noch keine Freigabe ab n ≥ 5`;
+  const delta = segment.activeAthleteDelta ?? 0;
+  const direction = segment.direction === "up" ? "mehr" : segment.direction === "down" ? "weniger" : "unverändert";
+  return `${label}: ${segment.previousActiveAthletes ?? "–"} → ${segment.currentActiveAthletes ?? "–"} aktive Athleten (${delta > 0 ? "+" : ""}${delta}; ${direction})`;
+};
 
 export const getJarvisTeamMetrics = (data: JarvisReadModel): JarvisTeamMetric[] => {
   const studyTeams = asRecords(data.study?.team_summaries);
@@ -78,9 +123,19 @@ export const buildJarvisAnswer = (question: string, data: JarvisReadModel): Jarv
     return { ...common, intent: "solo", answer, sourceLabels: ["Solo-Evidence-Aggregat"] };
   }
   if (normalized.includes("trend") || normalized.includes("hoch") || normalized.includes("runter") || normalized.includes("entwicklung")) {
-    const active7d = number(activation, "active_7d");
-    const active28d = number(activation, "active_28d");
-    return { ...common, intent: "activity", answer: `In den letzten 7 Tagen waren ${active7d ?? "–"} Athleten aktiv, in den letzten 28 Tagen ${active28d ?? "–"}. Diese Zeitfenster überlappen; daraus behauptet Jarvis bewusst noch keinen Hoch- oder Runter-Trend. Dafür fehlen gleich große, serverseitig berechnete Vergleichsfenster.`, sourceLabels: ["Pilot-Aktivität"] };
+    const trends = getJarvisTrendSegments(data);
+    if (trends.length === 0) {
+      return { ...common, intent: "activity", answer: "Die neue Trendquelle ist noch nicht verfügbar. Jarvis behauptet deshalb keinen Hoch- oder Runter-Trend.", sourceLabels: ["Aktivitätstrends"] };
+    }
+    const overall = trends.find((segment) => segment.participationMode === "all");
+    const team = trends.find((segment) => segment.participationMode === "team");
+    const solo = trends.find((segment) => segment.participationMode === "solo");
+    return {
+      ...common,
+      intent: "activity",
+      answer: `Verglichen werden zwei gleiche, nicht überlappende 7-Tage-Fenster. ${trendSegmentSentence(overall, "Gesamt")}. ${trendSegmentSentence(team, "Team")}. ${trendSegmentSentence(solo, "Solo")}. Testkonten sind serverseitig ausgeschlossen.`,
+      sourceLabels: ["Aktivitätstrends"],
+    };
   }
   if (normalized.includes("aktiv") || normalized.includes("check-in") || normalized.includes("checkin")) {
     const checkins = number(activity, "checkins_total") ?? number(data.overview, "total_checkins");

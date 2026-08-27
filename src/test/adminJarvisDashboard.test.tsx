@@ -18,16 +18,28 @@ const model = (athletes = 12): JarvisReadModel => ({
     team_summaries: [{ team: "U17", athlete_count: 8, avg_completion_rate: 0.72, avg_comprehension: 0.81 }],
   },
   solo: { sample: { eligible_participants: 6, total_observations: 24 }, coverage: { transfer_completion_rate: 0.75 } },
+  trends: {
+    segments: [
+      { participation_mode: "all", sample_size: 12, sufficient_data: true, previous_active_athletes: 6, current_active_athletes: 8, active_athlete_delta: 2, direction: "up", previous_checkins: 20, current_checkins: 28, previous_completed_days: 18, current_completed_days: 24 },
+      { participation_mode: "team", sample_size: 8, sufficient_data: true, previous_active_athletes: 5, current_active_athletes: 4, active_athlete_delta: -1, direction: "down", previous_checkins: 14, current_checkins: 12, previous_completed_days: 11, current_completed_days: 10 },
+      { participation_mode: "solo", sample_size: 4, sufficient_data: false, previous_active_athletes: null, current_active_athletes: null, active_athlete_delta: null, direction: "insufficient_data", previous_checkins: null, current_checkins: null, previous_completed_days: null, current_completed_days: null },
+    ],
+    data_quality: { previous_unclassified_events: 1, current_unclassified_events: 2 },
+  },
 });
 
 describe("Admin Jarvis dashboard", () => {
-  it("renders the connected decision view and honest trend boundary", () => {
+  it("renders the connected decision view and equal-window trends", () => {
     render(<AdminJarvisDashboard data={model()} />);
     expect(screen.getByText("Vom Zugang zur Nutzung")).toBeInTheDocument();
     expect(screen.getByText("Teams im Vergleich")).toBeInTheDocument();
     expect(screen.getByText("Solo-Athleten")).toBeInTheDocument();
-    expect(screen.getByText("Auf und Ab: noch bewusst offen")).toBeInTheDocument();
-    expect(screen.getByText(/Fenster überlappen/)).toBeInTheDocument();
+    expect(screen.getByText("Aktivitätstrend")).toBeInTheDocument();
+    expect(screen.getByText("6 → 8")).toBeInTheDocument();
+    expect(screen.getByText("5 → 4")).toBeInTheDocument();
+    expect(screen.getByText("Noch geschützt")).toBeInTheDocument();
+    expect(screen.getByText(/Testprofile, Test-Programminstanzen und Testteams/)).toBeInTheDocument();
+    expect(screen.getByText(/1 frühere und 2 aktuelle Aktivitätsereignisse/)).toBeInTheDocument();
     expect(screen.getByText("75 %")).toBeInTheDocument();
   });
 

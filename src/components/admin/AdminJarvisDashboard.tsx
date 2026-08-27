@@ -1,8 +1,8 @@
-import { AlertTriangle, CheckCircle2, LockKeyhole, Minus, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, LockKeyhole, Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getJarvisTeamMetrics, type JarvisReadModel, type JarvisRecord } from "@/lib/adminJarvis";
+import { getJarvisTeamMetrics, getJarvisTrendSegments, type JarvisReadModel, type JarvisRecord } from "@/lib/adminJarvis";
 
 const record = (value: unknown): JarvisRecord | null =>
   value && typeof value === "object" && !Array.isArray(value) ? value as JarvisRecord : null;
@@ -22,8 +22,11 @@ export default function AdminJarvisDashboard({ data }: { data: JarvisReadModel }
   const athleteCount = value(summary, "athletes_total") ?? value(data.overview, "total_athletes");
   const aggregatesAllowed = (athleteCount ?? 0) >= 5;
   const active7d = value(activation, "active_7d") ?? value(activity, "active_users_7d");
-  const active28d = value(activation, "active_28d");
   const teamMetrics = getJarvisTeamMetrics(data);
+  const trendSegments = getJarvisTrendSegments(data);
+  const overallTrend = trendSegments.find((segment) => segment.participationMode === "all");
+  const trendQuality = record(data.trends?.data_quality);
+  const TrendIcon = overallTrend?.direction === "up" ? TrendingUp : overallTrend?.direction === "down" ? TrendingDown : Minus;
   const soloEligible = value(soloSample, "eligible_participants");
   const funnel = [
     { label: "Athleten", count: athleteCount ?? 0 },
@@ -107,9 +110,38 @@ export default function AdminJarvisDashboard({ data }: { data: JarvisReadModel }
       )}
 
       <Card className="border-[#6d5637] bg-[#1d1914]">
-        <CardContent className="flex items-start gap-3 p-4 text-[#e4c48f]">
-          <Minus className="mt-0.5 h-5 w-5 shrink-0" />
-          <div><p className="font-semibold">Auf und Ab: noch bewusst offen</p><p className="mt-1 text-sm leading-relaxed text-[#c9aa79]">7 Tage aktiv: {format(active7d)} · 28 Tage aktiv: {format(active28d)}. Diese Fenster überlappen. Jarvis zeigt sie deshalb nicht fälschlich als Trend. Für ein ehrliches Hoch/Runter fehlt noch ein read-only Vergleich gleich großer Zeitfenster.</p></div>
+        <CardHeader>
+          <div className="flex items-start gap-3 text-[#e4c48f]">
+            <TrendIcon className="mt-0.5 h-5 w-5 shrink-0" />
+            <div><CardTitle className="text-base">Aktivitätstrend</CardTitle><CardDescription className="mt-1 text-[#c9aa79]">Zwei gleiche, nicht überlappende 7-Tage-Fenster in UTC. Der Trend beschreibt aktive Athleten, keine Ursache.</CardDescription></div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {trendSegments.length === 0 ? (
+            <div className="rounded-xl border border-[#6d5637] p-4 text-sm text-[#c9aa79]">Die read-only Trendquelle ist noch nicht aktiviert. Jarvis behauptet deshalb kein Hoch oder Runter.</div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {trendSegments.map((segment) => {
+                const label = segment.participationMode === "all" ? "Gesamt" : segment.participationMode === "team" ? "Team" : "Solo";
+                const delta = segment.activeAthleteDelta ?? 0;
+                const direction = segment.direction === "up" ? "mehr aktiv" : segment.direction === "down" ? "weniger aktiv" : "unverändert";
+                return (
+                  <div key={segment.participationMode} className="rounded-xl border border-[#5d4c37] bg-black/15 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#a99579]">{label}</p>
+                    {segment.sufficientData ? (
+                      <><p className="mt-2 text-xl font-semibold text-[#f4efe6]">{format(segment.previousActiveAthletes)} → {format(segment.currentActiveAthletes)}</p><p className="mt-1 text-sm text-[#c9aa79]">{delta > 0 ? "+" : ""}{delta} · {direction}</p><p className="mt-2 text-xs text-[#8f8373]">n = {segment.sampleSize} in beiden Fenstern</p></>
+                    ) : (
+                      <><p className="mt-2 font-semibold text-[#f4efe6]">Noch geschützt</p><p className="mt-1 text-sm text-[#c9aa79]">n = {segment.sampleSize}; Ausgabe erst ab 5.</p></>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <p className="mt-3 text-xs leading-relaxed text-[#9f927f]">Testprofile, Test-Programminstanzen und Testteams sind serverseitig ausgeschlossen. Einzelprofile werden nicht ausgegeben.</p>
+          {(value(trendQuality, "previous_unclassified_events") ?? 0) + (value(trendQuality, "current_unclassified_events") ?? 0) > 0 ? (
+            <p className="mt-2 text-xs leading-relaxed text-[#c9aa79]">Datenlücke: {format(value(trendQuality, "previous_unclassified_events"))} frühere und {format(value(trendQuality, "current_unclassified_events"))} aktuelle Aktivitätsereignisse besitzen keine sichere Solo-/Team-Zuordnung. Sie zählen nur im Gesamttrend.</p>
+          ) : null}
         </CardContent>
       </Card>
 
