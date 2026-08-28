@@ -24,6 +24,10 @@ const adminIntelligenceMigration = readFileSync(
   resolve("supabase/migrations/20260826062312_jarvis_admin_intelligence_read_contract_v1.sql"),
   "utf8",
 );
+const criticalJourneyMigration = readFileSync(
+  resolve("supabase/migrations/20260828133200_jarvis_critical_journey_coverage_v1_1.sql"),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -146,6 +150,7 @@ try {
     CREATE ROLE authenticated;
     CREATE ROLE service_role;
     CREATE SCHEMA auth;
+    CREATE SCHEMA minor_auth;
     CREATE SCHEMA extensions;
 
     -- PGlite has no pgcrypto bundle. This deterministic 32-byte test double
@@ -324,6 +329,18 @@ try {
       evidence_payload jsonb NOT NULL,
       analysis_manifest jsonb NOT NULL
     );
+    CREATE TABLE minor_auth.system_settings(
+      singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+      enforcement_enabled boolean NOT NULL DEFAULT false
+    );
+    INSERT INTO minor_auth.system_settings(singleton, enforcement_enabled)
+    VALUES (true, true);
+    CREATE TABLE minor_auth.guardian_challenges(
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES auth.users(id),
+      delivery_status text NOT NULL DEFAULT 'queued',
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
 
     CREATE FUNCTION public.evidence_eligibility_reason(
       _program_instance_id uuid,
@@ -347,6 +364,7 @@ try {
   await db.exec(extensionMigration);
   await db.exec(hardeningMigration);
   await db.exec(adminIntelligenceMigration);
+  await db.exec(criticalJourneyMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -599,6 +617,19 @@ try {
   assert(
     daily.data.system_health.operations_24h.flow_failures.daily_checkin_saved === 0,
     "QA failures must be excluded from production operations",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.auth_login.coverage === "AUTHENTICATED_SUCCESS_ONLY"
+      && daily.data.system_health.critical_journey_coverage.auth_login.failures_24h === null,
+    "Authenticated login successes must not masquerade as failed-login coverage",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.team_join.coverage === "AUTHENTICATED_APP_EVENTS",
+    "Team join must expose its bounded authenticated event coverage",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.minor_authorization.coverage === "STRUCTURAL_AND_DELIVERY_ONLY",
+    "Enabled minor enforcement must expose structural and delivery coverage",
   );
   const serializedDaily = JSON.stringify(daily);
   assert(!serializedDaily.includes("PRIVATE-FEEDBACK-CONTENT"), "Feedback text must not leave RewirePerform");

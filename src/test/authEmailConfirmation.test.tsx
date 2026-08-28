@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   verifyRole: vi.fn(),
+  trackAppEvent: vi.fn(),
   platform: "web",
 }));
 
@@ -53,6 +54,10 @@ vi.mock("@/integrations/supabase/client", () => ({
     from: mocks.from,
     rpc: mocks.rpc,
   },
+}));
+
+vi.mock("@/lib/monitoring", () => ({
+  trackAppEvent: mocks.trackAppEvent,
 }));
 
 vi.mock("sonner", () => ({
@@ -693,6 +698,12 @@ describe("auth email confirmation", () => {
     expect(pendingPostSignupIntent("user-1")).toBeNull();
     expect(pendingPostAuthorizationTeamCode("user-1")).toBe("ABC123");
     expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.trackAppEvent).toHaveBeenCalledWith({
+      eventName: "auth_login",
+      status: "success",
+      route: "/auth",
+      metadata: { stage: "password_session_created" },
+    });
   });
 
   it("queues an OTP-confirmed team signup without joining before minor authorization", async () => {

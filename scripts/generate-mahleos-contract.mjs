@@ -110,6 +110,48 @@ const healthFlowFailures = strictObject(
   ].map((key) => [key, nonnegativeInteger])),
 );
 
+const criticalJourneyCoverage = strictObject(
+  ["auth_login", "auth_signup", "team_join", "minor_authorization"],
+  {
+    auth_login: strictObject(
+      ["coverage", "authority", "successes_24h", "failures_24h"],
+      {
+        coverage: { const: "AUTHENTICATED_SUCCESS_ONLY" },
+        authority: { const: "authenticated_app_event_log" },
+        successes_24h: nonnegativeInteger,
+        failures_24h: { type: "null" },
+      },
+    ),
+    auth_signup: strictObject(
+      ["coverage", "authority", "successes_24h", "failures_24h"],
+      {
+        coverage: { const: "STRUCTURAL_ONLY" },
+        authority: { const: "identity_integrity" },
+        successes_24h: { type: "null" },
+        failures_24h: { type: "null" },
+      },
+    ),
+    team_join: strictObject(
+      ["coverage", "authority", "attempts_24h", "successes_24h", "failures_24h"],
+      {
+        coverage: { const: "AUTHENTICATED_APP_EVENTS" },
+        authority: { const: "authenticated_app_event_log" },
+        attempts_24h: nonnegativeInteger,
+        successes_24h: nonnegativeInteger,
+        failures_24h: nonnegativeInteger,
+      },
+    ),
+    minor_authorization: strictObject(
+      ["coverage", "authority", "delivery_failures_24h"],
+      {
+        coverage: { enum: ["NOT_CONNECTED", "STRUCTURAL_AND_DELIVERY_ONLY"] },
+        authority: { const: "minor_auth_state_machine" },
+        delivery_failures_24h: nullableNonnegativeInteger,
+      },
+    ),
+  },
+);
+
 const systemHealthSchema = schema("system-health", "MahleOS system health v1", strictObject(
   [
     "schema_version",
@@ -120,13 +162,14 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
     "program_integrity",
     "tracking_integrity_7d",
     "operations_24h",
+    "critical_journey_coverage",
     "notifications_7d",
     "feedback",
     "privacy_level",
     "privacy_exclusions",
   ],
   {
-    schema_version: { const: "mahleos-system-health-v1" },
+    schema_version: { const: "mahleos-system-health-v1.3" },
     generated_at: dateTime,
     reporting_timezone: reportingTimezone,
     status: operationalStatus,
@@ -175,6 +218,7 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
         flow_failures: healthFlowFailures,
       },
     ),
+    critical_journey_coverage: criticalJourneyCoverage,
     notifications_7d: strictObject(
       ["sent", "opened", "failed", "expired_subscriptions"],
       {
@@ -1114,7 +1158,7 @@ const lockId = "70000000-0000-4000-8000-000000000501";
 const checksum = "a".repeat(64);
 
 const systemHealth = {
-  schema_version: "mahleos-system-health-v1",
+  schema_version: "mahleos-system-health-v1.3",
   generated_at: generatedAt,
   reporting_timezone: "UTC",
   status: "GREEN",
@@ -1144,6 +1188,32 @@ const systemHealth = {
       assessment_saved: 0,
       coach_evidence_load_failed: 0,
       app_runtime_error: 0,
+    },
+  },
+  critical_journey_coverage: {
+    auth_login: {
+      coverage: "AUTHENTICATED_SUCCESS_ONLY",
+      authority: "authenticated_app_event_log",
+      successes_24h: 3,
+      failures_24h: null,
+    },
+    auth_signup: {
+      coverage: "STRUCTURAL_ONLY",
+      authority: "identity_integrity",
+      successes_24h: null,
+      failures_24h: null,
+    },
+    team_join: {
+      coverage: "AUTHENTICATED_APP_EVENTS",
+      authority: "authenticated_app_event_log",
+      attempts_24h: 2,
+      successes_24h: 2,
+      failures_24h: 0,
+    },
+    minor_authorization: {
+      coverage: "STRUCTURAL_AND_DELIVERY_ONLY",
+      authority: "minor_auth_state_machine",
+      delivery_failures_24h: 0,
     },
   },
   notifications_7d: { sent: 4, opened: 2, failed: 0, expired_subscriptions: 0 },
@@ -1435,7 +1505,7 @@ const evidenceResponse = {
 
 const manifest = {
   contract_id: "rewireperform-mahleos-machine-read",
-  contract_version: "1.2.0",
+  contract_version: "1.3.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   reporting_timezone: "UTC",
   authentication: {

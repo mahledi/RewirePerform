@@ -46,6 +46,7 @@ import {
   EXISTING_ACCOUNT_NOTICE,
   isObscuredExistingAccountSignUp,
 } from "@/lib/authAccountCollision";
+import { trackAppEvent } from "@/lib/monitoring";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join" | "organization";
@@ -351,6 +352,12 @@ const Auth = () => {
       }
       toast.error(authErrorMessage(error, "Die Anmeldung konnte gerade nicht abgeschlossen werden."));
     } else {
+      await trackAppEvent({
+        eventName: "auth_login",
+        status: "success",
+        route: "/auth",
+        metadata: { stage: "password_session_created" },
+      });
       await backfillProfileSport(data.user.id);
       const { data: roleData } = await supabase
         .from("user_roles")
