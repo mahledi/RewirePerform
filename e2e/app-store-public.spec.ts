@@ -252,7 +252,17 @@ test.describe("email confirmation", () => {
             confirmation_sent_at: now,
             app_metadata: { provider: "email", providers: ["email"] },
             user_metadata: { full_name: "QA Confirmation", role: "athlete" },
-            identities: [],
+            identities: [
+              {
+                id: "00000000-0000-4000-8000-000000000002",
+                user_id: "00000000-0000-4000-8000-000000000001",
+                identity_data: { email: "qa-confirmation@example.com" },
+                provider: "email",
+                created_at: now,
+                updated_at: now,
+                last_sign_in_at: now,
+              },
+            ],
             created_at: now,
             updated_at: now,
           },
