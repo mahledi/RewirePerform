@@ -97,7 +97,7 @@ test("auth flow exposes accessible controls and legal links", async ({ page }, t
 
   await expect(page.getByLabel("Vollständiger Name")).toHaveAttribute("autocomplete", "name");
   await expect(page.getByLabel("E-Mail")).toHaveAttribute("autocomplete", "email");
-  await expect(page.getByLabel("Passwort")).toHaveAttribute("autocomplete", "new-password");
+  await expect(page.getByLabel("Passwort", { exact: true })).toHaveAttribute("autocomplete", "new-password");
   await expectNoHorizontalOverflow(page);
   await capture(page, testInfo, "auth-signup");
 });
@@ -122,7 +122,7 @@ test("organization inquiry review stays aligned and explains privacy in-app", as
 
   await expect(page.getByRole("heading", { name: "Bereit für den nächsten Schritt." })).toBeVisible();
   await expect(page.getByText("alexandra.beispielperson@sehr-langer-vereinsname-in-deutschland.de", { exact: false })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Anfrage absenden" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Anfrage absenden" })).toBeEnabled();
   await expect(page.getByText(/Teststand:/)).toHaveCount(0);
   await expectNoHorizontalOverflow(page);
 
@@ -263,10 +263,10 @@ test.describe("email confirmation", () => {
     await page.goto("/auth?mode=signup&intent=solo&intro=athlete&redirect=%2Fadmin%2Fqa");
     await page.getByLabel("Vollständiger Name").fill("QA Confirmation");
     await page.getByLabel("E-Mail").fill("qa-confirmation@example.com");
-    await page.getByLabel("Passwort").fill("secure-test-password");
+    await page.getByLabel("Passwort", { exact: true }).fill("secure-test-password");
     expect(await page.getByLabel("Vollständiger Name").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
     expect(await page.getByLabel("E-Mail").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
-    expect(await page.getByLabel("Passwort").evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
+    expect(await page.getByLabel("Passwort", { exact: true }).evaluate((element) => (element as HTMLInputElement).checkValidity())).toBe(true);
     await page.getByRole("button", { name: "Konto erstellen" }).click();
 
     await expect.poll(() => interceptedSignups).toBe(1);
