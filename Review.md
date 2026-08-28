@@ -1,35 +1,35 @@
-# Review – Synthetic Navigation Contract
+# Review – Guardian Background Test Reliability
 
 ## Ziel
 
-Den bestehenden öffentlichen Browser-Smoke an die bereits aktive UI-Semantik anpassen, damit Guardian echte Navigationsfehler von veralteten Testannahmen unterscheiden kann.
+Den bestehenden kompletten RewirePerform-Testlauf im gedrosselten macOS-Guardian zuverlässig ausführen, ohne die normalen lokalen Testgrenzen zu lockern.
 
 ## Ergebnis
 
-- Die drei Passwort-Lookups adressieren das Eingabefeld eindeutig statt zusätzlich den Sichtbarkeits-Schalter zu treffen.
-- Der Organisation-Review erwartet den aktuellen, absichtlich aktivierten Absende-Button.
+- Normale lokale Tests behalten das Timeout von 15 Sekunden.
+- Ausschließlich der explizit markierte MahleOS-Hintergrundaudit erhält 60 Sekunden pro Test.
 - Produktcode, Auth-Verhalten, Datenzugriffe und Nutzeroberfläche bleiben unverändert.
 
 ## Geänderte Dateien
 
-- `e2e/app-store-public.spec.ts`
+- `vitest.config.ts`
 - `Review.md`
 
 ## Tests und Checks
 
-- Vollständige Suite `e2e/app-store-public.spec.ts`: PASS unter gesperrtem externem Netzwerk; nur localhost war erlaubt.
-- Ausführung mit installiertem System-Chrome über den isolierten MahleOS-Harness: PASS.
+- Gezielter PGlite-Vertragstest mit aktiviertem Audit-Profil: PASS.
+- Vollständiger CI-Lauf unter demselben gedrosselten macOS-Hintergrundprofil: vor Integration erforderlich.
 - Keine Production-Daten, Credentials oder externen KI-Anbieter verwendet.
 
 ## Offene Risiken
 
-- Der Fix wird erst nach erfolgreicher CI und Integration in `main` vom automatisch gestarteten Guardian verwendet.
-- Ein grüner Browser-Smoke beweist die geprüften öffentlichen Flows, nicht sämtliche Produkt- oder Production-Flows.
+- Das Audit-Profil verhindert falsche Timeout-Alarme unter niedriger macOS-Priorität; echte Fehler bleiben unverändert rot.
+- Der automatische Guardian kann den Fix erst nach MahleOS-Integration und Repin auf den integrierten RewirePerform-Mainstand belegen.
 
 ## Empfohlener nächster Schritt
 
-Branch pushen, CI abwarten, den Test-only-Diff integrieren und danach den RewirePerform-Audit-Worktree auf den neuen `origin/main`-Stand repinnen. Anschließend muss ein automatischer Guardian-Lauf beide betroffenen Journeys grün belegen.
+Beide test-only Änderungen isoliert integrieren und anschließend einen automatischen Guardian-Lauf auf einem stabilen RewirePerform-Mainstand abwarten.
 
 ## Risikostufe
 
-R2 – test-only, keine Produkt- oder Datenmutation.
+R2 – Testinfrastruktur, keine Produkt- oder Datenmutation.

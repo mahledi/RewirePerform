@@ -2,6 +2,9 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
+const testTimeout =
+  process.env.MAHLEOS_BACKGROUND_AUDIT === "1" ? 60_000 : 15_000;
+
 export default defineConfig({
   plugins: [react()],
   test: {
@@ -9,7 +12,7 @@ export default defineConfig({
     globals: true,
     // Catalog-backed PGlite tests can exceed Vitest's 5 s default when the
     // full suite initializes several isolated PostgreSQL runtimes in parallel.
-    testTimeout: 15_000,
+    testTimeout,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     env: {
