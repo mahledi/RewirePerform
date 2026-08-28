@@ -1,11 +1,11 @@
 # MahleOS Read API Contract
 
-Stand: 26. August 2026
+Stand: 28. August 2026
 
-Status: Der V1.1-Produzentenvertrag ist in `main` integriert. Der isolierte
-V1.2-Kandidat ergaenzt fuenf feste Admin-Aggregate. Keine V1.2-Migration, Edge
-Function, Umgebungsvariable oder Verbindung ist dadurch auf Production
-aktiviert.
+Status: Der V1.2-Produzentenvertrag mit fuenf festen Admin-Aggregaten ist in
+`main` integriert. Der isolierte V1.3-Kandidat ergaenzt privacy-minimierte
+Abdeckung kritischer Nutzerreisen. Keine V1.3-Migration oder Verbindung ist
+dadurch auf Production aktiviert.
 
 ## Zweck
 
@@ -88,12 +88,21 @@ Enthaelt gemeinsam:
 
 Diese Antworten verwenden die Schema-Versionen:
 
-- `mahleos-system-health-v1`
+- `mahleos-system-health-v1.3`
 - `mahleos-tracking-quality-v1`
 - `mahleos-feedback-status-v1`
 
 MahleOS muss unbekannte Schema-Versionen ablehnen und einen menschlichen Review
 anfordern. Es darf Felder nicht still umdeuten.
+
+`critical_journey_coverage` verdichtet ausschliesslich nicht-identifizierende
+24-Stunden-Zaehler. Erfolgreiche Passwort-Logins sind nach bestehender Session
+verbunden; fehlgeschlagene Logins bleiben mangels kostenfreier, sicherer
+Serverquelle explizit `null`. Teambeitritte liefern Versuch, Erfolg und
+technische beziehungsweise Autorisierungsfehler. Minderjaehrigenfreigaben
+liefern nur Enforcement- und Zustellabdeckung. Testprofile sind ausgeschlossen.
+E-Mail, User-ID, Team-ID, Teamcode, IP-Adresse, User-Agent, Route, Metadaten und
+Freitext verlassen diese Aggregatgrenze nicht.
 
 ### Pilotkatalog
 
@@ -166,7 +175,7 @@ Endpunkt vorbehalten.
 
 ### Admin Intelligence
 
-Der V1.2-Kandidat ergaenzt genau fuenf weitere feste Ansichten:
+Der V1.2-Vertrag ergaenzt genau fuenf weitere feste Ansichten:
 
 - `admin_overview`: Production-Zaehler fuer Nutzerrollen, Teams, aktive
   Programme, Aktivitaet, Assessments und Programmverstaendnis.

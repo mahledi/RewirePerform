@@ -16,6 +16,7 @@ const migrationSource = () => [
   "supabase/migrations/20260721153000_extend_mahleos_operational_read_contract.sql",
   "supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql",
   "supabase/migrations/20260826062312_jarvis_admin_intelligence_read_contract_v1.sql",
+  "supabase/migrations/20260828133200_jarvis_critical_journey_coverage_v1_1.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
@@ -91,9 +92,28 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("COUNT(DISTINCT cer.week_number)");
     expect(migration).toContain("ets.day_number <= current_program_day");
     expect(migration).toContain("'reporting_timezone', 'UTC'");
+    expect(migration).toContain("'critical_journey_coverage'");
+    expect(migration).toContain("'AUTHENTICATED_SUCCESS_ONLY'");
+    expect(migration).toContain("'AUTHENTICATED_APP_EVENTS'");
+    expect(migration).toContain("'STRUCTURAL_AND_DELIVERY_ONLY'");
     expect(migration).toContain("extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256')");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated");
     expect(migration).toContain("TO service_role");
+  });
+
+  it("keeps critical journey telemetry aggregate, identifier-free, and honest about gaps", () => {
+    const migration = readRepoFile(
+      "supabase/migrations/20260828133200_jarvis_critical_journey_coverage_v1_1.sql",
+    );
+
+    expect(migration).toContain("'failures_24h', NULL");
+    expect(migration).toContain("NOT COALESCE(ael.is_test, false)");
+    expect(migration).toContain("NOT COALESCE(p.is_test_user, false)");
+    expect(migration).not.toContain("ael.metadata");
+    expect(migration).not.toContain("ael.user_id");
+    expect(migration).not.toContain("p.full_name");
+    expect(migration).not.toContain("p.email");
+    expect(migration).toContain("FROM PUBLIC, anon, authenticated, service_role");
   });
 
   it("exports feedback counts and technical aggregates without private payloads", () => {

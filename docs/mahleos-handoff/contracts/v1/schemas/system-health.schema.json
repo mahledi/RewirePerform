@@ -12,6 +12,7 @@
     "program_integrity",
     "tracking_integrity_7d",
     "operations_24h",
+    "critical_journey_coverage",
     "notifications_7d",
     "feedback",
     "privacy_level",
@@ -19,7 +20,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "mahleos-system-health-v1"
+      "const": "mahleos-system-health-v1.3"
     },
     "generated_at": {
       "type": "string",
@@ -173,6 +174,125 @@
             },
             "app_runtime_error": {
               "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "critical_journey_coverage": {
+      "type": "object",
+      "required": [
+        "auth_login",
+        "auth_signup",
+        "team_join",
+        "minor_authorization"
+      ],
+      "properties": {
+        "auth_login": {
+          "type": "object",
+          "required": [
+            "coverage",
+            "authority",
+            "successes_24h",
+            "failures_24h"
+          ],
+          "properties": {
+            "coverage": {
+              "const": "AUTHENTICATED_SUCCESS_ONLY"
+            },
+            "authority": {
+              "const": "authenticated_app_event_log"
+            },
+            "successes_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failures_24h": {
+              "type": "null"
+            }
+          },
+          "additionalProperties": false
+        },
+        "auth_signup": {
+          "type": "object",
+          "required": [
+            "coverage",
+            "authority",
+            "successes_24h",
+            "failures_24h"
+          ],
+          "properties": {
+            "coverage": {
+              "const": "STRUCTURAL_ONLY"
+            },
+            "authority": {
+              "const": "identity_integrity"
+            },
+            "successes_24h": {
+              "type": "null"
+            },
+            "failures_24h": {
+              "type": "null"
+            }
+          },
+          "additionalProperties": false
+        },
+        "team_join": {
+          "type": "object",
+          "required": [
+            "coverage",
+            "authority",
+            "attempts_24h",
+            "successes_24h",
+            "failures_24h"
+          ],
+          "properties": {
+            "coverage": {
+              "const": "AUTHENTICATED_APP_EVENTS"
+            },
+            "authority": {
+              "const": "authenticated_app_event_log"
+            },
+            "attempts_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "successes_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failures_24h": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "minor_authorization": {
+          "type": "object",
+          "required": [
+            "coverage",
+            "authority",
+            "delivery_failures_24h"
+          ],
+          "properties": {
+            "coverage": {
+              "enum": [
+                "NOT_CONNECTED",
+                "STRUCTURAL_AND_DELIVERY_ONLY"
+              ]
+            },
+            "authority": {
+              "const": "minor_auth_state_machine"
+            },
+            "delivery_failures_24h": {
+              "type": [
+                "integer",
+                "null"
+              ],
               "minimum": 0
             }
           },
