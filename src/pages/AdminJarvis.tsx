@@ -23,7 +23,7 @@ const record = (value: unknown): Record<string, unknown> | null =>
 const AdminJarvis = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, role, roleLoading, roleVerified } = useAuth();
-  const [data, setData] = useState<JarvisReadModel>({ overview: null, teams: null, system: null, operations: null, presentation: null, study: null, solo: null });
+  const [data, setData] = useState<JarvisReadModel>({ overview: null, teams: null, system: null, operations: null, presentation: null, study: null, solo: null, trends: null });
   const [sources, setSources] = useState<SourceState[]>([]);
   const [loading, setLoading] = useState(true);
   const [question, setQuestion] = useState("");
@@ -44,8 +44,9 @@ const AdminJarvis = () => {
       client.rpc("get_admin_presentation_metrics", { include_test: false }),
       client.rpc("get_admin_study_overview", { include_test: false }),
       client.rpc("get_performance_evidence_summary", { _program_run_id: null, _include_test: false, _protocol_version: EVIDENCE_PROTOCOL_VERSION }),
+      client.rpc("get_admin_activity_trends"),
     ]);
-    const labels = ["Admin-Übersicht", "Teams & Aktivität", "Systemgesundheit", "Launch-Ops", "Pilot-Metriken", "Pilot-Auswertung", "Solo-Evidence"];
+    const labels = ["Admin-Übersicht", "Teams & Aktivität", "Systemgesundheit", "Launch-Ops", "Pilot-Metriken", "Pilot-Auswertung", "Solo-Evidence", "Aktivitätstrends"];
     setSources(results.map((result, index) => ({ label: labels[index], state: result.error ? "FAILED" : "CURRENT" })));
     setData({
       overview: results[0].error ? null : record(results[0].data),
@@ -55,6 +56,7 @@ const AdminJarvis = () => {
       presentation: results[4].error ? null : record(results[4].data),
       study: results[5].error ? null : record(results[5].data),
       solo: results[6].error ? null : record(results[6].data),
+      trends: results[7].error ? null : record(results[7].data),
     });
     setLoading(false);
   }, []);
