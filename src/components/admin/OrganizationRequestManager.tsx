@@ -141,6 +141,7 @@ const tierLabels = {
 } as const;
 
 const approvableStatuses = new Set(["submitted", "needs_information", "review_ready", "call_requested"]);
+const invitationReissueStatuses = new Set(["approved_community", "approved_partner", "approved_enterprise"]);
 
 const RequestMetric = ({ label, value }: { label: string; value: string }) => (
   <div className="rounded-xl border border-border/60 bg-secondary/25 p-3">
@@ -158,11 +159,15 @@ const OrganizationRequestManager = () => {
   const [note, setNote] = useState("");
   const [tier, setTier] = useState<"community" | "partner" | "enterprise">("community");
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [invitationEmail, setInvitationEmail] = useState("");
+  const [deliveredInvitationEmail, setDeliveredInvitationEmail] = useState<string | null>(null);
 
   const selected = useMemo(
     () => requests.find((request) => request.id === selectedId) ?? requests[0] ?? null,
     [requests, selectedId],
   );
+  const selectedRequestId = selected?.id;
+  const selectedWorkEmail = selected?.work_email;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -183,10 +188,12 @@ const OrganizationRequestManager = () => {
   useEffect(() => { void load(); }, [load]);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selectedRequestId || !selectedWorkEmail) return;
     setNote("");
     setInviteUrl(null);
-  }, [selected?.id]);
+    setInvitationEmail(selectedWorkEmail);
+    setDeliveredInvitationEmail(null);
+  }, [selectedRequestId, selectedWorkEmail]);
 
   const updateStatus = async (status: string) => {
     if (!selected || saving) return;
@@ -208,23 +215,37 @@ const OrganizationRequestManager = () => {
 
   const approve = async () => {
     if (!selected || saving) return;
+    const normalizedInvitationEmail = invitationEmail.trim().toLowerCase();
+    if (!normalizedInvitationEmail.includes("@")) {
+      toast.error("Bitte prüfe die persönliche Coach-E-Mail-Adresse.");
+      return;
+    }
     setSaving(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error: rpcError } = await (supabase as any).rpc("approve_organization_access_request", {
+    const { data, error: rpcError } = await (supabase as any).rpc("prepare_organization_access_invitation_v1_3", {
       _request_id: selected.id,
       _access_tier: tier,
       _team_name: null,
       _team_sport: null,
+      _invitation_email: normalizedInvitationEmail,
     });
-    setSaving(false);
     if (rpcError || !data?.invitation_token) {
-      toast.error("Organisation und Einladung konnten nicht angelegt werden.");
+      setSaving(false);
+      const message = String(rpcError?.message ?? "");
+      toast.error(
+        message.includes("coach_email_is_active_athlete")
+          ? "Diese E-Mail gehört zu einem aktiven Athletenkonto. Nutze für den persönlichen Coach-Zugang eine andere Adresse."
+          : message.includes("coach_email_already_invited")
+            ? "Für diese Coach-E-Mail besteht bereits eine offene Einladung."
+            : "Organisation und Einladung konnten nicht angelegt werden.",
+      );
       return;
     }
+    const preparedEmail = String(data.invitation_email ?? normalizedInvitationEmail);
     const url = `${window.location.origin}/organization/invite?token=${encodeURIComponent(String(data.invitation_token))}`;
     const { error: emailError } = await supabase.functions.invoke("send-organization-access-invitation", {
       body: {
-        recipient_email: selected.work_email,
+        recipient_email: preparedEmail,
         invitation_token: String(data.invitation_token),
       },
     });
@@ -235,6 +256,52 @@ const OrganizationRequestManager = () => {
     }
     await load();
     setInviteUrl(url);
+    setDeliveredInvitationEmail(preparedEmail);
+    setSaving(false);
+  };
+
+  const reissueInvitation = async () => {
+    if (!selected || saving) return;
+    const normalizedInvitationEmail = invitationEmail.trim().toLowerCase();
+    if (!normalizedInvitationEmail.includes("@")) {
+      toast.error("Bitte prüfe die persönliche Coach-E-Mail-Adresse.");
+      return;
+    }
+    setSaving(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error: rpcError } = await (supabase as any).rpc("reissue_organization_access_invitation_v1_3", {
+      _request_id: selected.id,
+      _invitation_email: normalizedInvitationEmail,
+    });
+    if (rpcError || !data?.invitation_token) {
+      setSaving(false);
+      const message = String(rpcError?.message ?? "");
+      toast.error(
+        message.includes("coach_email_is_active_athlete")
+          ? "Diese E-Mail gehört zu einem aktiven Athletenkonto. Nutze für den persönlichen Coach-Zugang eine andere Adresse."
+          : message.includes("coach_email_already_invited")
+            ? "Für diese Coach-E-Mail besteht bereits eine andere offene Einladung."
+            : message.includes("invitation_not_reissuable")
+              ? "Die Einladung ist nicht mehr offen und kann deshalb nicht neu ausgestellt werden."
+              : "Die persönliche Coach-Einladung konnte nicht neu ausgestellt werden.",
+      );
+      return;
+    }
+    const preparedEmail = String(data.invitation_email ?? normalizedInvitationEmail);
+    const token = String(data.invitation_token);
+    const url = `${window.location.origin}/organization/invite?token=${encodeURIComponent(token)}`;
+    const { error: emailError } = await supabase.functions.invoke("send-organization-access-invitation", {
+      body: { recipient_email: preparedEmail, invitation_token: token },
+    });
+    if (emailError) {
+      toast.error("Die neue Einladung ist vorbereitet, aber die E-Mail konnte nicht gesendet werden. Teile den Link persönlich.");
+    } else {
+      toast.success("Persönliche Coach-Einladung neu ausgestellt und gesendet.");
+    }
+    await load();
+    setInviteUrl(url);
+    setDeliveredInvitationEmail(preparedEmail);
+    setSaving(false);
   };
 
   const purgeFakeOrSpam = async () => {
@@ -387,6 +454,17 @@ const OrganizationRequestManager = () => {
                   <div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" /><div><p className="font-semibold">Zugang vorbereiten</p><p className="mt-1 text-sm text-muted-foreground">Erstellt den freigegebenen Organisationszugang und eine einmalige persönliche Einladung. Das erste Team legt der Coach anschließend selbst im Dashboard an.</p></div></div>
                   <div className="max-w-xs space-y-2">
                     <div className="space-y-2"><Label htmlFor="partner-tier">Klasse</Label><select id="partner-tier" value={tier} onChange={(e) => setTier(e.target.value as typeof tier)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="community">Community</option><option value="partner">Partner</option><option value="enterprise">Enterprise</option></select></div>
+                    <div className="space-y-2">
+                      <Label htmlFor="coach-login-email">Persönlicher Main-Coach-Login</Label>
+                      <Input
+                        id="coach-login-email"
+                        type="email"
+                        autoComplete="off"
+                        value={invitationEmail}
+                        onChange={(event) => setInvitationEmail(event.target.value)}
+                      />
+                      <p className="text-xs leading-relaxed text-muted-foreground">Diese Adresse gehört dauerhaft zu genau einem persönlichen Konto. Sie darf nicht bereits als aktiver Athletenzugang verwendet werden.</p>
+                    </div>
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground">Die Klasse beschreibt Umfang, Begleitung, Anpassung und Integrationsbedarf – nicht die vermutete Zahlungsfähigkeit der Organisation.</p>
                   <AlertDialog>
@@ -397,7 +475,7 @@ const OrganizationRequestManager = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>{selected.organization_name} verbindlich vorbereiten?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Es werden der Organisationszugang und eine einmalige Einladung für {selected.work_email} als {tierLabels[tier]} angelegt. Die persönliche Zugangs-E-Mail wird anschließend ausschließlich an diese Adresse gesendet. Der Coach erstellt sein erstes Team nach der Anmeldung selbst. Es wird noch keine Zahlung ausgelöst.
+                          Es werden der Organisationszugang und eine einmalige Einladung für {invitationEmail.trim().toLowerCase()} als {tierLabels[tier]} angelegt. Die Adresse wird serverseitig auf eine Kollision mit einem aktiven Athletenkonto geprüft. Die persönliche Zugangs-E-Mail wird anschließend ausschließlich an diese Adresse gesendet. Der Coach erstellt sein erstes Team nach der Anmeldung selbst. Es wird noch keine Zahlung ausgelöst.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -413,7 +491,43 @@ const OrganizationRequestManager = () => {
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Diese Anfrage ist nicht mehr im Entscheidungsmodus. Bestehende Organisationen und Rollen werden separat verwaltet.</p>
                   </section>
                 )}
-                {inviteUrl && <section className="rounded-2xl border border-border/70 bg-secondary/20 p-4 sm:p-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Einmalige Einladung</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Die Einladung wurde für {selected.work_email} vorbereitet. Falls der E-Mail-Versand nicht ankommt, kannst du diesen persönlichen Link gezielt weitergeben.</p><div className="mt-3 flex gap-2"><Input readOnly value={inviteUrl} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label="Einladungslink kopieren" onClick={() => { void navigator.clipboard.writeText(inviteUrl); toast.success("Einladungslink kopiert."); }}><Clipboard className="h-4 w-4" /></Button></div></section>}
+                {invitationReissueStatuses.has(selected.status) && (
+                  <section className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+                    <div className="flex items-start gap-3">
+                      <Mail className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                      <div>
+                        <p className="font-semibold">Offene Coach-Einladung korrigieren</p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Nur wenn die persönliche Einladung an die falsche Adresse gebunden wurde. Der bisherige Link wird widerrufen und durch genau einen neuen Link ersetzt.</p>
+                      </div>
+                    </div>
+                    <div className="max-w-xs space-y-2">
+                      <Label htmlFor="coach-reissue-email">Persönlicher Main-Coach-Login</Label>
+                      <Input
+                        id="coach-reissue-email"
+                        type="email"
+                        autoComplete="off"
+                        value={invitationEmail}
+                        onChange={(event) => setInvitationEmail(event.target.value)}
+                      />
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button disabled={saving} variant="outline">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}Einladung neu ausstellen</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Persönliche Einladung wirklich ersetzen?</AlertDialogTitle>
+                          <AlertDialogDescription>Der bisherige Link wird sofort ungültig. Ein neuer, sieben Tage gültiger Link wird ausschließlich für {invitationEmail.trim().toLowerCase()} erzeugt und gesendet.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => void reissueInvitation()}>Alten Link ersetzen</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </section>
+                )}
+                {inviteUrl && <section className="rounded-2xl border border-border/70 bg-secondary/20 p-4 sm:p-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Einmalige Einladung</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Die Einladung wurde für {deliveredInvitationEmail ?? invitationEmail.trim().toLowerCase()} vorbereitet. Falls der E-Mail-Versand nicht ankommt, kannst du diesen persönlichen Link gezielt weitergeben.</p><div className="mt-3 flex gap-2"><Input readOnly value={inviteUrl} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label="Einladungslink kopieren" onClick={() => { void navigator.clipboard.writeText(inviteUrl); toast.success("Einladungslink kopiert."); }}><Clipboard className="h-4 w-4" /></Button></div></section>}
               </CardContent>
             </Card>
           )}

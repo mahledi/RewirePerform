@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Auth from "@/pages/Auth";
@@ -132,6 +132,7 @@ describe("auth email confirmation", () => {
     mocks.platform = "web";
     mocks.resend.mockResolvedValue({ error: null });
     mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
+    mocks.rpc.mockResolvedValue({ data: null, error: null });
     mocks.signOut.mockResolvedValue({ error: null });
     mocks.verifyOtp.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
     mocks.verifyRole.mockResolvedValue({ ok: true, value: "athlete" });
@@ -179,6 +180,44 @@ describe("auth email confirmation", () => {
     expect(signUpCall.options.data).not.toHaveProperty("role");
   });
 
+  it("does not claim that an email was sent for Supabase's obscured repeated signup", async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { user: { id: "obscured-user", identities: [] }, session: null },
+      error: null,
+    });
+
+    renderAuth();
+    submitSoloSignup();
+
+    const collisionAlert = await screen.findByRole("alert");
+    expect(collisionAlert).toHaveTextContent(
+      "Für diese E-Mail besteht möglicherweise bereits ein Konto.",
+    );
+    expect(within(collisionAlert).getByRole("button", { name: "Anmelden" })).toBeInTheDocument();
+    expect(within(collisionAlert).getByRole("button", { name: "Passwort zurücksetzen" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Bestätige deine E-Mail." })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Du startest allein." })).toBeInTheDocument();
+    expect(pendingPostSignupIntent("obscured-user")).toBeNull();
+    expect(mocks.toastSuccess).not.toHaveBeenCalled();
+  });
+
+  it("uses the same neutral collision state for an explicit duplicate error", async () => {
+    mocks.signUp.mockResolvedValue({
+      data: { user: null, session: null },
+      error: { message: "User already registered", code: "user_already_exists" },
+    });
+
+    renderAuth();
+    submitSoloSignup();
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Für diese E-Mail besteht möglicherweise bereits ein Konto.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Passwort zurücksetzen" }));
+    expect(screen.getByRole("heading", { name: "Passwort zurücksetzen." })).toBeInTheDocument();
+    expect(mocks.toastError).not.toHaveBeenCalled();
+  });
+
   it("sends Android auth emails to the registered native callback while leaving the browser contract separate", async () => {
     mocks.platform = "android";
     mocks.signUp.mockResolvedValue({
@@ -195,6 +234,7 @@ describe("auth email confirmation", () => {
   });
 
   it("keeps an invited coach out of athlete onboarding and returns to the invitation after email confirmation", async () => {
+    mocks.rpc.mockResolvedValue({ data: "c*****@verein.de", error: null });
     mocks.signUp.mockResolvedValue({
       data: { user: { id: "user-1" }, session: null },
       error: null,
@@ -203,6 +243,7 @@ describe("auth email confirmation", () => {
     renderAuth(`/auth?mode=signup&intent=organization&redirect=${redirect}&intro=coach`);
 
     expect(screen.getByRole("heading", { name: "Dein Organisationszugang." })).toBeInTheDocument();
+    expect(await screen.findByText("c*****@verein.de")).toBeInTheDocument();
     expect(screen.queryByText(/athletin oder athlet/i)).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Vollständiger Name"), { target: { value: "Coach Beispiel" } });
     fireEvent.change(screen.getByLabelText("E-Mail"), { target: { value: "coach@verein.de" } });

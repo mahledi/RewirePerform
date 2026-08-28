@@ -51,12 +51,18 @@ describe("founder organization request manager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.invoke.mockResolvedValue({ error: null });
-    mocks.rpc.mockImplementation((name: string) => {
+    mocks.rpc.mockImplementation((name: string, args?: Record<string, unknown>) => {
       if (name === "get_admin_organization_access_requests") {
         return Promise.resolve({ data: [request], error: null });
       }
-      if (name === "approve_organization_access_request") {
-        return Promise.resolve({ data: { invitation_token: "secure-token" }, error: null });
+      if (name === "prepare_organization_access_invitation_v1_3") {
+        return Promise.resolve({
+          data: {
+            invitation_token: "secure-token",
+            invitation_email: String(args?._invitation_email ?? "alex@verein.de"),
+          },
+          error: null,
+        });
       }
       if (name === "delete_organization_access_request_spam") {
         return Promise.resolve({ data: { success: true }, error: null });
@@ -90,12 +96,13 @@ describe("founder organization request manager", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Organisation freigeben" }));
     await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith(
-      "approve_organization_access_request",
+      "prepare_organization_access_invitation_v1_3",
       {
         _request_id: "request-1",
         _access_tier: "community",
         _team_name: null,
         _team_sport: null,
+        _invitation_email: "alex@verein.de",
       },
     ));
     expect(await screen.findByDisplayValue(/organization\/invite\?token=secure-token/)).toBeInTheDocument();
@@ -114,9 +121,9 @@ describe("founder organization request manager", () => {
           error: null,
         });
       }
-      if (name === "approve_organization_access_request") {
+      if (name === "prepare_organization_access_invitation_v1_3") {
         approved = true;
-        return Promise.resolve({ data: { invitation_token: "secure-token" }, error: null });
+        return Promise.resolve({ data: { invitation_token: "secure-token", invitation_email: "alex@verein.de" }, error: null });
       }
       throw new Error(`Unexpected RPC: ${name}`);
     });
@@ -130,6 +137,88 @@ describe("founder organization request manager", () => {
     expect(screen.getByText(/falls der e-mail-versand nicht ankommt/i)).toBeInTheDocument();
     expect(screen.getByDisplayValue(/organization\/invite\?token=secure-token/)).toBeInTheDocument();
     expect(mocks.toastError).toHaveBeenCalledWith(expect.stringMatching(/e-mail konnte nicht gesendet/i));
+  });
+
+  it("lets the admin bind a different personal Coach login before approval", async () => {
+    render(<OrganizationRequestManager />);
+    await screen.findByRole("heading", { name: "Sportverein Beispiel" });
+
+    fireEvent.change(screen.getByLabelText("Persönlicher Main-Coach-Login"), {
+      target: { value: "alex+coach@verein.de" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Persönlich freigeben" }));
+    expect(await screen.findByText(/alex\+coach@verein\.de/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Organisation freigeben" }));
+
+    await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith(
+      "prepare_organization_access_invitation_v1_3",
+      expect.objectContaining({ _invitation_email: "alex+coach@verein.de" }),
+    ));
+    expect(mocks.invoke).toHaveBeenCalledWith("send-organization-access-invitation", {
+      body: { recipient_email: "alex+coach@verein.de", invitation_token: "secure-token" },
+    });
+  });
+
+  it("explains an active-athlete collision without sending an invitation", async () => {
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === "get_admin_organization_access_requests") {
+        return Promise.resolve({ data: [request], error: null });
+      }
+      if (name === "prepare_organization_access_invitation_v1_3") {
+        return Promise.resolve({ data: null, error: { message: "coach_email_is_active_athlete" } });
+      }
+      throw new Error(`Unexpected RPC: ${name}`);
+    });
+
+    render(<OrganizationRequestManager />);
+    await screen.findByRole("heading", { name: "Sportverein Beispiel" });
+    fireEvent.click(screen.getByRole("button", { name: "Persönlich freigeben" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Organisation freigeben" }));
+
+    await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith(
+      expect.stringMatching(/aktiven Athletenkonto/),
+    ));
+    expect(mocks.invoke).not.toHaveBeenCalled();
+  });
+
+  it("replaces an open Main-Coach invitation instead of requiring a new inquiry", async () => {
+    const approvedRequest = { ...request, status: "approved_community" };
+    mocks.rpc.mockImplementation((name: string, args?: Record<string, unknown>) => {
+      if (name === "get_admin_organization_access_requests") {
+        return Promise.resolve({ data: [approvedRequest], error: null });
+      }
+      if (name === "reissue_organization_access_invitation_v1_3") {
+        return Promise.resolve({
+          data: {
+            invitation_token: "replacement-token",
+            invitation_email: String(args?._invitation_email ?? "alex@verein.de"),
+          },
+          error: null,
+        });
+      }
+      throw new Error(`Unexpected RPC: ${name}`);
+    });
+
+    render(<OrganizationRequestManager />);
+    await screen.findByRole("heading", { name: "Sportverein Beispiel" });
+    fireEvent.change(screen.getByLabelText("Persönlicher Main-Coach-Login"), {
+      target: { value: "alex+coach@verein.de" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Einladung neu ausstellen" }));
+    expect(await screen.findByText(/bisherige Link wird sofort ungültig/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Alten Link ersetzen" }));
+
+    await waitFor(() => expect(mocks.rpc).toHaveBeenCalledWith(
+      "reissue_organization_access_invitation_v1_3",
+      {
+        _request_id: "request-1",
+        _invitation_email: "alex+coach@verein.de",
+      },
+    ));
+    expect(mocks.invoke).toHaveBeenCalledWith("send-organization-access-invitation", {
+      body: { recipient_email: "alex+coach@verein.de", invitation_token: "replacement-token" },
+    });
+    expect(await screen.findByDisplayValue(/organization\/invite\?token=replacement-token/)).toBeInTheDocument();
   });
 
   it("requires a destructive confirmation before permanently deleting confirmed fake or spam", async () => {

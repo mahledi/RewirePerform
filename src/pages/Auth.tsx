@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
 import TeamAccessLink from "@/components/access/TeamAccessLink";
+import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   AuthStatusLayout,
@@ -41,6 +42,10 @@ import {
   ORGANIZATION_INVITE_ORIGIN,
   parseOrganizationInviteUrl,
 } from "@/lib/organizationInvite";
+import {
+  EXISTING_ACCOUNT_NOTICE,
+  isObscuredExistingAccountSignUp,
+} from "@/lib/authAccountCollision";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join" | "organization";
@@ -61,6 +66,9 @@ const Auth = () => {
     : null;
   const coachInviteCode = organizationInvite?.inviteType === "coach_code"
     ? formatCoachInviteCode(organizationInvite.coachCode)
+    : null;
+  const personalOrganizationInviteToken = organizationInvite?.inviteType === "legacy_token"
+    ? organizationInvite.token
     : null;
   const urlIntent = searchParams.get("intent");
   const authFlow = searchParams.get("flow");
@@ -118,6 +126,8 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [teamCode, setTeamCode] = useState(urlCode ?? "");
+  const [signupNotice, setSignupNotice] = useState<string | null>(null);
+  const [organizationInviteEmailHint, setOrganizationInviteEmailHint] = useState<string | null>(null);
   const authSearchRef = useRef(location.search);
 
   useEffect(() => {
@@ -133,7 +143,28 @@ const Auth = () => {
     setTeamCode(initialIntent === "join" ? urlCode ?? "" : "");
     setTeamJoinStatus("idle");
     setRetryingRole(false);
+    setSignupNotice(null);
   }, [initialIntent, initialMode, location.search, urlCode]);
+
+  useEffect(() => {
+    let active = true;
+    if (!personalOrganizationInviteToken) {
+      setOrganizationInviteEmailHint(null);
+      return () => { active = false; };
+    }
+
+    const loadHint = async () => {
+      // The token is a 256-bit invitation capability. The RPC returns only a
+      // masked address and no account or role information.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc("get_organization_invitation_email_hint", {
+        _token: personalOrganizationInviteToken,
+      });
+      if (active) setOrganizationInviteEmailHint(error || typeof data !== "string" ? null : data);
+    };
+    void loadHint();
+    return () => { active = false; };
+  }, [personalOrganizationInviteToken]);
 
   const normalizedTeamCode = () => teamCode.trim().toUpperCase();
   const activeTeamJoinCode = intent === "join"
@@ -376,6 +407,7 @@ const Auth = () => {
       return;
     }
     setLoading(true);
+    setSignupNotice(null);
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
@@ -395,19 +427,14 @@ const Auth = () => {
       },
     });
 
+    if (isObscuredExistingAccountSignUp(data.user, error)) {
+      setSignupNotice(EXISTING_ACCOUNT_NOTICE);
+      setPassword("");
+      setLoading(false);
+      return;
+    }
+
     if (error) {
-      const lowerMessage = error.message.toLowerCase();
-      if (
-        intent === "join" &&
-        (lowerMessage.includes("already registered") ||
-          lowerMessage.includes("already exists") ||
-          lowerMessage.includes("already been registered"))
-      ) {
-        toast.error("Dieses Konto existiert bereits. Melde dich bitte an.", { duration: 2200 });
-        setMode("login");
-        setLoading(false);
-        return;
-      }
       toast.error(authErrorMessage(error, "Das Konto konnte gerade nicht erstellt werden."));
       setLoading(false);
       return;
@@ -961,6 +988,22 @@ const Auth = () => {
 
         <form onSubmit={handleSignup} className="space-y-4">
           {coachInviteCode && <CoachInviteCodeCard code={coachInviteCode} />}
+          {organizationInviteEmailHint && (
+            <div className="rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-sm">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Persönlich eingeladene Adresse</p>
+              <p className="mt-1 font-medium text-foreground">{organizationInviteEmailHint}</p>
+            </div>
+          )}
+          {signupNotice && (
+            <div role="alert" className="rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-sm text-foreground">
+              <p>{signupNotice}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Du kannst dich anmelden, dein Passwort zurücksetzen oder die E-Mail-Adresse im Formular ändern.</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setMode("login")}>Anmelden</Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setMode("forgot")}>Passwort zurücksetzen</Button>
+              </div>
+            </div>
+          )}
           <div className="relative">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
@@ -998,7 +1041,7 @@ const Auth = () => {
             </div>
           )}
 
-          <FieldEmail value={email} onChange={setEmail} />
+          <FieldEmail value={email} onChange={(value) => { setEmail(value); setSignupNotice(null); }} />
           <FieldPassword value={password} onChange={setPassword} autoComplete="new-password" />
           <SubmitButton loading={loading} label="Konto erstellen" />
         </form>
