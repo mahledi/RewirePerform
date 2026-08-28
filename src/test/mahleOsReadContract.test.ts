@@ -17,6 +17,7 @@ const migrationSource = () => [
   "supabase/migrations/20260721181524_harden_mahleos_readiness_statuses.sql",
   "supabase/migrations/20260826062312_jarvis_admin_intelligence_read_contract_v1.sql",
   "supabase/migrations/20260828133200_jarvis_critical_journey_coverage_v1_1.sql",
+  "supabase/migrations/20260828152000_fix_prestart_system_health_v1_3.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
