@@ -187,19 +187,19 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     cue: "Passiert. Lernen. Weiter.",
     purpose: "Du holst eine brauchbare Information aus einem Fehler, ohne daraus ein Urteil über dich zu machen.",
     scienceBite: {
-      title: "Ein Fehler und ein Urteil sind nicht dasselbe.",
+      title: "Dein Kopf kann nicht vollständig bei zwei Aktionen gleichzeitig sein.",
       paragraphs: [
-        "Ein Fehler zeigt zuerst nur, dass etwas zu spät, ungenau oder falsch entschieden war. Dein Kopf kann daraus zusätzlich machen: Ich bin schlecht. Jetzt sehen es alle.",
-        "Dieses Urteil bindet Aufmerksamkeit. Eine klare Information hilft dir dagegen bei der nächsten Handlung.",
+        "Wenn du dich weiter über den letzten Fehler aufregst oder dich selbst bewertest, fehlt dir Aufmerksamkeit für das, was jetzt kommt.",
+        "Ein Fehler kann dir trotzdem helfen: Er zeigt dir, was du beim nächsten Versuch verändern kannst.",
       ],
     },
     mission: {
-      title: "Eine Information, eine Korrektur",
-      trigger: "Direkt nach einem Fehler oder einem misslungenen Versuch.",
+      title: "Eine Sache mitnehmen",
+      trigger: "Direkt nach einem Fehler.",
       steps: [
-        "Sag kurz: Passiert.",
-        "Hol genau eine brauchbare Information aus dem Fehler.",
-        "Nutze sie in der nächsten passenden Handlung.",
+        "Sag innerlich: Passiert.",
+        "Nimm genau eine hilfreiche Information mit.",
+        "Nutze sie bei der nächsten passenden Aktion.",
       ],
       why: "Du machst den Fehler weder klein noch persönlich. Du nutzt, was er dir für die nächste Aktion zeigt.",
     },
@@ -316,14 +316,14 @@ export const GOLDEN_DAY_DRAFTS: GoldenDayDraft[] = [
     cue: "Gedanken und Gefühle sind keine Befehle.",
     purpose: "Du bemerkst einen Gedanken oder ein Gefühl und entscheidest bewusst, wie du handelst.",
     scienceBite: {
-      title: "Ein Gedanke kann laut sein, ohne recht zu haben.",
+      title: "Ein Gedanke kann deine Handlung beeinflussen, bevor du bewusst entschieden hast.",
       paragraphs: [
-        "Gedanken und Gefühle können Verhalten sehr schnell anschieben: zurückziehen, vermeiden, hektisch werden oder aufgeben. Dabei fühlt sich der erste Impuls oft wie die einzige Möglichkeit an.",
-        "Du musst ihn nicht wegdrücken. Schon das Bemerken schafft einen kurzen Moment, in dem du wieder entscheiden kannst.",
+        "Ein Satz wie ‚Lass es‘ oder ‚Das schaffst du nicht‘ kann dich sofort vorsichtiger, hektischer oder passiver machen.",
+        "Wenn du den Gedanken bemerkst, entsteht ein kurzer Moment, in dem du wieder selbst entscheiden kannst.",
       ],
     },
     mission: {
-      title: "Bemerken, dann entscheiden",
+      title: "Bemerke den Gedanken und entscheide selbst",
       trigger: "Wenn ein Gedanke oder Gefühl dich sofort in eine Richtung drängt.",
       steps: [
         "Benenne kurz, was gerade da ist.",
