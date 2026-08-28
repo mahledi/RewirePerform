@@ -13,6 +13,13 @@ const migration = readFileSync(
   "utf8",
 );
 
+type SystemHealthPayload = {
+  status: string;
+  program_integrity: {
+    active_team_instances_without_run: number;
+  };
+};
+
 describe("MahleOS system-health pre-start semantics", () => {
   it("counts an unassigned team instance only after that team has an active run", () => {
     expect(migration).toContain("instance.program_run_id IS NULL");
@@ -76,7 +83,7 @@ describe("MahleOS system-health pre-start semantics", () => {
       `);
       await db.exec(migration);
 
-      const before = await db.query<{ payload: Record<string, any> }>(
+      const before = await db.query<{ payload: SystemHealthPayload }>(
         "SELECT public._mahleos_system_health() AS payload",
       );
       expect(before.rows[0]?.payload.status).toBe("GREEN");
@@ -87,7 +94,7 @@ describe("MahleOS system-health pre-start semantics", () => {
       await db.exec(
         "INSERT INTO public.program_runs(id,team_id,status) VALUES ('run','team','active')",
       );
-      const active = await db.query<{ payload: Record<string, any> }>(
+      const active = await db.query<{ payload: SystemHealthPayload }>(
         "SELECT public._mahleos_system_health() AS payload",
       );
       expect(active.rows[0]?.payload.status).toBe("RED");
@@ -96,7 +103,7 @@ describe("MahleOS system-health pre-start semantics", () => {
       ).toBe(1);
 
       await db.exec("UPDATE public.teams SET is_test_team = true WHERE id = 'team'");
-      const testTeam = await db.query<{ payload: Record<string, any> }>(
+      const testTeam = await db.query<{ payload: SystemHealthPayload }>(
         "SELECT public._mahleos_system_health() AS payload",
       );
       expect(testTeam.rows[0]?.payload.status).toBe("GREEN");
