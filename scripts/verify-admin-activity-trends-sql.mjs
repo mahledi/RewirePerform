@@ -168,7 +168,7 @@ try {
   `);
 
   const migration = readFileSync(
-    resolve("supabase/migrations/20260827153944_admin_activity_trends_v1.sql"),
+    resolve("supabase/migrations/20260828084554_admin_activity_trends_v1.sql"),
     "utf8",
   );
   await db.exec(migration);
