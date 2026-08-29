@@ -19,6 +19,7 @@ import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationG
 import AdminCommandCenter from "@/components/admin/AdminCommandCenter";
 import OrganizationRequestManager from "@/components/admin/OrganizationRequestManager";
 import AdminFeedbackIntelligenceComments from "@/components/admin/AdminFeedbackIntelligenceComments";
+import AdminMinorAgeCorrectionPanel from "@/components/admin/AdminMinorAgeCorrectionPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
@@ -762,7 +763,7 @@ const Admin = () => {
           </TabsContent>
 
           {/* TEAMS */}
-          <TabsContent value="teams" className="mt-4">
+          <TabsContent value="teams" className="mt-4 space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Teams</CardTitle>
@@ -812,6 +813,7 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+            <AdminMinorAgeCorrectionPanel />
           </TabsContent>
 
           {/* COACH ACCESS */}
