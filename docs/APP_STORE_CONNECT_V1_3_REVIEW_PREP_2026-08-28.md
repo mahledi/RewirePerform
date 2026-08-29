@@ -1,8 +1,8 @@
 # App Store Connect V1.3 – Review-Vorbereitung
 
-Stand: 28. August 2026  
-Status: `PREPARED_NOT_SUBMITTED`  
-Version: `1.3`  
+Stand: 29. August 2026
+Status: `INTEGRATED_NOT_SUBMITTED`
+Version: `1.3`
 Geplante Buildnummer: `17`, vor dem Archiv gegen App Store Connect verifizieren.
 
 ## Was ist neu in dieser Version
@@ -77,6 +77,10 @@ neue Apple-Datenkategorie:
   Datenart.
 - Reminder-Härtung verändert Zustellung und Endpunktverwaltung, nicht den
   erklärten Zweck.
+- Die interne Alterskorrektur verwendet die bereits vorhandene Altersband-,
+  Guardian- und Consent-Logik. Sie führt keine neue Datenkategorie ein, darf
+  aber erst nach den separaten Minderjährigen-, Privacy-, Rechts- und
+  Production-Gates als aktiv beschrieben werden.
 
 Vor Submit müssen die sichtbaren App-Store-Privacy-Antworten trotzdem gegen
 den final signierten Build geprüft werden. Insbesondere bleiben Name, E-Mail,
@@ -143,4 +147,3 @@ rechtliche Endprüfung.
 - https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-an-app
 - https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information
 - https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots
-

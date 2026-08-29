@@ -1,21 +1,22 @@
 # RewirePerform V1.3 – Release-Candidate-Inventar
 
-Stand: 28. August 2026  
-Status: `PREPARED_NOT_FROZEN`  
+Stand: 29. August 2026
+Status: `INTEGRATED_NOT_FROZEN`
 Zweck: vollständige, wahrheitsgetreue Inventur für den finalen iOS-V1.3-Freeze.
 
 ## Referenzen
 
 - Letzte V1.2-Releasebasis: `c73804960306b755345fd36d7406d8acd5640b88`
-- Aktuelles `origin/main` beim Start der Vorbereitung: `309bb03583123f3154cff1b168390cd49614c40a`
-- Vorbereitungsbranch: `codex/v1-3-app-store-review-prep-20260828`
-- Lokaler Integrationsstand nach den zwei ausstehenden V1.3-Kandidaten:
-  - `5b86a52` – festes Fenster für verpasste Programmtage
-  - `3cb5fe4` – funktionale Trennung der 56 Tagesebenen
+- Aktuelles `origin/main` als Integrationsbasis: `8f82aa0096588b48f4ce16f9176f644fb6432bec`
+- Integrationsbranch: `codex/v1-3-integration-20260829`
+- Lokal zusammengeführte V1.3-Produktcommits:
+  - `f170d5d` – festes Fenster für verpasste Programmtage
+  - `2b60810` – funktionale Trennung der 56 Tagesebenen
+  - `5478fa4` – kontrollierte Admin-Alterskorrektur auf unter 16
 
 Dieser Stand ist noch kein finaler App-Store-Build. Weitere freigegebene
-Wochenendänderungen müssen vor dem Freeze auf den neuesten `origin/main`-Stand
-übernommen und erneut vollständig geprüft werden.
+Weitere freigegebene Änderungen müssen vor dem Freeze auf den dann neuesten
+`origin/main`-Stand übernommen und erneut vollständig geprüft werden.
 
 ## Im gemeinsamen Code auf `main` enthalten
 
@@ -84,6 +85,22 @@ Wochenendänderungen müssen vor dem Freeze auf den neuesten `origin/main`-Stand
   Überschneidungsaudit ging von 26 hohen und 24 mittleren Überschneidungen auf
   0 hohe und 0 mittlere Überschneidungen zurück.
 
+### Kontrollierte Alterskorrektur auf unter 16
+
+- Ein Admin kann einen zuvor als 16–17 oder 18+ geführten Athleten nach
+  verifizierter Klärung über die exakte E-Mail-Adresse auf unter 16 setzen.
+- Teamzuordnung, Fragebogen, Programmstand, Dashboard und Fortschritt bleiben
+  erhalten; bestehende Alters- und Beitragsfreigaben werden fail-closed
+  zurückgesetzt.
+- Beim nächsten App-Start oder erneuten Vordergrundwechsel bleibt der
+  Guardian-/Athletenfreigabe-Flow verpflichtend, bis er vollständig abgeschlossen
+  ist. Ein kurzzeitig zwischengespeicherter Login umgeht ihn nicht.
+- Der Vorgang wird ohne private Fragebogeninhalte auditierbar protokolliert.
+- Die zugehörige Migration ist Teil des V1.3-Kandidaten, aber nicht allein durch
+  diesen lokalen Integrationsstand auf Production aktiviert. Minderjährigen-
+  Enforcement bleibt an die dokumentierten Privacy-/Rechts- und Live-Gates
+  gebunden.
+
 ## Nicht als V1.3 enthalten behaupten
 
 - Noch nicht integrierte historische Branches oder ältere, inzwischen
@@ -97,10 +114,11 @@ Wochenendänderungen müssen vor dem Freeze auf den neuesten `origin/main`-Stand
 
 ## Offene Freeze-Gates
 
-1. Alle gewünschten Wochenendänderungen liegen auf `origin/main` und sind
-   einzeln nachvollziehbar.
-2. Die beiden lokalen V1.3-Kandidaten sind nach unabhängiger Prüfung auf den
-   neuesten Mainstand integriert.
+1. Der lokale Gesamtstand ist unabhängig vollständig geprüft und der Branch
+   gegenüber dem dann aktuellen `origin/main` weiterhin konfliktfrei.
+2. Die Alterskorrektur-Migration hat vor jeder Production-Aktivierung die
+   erforderlichen Minderjährigen-, Privacy- und Rechtsfreigaben sowie einen
+   kontrollierten Apply- und Rollback-Nachweis.
 3. Keine weitere freigegebene V1.3-Produktänderung liegt nur in einem
    Worktree, Branch, uncommitted Diff oder Builder-Handoff.
 4. Finaler iOS-Versionsstand wird erst beim Freeze auf `1.3` und die nächste in

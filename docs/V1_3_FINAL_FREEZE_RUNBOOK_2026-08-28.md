@@ -1,6 +1,6 @@
 # V1.3 Final-Freeze-Runbook
 
-Status: `READY_FOR_FREEZE_EXECUTION`, aber noch nicht ausgeführt.  
+Status: `READY_FOR_FREEZE_EXECUTION`, aber noch nicht ausgeführt.
 Ziel: montags in einem kontrollierten Lauf vom finalen Main-SHA zum
 hochladbaren iOS-Archiv.
 
@@ -13,6 +13,9 @@ hochladbaren iOS-Archiv.
 - App Store Connect bestätigt die nächste freie Buildnummer.
 - Die bestätigte Production-Umgebung ist lokal verfügbar; keine Werte werden
   erfunden oder aus Logs kopiert.
+- Die Alterskorrektur-Migration besitzt die erforderliche Minderjährigen-,
+  Privacy-, Rechts- und Production-Freigabe. Ohne diese Freigabe bleibt der
+  Gesamtstand `INTEGRATED_NOT_FROZEN` und wird nicht produktiv aktiviert.
 
 ## Freeze-Beleg
 
@@ -51,6 +54,8 @@ Zusätzlich:
 ## Ergebnisstatus
 
 - `PREPARED_NOT_FROZEN`: Inventar vorhanden, weitere Änderungen erlaubt.
+- `INTEGRATED_NOT_FROZEN`: V1.3-Code zusammengeführt, aber sensible Live-Gates
+  oder der endgültige Freeze stehen noch aus.
 - `FROZEN_TESTING`: SHA und Version fest, Prüfungen laufen.
 - `READY_TO_UPLOAD`: alle lokalen und physischen Gates grün, noch kein Upload.
 - `UPLOADED_PROCESSING`: Build bei Apple, noch nicht auswählbar.
@@ -60,4 +65,3 @@ Zusätzlich:
 
 Lokale Tests oder ein erfolgreicher Upload dürfen nicht als
 `WAITING_FOR_REVIEW` bezeichnet werden.
-
