@@ -7,19 +7,21 @@ const project = readFileSync(
   "utf8",
 );
 
-describe("V1.2 native release identity", () => {
-  it("uses version 1.2 and the next unused build number in every App configuration", () => {
-    expect(project.match(/MARKETING_VERSION = 1\.2;/g)).toHaveLength(2);
-    expect(project.match(/CURRENT_PROJECT_VERSION = 16;/g)).toHaveLength(2);
+describe("V1.3 native release identity", () => {
+  it("uses version 1.3 and the planned next build number in every App configuration", () => {
+    expect(project.match(/MARKETING_VERSION = 1\.3;/g)).toHaveLength(2);
+    expect(project.match(/CURRENT_PROJECT_VERSION = 17;/g)).toHaveLength(2);
     expect(project).toContain('CODE_SIGN_IDENTITY = "Apple Distribution";');
     expect(project).toContain("CODE_SIGN_STYLE = Manual;");
     expect(project).toContain(
       'PROVISIONING_PROFILE_SPECIFIER = "RewirePerform App Store 2026-08-22";',
     );
     expect(project).not.toContain("MARKETING_VERSION = 1.0;");
+    expect(project).not.toContain("MARKETING_VERSION = 1.2;");
     expect(project).not.toContain("CURRENT_PROJECT_VERSION = 4;");
     expect(project).not.toContain("CURRENT_PROJECT_VERSION = 5;");
     expect(project).not.toContain("CURRENT_PROJECT_VERSION = 6;");
+    expect(project).not.toContain("CURRENT_PROJECT_VERSION = 16;");
   });
 
   it("keeps the production bundle identifier unchanged", () => {
