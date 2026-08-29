@@ -3,7 +3,7 @@ import type { RetestStatus } from "@/lib/programProgress";
 
 export type AthleteMeasurementStatus = Pick<
   RetestStatus,
-  "midDue" | "midDone" | "postDue" | "postDone" | "programDay"
+  "preDone" | "midDue" | "midDone" | "postDue" | "postDone" | "programDay"
 >;
 
 export interface AthleteMeasurementDisplay {
@@ -18,6 +18,13 @@ export const getAthleteMeasurementDisplay = (
     return {
       title: "Nächster Messpunkt",
       copy: "Dein Messstatus wird gerade aktualisiert.",
+    };
+  }
+
+  if (!status.preDone) {
+    return {
+      title: "Startmessung ausstehend",
+      copy: "Schließe deinen ersten Messpunkt einmal vollständig ab.",
     };
   }
 

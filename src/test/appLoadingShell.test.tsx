@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
+import AthleteRouteLoadingShell from "@/components/app/AthleteRouteLoadingShell";
+import { MemoryRouter } from "react-router-dom";
 
 describe("AppLoadingShell", () => {
   it("keeps the native logo transition clean without a visible loading indicator", () => {
@@ -30,5 +32,17 @@ describe("AppLoadingShell", () => {
     expect(container.querySelector('[data-startup-brand-mark="true"] img'))
       .toHaveAttribute("width", "192");
     expect(container.querySelector(".animate-spin")).not.toBeInTheDocument();
+  });
+
+  it("uses the stable athlete chrome instead of the startup mark during route changes", () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <AthleteRouteLoadingShell active="today" />
+      </MemoryRouter>,
+    );
+
+    expect(container.querySelector('[data-startup-brand-mark="true"]')).not.toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "App-Navigation" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "RewirePerform Dashboard" })).toBeInTheDocument();
   });
 });

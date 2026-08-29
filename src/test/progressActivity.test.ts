@@ -48,8 +48,16 @@ describe("program activity progress", () => {
 
   it.each([
     {
+      label: "keeps an incomplete start measurement visible as the next required step",
+      status: { programDay: 1, preDone: false, midDue: false, midDone: false, postDue: false, postDone: false },
+      expected: {
+        title: "Startmessung ausstehend",
+        copy: "Schließe deinen ersten Messpunkt einmal vollständig ab.",
+      },
+    },
+    {
       label: "keeps the mid measurement due on day 28 until completed",
-      status: { programDay: 28, midDue: true, midDone: false, postDue: false, postDone: false },
+      status: { programDay: 28, preDone: true, midDue: true, midDone: false, postDue: false, postDone: false },
       expected: {
         title: "Zwischenmessung verfügbar",
         copy: "Deine Zwischenmessung ist jetzt freigeschaltet.",
@@ -57,7 +65,7 @@ describe("program activity progress", () => {
     },
     {
       label: "moves to the final measurement after the mid measurement is completed",
-      status: { programDay: 28, midDue: false, midDone: true, postDue: false, postDone: false },
+      status: { programDay: 28, preDone: true, midDue: false, midDone: true, postDue: false, postDone: false },
       expected: {
         title: "Nächster Messpunkt",
         copy: "Abschlussmessung an Tag 56. Bis dahin zählt deine tägliche Praxis.",
@@ -65,7 +73,7 @@ describe("program activity progress", () => {
     },
     {
       label: "keeps the post measurement due on day 56 until completed",
-      status: { programDay: 56, midDue: false, midDone: true, postDue: true, postDone: false },
+      status: { programDay: 56, preDone: true, midDue: false, midDone: true, postDue: true, postDone: false },
       expected: {
         title: "Abschlussmessung verfügbar",
         copy: "Deine Abschlussmessung ist jetzt freigeschaltet.",
@@ -73,7 +81,7 @@ describe("program activity progress", () => {
     },
     {
       label: "shows completion after the post measurement is completed",
-      status: { programDay: 56, midDue: false, midDone: true, postDue: false, postDone: true },
+      status: { programDay: 56, preDone: true, midDue: false, midDone: true, postDue: false, postDone: true },
       expected: {
         title: "Messungen abgeschlossen",
         copy: "Deine Start-, Zwischen- und Abschlussmessung sind abgeschlossen.",
@@ -81,7 +89,7 @@ describe("program activity progress", () => {
     },
     {
       label: "does not claim a skipped mid measurement was completed",
-      status: { programDay: 56, midDue: false, midDone: false, postDue: false, postDone: true },
+      status: { programDay: 56, preDone: true, midDue: false, midDone: false, postDue: false, postDone: true },
       expected: {
         title: "Abschlussmessung abgeschlossen",
         copy: "Deine Abschlussmessung ist abgeschlossen.",

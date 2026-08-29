@@ -1,77 +1,147 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { allAssessments, AssessmentInstrument, calculateScores } from "@/data/validatedAssessments";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getOrCreateActiveInstance } from "@/lib/programInstance";
-import { getRetestStatus } from "@/lib/programProgress";
+import {
+  getAssessmentCompletionStatus,
+  type AssessmentCompletionStatus,
+  type AssessmentTiming,
+} from "@/lib/programProgress";
 import { toast } from "sonner";
 import { captureAppError } from "@/lib/monitoring";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import type { Json } from "@/integrations/supabase/types";
+import AthleteRouteLoadingShell from "@/components/app/AthleteRouteLoadingShell";
+import AccessStatusScreen from "@/components/access/AccessStatusScreen";
+import { markAssessmentStatusChanged } from "@/lib/assessmentStatusRevision";
+import { clearAthleteProgressCache } from "@/lib/athleteProgressCache";
 
 type Phase = "select" | "instructions" | "items" | "sequence-done";
+
+const timingLabel = (timing: AssessmentTiming) =>
+  timing === "pre" ? "Pre" : timing === "mid" ? "Mid" : "Post";
+
+const timingTitle = (timing: AssessmentTiming) =>
+  timing === "pre" ? "Startmessung" : timing === "mid" ? "Zwischenmessung" : "Abschlussmessung";
 
 const Assessment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, role, isTestUser } = useAuth();
-  const mode = searchParams.get("mode") as "pre" | "mid" | "post" | null;
+  const requestedMode = searchParams.get("mode");
+  const mode: AssessmentTiming | null = requestedMode === "pre" || requestedMode === "mid" || requestedMode === "post"
+    ? requestedMode
+    : null;
 
-  const [phase, setPhase] = useState<Phase>(mode ? "instructions" : "select");
-  const [selectedTest, setSelectedTest] = useState<AssessmentInstrument | null>(mode ? allAssessments[0] : null);
+  const [phase, setPhase] = useState<Phase>("select");
+  const [selectedTest, setSelectedTest] = useState<AssessmentInstrument | null>(null);
   const [timing, setTiming] = useState<"pre" | "mid" | "post">(mode || "pre");
   const [currentItem, setCurrentItem] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const [sequenceIndex, setSequenceIndex] = useState(0);
   const [completedAssessmentIds, setCompletedAssessmentIds] = useState<string[]>([]);
+  const [completionStatus, setCompletionStatus] = useState<AssessmentCompletionStatus | null>(null);
+  const [accessLoading, setAccessLoading] = useState(true);
+  const [accessError, setAccessError] = useState(false);
 
   const isSequentialMode = mode !== null;
 
-  const timingLabel = (t: "pre" | "mid" | "post") =>
-    t === "pre" ? "Pre" : t === "mid" ? "Mid" : "Post";
-  const timingTitle = (t: "pre" | "mid" | "post") =>
-    t === "pre" ? "Startmessung" : t === "mid" ? "Zwischenmessung" : "Abschlussmessung";
+  const loadAccess = useCallback(async () => {
+    if (!user?.id) return;
+    setAccessLoading(true);
+    setAccessError(false);
 
-  useEffect(() => {
-    if (!user?.id || !mode || mode === "pre") return;
+    try {
+      const status = await getAssessmentCompletionStatus(user.id);
+      const requestedTiming: AssessmentTiming | null = mode
+        ?? (!status.preDone
+          ? "pre"
+          : status.midDue
+            ? "mid"
+            : status.postDue
+              ? "post"
+              : null);
 
-    const guardRetestAccess = async () => {
-      const instance = await getOrCreateActiveInstance(user.id);
-      if (!instance?.id) {
-        toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
+      if (!requestedTiming) {
+        toast.info("Deine aktuell fälligen Messungen sind vollständig gespeichert.");
         navigate("/dashboard", { replace: true });
         return;
       }
-      let preQ = supabase
-        .from("assessments")
-        .select("assessment_type")
-        .eq("timing", "pre")
-        .eq("user_id", user.id);
-      if (instance?.id) preQ = preQ.eq("program_instance_id", instance.id);
-      const [{ data: preRows }, retest] = await Promise.all([preQ, getRetestStatus(user.id)]);
-      const preTypes = new Set((preRows ?? []).map((row) => row.assessment_type));
-      const preDone = allAssessments.every((test) => preTypes.has(test.id));
-      const allowed = mode === "mid" ? retest.midDue : retest.postDue;
 
-      if (!preDone || !allowed) {
+      if (!mode) {
+        navigate(`/assessment?mode=${requestedTiming}`, { replace: true });
+        return;
+      }
+
+      const completed = status.completedAssessmentIds[requestedTiming];
+      const completedAll = requestedTiming === "pre"
+        ? status.preDone
+        : requestedTiming === "mid"
+          ? status.midDone
+          : status.postDone;
+      const isDue = requestedTiming === "pre"
+        ? !status.preDone
+        : requestedTiming === "mid"
+          ? status.midDue
+          : status.postDue;
+
+      setCompletionStatus(status);
+      setCompletedAssessmentIds(completed);
+
+      if (completedAll) {
+        toast.info(`${timingTitle(requestedTiming)} wurde bereits vollständig gespeichert.`);
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+
+      if (!isDue) {
         toast.error(
-          !preDone
+          requestedTiming !== "pre" && !status.preDone
             ? "Zuerst muss die Startmessung abgeschlossen sein."
-            : `${timingTitle(mode)} ist noch nicht freigegeben.`,
+            : `${timingTitle(requestedTiming)} ist noch nicht freigegeben.`,
           { duration: 2600 },
         );
         navigate("/dashboard", { replace: true });
+        return;
       }
-    };
 
-    guardRetestAccess();
-  }, [mode, navigate, user?.id]);
+      const firstIncompleteIndex = allAssessments.findIndex((test) => !completed.includes(test.id));
+      if (firstIncompleteIndex < 0) {
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+
+      setTiming(requestedTiming);
+      setSequenceIndex(firstIncompleteIndex);
+      setSelectedTest(allAssessments[firstIncompleteIndex]);
+      setAnswers({});
+      setCurrentItem(0);
+      setPhase("instructions");
+    } catch (error) {
+      void captureAppError({
+        eventName: "app_runtime_error",
+        error,
+        role,
+        route: "/assessment",
+        isTest: isTestUser,
+        metadata: { source: "assessment", stage: "access" },
+      });
+      setAccessError(true);
+    } finally {
+      setAccessLoading(false);
+    }
+  }, [isTestUser, mode, navigate, role, user?.id]);
+
+  useEffect(() => {
+    void loadAccess();
+  }, [loadAccess]);
 
   const startTest = (test: AssessmentInstrument, t: "pre" | "mid" | "post") => {
+    if (completionStatus?.completedAssessmentIds[t].includes(test.id)) return;
     setSelectedTest(test);
     setTiming(t);
     setAnswers({});
@@ -97,8 +167,7 @@ const Assessment = () => {
 
     const scores = calculateScores(selectedTest, answers);
 
-    const instance = await getOrCreateActiveInstance(user.id);
-    if (!instance?.id) {
+    if (!completionStatus?.instanceId) {
       toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
       setSaving(false);
       return;
@@ -112,14 +181,13 @@ const Assessment = () => {
       answers: answers as unknown as Json,
       scores: scores.subscaleScores as unknown as Json,
       total_score: scores.totalScore,
-      program_instance_id: instance.id,
+      program_instance_id: completionStatus.instanceId,
     });
 
+    const duplicate = insertError?.code === "23505";
     if (insertError) {
       // Duplicate (unique on user_id+instance+type+timing) → bereits absolviert in dieser Cohorte
-      if (insertError.code === "23505") {
-        toast.info(`${selectedTest.titleShort} (${timingLabel(timing)}) wurde bereits in diesem Programm-Zyklus gespeichert.`);
-      } else {
+      if (!duplicate) {
         void captureAppError({
           eventName: "assessment_saved",
           error: insertError,
@@ -129,7 +197,7 @@ const Assessment = () => {
           metadata: {
             assessment_type: selectedTest.id,
             timing,
-            has_program_instance: Boolean(instance?.id),
+            has_program_instance: Boolean(completionStatus.instanceId),
           },
         });
         toast.error("Speichern fehlgeschlagen.");
@@ -138,28 +206,49 @@ const Assessment = () => {
       }
     }
 
-    setCompletedAssessmentIds((previous) =>
-      previous.includes(selectedTest.id) ? previous : [...previous, selectedTest.id],
-    );
+    const updatedCompletedIds = completedAssessmentIds.includes(selectedTest.id)
+      ? completedAssessmentIds
+      : [...completedAssessmentIds, selectedTest.id];
+    const timingComplete = allAssessments.every((test) => updatedCompletedIds.includes(test.id));
+    setCompletedAssessmentIds(updatedCompletedIds);
+    setCompletionStatus((previous) => previous ? {
+      ...previous,
+      completedAssessmentIds: {
+        ...previous.completedAssessmentIds,
+        [timing]: updatedCompletedIds,
+      },
+      preDone: timing === "pre" ? timingComplete : previous.preDone,
+      midDone: timing === "mid" ? timingComplete : previous.midDone,
+      postDone: timing === "post" ? timingComplete : previous.postDone,
+      midDue: timing === "mid" && timingComplete ? false : previous.midDue,
+      postDue: timing === "post" && timingComplete ? false : previous.postDue,
+    } : previous);
+    markAssessmentStatusChanged(user.id);
+    clearAthleteProgressCache(user.id);
 
     setSaving(false);
 
-    if (isSequentialMode && sequenceIndex < allAssessments.length - 1) {
-      nextInSequence();
+    const nextIncompleteIndex = allAssessments.findIndex(
+      (test, index) => index > sequenceIndex && !updatedCompletedIds.includes(test.id),
+    );
+    if (isSequentialMode && nextIncompleteIndex >= 0) {
+      setSequenceIndex(nextIncompleteIndex);
+      setSelectedTest(allAssessments[nextIncompleteIndex]);
+      setAnswers({});
+      setCurrentItem(0);
+      setPhase("instructions");
+    } else if (!isSequentialMode && !timingComplete) {
+      setSelectedTest(null);
+      setPhase("select");
     } else {
       setPhase("sequence-done");
     }
 
-    toast.success(`${selectedTest.titleShort} ${timingTitle(timing)} gespeichert.`);
-  };
-
-  const nextInSequence = () => {
-    const nextIdx = sequenceIndex + 1;
-    setSequenceIndex(nextIdx);
-    setSelectedTest(allAssessments[nextIdx]);
-    setAnswers({});
-    setCurrentItem(0);
-    setPhase("instructions");
+    if (duplicate) {
+      toast.info(`${selectedTest.titleShort} (${timingLabel(timing)}) war bereits gespeichert.`);
+    } else {
+      toast.success(`${selectedTest.titleShort} ${timingTitle(timing)} gespeichert.`);
+    }
   };
 
   const allAnswered = selectedTest ? selectedTest.items.every((item) => answers[item.id] != null) : false;
@@ -181,6 +270,20 @@ const Assessment = () => {
       setCurrentItem(Math.max(0, Math.min(currentItem, selectedTest.items.length - 1)));
     }
   }, [currentItem, phase, selectedTest]);
+
+  if (accessLoading) {
+    return <AthleteRouteLoadingShell active="today" label="Prüfe deinen Messstatus..." />;
+  }
+
+  if (accessError || !completionStatus) {
+    return (
+      <AccessStatusScreen
+        title="Messstatus gerade nicht verfügbar"
+        message="Deine bisherigen Antworten bleiben gespeichert. Prüfe den Status erneut, bevor du eine Messung öffnest."
+        onRetry={() => void loadAccess()}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,7 +326,9 @@ const Assessment = () => {
                 </p>
               </div>
               <div className="space-y-4">
-                {allAssessments.map((test) => (
+                {allAssessments.map((test) => {
+                  const alreadyCompleted = completionStatus.completedAssessmentIds.pre.includes(test.id);
+                  return (
                   <div key={test.id} className="p-6 rounded-2xl bg-gradient-card border-glow">
                     <div className="mb-3">
                       <h3 className="font-heading font-semibold mb-1">{test.titleShort}</h3>
@@ -237,13 +342,21 @@ const Assessment = () => {
                     </div>
                     <p className="text-xs text-muted-foreground mb-4 italic">{test.citation}</p>
                     <div className="space-y-2">
-                      <button onClick={() => startTest(test, "pre")} className="flex w-full items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">Startmessung beginnen</button>
+                      <button
+                        type="button"
+                        onClick={() => startTest(test, "pre")}
+                        disabled={alreadyCompleted}
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/10 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:cursor-default disabled:bg-white/[0.035] disabled:text-white/42"
+                      >
+                        {alreadyCompleted ? "Bereits gespeichert" : "Startmessung beginnen"}
+                      </button>
                       <p className="text-[11px] leading-relaxed text-muted-foreground">
                         Zwischen- und Abschlussmessung werden später automatisch im Dashboard freigegeben.
                       </p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}

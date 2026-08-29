@@ -101,6 +101,21 @@ Weitere freigegebene Änderungen müssen vor dem Freeze auf den dann neuesten
   Enforcement bleibt an die dokumentierten Privacy-/Rechts- und Live-Gates
   gebunden.
 
+### Ruhige Athletennavigation und eindeutiger Messungsabschluss
+
+- Interne Wechsel zwischen Entwicklung, Einstellungen und Dashboard verwenden
+  eine stabile Athleten-Skelettansicht statt erneut das grosse Startlogo zu
+  zeigen.
+- Pre-, Mid- und Post-Messungen werden ausschliesslich fuer den aktuellen
+  Programmlauf ausgewertet. Teilweise abgeschlossene Messungen setzen beim
+  ersten noch fehlenden Instrument fort.
+- Eine vollstaendig gespeicherte Messung kann weder ueber die Dashboard-Aktion
+  noch ueber einen alten Direktlink erneut geoeffnet werden. Die Messungsaktion
+  erscheint nur, wenn eine Start-, Zwischen- oder Abschlussmessung tatsaechlich
+  faellig ist.
+- Nach dem Speichern werden Dashboard- und Fortschrittsstatus gezielt
+  invalidiert, damit kein alter Cache die abgeschlossene Messung erneut anbietet.
+
 ## Nicht als V1.3 enthalten behaupten
 
 - Noch nicht integrierte historische Branches oder ältere, inzwischen

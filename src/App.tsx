@@ -18,6 +18,7 @@ import ConnectionStatus from "./components/ConnectionStatus";
 import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardingGate";
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 import AppScrollReset from "./components/app/AppScrollReset";
+import AthleteRouteLoadingShell from "./components/app/AthleteRouteLoadingShell";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -96,9 +97,20 @@ const AthleteFlowQualityPreview = evidencePreviewEnabled
   : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
-const PageFallback = () => (
-  <AppLoadingShell subtitle="Öffne deinen Bereich..." />
-);
+const PageFallback = () => {
+  const location = useLocation();
+  const athleteSection = location.pathname === "/progress"
+    ? "progress"
+    : location.pathname.startsWith("/settings")
+      ? "more"
+      : location.pathname === "/dashboard"
+        ? "today"
+        : null;
+
+  return athleteSection
+    ? <AthleteRouteLoadingShell active={athleteSection} />
+    : <AppLoadingShell subtitle="Öffne deinen Bereich..." />;
+};
 
 const AppRoutes = () => {
   const location = useLocation();

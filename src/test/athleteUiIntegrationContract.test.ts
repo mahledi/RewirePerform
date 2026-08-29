@@ -148,6 +148,12 @@ describe("V1 athlete UI integration contract", () => {
     expect(assessment).not.toContain("isImproved");
     expect(deepProfile).not.toContain("Fortschritt ansehen");
     expect(dashboard).not.toContain("vergleiche deine Entwicklung");
+    expect(assessment).toContain("getAssessmentCompletionStatus");
+    expect(assessment).toContain("markAssessmentStatusChanged(user.id)");
+    expect(assessment).toContain("clearAthleteProgressCache(user.id)");
+    expect(dashboard).toContain("getAssessmentStatusRevision(userId) !== dashboardMemoryCache.assessmentRevision");
+    expect(dashboard).toContain("availableMeasurementMode &&");
+    expect(dashboard).not.toContain('navigate("/assessment")');
   });
 
   it("keeps coach surfaces free of selection, talent and career recommendations", () => {
