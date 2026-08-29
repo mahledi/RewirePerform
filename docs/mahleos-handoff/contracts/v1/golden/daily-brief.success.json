@@ -9,7 +9,7 @@
     "generated_at": "2026-07-21T12:00:00Z",
     "reporting_timezone": "UTC",
     "system_health": {
-      "schema_version": "mahleos-system-health-v1.3",
+      "schema_version": "mahleos-system-health-v1.4",
       "generated_at": "2026-07-21T12:00:00Z",
       "reporting_timezone": "UTC",
       "status": "GREEN",
@@ -52,9 +52,9 @@
           "failures_24h": null
         },
         "auth_signup": {
-          "coverage": "STRUCTURAL_ONLY",
-          "authority": "identity_integrity",
-          "successes_24h": null,
+          "coverage": "SERVER_ACCOUNT_CREATION_ONLY",
+          "authority": "auth.users",
+          "successes_24h": 2,
           "failures_24h": null
         },
         "team_join": {

@@ -26,6 +26,7 @@ const ALLOWED_VIEWS = new Set([
   "admin_comprehension",
   "admin_feedback_metadata",
   "admin_partner_requests",
+  "admin_activity_trends",
 ]);
 const ALLOWED_BODY_KEYS = new Set(["view", "program_run_id"]);
 

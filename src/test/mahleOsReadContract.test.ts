@@ -18,6 +18,8 @@ const migrationSource = () => [
   "supabase/migrations/20260826062312_jarvis_admin_intelligence_read_contract_v1.sql",
   "supabase/migrations/20260828133200_jarvis_critical_journey_coverage_v1_1.sql",
   "supabase/migrations/20260828152000_fix_prestart_system_health_v1_3.sql",
+  "supabase/migrations/20260829185434_add_jarvis_activity_trends_machine_read.sql",
+  "supabase/migrations/20260829190341_add_jarvis_auth_signup_success_coverage.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
@@ -78,6 +80,7 @@ describe("MahleOS operational read contract", () => {
       "admin_comprehension",
       "admin_feedback_metadata",
       "admin_partner_requests",
+      "admin_activity_trends",
     ]) {
       expect(migration).toContain(`'${view}'`);
     }
@@ -95,6 +98,7 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("'reporting_timezone', 'UTC'");
     expect(migration).toContain("'critical_journey_coverage'");
     expect(migration).toContain("'AUTHENTICATED_SUCCESS_ONLY'");
+    expect(migration).toContain("'SERVER_ACCOUNT_CREATION_ONLY'");
     expect(migration).toContain("'AUTHENTICATED_APP_EVENTS'");
     expect(migration).toContain("'STRUCTURAL_AND_DELIVERY_ONLY'");
     expect(migration).toContain("extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256')");
@@ -115,6 +119,16 @@ describe("MahleOS operational read contract", () => {
     expect(migration).not.toContain("p.full_name");
     expect(migration).not.toContain("p.email");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated, service_role");
+
+    const signupCoverage = readRepoFile(
+      "supabase/migrations/20260829190341_add_jarvis_auth_signup_success_coverage.sql",
+    );
+    expect(signupCoverage).toContain("SERVER_ACCOUNT_CREATION_ONLY");
+    expect(signupCoverage).toContain("FROM auth.users au");
+    expect(signupCoverage).toContain("NOT COALESCE(p.is_test_user, false)");
+    expect(signupCoverage).toContain("'failures_24h', NULL");
+    expect(signupCoverage).not.toContain("au.email");
+    expect(signupCoverage).not.toContain("p.full_name");
   });
 
   it("exports feedback counts and technical aggregates without private payloads", () => {
@@ -183,6 +197,7 @@ describe("MahleOS operational read contract", () => {
       "_mahleos_admin_comprehension",
       "_mahleos_admin_feedback_metadata",
       "_mahleos_admin_partner_requests",
+      "_mahleos_admin_activity_trends",
     ]) {
       expect(migration).toContain(`CREATE OR REPLACE FUNCTION public.${helper}()`);
       expect(migration).toContain(`REVOKE ALL ON FUNCTION public.${helper}()`);
@@ -192,6 +207,8 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("team_names_included', false");
     expect(migration).toContain("free_text_included', false");
     expect(migration).toContain("contact_details_included', false");
+    expect(migration).toContain("minimum_distinct_athletes_per_segment', 5");
+    expect(migration).toContain("observational_not_causal', true");
     expect(migration).not.toMatch(/jsonb_build_object\(\s*'user_id'/u);
     expect(migration).not.toMatch(/jsonb_build_object\(\s*'team_id'/u);
     expect(migration).not.toMatch(/jsonb_build_object\(\s*'contact_name'/u);

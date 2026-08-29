@@ -444,6 +444,40 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ok",
+        "request_id",
+        "view",
+        "checksum_algorithm",
+        "response_checksum",
+        "data"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "view": {
+          "const": "admin_activity_trends"
+        },
+        "checksum_algorithm": {
+          "const": "sha256"
+        },
+        "response_checksum": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "$ref": "https://rewireperform.com/contracts/mahleos/v1/admin-activity-trends.schema.json"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

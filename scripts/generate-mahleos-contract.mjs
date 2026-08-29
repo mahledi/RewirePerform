@@ -125,9 +125,9 @@ const criticalJourneyCoverage = strictObject(
     auth_signup: strictObject(
       ["coverage", "authority", "successes_24h", "failures_24h"],
       {
-        coverage: { const: "STRUCTURAL_ONLY" },
-        authority: { const: "identity_integrity" },
-        successes_24h: { type: "null" },
+        coverage: { const: "SERVER_ACCOUNT_CREATION_ONLY" },
+        authority: { const: "auth.users" },
+        successes_24h: nonnegativeInteger,
         failures_24h: { type: "null" },
       },
     ),
@@ -169,7 +169,7 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
     "privacy_exclusions",
   ],
   {
-    schema_version: { const: "mahleos-system-health-v1.3" },
+    schema_version: { const: "mahleos-system-health-v1.4" },
     generated_at: dateTime,
     reporting_timezone: reportingTimezone,
     status: operationalStatus,
@@ -481,6 +481,73 @@ const adminPartnerRequestsSchema = schema("admin-partner-requests", "MahleOS adm
     organization_names_included: { const: false },
     notes_or_context_included: { const: false },
     direct_identifiers_included: { const: false },
+  },
+));
+
+const activityTrendSegment = strictObject(
+  [
+    "participation_mode", "sample_size", "sufficient_data",
+    "previous_active_athletes", "current_active_athletes",
+    "active_athlete_delta", "active_athlete_change_rate", "direction",
+    "previous_checkins", "current_checkins",
+    "previous_completed_days", "current_completed_days",
+  ],
+  {
+    participation_mode: { enum: ["all", "team", "solo"] },
+    sample_size: nonnegativeInteger,
+    sufficient_data: { type: "boolean" },
+    previous_active_athletes: nullableNonnegativeInteger,
+    current_active_athletes: nullableNonnegativeInteger,
+    active_athlete_delta: { type: ["integer", "null"] },
+    active_athlete_change_rate: { type: ["number", "null"] },
+    direction: { enum: ["up", "down", "flat", "insufficient_data"] },
+    previous_checkins: nullableNonnegativeInteger,
+    current_checkins: nullableNonnegativeInteger,
+    previous_completed_days: nullableNonnegativeInteger,
+    current_completed_days: nullableNonnegativeInteger,
+  },
+);
+
+const adminActivityTrendsSchema = schema("admin-activity-trends", "MahleOS admin activity trends v1", strictObject(
+  [
+    "schema_version", "generated_at", "reporting_timezone", "window_days",
+    "previous_window", "current_window", "segments", "data_quality", "privacy",
+  ],
+  {
+    schema_version: { const: "admin-activity-trends-v1" },
+    generated_at: dateTime,
+    reporting_timezone: reportingTimezone,
+    window_days: { const: 7 },
+    previous_window: strictObject(["start_date", "end_date"], { start_date: date, end_date: date }),
+    current_window: strictObject(["start_date", "end_date"], { start_date: date, end_date: date }),
+    segments: { type: "array", minItems: 3, maxItems: 3, items: activityTrendSegment },
+    data_quality: strictObject(
+      ["previous_unclassified_events", "current_unclassified_events", "unclassified_events_in_overall"],
+      {
+        previous_unclassified_events: nonnegativeInteger,
+        current_unclassified_events: nonnegativeInteger,
+        unclassified_events_in_overall: { const: true },
+      },
+    ),
+    privacy: strictObject(
+      [
+        "minimum_distinct_athletes_per_segment", "test_profiles_excluded",
+        "test_program_instances_excluded", "test_teams_excluded",
+        "names_or_emails_included", "direct_identifiers_included",
+        "individual_rows_included", "free_text_included", "observational_not_causal",
+      ],
+      {
+        minimum_distinct_athletes_per_segment: { const: 5 },
+        test_profiles_excluded: { const: true },
+        test_program_instances_excluded: { const: true },
+        test_teams_excluded: { const: true },
+        names_or_emails_included: { const: false },
+        direct_identifiers_included: { const: false },
+        individual_rows_included: { const: false },
+        free_text_included: { const: false },
+        observational_not_causal: { const: true },
+      },
+    ),
   },
 ));
 
@@ -904,6 +971,7 @@ const operationsSuccessSchema = schema(
       successBranch("admin_comprehension", "admin-comprehension"),
       successBranch("admin_feedback_metadata", "admin-feedback-metadata"),
       successBranch("admin_partner_requests", "admin-partner-requests"),
+      successBranch("admin_activity_trends", "admin-activity-trends"),
     ],
   },
 );
@@ -930,6 +998,7 @@ const operationsRequestSchema = schema(
       viewRequest("admin_comprehension"),
       viewRequest("admin_feedback_metadata"),
       viewRequest("admin_partner_requests"),
+      viewRequest("admin_activity_trends"),
       strictObject(
         ["view", "program_run_id"],
         {
@@ -1158,7 +1227,7 @@ const lockId = "70000000-0000-4000-8000-000000000501";
 const checksum = "a".repeat(64);
 
 const systemHealth = {
-  schema_version: "mahleos-system-health-v1.3",
+  schema_version: "mahleos-system-health-v1.4",
   generated_at: generatedAt,
   reporting_timezone: "UTC",
   status: "GREEN",
@@ -1198,9 +1267,9 @@ const systemHealth = {
       failures_24h: null,
     },
     auth_signup: {
-      coverage: "STRUCTURAL_ONLY",
-      authority: "identity_integrity",
-      successes_24h: null,
+      coverage: "SERVER_ACCOUNT_CREATION_ONLY",
+      authority: "auth.users",
+      successes_24h: 2,
       failures_24h: null,
     },
     team_join: {
@@ -1445,6 +1514,31 @@ const adminPartnerRequests = {
   notes_or_context_included: false,
   direct_identifiers_included: false,
 };
+const adminActivityTrends = {
+  schema_version: "admin-activity-trends-v1",
+  generated_at: generatedAt,
+  reporting_timezone: "UTC",
+  window_days: 7,
+  previous_window: { start_date: "2026-07-08", end_date: "2026-07-14" },
+  current_window: { start_date: "2026-07-15", end_date: "2026-07-21" },
+  segments: [
+    { participation_mode: "all", sample_size: 12, sufficient_data: true, previous_active_athletes: 6, current_active_athletes: 8, active_athlete_delta: 2, active_athlete_change_rate: 0.3333, direction: "up", previous_checkins: 20, current_checkins: 28, previous_completed_days: 18, current_completed_days: 24 },
+    { participation_mode: "team", sample_size: 8, sufficient_data: true, previous_active_athletes: 5, current_active_athletes: 4, active_athlete_delta: -1, active_athlete_change_rate: -0.2, direction: "down", previous_checkins: 14, current_checkins: 12, previous_completed_days: 11, current_completed_days: 10 },
+    { participation_mode: "solo", sample_size: 4, sufficient_data: false, previous_active_athletes: null, current_active_athletes: null, active_athlete_delta: null, active_athlete_change_rate: null, direction: "insufficient_data", previous_checkins: null, current_checkins: null, previous_completed_days: null, current_completed_days: null },
+  ],
+  data_quality: { previous_unclassified_events: 1, current_unclassified_events: 2, unclassified_events_in_overall: true },
+  privacy: {
+    minimum_distinct_athletes_per_segment: 5,
+    test_profiles_excluded: true,
+    test_program_instances_excluded: true,
+    test_teams_excluded: true,
+    names_or_emails_included: false,
+    direct_identifiers_included: false,
+    individual_rows_included: false,
+    free_text_included: false,
+    observational_not_causal: true,
+  },
+};
 
 const requestIdFor = (index) => `90000000-0000-4000-8000-${String(500 + index).padStart(12, "0")}`;
 const success = (view, data, index) => ({
@@ -1505,7 +1599,7 @@ const evidenceResponse = {
 
 const manifest = {
   contract_id: "rewireperform-mahleos-machine-read",
-  contract_version: "1.3.0",
+  contract_version: "1.4.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   reporting_timezone: "UTC",
   authentication: {
@@ -1535,6 +1629,7 @@ const manifest = {
       "admin_comprehension",
       "admin_feedback_metadata",
       "admin_partner_requests",
+      "admin_activity_trends",
     ],
   },
   evidence_endpoint: {
@@ -1624,6 +1719,7 @@ const files = new Map([
   ["schemas/admin-comprehension.schema.json", json(adminComprehensionSchema)],
   ["schemas/admin-feedback-metadata.schema.json", json(adminFeedbackMetadataSchema)],
   ["schemas/admin-partner-requests.schema.json", json(adminPartnerRequestsSchema)],
+  ["schemas/admin-activity-trends.schema.json", json(adminActivityTrendsSchema)],
   ["schemas/daily-brief.schema.json", json(dailyBriefSchema)],
   ["schemas/operations-request.schema.json", json(operationsRequestSchema)],
   ["schemas/operations-success.schema.json", json(operationsSuccessSchema)],
@@ -1645,6 +1741,7 @@ const files = new Map([
     { view: "admin_comprehension" },
     { view: "admin_feedback_metadata" },
     { view: "admin_partner_requests" },
+    { view: "admin_activity_trends" },
   ])],
   ["golden/evidence-read-requests.json", json([
     { lock_id: lockId },
@@ -1665,6 +1762,7 @@ const files = new Map([
   ["golden/admin-comprehension.success.json", json(success("admin_comprehension", adminComprehension, 11))],
   ["golden/admin-feedback-metadata.success.json", json(success("admin_feedback_metadata", adminFeedbackMetadata, 12))],
   ["golden/admin-partner-requests.success.json", json(success("admin_partner_requests", adminPartnerRequests, 13))],
+  ["golden/admin-activity-trends.success.json", json(success("admin_activity_trends", adminActivityTrends, 14))],
   ["golden/evidence-read.success.json", json(evidenceResponse)],
   ["golden/error-responses.json", json([
     { error: "invalid_request", request_id: requestIdFor(31) },
