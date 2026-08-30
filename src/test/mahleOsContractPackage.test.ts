@@ -24,6 +24,7 @@ const schemaFiles = [
   "admin-comprehension",
   "admin-feedback-metadata",
   "admin-partner-requests",
+  "admin-activity-trends",
   "daily-brief",
   "operations-request",
   "operations-success",
@@ -62,7 +63,7 @@ describe("MahleOS machine-readable handoff", () => {
       privacy_boundaries: { minimum_sensitive_aggregate_n: number; forbidden: string[] };
     }>("manifest.json");
 
-    expect(manifest.contract_version).toBe("1.3.0");
+    expect(manifest.contract_version).toBe("1.4.0");
     expect(manifest.status).toBe("IMPLEMENTED_NOT_PRODUCTION_ACTIVATED");
     expect(manifest.operations_endpoint.method).toBe("POST");
     expect(manifest.operations_endpoint.views).toEqual([
@@ -79,6 +80,7 @@ describe("MahleOS machine-readable handoff", () => {
       "admin_comprehension",
       "admin_feedback_metadata",
       "admin_partner_requests",
+      "admin_activity_trends",
     ]);
     expect(manifest.retry_policy).toEqual(expect.objectContaining({
       retryable_http_statuses: [429, 503],
@@ -106,6 +108,7 @@ describe("MahleOS machine-readable handoff", () => {
       "admin-comprehension",
       "admin-feedback-metadata",
       "admin-partner-requests",
+      "admin-activity-trends",
     ]) {
       validateWith(
         "operations-success",
@@ -163,5 +166,29 @@ describe("MahleOS machine-readable handoff", () => {
       data: { ...data, athlete_names: ["blocked"] },
     };
     expect(validate?.(withAthleteList)).toBe(false);
+  });
+
+  it("keeps suppressed activity-trend segments value-free below n five", () => {
+    const response = readJson<Record<string, unknown>>(
+      "golden/admin-activity-trends.success.json",
+    );
+    const data = response.data as { segments: Array<Record<string, unknown>>; privacy: Record<string, unknown> };
+    const solo = data.segments.find((segment) => segment.participation_mode === "solo");
+    expect(solo).toEqual(expect.objectContaining({
+      sample_size: 4,
+      sufficient_data: false,
+      direction: "insufficient_data",
+      previous_active_athletes: null,
+      current_active_athletes: null,
+      previous_checkins: null,
+      current_checkins: null,
+    }));
+    expect(data.privacy).toEqual(expect.objectContaining({
+      minimum_distinct_athletes_per_segment: 5,
+      test_profiles_excluded: true,
+      direct_identifiers_included: false,
+      free_text_included: false,
+      observational_not_causal: true,
+    }));
   });
 });

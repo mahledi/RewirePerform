@@ -28,6 +28,14 @@ const criticalJourneyMigration = readFileSync(
   resolve("supabase/migrations/20260828133200_jarvis_critical_journey_coverage_v1_1.sql"),
   "utf8",
 );
+const activityTrendsMachineMigration = readFileSync(
+  resolve("supabase/migrations/20260829185434_add_jarvis_activity_trends_machine_read.sql"),
+  "utf8",
+);
+const authSignupCoverageMigration = readFileSync(
+  resolve("supabase/migrations/20260829190341_add_jarvis_auth_signup_success_coverage.sql"),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -42,6 +50,7 @@ const contractSchemaNames = [
   "admin-comprehension",
   "admin-feedback-metadata",
   "admin-partner-requests",
+  "admin-activity-trends",
   "operations-success",
 ];
 const contractValidator = new Ajv2020({
@@ -161,7 +170,10 @@ try {
         || decode(md5(_value || convert_to(_algorithm, 'UTF8')), 'hex')
     $$;
 
-    CREATE TABLE auth.users(id uuid PRIMARY KEY);
+    CREATE TABLE auth.users(
+      id uuid PRIMARY KEY,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
     CREATE TYPE public.app_role AS ENUM ('athlete', 'coach', 'admin');
     CREATE TABLE public.user_roles(
       user_id uuid NOT NULL REFERENCES auth.users(id),
@@ -357,6 +369,12 @@ try {
     LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog AS $$
       SELECT COALESCE(current_setting('app.test_can_manage', true), 'false') = 'true'
     $$;
+
+    CREATE FUNCTION auth.uid() RETURNS uuid
+    LANGUAGE sql STABLE AS $$ SELECT NULL::uuid $$;
+
+    CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
+    RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT false $$;
   `);
 
   await db.exec(migration);
@@ -365,6 +383,8 @@ try {
   await db.exec(hardeningMigration);
   await db.exec(adminIntelligenceMigration);
   await db.exec(criticalJourneyMigration);
+  await db.exec(activityTrendsMachineMigration);
+  await db.exec(authSignupCoverageMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -622,6 +642,12 @@ try {
     daily.data.system_health.critical_journey_coverage.auth_login.coverage === "AUTHENTICATED_SUCCESS_ONLY"
       && daily.data.system_health.critical_journey_coverage.auth_login.failures_24h === null,
     "Authenticated login successes must not masquerade as failed-login coverage",
+  );
+  assert(
+    daily.data.system_health.critical_journey_coverage.auth_signup.coverage === "SERVER_ACCOUNT_CREATION_ONLY"
+      && daily.data.system_health.critical_journey_coverage.auth_signup.successes_24h >= 1
+      && daily.data.system_health.critical_journey_coverage.auth_signup.failures_24h === null,
+    "Auth account creations must be authoritative without masquerading as failed-signup coverage",
   );
   assert(
     daily.data.system_health.critical_journey_coverage.team_join.coverage === "AUTHENTICATED_APP_EVENTS",
@@ -1045,6 +1071,18 @@ try {
       `${view} must publish its direct-identifier exclusion`,
     );
   }
+
+  const activityTrends = await readAsService({
+    requestId: "91000000-0000-4000-8000-000000000006",
+    clientId: "admin-contract-6",
+    view: "admin_activity_trends",
+  });
+  assertContractResponse(activityTrends, "admin_activity_trends");
+  assert(activityTrends.data.window_days === 7, "Activity trends must use seven-day windows");
+  assert(activityTrends.data.privacy.minimum_distinct_athletes_per_segment === 5, "Activity trends must retain n >= 5");
+  assert(activityTrends.data.privacy.direct_identifiers_included === false, "Activity trends must exclude identifiers");
+  assert(activityTrends.data.privacy.free_text_included === false, "Activity trends must exclude free text");
+  assert(activityTrends.data.privacy.observational_not_causal === true, "Activity trends must remain descriptive");
 
   await expectFailure(
     () => db.query(

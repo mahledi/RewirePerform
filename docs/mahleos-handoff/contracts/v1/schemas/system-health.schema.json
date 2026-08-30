@@ -20,7 +20,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "mahleos-system-health-v1.3"
+      "const": "mahleos-system-health-v1.4"
     },
     "generated_at": {
       "type": "string",
@@ -226,13 +226,14 @@
           ],
           "properties": {
             "coverage": {
-              "const": "STRUCTURAL_ONLY"
+              "const": "SERVER_ACCOUNT_CREATION_ONLY"
             },
             "authority": {
-              "const": "identity_integrity"
+              "const": "auth.users"
             },
             "successes_24h": {
-              "type": "null"
+              "type": "integer",
+              "minimum": 0
             },
             "failures_24h": {
               "type": "null"

@@ -156,6 +156,18 @@
     {
       "type": "object",
       "required": [
+        "view"
+      ],
+      "properties": {
+        "view": {
+          "const": "admin_activity_trends"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "view",
         "program_run_id"
       ],

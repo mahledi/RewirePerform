@@ -175,7 +175,7 @@ Endpunkt vorbehalten.
 
 ### Admin Intelligence
 
-Der V1.2-Vertrag ergaenzt genau fuenf weitere feste Ansichten:
+Der V1.4-Vertrag ergaenzt genau sechs weitere feste Ansichten:
 
 - `admin_overview`: Production-Zaehler fuer Nutzerrollen, Teams, aktive
   Programme, Aktivitaet, Assessments und Programmverstaendnis.
@@ -189,6 +189,9 @@ Der V1.2-Vertrag ergaenzt genau fuenf weitere feste Ansichten:
 - `admin_partner_requests`: Status- und feste Segmentzaehler fuer eingehende
   Organisationsanfragen. Kontakt, Organisationsname, Website und Kontextnotiz
   werden nicht gelesen.
+- `admin_activity_trends`: zwei gleiche, nicht ueberlappende Sieben-Tage-
+  Fenster fuer Gesamt, Team und Solo. Testdaten sind ausgeschlossen; Segmente
+  unter fuenf unterschiedlichen Athleten bleiben vollstaendig unterdrueckt.
 
 Alle Ansichten laufen durch denselben `read_mahleos_operational_view`-RPC. Die
 internen Aggregatfunktionen sind auch fuer `service_role` nicht direkt
@@ -201,7 +204,7 @@ allgemeinen Filter- oder SQL-Parameter.
 
 - Transport- und Privacy-Manifest `manifest.json`
 - JSON-Schemas mit geschlossenen Top-Level-Vertraegen
-- synthetische Golden Responses fuer alle 13 Operations-Ansichten
+- synthetische Golden Responses fuer alle 14 Operations-Ansichten
 - Golden Response fuer `evidence-read`
 - vollstaendige dokumentierte Fehlerantworten
 
