@@ -328,11 +328,10 @@ export const MinorAuthorizationProvider = ({ children }: { children: ReactNode }
   useEffect(() => {
     const recoverIfNeeded = () => {
       const current = authRef.current;
-      const currentStatus = statusRef.current;
       if (
         !current.userId
+        || current.role !== "athlete"
         || recoveryInFlightRef.current
-        || (currentStatus && currentStatus.state !== "guardian_pending")
       ) return;
       void recoverAccess("lifecycle");
     };
@@ -359,11 +358,10 @@ export const MinorAuthorizationProvider = ({ children }: { children: ReactNode }
     let listener: PluginListenerHandle | null = null;
     void CapacitorApp.addListener("appStateChange", ({ isActive }) => {
       if (!isActive) return;
-      const currentStatus = statusRef.current;
       if (
         authRef.current.userId
+        && authRef.current.role === "athlete"
         && !recoveryInFlightRef.current
-        && (!currentStatus || currentStatus.state === "guardian_pending")
       ) {
         void recoverAccess("lifecycle");
       }

@@ -838,16 +838,16 @@ const Auth = () => {
 
           <div className="space-y-3">
             <IntentCard
-              icon={<Sparkles className="w-5 h-5" />}
-              title="Allein starten"
-              description="Dein persönliches Mental-Performance-Programm — nur für dich."
-              onClick={() => pickIntent("solo")}
-            />
-            <IntentCard
               icon={<UserPlus className="w-5 h-5" />}
               title="Team beitreten"
-              description="Du hast einen Teamcode von deinem Coach oder Trainer erhalten."
+              description="Du hast einen Teamcode oder Einladungslink von deinem Coach erhalten. Dann starte hier."
               onClick={() => pickIntent("join")}
+            />
+            <IntentCard
+              icon={<Sparkles className="w-5 h-5" />}
+              title="Ohne Team starten"
+              description="Du hast keine Teameinladung und nutzt dein persönliches Programm allein."
+              onClick={() => pickIntent("solo")}
             />
           </div>
 

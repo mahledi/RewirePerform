@@ -2521,6 +2521,10 @@ export type Database = {
         Returns: Json
       }
       join_team_by_code: { Args: { _code: string }; Returns: Json }
+      join_team_by_code_v1_3: {
+        Args: { _code: string; _confirm_solo_transition?: boolean }
+        Returns: Json
+      }
       save_coach_evidence_review: {
         Args: {
           _completion_duration_ms?: number

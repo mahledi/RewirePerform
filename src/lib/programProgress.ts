@@ -67,6 +67,7 @@ export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnaps
  * kein Banner mehr — Eindeutigkeits-Index in DB verhindert Doppel-Speicherung.
  */
 export interface RetestStatus {
+  preDone: boolean;
   midDue: boolean;
   postDue: boolean;
   midDone: boolean;
@@ -74,32 +75,77 @@ export interface RetestStatus {
   programDay: number | null;
 }
 
-const REQUIRED_TYPES = ["csai2r", "smtq", "flow_short"];
+export type AssessmentTiming = "pre" | "mid" | "post";
 
-export async function getRetestStatus(userId: string): Promise<RetestStatus> {
+const REQUIRED_TYPES = ["csai2r", "smtq", "flow_short"] as const;
+
+export interface AssessmentCompletionStatus extends RetestStatus {
+  instanceId: string;
+  completedAssessmentIds: Record<AssessmentTiming, string[]>;
+}
+
+export async function getAssessmentCompletionStatus(
+  userId: string,
+  referenceDate?: Date,
+): Promise<AssessmentCompletionStatus> {
   const instance = await getOrCreateActiveInstance(userId);
-  const startDate = instance?.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
-  const effectiveToday = await getEffectiveTodayDate(userId);
+  if (!instance?.id) throw new Error("active_program_instance_required");
+
+  const startDate = instance.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
+  const effectiveToday = referenceDate ?? await getEffectiveTodayDate(userId);
   const info = getCurrentProgramDay(startDate, effectiveToday);
   const programDay = info?.dayNumber ?? null;
 
-  // Cohort-scoped: only assessments from current instance count
-  let q = supabase
+  const { data, error } = await supabase
     .from("assessments")
     .select("assessment_type, timing, program_instance_id")
     .eq("user_id", userId)
-    .in("timing", ["mid", "post"]);
-  if (instance?.id) q = q.eq("program_instance_id", instance.id);
-  const { data } = await q;
+    .eq("program_instance_id", instance.id)
+    .in("timing", ["pre", "mid", "post"]);
 
-  const midTypes = new Set((data ?? []).filter((a) => a.timing === "mid").map((a) => a.assessment_type));
-  const postTypes = new Set((data ?? []).filter((a) => a.timing === "post").map((a) => a.assessment_type));
+  if (error) throw error;
 
-  const midDone = REQUIRED_TYPES.every((t) => midTypes.has(t));
-  const postDone = REQUIRED_TYPES.every((t) => postTypes.has(t));
+  const completedAssessmentIds: Record<AssessmentTiming, string[]> = {
+    pre: [],
+    mid: [],
+    post: [],
+  };
+  for (const assessment of data ?? []) {
+    if (assessment.timing === "pre" || assessment.timing === "mid" || assessment.timing === "post") {
+      if (!completedAssessmentIds[assessment.timing].includes(assessment.assessment_type)) {
+        completedAssessmentIds[assessment.timing].push(assessment.assessment_type);
+      }
+    }
+  }
 
-  const midDue = !!programDay && programDay >= 28 && programDay < 56 && !midDone;
-  const postDue = !!programDay && programDay >= 56 && !postDone;
+  const hasAll = (timing: AssessmentTiming) =>
+    REQUIRED_TYPES.every((type) => completedAssessmentIds[timing].includes(type));
+  const preDone = hasAll("pre");
+  const midDone = hasAll("mid");
+  const postDone = hasAll("post");
+  const midDue = preDone && Boolean(programDay && programDay >= 28 && programDay < 56 && !midDone);
+  const postDue = preDone && Boolean(programDay && programDay >= 56 && !postDone);
 
-  return { midDue, postDue, midDone, postDone, programDay };
+  return {
+    instanceId: instance.id,
+    completedAssessmentIds,
+    preDone,
+    midDue,
+    postDue,
+    midDone,
+    postDone,
+    programDay,
+  };
+}
+
+export async function getRetestStatus(userId: string): Promise<RetestStatus> {
+  const {
+    preDone,
+    midDue,
+    postDue,
+    midDone,
+    postDone,
+    programDay,
+  } = await getAssessmentCompletionStatus(userId);
+  return { preDone, midDue, postDue, midDone, postDone, programDay };
 }

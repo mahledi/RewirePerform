@@ -166,6 +166,24 @@ describe("minor authorization reconnect recovery", () => {
     ));
   });
 
+  it("rechecks an authorized athlete on focus so a later support correction locks the app", async () => {
+    mocks.getStatus
+      .mockResolvedValueOnce(authorized)
+      .mockResolvedValueOnce(guardianPending);
+
+    render(<MinorAuthorizationProvider><Probe /></MinorAuthorizationProvider>);
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "authorized|ready|ready|no-error",
+    ));
+
+    act(() => window.dispatchEvent(new Event("focus")));
+
+    await waitFor(() => expect(mocks.getStatus).toHaveBeenCalledTimes(2), { timeout: 2_000 });
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "pending|ready|ready|no-error",
+    ));
+  });
+
   it("refreshes a cached guardian-pending state when the native app becomes active", async () => {
     mocks.native = true;
     mocks.getStatus
@@ -183,6 +201,26 @@ describe("minor authorization reconnect recovery", () => {
     await waitFor(() => expect(mocks.getStatus).toHaveBeenCalledTimes(2), { timeout: 2_000 });
     await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
       "authorized|ready|ready|no-error",
+    ));
+  });
+
+  it("rechecks an authorized athlete when the native app becomes active", async () => {
+    mocks.native = true;
+    mocks.getStatus
+      .mockResolvedValueOnce(authorized)
+      .mockResolvedValueOnce(guardianPending);
+
+    render(<MinorAuthorizationProvider><Probe /></MinorAuthorizationProvider>);
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "authorized|ready|ready|no-error",
+    ));
+    await waitFor(() => expect(mocks.appStateListener).not.toBeNull());
+
+    act(() => mocks.appStateListener?.({ isActive: true }));
+
+    await waitFor(() => expect(mocks.getStatus).toHaveBeenCalledTimes(2), { timeout: 2_000 });
+    await waitFor(() => expect(screen.getByTestId("minor-status")).toHaveTextContent(
+      "pending|ready|ready|no-error",
     ));
   });
 

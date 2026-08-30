@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2, Building2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -19,6 +19,7 @@ import EvidenceParticipationGate from "@/components/admin/EvidenceParticipationG
 import AdminCommandCenter from "@/components/admin/AdminCommandCenter";
 import OrganizationRequestManager from "@/components/admin/OrganizationRequestManager";
 import AdminFeedbackIntelligenceComments from "@/components/admin/AdminFeedbackIntelligenceComments";
+import AdminMinorAgeCorrectionPanel from "@/components/admin/AdminMinorAgeCorrectionPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavCard from "@/components/MobileNavCard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
@@ -423,10 +424,10 @@ const Admin = () => {
       feedback_id: id, new_status: status, new_note: note ?? null,
     });
     if (error) {
-      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+      toast.error("Fehler", { description: error.message });
       return;
     }
-    toast({ title: "Aktualisiert" });
+    toast.success("Aktualisiert");
     loadAll();
   };
 
@@ -762,7 +763,7 @@ const Admin = () => {
           </TabsContent>
 
           {/* TEAMS */}
-          <TabsContent value="teams" className="mt-4">
+          <TabsContent value="teams" className="mt-4 space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Teams</CardTitle>
@@ -812,6 +813,7 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+            <AdminMinorAgeCorrectionPanel />
           </TabsContent>
 
           {/* COACH ACCESS */}

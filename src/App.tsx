@@ -2,7 +2,6 @@ import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { MinorAuthorizationProvider } from "@/contexts/MinorAuthorizationContext";
@@ -18,6 +17,7 @@ import ConnectionStatus from "./components/ConnectionStatus";
 import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardingGate";
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 import AppScrollReset from "./components/app/AppScrollReset";
+import AthleteRouteLoadingShell from "./components/app/AthleteRouteLoadingShell";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -96,9 +96,20 @@ const AthleteFlowQualityPreview = evidencePreviewEnabled
   : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
-const PageFallback = () => (
-  <AppLoadingShell subtitle="Öffne deinen Bereich..." />
-);
+const PageFallback = () => {
+  const location = useLocation();
+  const athleteSection = location.pathname === "/progress"
+    ? "progress"
+    : location.pathname.startsWith("/settings")
+      ? "more"
+      : location.pathname === "/dashboard"
+        ? "today"
+        : null;
+
+  return athleteSection
+    ? <AthleteRouteLoadingShell active={athleteSection} />
+    : <AppLoadingShell subtitle="Öffne deinen Bereich..." />;
+};
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -137,7 +148,6 @@ const AppRoutes = () => {
   if (isDemoRoute) {
     return (
       <TooltipProvider>
-        <Toaster />
         <Sonner />
         <Suspense fallback={<PageFallback />}>
           <Routes>
@@ -180,7 +190,6 @@ const AppRoutes = () => {
     <AuthProvider>
       <MinorAuthorizationProvider>
         <TooltipProvider>
-          <Toaster />
           <Sonner />
           <QATestBanner />
           <NativeAuthReturnHandler />

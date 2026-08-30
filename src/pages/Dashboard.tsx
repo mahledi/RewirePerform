@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { getCurrentProgramDay, getEffectiveProgramStart } from "@/lib/getCurrentProgramDay";
 import { getProgramModeInfo, type ProgramMode } from "@/lib/programMode";
 import { normalizeDateString } from "@/lib/utils";
-import { upsertTodaySnapshot, getRetestStatus } from "@/lib/programProgress";
+import { getAssessmentCompletionStatus, upsertTodaySnapshot } from "@/lib/programProgress";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
 import {
   buildFlameStats,
@@ -25,7 +25,7 @@ import { resolveProgressReferenceDateIso } from "@/lib/athleteProgressPresentati
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { resolveDay } from "@/lib/getDayContent";
-import AppLoadingShell from "@/components/AppLoadingShell";
+import AthleteRouteLoadingShell from "@/components/app/AthleteRouteLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
 import { hasValidCompletedOnboarding } from "@/lib/questionnaireCompletion";
 import {
@@ -44,6 +44,8 @@ import {
   athleteAppViewport,
 } from "@/components/app/AthleteAppChrome";
 import { getAthleteGreeting } from "@/lib/athleteGreeting";
+import { getRecentMissedDayReviewWindow } from "@/lib/missedDayReviewWindow";
+import { getAssessmentStatusRevision } from "@/lib/assessmentStatusRevision";
 import {
   canOpenRestVisualization,
   readRestVisualizationIntent,
@@ -95,7 +97,6 @@ interface MissedDayReview {
 }
 
 
-const REQUIRED_ASSESSMENTS = ["csai2r", "smtq", "flow_short"] as const;
 const DEEP_PROFILE_BASELINE_AVAILABLE_FROM_DAY = 7;
 const DASHBOARD_MEMORY_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -269,6 +270,7 @@ const PlanTimelineRow = ({
 interface DashboardMemoryCache {
   userId: string;
   cachedAt: number;
+  assessmentRevision: number;
   currentMonthIso: string;
   events: CalendarEvent[];
   setupMode: boolean;
@@ -299,6 +301,7 @@ let dashboardMemoryCache: DashboardMemoryCache | null = null;
 const getDashboardMemoryCache = (userId?: string | null) => {
   if (!userId || !dashboardMemoryCache || dashboardMemoryCache.userId !== userId) return null;
   if (Date.now() - dashboardMemoryCache.cachedAt > DASHBOARD_MEMORY_CACHE_TTL_MS) return null;
+  if (getAssessmentStatusRevision(userId) !== dashboardMemoryCache.assessmentRevision) return null;
   return dashboardMemoryCache;
 };
 
@@ -362,7 +365,7 @@ const buildInitialMissedDayReviews = ({
   const start = new Date(`${startDate}T00:00:00`);
   const reviews: MissedDayReview[] = [];
 
-  for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= 1 && reviews.length < 3; dayNumber -= 1) {
+  for (const dayNumber of getRecentMissedDayReviewWindow(dayInfo.dayNumber)) {
     if (completedDays.has(dayNumber)) continue;
     const dayDate = addDays(start, dayNumber - 1);
     const date = format(dayDate, "yyyy-MM-dd");
@@ -687,9 +690,6 @@ const Dashboard = () => {
   const lastStatusRefreshAt = useRef(0);
   
 
-  const hasCompletedAllAssessments = (types: Set<string>) =>
-    REQUIRED_ASSESSMENTS.every((id) => types.has(id));
-
   const applyDashboardCache = (cache: DashboardMemoryCache) => {
     setCurrentMonth(new Date(cache.currentMonthIso));
     setEvents(cache.events);
@@ -843,6 +843,7 @@ const Dashboard = () => {
           activeApplications: status.tasksCompletedCount,
           referenceDateIso: resolveProgressReferenceDateIso(effectiveStart, resolvedToday),
           measurementStatus: {
+            preDone: status.preTestsDone,
             midDue: status.midTestDue,
             midDone: status.midTestsDone,
             postDue: status.postTestDue,
@@ -883,6 +884,7 @@ const Dashboard = () => {
     dashboardMemoryCache = {
       userId: user.id,
       cachedAt: Date.now(),
+      assessmentRevision: getAssessmentStatusRevision(user.id),
       currentMonthIso: currentMonth.toISOString(),
       events,
       setupMode,
@@ -940,6 +942,7 @@ const Dashboard = () => {
     setAthleteProgressCache(user.id, flameStats, {
       referenceDateIso: resolveProgressReferenceDateIso(programStartDate, effectiveToday),
       measurementStatus: {
+        preDone: preTestsDone,
         midDue: midTestDue,
         midDone: midTestsDone,
         postDue: postTestDue,
@@ -952,6 +955,7 @@ const Dashboard = () => {
     flameStats,
     effectiveToday,
     programStartDate,
+    preTestsDone,
     midTestDue,
     midTestsDone,
     postTestDue,
@@ -1134,45 +1138,24 @@ const Dashboard = () => {
   };
 
   const checkAssessments = async (referenceDate = effectiveToday) => {
-    const [{ data: settingsArr }, effectiveStart] = await Promise.all([
+    const [{ data: settingsArr }, effectiveStart, assessmentStatus] = await Promise.all([
       supabase
         .from("program_settings")
         .select("program_start")
         .eq("user_id", user!.id),
       getEffectiveProgramStart(user!.id),
+      getAssessmentCompletionStatus(user!.id, referenceDate),
     ]);
     const settings = settingsArr && settingsArr.length > 0 ? settingsArr[0] : null;
     const startDate = effectiveStart.startDate ?? settings?.program_start ?? null;
 
     if (startDate) {
       setProgramStartDate(startDate);
-      const daysSince = differenceInDays(referenceDate, new Date(startDate));
-
-      const { data: preTests } = await supabase
-        .from("assessments")
-        .select("assessment_type")
-        .eq("timing", "pre")
-        .eq("user_id", user!.id);
-
-      const preTypes = new Set((preTests || []).map(t => t.assessment_type));
-      setPreTestsDone(hasCompletedAllAssessments(preTypes));
-
-      const { data: postTests } = await supabase
-        .from("assessments")
-        .select("assessment_type")
-        .eq("timing", "post")
-        .eq("user_id", user!.id);
-
-      
-      const postTypes = new Set((postTests || []).map(t => t.assessment_type));
-      const postDone = hasCompletedAllAssessments(postTypes);
-      setPostTestsDone(postDone);
-
-      // Mid/Post via centralized helper (uses effective program start incl. team)
-      const retest = await getRetestStatus(user!.id);
-      setMidTestDue(retest.midDue);
-      setMidTestsDone(retest.midDone);
-      setPostTestDue(retest.postDue || (daysSince >= 56 && !postDone));
+      setPreTestsDone(assessmentStatus.preDone);
+      setMidTestDue(assessmentStatus.midDue);
+      setMidTestsDone(assessmentStatus.midDone);
+      setPostTestDue(assessmentStatus.postDue);
+      setPostTestsDone(assessmentStatus.postDone);
 
       // Idempotenter Adherence-Snapshot für heute
       await upsertTodaySnapshot(user!.id).catch((e) => console.error("snapshot error", e));
@@ -1282,8 +1265,7 @@ const Dashboard = () => {
       const start = new Date(`${startDate}T00:00:00`);
 
       const reviews: MissedDayReview[] = [];
-      const oldestReviewDay = Math.max(1, dayInfo.dayNumber - 3);
-      for (let dayNumber = dayInfo.dayNumber - 1; dayNumber >= oldestReviewDay; dayNumber -= 1) {
+      for (const dayNumber of getRecentMissedDayReviewWindow(dayInfo.dayNumber)) {
         if (completedDays.has(dayNumber)) continue;
 
         const dayDate = addDays(start, dayNumber - 1);
@@ -1457,6 +1439,13 @@ const Dashboard = () => {
     !setupMode &&
     !!programStartDate &&
     differenceInDays(effectiveToday, new Date(programStartDate)) < 56;
+  const availableMeasurementMode = !preTestsDone
+    ? "pre"
+    : midTestDue && !midTestsDone
+      ? "mid"
+      : postTestDue && !postTestsDone
+        ? "post"
+        : null;
   const effectiveProgramStartDate = teamProgramStart ?? programStartDate;
   const programDayInfo = getCurrentProgramDay(effectiveProgramStartDate, effectiveToday);
   const currentProgramDay = programDayInfo?.dayNumber ?? null;
@@ -1551,13 +1540,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return (
-      <AppLoadingShell
-        variant="dashboard"
-        title="RewirePerform"
-        subtitle="Lade deinen heutigen Flow..."
-      />
-    );
+    return <AthleteRouteLoadingShell active="today" label="Lade deinen heutigen Flow..." />;
   }
 
   if (bootstrapError) {
@@ -1677,14 +1660,20 @@ const Dashboard = () => {
       <AthleteAppHeader
         actions={(
           <>
-            <button
-              type="button"
-              onClick={() => navigate("/assessment")}
-              aria-label="Wissenschaftliche Messungen"
-              className="flex h-11 w-11 items-center justify-center rounded-full text-white/48 hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            >
-              <ClipboardCheck className="h-[18px] w-[18px]" />
-            </button>
+            {availableMeasurementMode && (
+              <button
+                type="button"
+                onClick={() => navigate(`/assessment?mode=${availableMeasurementMode}`)}
+                aria-label={availableMeasurementMode === "pre"
+                  ? "Startmessung öffnen"
+                  : availableMeasurementMode === "mid"
+                    ? "Zwischenmessung öffnen"
+                    : "Abschlussmessung öffnen"}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-white/48 hover:bg-white/[0.055] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <ClipboardCheck className="h-[18px] w-[18px]" />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => navigate("/settings")}

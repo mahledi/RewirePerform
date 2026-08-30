@@ -407,18 +407,27 @@ const TeamManagement = ({
                 <div className="flex min-w-0 flex-col gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-sm text-primary sm:flex-row sm:items-center">
                   <CalendarCheck className="w-4 h-4 shrink-0" />
                   <span className="min-w-0 flex-1 font-medium">
-                    Programm startet am {format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}
+                    {team.program_activated_at
+                      ? `Programmstart verbindlich festgelegt: ${format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}`
+                      : `Programm startet am ${format(parseISO(team.program_start_date), "d. MMMM yyyy", { locale: de })}`}
                   </span>
-                  <button
-                    onClick={() => {
-                      setEditingStartId(team.id);
-                      setStartDateDraft(team.program_start_date!);
-                    }}
-                    className="text-xs underline opacity-80 hover:opacity-100"
-                  >
-                    Ändern
-                  </button>
+                  {!team.program_activated_at && (
+                    <button
+                      onClick={() => {
+                        setEditingStartId(team.id);
+                        setStartDateDraft(team.program_start_date!);
+                      }}
+                      className="text-xs underline opacity-80 hover:opacity-100"
+                    >
+                      Ändern
+                    </button>
+                  )}
                 </div>
+                {team.program_activated_at && (
+                  <p className="px-1 text-xs leading-5 text-muted-foreground">
+                    Nach der Bestätigung bleibt das Startdatum fest, damit Tageszuordnung und Messungen eindeutig bleiben.
+                  </p>
+                )}
                 {editingStartId === team.id && (
                   <div className="flex flex-col gap-2 rounded-xl bg-secondary/40 px-3 py-2.5 sm:flex-row sm:items-center">
                     <input

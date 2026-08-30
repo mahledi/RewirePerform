@@ -7,8 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 import {
   ONBOARDING_V2_INSTRUMENT_ID,
+  ONBOARDING_V2_QUESTIONS,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import { countCanonicalQuestionnaireAnswers } from "@/lib/questionnaireCustomAnswers";
 import { captureAppError } from "@/lib/monitoring";
 import { clearLocalDraft } from "@/lib/localDrafts";
 import type { Json } from "@/integrations/supabase/types";
@@ -166,7 +168,10 @@ const QuestionnaireResults = ({
           metadata: {
             instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
             questionnaire_version: ONBOARDING_V2_VERSION,
-            answer_count: Object.keys(answers).length,
+            answer_count: countCanonicalQuestionnaireAnswers(
+              answers,
+              new Set(ONBOARDING_V2_QUESTIONS.map((question) => question.id)),
+            ),
           },
         });
         setError(
@@ -183,7 +188,10 @@ const QuestionnaireResults = ({
     return () => clearInterval(interval);
   }, [answers, draftStorageKey, navigate, retryTick]);
 
-  const answeredCount = Object.keys(answers).length;
+  const answeredCount = countCanonicalQuestionnaireAnswers(
+    answers,
+    new Set(ONBOARDING_V2_QUESTIONS.map((question) => question.id)),
+  );
 
   if (saveCompleted) {
     return (

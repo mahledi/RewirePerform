@@ -50,7 +50,7 @@ describe("post-signup onboarding gate", () => {
     auth.role = "athlete";
     auth.roleVerified = true;
     auth.loading = false;
-    joinTeamByCode.mockResolvedValue({ success: true });
+    joinTeamByCode.mockResolvedValue({ success: true, transition: "team_joined" });
   });
 
   it("inserts the introduction at the exact point where a new athlete would open the questionnaire", () => {
@@ -100,7 +100,7 @@ describe("post-signup onboarding gate", () => {
 
     expect(await screen.findByText("Produktive Einführung")).toBeInTheDocument();
     expect(joinTeamByCode).toHaveBeenCalledTimes(1);
-    expect(joinTeamByCode).toHaveBeenCalledWith("ABC123");
+    expect(joinTeamByCode).toHaveBeenCalledWith("ABC123", { confirmSoloTransition: false });
     expect(pendingPostAuthorizationTeamCode("athlete-1")).toBeNull();
   });
 
@@ -110,12 +110,12 @@ describe("post-signup onboarding gate", () => {
     renderGate();
 
     expect(await screen.findByText("Athleten-Dashboard")).toBeInTheDocument();
-    expect(joinTeamByCode).toHaveBeenCalledWith("ABC123");
+    expect(joinTeamByCode).toHaveBeenCalledWith("ABC123", { confirmSoloTransition: false });
     expect(pendingPostAuthorizationTeamCode("athlete-1")).toBeNull();
   });
 
   it("finishes an in-flight join when auth refreshes the same user object", async () => {
-    let resolveJoin!: (value: { success: true }) => void;
+    let resolveJoin!: (value: { success: true; transition: "team_joined" }) => void;
     joinTeamByCode.mockReturnValue(new Promise((resolve) => { resolveJoin = resolve; }));
     queuePostAuthorizationTeamJoin("athlete-1", "abc123", false);
 
@@ -123,7 +123,7 @@ describe("post-signup onboarding gate", () => {
     await waitFor(() => expect(joinTeamByCode).toHaveBeenCalledTimes(1));
     auth.user = { id: "athlete-1" };
     view.rerender(gateTree());
-    resolveJoin({ success: true });
+    resolveJoin({ success: true, transition: "team_joined" });
 
     expect(await screen.findByText("Athleten-Dashboard")).toBeInTheDocument();
     expect(joinTeamByCode).toHaveBeenCalledTimes(1);
@@ -152,6 +152,24 @@ describe("post-signup onboarding gate", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Ohne Team fortfahren" }));
     expect(await screen.findByText("Athleten-Dashboard")).toBeInTheDocument();
     expect(pendingPostAuthorizationTeamCode("athlete-1")).toBeNull();
+  });
+
+  it("requires explicit confirmation before separating a real solo program", async () => {
+    joinTeamByCode
+      .mockResolvedValueOnce({
+        success: false,
+        requiresSoloTransitionConfirmation: true,
+        message: "Solo bleibt geschützt.",
+      })
+      .mockResolvedValueOnce({ success: true, transition: "new_team_cycle_started" });
+    queuePostAuthorizationTeamJoin("athlete-1", "abc123", false);
+
+    renderGate();
+
+    expect(await screen.findByRole("heading", { name: "Solo-Verlauf sicher trennen?" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Teamlauf getrennt starten" }));
+    expect(await screen.findByText("Athleten-Dashboard")).toBeInTheDocument();
+    expect(joinTeamByCode).toHaveBeenNthCalledWith(2, "ABC123", { confirmSoloTransition: true });
   });
 
   it.each(["coach", "admin"] as const)("never joins a team for a verified %s", async (role) => {

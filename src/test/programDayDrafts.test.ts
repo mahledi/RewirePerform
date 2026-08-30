@@ -15,6 +15,28 @@ import {
 
 const words = (value: string): number => value.trim().split(/\s+/u).filter(Boolean).length;
 
+const layerStopWords = new Set(
+  "der die das den dem des ein eine einer einem einen und oder aber ist sind war wie was du dein deine deiner deinem dich dir im in am an auf aus mit für von zu zum zur bei wenn dann noch nicht nur schon auch es er sie wir ihr man dass weil damit als so wird werden kann kannst heute jetzt über mehr sehr wieder immer".split(" "),
+);
+
+const layerTokens = (value: string): string[] => value
+  .toLowerCase()
+  .replace(/ä/g, "ae")
+  .replace(/ö/g, "oe")
+  .replace(/ü/g, "ue")
+  .replace(/ß/g, "ss")
+  .replace(/[^a-z0-9]+/g, " ")
+  .trim()
+  .split(/\s+/u)
+  .filter((word) => word.length > 3 && !layerStopWords.has(word));
+
+const lexicalContainment = (source: string, explanation: string): number => {
+  const sourceTokens = new Set(layerTokens(source));
+  const explanationTokens = new Set(layerTokens(explanation));
+  if (explanationTokens.size === 0) return 0;
+  return [...explanationTokens].filter((token) => sourceTokens.has(token)).length / explanationTokens.size;
+};
+
 const expectedTools = [
   "W1", "W2", "W1", "W3", "W2", "W4", "W1", "W5", "W3", "W6", "W4", "W2", "W5", "W1",
   "W7", "W6", "W3", "W1", "W4", "W5", "W2", "W7", "W6", "W2", "W5", "W6", "W2", "W7",
@@ -118,6 +140,23 @@ describe("complete 56-day V1.1 editorial draft", () => {
       expect(explanation, `Tag ${draft.day} contains editorial jargon`).not.toMatch(
         /Prozesspunkt|funktional flach|Lernraum|Grundweite|Ego-Zusatz|Selbstprojekt|automatische Enge|Werkzeugbild|innerer Kampf/iu,
       );
+    }
+  });
+
+  it("keeps optional depth lexically separate from both mechanism and mission", () => {
+    for (const draft of PROGRAM_DAY_DRAFTS) {
+      const explanation = draft.detailedExplanation?.trim() ?? "";
+      const science = [draft.scienceBite.title, ...draft.scienceBite.paragraphs].join(" ");
+      const mission = [draft.mission.title, draft.mission.trigger, ...draft.mission.steps, draft.mission.why].join(" ");
+
+      expect(
+        lexicalContainment(science, explanation),
+        `Tag ${draft.day} retells too much of the Science Bite`,
+      ).toBeLessThan(0.3);
+      expect(
+        lexicalContainment(mission, explanation),
+        `Tag ${draft.day} retells too much of the mission`,
+      ).toBeLessThan(0.32);
     }
   });
 
