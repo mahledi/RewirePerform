@@ -122,21 +122,21 @@ describe("first run experience preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Dein Weg beginnt mit dem ersten Tag." })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Solo" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Ohne Team" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Registrierung starten")).toBeInTheDocument();
     expect(screen.queryByLabelText("Schritt 10 von 10")).not.toBeInTheDocument();
   }, 15_000);
 
-  it("keeps the preview replayable and makes the Solo/Team choice explicit", () => {
+  it("keeps the preview replayable and makes the team-code choice explicit", () => {
     render(<FirstRunExperiencePreview />);
 
     for (let index = 0; index < 9; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     }
-    fireEvent.click(screen.getByRole("button", { name: "Team" }));
+    fireEvent.click(screen.getByRole("button", { name: "Teamcode" }));
 
-    expect(screen.getByRole("button", { name: "Team" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "Solo" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Teamcode" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Ohne Team" })).toHaveAttribute("aria-pressed", "false");
 
     fireEvent.click(screen.getByRole("button", { name: /Vorschau erneut ansehen/ }));
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();

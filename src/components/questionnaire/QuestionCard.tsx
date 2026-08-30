@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MessageSquarePlus } from "lucide-react";
 import type { Question } from "@/data/questionnaireData";
 import VoiceInput from "@/components/VoiceInput";
+import { CUSTOM_ANSWER_MAX_LENGTH, supportsPrivateCustomAnswer } from "@/lib/questionnaireCustomAnswers";
 
 interface QuestionCardProps {
   question: Question;
   answer: string | string[] | number | undefined;
   onAnswer: (value: string | string[] | number) => void;
+  customAnswer?: string;
+  onCustomAnswer?: (value: string) => void;
   isRequired?: boolean;
   validationError?: string | null;
 }
@@ -15,12 +19,15 @@ const QuestionCard = ({
   question,
   answer,
   onAnswer,
+  customAnswer = "",
+  onCustomAnswer,
   isRequired = true,
   validationError = null,
 }: QuestionCardProps) => {
   const [textValue, setTextValue] = useState(
     typeof answer === "string" ? answer : ""
   );
+  const [customAnswerOpen, setCustomAnswerOpen] = useState(customAnswer.trim().length > 0);
 
   const handleTextChange = (val: string) => {
     setTextValue(val);
@@ -177,6 +184,44 @@ const QuestionCard = ({
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {supportsPrivateCustomAnswer(question) && onCustomAnswer && (
+          <div className="mt-4 rounded-xl border border-border/70 bg-secondary/35 p-3 md:mt-5 md:p-4">
+            <button
+              type="button"
+              onClick={() => setCustomAnswerOpen((open) => !open)}
+              aria-expanded={customAnswerOpen}
+              className="flex min-h-11 w-full items-center gap-2 text-left text-sm font-semibold text-primary"
+            >
+              <MessageSquarePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Eigene Antwort ergänzen
+            </button>
+            <AnimatePresence initial={false}>
+              {customAnswerOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <textarea
+                    value={customAnswer}
+                    onChange={(event) => onCustomAnswer(event.target.value)}
+                    maxLength={CUSTOM_ANSWER_MAX_LENGTH}
+                    rows={3}
+                    aria-label="Eigene Antwort"
+                    placeholder="Was passt für dich zusätzlich?"
+                    className="mt-2 w-full resize-none rounded-xl border border-border bg-background/70 p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15"
+                  />
+                  <div className="mt-2 flex items-start justify-between gap-3 text-[11px] leading-relaxed text-muted-foreground">
+                    <span>Du kannst damit auch ohne Auswahl antworten. Privat: Dein Coach sieht diesen Text nicht.</span>
+                    <span className="shrink-0">{customAnswer.length}/{CUSTOM_ANSWER_MAX_LENGTH}</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </motion.div>

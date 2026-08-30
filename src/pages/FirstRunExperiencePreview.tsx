@@ -914,19 +914,19 @@ const StartScreen = ({ mode, postSignup }: { mode: FirstRunMode; postSignup: boo
         <div className="mt-7 grid w-full grid-cols-2 gap-3">
           <div className={cn(
             "rounded-[18px] border p-4 text-left",
-            mode === "solo" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
-          )}>
-            <Target className={cn("h-4 w-4", mode === "solo" ? "text-primary" : "text-white/35")} />
-            <p className="mt-4 text-[11px] font-semibold">Solo</p>
-            <p className="mt-1 text-[8px] text-white/35">Dein eigener Plan</p>
-          </div>
-          <div className={cn(
-            "rounded-[18px] border p-4 text-left",
             mode === "team" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
           )}>
             <Users className={cn("h-4 w-4", mode === "team" ? "text-primary" : "text-white/35")} />
             <p className="mt-4 text-[11px] font-semibold">Team</p>
             <p className="mt-1 text-[8px] text-white/35">Mit Teamcode</p>
+          </div>
+          <div className={cn(
+            "rounded-[18px] border p-4 text-left",
+            mode === "solo" ? "border-primary/35 bg-primary/[0.09]" : "border-white/[0.065] bg-white/[0.025]",
+          )}>
+            <Target className={cn("h-4 w-4", mode === "solo" ? "text-primary" : "text-white/35")} />
+            <p className="mt-4 text-[11px] font-semibold">Ohne Team</p>
+            <p className="mt-1 text-[8px] text-white/35">Dein eigener Plan</p>
           </div>
         </div>
       )}
@@ -1062,7 +1062,7 @@ const FirstRunExperiencePreview = ({
           {isLast && !replay && !postSignup && (
             <div className="mt-4">
               <div className="flex gap-2" role="group" aria-label="Programmweg auswählen">
-                {(["solo", "team"] as const).map((item) => (
+                {(["team", "solo"] as const).map((item) => (
                   <button
                     key={item}
                     type="button"
@@ -1075,7 +1075,7 @@ const FirstRunExperiencePreview = ({
                         : "border-white/[0.08] bg-white/[0.025] text-white/48",
                     )}
                   >
-                    {item === "solo" ? "Solo" : "Team"}
+                    {item === "solo" ? "Ohne Team" : "Teamcode"}
                   </button>
                 ))}
               </div>

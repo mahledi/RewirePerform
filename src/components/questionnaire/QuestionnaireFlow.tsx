@@ -14,6 +14,10 @@ import {
 import { writeLocalDraft } from "@/lib/localDrafts";
 import { isOptionalOnboardingQuestion, isRequiredOnboardingQuestion } from "@/lib/questionnaireCompletion";
 import type { Json } from "@/integrations/supabase/types";
+import {
+  applyPrivateCustomAnswer,
+  customAnswerKey,
+} from "@/lib/questionnaireCustomAnswers";
 
 interface QuestionnaireFlowProps {
   onComplete: (answers: Record<string, string | string[] | number>) => void;
@@ -87,6 +91,10 @@ const QuestionnaireFlow = ({
     },
     []
   );
+
+  const handleCustomAnswer = useCallback((questionId: string, value: string) => {
+    setAnswers((previous) => applyPrivateCustomAnswer(previous, questionId, value));
+  }, []);
 
   const getCurrentCategoryForQuestion = (globalIndex: number) => {
     const q = orderedQuestions[globalIndex];
@@ -492,6 +500,8 @@ const QuestionnaireFlow = ({
                 question={currentQuestion}
                 answer={answers[currentQuestion.id]}
                 onAnswer={(val) => handleAnswer(currentQuestion.id, val)}
+                customAnswer={String(answers[customAnswerKey(currentQuestion.id)] ?? "")}
+                onCustomAnswer={(value) => handleCustomAnswer(currentQuestion.id, value)}
                 isRequired={isRequiredQuestion(currentQuestion)}
                 validationError={validationError}
               />

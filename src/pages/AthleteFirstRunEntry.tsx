@@ -7,7 +7,7 @@ const AthleteFirstRunEntry = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const teamCode = normalizeTeamInviteCode(searchParams.get("team") ?? "");
-  const initialMode: FirstRunMode = searchParams.get("intent") === "join" || teamCode ? "team" : "solo";
+  const initialMode: FirstRunMode = searchParams.get("intent") === "solo" && !teamCode ? "solo" : "team";
   const requestedMode = searchParams.get("auth_mode") === "login" ? "login" : "signup";
 
   const authRoute = (mode: "signup" | "login", intent: FirstRunMode) => {
