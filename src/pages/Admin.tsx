@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCcw, AlertTriangle, ShieldCheck, LogOut, ArrowLeft, LayoutGrid, CalendarDays, Users as UsersIcon, BarChart3, MessageSquare, HeartPulse, BookOpen, TestTube2, Activity, Shield, Target, CheckCircle2, Building2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -424,10 +424,10 @@ const Admin = () => {
       feedback_id: id, new_status: status, new_note: note ?? null,
     });
     if (error) {
-      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+      toast.error("Fehler", { description: error.message });
       return;
     }
-    toast({ title: "Aktualisiert" });
+    toast.success("Aktualisiert");
     loadAll();
   };
 

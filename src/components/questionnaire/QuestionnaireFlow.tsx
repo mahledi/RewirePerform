@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Cloud, CloudOff, Loader2, Pause } from "lucide-react";
 import { questions, categories, getQuestionsByCategory } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import QuestionnaireProgress from "./QuestionnaireProgress";
 import QuestionCard from "./QuestionCard";
 import CategoryIntro from "./CategoryIntro";
@@ -376,8 +376,7 @@ const QuestionnaireFlow = ({
     });
     try {
       await saveDraft(answers, currentCatIndex);
-      toast({
-        title: "Fortschritt gespeichert",
+      toast.success("Fortschritt gespeichert", {
         description: "Du bleibst angemeldet und kannst jederzeit weitermachen.",
       });
       await onPauseExit(pauseDraft);

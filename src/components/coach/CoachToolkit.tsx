@@ -9,7 +9,7 @@ import {
   TEAM_STANDARDS,
 } from "@/content/coachToolkit";
 import { BookOpen, ShieldCheck, NotebookPen, Loader2, Save } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { CalendarEventType } from "@/content/matrixDayTypes";
 
 interface Props {
@@ -151,9 +151,9 @@ const CoachToolkit = ({ teamId }: Props) => {
     );
     setSavingJournal(false);
     if (error) {
-      toast({ title: "Speichern fehlgeschlagen", description: error.message, variant: "destructive" });
+      toast.error("Speichern fehlgeschlagen", { description: error.message });
     } else {
-      toast({ title: "Gespeichert", description: `Coach Journal Woche ${weekNumber}` });
+      toast.success("Gespeichert", { description: `Coach Journal Woche ${weekNumber}` });
     }
   };
 

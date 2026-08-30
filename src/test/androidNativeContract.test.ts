@@ -14,7 +14,7 @@ describe("Android native release contract", () => {
     expect(build).toContain('versionName "1.2"');
     expect(variables).toContain("compileSdkVersion = 36");
     expect(variables).toContain("targetSdkVersion = 36");
-    expect(iosProject.match(/CURRENT_PROJECT_VERSION = 17;/g)).toHaveLength(2);
+    expect(iosProject.match(/CURRENT_PROJECT_VERSION = 18;/g)).toHaveLength(2);
   });
 
   it("keeps verified HTTPS App Links for the Android auth and recovery return", () => {
