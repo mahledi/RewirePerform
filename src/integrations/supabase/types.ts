@@ -2386,6 +2386,10 @@ export type Database = {
         Args: { include_test?: boolean }
         Returns: Json
       }
+      get_admin_evidence_workbench_v1_4: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_admin_nlz_evidence_dossier: {
         Args: { cohort_id?: string; include_test?: boolean }
         Returns: Json
@@ -2410,6 +2414,10 @@ export type Database = {
         Args: { _protocol_version?: string; _team_id: string }
         Returns: Json
       }
+      get_coach_team_development_v1_4: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_coach_team_activity_status: {
         Args: { _team_id: string }
         Returns: {
@@ -2427,6 +2435,10 @@ export type Database = {
         }[]
       }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
+      get_evidence_report_v1_4: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_evidence_data_lock: { Args: { _lock_id: string }; Returns: Json }
       get_my_evidence_status: {
         Args: {
@@ -2437,6 +2449,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_my_longitudinal_evidence_v1_4: { Args: never; Returns: Json }
       get_my_transfer_evidence_summary: {
         Args: { _program_instance_id: string; _protocol_version?: string }
         Returns: Json

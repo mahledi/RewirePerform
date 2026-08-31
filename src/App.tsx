@@ -61,6 +61,9 @@ const GuardianDecision = lazy(() => import("./pages/GuardianDecision.tsx"));
 const EvidencePreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/EvidencePreview.tsx"))
   : null;
+const EvidenceV14Preview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/EvidenceV14Preview.tsx"))
+  : null;
 const EmailPreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/EmailPreview.tsx"))
   : null;
@@ -114,6 +117,7 @@ const PageFallback = () => {
 const AppRoutes = () => {
   const location = useLocation();
   const isEvidencePreview = EvidencePreview !== null && location.pathname === "/internal/evidence-preview";
+  const isEvidenceV14Preview = EvidenceV14Preview !== null && location.pathname === "/internal/evidence-v1-4-preview";
   const isEmailPreview = EmailPreview !== null && location.pathname === "/internal/email-preview";
   const isMinorConsentPreview = MinorConsentPreview !== null && location.pathname === "/internal/minor-consent-preview";
   const isFirstRunExperiencePreview = FirstRunExperiencePreview !== null
@@ -134,6 +138,7 @@ const AppRoutes = () => {
     && location.pathname === "/internal/athlete-flow-preview";
   const isDemoRoute = location.pathname === "/demo"
     || isEvidencePreview
+    || isEvidenceV14Preview
     || isEmailPreview
     || isMinorConsentPreview
     || isFirstRunExperiencePreview
@@ -153,6 +158,7 @@ const AppRoutes = () => {
           <Routes>
             <Route path="/demo" element={<Demo />} />
             {EvidencePreview && <Route path="/internal/evidence-preview" element={<EvidencePreview />} />}
+            {EvidenceV14Preview && <Route path="/internal/evidence-v1-4-preview" element={<EvidenceV14Preview />} />}
             {EmailPreview && <Route path="/internal/email-preview" element={<EmailPreview />} />}
             {MinorConsentPreview && <Route path="/internal/minor-consent-preview" element={<MinorConsentPreview />} />}
             {FirstRunExperiencePreview && (
