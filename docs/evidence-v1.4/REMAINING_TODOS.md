@@ -55,3 +55,21 @@ Abnahme: Gleicher Dry-Run vor und nach Aktivierung, keine PII/Freitexte im Ergeb
 8. Während des Piloten Missingness, Instrumentversionen, Abbrüche und Datenqualität beobachten; keine Kausal- oder Wirksamkeitsbehauptung aus Nutzung oder Korrelation ableiten.
 
 Wichtig: Der Grenzvertrag ist gebaut, aber noch nicht aktiv. Bis zu seiner getrennten Freigabe nutzt das neue V1.4-Evidence-System keine realen Pilotdaten. Nach Aktivierung zählt nicht pauschal „alles ab dem 1. September“: Die legitime Baseline vom 27.–31. August bleibt erhalten, während In-Programm-Daten vor dem 1. September und alle Test-/QA-Daten ausgeschlossen bleiben.
+
+## 6. Push-Bereitschaft und tägliche Teilnahme verbinden – eigener Folgeschritt
+
+Die heutige operative Schnittmenge aus registriertem Push-Kanal und abgeschlossenem Check-in soll als eigene, pseudonymisierte und ausschließlich deskriptive Tracking-Stufe integriert werden. Sie ist nicht Teil der aktuellen Evidence-Aktivierung und wird nicht rückwirkend aus unvollständigen historischen Signalen rekonstruiert.
+
+Verbindlich zu trennen sind:
+
+1. ein zum jeweiligen Zeitpunkt registrierter Push-Kanal,
+2. eine tatsächlich ausgelöste Erinnerung,
+3. die Annahme durch APNs, FCM oder Web Push,
+4. ein erfasstes Öffnungsereignis,
+5. Beginn und Abschluss des zugehörigen Check-ins.
+
+Ein registrierter Token beweist weder Betriebssystem-Berechtigung noch Anzeige auf dem Sperrbildschirm. Provider-Annahme beweist keine Wahrnehmung. Ein zeitlich folgender Check-in beweist keine kausale Wirkung der Erinnerung. Ausbleibende Nutzung darf nicht als Motivation, mentale Qualität oder Widerstand interpretiert werden.
+
+Die spätere Auswertung darf nur identifierfrei beziehungsweise pseudonymisiert und für Coach-/Organisationsansichten ausschließlich aggregiert mit `n >= 5` erfolgen. Erforderlich sind zeitgebundene Kanal-Snapshots ab Aktivierung, klare Event- und Copy-Versionen, Instrument-/Plattformtrennung, Missingness, Consent-/Widerrufs-/Löschpfade und ein Vergleich über mehrere Tage. Die Momentaufnahme vom 1. September 2026 dient nur als operativer Plausibilitätsbeleg, nicht als Baseline oder Wirksamkeitsnachweis.
+
+Abnahme: Für ein freigegebenes Programmfenster lässt sich ohne Namen, E-Mails oder private Inhalte nachvollziehen, wie viele Athleten erreichbar, adressiert, vom Provider akzeptiert, geöffnet und anschließend im Check-in aktiv waren. Jede dargestellte Differenz bleibt als deskriptive Assoziation gekennzeichnet; Kausalclaims sind technisch und redaktionell ausgeschlossen.
