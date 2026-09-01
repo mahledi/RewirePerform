@@ -37,7 +37,7 @@ const authSignupCoverageMigration = readFileSync(
   "utf8",
 );
 const programStartObservabilityMigration = readFileSync(
-  resolve("supabase/migrations/20260901090755_jarvis_program_start_observability_v1_4.sql"),
+  resolve("supabase/migrations/20260901103644_jarvis_program_start_observability_v1_4.sql"),
   "utf8",
 );
 const contractSchemaNames = [
