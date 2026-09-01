@@ -48,7 +48,10 @@ const CoachEvidenceReviewPanel = ({ teamId, active = true }: { teamId: string; a
 
     const request = (async () => {
       try {
-        const next = await loadWithSingleTransientRetry(() => getCoachEvidenceReviewContext(teamId));
+        const next = await loadWithSingleTransientRetry(
+          () => getCoachEvidenceReviewContext(teamId),
+          { shouldRetry: () => lifecycle === lifecycleRef.current },
+        );
         if (lifecycle !== lifecycleRef.current) return;
 
         contextRef.current = next;

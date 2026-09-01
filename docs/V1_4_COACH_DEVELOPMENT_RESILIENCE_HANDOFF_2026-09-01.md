@@ -9,15 +9,17 @@ Basis: `origin/main@88b6ed2b872a88028596112319331cf07980e1d1`
 - 4xx-, Auth-, Permission- und RLS-Fehler werden nicht automatisch wiederholt.
 - Ein bestehender transienter Fehler wird beim erneuten Öffnen von `Entwicklung` sowie bei `online` oder Window-Focus erneut geladen; erfolgreiche Zustände lösen dabei keinen Request aus.
 - Gleichzeitige Recovery-Signale werden auf einen laufenden Request begrenzt.
+- Der HTTP-Status wird aus dem vollständigen `postgrest-js`-RPC-Ergebnis übernommen; ein Fehlerobjekt muss den Status nicht selbst tragen.
 - Erfolgreich geladene Daten und offene Formeingaben bleiben bei einem Hintergrundfehler sichtbar.
 - Die Team-Ebene bleibt bei `teamEligible = false` gesperrt; die zulässige Einzelbeobachtung bleibt aktiv.
-- Event-Listener werden beim Unmount entfernt; der Fix verwendet keine Timer.
+- Event-Listener werden beim Unmount entfernt; nach Unmount oder Teamwechsel startet auch ein verspätet scheiternder Request keinen Retry. Der Fix verwendet keine Timer.
+- Beide betroffenen Datenquellen sind PostgREST-RPCs. Eine pauschale Erweiterung auf `FunctionsFetchError`, `FunctionsHttpError` oder `FunctionsRelayError` wurde deshalb bewusst nicht vorgenommen.
 
 ## Lokale Verifikation
 
-- neue Resilienztests: 8/8 grün;
+- neue Resilienz-/Transporttests: 13/13 grün;
 - fokussierte Coach-/Evidence-Suite: 41/41 grün;
-- vollständige Vitest-Suite: 219/219 Dateien, 1175/1175 Tests grün;
+- vollständige Vitest-Suite: 220/220 Dateien, 1180/1180 Tests grün;
 - Typecheck grün;
 - Production-Build grün;
 - scoped ESLint: 0 Fehler; ein bereits vorhandener `fetchTeams`-Dependency-Warnhinweis in `Coach.tsx` bleibt unverändert;

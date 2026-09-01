@@ -1,5 +1,40 @@
 import { useEffect, useRef } from "react";
 
+type PostgrestResultLike = {
+  error: unknown;
+  status?: unknown;
+  statusText?: unknown;
+};
+
+class PostgrestResultError extends Error {
+  readonly cause: unknown;
+  readonly status?: number;
+  readonly statusText?: string;
+  readonly code?: string;
+  readonly details?: string;
+  readonly hint?: string;
+
+  constructor({ error, status, statusText }: PostgrestResultLike) {
+    const source = error && typeof error === "object"
+      ? error as { code?: unknown; details?: unknown; hint?: unknown; message?: unknown; name?: unknown }
+      : null;
+    super(typeof source?.message === "string" ? source.message : "Supabase request failed");
+    this.name = typeof source?.name === "string" ? source.name : "PostgrestError";
+    this.cause = error;
+    if (typeof status === "number") this.status = status;
+    if (typeof statusText === "string") this.statusText = statusText;
+    if (typeof source?.code === "string") this.code = source.code;
+    if (typeof source?.details === "string") this.details = source.details;
+    if (typeof source?.hint === "string") this.hint = source.hint;
+  }
+}
+
+export const createPostgrestResultError = (result: PostgrestResultLike): Error =>
+  new PostgrestResultError(result);
+
+const normalizeHttpStatus = (value: unknown): number | null =>
+  typeof value === "number" && value >= 100 && value <= 599 ? value : null;
+
 const getHttpStatus = (error: unknown): number | null => {
   if (!error || typeof error !== "object") return null;
 
@@ -8,9 +43,13 @@ const getHttpStatus = (error: unknown): number | null => {
     status?: unknown;
     statusCode?: unknown;
   };
-  if (typeof candidate.status === "number") return candidate.status;
-  if (typeof candidate.statusCode === "number") return candidate.statusCode;
-  if (candidate.context instanceof Response) return candidate.context.status;
+  const directStatus = normalizeHttpStatus(candidate.status);
+  if (directStatus !== null) return directStatus;
+  const statusCode = normalizeHttpStatus(candidate.statusCode);
+  if (statusCode !== null) return statusCode;
+  if (typeof Response !== "undefined" && candidate.context instanceof Response) {
+    return normalizeHttpStatus(candidate.context.status);
+  }
   return null;
 };
 
@@ -30,11 +69,14 @@ export const isTransientRemoteLoadError = (error: unknown): boolean => {
   return /failed to fetch|load failed|network request failed|networkerror|connection.*(?:failed|lost)|fetch.*failed/i.test(message);
 };
 
-export const loadWithSingleTransientRetry = async <T,>(load: () => Promise<T>): Promise<T> => {
+export const loadWithSingleTransientRetry = async <T,>(
+  load: () => Promise<T>,
+  { shouldRetry = () => true }: { shouldRetry?: () => boolean } = {},
+): Promise<T> => {
   try {
     return await load();
   } catch (error) {
-    if (!isTransientRemoteLoadError(error)) throw error;
+    if (!isTransientRemoteLoadError(error) || !shouldRetry()) throw error;
     return load();
   }
 };

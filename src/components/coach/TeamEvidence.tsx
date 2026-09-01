@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Info, ArrowDown, ArrowUp, Minus, RefreshCw, Target, Zap } from "lucide-react";
 import { captureAppError } from "@/lib/monitoring";
 import {
+  createPostgrestResultError,
   isTransientRemoteLoadError,
   loadWithSingleTransientRetry,
   useRefreshWhenFailed,
@@ -120,13 +121,13 @@ const TeamEvidence = ({ teamId, active = true }: { teamId: string; active?: bool
     const request = (async () => {
       try {
         const next = await loadWithSingleTransientRetry(async () => {
-          const { data: rpcData, error: rpcError } = await supabase.rpc(
+          const result = await supabase.rpc(
             "compute_team_outcomes",
             { team_id_param: teamId, min_n: 5 },
           );
-          if (rpcError) throw rpcError;
-          return rpcData as unknown as OutcomeData;
-        });
+          if (result.error) throw createPostgrestResultError(result);
+          return result.data as unknown as OutcomeData;
+        }, { shouldRetry: () => lifecycle === lifecycleRef.current });
 
         if (lifecycle !== lifecycleRef.current) return;
         dataRef.current = next;

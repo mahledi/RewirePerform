@@ -1,8 +1,9 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CoachEvidenceReviewPanel from "@/components/coach/CoachEvidenceReviewPanel";
 import TeamEvidence from "@/components/coach/TeamEvidence";
 import type { CoachEvidenceReviewContext } from "@/lib/evidenceTracking";
+import { createPostgrestResultError } from "@/lib/recoverableRemoteLoad";
 
 const mocks = vi.hoisted(() => ({
   captureAppError: vi.fn(),
@@ -116,8 +117,18 @@ const reviewContext = (teamEligible: boolean): CoachEvidenceReviewContext => ({
   teamReview: null,
 });
 
-const rpcFailure = (error: unknown) => ({ data: null, error });
-const rpcSuccess = () => ({ data: emptyOutcome, error: null });
+const rpcFailure = (
+  status: number,
+  statusText: string,
+  message: string,
+  code = "PGRST001",
+) => ({
+  data: null,
+  error: { code, details: "", hint: "", message },
+  status,
+  statusText,
+});
+const rpcSuccess = () => ({ data: emptyOutcome, error: null, status: 200, statusText: "OK" });
 
 describe("Coach Entwicklung load resilience", () => {
   beforeEach(() => {
@@ -127,9 +138,9 @@ describe("Coach Entwicklung load resilience", () => {
 
   afterEach(cleanup);
 
-  it("retries one transient fetch failure silently and renders the successful result", async () => {
+  it("retries one real PostgREST 503 result silently and renders the successful result", async () => {
     mocks.rpc
-      .mockResolvedValueOnce(rpcFailure(new TypeError("Failed to fetch")))
+      .mockResolvedValueOnce(rpcFailure(503, "Service Unavailable", "Service unavailable", "PGRST002"))
       .mockResolvedValueOnce(rpcSuccess());
 
     render(<TeamEvidence teamId="team-1" />);
@@ -141,8 +152,8 @@ describe("Coach Entwicklung load resilience", () => {
   });
 
   it("stops after one transient retry, keeps the error, and offers a bounded manual retry", async () => {
-    const unavailable = { status: 503, message: "Service unavailable" };
-    mocks.rpc.mockResolvedValue(rpcFailure(unavailable));
+    const unavailable = rpcFailure(503, "Service Unavailable", "Service unavailable", "PGRST002");
+    mocks.rpc.mockResolvedValue(unavailable);
 
     render(<TeamEvidence teamId="team-1" />);
 
@@ -156,7 +167,7 @@ describe("Coach Entwicklung load resilience", () => {
   });
 
   it("does not silently or automatically retry a real 4xx permission failure", async () => {
-    mocks.rpc.mockResolvedValue(rpcFailure({ status: 403, code: "42501", message: "RLS denied" }));
+    mocks.rpc.mockResolvedValue(rpcFailure(403, "Forbidden", "RLS denied", "42501"));
 
     render(<TeamEvidence teamId="team-1" />);
 
@@ -170,7 +181,7 @@ describe("Coach Entwicklung load resilience", () => {
   });
 
   it("reloads once when the Entwicklung tab is revisited after a transient failure", async () => {
-    mocks.rpc.mockResolvedValue(rpcFailure({ status: 502, message: "Bad gateway" }));
+    mocks.rpc.mockResolvedValue(rpcFailure(502, "Bad Gateway", "Bad gateway", "PGRST000"));
     const view = render(<TeamEvidence teamId="team-1" active />);
 
     expect(await screen.findByText("Entwicklungsdaten gerade nicht verfügbar")).toBeInTheDocument();
@@ -185,8 +196,8 @@ describe("Coach Entwicklung load resilience", () => {
   });
 
   it("deduplicates simultaneous focus and online recovery signals", async () => {
-    const unavailable = { status: 503, message: "Service unavailable" };
-    mocks.rpc.mockResolvedValue(rpcFailure(unavailable));
+    const unavailable = rpcFailure(503, "Service Unavailable", "Service unavailable", "PGRST002");
+    mocks.rpc.mockResolvedValue(unavailable);
     render(<TeamEvidence teamId="team-1" active />);
 
     expect(await screen.findByText("Entwicklungsdaten gerade nicht verfügbar")).toBeInTheDocument();
@@ -204,6 +215,43 @@ describe("Coach Entwicklung load resilience", () => {
     resolveRecovery?.(rpcSuccess());
     expect(await screen.findByRole("heading", { name: "Noch keine Entwicklungsdaten verfügbar" })).toBeInTheDocument();
     expect(mocks.rpc).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not start the retry after unmount cleanup", async () => {
+    let resolveRequest: ((value: ReturnType<typeof rpcFailure>) => void) | undefined;
+    mocks.rpc.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveRequest = resolve;
+    }));
+    const view = render(<TeamEvidence teamId="team-1" active />);
+
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    view.unmount();
+
+    await act(async () => {
+      resolveRequest?.(rpcFailure(503, "Service Unavailable", "Service unavailable", "PGRST002"));
+    });
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not retry a stale request after the selected team changes", async () => {
+    let resolveOldRequest: ((value: ReturnType<typeof rpcFailure>) => void) | undefined;
+    mocks.rpc
+      .mockImplementationOnce(() => new Promise((resolve) => {
+        resolveOldRequest = resolve;
+      }))
+      .mockResolvedValueOnce(rpcSuccess());
+    const view = render(<TeamEvidence teamId="team-1" active />);
+
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    view.rerender(<TeamEvidence teamId="team-2" active />);
+
+    expect(await screen.findByRole("heading", { name: "Noch keine Entwicklungsdaten verfügbar" })).toBeInTheDocument();
+    expect(mocks.rpc).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      resolveOldRequest?.(rpcFailure(503, "Service Unavailable", "Service unavailable", "PGRST002"));
+    });
+    expect(mocks.rpc).toHaveBeenCalledTimes(2);
   });
 
   it("does not refresh a successful state on focus and removes recovery listeners on unmount", async () => {
@@ -238,7 +286,9 @@ describe("Coach Entwicklung load resilience", () => {
 
   it("keeps an open form mounted when a background refresh fails and later recovers", async () => {
     const context = reviewContext(true);
-    const unavailable = { status: 503, message: "Service unavailable" };
+    const unavailable = createPostgrestResultError(
+      rpcFailure(503, "Service Unavailable", "Service unavailable", "PGRST002"),
+    );
     mocks.getContext
       .mockResolvedValueOnce(context)
       .mockRejectedValueOnce(unavailable)
