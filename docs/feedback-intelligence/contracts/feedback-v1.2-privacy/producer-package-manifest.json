@@ -27,7 +27,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "bfbb9948c94e1808c6b3726c74ae2ecc6314b05e60a0754351bebf6ac2bdc048",
+  "package_sha256": "0a6d1cae429e16c46d364dfb0df33b6d8a240828c7607a365e63f24bfa5296db",
   "files": [
     {
       "path": ".env.example",
@@ -39,7 +39,7 @@
     },
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "b7ca48516a049c2656eb02b04fa8e6f9f3a4db6ece4ba8c90c2c9ec9eeba437f"
+      "sha256": "cfc1359600178a29ba8cdc4348379fd3280850490617f22e43a7a8b6d1f3d9dd"
     },
     {
       "path": "src/content/feedbackTextConsentV12.ts",

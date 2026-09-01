@@ -21,6 +21,21 @@ const SAFE_NOTIFICATION_ROUTES = new Set([
   "/pre-training",
 ]);
 
+const remoteNotificationExtra = (data: Record<string, unknown> | undefined) => {
+  const nested = data?.rewireperform;
+  if (nested && typeof nested === "object") return nested as Record<string, unknown>;
+  if (typeof nested === "string") {
+    try {
+      const parsed = JSON.parse(nested) as unknown;
+      if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
+    } catch {
+      return data;
+    }
+  }
+  // FCM data payloads are flat string maps; APNs uses the nested object above.
+  return data;
+};
+
 export const NativeNotificationRouter = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +50,8 @@ export const NativeNotificationRouter = () => {
       if (actionId === "dismiss") return;
       const route = typeof extra?.route === "string" ? extra.route : null;
       const reminderUserId = typeof extra?.userId === "string" ? extra.userId : null;
-      if (!route || !SAFE_NOTIFICATION_ROUTES.has(route)) return;
+      const routePath = route?.split(/[?#]/, 1)[0] ?? null;
+      if (!route || !routePath || !SAFE_NOTIFICATION_ROUTES.has(routePath)) return;
       if (reminderUserId && user && reminderUserId !== user.id) {
         toast.error("Diese Erinnerung gehört zu einem anderen Account.");
         return;
@@ -54,7 +70,7 @@ export const NativeNotificationRouter = () => {
     if (isNativeRemotePushAvailable()) {
       void PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
         const data = action.notification.data as Record<string, unknown> | undefined;
-        handleRoute(data?.rewireperform as Record<string, unknown> | undefined, action.actionId);
+        handleRoute(remoteNotificationExtra(data), action.actionId);
       }).then((listenerHandle) => {
         if (disposed) void listenerHandle.remove();
         else remoteHandle = listenerHandle;

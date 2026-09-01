@@ -195,6 +195,7 @@ Deno.serve(async (req) => {
     ? await supa
       .from("native_push_devices")
       .select("id,user_id,device_token")
+      .eq("platform", "ios")
       .in("user_id", athleteIds)
     : { data: [] as NativePushDevice[], error: null };
   if (nativeDevicesError) return jsonResponse({ error: nativeDevicesError.message }, 500);

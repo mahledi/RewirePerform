@@ -13,7 +13,7 @@ describe("native iOS program-start push V1.2 contract", () => {
   const entitlements = read("ios/App/App/App.entitlements");
   const appDelegate = read("ios/App/App/AppDelegate.swift");
 
-  it("stores only an owner-bound iOS delivery token with RLS and deletion cascade", () => {
+  it("keeps the original owner-bound iOS delivery token with RLS and deletion cascade", () => {
     expect(migration).toContain("CREATE TABLE public.native_push_devices");
     expect(migration).toContain("REFERENCES auth.users(id) ON DELETE CASCADE");
     expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
@@ -49,7 +49,7 @@ describe("native iOS program-start push V1.2 contract", () => {
     expect(entitlements).toContain("aps-environment");
     expect(appDelegate).toContain("capacitorDidRegisterForRemoteNotifications");
     expect(appDelegate).toContain("capacitorDidFailToRegisterForRemoteNotifications");
-    expect(privacy).toContain("APNs-Gerätetoken");
-    expect(privacy).toContain("beim Deaktivieren der Benachrichtigungen oder beim Löschen deines");
+    expect(privacy).toContain("APNs- beziehungsweise FCM-Gerätetoken");
+    expect(privacy).toContain("Deaktivieren der Benachrichtigungen oder beim Löschen deines Accounts entfernt");
   });
 });

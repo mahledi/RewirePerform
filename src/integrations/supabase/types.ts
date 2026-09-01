@@ -1305,6 +1305,7 @@ export type Database = {
           started_at: string | null
           status: string
           team_id: string
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -1317,6 +1318,7 @@ export type Database = {
           started_at?: string | null
           status?: string
           team_id: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -1329,6 +1331,7 @@ export type Database = {
           started_at?: string | null
           status?: string
           team_id?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: [
@@ -2435,6 +2438,22 @@ export type Database = {
           journal_entries_count: number
           last_activity_at: string
           last_checkin_date: string
+          user_id: string
+        }[]
+      }
+      get_coach_team_checkin_status_v1_4: {
+        Args: { _team_id: string }
+        Returns: {
+          already_reminded_today: boolean
+          full_name: string | null
+          program_instance_id: string | null
+          program_local_date: string
+          rolling_7_available: number
+          rolling_7_completed: number
+          rolling_7_rate: number
+          supported_push_channels: string[]
+          today_checkin_at: string | null
+          today_checkin_completed: boolean
           user_id: string
         }[]
       }
