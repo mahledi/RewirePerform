@@ -65,5 +65,7 @@ describe("V1.2 athlete flow experience contract", () => {
     expect(preTraining).toContain("Erinnerung prüfen");
     expect(preTraining).toContain("disabled={saving || (Boolean(resolved.content.preTraining) && !revealed)}");
     expect(preTraining).toContain("markPreTrainingCompleted");
+    expect(preTraining).toContain("setExpired(isPreTrainingExpired(eventTiming, completionContext.date))");
+    expect(preTraining).toContain("window.setInterval(refreshExpiry, 30_000)");
   });
 });

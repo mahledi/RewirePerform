@@ -2393,8 +2393,8 @@ const Dashboard = () => {
                           : "Teammodus · heutige Vorbereitung"
                         : "Kein separater Coach-Termin eingetragen."
                     }
-                    active={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone}
-                    onClick={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone ? () => navigate("/pre-training") : undefined}
+                    active={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone && !todayPreTrainingExpired}
+                    onClick={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone && !todayPreTrainingExpired ? () => navigate("/pre-training") : undefined}
                   />
                 )}
 

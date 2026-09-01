@@ -39,6 +39,7 @@ const PreTraining = () => {
   const [expired, setExpired] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [eventTiming, setEventTiming] = useState<PreTrainingEventTiming | null>(null);
   const [completionContext, setCompletionContext] = useState<{
     date: Date;
     eventType: "training" | "competition";
@@ -75,6 +76,7 @@ const PreTraining = () => {
             .eq("date", dateStr)
             .limit(1);
       const primaryEvent = events?.[0] as (PreTrainingEventTiming & { event_type: EventType }) | undefined;
+      setEventTiming(primaryEvent ?? null);
       const resolvedEventType = (primaryEvent?.event_type ?? "training") as EventType;
       setEventType(resolvedEventType);
       if (resolvedEventType === "rest") {
@@ -118,8 +120,27 @@ const PreTraining = () => {
     });
   }, [user, role, isTestUser]);
 
+  useEffect(() => {
+    if (
+      completed
+      || !completionContext
+      || typeof eventTiming?.training_local_hour !== "number"
+    ) return;
+
+    const refreshExpiry = () => {
+      setExpired(isPreTrainingExpired(eventTiming, completionContext.date));
+    };
+    refreshExpiry();
+    const interval = window.setInterval(refreshExpiry, 30_000);
+    return () => window.clearInterval(interval);
+  }, [completed, completionContext, eventTiming]);
+
   const finishPreTraining = async () => {
     if (!user || !completionContext || saving) return;
+    if (isPreTrainingExpired(eventTiming, completionContext.date)) {
+      setExpired(true);
+      return;
+    }
     setSaving(true);
     setSaveError(false);
     try {
