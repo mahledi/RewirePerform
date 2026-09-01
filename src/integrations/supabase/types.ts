@@ -2312,6 +2312,10 @@ export type Database = {
       }
     }
     Functions: {
+      activate_team_program_v1_3: {
+        Args: { _started_at: string; _team_id: string }
+        Returns: Json
+      }
       activate_team_program_run: {
         Args: { _program_run_id: string }
         Returns: Json

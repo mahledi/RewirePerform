@@ -214,24 +214,32 @@ const TeamManagement = ({
     }
   };
 
+  const persistProgramStart = async (teamId: string, date: string) => {
+    const { data, error } = await supabase.rpc("activate_team_program_v1_3", {
+      _team_id: teamId,
+      _started_at: date,
+    });
+    if (error) throw error;
+    if (!data || typeof data !== "object") {
+      throw new Error("Der gemeinsame Programmlauf konnte nicht bestätigt werden.");
+    }
+    return data;
+  };
+
   const updateTeamStartDate = async (teamId: string, date: string) => {
     if (!date) {
       toast.error("Bitte ein Datum auswählen.");
       return;
     }
     setSavingStart(true);
-    const { error } = await supabase
-      .from("teams")
-      .update({
-        program_start_date: date,
-        program_activated_by: user!.id,
-        program_activated_at: new Date().toISOString(),
-      })
-      .eq("id", teamId);
-    setSavingStart(false);
-    if (error) {
-      toast.error("Konnte Programmstart nicht speichern: " + error.message);
+    try {
+      await persistProgramStart(teamId, date);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unbekannter Fehler";
+      toast.error("Konnte Programmstart nicht speichern: " + message);
       return;
+    } finally {
+      setSavingStart(false);
     }
     toast.success(`Programmstart auf ${format(parseISO(date), "d. MMMM yyyy", { locale: de })} gesetzt.`);
     setEditingStartId(null);
@@ -306,21 +314,16 @@ const TeamManagement = ({
     }
     setActivatingId(team.id);
     const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
-    const { error } = await supabase
-      .from("teams")
-      .update({
-        program_start_date: tomorrow,
-        program_activated_by: user.id,
-        program_activated_at: new Date().toISOString(),
-      })
-      .eq("id", team.id);
-    setActivatingId(null);
-    if (error) {
-      toast.error("Programm konnte nicht gestartet werden: " + error.message);
-    } else {
+    try {
+      await persistProgramStart(team.id, tomorrow);
       toast.success(`Programm startet am ${format(addDays(new Date(), 1), "d. MMMM yyyy", { locale: de })}`);
       await notifyProgramStart(team.id, tomorrow);
       onTeamCreated();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unbekannter Fehler";
+      toast.error("Programm konnte nicht gestartet werden: " + message);
+    } finally {
+      setActivatingId(null);
     }
   };
 
