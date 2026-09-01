@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 const migration = readFileSync(
   resolve(
     process.cwd(),
-    "supabase/migrations/20260901084217_coach_activity_run_clock_v1_3.sql",
+    "supabase/migrations/20260901090453_coach_activity_run_clock_v1_3.sql",
   ),
   "utf8",
 );
