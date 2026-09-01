@@ -46,6 +46,8 @@ import {
 import { getAthleteGreeting } from "@/lib/athleteGreeting";
 import { getRecentMissedDayReviewWindow } from "@/lib/missedDayReviewWindow";
 import { getAssessmentStatusRevision } from "@/lib/assessmentStatusRevision";
+import { loadPreTrainingCompletion } from "@/lib/preTrainingCompletion";
+import { isPreTrainingExpired } from "@/lib/preTrainingState";
 import {
   canOpenRestVisualization,
   readRestVisualizationIntent,
@@ -673,6 +675,9 @@ const Dashboard = () => {
   const [midTestsDone, setMidTestsDone] = useState(false);
   const [todayCheckinDone, setTodayCheckinDone] = useState(false);
   const [todayJournalDone, setTodayJournalDone] = useState(false);
+  const [todayPreTrainingDone, setTodayPreTrainingDone] = useState(false);
+  const [preTrainingStatusLoading, setPreTrainingStatusLoading] = useState(true);
+  const [preTrainingClock, setPreTrainingClock] = useState(() => new Date());
   const [checkinStatusLoading, setCheckinStatusLoading] = useState(true);
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const [baselineDone, setBaselineDone] = useState(false);
@@ -1433,6 +1438,40 @@ const Dashboard = () => {
       : isTeamActive
         ? "training"
         : null;
+  const primaryTodayEvent = todayEvents[0] ?? null;
+  const todayPreTrainingExpired = isPreTrainingExpired(primaryTodayEvent, effectiveToday, preTrainingClock);
+
+  useEffect(() => {
+    if (typeof primaryTodayEvent?.training_local_hour !== "number") return;
+    const interval = window.setInterval(() => setPreTrainingClock(new Date()), 30_000);
+    return () => window.clearInterval(interval);
+  }, [primaryTodayEvent?.date, primaryTodayEvent?.training_local_hour, primaryTodayEvent?.training_local_minute]);
+
+  useEffect(() => {
+    if (!user?.id || !todayEventType || todayEventType === "rest") {
+      setTodayPreTrainingDone(false);
+      setPreTrainingStatusLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPreTrainingStatusLoading(true);
+    void loadPreTrainingCompletion(user.id, format(effectiveToday, "yyyy-MM-dd"))
+      .then((done) => {
+        if (!cancelled) setTodayPreTrainingDone(done);
+      })
+      .catch((error) => {
+        console.error("pre-training status error", error);
+        if (!cancelled) setTodayPreTrainingDone(false);
+      })
+      .finally(() => {
+        if (!cancelled) setPreTrainingStatusLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveToday, todayEventType, user?.id]);
   const isTeamDefaultDay = isTeamActive && todayEvents.length === 0;
   const showPreTestReminder =
     !preTestsDone &&
@@ -2073,28 +2112,30 @@ const Dashboard = () => {
             </button>
           </div>
           <div className="overflow-hidden rounded-[22px] border border-white/[0.065] bg-white/[0.025]">
-            <DashboardActionRow
-              icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
-              eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
-              title={todayEventType === "rest" ? "Visualisierung" : "Pre-Training"}
-              detail={
-                todayEventType === "rest"
-                  ? todayCheckinDone
-                    ? "Deine Visualisierung für heute ist abgeschlossen."
-                    : "Geführte Visualisierung · passend zum heutigen Werkzeug"
-                  : todayEventType
-                    ? todayResolved
-                      ? `${eventConfig[todayEventType].label} · aktives Erinnern und dein Satz`
-                      : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
-                    : "Sobald dein heutiger Termin feststeht."
-              }
-              disabled={!todayEventType || (todayEventType === "rest" && todayCheckinDone)}
-              done={todayEventType === "rest" && todayCheckinDone}
-              onClick={() => {
-                if (todayEventType === "rest") setShowCheckin(true);
-                else navigate("/pre-training");
-              }}
-            />
+            {(todayEventType === "rest" || (!preTrainingStatusLoading && !todayPreTrainingDone && !todayPreTrainingExpired)) && (
+              <DashboardActionRow
+                icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
+                eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
+                title={todayEventType === "rest" ? "Visualisierung" : "Pre-Training"}
+                detail={
+                  todayEventType === "rest"
+                    ? todayCheckinDone
+                      ? "Deine Visualisierung für heute ist abgeschlossen."
+                      : "Geführte Visualisierung · passend zum heutigen Werkzeug"
+                    : todayEventType
+                      ? todayResolved
+                        ? `${eventConfig[todayEventType].label} · aktives Erinnern und dein Satz`
+                        : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
+                      : "Sobald dein heutiger Termin feststeht."
+                }
+                disabled={!todayEventType || (todayEventType === "rest" && todayCheckinDone)}
+                done={todayEventType === "rest" && todayCheckinDone}
+                onClick={() => {
+                  if (todayEventType === "rest") setShowCheckin(true);
+                  else navigate("/pre-training");
+                }}
+              />
+            )}
             <DashboardActionRow
               icon={BookOpen}
               eyebrow="Nach dem Tag"
@@ -2267,7 +2308,11 @@ const Dashboard = () => {
                 {selectedPlanEvents.map((event) => {
                   const config = eventConfig[event.event_type];
                   const isPrimaryTodayEvent = selectedIsToday && event.id === selectedPlanEvents[0]?.id;
-                  const canOpenPreTraining = isPrimaryTodayEvent && event.event_type !== "rest";
+                  const canOpenPreTraining = isPrimaryTodayEvent
+                    && event.event_type !== "rest"
+                    && !preTrainingStatusLoading
+                    && !todayPreTrainingDone
+                    && !todayPreTrainingExpired;
                   return (
                     <PlanTimelineRow
                       key={event.id}
@@ -2294,8 +2339,8 @@ const Dashboard = () => {
                           : "Teammodus · heutige Vorbereitung"
                         : "Kein separater Coach-Termin eingetragen."
                     }
-                    active={selectedIsToday && selectedPrimaryEventType !== "rest"}
-                    onClick={selectedIsToday && selectedPrimaryEventType !== "rest" ? () => navigate("/pre-training") : undefined}
+                    active={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone}
+                    onClick={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone ? () => navigate("/pre-training") : undefined}
                   />
                 )}
 

@@ -82,7 +82,8 @@ describe("V1.1 production content contract", () => {
     expect(preTraining).toContain("recallPrompt");
     expect(preTraining).toContain("Erinnerung prüfen");
     expect(preTraining).toContain("resolved.content.preTraining.reveal");
-    expect(preTraining).toContain("disabled={Boolean(resolved.content.preTraining) && !revealed}");
+    expect(preTraining).toContain("disabled={saving || (Boolean(resolved.content.preTraining) && !revealed)}");
+    expect(preTraining).toContain("markPreTrainingCompleted");
     expect(preTraining).not.toContain("resolved.content.tasks.map");
   });
 
