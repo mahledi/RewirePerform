@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
 describe("coach check-in reminder V1.4 contract", () => {
-  const migration = read("supabase/migrations/20260901140000_coach_checkin_reminder_v1_4.sql");
+  const migration = read("supabase/migrations/20260901204924_coach_checkin_reminder_v1_4.sql");
   const edge = read("supabase/functions/send-coach-checkin-reminder/index.ts");
   const remotePush = read("supabase/functions/_shared/remotePush.ts");
   const overview = read("src/components/coach/TeamOverview.tsx");
