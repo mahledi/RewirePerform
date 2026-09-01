@@ -1,6 +1,6 @@
 # App Store Readiness 5.0 — kanonischer Übergabestand 2026-09-02
 
-Status: `HANDOFF_CANDIDATE__MERGE_AND_LIVE_VERIFICATION_REQUIRED`
+Status: `MERGED_TO_MAIN__LIVE_BACKEND_VERIFIED__PHYSICAL_SMOKES_OPEN`
 
 Dieses Dokument ist der Einstiegspunkt für den neuen App-Store-Readiness-Task.
 Es ersetzt keine erneute Git-, Supabase-, Store- oder Geräteprüfung. Historische
@@ -30,7 +30,9 @@ jeden anderen Task.
 ## 2. Git-Wahrheit bei Erstellung
 
 - Remote-Basis: `origin/main`
-- geprüfte Basis-SHA: `88b6ed2b872a88028596112319331cf07980e1d1`
+- geprüfte Integrationsbasis: `88b6ed2b872a88028596112319331cf07980e1d1`
+- PR #189 Merge-SHA auf `origin/main`:
+  `91821f106aebfee04a908e87c65349d0308bdbb1`
 - Integrationsbranch: `codex/app-store-readiness-5-integration-20260902`
 - Worktree:
   `/Users/NeuroRewiremahle/Social Media/RewirePerform/worktrees/app-store-readiness-5-integration-20260902`
@@ -61,7 +63,8 @@ Am 2. September wurde vor der Migration live belegt:
 - alle drei aktiven Runs nutzten `Europe/Berlin`.
 
 Die freigegebene Migration
-`athlete_effective_today_timezone_rollover` wurde erfolgreich angewendet. Der
+`20260901224730_athlete_effective_today_timezone_rollover` wurde erfolgreich
+angewendet. Die Repository-Datei trägt denselben Production-Zeitstempel. Der
 Read-only-Nachbeleg bestätigte:
 
 - Run-Zeitzone wird verwendet und gegen `pg_timezone_names` validiert;

@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 const migration = readFileSync(
   resolve(
     process.cwd(),
-    "supabase/migrations/20260901221729_athlete_effective_today_timezone_rollover.sql",
+    "supabase/migrations/20260901224730_athlete_effective_today_timezone_rollover.sql",
   ),
   "utf8",
 );
