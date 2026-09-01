@@ -92,10 +92,10 @@ const SECTIONS: SectionMeta[] = [
   },
 ];
 
-const EvidenceSection = ({ teamId }: { teamId: string }) => (
+const EvidenceSection = ({ teamId, active }: { teamId: string; active: boolean }) => (
   <div className="min-w-0 space-y-6">
-    <CoachEvidenceReviewPanel teamId={teamId} />
-    <TeamEvidence teamId={teamId} />
+    <CoachEvidenceReviewPanel teamId={teamId} active={active} />
+    <TeamEvidence teamId={teamId} active={active} />
   </div>
 );
 
@@ -254,7 +254,7 @@ const Coach = () => {
         )}
         {selectedTeam && visitedTabs.has("evidence") && (
           <div className={tab === "evidence" ? "block" : "hidden"}>
-            <EvidenceSection key={`evidence-${selectedTeam.id}`} teamId={selectedTeam.id} />
+            <EvidenceSection key={`evidence-${selectedTeam.id}`} teamId={selectedTeam.id} active={tab === "evidence"} />
           </div>
         )}
         {selectedTeam && visitedTabs.has("toolkit") && (

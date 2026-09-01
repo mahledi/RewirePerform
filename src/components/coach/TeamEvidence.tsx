@@ -1,7 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Info, ArrowDown, ArrowUp, Minus, RefreshCw, Target, Zap } from "lucide-react";
 import { captureAppError } from "@/lib/monitoring";
+import {
+  isTransientRemoteLoadError,
+  loadWithSingleTransientRetry,
+  useRefreshWhenFailed,
+} from "@/lib/recoverableRemoteLoad";
 
 // Direction per subscale: which direction = improvement
 type Dir = "higher_is_better" | "lower_is_better";
@@ -96,39 +101,76 @@ function isImprovement(subscale: string, change: number): boolean | null {
   return dir === "higher_is_better" ? change > 0 : change < 0;
 }
 
-const TeamEvidence = ({ teamId }: { teamId: string }) => {
+const TeamEvidence = ({ teamId, active = true }: { teamId: string; active?: boolean }) => {
   const [data, setData] = useState<OutcomeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
+  const [autoRecoverable, setAutoRecoverable] = useState(false);
+  const dataRef = useRef<OutcomeData | null>(null);
+  const lifecycleRef = useRef(0);
+  const inFlightRef = useRef<Promise<void> | null>(null);
+
+  const load = useCallback(({ preserveData = false }: { preserveData?: boolean } = {}) => {
+    if (inFlightRef.current) return inFlightRef.current;
+
+    const lifecycle = lifecycleRef.current;
+    if (!preserveData || dataRef.current === null) setLoading(true);
+    setError(null);
+
+    const request = (async () => {
+      try {
+        const next = await loadWithSingleTransientRetry(async () => {
+          const { data: rpcData, error: rpcError } = await supabase.rpc(
+            "compute_team_outcomes",
+            { team_id_param: teamId, min_n: 5 },
+          );
+          if (rpcError) throw rpcError;
+          return rpcData as unknown as OutcomeData;
+        });
+
+        if (lifecycle !== lifecycleRef.current) return;
+        dataRef.current = next;
+        setData(next);
+        setAutoRecoverable(false);
+      } catch (loadError) {
+        if (lifecycle !== lifecycleRef.current) return;
+        setError("Entwicklungsdaten konnten gerade nicht geladen werden.");
+        setAutoRecoverable(isTransientRemoteLoadError(loadError));
+        void captureAppError({
+          eventName: "coach_evidence_load_failed",
+          error: loadError,
+          role: "coach",
+          route: "/coach",
+          metadata: { source: "compute_team_outcomes" },
+        });
+      } finally {
+        if (lifecycle === lifecycleRef.current) {
+          setLoading(false);
+          inFlightRef.current = null;
+        }
+      }
+    })();
+    inFlightRef.current = request;
+    return request;
+  }, [teamId]);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
+    lifecycleRef.current += 1;
+    dataRef.current = null;
     setData(null);
-    supabase
-      .rpc("compute_team_outcomes", { team_id_param: teamId, min_n: 5 })
-      .then(({ data: rpcData, error: rpcError }) => {
-        if (cancelled) return;
-        if (rpcError) {
-          setError("Entwicklungsdaten konnten gerade nicht geladen werden.");
-          void captureAppError({
-            eventName: "coach_evidence_load_failed",
-            error: rpcError,
-            role: "coach",
-            route: "/coach",
-            metadata: { source: "compute_team_outcomes" },
-          });
-        } else {
-          setData(rpcData as unknown as OutcomeData);
-        }
-        setLoading(false);
-      });
+    setError(null);
+    setAutoRecoverable(false);
+    void load();
     return () => {
-      cancelled = true;
+      lifecycleRef.current += 1;
+      inFlightRef.current = null;
     };
-  }, [teamId, reloadKey]);
+  }, [load]);
+
+  const recover = useCallback(() => {
+    void load({ preserveData: true });
+  }, [load]);
+  useRefreshWhenFailed({ active, failed: error !== null && autoRecoverable, refresh: recover });
 
   if (loading) {
     return (
@@ -146,7 +188,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
     );
   }
 
-  if (error) {
+  if (error && !data) {
     return (
       <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-5 text-sm text-muted-foreground">
         <div className="flex items-start gap-3">
@@ -156,7 +198,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
             <p className="leading-relaxed">{error} Die restliche Coach-Übersicht bleibt nutzbar.</p>
             <button
               type="button"
-              onClick={() => setReloadKey((value) => value + 1)}
+              onClick={() => void load()}
               className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border/60 px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
             >
               <RefreshCw className="h-3.5 w-3.5" />
@@ -243,6 +285,17 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
 
   return (
     <div className="w-full min-w-0 space-y-5">
+      {error && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-yellow-400/25 bg-yellow-400/5 p-4 text-xs text-muted-foreground">
+          <div className="flex min-w-0 items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" aria-hidden="true" />
+            <p>Die letzte Aktualisierung ist fehlgeschlagen. Die zuletzt erfolgreich geladenen Daten bleiben sichtbar.</p>
+          </div>
+          <button type="button" onClick={() => void load({ preserveData: true })} className="shrink-0 font-semibold text-foreground">
+            Erneut laden
+          </button>
+        </div>
+      )}
       {/* Privacy banner */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />

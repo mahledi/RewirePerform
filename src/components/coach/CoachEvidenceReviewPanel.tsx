@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClipboardCheck, Loader2, LockKeyhole, RefreshCw, ShieldAlert, UserRound, Users } from "lucide-react";
 import { toast } from "sonner";
 import CoachWeeklyReview, {
@@ -20,51 +20,92 @@ import {
   type CoachEvidenceReviewValues,
 } from "@/lib/evidenceTracking";
 import { captureAppError } from "@/lib/monitoring";
+import {
+  isTransientRemoteLoadError,
+  loadWithSingleTransientRetry,
+  useRefreshWhenFailed,
+} from "@/lib/recoverableRemoteLoad";
 
 type ReviewMode = "team" | "athlete";
 
-const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
+const CoachEvidenceReviewPanel = ({ teamId, active = true }: { teamId: string; active?: boolean }) => {
   const [context, setContext] = useState<CoachEvidenceReviewContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [autoRecoverable, setAutoRecoverable] = useState(false);
   const [mode, setMode] = useState<ReviewMode>("team");
   const [selectedAthleteId, setSelectedAthleteId] = useState("");
+  const contextRef = useRef<CoachEvidenceReviewContext | null>(null);
+  const lifecycleRef = useRef(0);
+  const inFlightRef = useRef<Promise<void> | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(({ preserveData = false }: { preserveData?: boolean } = {}) => {
+    if (inFlightRef.current) return inFlightRef.current;
+
+    const lifecycle = lifecycleRef.current;
+    if (!preserveData || contextRef.current === null) setLoading(true);
     setError(null);
-    try {
-      const next = await getCoachEvidenceReviewContext(teamId);
-      setContext(next);
-      const observableAthletes = next.athletes.filter((athlete) => athlete.observationAvailable);
-      setSelectedAthleteId((current) => (
-        observableAthletes.some((athlete) => athlete.programInstanceId === current)
-          ? current
-          : observableAthletes[0]?.programInstanceId ?? ""
-      ));
-      setMode((current) => {
-        if (current === "team" && !next.teamEligible && observableAthletes.length > 0) return "athlete";
-        if (current === "athlete" && observableAthletes.length === 0) return "team";
-        return current;
-      });
-    } catch (loadError) {
-      void captureAppError({
-        error: loadError,
-        eventName: "coach_evidence_load_failed",
-        role: "coach",
-        teamId,
-        metadata: { action: "load_weekly_review" },
-      });
-      setContext(null);
-      setError("Die Wochenbeobachtung konnte gerade nicht geladen werden.");
-    } finally {
-      setLoading(false);
-    }
+
+    const request = (async () => {
+      try {
+        const next = await loadWithSingleTransientRetry(() => getCoachEvidenceReviewContext(teamId));
+        if (lifecycle !== lifecycleRef.current) return;
+
+        contextRef.current = next;
+        setContext(next);
+        setAutoRecoverable(false);
+        const observableAthletes = next.athletes.filter((athlete) => athlete.observationAvailable);
+        setSelectedAthleteId((current) => (
+          observableAthletes.some((athlete) => athlete.programInstanceId === current)
+            ? current
+            : observableAthletes[0]?.programInstanceId ?? ""
+        ));
+        setMode((current) => {
+          if (current === "team" && !next.teamEligible && observableAthletes.length > 0) return "athlete";
+          if (current === "athlete" && observableAthletes.length === 0) return "team";
+          return current;
+        });
+      } catch (loadError) {
+        if (lifecycle !== lifecycleRef.current) return;
+        void captureAppError({
+          error: loadError,
+          eventName: "coach_evidence_load_failed",
+          role: "coach",
+          teamId,
+          metadata: { action: "load_weekly_review" },
+        });
+        setError("Die Wochenbeobachtung konnte gerade nicht geladen werden.");
+        setAutoRecoverable(isTransientRemoteLoadError(loadError));
+      } finally {
+        if (lifecycle === lifecycleRef.current) {
+          setLoading(false);
+          inFlightRef.current = null;
+        }
+      }
+    })();
+    inFlightRef.current = request;
+    return request;
   }, [teamId]);
 
   useEffect(() => {
+    lifecycleRef.current += 1;
+    contextRef.current = null;
+    setContext(null);
+    setError(null);
+    setAutoRecoverable(false);
+    setMode("team");
+    setSelectedAthleteId("");
     void load();
+    return () => {
+      lifecycleRef.current += 1;
+      inFlightRef.current = null;
+    };
   }, [load]);
+
+  const recover = useCallback(() => {
+    void load({ preserveData: true });
+  }, [load]);
+  useRefreshWhenFailed({ active, failed: error !== null && autoRecoverable, refresh: recover });
 
   const observableAthletes = useMemo(
     () => context?.athletes.filter((athlete) => athlete.observationAvailable) ?? [],
@@ -90,7 +131,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
         completionDurationMs: submission.durationMs,
       });
       toast.success(mode === "team" ? "Teambeobachtung gespeichert." : "Einzelbeobachtung geschützt gespeichert.");
-      await load();
+      await load({ preserveData: true });
     } catch (saveError) {
       void captureAppError({
         error: saveError,
@@ -104,7 +145,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
     }
   };
 
-  if (loading) {
+  if (loading && !context) {
     return (
       <section className="flex min-h-36 items-center justify-center border-y border-border/60 py-8">
         <Loader2 className="h-5 w-5 animate-spin text-primary" aria-label="Beobachtungen werden geladen" />
@@ -112,7 +153,7 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
     );
   }
 
-  if (error) {
+  if (error && !context) {
     return (
       <section className="flex flex-col gap-4 border-y border-amber-400/25 bg-amber-400/5 px-4 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
@@ -147,6 +188,20 @@ const CoachEvidenceReviewPanel = ({ teamId }: { teamId: string }) => {
 
   return (
     <section className="border-y border-border/60 py-6" aria-labelledby="weekly-evidence-heading">
+      {error && (
+        <div className="mb-5 flex items-start justify-between gap-3 rounded-md border border-amber-400/25 bg-amber-400/5 px-4 py-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Die letzte Aktualisierung ist fehlgeschlagen. Deine Ansicht und offene Eingaben bleiben erhalten.
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => void load({ preserveData: true })} disabled={loading} className="h-8 shrink-0">
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />}
+            Erneut laden
+          </Button>
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase text-primary">{context.run.name} · Woche {context.weekNumber}</p>
