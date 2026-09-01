@@ -20,7 +20,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "mahleos-system-health-v1.4"
+      "const": "mahleos-system-health-v1.5"
     },
     "generated_at": {
       "type": "string",
@@ -60,7 +60,10 @@
         "athletes_without_program_instance",
         "athletes_with_multiple_active_instances",
         "active_team_instances_without_run",
-        "active_runs_without_start_date"
+        "active_runs_without_start_date",
+        "activated_teams_without_active_run",
+        "activated_teams_with_multiple_active_runs",
+        "active_runs_with_assignment_set_mismatch"
       ],
       "properties": {
         "athletes_without_program_instance": {
@@ -76,6 +79,18 @@
           "minimum": 0
         },
         "active_runs_without_start_date": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "activated_teams_without_active_run": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "activated_teams_with_multiple_active_runs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_runs_with_assignment_set_mismatch": {
           "type": "integer",
           "minimum": 0
         }
@@ -188,6 +203,7 @@
         "auth_login",
         "auth_signup",
         "team_join",
+        "program_start",
         "minor_authorization"
       ],
       "properties": {
@@ -268,6 +284,39 @@
             "failures_24h": {
               "type": "integer",
               "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "program_start": {
+          "type": "object",
+          "required": [
+            "coverage",
+            "authority",
+            "attempts_24h",
+            "successes_24h",
+            "failures_24h",
+            "state_reconciliation"
+          ],
+          "properties": {
+            "coverage": {
+              "const": "SERVER_ACTIVATION_SUCCESS_AND_STATE_RECONCILIATION"
+            },
+            "authority": {
+              "const": "teams_program_runs_program_instances"
+            },
+            "attempts_24h": {
+              "type": "null"
+            },
+            "successes_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failures_24h": {
+              "type": "null"
+            },
+            "state_reconciliation": {
+              "const": "COMPLETE"
             }
           },
           "additionalProperties": false

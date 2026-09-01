@@ -171,8 +171,8 @@ test("internal introduction evidence completes without collecting personal data"
   }
 
   await expect(page.getByRole("group", { name: "Programmweg auswählen" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Solo" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("button", { name: "Team" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Ohne Team" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Teamcode" })).toHaveAttribute("aria-pressed", "false");
   await capture(page, testInfo, "introduction-start");
 
   await page.getByRole("button", { name: "Vorschau erneut ansehen" }).click();

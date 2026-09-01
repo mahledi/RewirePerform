@@ -36,6 +36,10 @@ const authSignupCoverageMigration = readFileSync(
   resolve("supabase/migrations/20260829190341_add_jarvis_auth_signup_success_coverage.sql"),
   "utf8",
 );
+const programStartObservabilityMigration = readFileSync(
+  resolve("supabase/migrations/20260901103644_jarvis_program_start_observability_v1_4.sql"),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -74,6 +78,8 @@ const ids = {
   missingRun: "20000000-0000-4000-8000-000000000399",
   testTeam: "10000000-0000-4000-8000-000000000302",
   testRun: "20000000-0000-4000-8000-000000000302",
+  contradictionTeam: "10000000-0000-4000-8000-000000000303",
+  contradictionRun: "20000000-0000-4000-8000-000000000303",
   request: "90000000-0000-4000-8000-000000000301",
   duplicateRequest: "90000000-0000-4000-8000-000000000302",
   missingRequest: "90000000-0000-4000-8000-000000000303",
@@ -190,6 +196,7 @@ try {
       id uuid PRIMARY KEY,
       sport text,
       program_start_date date,
+      program_activated_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now(),
       is_test_team boolean NOT NULL DEFAULT false,
       is_archived boolean NOT NULL DEFAULT false
@@ -385,6 +392,7 @@ try {
   await db.exec(criticalJourneyMigration);
   await db.exec(activityTrendsMachineMigration);
   await db.exec(authSignupCoverageMigration);
+  await db.exec(programStartObservabilityMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -654,6 +662,18 @@ try {
     "Team join must expose its bounded authenticated event coverage",
   );
   assert(
+    daily.data.system_health.critical_journey_coverage.program_start.coverage
+      === "SERVER_ACTIVATION_SUCCESS_AND_STATE_RECONCILIATION"
+      && daily.data.system_health.critical_journey_coverage.program_start.attempts_24h === null
+      && daily.data.system_health.critical_journey_coverage.program_start.failures_24h === null,
+    "Program start must expose reconciled successes without inventing attempt or failure coverage",
+  );
+  assert(
+    daily.data.system_health.program_integrity.activated_teams_without_active_run === 0
+      && daily.data.system_health.program_integrity.active_runs_with_assignment_set_mismatch === 0,
+    "Healthy production program runs must reconcile their complete athlete assignment set",
+  );
+  assert(
     daily.data.system_health.critical_journey_coverage.minor_authorization.coverage === "STRUCTURAL_AND_DELIVERY_ONLY",
     "Enabled minor enforcement must expose structural and delivery coverage",
   );
@@ -662,6 +682,36 @@ try {
   assert(!serializedDaily.includes("PRIVATE-METADATA-CONTENT"), "Technical metadata must not leave RewirePerform");
   assert(!serializedDaily.includes("QA-PRIVATE-FEEDBACK-CONTENT"), "QA feedback must stay excluded");
   assert(!serializedDaily.includes(ids.athletes[0].user), "User IDs must not leave RewirePerform");
+
+  await db.query(
+    "INSERT INTO public.teams(id, program_activated_at, is_test_team) VALUES ($1, now(), false)",
+    [ids.contradictionTeam],
+  );
+  let contradiction = await db.query("SELECT public._mahleos_system_health() AS payload");
+  assert(
+    contradiction.rows[0].payload.status === "RED"
+      && contradiction.rows[0].payload.program_integrity.activated_teams_without_active_run === 1,
+    "An activated production team without any active run must be an immediate RED contradiction",
+  );
+  await db.query(
+    `INSERT INTO public.program_runs(id, team_id, status, started_at)
+     VALUES ($1, $2, 'active', CURRENT_DATE)`,
+    [ids.contradictionRun, ids.contradictionTeam],
+  );
+  await db.query(
+    "INSERT INTO public.team_members(team_id, user_id) VALUES ($1, $2)",
+    [ids.contradictionTeam, ids.athletes[0].user],
+  );
+  contradiction = await db.query("SELECT public._mahleos_system_health() AS payload");
+  assert(
+    contradiction.rows[0].payload.status === "RED"
+      && contradiction.rows[0].payload.program_integrity.activated_teams_without_active_run === 0
+      && contradiction.rows[0].payload.program_integrity.active_runs_with_assignment_set_mismatch === 1,
+    "A run whose active assignment set differs from its production roster must be RED even when the run exists",
+  );
+  await db.query("DELETE FROM public.team_members WHERE team_id = $1", [ids.contradictionTeam]);
+  await db.query("DELETE FROM public.program_runs WHERE id = $1", [ids.contradictionRun]);
+  await db.query("DELETE FROM public.teams WHERE id = $1", [ids.contradictionTeam]);
 
   const duplicate = await readAsService({
     requestId: ids.request,
