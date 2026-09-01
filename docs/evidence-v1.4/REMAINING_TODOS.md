@@ -31,3 +31,13 @@ Die technischen Block-9-Verträge, Aktivierungssperren, Widerrufs-/Löschpfade, 
 Erst danach dürfen Production-Migration, Protokollaktivierung und ein separat geprüfter Backfill realer Pilotantworten erfolgen. Die vollständige Aktivierungsgrenze steht in `ACTIVATION_BOUNDARY.md`.
 
 Abnahme: Rechtliche und produktseitige Freigaben sind belegt; Migration und Backfill besitzen getrennte Dry-Run-, Reconciliation-, Rollback- und Audit-Nachweise.
+
+## 4. Offizielles Pilotfenster aktivieren
+
+- Den in `PILOT_DATA_BOUNDARY.md` dokumentierten Baseline- und Aktivitäts-Cut fachlich bestätigen.
+- Production-Migration zuerst ohne Fensterdaten anwenden und Security Advisors prüfen.
+- Das konkrete Fenster erst nach separater Freigabe als `approved` eintragen.
+- Reconciliation muss 28 vollständige Onboarding-Baselines erhalten, unvollständige Entwürfe, vier vorgezogene Pre-Assessments und historische Snapshots ausschließen.
+- Erst danach darf ein separater, idempotenter Backfill der pseudonymisierten erlaubten Werte freigegeben werden.
+
+Abnahme: Gleicher Dry-Run vor und nach Aktivierung, keine PII/Freitexte im Ergebnis, keine Veränderung an Konten, Teamzuordnung, Consent oder Guardian-Freigaben.

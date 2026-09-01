@@ -5,6 +5,7 @@ import { PGlite } from "@electric-sql/pglite";
 const db = new PGlite();
 const migrationPath = resolve("supabase/migrations/20260831183516_v1_4_longitudinal_evidence_system.sql");
 const block9MigrationPath = resolve("supabase/migrations/20260901101823_v1_4_evidence_block_9_controls.sql");
+const pilotBoundaryMigrationPath = resolve("supabase/migrations/20260901143153_v1_4_official_pilot_data_boundary.sql");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const expectFailure = async (task, expected) => {
   try { await task(); } catch (error) {
@@ -40,8 +41,10 @@ try {
       data_contribution_consent_version text,
       data_contribution_consented_at timestamptz
     );
-    CREATE TABLE public.teams(id uuid PRIMARY KEY, created_by uuid);
-    CREATE TABLE public.program_runs(id uuid PRIMARY KEY, team_id uuid REFERENCES public.teams(id));
+    CREATE TABLE public.teams(id uuid PRIMARY KEY, created_by uuid, is_test_team boolean NOT NULL DEFAULT false);
+    CREATE TABLE public.program_runs(
+      id uuid PRIMARY KEY, team_id uuid REFERENCES public.teams(id), started_at date
+    );
     CREATE TABLE public.program_instances(
       id uuid PRIMARY KEY, user_id uuid NOT NULL, team_id uuid, program_run_id uuid,
       is_test_instance boolean NOT NULL DEFAULT false
@@ -51,6 +54,33 @@ try {
       created_at timestamptz NOT NULL DEFAULT now(), user_id uuid, is_complete boolean NOT NULL DEFAULT false,
       instrument_id text, questionnaire_version text, timing text NOT NULL DEFAULT 'pre', scores jsonb NOT NULL DEFAULT '{}',
       program_instance_id uuid
+    );
+    CREATE TABLE public.assessments(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.comprehension_check_instances(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, day_number integer,
+      status text, completed_at timestamptz
+    );
+    CREATE TABLE public.daily_checkins(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, date date,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.daily_journals(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, date date, day_number integer,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.user_day_completion(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, day_number integer,
+      completion_status text, completed_at timestamptz
+    );
+    CREATE TABLE public.athlete_transfer_observations(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, day_number integer,
+      is_test boolean NOT NULL DEFAULT false, collected_at timestamptz
+    );
+    CREATE TABLE public.program_progress_snapshots(
+      id uuid PRIMARY KEY, user_id uuid, program_instance_id uuid, date date,
+      program_day integer, created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE TABLE minor_auth.policy_versions(id uuid PRIMARY KEY);
     CREATE TABLE minor_auth.participant_authorizations(
@@ -70,10 +100,15 @@ try {
       SELECT public.has_role(auth.uid(),'admin'::public.app_role)
         OR EXISTS(SELECT 1 FROM public.teams t WHERE t.id=_team_id AND t.created_by=auth.uid())
     $$;
+    CREATE FUNCTION public.evidence_eligibility_reason(_program_instance_id uuid, _protocol_version text)
+    RETURNS text LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
+      SELECT 'eligible'::text
+    $$;
   `);
 
   await db.exec(readFileSync(migrationPath, "utf8"));
   await db.exec(readFileSync(block9MigrationPath, "utf8"));
+  await db.exec(readFileSync(pilotBoundaryMigrationPath, "utf8"));
 
   const protocol = (await db.query(`
     SELECT status, required_consent_version, retention_policy, minimum_group_size
@@ -98,7 +133,7 @@ try {
   const readiness = (await db.query("SELECT evidence_private.get_activation_readiness_v1_4() AS payload")).rows[0].payload;
   assert(readiness.ready === false, "Block 9 readiness must fail closed");
   assert(readiness.required_gates === 12 && readiness.approved_gates === 0, "All twelve governance gates must start pending");
-  assert(readiness.unmapped_source_families.length === 5, "Unapproved source mappings must remain disconnected");
+  assert(readiness.unmapped_source_families.length === 6, "Unapproved source mappings must remain disconnected");
   await expectFailure(
     () => db.query(`UPDATE evidence_derived.analysis_protocols
       SET status='active', activated_at=now(), activated_by=$1,
@@ -137,10 +172,83 @@ try {
   assert(!grants.anon_athlete && grants.athlete_rpc && !grants.capture_rpc, "Function grants are not least privilege");
   assert(!grants.readiness_rpc && grants.service_readiness_rpc && !grants.governance_select, "Block 9 controls leaked to browser roles");
 
+  const boundaryGrants = (await db.query(`
+    SELECT
+      has_table_privilege('authenticated','evidence_private.program_run_data_windows','SELECT') AS windows_select,
+      has_function_privilege('authenticated','evidence_private.reconcile_program_run_boundary_v1_4(uuid)','EXECUTE') AS reconcile_rpc,
+      has_function_privilege('service_role','evidence_private.reconcile_program_run_boundary_v1_4(uuid)','EXECUTE') AS service_reconcile_rpc
+  `)).rows[0];
+  assert(!boundaryGrants.windows_select && !boundaryGrants.reconcile_rpc && boundaryGrants.service_reconcile_rpc,
+    "Pilot boundary controls leaked to browser roles");
+
   const athlete = "00000000-0000-4000-8000-000000000001";
   const outsider = "00000000-0000-4000-8000-000000000002";
   await db.query("INSERT INTO auth.users(id) VALUES ($1),($2)", [athlete, outsider]);
   await db.query("INSERT INTO public.profiles(id) VALUES ($1),($2)", [athlete, outsider]);
+
+  const team = "10000000-0000-4000-8000-000000000001";
+  const run = "10000000-0000-4000-8000-000000000002";
+  await db.query("INSERT INTO public.teams(id,created_by) VALUES ($1,$2)", [team, outsider]);
+  await db.query("INSERT INTO public.program_runs(id,team_id,started_at) VALUES ($1,$2,'2026-09-01')", [run, team]);
+  await db.query(`INSERT INTO evidence_private.program_run_data_windows(
+    program_run_id,pilot_timezone,baseline_started_at,activity_started_at,status,decision_basis,approved_by,approved_at
+  ) VALUES ($1,'Europe/Berlin','2026-08-27T00:00:00+02','2026-09-01T00:00:00+02','approved','verified pilot boundary',$2,now())`, [run, outsider]);
+
+  const baselineDecision = (await db.query(`SELECT evidence_private.get_source_boundary_decision_v1_4(
+    $1,'onboarding_self_report','2026-08-28T08:00:00Z',NULL,NULL
+  ) AS payload`, [run])).rows[0].payload;
+  assert(baselineDecision.official === true && baselineDecision.reason === "official_baseline",
+    "Legitimate pre-program onboarding baseline was rejected");
+  const earlyActivity = (await db.query(`SELECT evidence_private.get_source_boundary_decision_v1_4(
+    $1,'validated_assessment','2026-08-31T20:00:00Z',NULL,NULL
+  ) AS payload`, [run])).rows[0].payload;
+  assert(earlyActivity.official === false && earlyActivity.reason === "before_activity_window",
+    "Pre-pilot assessment was incorrectly accepted");
+  const officialActivity = (await db.query(`SELECT evidence_private.get_source_boundary_decision_v1_4(
+    $1,'comprehension_learning','2026-09-01T07:00:00Z','2026-09-01',1
+  ) AS payload`, [run])).rows[0].payload;
+  assert(officialActivity.official === true && officialActivity.reason === "official_activity",
+    "Official day-one understanding check was rejected");
+  const derived = (await db.query(`SELECT evidence_private.get_source_boundary_decision_v1_4(
+    $1,'program_progress_snapshot','2026-09-01T07:00:00Z','2026-09-01',1
+  ) AS payload`, [run])).rows[0].payload;
+  assert(derived.official === false && derived.reason === "derived_output_not_source",
+    "Derived progress snapshot was accepted as raw evidence");
+
+  const instance = "11000000-0000-4000-8000-000000000001";
+  await db.query(`INSERT INTO public.program_instances(id,user_id,team_id,program_run_id)
+    VALUES ($1,$2,$3,$4)`, [instance, athlete, team, run]);
+  await db.query(`INSERT INTO public.questionnaire_responses(
+    id,session_id,user_id,program_instance_id,is_complete,instrument_id,questionnaire_version,timing,created_at
+  ) VALUES
+    ('12000000-0000-4000-8000-000000000001','complete',$1,$2,true,'onboarding_v2','v2','pre','2026-08-28T08:00:00Z'),
+    ('12000000-0000-4000-8000-000000000002','draft',$1,$2,false,'onboarding_v2','v2','pre','2026-08-28T07:00:00Z')`, [athlete, instance]);
+  await db.query(`INSERT INTO public.assessments(id,user_id,program_instance_id,created_at) VALUES
+    ('13000000-0000-4000-8000-000000000001',$1,$2,'2026-08-31T20:00:00Z'),
+    ('13000000-0000-4000-8000-000000000002',$1,$2,'2026-09-01T08:00:00Z')`, [athlete, instance]);
+  await db.query(`INSERT INTO public.comprehension_check_instances(
+    id,user_id,program_instance_id,day_number,status,completed_at
+  ) VALUES ('14000000-0000-4000-8000-000000000001',$1,$2,1,'completed','2026-09-01T08:10:00Z')`, [athlete, instance]);
+  await db.query(`INSERT INTO public.program_progress_snapshots(
+    id,user_id,program_instance_id,date,program_day,created_at
+  ) VALUES ('15000000-0000-4000-8000-000000000001',$1,$2,'2026-09-01',1,'2026-09-01T08:20:00Z')`, [athlete, instance]);
+  const reconciliation = (await db.query(
+    "SELECT evidence_private.reconcile_program_run_boundary_v1_4($1) AS payload", [run],
+  )).rows[0].payload;
+  const sourceByKey = Object.fromEntries(reconciliation.sources.map((row) => [row.source_key, row]));
+  assert(sourceByKey.onboarding_self_report.total_rows === 2
+      && sourceByKey.onboarding_self_report.official_rows === 1
+      && sourceByKey.onboarding_self_report.incomplete_rows === 1,
+    "Onboarding reconciliation must keep one complete baseline and reject its draft");
+  assert(sourceByKey.validated_assessment.total_rows === 2
+      && sourceByKey.validated_assessment.official_rows === 1
+      && sourceByKey.validated_assessment.boundary_excluded_rows === 1,
+    "Assessment reconciliation did not separate pre-pilot test from official activity");
+  assert(sourceByKey.comprehension_learning.official_rows === 1,
+    "Official understanding check was not reconciled");
+  assert(sourceByKey.program_progress_snapshot.official_rows === 0
+      && sourceByKey.program_progress_snapshot.boundary_excluded_rows === 1,
+    "Derived snapshot entered official raw evidence");
   await setActor(athlete);
   const own = (await db.query("SELECT public.get_my_longitudinal_evidence_v1_4() AS payload")).rows[0].payload;
   assert(own.status === "not_activated" && own.timeline.length === 0, "Draft athlete surface must be safely inactive");

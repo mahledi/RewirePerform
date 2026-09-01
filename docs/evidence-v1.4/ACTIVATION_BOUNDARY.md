@@ -15,11 +15,15 @@
 - Quellen-Mapping-Sperre gegen fachlich nicht freigegebene Verbindungen
 - Widerrufs-/Löschpfad und 365-Tage-Dry-Run-/Retention-Pfad
 - getrennte Lifecycle- und Zugriffs-Audits ohne direkte Identifikatoren
+- getrennte Baseline-/Aktivitätsfenster je Programmlauf
+- service-only Reconciliation ohne Identifikatoren oder Inhaltsdaten
+- harte Sperre gegen alte Testmessungen und abgeleitete Progress-Snapshots
 
 ## Absichtlich nicht aktiv
 
 - kein Production-Schema angewendet
 - kein Backfill der 27 oder anderer realer Pilotantworten
+- kein Production-Pilotfenster eingetragen und keine historische Zeile umklassifiziert
 - keine echte Athleten-, Coach-, Admin- oder Jarvis-Oberfläche verbunden
 - keine neue Einwilligung angezeigt oder gespeichert
 - keine Store-/Privacy-Erklärung geändert
