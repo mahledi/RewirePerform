@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
@@ -23,7 +23,8 @@ import {
 import { setAthleteProgressCache } from "@/lib/athleteProgressCache";
 import { resolveProgressReferenceDateIso } from "@/lib/athleteProgressPresentation";
 import { BrandLockup } from "@/components/brand/BrandLogo";
-import { getEffectiveTodayDate } from "@/lib/qaTime";
+import { formatProgramCalendarDateISO, getEffectiveTodayDate } from "@/lib/qaTime";
+import { useEffectiveDayRollover } from "@/hooks/useEffectiveDayRollover";
 import { resolveDay } from "@/lib/getDayContent";
 import AthleteRouteLoadingShell from "@/components/app/AthleteRouteLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
@@ -296,6 +297,7 @@ interface DashboardMemoryCache {
   flameStats: FlameStats | null;
   missedDayReviews: MissedDayReview[];
   effectiveTodayIso: string;
+  programCalendarDayAtCache: string;
 }
 
 let dashboardMemoryCache: DashboardMemoryCache | null = null;
@@ -303,6 +305,7 @@ let dashboardMemoryCache: DashboardMemoryCache | null = null;
 const getDashboardMemoryCache = (userId?: string | null) => {
   if (!userId || !dashboardMemoryCache || dashboardMemoryCache.userId !== userId) return null;
   if (Date.now() - dashboardMemoryCache.cachedAt > DASHBOARD_MEMORY_CACHE_TTL_MS) return null;
+  if (dashboardMemoryCache.programCalendarDayAtCache !== formatProgramCalendarDateISO()) return null;
   if (getAssessmentStatusRevision(userId) !== dashboardMemoryCache.assessmentRevision) return null;
   return dashboardMemoryCache;
 };
@@ -692,8 +695,6 @@ const Dashboard = () => {
   const [dashboardSection, setDashboardSection] = useState<"today" | "plan">(
     location.hash === "#dashboard-plan" ? "plan" : "today",
   );
-  const lastStatusRefreshAt = useRef(0);
-  
 
   const applyDashboardCache = (cache: DashboardMemoryCache) => {
     setCurrentMonth(new Date(cache.currentMonthIso));
@@ -761,7 +762,6 @@ const Dashboard = () => {
 
     if (cachedDashboard) {
       applyDashboardCache(cachedDashboard);
-      lastStatusRefreshAt.current = cachedDashboard.cachedAt;
     } else {
       setLoading(true);
     }
@@ -857,7 +857,6 @@ const Dashboard = () => {
           },
         });
         setMissedDayReviews(initialMissedReviews);
-        lastStatusRefreshAt.current = Date.now();
         setBootstrapError(null);
         setLoading(false);
 
@@ -913,6 +912,7 @@ const Dashboard = () => {
       flameStats,
       missedDayReviews,
       effectiveTodayIso: effectiveToday.toISOString(),
+      programCalendarDayAtCache: formatProgramCalendarDateISO(),
     };
   }, [
     user?.id,
@@ -1316,20 +1316,74 @@ const Dashboard = () => {
   };
 
   const refreshDashboardStatus = async (referenceDate = effectiveToday) => {
-    lastStatusRefreshAt.current = Date.now();
     await Promise.all([checkAssessments(referenceDate), checkTodayCheckin(referenceDate), checkDeepProfile()]);
     await loadMissedDayReviews(referenceDate);
   };
 
-  // Re-check assessments when navigating back to dashboard
-  useEffect(() => {
-    const handleFocus = () => {
-      if (Date.now() - lastStatusRefreshAt.current < 60_000) return;
-      if (!setupMode && !loading) refreshDashboardStatus();
-    };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [setupMode, loading, user?.id, effectiveToday]);
+  useEffectiveDayRollover({
+    userId: user?.id,
+    currentDate: effectiveToday,
+    enabled: !setupMode && !loading,
+    // DailyCheckin owns a date-scoped local draft. A midnight resume is
+    // therefore applied only after that visible form closes.
+    suspended: showCheckin,
+    onRefresh: async (resolvedDate, dayChanged) => {
+      if (!user?.id) return;
+      if (!dayChanged) {
+        await refreshDashboardStatus(resolvedDate);
+        return;
+      }
+
+      const status = await loadDashboardInitialStatus(
+        user.id,
+        resolvedDate,
+        teamProgramStart ?? programStartDate,
+      );
+      const effectiveStart = resolveDashboardProgramStart(
+        teamProgramStart,
+        programStartDate,
+      );
+      const nextMissedReviews = buildInitialMissedDayReviews({
+        userId: user.id,
+        instanceId: status.instanceId,
+        startDate: effectiveStart,
+        referenceDate: resolvedDate,
+        completionRows: status.completionRows,
+        events,
+      });
+
+      // Commit the complete new-day state together without clearing the route,
+      // calendar, navigation state or any unrelated form values.
+      setEffectiveToday(resolvedDate);
+      setPreTestsDone(status.preTestsDone);
+      setMidTestsDone(status.midTestsDone);
+      setPostTestsDone(status.postTestsDone);
+      setMidTestDue(status.midTestDue);
+      setPostTestDue(status.postTestDue);
+      setTodayCheckinDone(status.todayCheckinDone);
+      setTodayJournalDone(status.todayJournalDone);
+      setCheckinStatusLoading(false);
+      setBaselineDone(status.baselineDone);
+      setRetestDone(status.retestDone);
+      setFlameStats(status.flameStats);
+      setMissedDayReviews(nextMissedReviews);
+      setAthleteProgressCache(user.id, status.flameStats, {
+        activeApplications: status.tasksCompletedCount,
+        referenceDateIso: resolveProgressReferenceDateIso(effectiveStart, resolvedDate),
+        measurementStatus: {
+          preDone: status.preTestsDone,
+          midDue: status.midTestDue,
+          midDone: status.midTestsDone,
+          postDue: status.postTestDue,
+          postDone: status.postTestsDone,
+          programDay: status.flameStats.programDay,
+        },
+      });
+      void upsertTodaySnapshot(user.id).catch((error) => {
+        console.error("snapshot error", error);
+      });
+    },
+  });
 
   // Speichert das Wettkampfziel. Früher wurde hier ein KI-Sync getriggert; seit der Matrix-Architektur
   // sind die Tagesinhalte deterministisch — diese Funktion speichert ausschließlich den zeitlichen Anker.
