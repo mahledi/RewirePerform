@@ -20,6 +20,7 @@ const migrationSource = () => [
   "supabase/migrations/20260828152000_fix_prestart_system_health_v1_3.sql",
   "supabase/migrations/20260829185434_add_jarvis_activity_trends_machine_read.sql",
   "supabase/migrations/20260829190341_add_jarvis_auth_signup_success_coverage.sql",
+  "supabase/migrations/20260901090755_jarvis_program_start_observability_v1_4.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {

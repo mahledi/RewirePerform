@@ -111,7 +111,7 @@ const healthFlowFailures = strictObject(
 );
 
 const criticalJourneyCoverage = strictObject(
-  ["auth_login", "auth_signup", "team_join", "minor_authorization"],
+  ["auth_login", "auth_signup", "team_join", "program_start", "minor_authorization"],
   {
     auth_login: strictObject(
       ["coverage", "authority", "successes_24h", "failures_24h"],
@@ -139,6 +139,17 @@ const criticalJourneyCoverage = strictObject(
         attempts_24h: nonnegativeInteger,
         successes_24h: nonnegativeInteger,
         failures_24h: nonnegativeInteger,
+      },
+    ),
+    program_start: strictObject(
+      ["coverage", "authority", "attempts_24h", "successes_24h", "failures_24h", "state_reconciliation"],
+      {
+        coverage: { const: "SERVER_ACTIVATION_SUCCESS_AND_STATE_RECONCILIATION" },
+        authority: { const: "teams_program_runs_program_instances" },
+        attempts_24h: { type: "null" },
+        successes_24h: nonnegativeInteger,
+        failures_24h: { type: "null" },
+        state_reconciliation: { const: "COMPLETE" },
       },
     ),
     minor_authorization: strictObject(
@@ -169,7 +180,7 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
     "privacy_exclusions",
   ],
   {
-    schema_version: { const: "mahleos-system-health-v1.4" },
+    schema_version: { const: "mahleos-system-health-v1.5" },
     generated_at: dateTime,
     reporting_timezone: reportingTimezone,
     status: operationalStatus,
@@ -186,12 +197,18 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
         "athletes_with_multiple_active_instances",
         "active_team_instances_without_run",
         "active_runs_without_start_date",
+        "activated_teams_without_active_run",
+        "activated_teams_with_multiple_active_runs",
+        "active_runs_with_assignment_set_mismatch",
       ],
       {
         athletes_without_program_instance: nonnegativeInteger,
         athletes_with_multiple_active_instances: nonnegativeInteger,
         active_team_instances_without_run: nonnegativeInteger,
         active_runs_without_start_date: nonnegativeInteger,
+        activated_teams_without_active_run: nonnegativeInteger,
+        activated_teams_with_multiple_active_runs: nonnegativeInteger,
+        active_runs_with_assignment_set_mismatch: nonnegativeInteger,
       },
     ),
     tracking_integrity_7d: strictObject(
@@ -1227,7 +1244,7 @@ const lockId = "70000000-0000-4000-8000-000000000501";
 const checksum = "a".repeat(64);
 
 const systemHealth = {
-  schema_version: "mahleos-system-health-v1.4",
+  schema_version: "mahleos-system-health-v1.5",
   generated_at: generatedAt,
   reporting_timezone: "UTC",
   status: "GREEN",
@@ -1237,6 +1254,9 @@ const systemHealth = {
     athletes_with_multiple_active_instances: 0,
     active_team_instances_without_run: 0,
     active_runs_without_start_date: 0,
+    activated_teams_without_active_run: 0,
+    activated_teams_with_multiple_active_runs: 0,
+    active_runs_with_assignment_set_mismatch: 0,
   },
   tracking_integrity_7d: {
     checkins_missing_instance: 0,
@@ -1278,6 +1298,14 @@ const systemHealth = {
       attempts_24h: 2,
       successes_24h: 2,
       failures_24h: 0,
+    },
+    program_start: {
+      coverage: "SERVER_ACTIVATION_SUCCESS_AND_STATE_RECONCILIATION",
+      authority: "teams_program_runs_program_instances",
+      attempts_24h: null,
+      successes_24h: 1,
+      failures_24h: null,
+      state_reconciliation: "COMPLETE",
     },
     minor_authorization: {
       coverage: "STRUCTURAL_AND_DELIVERY_ONLY",
@@ -1599,7 +1627,7 @@ const evidenceResponse = {
 
 const manifest = {
   contract_id: "rewireperform-mahleos-machine-read",
-  contract_version: "1.4.0",
+  contract_version: "1.5.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   reporting_timezone: "UTC",
   authentication: {

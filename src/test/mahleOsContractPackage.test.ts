@@ -63,7 +63,7 @@ describe("MahleOS machine-readable handoff", () => {
       privacy_boundaries: { minimum_sensitive_aggregate_n: number; forbidden: string[] };
     }>("manifest.json");
 
-    expect(manifest.contract_version).toBe("1.4.0");
+    expect(manifest.contract_version).toBe("1.5.0");
     expect(manifest.status).toBe("IMPLEMENTED_NOT_PRODUCTION_ACTIVATED");
     expect(manifest.operations_endpoint.method).toBe("POST");
     expect(manifest.operations_endpoint.views).toEqual([

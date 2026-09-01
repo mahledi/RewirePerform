@@ -88,7 +88,7 @@ Enthaelt gemeinsam:
 
 Diese Antworten verwenden die Schema-Versionen:
 
-- `mahleos-system-health-v1.3`
+- `mahleos-system-health-v1.5`
 - `mahleos-tracking-quality-v1`
 - `mahleos-feedback-status-v1`
 
@@ -101,6 +101,11 @@ verbunden; fehlgeschlagene Logins bleiben mangels kostenfreier, sicherer
 Serverquelle explizit `null`. Teambeitritte liefern Versuch, Erfolg und
 technische beziehungsweise Autorisierungsfehler. Minderjaehrigenfreigaben
 liefern nur Enforcement- und Zustellabdeckung. Testprofile sind ausgeschlossen.
+Programmstarts liefern nur erfolgreich und vollstaendig abgeglichene
+Aktivierungen. Fehlende aktive Runs, leere Runs sowie fehlende oder unerwartete
+aktive Spielerzuordnungen werden als identifier-freie Integritaetszaehler
+ausgegeben und erzwingen `RED`. Versuche und fehlgeschlagene Aktivierungen
+bleiben bis zu einer eigenen serverseitigen Outcome-Quelle explizit `null`.
 E-Mail, User-ID, Team-ID, Teamcode, IP-Adresse, User-Agent, Route, Metadaten und
 Freitext verlassen diese Aggregatgrenze nicht.
 
