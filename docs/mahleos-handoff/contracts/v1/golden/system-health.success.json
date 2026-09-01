@@ -5,7 +5,7 @@
   "checksum_algorithm": "sha256",
   "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "data": {
-    "schema_version": "mahleos-system-health-v1.4",
+    "schema_version": "mahleos-system-health-v1.5",
     "generated_at": "2026-07-21T12:00:00Z",
     "reporting_timezone": "UTC",
     "status": "GREEN",
@@ -17,7 +17,10 @@
       "athletes_without_program_instance": 0,
       "athletes_with_multiple_active_instances": 0,
       "active_team_instances_without_run": 0,
-      "active_runs_without_start_date": 0
+      "active_runs_without_start_date": 0,
+      "activated_teams_without_active_run": 0,
+      "activated_teams_with_multiple_active_runs": 0,
+      "active_runs_with_assignment_set_mismatch": 0
     },
     "tracking_integrity_7d": {
       "checkins_missing_instance": 0,
@@ -59,6 +62,14 @@
         "attempts_24h": 2,
         "successes_24h": 2,
         "failures_24h": 0
+      },
+      "program_start": {
+        "coverage": "SERVER_ACTIVATION_SUCCESS_AND_STATE_RECONCILIATION",
+        "authority": "teams_program_runs_program_instances",
+        "attempts_24h": null,
+        "successes_24h": 1,
+        "failures_24h": null,
+        "state_reconciliation": "COMPLETE"
       },
       "minor_authorization": {
         "coverage": "STRUCTURAL_AND_DELIVERY_ONLY",
