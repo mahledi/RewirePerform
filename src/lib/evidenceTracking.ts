@@ -1,5 +1,6 @@
 import type { Json } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
+import { createPostgrestResultError } from "@/lib/recoverableRemoteLoad";
 import {
   EVIDENCE_PROTOCOL_VERSION,
   isTransferPulseResponse,
@@ -128,13 +129,13 @@ const parseCoachReview = (value: unknown): CoachEvidenceReviewRecord | null => {
 export const getCoachEvidenceReviewContext = async (
   teamId: string,
 ): Promise<CoachEvidenceReviewContext> => {
-  const { data, error } = await supabase.rpc("get_coach_evidence_review_context", {
+  const result = await supabase.rpc("get_coach_evidence_review_context", {
     _team_id: teamId,
     _protocol_version: EVIDENCE_PROTOCOL_VERSION,
   });
-  if (error) throw error;
+  if (result.error) throw createPostgrestResultError(result);
 
-  const raw = (data ?? {}) as Record<string, unknown>;
+  const raw = (result.data ?? {}) as Record<string, unknown>;
   const rawRun = raw.run && typeof raw.run === "object" && !Array.isArray(raw.run)
     ? raw.run as Record<string, unknown>
     : null;

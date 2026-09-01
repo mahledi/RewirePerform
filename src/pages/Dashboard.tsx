@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, addDays, isBefore, startOfDay, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
@@ -23,7 +23,8 @@ import {
 import { setAthleteProgressCache } from "@/lib/athleteProgressCache";
 import { resolveProgressReferenceDateIso } from "@/lib/athleteProgressPresentation";
 import { BrandLockup } from "@/components/brand/BrandLogo";
-import { getEffectiveTodayDate } from "@/lib/qaTime";
+import { formatProgramCalendarDateISO, getEffectiveTodayDate } from "@/lib/qaTime";
+import { useEffectiveDayRollover } from "@/hooks/useEffectiveDayRollover";
 import { resolveDay } from "@/lib/getDayContent";
 import AthleteRouteLoadingShell from "@/components/app/AthleteRouteLoadingShell";
 import AccessStatusScreen from "@/components/access/AccessStatusScreen";
@@ -46,6 +47,8 @@ import {
 import { getAthleteGreeting } from "@/lib/athleteGreeting";
 import { getRecentMissedDayReviewWindow } from "@/lib/missedDayReviewWindow";
 import { getAssessmentStatusRevision } from "@/lib/assessmentStatusRevision";
+import { loadPreTrainingCompletion } from "@/lib/preTrainingCompletion";
+import { isPreTrainingExpired } from "@/lib/preTrainingState";
 import {
   canOpenRestVisualization,
   readRestVisualizationIntent,
@@ -294,6 +297,7 @@ interface DashboardMemoryCache {
   flameStats: FlameStats | null;
   missedDayReviews: MissedDayReview[];
   effectiveTodayIso: string;
+  programCalendarDayAtCache: string;
 }
 
 let dashboardMemoryCache: DashboardMemoryCache | null = null;
@@ -301,6 +305,7 @@ let dashboardMemoryCache: DashboardMemoryCache | null = null;
 const getDashboardMemoryCache = (userId?: string | null) => {
   if (!userId || !dashboardMemoryCache || dashboardMemoryCache.userId !== userId) return null;
   if (Date.now() - dashboardMemoryCache.cachedAt > DASHBOARD_MEMORY_CACHE_TTL_MS) return null;
+  if (dashboardMemoryCache.programCalendarDayAtCache !== formatProgramCalendarDateISO()) return null;
   if (getAssessmentStatusRevision(userId) !== dashboardMemoryCache.assessmentRevision) return null;
   return dashboardMemoryCache;
 };
@@ -673,6 +678,9 @@ const Dashboard = () => {
   const [midTestsDone, setMidTestsDone] = useState(false);
   const [todayCheckinDone, setTodayCheckinDone] = useState(false);
   const [todayJournalDone, setTodayJournalDone] = useState(false);
+  const [todayPreTrainingDone, setTodayPreTrainingDone] = useState(false);
+  const [preTrainingStatusLoading, setPreTrainingStatusLoading] = useState(true);
+  const [preTrainingClock, setPreTrainingClock] = useState(() => new Date());
   const [checkinStatusLoading, setCheckinStatusLoading] = useState(true);
   const [programStartDate, setProgramStartDate] = useState<string | null>(null);
   const [baselineDone, setBaselineDone] = useState(false);
@@ -687,8 +695,6 @@ const Dashboard = () => {
   const [dashboardSection, setDashboardSection] = useState<"today" | "plan">(
     location.hash === "#dashboard-plan" ? "plan" : "today",
   );
-  const lastStatusRefreshAt = useRef(0);
-  
 
   const applyDashboardCache = (cache: DashboardMemoryCache) => {
     setCurrentMonth(new Date(cache.currentMonthIso));
@@ -756,7 +762,6 @@ const Dashboard = () => {
 
     if (cachedDashboard) {
       applyDashboardCache(cachedDashboard);
-      lastStatusRefreshAt.current = cachedDashboard.cachedAt;
     } else {
       setLoading(true);
     }
@@ -852,7 +857,6 @@ const Dashboard = () => {
           },
         });
         setMissedDayReviews(initialMissedReviews);
-        lastStatusRefreshAt.current = Date.now();
         setBootstrapError(null);
         setLoading(false);
 
@@ -908,6 +912,7 @@ const Dashboard = () => {
       flameStats,
       missedDayReviews,
       effectiveTodayIso: effectiveToday.toISOString(),
+      programCalendarDayAtCache: formatProgramCalendarDateISO(),
     };
   }, [
     user?.id,
@@ -1311,20 +1316,74 @@ const Dashboard = () => {
   };
 
   const refreshDashboardStatus = async (referenceDate = effectiveToday) => {
-    lastStatusRefreshAt.current = Date.now();
     await Promise.all([checkAssessments(referenceDate), checkTodayCheckin(referenceDate), checkDeepProfile()]);
     await loadMissedDayReviews(referenceDate);
   };
 
-  // Re-check assessments when navigating back to dashboard
-  useEffect(() => {
-    const handleFocus = () => {
-      if (Date.now() - lastStatusRefreshAt.current < 60_000) return;
-      if (!setupMode && !loading) refreshDashboardStatus();
-    };
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, [setupMode, loading, user?.id, effectiveToday]);
+  useEffectiveDayRollover({
+    userId: user?.id,
+    currentDate: effectiveToday,
+    enabled: !setupMode && !loading,
+    // DailyCheckin owns a date-scoped local draft. A midnight resume is
+    // therefore applied only after that visible form closes.
+    suspended: showCheckin,
+    onRefresh: async (resolvedDate, dayChanged) => {
+      if (!user?.id) return;
+      if (!dayChanged) {
+        await refreshDashboardStatus(resolvedDate);
+        return;
+      }
+
+      const status = await loadDashboardInitialStatus(
+        user.id,
+        resolvedDate,
+        teamProgramStart ?? programStartDate,
+      );
+      const effectiveStart = resolveDashboardProgramStart(
+        teamProgramStart,
+        programStartDate,
+      );
+      const nextMissedReviews = buildInitialMissedDayReviews({
+        userId: user.id,
+        instanceId: status.instanceId,
+        startDate: effectiveStart,
+        referenceDate: resolvedDate,
+        completionRows: status.completionRows,
+        events,
+      });
+
+      // Commit the complete new-day state together without clearing the route,
+      // calendar, navigation state or any unrelated form values.
+      setEffectiveToday(resolvedDate);
+      setPreTestsDone(status.preTestsDone);
+      setMidTestsDone(status.midTestsDone);
+      setPostTestsDone(status.postTestsDone);
+      setMidTestDue(status.midTestDue);
+      setPostTestDue(status.postTestDue);
+      setTodayCheckinDone(status.todayCheckinDone);
+      setTodayJournalDone(status.todayJournalDone);
+      setCheckinStatusLoading(false);
+      setBaselineDone(status.baselineDone);
+      setRetestDone(status.retestDone);
+      setFlameStats(status.flameStats);
+      setMissedDayReviews(nextMissedReviews);
+      setAthleteProgressCache(user.id, status.flameStats, {
+        activeApplications: status.tasksCompletedCount,
+        referenceDateIso: resolveProgressReferenceDateIso(effectiveStart, resolvedDate),
+        measurementStatus: {
+          preDone: status.preTestsDone,
+          midDue: status.midTestDue,
+          midDone: status.midTestsDone,
+          postDue: status.postTestDue,
+          postDone: status.postTestsDone,
+          programDay: status.flameStats.programDay,
+        },
+      });
+      void upsertTodaySnapshot(user.id).catch((error) => {
+        console.error("snapshot error", error);
+      });
+    },
+  });
 
   // Speichert das Wettkampfziel. Früher wurde hier ein KI-Sync getriggert; seit der Matrix-Architektur
   // sind die Tagesinhalte deterministisch — diese Funktion speichert ausschließlich den zeitlichen Anker.
@@ -1433,6 +1492,40 @@ const Dashboard = () => {
       : isTeamActive
         ? "training"
         : null;
+  const primaryTodayEvent = todayEvents[0] ?? null;
+  const todayPreTrainingExpired = isPreTrainingExpired(primaryTodayEvent, effectiveToday, preTrainingClock);
+
+  useEffect(() => {
+    if (typeof primaryTodayEvent?.training_local_hour !== "number") return;
+    const interval = window.setInterval(() => setPreTrainingClock(new Date()), 30_000);
+    return () => window.clearInterval(interval);
+  }, [primaryTodayEvent?.date, primaryTodayEvent?.training_local_hour, primaryTodayEvent?.training_local_minute]);
+
+  useEffect(() => {
+    if (!user?.id || !todayEventType || todayEventType === "rest") {
+      setTodayPreTrainingDone(false);
+      setPreTrainingStatusLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPreTrainingStatusLoading(true);
+    void loadPreTrainingCompletion(user.id, format(effectiveToday, "yyyy-MM-dd"))
+      .then((done) => {
+        if (!cancelled) setTodayPreTrainingDone(done);
+      })
+      .catch((error) => {
+        console.error("pre-training status error", error);
+        if (!cancelled) setTodayPreTrainingDone(false);
+      })
+      .finally(() => {
+        if (!cancelled) setPreTrainingStatusLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveToday, todayEventType, user?.id]);
   const isTeamDefaultDay = isTeamActive && todayEvents.length === 0;
   const showPreTestReminder =
     !preTestsDone &&
@@ -2073,28 +2166,30 @@ const Dashboard = () => {
             </button>
           </div>
           <div className="overflow-hidden rounded-[22px] border border-white/[0.065] bg-white/[0.025]">
-            <DashboardActionRow
-              icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
-              eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
-              title={todayEventType === "rest" ? "Visualisierung" : "Pre-Training"}
-              detail={
-                todayEventType === "rest"
-                  ? todayCheckinDone
-                    ? "Deine Visualisierung für heute ist abgeschlossen."
-                    : "Geführte Visualisierung · passend zum heutigen Werkzeug"
-                  : todayEventType
-                    ? todayResolved
-                      ? `${eventConfig[todayEventType].label} · aktives Erinnern und dein Satz`
-                      : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
-                    : "Sobald dein heutiger Termin feststeht."
-              }
-              disabled={!todayEventType || (todayEventType === "rest" && todayCheckinDone)}
-              done={todayEventType === "rest" && todayCheckinDone}
-              onClick={() => {
-                if (todayEventType === "rest") setShowCheckin(true);
-                else navigate("/pre-training");
-              }}
-            />
+            {(todayEventType === "rest" || (!preTrainingStatusLoading && !todayPreTrainingDone && !todayPreTrainingExpired)) && (
+              <DashboardActionRow
+                icon={todayEventType ? eventConfig[todayEventType].icon : Dumbbell}
+                eyebrow={todayEventType === "competition" ? "Vor dem Wettkampf" : todayEventType === "rest" ? "Ruhetag" : "Vor dem Training"}
+                title={todayEventType === "rest" ? "Visualisierung" : "Pre-Training"}
+                detail={
+                  todayEventType === "rest"
+                    ? todayCheckinDone
+                      ? "Deine Visualisierung für heute ist abgeschlossen."
+                      : "Geführte Visualisierung · passend zum heutigen Werkzeug"
+                    : todayEventType
+                      ? todayResolved
+                        ? `${eventConfig[todayEventType].label} · aktives Erinnern und dein Satz`
+                        : `${eventConfig[todayEventType].label} · heutige Vorbereitung`
+                      : "Sobald dein heutiger Termin feststeht."
+                }
+                disabled={!todayEventType || (todayEventType === "rest" && todayCheckinDone)}
+                done={todayEventType === "rest" && todayCheckinDone}
+                onClick={() => {
+                  if (todayEventType === "rest") setShowCheckin(true);
+                  else navigate("/pre-training");
+                }}
+              />
+            )}
             <DashboardActionRow
               icon={BookOpen}
               eyebrow="Nach dem Tag"
@@ -2267,7 +2362,11 @@ const Dashboard = () => {
                 {selectedPlanEvents.map((event) => {
                   const config = eventConfig[event.event_type];
                   const isPrimaryTodayEvent = selectedIsToday && event.id === selectedPlanEvents[0]?.id;
-                  const canOpenPreTraining = isPrimaryTodayEvent && event.event_type !== "rest";
+                  const canOpenPreTraining = isPrimaryTodayEvent
+                    && event.event_type !== "rest"
+                    && !preTrainingStatusLoading
+                    && !todayPreTrainingDone
+                    && !todayPreTrainingExpired;
                   return (
                     <PlanTimelineRow
                       key={event.id}
@@ -2294,8 +2393,8 @@ const Dashboard = () => {
                           : "Teammodus · heutige Vorbereitung"
                         : "Kein separater Coach-Termin eingetragen."
                     }
-                    active={selectedIsToday && selectedPrimaryEventType !== "rest"}
-                    onClick={selectedIsToday && selectedPrimaryEventType !== "rest" ? () => navigate("/pre-training") : undefined}
+                    active={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone && !todayPreTrainingExpired}
+                    onClick={selectedIsToday && selectedPrimaryEventType !== "rest" && !preTrainingStatusLoading && !todayPreTrainingDone && !todayPreTrainingExpired ? () => navigate("/pre-training") : undefined}
                   />
                 )}
 

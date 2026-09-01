@@ -13,6 +13,8 @@ import { getEffectiveTodayDate } from "@/lib/qaTime";
 import { getProgramModeInfo } from "@/lib/programMode";
 import { format } from "date-fns";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
+import { loadPreTrainingCompletion, markPreTrainingCompleted } from "@/lib/preTrainingCompletion";
+import { isPreTrainingExpired, type PreTrainingEventTiming } from "@/lib/preTrainingState";
 import {
   AthleteFlowButton,
   AthleteFlowAmbient,
@@ -33,6 +35,17 @@ const PreTraining = () => {
   const [eventType, setEventType] = useState<EventType | null>(null);
   const [recall, setRecall] = useState("");
   const [revealed, setRevealed] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [expired, setExpired] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [eventTiming, setEventTiming] = useState<PreTrainingEventTiming | null>(null);
+  const [completionContext, setCompletionContext] = useState<{
+    date: Date;
+    eventType: "training" | "competition";
+    sport?: string | null;
+    position?: string | null;
+  } | null>(null);
   const trackedRef = useRef(false);
 
   useEffect(() => {
@@ -52,7 +65,7 @@ const PreTraining = () => {
       const { data: events } = modeInfo.mode === "team" && modeInfo.teamId
         ? await supabase
             .from("team_calendar_events")
-            .select("date,event_type")
+            .select("date,event_type,training_local_hour,training_local_minute,training_timezone")
             .eq("team_id", modeInfo.teamId)
             .eq("date", dateStr)
             .limit(1)
@@ -62,7 +75,9 @@ const PreTraining = () => {
             .eq("user_id", user.id)
             .eq("date", dateStr)
             .limit(1);
-      const resolvedEventType = (events?.[0]?.event_type ?? "training") as EventType;
+      const primaryEvent = events?.[0] as (PreTrainingEventTiming & { event_type: EventType }) | undefined;
+      setEventTiming(primaryEvent ?? null);
+      const resolvedEventType = (primaryEvent?.event_type ?? "training") as EventType;
       setEventType(resolvedEventType);
       if (resolvedEventType === "rest") {
         setResolved(null);
@@ -74,6 +89,15 @@ const PreTraining = () => {
         .select("sport,position")
         .eq("id", user.id)
         .maybeSingle();
+      const alreadyCompleted = await loadPreTrainingCompletion(user.id, dateStr);
+      setCompleted(alreadyCompleted);
+      setExpired(isPreTrainingExpired(primaryEvent, today));
+      setCompletionContext({
+        date: today,
+        eventType: resolvedEventType as "training" | "competition",
+        sport: profile?.sport,
+        position: profile?.position,
+      });
       const day = resolveDay(info.dayNumber, today, resolvedEventType, {
         sport: profile?.sport,
         position: profile?.position,
@@ -96,6 +120,40 @@ const PreTraining = () => {
     });
   }, [user, role, isTestUser]);
 
+  useEffect(() => {
+    if (
+      completed
+      || !completionContext
+      || typeof eventTiming?.training_local_hour !== "number"
+    ) return;
+
+    const refreshExpiry = () => {
+      setExpired(isPreTrainingExpired(eventTiming, completionContext.date));
+    };
+    refreshExpiry();
+    const interval = window.setInterval(refreshExpiry, 30_000);
+    return () => window.clearInterval(interval);
+  }, [completed, completionContext, eventTiming]);
+
+  const finishPreTraining = async () => {
+    if (!user || !completionContext || saving) return;
+    if (isPreTrainingExpired(eventTiming, completionContext.date)) {
+      setExpired(true);
+      return;
+    }
+    setSaving(true);
+    setSaveError(false);
+    try {
+      await markPreTrainingCompleted({ userId: user.id, ...completionContext });
+      setCompleted(true);
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error("pre-training completion error", error);
+      setSaveError(true);
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#0D0E12] text-[#EEF0F2]">
       <AthleteFlowAmbient />
@@ -110,6 +168,19 @@ const PreTraining = () => {
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : completed || expired ? (
+          <div className="py-20 text-center">
+            <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
+            <h1 className="mt-5 font-heading text-2xl font-semibold">
+              {completed ? "Pre-Training bereits erledigt" : "Diese Vorbereitung ist abgeschlossen"}
+            </h1>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+              {completed
+                ? "Deine Vorbereitung für die heutige Einheit wurde gespeichert."
+                : "Die Einheit hat bereits begonnen. Dein nächster Pre-Training-Flow erscheint automatisch vor dem nächsten Termin."}
+            </p>
+            <Button onClick={() => navigate("/dashboard")} className="mt-6">Zurück zu „Dein Tag“</Button>
           </div>
         ) : !resolved ? (
           <div className="text-center py-20">
@@ -189,13 +260,18 @@ const PreTraining = () => {
             )}
 
             <AthleteFlowButton
-              onClick={() => navigate("/dashboard")}
+              onClick={() => void finishPreTraining()}
               className={`${athleteFlowPrimaryButton} w-full`}
-              disabled={Boolean(resolved.content.preTraining) && !revealed}
+              disabled={saving || (Boolean(resolved.content.preTraining) && !revealed)}
             >
-              <Target className="w-4 h-4 mr-2" />
-              {eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit fürs Training"}
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Target className="w-4 h-4 mr-2" />}
+              {saving ? "Wird gespeichert …" : eventType === "competition" ? "Bereit für den Wettkampf" : "Bereit fürs Training"}
             </AthleteFlowButton>
+            {saveError && (
+              <p role="alert" className="text-center text-sm text-destructive">
+                Das Speichern hat nicht funktioniert. Bitte versuche es erneut.
+              </p>
+            )}
           </div>
         )}
       </div>
