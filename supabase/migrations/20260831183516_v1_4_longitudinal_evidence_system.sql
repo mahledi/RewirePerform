@@ -365,11 +365,11 @@ $$;
 CREATE OR REPLACE FUNCTION public.get_coach_team_development_v1_4(_program_run_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
-STABLE
+VOLATILE
 SECURITY DEFINER
 SET search_path = pg_catalog, public, evidence_private, evidence_derived
 AS $$
-DECLARE target_team_id uuid; min_n integer; result jsonb;
+DECLARE target_team_id uuid; min_n integer; result jsonb; returned integer;
 BEGIN
   SELECT team_id INTO target_team_id FROM public.program_runs WHERE id = _program_run_id;
   IF target_team_id IS NULL OR NOT public.can_manage_team_program_runs(target_team_id) THEN RAISE EXCEPTION 'access_denied'; END IF;
@@ -385,11 +385,13 @@ BEGIN
     SELECT construct_id, timing, count(*)::integer AS n, avg(score) AS mean_score
     FROM subject_construct_timing GROUP BY construct_id, timing
   )
-  SELECT jsonb_build_object('status','active','minimum_group_size',min_n,'groups',COALESCE(jsonb_agg(
+  SELECT count(*)::integer, jsonb_build_object('status','active','minimum_group_size',min_n,'groups',COALESCE(jsonb_agg(
     jsonb_build_object('construct_id',construct_id,'timing',timing,'n',n,
       'confidence',CASE WHEN n < min_n THEN 'suppressed' WHEN n < 10 THEN 'low' ELSE 'standard' END,
       'mean_score',CASE WHEN n >= min_n THEN round(mean_score,2) ELSE NULL END)
-    ORDER BY construct_id,timing), '[]'::jsonb)) INTO result FROM grouped;
+    ORDER BY construct_id,timing), '[]'::jsonb)) INTO returned,result FROM grouped;
+  INSERT INTO evidence_private.access_audit(actor_id,surface,purpose,program_run_id,rows_returned)
+  VALUES(auth.uid(),'coach_aggregate','authorized_thresholded_team_development',_program_run_id,returned);
   RETURN result;
 END;
 $$;

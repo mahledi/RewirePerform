@@ -10,6 +10,11 @@
 - fünfstufiges Claims Ledger mit gesperrter Kausalität
 - vier getrennte Oberflächen als synthetische Entwicklungs-Vorschau
 - SQL-Rollen-, RLS-, Grant- und Draft-Status-Prüfung
+- maschinenlesbarer Zweck-, Datenklassen- und Outputvertrag
+- zwölf fail-closed Governance-Gates vor jeder Protokollaktivierung
+- Quellen-Mapping-Sperre gegen fachlich nicht freigegebene Verbindungen
+- Widerrufs-/Löschpfad und 365-Tage-Dry-Run-/Retention-Pfad
+- getrennte Lifecycle- und Zugriffs-Audits ohne direkte Identifikatoren
 
 ## Absichtlich nicht aktiv
 
@@ -20,6 +25,6 @@
 - keine Store-/Privacy-Erklärung geändert
 - keine Rohantwort, kein Freitext, kein Name und keine E-Mail in das Evidenzmodell kopiert
 
-## Block 9 vor jeder Aktivierung
+## Block 9 – technisch gebaut, Freigaben weiter offen
 
-Erforderlich sind mindestens dokumentierte und freigegebene Entscheidungen zu Zweck und Rechtsgrundlage, neuer Einwilligung, Minderjährigen/Guardian, Widerruf und Löschung, Aufbewahrung, Export, Zugriffsprüfung, DPIA/Datenschutz-Folgenabschätzung sowie Privacy- und Store-Angaben. Erst danach darf eine neue Migration den Protokollstatus aktivieren und ein separat geprüftes Backfill starten.
+Die Verträge und technischen Sperren sind lokal gebaut. Die bestehende V3-Einwilligung ist nur als `conditionally_compatible` dokumentiert. Erforderlich bleiben die tatsächlichen, nachweisbaren Freigaben zu Zweck und Rechtsgrundlage, Einwilligung, Minderjährigen/Guardian, Widerruf und Löschung, Aufbewahrung, Quellen-Mappings, Export, Zugriffsprüfung, DPIA-Schwellenprüfung sowie Privacy- und Store-Angaben. Erst danach darf eine getrennte Migration den Protokollstatus aktivieren und ein separat freigegebener Backfill starten.

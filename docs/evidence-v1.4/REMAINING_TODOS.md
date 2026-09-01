@@ -26,8 +26,8 @@ Abnahme: Neu gespeicherte Aktivität erscheint zuverlässig ohne App-Neustart; d
 
 ## 3. Block 9 – Evidence-Aktivierung
 
-Vor jeder Production-Aktivierung des V1.4-Evidenzsystems müssen Zweck und Rechtsgrundlage, Einwilligung, Minderjährigen-/Guardian-Vertrag, Widerruf und Löschung, Aufbewahrung, Export, Zugriffsprüfung, DPIA/Datenschutz-Folgenabschätzung sowie Privacy- und Store-Angaben dokumentiert, fachlich geprüft und freigegeben sein.
+Die technischen Block-9-Verträge, Aktivierungssperren, Widerrufs-/Löschpfade, Retention-Dry-Run und Quellen-Mapping-Gates sind lokal gebaut. Offen sind nicht mehr die technischen Guardrails, sondern deren tatsächliche fachliche/rechtliche Freigabe und die noch nicht genehmigten Quellen-Crosswalks.
 
-Erst danach dürfen Production-Migration, Protokollaktivierung und ein separat geprüftes Backfill realer Pilotantworten erfolgen. Die vollständige Aktivierungsgrenze steht in `ACTIVATION_BOUNDARY.md`.
+Erst danach dürfen Production-Migration, Protokollaktivierung und ein separat geprüfter Backfill realer Pilotantworten erfolgen. Die vollständige Aktivierungsgrenze steht in `ACTIVATION_BOUNDARY.md`.
 
 Abnahme: Rechtliche und produktseitige Freigaben sind belegt; Migration und Backfill besitzen getrennte Dry-Run-, Reconciliation-, Rollback- und Audit-Nachweise.
