@@ -24,6 +24,14 @@ const queryResult = (value: unknown) => ({
   in: vi.fn().mockResolvedValue(value),
 });
 
+const abortableResult = <T,>(value: T) => {
+  const promise = Promise.resolve(value) as Promise<T> & {
+    abortSignal: (signal: AbortSignal) => Promise<T>;
+  };
+  promise.abortSignal = vi.fn(() => promise);
+  return promise;
+};
+
 describe("coach team member count", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -58,20 +66,20 @@ describe("coach team member count", () => {
           error: null,
         });
       }
-      if (name === "get_coach_team_activity_status") {
-        return Promise.resolve({
+      if (name === "get_coach_team_checkin_status_v1_4") {
+        return abortableResult({
           data: Array.from({ length: 6 }, (_, index) => ({
             user_id: `athlete-${index + 1}`,
             full_name: `Athlet ${index + 1}`,
-            last_activity_at: null,
-            days_completed: 0,
-            days_available: 0,
-            completion_rate: null,
-            current_streak: 0,
-            checkins_last_7d: 0,
-            last_checkin_date: null,
-            journal_entries_count: 0,
-            inactive_risk: false,
+            program_instance_id: `instance-${index + 1}`,
+            program_local_date: "2026-08-30",
+            today_checkin_completed: index < 2,
+            today_checkin_at: index < 2 ? "2026-08-30T08:00:00Z" : null,
+            rolling_7_completed: index < 2 ? 1 : 0,
+            rolling_7_available: 1,
+            rolling_7_rate: index < 2 ? 1 : 0,
+            already_reminded_today: false,
+            supported_push_channels: index < 5 ? ["apns"] : [],
           })),
           error: null,
         });
@@ -128,5 +136,71 @@ describe("coach team member count", () => {
     expect(await screen.findByRole("heading", { name: "U17" })).toBeInTheDocument();
     expect(screen.getByLabelText(/Programmfortschritt .* von 56 Tagen/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Programmstart vorbereiten/ })).not.toBeInTheDocument();
+    expect(screen.getByText("2/6")).toBeInTheDocument();
+    expect(screen.getByText("Check-ins heute")).toBeInTheDocument();
+    expect(screen.getByText("7-Tage-Rhythmus")).toBeInTheDocument();
+    expect(screen.getAllByText("Heute offen")).toHaveLength(4);
+    expect(screen.queryByText("inaktiv")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Streak/)).not.toBeInTheDocument();
+  });
+
+  it("shows the approved fixed reminder copy and channel coverage before sending", async () => {
+    mocks.invoke.mockResolvedValueOnce({
+      data: { openToday: 4, reachable: 3, withoutChannel: 1, alreadyReminded: 0 },
+      error: null,
+    });
+    render(
+      <TeamOverview teamId="team-1" teamName="U17" programStartDate="2026-08-01" />,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Offene Check-ins erinnern" }));
+
+    expect(await screen.findByRole("heading", { name: "Offene Check-ins erinnern?" })).toBeInTheDocument();
+    expect(screen.getByText(/Nimm dir bitte sobald wie möglich kurz Zeit dafür/)).toBeInTheDocument();
+    expect(screen.getByText(/3 Athleten sind aktuell/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Freundlich erinnern" })).toBeEnabled();
+  });
+
+  it("keeps the current dashboard visible while a focus refresh is still pending", async () => {
+    render(<TeamOverview teamId="team-1" teamName="U17" programStartDate="2026-08-01" />);
+    expect(await screen.findByText("2/6")).toBeInTheDocument();
+
+    let resolveRefresh: ((value: { data: unknown[]; error: null }) => void) | undefined;
+    const pending = new Promise<{ data: unknown[]; error: null }>((resolve) => {
+      resolveRefresh = resolve;
+    }) as Promise<{ data: unknown[]; error: null }> & {
+      abortSignal: (signal: AbortSignal) => Promise<{ data: unknown[]; error: null }>;
+    };
+    pending.abortSignal = vi.fn(() => pending);
+    const originalRpc = mocks.rpc.getMockImplementation();
+    mocks.rpc.mockImplementation((name: string, args: unknown) => {
+      if (name === "get_coach_team_checkin_status_v1_4") return pending;
+      if (!originalRpc) throw new Error(`Unexpected RPC: ${name}`);
+      return originalRpc(name, args);
+    });
+
+    fireEvent.focus(window);
+    expect(screen.getByText("2/6")).toBeInTheDocument();
+    expect(screen.getByText("Athlet 6")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Teilnahmestatus im Hintergrund aktualisieren" })).toBeDisabled();
+    expect(screen.getByText(/Stand \d{2}:\d{2}/)).toBeInTheDocument();
+
+    resolveRefresh?.({
+      data: Array.from({ length: 6 }, (_, index) => ({
+        user_id: `athlete-${index + 1}`,
+        full_name: `Athlet ${index + 1}`,
+        program_instance_id: `instance-${index + 1}`,
+        program_local_date: "2026-09-01",
+        today_checkin_completed: index < 3,
+        today_checkin_at: index < 3 ? "2026-09-01T08:00:00Z" : null,
+        rolling_7_completed: index < 3 ? 1 : 0,
+        rolling_7_available: 1,
+        rolling_7_rate: index < 3 ? 1 : 0,
+        already_reminded_today: false,
+        supported_push_channels: ["apns"],
+      })),
+      error: null,
+    });
+    expect(await screen.findByText("3/6")).toBeInTheDocument();
   });
 });

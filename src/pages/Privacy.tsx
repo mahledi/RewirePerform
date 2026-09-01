@@ -41,7 +41,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: {feedbackEnabled ? "24. August 2026" : webAnalyticsEnabled ? "23. August 2026" : "10. August 2026"}. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
+          Stand: 1. September 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert.
         </p>
@@ -319,17 +319,20 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Benachrichtigungen</h2>
             <p>
               Push-Benachrichtigungen sind optional. Wenn du sie aktivierst, speichern wir nur eine
-              technische Push-Berechtigung und deine gewählten Erinnerungszeiten. In der iOS-App wird
-              zusätzlich ein technischer APNs-Gerätetoken gespeichert, damit wir dir den Programmstart
-              zustellen können. Der Token enthält weder deinen Namen noch Antworten, Journaltexte oder
-              Standortdaten und wird beim Deaktivieren der Benachrichtigungen oder beim Löschen deines
-              Accounts entfernt.
+              technische Push-Berechtigung und deine gewählten Erinnerungszeiten. In der iOS- beziehungsweise
+              Android-App wird zusätzlich ein technischer APNs- beziehungsweise FCM-Gerätetoken gespeichert,
+              damit wir dir aktivierte Erinnerungen und teambezogene Programmhinweise zustellen können. Der
+              Token enthält weder deinen Namen noch Antworten, Journaltexte oder Standortdaten und wird beim
+              Deaktivieren der Benachrichtigungen oder beim Löschen deines Accounts entfernt.
             </p>
             <p className="mt-3">
               Für den zuverlässigen Versand speichern wir außerdem Benachrichtigungstyp, Versanddatum,
               Versandstatus sowie gegebenenfalls Öffnungszeitpunkt und Fehlerzeitpunkt. Diese Angaben dienen
-              ausschließlich Zustellung, Fehlerbehebung und der von dir geöffneten Zielseite. Private Journal-
-              oder Antwortinhalte werden weder protokolliert noch in Benachrichtigungen aufgenommen.
+              ausschließlich Zustellung, Fehlerbehebung und der von dir geöffneten Zielseite. Ein Coach kann
+              einmal am Tag eine feste, freundliche Erinnerung an noch offene Check-ins seines Teams auslösen;
+              dabei werden ausschließlich der offene Abschlussstatus und technische Zustellinformationen
+              verwendet. Private Journal- oder Antwortinhalte werden weder protokolliert noch in
+              Benachrichtigungen aufgenommen.
             </p>
           </section>
 

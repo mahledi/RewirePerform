@@ -1305,6 +1305,7 @@ export type Database = {
           started_at: string | null
           status: string
           team_id: string
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -1317,6 +1318,7 @@ export type Database = {
           started_at?: string | null
           status?: string
           team_id: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -1329,6 +1331,7 @@ export type Database = {
           started_at?: string | null
           status?: string
           team_id?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: [
@@ -2390,6 +2393,10 @@ export type Database = {
         Args: { include_test?: boolean }
         Returns: Json
       }
+      get_admin_evidence_workbench_v1_4: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_admin_nlz_evidence_dossier: {
         Args: { cohort_id?: string; include_test?: boolean }
         Returns: Json
@@ -2414,6 +2421,10 @@ export type Database = {
         Args: { _protocol_version?: string; _team_id: string }
         Returns: Json
       }
+      get_coach_team_development_v1_4: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_coach_team_activity_status: {
         Args: { _team_id: string }
         Returns: {
@@ -2430,7 +2441,27 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_coach_team_checkin_status_v1_4: {
+        Args: { _team_id: string }
+        Returns: {
+          already_reminded_today: boolean
+          full_name: string | null
+          program_instance_id: string | null
+          program_local_date: string
+          rolling_7_available: number
+          rolling_7_completed: number
+          rolling_7_rate: number
+          supported_push_channels: string[]
+          today_checkin_at: string | null
+          today_checkin_completed: boolean
+          user_id: string
+        }[]
+      }
       get_effective_today: { Args: { _user_id: string }; Returns: string }
+      get_evidence_report_v1_4: {
+        Args: { _program_run_id: string }
+        Returns: Json
+      }
       get_evidence_data_lock: { Args: { _lock_id: string }; Returns: Json }
       get_my_evidence_status: {
         Args: {
@@ -2441,6 +2472,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_my_longitudinal_evidence_v1_4: { Args: never; Returns: Json }
       get_my_transfer_evidence_summary: {
         Args: { _program_instance_id: string; _protocol_version?: string }
         Returns: Json

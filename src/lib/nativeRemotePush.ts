@@ -6,11 +6,11 @@ import { getNativeReminderPreferences } from "@/lib/nativeNotifications";
 const REGISTRATION_TIMEOUT_MS = 15_000;
 
 export const isNativeRemotePushAvailable = () =>
-  Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
+  Capacitor.isNativePlatform() && ["ios", "android"].includes(Capacitor.getPlatform());
 
-/** Registers an APNs token only after the existing explicit reminder opt-in. */
+/** Registers an APNs or FCM token only after the existing explicit reminder opt-in. */
 export const syncNativeRemotePushRegistration = async (userId: string) => {
-  if (!isNativeRemotePushAvailable()) return { registered: false as const, reason: "not_ios" };
+  if (!isNativeRemotePushAvailable()) return { registered: false as const, reason: "not_native" };
   if (!getNativeReminderPreferences(userId)?.enabled) {
     return { registered: false as const, reason: "not_opted_in" };
   }
@@ -35,8 +35,12 @@ export const syncNativeRemotePushRegistration = async (userId: string) => {
         try {
           registrationHandle = await PushNotifications.addListener("registration", async ({ value }) => {
             try {
+              const platform = Capacitor.getPlatform();
+              if (platform !== "ios" && platform !== "android") {
+                throw new Error("Unsupported native push platform");
+              }
               const { error } = await supabase.from("native_push_devices").upsert(
-                { user_id: userId, platform: "ios", device_token: value },
+                { user_id: userId, platform, device_token: value },
                 { onConflict: "device_token" },
               );
               if (error) throw error;
@@ -49,7 +53,7 @@ export const syncNativeRemotePushRegistration = async (userId: string) => {
             finish(() => reject(new Error(error)));
           });
           timeout = setTimeout(
-            () => finish(() => reject(new Error("APNs registration timed out"))),
+            () => finish(() => reject(new Error("Native push registration timed out"))),
             REGISTRATION_TIMEOUT_MS,
           );
           await PushNotifications.register();
@@ -68,10 +72,12 @@ export const syncNativeRemotePushRegistration = async (userId: string) => {
 
 export const unregisterNativeRemotePush = async (userId: string) => {
   if (!isNativeRemotePushAvailable()) return;
+  const platform = Capacitor.getPlatform();
   const { error } = await supabase
     .from("native_push_devices")
     .delete()
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .eq("platform", platform);
   if (error) throw error;
   await PushNotifications.unregister();
 };

@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.team-mental-state]
 verify_jwt = true
 
+[functions.send-coach-checkin-reminder]
+verify_jwt = true
+
 # Machine-authenticated endpoints. They verify MAHLEOS_REWIRE_API_KEY inside
 # the handler and may call only their dedicated service-role-only RPCs.
 [functions.evidence-read]
