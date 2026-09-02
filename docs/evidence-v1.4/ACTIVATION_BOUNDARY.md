@@ -29,6 +29,6 @@
 - keine Store-/Privacy-Erklärung geändert
 - keine Rohantwort, kein Freitext, kein Name und keine E-Mail in das Evidenzmodell kopiert
 
-## Block 9 – technisch gebaut, Freigaben weiter offen
+## Block 9 – enger Core intern entschieden, Production weiter gesperrt
 
-Die Verträge und technischen Sperren sind lokal gebaut. Die bestehende V3-Einwilligung ist nur als `conditionally_compatible` dokumentiert. Erforderlich bleiben die tatsächlichen, nachweisbaren Freigaben zu Zweck und Rechtsgrundlage, Einwilligung, Minderjährigen/Guardian, Widerruf und Löschung, Aufbewahrung, Quellen-Mappings, Export, Zugriffsprüfung, DPIA-Schwellenprüfung sowie Privacy- und Store-Angaben. Erst danach darf eine getrennte Migration den Protokollstatus aktivieren und ein separat freigegebener Backfill starten.
+Die Verträge und technischen Sperren sind lokal gebaut. Die bestehende V3-Einwilligung ist intern als `approved_core_scope` dokumentiert – ausschließlich für strukturierte, pseudonymisierte Core-Daten freiwillig freigegebener Personen im offiziellen Programmlauf. Coach-Beobachtungen, Push-Verhaltensanalyse und externe Matchdaten bleiben ausgeschlossen und benötigen eine neue V4-Entscheidung. Offen bleiben die qualifizierte externe Rechtsprüfung, die empfohlene kompakte DSFA, die fachlichen Quellen-Mappings, Export- und Zugriffsprüfung sowie der Abgleich der live hinterlegten Store-Angaben. Erst danach darf eine getrennte Migration den Protokollstatus aktivieren und ein separat freigegebener Backfill starten.

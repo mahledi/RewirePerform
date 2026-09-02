@@ -363,8 +363,9 @@ const AccountSettings = () => {
                   Freiwilliger Datenbeitrag
                 </label>
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  Erlaubt anonymisierte oder aggregierte Nutzungs- und Fortschrittsdaten für Produktverbesserung,
-                  Performance-Optimierung, Pilotberichte und Präsentationen.
+                  Erlaubt intern pseudonymisierte, strukturierte Nutzungs-, Fortschritts-, Check-in-, Assessment-
+                  und Transferdaten für die Pilot-Auswertung. Berichte und Präsentationen bleiben aggregiert oder
+                  nicht identifizierend.
                 </p>
               </div>
               <Switch

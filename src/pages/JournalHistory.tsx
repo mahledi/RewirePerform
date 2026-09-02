@@ -7,6 +7,7 @@ import { BookOpen, ChevronDown, Loader2, LockKeyhole } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
+import { getHistoricalJournalQuestion } from "@/lib/journalPresentation";
 
 interface JournalEntry {
   id: string;
@@ -55,7 +56,8 @@ const JournalHistory = () => {
       .limit(120);
 
     if (!error) {
-      setEntries((data ?? []) as JournalEntry[]);
+      const journalEntries = (data ?? []) as JournalEntry[];
+      setEntries(journalEntries);
       setOpenId(data?.[0]?.id ?? null);
     }
     setLoading(false);
@@ -126,10 +128,14 @@ const JournalHistory = () => {
                         className="overflow-hidden"
                       >
                         <div className="px-4 pb-4 space-y-4">
-                          {Object.entries(answers).map(([questionId, answer], index) => (
+                          {Object.entries(answers).map(([questionId, answer]) => (
                             <div key={questionId} className="rounded-xl bg-secondary/35 border border-border/35 p-4">
-                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                                Reflexion {index + 1}
+                              <p className="text-xs font-medium leading-5 text-primary/85 mb-2">
+                                {getHistoricalJournalQuestion({
+                                  dayNumber: entry.day_number,
+                                  date: entry.date,
+                                  questionId,
+                                })}
                               </p>
                               <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{answer}</p>
                             </div>
