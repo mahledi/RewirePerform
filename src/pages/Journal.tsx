@@ -17,6 +17,7 @@ import { AthleteScreenHeader } from "@/components/app/AthleteAppChrome";
 import { captureAppError } from "@/lib/monitoring";
 import { upsertTodaySnapshot } from "@/lib/programProgress";
 import { clearLocalDraft, readLocalDraft, writeLocalDraft } from "@/lib/localDrafts";
+import { getJournalCompletionLabel } from "@/lib/journalPresentation";
 import type { CalendarEventType, ResolvedDay } from "@/content/matrixDayTypes";
 import {
   AthleteFlowButton,
@@ -321,6 +322,13 @@ const Journal = () => {
   const allQuestionsReady = j.questions.every(
     (question) => (answers[question.id] ?? "").trim().length > 0,
   );
+  const completionLabel = getJournalCompletionLabel({
+    saving,
+    hasSaveError: Boolean(saveError),
+    allQuestionsReady,
+    gratitudeWords,
+    gratitudeMinWords,
+  });
 
   return (
     <div className="relative min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#0D0E12] text-[#EEF0F2]">
@@ -477,8 +485,17 @@ const Journal = () => {
               disabled={saving || !allQuestionsReady || gratitudeWords < gratitudeMinWords}
               className={`${athleteFlowPrimaryButton} w-full`}
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              {saving ? "Speichert …" : saveError ? "Erneut speichern" : "Tag abschließen"}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : gratitudeWords >= gratitudeMinWords && allQuestionsReady ? (
+                <Check className="h-4 w-4" />
+              ) : null}
+              <span
+                aria-live="polite"
+                className={gratitudeWords < gratitudeMinWords ? "text-white/70" : undefined}
+              >
+                {completionLabel}
+              </span>
             </AthleteFlowButton>
           ) : (
             <AthleteFlowButton

@@ -15,7 +15,7 @@ Eine Quelle wird nicht deshalb in dasselbe Konstrukt gerechnet, weil ihre Zahl �
 | validierte Assessments | Ergebnis des jeweiligen Instruments/Subscores | automatische Gleichheit mit RewirePerform-Konstrukten | Mapping required |
 | Verständnislernen | versionierte Richtig-/Verständniswerte zu einem konkreten Programmtag | mentale Fähigkeit, Transfer oder Wirkung | Mapping required |
 | Athlete Transfer | selbst berichtete Anwendung in konkreten Situationen | objektiv beobachtete Umsetzung | Mapping required |
-| Coach-Beobachtung | sichtbares Verhalten aus Coach-Perspektive | private Gedanken, Diagnose oder „Wahrheit“ über den Athleten | Mapping + Consent required |
+| Coach-Beobachtung | sichtbares Verhalten aus Coach-Perspektive | private Gedanken, Diagnose oder „Wahrheit“ über den Athleten | außerhalb des V1.4 Core; V4 required |
 | Daily State | Tageswerte zu Stimmung, Energie und Fokus | stabile Persönlichkeit oder Trainingswirkung | Mapping required |
 | Completion | Öffnung und Abschluss von Inhalten | Verständnis, mentale Qualität oder Wirkung | Use only |
 

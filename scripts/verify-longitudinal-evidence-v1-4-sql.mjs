@@ -6,6 +6,7 @@ const db = new PGlite();
 const migrationPath = resolve("supabase/migrations/20260831183516_v1_4_longitudinal_evidence_system.sql");
 const block9MigrationPath = resolve("supabase/migrations/20260901101823_v1_4_evidence_block_9_controls.sql");
 const pilotBoundaryMigrationPath = resolve("supabase/migrations/20260901143153_v1_4_official_pilot_data_boundary.sql");
+const coreScopeAlignmentMigrationPath = resolve("supabase/migrations/20260902093000_v1_4_core_scope_privacy_alignment.sql");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const expectFailure = async (task, expected) => {
   try { await task(); } catch (error) {
@@ -109,6 +110,7 @@ try {
   await db.exec(readFileSync(migrationPath, "utf8"));
   await db.exec(readFileSync(block9MigrationPath, "utf8"));
   await db.exec(readFileSync(pilotBoundaryMigrationPath, "utf8"));
+  await db.exec(readFileSync(coreScopeAlignmentMigrationPath, "utf8"));
 
   const protocol = (await db.query(`
     SELECT status, required_consent_version, retention_policy, minimum_group_size
@@ -121,13 +123,16 @@ try {
 
   const scope = (await db.query(`
     SELECT candidate_consent_version, compatibility_assessment, maximum_retention_days,
-      excluded_data_classes, prohibited_outputs
+      included_data_classes, excluded_data_classes, prohibited_outputs
     FROM evidence_private.processing_scope_contracts
   `)).rows[0];
   assert(scope.candidate_consent_version === "data_contribution_v3_2026_07", "Candidate consent version drifted");
-  assert(scope.compatibility_assessment === "conditionally_compatible", "Compatibility must not be pre-approved");
+  assert(scope.compatibility_assessment === "approved_core_scope", "Narrow V3 core compatibility decision drifted");
   assert(scope.maximum_retention_days === 365, "V1.4 personal evidence must have a 365-day maximum");
+  assert(scope.included_data_classes.includes("progress_values") && scope.included_data_classes.includes("comprehension_values"), "Progress and comprehension must stay inside the narrow core");
+  assert(!scope.included_data_classes.includes("released_structured_coach_observations"), "Coach observations must stay outside the V1.4 core");
   assert(scope.excluded_data_classes.includes("free_text") && scope.excluded_data_classes.includes("journal_content"), "Private text exclusions are incomplete");
+  assert(scope.excluded_data_classes.includes("push_behavior_analysis") && scope.excluded_data_classes.includes("external_match_data"), "Red-scope sources must stay excluded");
   assert(scope.prohibited_outputs.includes("automated_decision") && scope.prohibited_outputs.includes("causal_effectiveness_claim"), "Prohibited output boundary is incomplete");
 
   const readiness = (await db.query("SELECT evidence_private.get_activation_readiness_v1_4() AS payload")).rows[0].payload;

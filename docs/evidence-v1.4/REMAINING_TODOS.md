@@ -25,9 +25,9 @@ Abnahme: Der Coach kann die Team-Ebene verwenden, während Evidence/Jarvis separ
 
 Verbleibende Abnahme: physischer Coach-Web-Smoke nach Main-Deploy und je ein realer APNs-/Web-Push-Versand. FCM bleibt ohne Android-Token und Production-Service-Account nicht physisch bewiesen.
 
-## 3. Block 9 – Evidence-Aktivierung
+## 3. Block 9 – enger Core intern entschieden, Production-Aktivierung offen
 
-Die technischen Block-9-Verträge, Aktivierungssperren, Widerrufs-/Löschpfade, Retention-Dry-Run und Quellen-Mapping-Gates sind lokal gebaut. Offen sind nicht mehr die technischen Guardrails, sondern deren tatsächliche fachliche/rechtliche Freigabe und die noch nicht genehmigten Quellen-Crosswalks.
+Die technischen Block-9-Verträge, Aktivierungssperren, Widerrufs-/Löschpfade, Retention-Dry-Run und Quellen-Mapping-Gates sind lokal gebaut. V3 ist intern ausschließlich für den strukturierten, pseudonymisierten Core als `approved_core_scope` bewertet. Coach-Beobachtungen, Push-Verhaltensanalyse und externe Matchdaten bleiben außerhalb und benötigen eine neue V4-Entscheidung. Offen sind die qualifizierte externe Rechtsprüfung, die empfohlene kompakte DSFA, die noch nicht genehmigten Quellen-Crosswalks sowie der Live-Abgleich der Store-Datenschutzangaben.
 
 Erst danach dürfen Production-Migration, Protokollaktivierung und ein separat geprüfter Backfill realer Pilotantworten erfolgen. Die vollständige Aktivierungsgrenze steht in `ACTIVATION_BOUNDARY.md`.
 
@@ -46,7 +46,7 @@ Abnahme: Gleicher Dry-Run vor und nach Aktivierung, keine PII/Freitexte im Ergeb
 ## 5. Tracking-System finalisieren – verbindliche Reihenfolge
 
 1. Fachliche Quellen-Crosswalks für alle tatsächlich genutzten Quellen abnehmen; unbekannte oder nur hypothetische Verbindungen bleiben gesperrt.
-2. Rechtsgrundlage, bestehende Einwilligung, Minderjährigen-/Guardian-Vertrag, Widerruf, Löschung, Aufbewahrung, DPIA-Schwelle sowie Privacy-/Store-Texte nachweisbar freigeben.
+2. Den intern abgegrenzten V3-Core extern qualifiziert prüfen, die kompakte DSFA abnehmen sowie Quellen-Mappings und live hinterlegte Privacy-/Store-Angaben nachweisbar freigeben.
 3. Die drei Evidence-Migrationen getrennt und ohne Protokollaktivierung anwenden; danach Security Advisors und Grant-/RLS-Smoke prüfen.
 4. Für den TSV-U17-Lauf das Baseline-Fenster und das Aktivitätsfenster separat genehmigen. Baseline sind die vollständigen offiziellen Onboarding-Fragebögen vom 27.–31. August; In-Programm-Aktivität beginnt am 1. September 2026. Frühere Test-Pre-Assessments und historische Progress-Snapshots bleiben ausgeschlossen.
 5. Reconciliation ohne Namen, E-Mails, Antworten oder Freitext ausführen und die erwarteten Ein-/Ausschlüsse festhalten.

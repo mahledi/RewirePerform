@@ -38,7 +38,7 @@ Die Zählwerte sind ein Audit-Snapshot und wachsen während des Piloten weiter. 
 | Tagesabschluss | Aktivität | nur wirklich abgeschlossene Tage; Nutzung ist keine Wirkung |
 | Journal | Aktivität | nur Abschluss-Präsenz; Antworten und Freitext bleiben ausgeschlossen |
 | Athlete Transfer | Aktivität | strukturiert, consentiert, `is_test = false` |
-| Coach-Beobachtung | Aktivität | nur strukturierte freigegebene Werte, keine privaten Notizen |
+| Coach-Beobachtung | nicht im V1.4 Core | gesperrt bis zu einer neuen V4-Transparenz- und Einwilligungsentscheidung |
 | Progress Snapshot | nie Rohquelle | ausschließlich reproduzierbare Ausgabe |
 
 ## Fail-closed-Verhalten
