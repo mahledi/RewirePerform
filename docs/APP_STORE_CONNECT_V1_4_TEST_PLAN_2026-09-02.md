@@ -1,14 +1,14 @@
-# RewirePerform 1.4 (20) – TestFlight-Testplan
+# RewirePerform 1.4 – TestFlight-Testplan
 
-Status: `SIGNED_IPA_BUILT__TESTFLIGHT_UPLOAD_PENDING`
+Status: `LOCAL_RELEASE_CANDIDATE_VERIFIED__TESTFLIGHT_UPLOAD_PENDING`
 
 ## Ziel
 
-Dieser Plan prüft den signierten iOS-Kandidaten 1.4 (20) vor einer getrennten App-Review-Freigabe. Ein erfolgreicher Build oder Upload allein gilt nicht als bestandener Gerätetest.
+Dieser Plan prüft den nächsten signierten iOS-Kandidaten 1.4 vor einer getrennten App-Review-Freigabe. Ein erfolgreicher Build oder Upload allein gilt nicht als bestandener Gerätetest.
 
 ## Pflichtlauf auf einem echten iPhone
 
-1. Version 1.4 (20) aus TestFlight installieren und die App kalt starten.
+1. Die neue Version 1.4 aus TestFlight installieren und die App kalt starten.
 2. Mit einem freigegebenen Athletenkonto anmelden und Dashboard, Tagesinhalt, Check-in, Mission und Verständnis-Check kurz öffnen.
 3. Im Tagesjournal alle aktiven Fragen beantworten.
 4. In der Dankbarkeit genau sieben Wörter eingeben. Der untere, noch deaktivierte Button muss deutlich `7 von 8 Wörtern` anzeigen.
@@ -17,6 +17,8 @@ Dieser Plan prüft den signierten iOS-Kandidaten 1.4 (20) vor einer getrennten A
 7. Über jeder Antwort muss die wirkliche damalige Frage stehen; `Reflexion 1`, `Reflexion 2` oder `Reflexion 3` darf nicht mehr erscheinen.
 8. Wenn vorhanden, je einen Trainingstag-, Ruhetag- und Wettkampftag-Eintrag prüfen. Die Frage muss zum jeweiligen Kontext passen.
 9. App vollständig schließen, erneut öffnen und prüfen, dass der gespeicherte Eintrag weiterhin korrekt angezeigt wird.
+10. An einem Ruhetag die Visualisierung starten und auf `Für später planen` tippen. Es darf nichts abgeschlossen werden; stattdessen muss die Zeit-Auswahl erscheinen.
+11. Eine künftige Uhrzeit wählen, `Erinnerung setzen` drücken und die Rückkehr zum Dashboard bestätigen. Zum gewählten Zeitpunkt muss die Erinnerung wieder in die Visualisierung führen.
 
 ## Kurzer Regressionslauf
 

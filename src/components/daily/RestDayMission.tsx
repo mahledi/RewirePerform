@@ -139,6 +139,7 @@ const RestDayMission = ({
       <RestDayVisualizationFlow
         draft={draft}
         athleteName={athleteName}
+        onDefer={() => onPlanModeChange("later")}
         onCompletionChange={(complete) => {
           if (complete) {
             onComplete();

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import RestDayMission from "@/components/daily/RestDayMission";
 import { getProgramDayDraft } from "@/content/programV11";
@@ -69,6 +69,36 @@ const renderPlannedMission = () => {
   );
 };
 
+const renderActiveMission = (
+  onPlanModeChange = vi.fn(),
+  onComplete = vi.fn(),
+) => {
+  if (!draft) throw new Error("Program day draft missing");
+
+  render(
+    <RestDayMission
+      draft={draft}
+      userId="00000000-0000-4000-8000-000000000001"
+      athleteName="Noah"
+      date="2026-08-08"
+      planMode="now"
+      reminderTime="18:00"
+      reminderScheduled={false}
+      completed={false}
+      saving={false}
+      saveError={null}
+      onPlanModeChange={onPlanModeChange}
+      onReminderTimeChange={vi.fn()}
+      onReminderScheduledChange={vi.fn()}
+      onComplete={onComplete}
+      onRetrySave={vi.fn()}
+      onCloseForLater={vi.fn()}
+    />,
+  );
+
+  return { onPlanModeChange, onComplete };
+};
+
 describe("RestDayMission completion", () => {
   it("introduces the daily focus and sentence before offering the optional explanation", () => {
     renderPlannedMission();
@@ -98,6 +128,25 @@ describe("RestDayMission completion", () => {
     expect(screen.getByText("Abschluss wird gespeichert …")).toBeInTheDocument();
     expect(screen.queryByText(/Verständnis/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Journal/i)).not.toBeInTheDocument();
+  });
+
+  it("lets an athlete leave an active visualization to plan it for later", async () => {
+    const { onPlanModeChange, onComplete } = renderActiveMission();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Visualisierung starten" }),
+    );
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "Visualisierung starten" }),
+      ).not.toBeInTheDocument();
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Für später planen" }),
+    );
+
+    expect(onPlanModeChange).toHaveBeenCalledWith("later");
+    expect(onComplete).not.toHaveBeenCalled();
   });
 
   it("offers one explicit retry when the atomic save failed", () => {
