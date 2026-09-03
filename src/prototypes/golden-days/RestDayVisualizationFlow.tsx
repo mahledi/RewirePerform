@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import {
   Check,
   ChevronRight,
+  Clock3,
   Pause,
   Play,
   RotateCcw,
@@ -40,6 +41,7 @@ type RestDayVisualizationFlowProps = {
   draft: GoldenDayDraft;
   athleteName?: unknown;
   onCompletionChange?: (complete: boolean) => void;
+  onDefer?: () => void;
   showSoundLab?: boolean;
 };
 
@@ -125,6 +127,7 @@ const RestDayVisualizationFlow = ({
   draft,
   athleteName,
   onCompletionChange,
+  onDefer,
   showSoundLab = false,
 }: RestDayVisualizationFlowProps) => {
   const visualization = useMemo(() => getRestDayVisualization(draft), [draft]);
@@ -286,6 +289,14 @@ const RestDayVisualizationFlow = ({
     setRunning(false);
   };
 
+  const deferForLater = () => {
+    timerDeadlineRef.current = null;
+    releaseWakeLock();
+    stopVisualizationAudioSession();
+    setRunning(false);
+    onDefer?.();
+  };
+
   const moveToNextPhase = () => {
     if (!phaseFinished) return;
     if (phaseIndex === phases.length - 1) {
@@ -385,6 +396,14 @@ const RestDayVisualizationFlow = ({
           >
             <Play className="h-4 w-4 fill-current" /> Visualisierung starten
           </AthleteFlowButton>
+          {onDefer && (
+            <AthleteFlowButton
+              onClick={deferForLater}
+              className={`${athleteFlowSecondaryButton} mt-3 w-full`}
+            >
+              <Clock3 className="h-4 w-4" /> Für später planen
+            </AthleteFlowButton>
+          )}
         </div>
       </div>
     );
@@ -472,6 +491,14 @@ const RestDayVisualizationFlow = ({
             </AthleteFlowButton>
           )}
         </div>
+        {onDefer && (
+          <AthleteFlowButton
+            onClick={deferForLater}
+            className={`${athleteFlowSecondaryButton} mt-3 w-full`}
+          >
+            <Clock3 className="h-4 w-4" /> Für später planen
+          </AthleteFlowButton>
+        )}
       </div>
     </div>
   );
