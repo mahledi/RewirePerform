@@ -1,6 +1,6 @@
 # RewirePerform 1.4 – TestFlight-Testplan
 
-Status: `LOCAL_RELEASE_CANDIDATE_VERIFIED__TESTFLIGHT_UPLOAD_PENDING`
+Status: `TESTFLIGHT_GREEN__APP_REVIEW_SUBMITTED`
 
 ## Ziel
 
@@ -33,10 +33,13 @@ Dieser Plan prüft den nächsten signierten iOS-Kandidaten 1.4 vor einer getrenn
 
 Der V1.4-Evidence-Core ist im Quellstand vorbereitet und fail-closed. Dieser TestFlight-Build aktiviert keine neue Production-Migration, keinen echten Evidence-Backfill und keine reale Jarvis-/Coach-Auswertung. Journaltexte und Freitexte bleiben vollständig ausgeschlossen.
 
-## Vor App Review noch erforderlich
+## Ergebnis für 1.4
 
-- Mahles dokumentiertes Ergebnis des Pflichtlaufs auf einem echten iPhone;
-- App Store Connect Privacy-Angaben gegen `PrivacyInfo.xcprivacy` prüfen;
-- entscheiden, ob die noch offene First-Run-Parity-Überarbeitung vor 1.4 gebaut oder ausdrücklich auf später verschoben wird;
-- für eine spätere reale Evidence-Aktivierung: externe qualifizierte Rechtsprüfung, kompakte DSFA, Quellen-Mappings und getrennte Production-/Backfill-Freigaben;
-- abschließende, separate Bestätigung unmittelbar vor `Zur Überprüfung einreichen`.
+- Der Pflichtlauf auf dem echten iPhone ist vollständig grün bestätigt.
+- Build `1.4 (21)` wurde TestFlight bereitgestellt und am 3. September 2026 zur App-Prüfung eingereicht.
+- Die App-Store-Datenschutzangaben wurden gegen `PrivacyInfo.xcprivacy` abgeglichen. Dieser Build fügt keine neue Datenkategorie und kein neues app-übergreifendes Tracking hinzu; eine Änderung der Store-Angaben war daher nicht erforderlich.
+- Die noch offene First-Run-Parity-Überarbeitung ist nicht Teil von Build 21 und wird nicht als gelieferte 1.4-Funktion behauptet.
+
+## Weiterhin getrennt und nicht mit 1.4 aktiviert
+
+- Für eine spätere reale Evidence-Aktivierung bleiben externe qualifizierte Rechtsprüfung, kompakte DSFA, Quellen-Mappings und getrennte Production-/Backfill-Freigaben erforderlich.
