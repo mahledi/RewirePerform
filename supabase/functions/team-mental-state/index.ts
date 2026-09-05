@@ -33,10 +33,18 @@ Deno.serve(async (req) => {
     }
 
     const client = authenticatedClient(req);
-    const { data, error } = await client.rpc("get_team_mental_state_aggregate", {
-      _team_id: teamId,
-      _protocol_version: "56d-transfer-v2-2026-07",
-    });
+    const protocolVersion = "56d-transfer-v2-2026-07";
+    const [aggregateResult, historyResult] = await Promise.all([
+      client.rpc("get_team_mental_state_aggregate", {
+        _team_id: teamId,
+        _protocol_version: protocolVersion,
+      }),
+      client.rpc("get_team_pulse_history_v1_5", {
+        _team_id: teamId,
+        _protocol_version: protocolVersion,
+      }),
+    ]);
+    const { data, error } = aggregateResult;
 
     if (error) {
       if (error.message.includes("team_not_found")) {
@@ -51,7 +59,23 @@ Deno.serve(async (req) => {
       throw new MinorFlowError("team_aggregate_unavailable", 503);
     }
 
-    return new Response(JSON.stringify(data), {
+    const history = historyResult.data as Record<string, unknown> | null;
+    const aggregate = data as Record<string, unknown> | null;
+    const aggregateWellbeing = aggregate?.wellbeing && typeof aggregate.wellbeing === "object"
+      ? aggregate.wellbeing as Record<string, unknown>
+      : {};
+    const responseData = !historyResult.error && history?.available === true && aggregate
+      ? {
+          ...aggregate,
+          wellbeing: {
+            ...aggregateWellbeing,
+            daily_trends: history.daily_trends,
+            weekly_trends: history.weekly_trends,
+          },
+        }
+      : data;
+
+    return new Response(JSON.stringify(responseData), {
       headers: {
         ...corsHeaders(req),
         "Content-Type": "application/json",

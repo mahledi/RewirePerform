@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
+import { de } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Activity,
   AlertTriangle,
   Brain,
+  ChevronDown,
   Compass,
   Info,
   Lock,
@@ -29,8 +31,9 @@ interface TrendPoint {
   sufficient_data?: boolean;
 }
 
-interface WellbeingDay {
+export interface WellbeingDay {
   date?: string;
+  start?: string;
   n_users: number;
   sufficient_data: boolean;
   low_confidence?: boolean;
@@ -69,7 +72,7 @@ interface TeamRow {
   program_start_date: string | null;
 }
 
-type WellbeingKey =
+export type WellbeingKey =
   | "mood"
   | "energy"
   | "focus"
@@ -511,6 +514,12 @@ const TeamMentalState = ({ teamId }: { teamId: string }) => {
         </div>
       </section>
 
+      <CoachPulseHistory
+        days={data.wellbeing?.daily_trends ?? []}
+        weeks={data.wellbeing?.weekly_trends ?? []}
+        minN={minN}
+      />
+
     </div>
   );
 };
@@ -584,6 +593,159 @@ const DeltaBadge = ({ delta, inverse = false, small = false }: { delta: number |
       <Icon className="h-3 w-3" />
       {delta === null ? "—" : formatSigned(delta)}
     </span>
+  );
+};
+
+const historyMetrics: Array<{ key: WellbeingKey; label: string; inverse?: boolean }> = [
+  { key: "mood", label: "Stimmung" },
+  { key: "energy", label: "Energie" },
+  { key: "focus", label: "Fokus" },
+  { key: "stress", label: "Stress", inverse: true },
+  { key: "recovery", label: "Erholung" },
+  { key: "sleep_quality", label: "Schlaf" },
+  { key: "physical_readiness", label: "Körper" },
+  { key: "motivation", label: "Motivation" },
+  { key: "pressure", label: "Druck", inverse: true },
+  { key: "team_connection", label: "Teamverbundenheit" },
+];
+
+const previousHistoryValue = (
+  rows: WellbeingDay[],
+  currentIndex: number,
+  key: WellbeingKey,
+) => {
+  for (let index = currentIndex - 1; index >= 0; index -= 1) {
+    if (rows[index].sufficient_data && typeof rows[index][key] === "number") {
+      return rows[index][key] as number;
+    }
+  }
+  return null;
+};
+
+export const CoachPulseHistory = ({
+  days,
+  weeks,
+  minN,
+}: {
+  days: WellbeingDay[];
+  weeks: (WellbeingDay & { week: string })[];
+  minN: number;
+}) => {
+  const chronologicalWeeks = [...weeks];
+  const newestFirst = [...chronologicalWeeks].reverse();
+
+  if (newestFirst.length === 0) return null;
+
+  return (
+    <section className="rounded-2xl border border-border/50 bg-card p-4" aria-labelledby="team-pulse-history-title">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-primary/80">Verlauf</p>
+          <h3 id="team-pulse-history-title" className="mt-2 text-lg font-semibold text-foreground">
+            Teampuls nach Wochen
+          </h3>
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+            Die aktuelle Woche ist offen. Frühere Wochen kannst du einzeln aufklappen. Jeder Wert bleibt anonymisiert und erscheint erst ab {minN} Beiträgen.
+          </p>
+        </div>
+        <Activity className="h-5 w-5 shrink-0 text-primary" />
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {newestFirst.map((week, reverseIndex) => {
+          const chronologicalIndex = chronologicalWeeks.length - 1 - reverseIndex;
+          const start = week.start ? parseISO(week.start) : null;
+          const end = start ? addDays(start, 7) : null;
+          const weekDays = start && end
+            ? days.filter((day) => {
+                if (!day.date) return false;
+                const date = parseISO(day.date);
+                return date >= start && date < end;
+              }).reverse()
+            : [];
+
+          return (
+            <details
+              key={`${week.week}-${week.start ?? reverseIndex}`}
+              open={reverseIndex === 0}
+              className="group overflow-hidden rounded-xl border border-border/45 bg-secondary/20"
+            >
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{week.week}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {week.sufficient_data ? `${week.n_users} Athlet:innen im Wochenbild` : `Unter ${minN} Beiträgen`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {typeof week.team_connection === "number" && (
+                    <span className="text-right">
+                      <span className="block text-[9px] text-muted-foreground">Verbundenheit</span>
+                      <span className="text-sm font-semibold text-primary">{formatDecimal(week.team_connection)}</span>
+                    </span>
+                  )}
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                </div>
+              </summary>
+
+              <div className="border-t border-border/40 p-3">
+                {!week.sufficient_data ? (
+                  <p className="rounded-lg bg-background/35 px-3 py-4 text-center text-xs text-muted-foreground">
+                    Für diese Woche gibt es noch kein ausreichend großes, anonymes Team-Bild.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                    {historyMetrics.map((metric) => {
+                      const value = week[metric.key];
+                      const previous = previousHistoryValue(chronologicalWeeks, chronologicalIndex, metric.key);
+                      const delta = typeof value === "number" && typeof previous === "number" ? value - previous : null;
+                      return (
+                        <div key={metric.key} className="rounded-lg border border-border/35 bg-background/30 p-3">
+                          <div className="flex min-h-9 flex-col items-start justify-between gap-1 min-[520px]:min-h-0 min-[520px]:flex-row">
+                            <p className="text-[10px] text-muted-foreground">{metric.label}</p>
+                            <DeltaBadge delta={delta} inverse={metric.inverse} small />
+                          </div>
+                          <p className="mt-2 text-lg font-semibold text-foreground">{formatDecimal(value)}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {weekDays.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="px-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                      Einzelne Tage dieser Woche
+                    </p>
+                    {weekDays.map((day) => (
+                      <div key={day.date} className="flex items-center justify-between gap-3 rounded-lg border border-border/35 bg-background/25 px-3 py-2.5">
+                        <div>
+                          <p className="text-xs font-medium capitalize text-foreground">
+                            {day.date ? format(parseISO(day.date), "EEEE, dd. MMMM", { locale: de }) : "Tag"}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground">
+                            {day.sufficient_data ? `${day.n_users} Beiträge` : `unter ${minN} Beiträgen`}
+                          </p>
+                        </div>
+                        {day.sufficient_data ? (
+                          <div className="flex gap-3 text-right">
+                            <span className="text-[10px] text-muted-foreground">Stimmung <b className="text-foreground">{formatDecimal(day.mood)}</b></span>
+                            <span className="text-[10px] text-muted-foreground">Energie <b className="text-foreground">{formatDecimal(day.energy)}</b></span>
+                            <span className="hidden text-[10px] text-muted-foreground sm:inline">Fokus <b className="text-foreground">{formatDecimal(day.focus)}</b></span>
+                          </div>
+                        ) : (
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </details>
+          );
+        })}
+      </div>
+    </section>
   );
 };
 

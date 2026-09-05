@@ -97,6 +97,9 @@ const WebsiteGoldenPagePreview = evidencePreviewEnabled
 const AthleteFlowQualityPreview = evidencePreviewEnabled
   ? lazy(() => import("./pages/AthleteFlowQualityPreview.tsx"))
   : null;
+const TeamDevelopmentV15Preview = evidencePreviewEnabled
+  ? lazy(() => import("./pages/TeamDevelopmentV15Preview.tsx"))
+  : null;
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const PageFallback = () => {
@@ -136,6 +139,8 @@ const AppRoutes = () => {
     && location.pathname === "/internal/website-golden-page-preview";
   const isAthleteFlowQualityPreview = AthleteFlowQualityPreview !== null
     && location.pathname === "/internal/athlete-flow-preview";
+  const isTeamDevelopmentV15Preview = TeamDevelopmentV15Preview !== null
+    && location.pathname === "/internal/team-development-v1-5-preview";
   const isDemoRoute = location.pathname === "/demo"
     || isEvidencePreview
     || isEvidenceV14Preview
@@ -148,7 +153,8 @@ const AppRoutes = () => {
     || isGoldenDaysPreview
     || isProgramContentPreview
     || isWebsiteGoldenPagePreview
-    || isAthleteFlowQualityPreview;
+    || isAthleteFlowQualityPreview
+    || isTeamDevelopmentV15Preview;
 
   if (isDemoRoute) {
     return (
@@ -184,6 +190,9 @@ const AppRoutes = () => {
             )}
             {AthleteFlowQualityPreview && (
               <Route path="/internal/athlete-flow-preview" element={<AthleteFlowQualityPreview />} />
+            )}
+            {TeamDevelopmentV15Preview && (
+              <Route path="/internal/team-development-v1-5-preview" element={<TeamDevelopmentV15Preview />} />
             )}
             <Route path="*" element={<NotFound />} />
           </Routes>
