@@ -51,6 +51,9 @@ describe("Jarvis deep analysis request boundary", () => {
     await expect(requestDeepAnalysis(
       { rpc }, "Analysiere person@example.com", data(), [],
     )).rejects.toThrow("QUESTION_INVALID");
+    await expect(requestDeepAnalysis(
+      { rpc }, "Analysiere user_id 11111111-1111-4111-8111-111111111111", data(), [],
+    )).rejects.toThrow("QUESTION_INVALID");
     expect(rpc).not.toHaveBeenCalled();
   });
 

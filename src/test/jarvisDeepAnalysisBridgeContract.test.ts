@@ -31,6 +31,7 @@ describe("Jarvis deep-analysis prepared database contract", () => {
     expect(sql).toContain("ORDER BY (job.status = 'LAEUFT') DESC");
     expect(sql).toContain("_worker_id text,\n  _status text");
     expect(sql).toContain("DESCRIPTIVE_STRUCTURED_ONLY");
+    expect(sql).toContain("(user|athlete|coach|team|program|subject)[_-]?id");
     for (const value of ["subject_reference", "journal", "free_text", "individual_score"]) {
       expect(sql).toContain(value);
     }

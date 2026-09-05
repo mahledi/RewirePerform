@@ -32,6 +32,7 @@ type RpcClient = {
 const SHA256 = /^[a-f0-9]{64}$/u;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const EMAIL = /\b[^\s@]+@[^\s@]+\.[^\s@]+\b/u;
+const DIRECT_IDENTIFIER = /\b(?:user|athlete|coach|team|program|subject)[_-]?id\b|\b[0-9a-f]{8}-[0-9a-f-]{27,36}\b/iu;
 const RESULT_KEYS = new Set([
   "schema_version", "summary", "developments", "comparisons", "data_quality",
   "temporal_links", "review_areas", "founder_questions", "sources", "limitations",
@@ -118,7 +119,10 @@ export const requestDeepAnalysis = async (
   sourceStates: Array<{ label: string; state: JarvisSourceState }>,
 ): Promise<DeepAnalysisJob> => {
   const normalizedQuestion = question.trim().replace(/\s+/gu, " ");
-  if (normalizedQuestion.length < 3 || normalizedQuestion.length > 500 || EMAIL.test(normalizedQuestion)) {
+  if (
+    normalizedQuestion.length < 3 || normalizedQuestion.length > 500
+    || EMAIL.test(normalizedQuestion) || DIRECT_IDENTIFIER.test(normalizedQuestion)
+  ) {
     throw new Error("JARVIS_DEEP_ANALYSIS_QUESTION_INVALID");
   }
   assertPrivateSafe(data);

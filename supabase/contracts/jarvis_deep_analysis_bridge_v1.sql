@@ -54,6 +54,8 @@ BEGIN
   END IF;
   IF char_length(normalized_question) NOT BETWEEN 3 AND 500
      OR normalized_question ~* '[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+'
+     OR normalized_question ~* '\m(user|athlete|coach|team|program|subject)[_-]?id\M'
+     OR normalized_question ~* '\m[0-9a-f]{8}-[0-9a-f-]{27,36}\M'
      OR _snapshot_sha256 !~ '^[a-f0-9]{64}$'
      OR jsonb_typeof(_source_states) <> 'object'
      OR _source_states::text ~* '[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+'
