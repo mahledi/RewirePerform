@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowLeft, Bot, Loader2, RefreshCcw, Send } from "lucide-react";
+import { ArrowLeft, Bot, BrainCircuit, Loader2, RefreshCcw, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +13,23 @@ import AdminFeedbackStructuredInsights from "@/components/admin/AdminFeedbackStr
 import AdminJarvisDashboard from "@/components/admin/AdminJarvisDashboard";
 import { BrandSymbol } from "@/components/brand/BrandLogo";
 import { buildJarvisAnswer, type JarvisAnswer, type JarvisReadModel } from "@/lib/adminJarvis";
+import {
+  readDeepAnalysis,
+  requestDeepAnalysis,
+  type DeepAnalysisJob,
+  type JarvisSourceState,
+} from "@/lib/adminJarvisDeepAnalysis";
 import { EVIDENCE_PROTOCOL_VERSION } from "@/lib/performanceEvidence";
 
-type SourceState = { label: string; state: "CURRENT" | "FAILED" };
+type SourceState = { label: string; state: JarvisSourceState };
 
 const record = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+
+const textList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
+const terminalDeepAnalysisStates = new Set(["FERTIG", "BLOCKIERT", "FEHLGESCHLAGEN"]);
 
 const AdminJarvis = () => {
   const navigate = useNavigate();
@@ -28,6 +39,9 @@ const AdminJarvis = () => {
   const [loading, setLoading] = useState(true);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<JarvisAnswer | null>(null);
+  const [deepAnalysis, setDeepAnalysis] = useState<DeepAnalysisJob | null>(null);
+  const [deepAnalysisLoading, setDeepAnalysisLoading] = useState(false);
+  const [deepAnalysisError, setDeepAnalysisError] = useState<string | null>(null);
   const [feedbackSourceState, setFeedbackSourceState] = useState<SourceState["state"] | null>(null);
   const [comprehensionSourceState, setComprehensionSourceState] = useState<SourceState["state"] | null>(null);
 
@@ -65,9 +79,46 @@ const AdminJarvis = () => {
     if (!authLoading && roleVerified && role === "admin") void load();
   }, [authLoading, role, roleVerified, load]);
 
+  useEffect(() => {
+    if (!deepAnalysis || terminalDeepAnalysisStates.has(deepAnalysis.status)) return undefined;
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const current = await readDeepAnalysis(supabase as any, deepAnalysis.request_id);
+        if (!cancelled) setDeepAnalysis(current);
+      } catch {
+        if (!cancelled) setDeepAnalysisError("Der Status kann gerade nicht aktualisiert werden. Der sichere Auftrag bleibt bestehen.");
+      }
+    }, 5_000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [deepAnalysis]);
+
   const ask = () => {
     if (!question.trim()) return;
     setAnswer(buildJarvisAnswer(question, data));
+    setDeepAnalysis(null);
+    setDeepAnalysisError(null);
+  };
+
+  const requestDepth = async () => {
+    if (!answer || !question.trim()) return;
+    setDeepAnalysisLoading(true);
+    setDeepAnalysisError(null);
+    try {
+      // Only the question, aggregate snapshot hash and source states leave the
+      // browser. The aggregate data is fetched again by the local worker.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const job = await requestDeepAnalysis(supabase as any, question, data, visibleSources);
+      setDeepAnalysis(job);
+    } catch {
+      setDeepAnalysisError("Der Auftrag konnte nicht sicher angelegt werden. Es wurde keine Tiefenanalyse gestartet.");
+    } finally {
+      setDeepAnalysisLoading(false);
+    }
   };
 
   const visibleSources = [
@@ -113,12 +164,45 @@ const AdminJarvis = () => {
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {["Wie ist die Aktivität?", "Was geht hoch oder runter?", "Wie stehen die Solo-Athleten?", "Welche Datenlücken gibt es?", "Wie stehen die Messfenster?"].map((prompt) => (
-              <button key={prompt} type="button" onClick={() => { setQuestion(prompt); setAnswer(buildJarvisAnswer(prompt, data)); }} className="rounded-full border border-[#4b4338] px-3 py-1.5 text-xs text-[#b9b0a4] transition-colors hover:border-[#d8c4a8] hover:text-[#f4efe6]">{prompt}</button>
+              <button key={prompt} type="button" onClick={() => { setQuestion(prompt); setAnswer(buildJarvisAnswer(prompt, data)); setDeepAnalysis(null); setDeepAnalysisError(null); }} className="rounded-full border border-[#4b4338] px-3 py-1.5 text-xs text-[#b9b0a4] transition-colors hover:border-[#d8c4a8] hover:text-[#f4efe6]">{prompt}</button>
             ))}
           </div>
           {answer ? (
             <div className="mt-5 rounded-2xl border border-[#4b4338] bg-black/20 p-4" aria-live="polite">
               <div className="flex gap-3"><Bot className="mt-0.5 h-5 w-5 shrink-0 text-[#66d4b1]" /><div><p className="leading-relaxed text-[#f4efe6]">{answer.answer}</p><p className="mt-3 text-xs text-[#a9a095]">Quellen: {answer.sourceLabels.join(" · ")} · {answer.boundary}</p></div></div>
+              <div className="mt-5 border-t border-[#4b4338] pt-4">
+                <p className="text-xs leading-relaxed text-[#a9a095]">Optional: Sol analysiert einmalig nur die strukturierten, aggregierten Daten dieses Stands. Freitext, Journale, Namen, E-Mails und direkte IDs bleiben ausgeschlossen. Fehlende oder alte Quellen werden sichtbar; Ursachen werden nicht als Fakten behauptet. Der Auftrag nutzt dein bestehendes Codex-Kontingent und wartet, wenn dein Mac nicht läuft.</p>
+                <Button type="button" variant="outline" onClick={() => void requestDepth()} disabled={deepAnalysisLoading} className="mt-3 border-[#6f6456] bg-transparent text-[#f4efe6] hover:bg-[#29251f] hover:text-white">
+                  {deepAnalysisLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BrainCircuit className="mr-2 h-4 w-4" />}
+                  Mit Codex tief analysieren
+                </Button>
+                {deepAnalysis ? (
+                  <div className="mt-3 space-y-3" aria-live="polite">
+                    <p className="text-sm text-[#d8c4a8]">Status: {deepAnalysis.status}{deepAnalysis.reused ? " · vorhandenes Ergebnis wiederverwendet" : ""}</p>
+                    {deepAnalysis.status === "WARTET_AUF_MAC" ? <p className="text-xs text-[#a9a095]">Dein Mac ist vermutlich nicht erreichbar. Der Auftrag wird erst lokal verarbeitet, wenn der Worker aktiv ist.</p> : null}
+                    {deepAnalysis.status === "BLOCKIERT" || deepAnalysis.status === "FEHLGESCHLAGEN" ? <p className="text-sm text-[#f0b9a9]">Jarvis hat sicher gestoppt. Grund: {deepAnalysis.failure_code ?? "nicht eindeutig bestimmbar"}. Es wurde kein Ergebnis erfunden.</p> : null}
+                    {deepAnalysis.status === "FERTIG" && deepAnalysis.result ? (
+                      <div className="rounded-xl border border-[#6f6456] bg-[#11110f] p-4 text-sm text-[#e9e2d8]">
+                        <p className="font-semibold text-[#f4efe6]">{String(deepAnalysis.result.summary ?? "Analyse abgeschlossen.")}</p>
+                        {([
+                          ["Wichtigste Entwicklungen", "developments"],
+                          ["Solo, Team und Gesamt", "comparisons"],
+                          ["Datenqualität", "data_quality"],
+                          ["Zeitliche Zusammenhänge", "temporal_links"],
+                          ["Sinnvolle Prüfbereiche – keine bewiesenen Ursachen", "review_areas"],
+                          ["Nächste Founder-Fragen", "founder_questions"],
+                          ["Quellen", "sources"],
+                          ["Grenzen", "limitations"],
+                        ] as const).map(([label, key]) => {
+                          const items = textList(deepAnalysis.result?.[key]);
+                          return items.length ? <div key={key} className="mt-4"><p className="font-medium text-[#d8c4a8]">{label}</p><ul className="mt-1 list-disc space-y-1 pl-5">{items.map((item) => <li key={item}>{item}</li>)}</ul></div> : null;
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+                {deepAnalysisError ? <p className="mt-3 text-sm text-destructive" role="alert">{deepAnalysisError}</p> : null}
+              </div>
             </div>
           ) : null}
         </section>
