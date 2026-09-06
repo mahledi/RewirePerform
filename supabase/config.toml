@@ -23,6 +23,12 @@ verify_jwt = false
 [functions.mahleos-read]
 verify_jwt = false
 
+# Founder-triggered local Codex worker bridge. It reuses the existing MahleOS
+# machine authentication and may call only the private queue claim/complete RPCs.
+# The function remains prepared, not deployed, until a separate Production gate.
+[functions.jarvis-deep-analysis-worker]
+verify_jwt = false
+
 # Public business inquiry intake. The handler remains fail-closed unless the
 # explicit feature flag and Turnstile secret are configured.
 [functions.submit-organization-access-request]
