@@ -2523,6 +2523,10 @@ export type Database = {
         Args: { _program_run_id: string }
         Returns: Json
       }
+      get_athlete_team_momentum_v1_5: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_team_mental_state_aggregate: {
         Args: { _protocol_version?: string; _team_id: string }
         Returns: Json

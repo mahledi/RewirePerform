@@ -31,6 +31,12 @@ import {
   athleteAppBackground,
   athleteAppViewport,
 } from "@/components/app/AthleteAppChrome";
+import {
+  AthletePulseHistory,
+  AthleteTeamMomentumCard,
+  type AthleteTeamMomentum,
+} from "@/components/progress/AthletePulseHistory";
+import { ownCheckinToPulseDay, type OwnCheckinRow, type PulseDay } from "@/lib/pulseHistory";
 
 const PROGRAM_DAYS = 56;
 const CHART_WIDTH = 320;
@@ -166,6 +172,8 @@ const Progress = () => {
   );
   const [loading, setLoading] = useState(() => !getAthleteProgressCache(user?.id));
   const [error, setError] = useState(false);
+  const [pulseDays, setPulseDays] = useState<PulseDay[]>([]);
+  const [teamMomentum, setTeamMomentum] = useState<AthleteTeamMomentum | null>(null);
 
   const loadActivity = useCallback(async (signal?: AbortSignal) => {
     if (!user?.id) {
@@ -211,16 +219,37 @@ const Progress = () => {
         ? snapshotQuery.eq("program_instance_id", instanceId)
         : snapshotQuery.is("program_instance_id", null);
 
+      let checkinsQuery = supabase
+        .from("daily_checkins")
+        .select("date, mood_before, energy_level, focus_rating, wellbeing_metrics")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
+        .limit(PROGRAM_DAYS)
+        .retry(false);
+      checkinsQuery = instanceId
+        ? checkinsQuery.eq("program_instance_id", instanceId)
+        : checkinsQuery.is("program_instance_id", null);
+
+      const momentumQuery = instance?.team_id
+        ? supabase.rpc("get_athlete_team_momentum_v1_5")
+        : Promise.resolve({ data: null, error: null });
+
       if (signal) {
         completionsQuery = completionsQuery.abortSignal(signal);
         snapshotQuery = snapshotQuery.abortSignal(signal);
+        checkinsQuery = checkinsQuery.abortSignal(signal);
       }
 
-      const [{ data: completions, error: completionsError }, { data: snapshots, error: snapshotError }] =
-        await Promise.all([completionsQuery, snapshotQuery]);
+      const [
+        { data: completions, error: completionsError },
+        { data: snapshots, error: snapshotError },
+        { data: checkins, error: checkinsError },
+        { data: momentum, error: momentumError },
+      ] = await Promise.all([completionsQuery, snapshotQuery, checkinsQuery, momentumQuery]);
 
       if (completionsError) throw completionsError;
       if (snapshotError) throw snapshotError;
+      if (checkinsError) throw checkinsError;
 
       const snapshot = (snapshots?.[0] ?? null) as ActivitySnapshot | null;
       const startDate = instance?.started_at ?? effectiveStart.startDate;
@@ -256,6 +285,12 @@ const Progress = () => {
         measurementStatus: nextData.measurementStatus,
       });
       setProgressData(nextData);
+      setPulseDays(((checkins ?? []) as OwnCheckinRow[]).map(ownCheckinToPulseDay));
+      if (!momentumError && momentum && typeof momentum === "object" && !Array.isArray(momentum)) {
+        setTeamMomentum(momentum as unknown as AthleteTeamMomentum);
+      } else {
+        setTeamMomentum(null);
+      }
     } catch (loadError) {
       if (loadError instanceof DOMException && loadError.name === "AbortError") return;
       console.error("development activity load error", loadError);
@@ -490,6 +525,15 @@ const Progress = () => {
                 </div>
               </div>
             </motion.section>
+
+            <AthleteTeamMomentumCard
+              momentum={teamMomentum}
+              checkedInToday={Boolean(
+                teamMomentum?.today && pulseDays.some((day) => day.date === teamMomentum.today),
+              )}
+            />
+
+            <AthletePulseHistory days={pulseDays} />
           </>
         )}
       </main>
