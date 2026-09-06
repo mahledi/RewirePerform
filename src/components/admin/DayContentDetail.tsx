@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { getNote, setNote } from "@/lib/adminNotes";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Props {
   dayNumber: number;
@@ -30,7 +30,7 @@ const DayContentDetail = ({ dayNumber, onPrev, onNext, hasPrev, hasNext }: Props
 
   const handleSave = () => {
     setNote(dayNumber, note);
-    toast({ title: "Notiz gespeichert", description: `Tag ${dayNumber}` });
+    toast.success("Notiz gespeichert", { description: `Tag ${dayNumber}` });
   };
 
   if (!matrix) {

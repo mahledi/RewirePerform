@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000507",
+  "view": "solo_readiness",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-solo-readiness-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "status": "YELLOW",
+    "setup": {
+      "athletes": 2,
+      "active_instances": 2,
+      "multiple_active_instances": 0
+    },
+    "evidence_authorization": {
+      "eligible": 2,
+      "not_eligible": 0,
+      "complete": true
+    },
+    "pre_measurement": {
+      "validated_complete": 2,
+      "validated_missing": 0
+    },
+    "daily_tracking": {
+      "day_1_completed": 2,
+      "checkins_today": 1,
+      "active_7d": 2,
+      "inactive_7d": 0
+    },
+    "transfer_tracking": {
+      "measurements_completed": 4,
+      "measurements_expected": 4
+    },
+    "cohort_breakdown": [],
+    "suppressed_cohort_count": 1,
+    "data_quality": {
+      "duplicate_checkins": 0,
+      "completions_without_checkin": 0,
+      "aggregate_visible": false,
+      "low_confidence": false,
+      "minimum_aggregate_n": 5
+    },
+    "test_data_included": false,
+    "privacy_level": "solo_operational_counts_with_suppressed_cohorts",
+    "privacy_exclusions": [
+      "athlete_names",
+      "user_ids",
+      "individual_checkins",
+      "individual_scores",
+      "journal_text",
+      "reflection"
+    ]
+  }
+}

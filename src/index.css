@@ -58,12 +58,22 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     background-image:
       linear-gradient(180deg, hsl(222 16% 7%) 0%, hsl(222 15% 5%) 100%);
+    position: relative;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -87,6 +97,18 @@
     touch-action: manipulation;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+
   button:disabled {
     cursor: not-allowed;
   }
@@ -98,6 +120,17 @@
   ::selection {
     background: hsl(var(--primary) / 0.24);
     color: hsl(var(--foreground));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

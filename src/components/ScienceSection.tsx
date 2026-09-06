@@ -1,26 +1,26 @@
 import { motion } from "framer-motion";
-import { BookOpen, FlaskConical, Eye, Repeat } from "lucide-react";
+import { BookOpen, Eye, Repeat, Target } from "lucide-react";
 
 const principles = [
   {
-    icon: FlaskConical,
-    title: "Neurokognitives Training",
-    text: "PFC-Aktivierung und Amygdala-Regulation: Wir trainieren die Gehirnregionen, die unter Druck über Sieg und Niederlage entscheiden.",
-  },
-  {
-    icon: Eye,
-    title: "Prämotorische Aktivierung",
-    text: "Visualisierung aktiviert denselben prämotorischen Kortex wie die echte Bewegung – mentale Reps formen reale neuronale Pfade (Jeannerod, 2001).",
-  },
-  {
     icon: Repeat,
-    title: "Neuroplastische Progression",
-    text: "56 Tage: Von PFC-gesteuertem bewusstem Üben zu automatisierten Routinen in den Basalganglien. Dein Gehirn baut sich physisch um.",
+    title: "Wiederholung",
+    text: "Kurze, wiederkehrende Einheiten bringen mentale Fähigkeiten aus einmaligem Wissen in den Sportalltag.",
+  },
+  {
+    icon: Target,
+    title: "Aufmerksamkeit",
+    text: "Konkrete Tagesanker helfen Athlet:innen, den Fokus auf die nächste beeinflussbare Handlung zu richten.",
   },
   {
     icon: BookOpen,
-    title: "aMCC Willpower-Training",
-    text: "Der Anterior Midcingulate Cortex wächst messbar durch freiwillige Überwindung. Tägliche Challenges machen Disziplin zu einem physischen Muskel.",
+    title: "Reflexion & aktives Erinnern",
+    text: "Fragen, aktives Erinnern und Journaling machen Erfahrungen bewusst und für die nächste Situation nutzbar.",
+  },
+  {
+    icon: Eye,
+    title: "Visualisierung",
+    text: "Mentales Durchspielen verbindet den Satz des Tages mit einer konkreten sportlichen Situation — als Übung, nicht als Wirkversprechen.",
   },
 ];
 
@@ -35,33 +35,25 @@ const ScienceSection = () => {
             viewport={{ once: true }}
           >
             <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
-              Die Wissenschaft
+              Wissenschaftliche Grundlage
             </span>
             <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
-              Vertrauen durch
+              Wissenschaftliche Prinzipien.
               <br />
-              <span className="text-gradient">Evidenz.</span>
+              <span className="text-gradient">Praktisch übersetzt.</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              Jede Übung, jede Frage, jede Empfehlung basiert auf 
-              peer-reviewed Forschung aus Sportpsychologie, Neurowissenschaften 
-              und Verhaltensforschung. Kein Trend – Wissenschaft.
+              RewirePerform verbindet Erkenntnisse aus Sportpsychologie,
+              Lernforschung und Neurowissenschaft mit wiederholbaren Routinen.
+              Die Forschung begründet die eingesetzten Prinzipien. Wie gut das
+              Gesamtsystem im Sportalltag funktioniert, prüfen wir kontrolliert
+              im Pilot.
             </p>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="text-center">
-                <span className="block text-3xl font-heading font-bold text-foreground">150+</span>
-                Studien
-              </div>
-              <div className="w-px h-10 bg-border" />
-              <div className="text-center">
-                <span className="block text-3xl font-heading font-bold text-foreground">12</span>
-                Prinzipien
-              </div>
-              <div className="w-px h-10 bg-border" />
-              <div className="text-center">
-                <span className="block text-3xl font-heading font-bold text-foreground">100%</span>
-                Individuell
-              </div>
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm leading-relaxed text-muted-foreground">
+              RewirePerform misst keine Gehirnaktivität und garantiert keine
+              körperliche Veränderung. Es übersetzt erforschte Prinzipien in
+              eine klare 56-Tage-Struktur, deren Nutzen wir im realen
+              Sportalltag überprüfen.
             </div>
           </motion.div>
 

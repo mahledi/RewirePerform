@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/credentialless-staging-preflight-v0.1/evidence.schema.json",
+  "title": "RewirePerform Feedback Intelligence credentialless Staging preflight v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_status",
+    "target",
+    "accepted_postdeploy",
+    "secret_presence_observation",
+    "database_preflight",
+    "runtime_gates",
+    "next_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rewireperform-feedback-intelligence-credentialless-staging-preflight-v1"
+    },
+    "evidence_status": {
+      "const": "PASS_CREDENTIALLESS_PREFLIGHT_UNSIGNED_AWAITING_CONSUMER_REVIEW"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_ref", "project_name", "region", "environment", "data_scope"],
+      "properties": {
+        "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+        "project_name": { "const": "RewirePerform Staging" },
+        "region": { "const": "eu-central-1" },
+        "environment": { "const": "staging" },
+        "data_scope": { "const": "synthetic_only" }
+      }
+    },
+    "accepted_postdeploy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer_commit",
+        "evidence_sha256",
+        "manifest_sha256",
+        "package_sha256",
+        "consumer_commit",
+        "consumer_acceptance_sha256"
+      ],
+      "properties": {
+        "producer_commit": { "const": "5d8b97ecec98c5091b12decf60c788820c98ec6a" },
+        "evidence_sha256": { "const": "3ff7ed70bf0523c0e23b5e1800a6c0143d4edcd6a6a215597a3c081919101b55" },
+        "manifest_sha256": { "const": "10f9b7581ea68add7c57b87d17f6e36b98a1efa2acf33b3780dd608b7eb7632c" },
+        "package_sha256": { "const": "4be78184303b4d4547dcb5730da8cbcb4dedd45d2ebb1d6df273ff5b1c5e98cd" },
+        "consumer_commit": { "const": "812fd918e48b9740ca9e37b7b3c6ff4b008dc66f" },
+        "consumer_acceptance_sha256": { "const": "a90018ce863edc56f89cd19f0c14952977626dc2499083c8a04cb94814d227c2" }
+      }
+    },
+    "secret_presence_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recorded_at",
+        "method",
+        "dashboard_path",
+        "custom_secret_count",
+        "expected_feedback_secrets",
+        "secret_values_read",
+        "secret_values_persisted",
+        "secret_digests_persisted",
+        "unrelated_secret_names_persisted"
+      ],
+      "properties": {
+        "recorded_at": { "const": "2026-08-10T12:14:11Z" },
+        "method": { "const": "SUPABASE_DASHBOARD_SECRET_NAME_PRESENCE_ONLY" },
+        "dashboard_path": { "const": "/dashboard/project/zbeswjipayspgvcipzmx/functions/secrets" },
+        "custom_secret_count": { "const": 3 },
+        "expected_feedback_secrets": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY",
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY_PREVIOUS",
+            "MAHLEOS_FEEDBACK_READER_DATABASE_URL",
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_GATE",
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_PRODUCTION_GATE"
+          ],
+          "properties": {
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY": { "const": false },
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY_PREVIOUS": { "const": false },
+            "MAHLEOS_FEEDBACK_READER_DATABASE_URL": { "const": false },
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_GATE": { "const": false },
+            "MAHLEOS_FEEDBACK_INTELLIGENCE_PRODUCTION_GATE": { "const": false }
+          }
+        },
+        "secret_values_read": { "const": false },
+        "secret_values_persisted": { "const": false },
+        "secret_digests_persisted": { "const": false },
+        "unrelated_secret_names_persisted": { "const": false }
+      }
+    },
+    "database_preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "application_rows_read",
+        "application_functions_called",
+        "database_mutated",
+        "reader_password_is_null",
+        "reader_role_is_hardened",
+        "contract_version",
+        "schema_version",
+        "contract_status",
+        "producer_package_unset",
+        "database_gates"
+      ],
+      "properties": {
+        "method": { "const": "SUPABASE_MANAGEMENT_API_METADATA_QUERY" },
+        "application_rows_read": { "const": false },
+        "application_functions_called": { "const": false },
+        "database_mutated": { "const": false },
+        "reader_password_is_null": { "const": true },
+        "reader_role_is_hardened": { "const": true },
+        "contract_version": { "const": "0.2.1-draft" },
+        "schema_version": { "const": "rewire-feedback-intelligence-export-v0.2.1-draft" },
+        "contract_status": { "const": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED" },
+        "producer_package_unset": { "const": true },
+        "database_gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "consumer_pin_ready",
+            "synthetic_export_enabled",
+            "production_export_enabled",
+            "machine_credential_ready",
+            "privacy_notice_ready",
+            "app_store_declaration_ready",
+            "minor_policy_ready"
+          ],
+          "properties": {
+            "consumer_pin_ready": { "const": false },
+            "synthetic_export_enabled": { "const": false },
+            "production_export_enabled": { "const": false },
+            "machine_credential_ready": { "const": false },
+            "privacy_notice_ready": { "const": false },
+            "app_store_declaration_ready": { "const": false },
+            "minor_policy_ready": { "const": false }
+          }
+        }
+      }
+    },
+    "runtime_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentials_provisioned",
+        "keychain_written",
+        "reader_password_set",
+        "synthetic_read_enabled",
+        "machine_read_enabled",
+        "production_read_enabled",
+        "real_data_read_enabled",
+        "network_read_performed",
+        "export_function_called",
+        "credential_mutation_performed",
+        "production_mutation_performed",
+        "push_performed",
+        "merge_performed",
+        "app_store_release_authorized"
+      ],
+      "properties": {
+        "credentials_provisioned": { "const": false },
+        "keychain_written": { "const": false },
+        "reader_password_set": { "const": false },
+        "synthetic_read_enabled": { "const": false },
+        "machine_read_enabled": { "const": false },
+        "production_read_enabled": { "const": false },
+        "real_data_read_enabled": { "const": false },
+        "network_read_performed": { "const": false },
+        "export_function_called": { "const": false },
+        "credential_mutation_performed": { "const": false },
+        "production_mutation_performed": { "const": false },
+        "push_performed": { "const": false },
+        "merge_performed": { "const": false },
+        "app_store_release_authorized": { "const": false }
+      }
+    },
+    "next_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "consumer_review_required", "credentials_allowed", "one_shot_read_allowed", "production_allowed"],
+      "properties": {
+        "decision": { "const": "AWAITING_CONSUMER_CREDENTIALLESS_PREFLIGHT_REVIEW" },
+        "consumer_review_required": { "const": true },
+        "credentials_allowed": { "const": false },
+        "one_shot_read_allowed": { "const": false },
+        "production_allowed": { "const": false }
+      }
+    }
+  }
+}

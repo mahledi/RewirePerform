@@ -1,0 +1,55 @@
+{
+  "schema_version": "rewireperform-v1.1-production-postdeploy-assurance-package-v1",
+  "status": "LOCAL_ASSURANCE_CONTRACT_PREPARED_PRODUCTION_NOT_APPLIED",
+  "generated_at": "2026-08-13T13:20:00+02:00",
+  "package_sha256": "46d5eb12679b088100f8ff16296fbc1e064c4590ee788b5983b8ef6d17dd4846",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/assurance-plan.json",
+      "sha256": "58dd328e33dc9f1405fe53f3cbb54e70e0c183aaecfb31d5f031c94ac6f075a5"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/postdeploy-evidence.schema.json",
+      "sha256": "4d52d56126259a90b7cf437da83a84168acc8d669dbb479a283acc3f3d53ac8a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/plan.json",
+      "sha256": "f2cef8f1c44415e341cfe28fdc22a35d049191423ea475c374f47d1adaaa3f20"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-persistent-apply-v0.1/producer-package-manifest.json",
+      "sha256": "79718341bb1a9a036315eff5a015dc03dfbdf7105d34409d734ea048e7ab98bf"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCTION_POSTDEPLOY_ASSURANCE_V1_1.md",
+      "sha256": "8c0c108e1c6229e16ca4d84e4bf78eb6f6fae4ad14f072a38a4346ef3aea3eed"
+    },
+    {
+      "path": "scripts/generate-v1-1-production-postdeploy-assurance.mjs",
+      "sha256": "ea3b1aa35d0800b3e3e08b9f691c38f51486eff56e3a8be12aa4cb8b80077a4a"
+    },
+    {
+      "path": "scripts/run-v1-1-production-persistent-apply.mjs",
+      "sha256": "c21bf8ac2779b252b1805811f1da09cbe1cee8d44b86792c24dd1c32d73f266d"
+    },
+    {
+      "path": "src/test/v11ProductionPostdeployAssurance.test.ts",
+      "sha256": "075d6ca3a11c7cf224fa291e341ee434b1c6659c662b9f16d275114c0168d393"
+    },
+    {
+      "path": "src/test/v11ProductionPersistentRunner.test.ts",
+      "sha256": "c7123078e31e8aeecbd8c567ad5c7f0603a5097f33670a6fe84964da49831a16"
+    }
+  ],
+  "activation": {
+    "database_apply_gate_open": false,
+    "edge_deploy": false,
+    "credentials": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "minor_feedback": false,
+    "real_jarvis": false,
+    "organization_inquiry_public": false,
+    "app_store_submission": false
+  }
+}

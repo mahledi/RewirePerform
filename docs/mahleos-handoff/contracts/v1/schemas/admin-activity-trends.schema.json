@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/admin-activity-trends.schema.json",
+  "title": "MahleOS admin activity trends v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "window_days",
+    "previous_window",
+    "current_window",
+    "segments",
+    "data_quality",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "admin-activity-trends-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "window_days": {
+      "const": 7
+    },
+    "previous_window": {
+      "type": "object",
+      "required": [
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "end_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "current_window": {
+      "type": "object",
+      "required": [
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "end_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "participation_mode",
+          "sample_size",
+          "sufficient_data",
+          "previous_active_athletes",
+          "current_active_athletes",
+          "active_athlete_delta",
+          "active_athlete_change_rate",
+          "direction",
+          "previous_checkins",
+          "current_checkins",
+          "previous_completed_days",
+          "current_completed_days"
+        ],
+        "properties": {
+          "participation_mode": {
+            "enum": [
+              "all",
+              "team",
+              "solo"
+            ]
+          },
+          "sample_size": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sufficient_data": {
+            "type": "boolean"
+          },
+          "previous_active_athletes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "current_active_athletes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "active_athlete_delta": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "active_athlete_change_rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "direction": {
+            "enum": [
+              "up",
+              "down",
+              "flat",
+              "insufficient_data"
+            ]
+          },
+          "previous_checkins": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "current_checkins": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "previous_completed_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "current_completed_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "data_quality": {
+      "type": "object",
+      "required": [
+        "previous_unclassified_events",
+        "current_unclassified_events",
+        "unclassified_events_in_overall"
+      ],
+      "properties": {
+        "previous_unclassified_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "current_unclassified_events": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unclassified_events_in_overall": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "required": [
+        "minimum_distinct_athletes_per_segment",
+        "test_profiles_excluded",
+        "test_program_instances_excluded",
+        "test_teams_excluded",
+        "names_or_emails_included",
+        "direct_identifiers_included",
+        "individual_rows_included",
+        "free_text_included",
+        "observational_not_causal"
+      ],
+      "properties": {
+        "minimum_distinct_athletes_per_segment": {
+          "const": 5
+        },
+        "test_profiles_excluded": {
+          "const": true
+        },
+        "test_program_instances_excluded": {
+          "const": true
+        },
+        "test_teams_excluded": {
+          "const": true
+        },
+        "names_or_emails_included": {
+          "const": false
+        },
+        "direct_identifiers_included": {
+          "const": false
+        },
+        "individual_rows_included": {
+          "const": false
+        },
+        "free_text_included": {
+          "const": false
+        },
+        "observational_not_causal": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

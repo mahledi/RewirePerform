@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import {
   type FlameStats,
   type FlameLevel,
-  levelDescription,
 } from "@/lib/flameStats";
 import FlameProgressGrid from "./FlameProgressGrid";
 
@@ -66,16 +65,16 @@ const FlameCard = ({ stats }: FlameCardProps) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-6 p-5 rounded-2xl bg-gradient-card border-glow relative overflow-hidden"
+      className="mb-5 sm:mb-6 p-4 rounded-2xl bg-gradient-card border-glow relative overflow-hidden"
     >
       {/* Subtle ambient flame glow */}
       <div
         aria-hidden
-        className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-primary/10 blur-3xl pointer-events-none"
+        className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none"
       />
 
-      <div className="relative flex items-start justify-between mb-5">
-        <div className="flex items-center gap-3">
+      <div className="relative flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3 min-w-0">
           <motion.div
             animate={
               stats.completedToday
@@ -91,7 +90,7 @@ const FlameCard = ({ stats }: FlameCardProps) => {
           >
             <Flame
               className={cn(
-                "w-8 h-8",
+                "w-7 h-7",
                 stats.flameLevel === "ember"
                   ? "text-muted-foreground"
                   : "text-primary"
@@ -99,32 +98,32 @@ const FlameCard = ({ stats }: FlameCardProps) => {
               strokeWidth={1.6}
             />
           </motion.div>
-          <div>
+          <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-heading">
               Deine Flamme
             </p>
-            <p className="font-heading font-semibold text-sm">
+            <p className="font-heading font-semibold text-sm truncate">
               {stats.levelLabel}
             </p>
           </div>
         </div>
         {stats.completedToday && (
-          <span className="text-[10px] font-heading uppercase tracking-wider px-2 py-1 rounded-full bg-primary/15 text-primary border border-primary/30">
-            Heute gesichert
+          <span className="w-fit text-[10px] font-heading uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/30">
+            Gesichert
           </span>
         )}
       </div>
 
-      <div className="relative flex items-end gap-4 mb-4">
-        <div>
-          <p className="font-heading text-4xl font-bold leading-none">
+      <div className="relative grid grid-cols-[auto_1fr] items-end gap-4 mb-3">
+        <div className="min-w-[72px]">
+          <p className="font-heading text-2xl sm:text-3xl font-bold leading-none">
             {stats.currentStreak}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             {stats.currentStreak === 1 ? "Tag in Folge" : "Tage in Folge"}
           </p>
         </div>
-        <div className="flex-1 grid grid-cols-3 gap-2 text-center">
+        <div className="w-full grid grid-cols-3 gap-2 text-center">
           <Stat label="Längste" value={`${stats.longestStreak}`} />
           <Stat
             label="Erledigt"
@@ -136,11 +135,8 @@ const FlameCard = ({ stats }: FlameCardProps) => {
         </div>
       </div>
 
-      <p className="relative text-sm text-foreground/90 leading-relaxed mb-4">
+      <p className="relative text-xs sm:text-sm text-foreground/90 leading-relaxed mb-3">
         {stats.message}
-      </p>
-      <p className="relative text-xs text-muted-foreground leading-relaxed mb-4">
-        {levelDescription(stats.flameLevel)}
       </p>
 
       <button
@@ -181,9 +177,9 @@ const FlameCard = ({ stats }: FlameCardProps) => {
 };
 
 const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-lg bg-secondary/40 px-2 py-2">
-    <p className="font-heading text-base font-semibold leading-none">{value}</p>
-    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider">
+  <div className="min-w-0 rounded-lg bg-secondary/40 px-2 py-2">
+    <p className="font-heading text-sm sm:text-base font-semibold leading-none truncate">{value}</p>
+    <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1 uppercase tracking-wide sm:tracking-wider truncate">
       {label}
     </p>
   </div>

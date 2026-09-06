@@ -1,55 +1,95 @@
 /// <reference lib="webworker" />
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from "workbox-precaching";
-import { registerRoute, NavigationRoute } from "workbox-routing";
-import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from "workbox-strategies";
-import { ExpirationPlugin } from "workbox-expiration";
+
+import { safeInternalUrl } from "./lib/internalRoute";
 
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: any };
 
+const OFFLINE_URL = "/offline.html";
+const OFFLINE_BRAND_URL = "/brand/rewireperform-symbol-dark.svg";
+const OFFLINE_CACHE = "rewireperform-offline-v2";
+
+// Vite injects this at build time. We intentionally do not precache app assets:
+// Safari/iOS can otherwise serve stale index/chunk combinations after deploys.
+const ignoredPrecacheManifest = self.__WB_MANIFEST;
+if (!Array.isArray(ignoredPrecacheManifest)) {
+  // Keep the injected manifest reference visible to Workbox without caching it.
+  console.warn("[pwa] Missing precache manifest.");
+}
+
 self.skipWaiting();
-cleanupOutdatedCaches();
 
-// Precache the build output (HTML, JS, CSS, assets)
-precacheAndRoute(self.__WB_MANIFEST || []);
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    Promise.all([OFFLINE_URL, OFFLINE_BRAND_URL].map(async (url) => {
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Offline asset ${url} returned HTTP ${response.status}`);
+      return [url, response] as const;
+    })).then(async (assets) => {
+      const cache = await caches.open(OFFLINE_CACHE);
+      await Promise.all(assets.map(([url, response]) => cache.put(url, response)));
+    })
+  );
+});
 
-// SPA navigations -> NetworkFirst with offline fallback to cached index.html
-const navHandler = createHandlerBoundToURL("/index.html");
-registerRoute(
-  new NavigationRoute(
-    async (params) => {
-      try {
-        const network = new NetworkFirst({
-          cacheName: "html",
-          networkTimeoutSeconds: 3,
-        });
-        return await network.handle(params);
-      } catch {
-        return navHandler(params);
-      }
-    },
-    { denylist: [/^\/~oauth/, /^\/api\//] }
-  )
-);
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== OFFLINE_CACHE)
+            .map((cacheName) => caches.delete(cacheName))
+        )
+      ),
+    ])
+  );
+});
 
-// Static assets: SWR
-registerRoute(
-  ({ request }) => ["style", "script", "worker"].includes(request.destination),
-  new StaleWhileRevalidate({ cacheName: "assets" })
-);
+self.addEventListener("fetch", (event) => {
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin === self.location.origin && requestUrl.pathname === OFFLINE_BRAND_URL) {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const offlineCache = await caches.open(OFFLINE_CACHE);
+        return offlineCache.match(OFFLINE_BRAND_URL) ?? Response.error();
+      })
+    );
+    return;
+  }
 
-// Images: CacheFirst, capped
-registerRoute(
-  ({ request }) => request.destination === "image",
-  new CacheFirst({
-    cacheName: "images",
-    plugins: [new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 })],
-  })
-);
+  if (event.request.mode !== "navigate") return;
+
+  event.respondWith(
+    fetch(event.request).catch(async () => {
+      const offlineCache = await caches.open(OFFLINE_CACHE);
+      const offline = await offlineCache.match(OFFLINE_URL);
+      return offline ?? new Response("RewirePerform ist gerade offline.", {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+        status: 503,
+      });
+    })
+  );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "CLEAR_APP_CACHE") {
+    event.waitUntil(
+      caches.keys().then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName !== OFFLINE_CACHE)
+            .map((cacheName) => caches.delete(cacheName))
+        )
+      )
+    );
+  }
+});
 
 // ---- Push notifications (kept from previous public/sw.js) ----
 self.addEventListener("push", (event: PushEvent) => {
-  let data: any = { title: "RewirePerform", body: "", url: "/" };
+  let data: any = { title: "Neue Nachricht", body: "", url: "/" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch {
@@ -58,25 +98,40 @@ self.addEventListener("push", (event: PushEvent) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/app-icon.png",
-      badge: "/app-icon.png",
-      data: { url: data.url || "/" },
-    })
+      icon: "/app-icon-192.png",
+      badge: "/favicon-64.png",
+      data: {
+        url: data.url || "/",
+        notificationId: data.notificationId,
+        notificationType: data.notificationType,
+      },
+      lang: "de-DE",
+      tag: data.notificationId
+        ? `rewireperform-${data.notificationId}`
+        : `rewireperform-${data.notificationType || "reminder"}`,
+      renotify: true,
+      requireInteraction: true,
+      silent: false,
+      timestamp: Date.now(),
+      vibrate: [240, 120, 240],
+    } as NotificationOptions)
   );
 });
 
 self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
-  const url = (event.notification.data as any)?.url || "/";
+  const targetUrl = safeInternalUrl(
+    (event.notification.data as any)?.url || "/",
+    self.location.origin,
+  );
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if ("focus" in client) {
-          (client as WindowClient).navigate(url);
-          return (client as WindowClient).focus();
-        }
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clients) => {
+      const appClient = clients.find((client) => "focus" in client) as WindowClient | undefined;
+      if (appClient) {
+        const navigatedClient = await appClient.navigate(targetUrl).catch(() => null);
+        return (navigatedClient || appClient).focus();
       }
-      if (self.clients.openWindow) return self.clients.openWindow(url);
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
     })
   );
 });

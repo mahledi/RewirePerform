@@ -1,31 +1,25 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import {
-  Brain,
-  Loader2,
-  ArrowRight,
-  CheckCircle2,
-  BarChart3,
-  Target,
-  Sparkles,
-  AlertTriangle,
-  Flame,
-  TrendingUp,
-  Lightbulb,
-  Zap,
-  Moon,
-} from "lucide-react";
-import { getOptionText } from "@/data/questionnaireData";
+import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { getSportAnswerText } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 import {
   ONBOARDING_V2_INSTRUMENT_ID,
+  ONBOARDING_V2_QUESTIONS,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import { countCanonicalQuestionnaireAnswers } from "@/lib/questionnaireCustomAnswers";
+import { captureAppError } from "@/lib/monitoring";
+import { clearLocalDraft } from "@/lib/localDrafts";
+import type { Json } from "@/integrations/supabase/types";
+import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
+import QuestionnaireNotificationOnboarding from "@/components/questionnaire/QuestionnaireNotificationOnboarding";
 
 interface QuestionnaireResultsProps {
   answers: Record<string, string | string[] | number>;
+  draftStorageKey?: string;
 }
 
 interface Analysis {
@@ -46,66 +40,80 @@ interface Analysis {
   }[];
   training_day_tasks: string[];
   rest_day_tasks: string[];
-  mental_score: number;
-  dominant_category: string;
+  score_visibility?: "internal_only";
+  measurement_boundary?: string;
   scores?: Record<string, unknown>;
 }
 
-const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
+const LOADING_STEPS = [
+  "Antworten werden gesichert...",
+  "Dein Startprofil wird intern erstellt...",
+  "Programmstatus wird aktualisiert...",
+];
+
+const QuestionnaireResults = ({
+  answers,
+  draftStorageKey = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`,
+}: QuestionnaireResultsProps) => {
   const navigate = useNavigate();
-  const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [isSaving, setIsSaving] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
-
-  const loadingSteps = [
-    "Antworten werden verarbeitet...",
-    "Muster werden erkannt...",
-    "Stärken werden identifiziert...",
-    "Entwicklungsfelder werden analysiert...",
-    "Dein Startprofil wird erstellt...",
-  ];
+  const [retryTick, setRetryTick] = useState(0);
+  const [saveCompleted, setSaveCompleted] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setLoadingStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
+      setLoadingStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
     }, 800);
 
-    const analyze = async () => {
+    const saveQuestionnaire = async () => {
+      setError(null);
+      setIsSaving(true);
+      setSaveCompleted(false);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         const userId = user?.id || null;
 
         if (!userId) {
           setError("Bitte melde dich an.");
-          setIsAnalyzing(false);
+          setIsSaving(false);
           return;
         }
 
-        // Sync sport/position to profiles table
-        const sportAnswer = answers["sport-01"] as string || null;
+        const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+        const instance = await getOrCreateActiveInstance(userId);
+        if (!instance?.id) throw new Error("active_program_instance_required");
+
+        const sportAnswer = getSportAnswerText(answers["sport-01"]);
         const positionAnswer = answers["sport-02"] as string || null;
         const levelAnswer = answers["sport-03"] as string || null;
         if (sportAnswer) {
-          await supabase
+          const { error: profileError } = await supabase
             .from("profiles")
-            .update({ sport: getOptionText("sport-01", sportAnswer), team: positionAnswer })
+            .update({
+              sport: sportAnswer,
+              position: positionAnswer,
+              ...buildStructuredSportProfile(sportAnswer, levelAnswer),
+            })
             .eq("id", userId);
+          if (profileError) throw profileError;
         }
 
-        // Deterministic analysis — no AI, no edge function, no credits.
         const analysisResult = buildDeterministicQuestionnaireAnalysis(answers, {
           sport: sportAnswer,
           position: positionAnswer,
           level: levelAnswer,
         }) as unknown as Analysis;
+        const analysisJson = analysisResult as unknown as Json;
+        const answersJson = answers as unknown as Json;
+        const scoresJson = (analysisResult.scores ?? {}) as Json;
 
-        // Prefer updating the existing completed draft (avoids creating a
-        // new is_complete=false row that the resume-flow would treat as a reset).
         const { data: existingComplete } = await supabase
           .from("questionnaire_responses")
           .select("id")
-          .eq("user_id", user!.id)
+          .eq("user_id", user.id)
+          .eq("program_instance_id", instance.id)
           .eq("is_complete", true)
           .eq("instrument_id", ONBOARDING_V2_INSTRUMENT_ID)
           .order("created_at", { ascending: false })
@@ -116,12 +124,13 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           const { error: updErr } = await supabase
             .from("questionnaire_responses")
             .update({
-              answers: answers as any,
-              analysis: analysisResult as any,
-              scores: (analysisResult as any).scores ?? {},
+              answers: answersJson,
+              analysis: analysisJson,
+              scores: scoresJson,
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance.id,
               is_complete: true,
             })
             .eq("id", existingComplete.id);
@@ -130,45 +139,69 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
           const { error: insertError } = await supabase
             .from("questionnaire_responses")
             .insert({
-              session_id: user!.id,
-              user_id: user!.id,
-              answers: answers as any,
-              analysis: analysisResult as any,
-              scores: (analysisResult as any).scores ?? {},
+              session_id: user.id,
+              user_id: user.id,
+              answers: answersJson,
+              analysis: analysisJson,
+              scores: scoresJson,
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance.id,
               is_complete: true,
               last_category_index: 9999,
             });
           if (insertError) throw insertError;
         }
 
-        // Preserve old questionnaire rows. Draft cleanup is intentionally not
-        // destructive here; resume code only looks at V2 incomplete drafts.
-
-        // Small artificial delay so the user can read the loader once.
-        await new Promise((r) => setTimeout(r, 600));
-        setAnalysis(analysisResult);
+        clearLocalDraft(draftStorageKey);
+        clearLocalDraft(`questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`);
+        await new Promise((r) => setTimeout(r, 300));
+        setSaveCompleted(true);
       } catch (err) {
-        console.error("Analysis error:", err);
+        console.error("Questionnaire save error:", err);
+        void captureAppError({
+          eventName: "onboarding_completed",
+          error: err,
+          role: "athlete",
+          route: "/questionnaire",
+          metadata: {
+            instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
+            questionnaire_version: ONBOARDING_V2_VERSION,
+            answer_count: countCanonicalQuestionnaireAnswers(
+              answers,
+              new Set(ONBOARDING_V2_QUESTIONS.map((question) => question.id)),
+            ),
+          },
+        });
         setError(
           err instanceof Error
             ? err.message
-            : "Analyse konnte nicht durchgeführt werden."
+            : "Der Fragebogen konnte gerade nicht gespeichert werden."
         );
       } finally {
-        setIsAnalyzing(false);
+        setIsSaving(false);
       }
     };
 
-    analyze();
+    saveQuestionnaire();
     return () => clearInterval(interval);
-  }, [answers]);
+  }, [answers, draftStorageKey, navigate, retryTick]);
 
-  const answeredCount = Object.keys(answers).length;
+  const answeredCount = countCanonicalQuestionnaireAnswers(
+    answers,
+    new Set(ONBOARDING_V2_QUESTIONS.map((question) => question.id)),
+  );
 
-  if (isAnalyzing) {
+  if (saveCompleted) {
+    return (
+      <QuestionnaireNotificationOnboarding
+        onContinue={() => navigate("/dashboard", { replace: true })}
+      />
+    );
+  }
+
+  if (isSaving) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <motion.div
@@ -184,7 +217,7 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             <Loader2 className="w-12 h-12 text-primary" />
           </motion.div>
           <h2 className="font-heading text-2xl font-bold mb-3">
-            Auswertung läuft...
+            Fragebogen wird gespeichert...
           </h2>
           <motion.p
             key={loadingStep}
@@ -192,10 +225,10 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
             animate={{ opacity: 1, y: 0 }}
             className="text-muted-foreground"
           >
-            {loadingSteps[loadingStep]}
+            {LOADING_STEPS[loadingStep]}
           </motion.p>
           <p className="text-xs text-muted-foreground mt-4">
-            {answeredCount} Antworten werden ausgewertet
+            {answeredCount} Antworten werden sicher gespeichert
           </p>
         </motion.div>
       </div>
@@ -212,11 +245,13 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
         >
           <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-6" />
           <h2 className="font-heading text-2xl font-bold mb-3">
-            Analyse fehlgeschlagen
+            Speichern fehlgeschlagen
           </h2>
-          <p className="text-muted-foreground mb-6">{error}</p>
+          <p className="text-muted-foreground mb-6">
+            {error} Deine Antworten bleiben in diesem Schritt erhalten. Bitte versuche es noch einmal.
+          </p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => setRetryTick((value) => value + 1)}
             className="px-6 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
           >
             Erneut versuchen
@@ -226,248 +261,21 @@ const QuestionnaireResults = ({ answers }: QuestionnaireResultsProps) => {
     );
   }
 
-  if (!analysis) return null;
-
-  const priorityColor = (p: string) =>
-    p === "high"
-      ? "text-destructive"
-      : p === "medium"
-      ? "text-yellow-500"
-      : "text-primary";
-
-  const priorityLabel = (p: string) =>
-    p === "high" ? "Hoch" : p === "medium" ? "Mittel" : "Niedrig";
-
   return (
-    <div className="min-h-screen bg-background px-6 py-20">
-      <div className="max-w-3xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="text-center mb-16">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="px-4 py-2 rounded-full bg-primary/10 border-glow flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
-                  Auswertung abgeschlossen
-                </span>
-              </div>
-            </div>
-            <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-              Dein
-              <br />
-              <span className="text-gradient">Startprofil.</span>
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              {analysis.summary}
-            </p>
-            <p className="text-xs text-muted-foreground/70 mt-3 max-w-md mx-auto">
-              Deterministische Auswertung aus deinen Antworten. Kein Diagnosewert, sondern Orientierung für dein 56-Tage-System.
-            </p>
-          </div>
-
-          <div className="flex justify-center mb-16">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.2 }}
-              className="relative w-40 h-40 flex items-center justify-center"
-            >
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  fill="none"
-                  stroke="hsl(var(--muted))"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="70"
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(analysis.mental_score / 100) * 440} 440`}
-                  className="transition-all duration-1000"
-                />
-              </svg>
-              <div className="text-center">
-                <span className="text-4xl font-heading font-bold">
-                  {analysis.mental_score}
-                </span>
-                <span className="block text-xs text-muted-foreground">
-                  Mental Score
-                </span>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Flame className="w-5 h-5 text-primary" />
-              <h3 className="font-heading text-xl font-semibold">
-                Deine Stärken
-              </h3>
-            </div>
-            <div className="space-y-4">
-              {analysis.strengths.map((s, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                  className="p-6 rounded-2xl bg-gradient-card border-glow"
-                >
-                  <h4 className="font-heading font-semibold mb-2">{s.title}</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {s.description}
-                  </p>
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5">
-                    <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <p className="text-xs text-muted-foreground">{s.science}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              <h3 className="font-heading text-xl font-semibold">
-                Entwicklungsfelder
-              </h3>
-            </div>
-            <div className="space-y-4">
-              {analysis.development_areas.map((d, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                  className="p-6 rounded-2xl bg-gradient-card border-glow"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-heading font-semibold">{d.title}</h4>
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded-md bg-secondary ${priorityColor(d.priority)}`}
-                    >
-                      Priorität: {priorityLabel(d.priority)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {d.description}
-                  </p>
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5">
-                    <Lightbulb className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <p className="text-xs text-muted-foreground">{d.science}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Brain className="w-5 h-5 text-primary" />
-              <h3 className="font-heading text-xl font-semibold">
-                Erkannte Muster
-              </h3>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {analysis.patterns.map((p, i) => (
-                <div
-                  key={i}
-                  className="p-5 rounded-2xl bg-gradient-card border-glow"
-                >
-                  <h4 className="font-heading font-semibold mb-2 text-sm">
-                    {p.title}
-                  </h4>
-                  <p className="text-xs text-muted-foreground">{p.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Target className="w-5 h-5 text-primary" />
-              <h3 className="font-heading text-xl font-semibold">
-                Dein 4-Wochen-Plan
-              </h3>
-            </div>
-            <div className="space-y-4">
-              {analysis.recommendations.map((r, i) => (
-                <div
-                  key={i}
-                  className="p-6 rounded-2xl bg-gradient-card border-glow"
-                >
-                  <h4 className="font-heading font-semibold mb-2">{r.title}</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {r.description}
-                  </p>
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span>⏱ {r.duration}</span>
-                    <span>🔄 {r.frequency}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
-            <div className="p-6 rounded-2xl bg-gradient-card border-glow">
-              <div className="flex items-center gap-2 mb-4">
-                <Zap className="w-5 h-5 text-primary" />
-                <h4 className="font-heading font-semibold">Trainingstag</h4>
-              </div>
-              <ul className="space-y-3">
-                {analysis.training_day_tasks.map((t, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <span className="text-sm text-muted-foreground">{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-6 rounded-2xl bg-gradient-card border-glow">
-              <div className="flex items-center gap-2 mb-4">
-                <Moon className="w-5 h-5 text-primary" />
-                <h4 className="font-heading font-semibold">Ruhetag</h4>
-              </div>
-              <ul className="space-y-3">
-                {analysis.rest_day_tasks.map((t, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <span className="text-sm text-muted-foreground">{t}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                navigate("/dashboard");
-              }}
-              className="group inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground hover:shadow-glow transition-all"
-            >
-              Programm starten
-              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </motion.button>
-            <p className="text-xs text-muted-foreground mt-4">
-              Dein 56-Tage-System startet sofort.
-            </p>
-          </div>
-        </motion.div>
-      </div>
+    <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center max-w-md"
+      >
+        <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-6" />
+        <h2 className="font-heading text-2xl font-bold mb-3">
+          Fragebogen gespeichert.
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Du wirst direkt weitergeleitet.
+        </p>
+      </motion.div>
     </div>
   );
 };

@@ -1,0 +1,181 @@
+{
+  "schema_version": "rewireperform-feedback-v1.2-privacy-package-v1",
+  "package_version": "feedback-v1.2-privacy-v1.1.0",
+  "status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
+  "scope": {
+    "structured_checkpoints": true,
+    "optional_product_feedback_text": true,
+    "separate_text_consent": true,
+    "under_16_guardian_plus_athlete_gate": true,
+    "max_raw_text_retention_days": 365,
+    "protected_admin_read_only_review": true,
+    "jarvis_structured_feedback_access": true,
+    "jarvis_product_feedback_text_access": false,
+    "jarvis_minimum_group_size": 5,
+    "jarvis_subject_references_in_memory_only": true,
+    "jarvis_model_training": false,
+    "jarvis_automated_individual_decisions": false,
+    "external_ai_processor": false,
+    "journals_or_private_reflections": false,
+    "coach_individual_access": false
+  },
+  "activation": {
+    "production_database_activated": false,
+    "production_feedback_collection_enabled": false,
+    "production_text_collection_enabled": false,
+    "production_jarvis_reader_enabled": false,
+    "app_store_v1_2_submitted": false
+  },
+  "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
+  "package_sha256": "02506f952ff2363ec19e655b8b28505387c08355ed512ec38c30234fdeb07619",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "d7caa1a46a2d8c89efacf437edd930eeb2a3e30233a06cb836dbaee923361534"
+    },
+    {
+      "path": "scripts/validate-release-target.mjs",
+      "sha256": "09ea2c65809d58c8db0d4e15dfdd2b9a30ead787e35aa582076a3caa146fa5d8"
+    },
+    {
+      "path": "src/pages/Privacy.tsx",
+      "sha256": "cd95373bf68115849870ee22969372806b84ef98c376f15e882b7acc425c2acb"
+    },
+    {
+      "path": "src/content/feedbackTextConsentV12.ts",
+      "sha256": "8930662508e2029363e86c70dc32ec74f87f5035ea3fa4fe5899b567a42f8145"
+    },
+    {
+      "path": "src/content/guardianFeedbackTextPolicyV12.ts",
+      "sha256": "7284723360d44b025f7c6e81df4c1bc5d936e63e7b9e66aae6ff06d0e0fbb322"
+    },
+    {
+      "path": "src/lib/feedbackIntelligenceApi.ts",
+      "sha256": "3c28319a29270ebafc8e89ec8b72381b642d9e4de4cc74d299689120d7f2d849"
+    },
+    {
+      "path": "src/lib/feedbackIntelligencePersistence.ts",
+      "sha256": "e049a323a12c138b9768aab09d3fc907bb1a5d22786c0687dcda0424a07d2a49"
+    },
+    {
+      "path": "src/components/feedback-intelligence/FeedbackCheckpointGate.tsx",
+      "sha256": "405ff8e4ccd64685f15362b9c5487f20b25f8637b708239ea9f56f599165f3f7"
+    },
+    {
+      "path": "src/components/feedback-intelligence/FeedbackQuestionnairePreview.tsx",
+      "sha256": "2790e580a4414fb97794347aae0c40b2f46b63b24978e666268c41d95804fdf0"
+    },
+    {
+      "path": "src/components/settings/FeedbackTextConsentSettings.tsx",
+      "sha256": "9ed5e187f9e8527cf61ec65a093481f36b7f3ad5846cff1d0745b89865601463"
+    },
+    {
+      "path": "src/pages/AccountSettings.tsx",
+      "sha256": "be8d25d96ed1c4359ef1e926fd856c72023f616a876067adb59d1787018c5253"
+    },
+    {
+      "path": "src/components/admin/AdminFeedbackIntelligenceComments.tsx",
+      "sha256": "865cd53b53b845f1604a14397e13cb685c949dd72799b171cc764d7e3e3611a8"
+    },
+    {
+      "path": "src/lib/adminFeedbackComments.ts",
+      "sha256": "a20b7b5d07a45c7f5499c7076146b15a028cb75ca845e9f397a05e749c3842b9"
+    },
+    {
+      "path": "supabase/migrations/20260814141647_admin_feedback_comment_review_v1_1.sql",
+      "sha256": "be4cd3be2cc8396d13e7d105b1fa8417c66d24c5b046ff309a8594c6f589f300"
+    },
+    {
+      "path": "supabase/migrations/20260820080207_structured_feedback_v1_2_activation_contract.sql",
+      "sha256": "e11d535cf6111b55a767a317be7537c0547b19aa5905f7524eb0db00ebae84ea"
+    },
+    {
+      "path": "supabase/migrations/20260824121000_feedback_jarvis_structured_only_v1_2.sql",
+      "sha256": "0145f375b4ecd89946baa81d3e38d47d9b317351b348463d6bea1d2d8e9abdd4"
+    },
+    {
+      "path": "supabase/migrations/20260824143000_feedback_machine_reader_net_privilege_hardening_v1_2.sql",
+      "sha256": "4b57b6636e8cae3c7a7d55c3689a543b99f742672cbe5a86099626ae9837b953"
+    },
+    {
+      "path": "supabase/migrations/20260824150000_feedback_jarvis_structured_contract_v1_2.sql",
+      "sha256": "25cc6f332c71fbe56ad76631c8c950b6fd3efa6465eb7bb7cf08fa3677ecc519"
+    },
+    {
+      "path": "supabase/functions/mahleos-feedback-structured-production-read/index.ts",
+      "sha256": "d65ae1fb14e7012253a5b52fffd91b07d6ab8e12ce9e6d46bc0f00f39845fa6c"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/structured-export.schema.json",
+      "sha256": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/consumer-contract.json",
+      "sha256": "d1b57de3528f45204e4bedafebb9db8f15f6602b9d4cbe0f812f083cf78fd60e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/jarvis-consumer-package-pin.json",
+      "sha256": "c5569db6cbe84728baccdab0ecf297817d005f3805a347ad5cc3afa093ff8543"
+    },
+    {
+      "path": "docs/V1_2_FEEDBACK_INTELLIGENCE_READINESS_2026-08-20.md",
+      "sha256": "a98b27ebeacd3236adc712352ca6c6adae7ec0b58bd2ea524c3569bf55ab023f"
+    },
+    {
+      "path": "docs/V1_2_FEEDBACK_CONTROLLER_ASSESSMENT_2026-08-21.md",
+      "sha256": "7d0e15eb7caa739bb516586f75fed1baf79829ff04681d9a535c06a7cb3d4c84"
+    },
+    {
+      "path": "docs/V1_2_STRUCTURED_JARVIS_CONTROLLER_SUPPLEMENT_2026-08-24.md",
+      "sha256": "e84edce0e89022d757bc48eee668692aa2db3f5a1040350cecacc780b21a5324"
+    },
+    {
+      "path": "docs/APP_STORE_CONNECT_V1_2_STRUCTURED_JARVIS_DELTA_2026-08-24.md",
+      "sha256": "d324cef4a4049426428302944fd858b840c2bc924f75760644137fad6a0b323e"
+    },
+    {
+      "path": "docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md",
+      "sha256": "58943cf68a8b744bbe1af2407340f5a6641268d69fa11bb63847785898d11d17"
+    },
+    {
+      "path": "src/test/feedbackPrivacyV12.test.ts",
+      "sha256": "401ee7c13b9f624248d6149738a502b5bdbf055f3393a05a649cadd8b106a6ee"
+    },
+    {
+      "path": "src/test/feedbackJarvisStructuredOnlyV12.test.ts",
+      "sha256": "294cfd1f96d962a8afd6b25839eb0cb4f7844fd4f25969d12b0fb8dc5521ccec"
+    },
+    {
+      "path": "src/test/feedbackJarvisStructuredContractV12.test.ts",
+      "sha256": "d881d9c87a880faa74b5f83809fcf5f95323d9a9b6bdfe5a47e072546760ad0d"
+    },
+    {
+      "path": "src/test/feedbackMachineReaderNetPrivilegeHardeningV12.test.ts",
+      "sha256": "ad7a3b1ddf5d000ae0452a44b9127a844456603eec65e568f8f2e44dc1d5f693"
+    },
+    {
+      "path": "src/test/releaseTarget.test.ts",
+      "sha256": "3be21b513b6a090f8c523d537587393dce849619fb8b3e7b310f3144af5161ed"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceApi.test.ts",
+      "sha256": "768982dfafb44fc6c895690bb042cdea398e33997aaf78a3f4516b04a24f37ac"
+    },
+    {
+      "path": "src/test/feedbackIntelligencePreview.test.tsx",
+      "sha256": "8ea8406cc570999ca9fa6360115c088f36096c3fd802753e1e99496356acc054"
+    },
+    {
+      "path": "src/test/feedbackTextConsentSettings.test.tsx",
+      "sha256": "a6ec35351c1ce7a7665549fcc689dede78e220706ed1a3d37c05789d0aaba6f2"
+    },
+    {
+      "path": "src/test/feedbackV12ActivationContract.test.ts",
+      "sha256": "3937cf29ff23293c83d4ffa8d112e2f84fb28daeee76f4b5173c43b6e9f8a762"
+    },
+    {
+      "path": "src/test/feedbackV12ActivationSmoke.test.ts",
+      "sha256": "2902a62765f669d72cea61db48d2ba6a410d9e67c599b7163dad9055d4c0ae1f"
+    }
+  ]
+}

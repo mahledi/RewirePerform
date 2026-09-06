@@ -1,0 +1,165 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000501",
+  "view": "daily_brief",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-daily-brief-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "system_health": {
+      "schema_version": "mahleos-system-health-v1.5",
+      "generated_at": "2026-07-21T12:00:00Z",
+      "reporting_timezone": "UTC",
+      "status": "GREEN",
+      "identity_integrity": {
+        "users_missing_profile": 0,
+        "production_profiles_missing_role": 0
+      },
+      "program_integrity": {
+        "athletes_without_program_instance": 0,
+        "athletes_with_multiple_active_instances": 0,
+        "active_team_instances_without_run": 0,
+        "active_runs_without_start_date": 0,
+        "activated_teams_without_active_run": 0,
+        "activated_teams_with_multiple_active_runs": 0,
+        "active_runs_with_assignment_set_mismatch": 0
+      },
+      "tracking_integrity_7d": {
+        "checkins_missing_instance": 0,
+        "completions_missing_instance": 0,
+        "assessments_missing_instance": 0,
+        "questionnaires_missing_instance": 0,
+        "comprehension_missing_instance": 0
+      },
+      "operations_24h": {
+        "failed_events": 0,
+        "critical_failed_events": 0,
+        "flow_failures": {
+          "auth_login": 0,
+          "auth_signup": 0,
+          "team_join_attempt": 0,
+          "daily_checkin_saved": 0,
+          "journal_saved": 0,
+          "assessment_saved": 0,
+          "coach_evidence_load_failed": 0,
+          "app_runtime_error": 0
+        }
+      },
+      "critical_journey_coverage": {
+        "auth_login": {
+          "coverage": "AUTHENTICATED_SUCCESS_ONLY",
+          "authority": "authenticated_app_event_log",
+          "successes_24h": 3,
+          "failures_24h": null
+        },
+        "auth_signup": {
+          "coverage": "SERVER_ACCOUNT_CREATION_ONLY",
+          "authority": "auth.users",
+          "successes_24h": 2,
+          "failures_24h": null
+        },
+        "team_join": {
+          "coverage": "AUTHENTICATED_APP_EVENTS",
+          "authority": "authenticated_app_event_log",
+          "attempts_24h": 2,
+          "successes_24h": 2,
+          "failures_24h": 0
+        },
+        "program_start": {
+          "coverage": "SERVER_ACTIVATION_SUCCESS_AND_STATE_RECONCILIATION",
+          "authority": "teams_program_runs_program_instances",
+          "attempts_24h": null,
+          "successes_24h": 1,
+          "failures_24h": null,
+          "state_reconciliation": "COMPLETE"
+        },
+        "minor_authorization": {
+          "coverage": "STRUCTURAL_AND_DELIVERY_ONLY",
+          "authority": "minor_auth_state_machine",
+          "delivery_failures_24h": 0
+        }
+      },
+      "notifications_7d": {
+        "sent": 4,
+        "opened": 2,
+        "failed": 0,
+        "expired_subscriptions": 0
+      },
+      "feedback": {
+        "open": 0
+      },
+      "privacy_level": "aggregate_operational_no_user_content",
+      "privacy_exclusions": [
+        "names",
+        "emails",
+        "user_ids",
+        "team_names",
+        "feedback_text",
+        "journal_text",
+        "free_reflection",
+        "individual_scores",
+        "raw_checkins"
+      ]
+    },
+    "tracking_quality": {
+      "schema_version": "mahleos-tracking-quality-v1",
+      "generated_at": "2026-07-21T12:00:00Z",
+      "reporting_timezone": "UTC",
+      "status": "GREEN",
+      "activity": {
+        "active_instances": 7,
+        "active_athletes_7d": 6,
+        "checkins_today": 5,
+        "checkins_7d": 31,
+        "completed_days_today": 5,
+        "completed_days_7d": 31,
+        "fresh_snapshots_today": 5
+      },
+      "integrity": {
+        "duplicate_checkins_56d": 0,
+        "checkins_missing_instance_7d": 0,
+        "completions_missing_instance_7d": 0,
+        "completions_without_checkin_7d": 0
+      },
+      "save_pipeline_24h": {
+        "success": 5,
+        "failed": 0
+      },
+      "test_data_included": false,
+      "privacy_level": "aggregate_tracking_counts_only",
+      "privacy_exclusions": [
+        "user_ids",
+        "daily_checkin_values",
+        "wellbeing_metrics",
+        "reflection",
+        "journal_text",
+        "assessment_scores"
+      ]
+    },
+    "feedback_status": {
+      "schema_version": "mahleos-feedback-status-v1",
+      "generated_at": "2026-07-21T12:00:00Z",
+      "reporting_timezone": "UTC",
+      "status": "CLEAR",
+      "counts": {
+        "open": 0,
+        "reviewed": 2,
+        "resolved": 4,
+        "new_24h": 0,
+        "new_7d": 1
+      },
+      "open_by_category": {
+        "bug": 0,
+        "suggestion": 0,
+        "general": 0,
+        "other": 0
+      },
+      "feedback_text_exported": false,
+      "user_identifiers_exported": false,
+      "privacy_level": "backlog_counts_only"
+    },
+    "claim_boundary": "operational monitoring only; no effectiveness or causal conclusion"
+  }
+}

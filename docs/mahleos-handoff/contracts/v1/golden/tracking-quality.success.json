@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000503",
+  "view": "tracking_quality",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-tracking-quality-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "status": "GREEN",
+    "activity": {
+      "active_instances": 7,
+      "active_athletes_7d": 6,
+      "checkins_today": 5,
+      "checkins_7d": 31,
+      "completed_days_today": 5,
+      "completed_days_7d": 31,
+      "fresh_snapshots_today": 5
+    },
+    "integrity": {
+      "duplicate_checkins_56d": 0,
+      "checkins_missing_instance_7d": 0,
+      "completions_missing_instance_7d": 0,
+      "completions_without_checkin_7d": 0
+    },
+    "save_pipeline_24h": {
+      "success": 5,
+      "failed": 0
+    },
+    "test_data_included": false,
+    "privacy_level": "aggregate_tracking_counts_only",
+    "privacy_exclusions": [
+      "user_ids",
+      "daily_checkin_values",
+      "wellbeing_metrics",
+      "reflection",
+      "journal_text",
+      "assessment_scores"
+    ]
+  }
+}

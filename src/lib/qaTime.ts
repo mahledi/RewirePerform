@@ -11,32 +11,88 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 
-let cache: { userId: string; iso: string; fetchedAt: number } | null = null;
+export const DEFAULT_PROGRAM_TIME_ZONE = "Europe/Berlin";
+
+/**
+ * Formats a calendar date without converting the instant to a UTC date first.
+ * The explicit program timezone keeps the web/native fallback aligned with the
+ * server even when the device itself is configured for another timezone.
+ */
+export const formatProgramCalendarDateISO = (
+  date: Date = new Date(),
+  timeZone = DEFAULT_PROGRAM_TIME_ZONE,
+): string => {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(date);
+    const values = new Map(parts.map((part) => [part.type, part.value]));
+    const year = values.get("year");
+    const month = values.get("month");
+    const day = values.get("day");
+    if (year && month && day) return `${year}-${month}-${day}`;
+  } catch {
+    // Older WebViews can reject a timezone identifier. The device calendar is
+    // still safer than turning the instant into a UTC date via toISOString().
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+let cache: {
+  userId: string;
+  iso: string;
+  fetchedAt: number;
+  programCalendarDay: string;
+} | null = null;
 const TTL_MS = 60_000;
 
-export const getEffectiveTodayISO = async (userId: string | null | undefined): Promise<string> => {
-  const realToday = new Date().toISOString().slice(0, 10);
+export const getEffectiveTodayISO = async (
+  userId: string | null | undefined,
+  signal?: AbortSignal,
+): Promise<string> => {
+  const nowDate = new Date();
+  const realToday = formatProgramCalendarDateISO(nowDate);
   if (!userId) return realToday;
-  const now = Date.now();
-  if (cache && cache.userId === userId && now - cache.fetchedAt < TTL_MS) {
+  const now = nowDate.getTime();
+  if (
+    cache
+    && cache.userId === userId
+    && cache.programCalendarDay === realToday
+    && now - cache.fetchedAt < TTL_MS
+  ) {
     return cache.iso;
   }
   try {
-    const { data, error } = await supabase.rpc("get_effective_today", { _user_id: userId });
+    const query = supabase
+      .rpc("get_effective_today", { _user_id: userId })
+      .retry(false);
+    if (signal) query.abortSignal(signal);
+    const { data, error } = await query;
     if (error || !data) {
-      cache = { userId, iso: realToday, fetchedAt: now };
+      cache = { userId, iso: realToday, fetchedAt: now, programCalendarDay: realToday };
       return realToday;
     }
     const iso = String(data);
-    cache = { userId, iso, fetchedAt: now };
+    cache = { userId, iso, fetchedAt: now, programCalendarDay: realToday };
     return iso;
   } catch {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
     return realToday;
   }
 };
 
-export const getEffectiveTodayDate = async (userId: string | null | undefined): Promise<Date> => {
-  const iso = await getEffectiveTodayISO(userId);
+export const getEffectiveTodayDate = async (
+  userId: string | null | undefined,
+  signal?: AbortSignal,
+): Promise<Date> => {
+  const iso = await getEffectiveTodayISO(userId, signal);
   // Parse as local date (midnight) consistent with date-fns format(d, "yyyy-MM-dd")
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(y, (m ?? 1) - 1, d ?? 1);

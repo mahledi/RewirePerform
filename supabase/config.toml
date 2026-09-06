@@ -1,1 +1,61 @@
-project_id = "twceqincrbrenyuqukpj"
+project_id = "bqsbxesmybthwtxmowfz"
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.minor-guardian-user]
+verify_jwt = true
+
+[functions.minor-guardian-public]
+verify_jwt = false
+
+[functions.team-mental-state]
+verify_jwt = true
+
+[functions.send-coach-checkin-reminder]
+verify_jwt = true
+
+# Machine-authenticated endpoints. They verify MAHLEOS_REWIRE_API_KEY inside
+# the handler and may call only their dedicated service-role-only RPCs.
+[functions.evidence-read]
+verify_jwt = false
+
+[functions.mahleos-read]
+verify_jwt = false
+
+# Founder-triggered local Codex worker bridge. It reuses the existing MahleOS
+# machine authentication and may call only the private queue claim/complete RPCs.
+# The function remains prepared, not deployed, until a separate Production gate.
+[functions.jarvis-deep-analysis-worker]
+verify_jwt = false
+
+# Public business inquiry intake. The handler remains fail-closed unless the
+# explicit feature flag and Turnstile secret are configured.
+[functions.submit-organization-access-request]
+verify_jwt = false
+
+# Founder-only delivery of a previously approved personal coach invitation.
+# The handler verifies the authenticated admin again before it can access
+# Resend or a pending invitation.
+[functions.send-organization-access-invitation]
+verify_jwt = true
+
+# Dedicated synthetic-Staging Feedback Intelligence endpoint. It accepts no
+# Supabase JWT and performs its own separate 64-hex machine authentication.
+# Runtime host, machine and database gates remain fail-closed in source.
+[functions.mahleos-feedback-intelligence-read]
+verify_jwt = false
+
+# Dedicated Production Feedback Intelligence endpoint. It is intentionally
+# separate from the synthetic Staging endpoint and remains fail-closed until
+# the exact Production host, machine gate, real-data gate, machine key and
+# passwordless-by-default reader credential are provisioned in a later,
+# separately approved operation.
+[functions.mahleos-feedback-intelligence-production-read]
+verify_jwt = false
+
+[functions.mahleos-feedback-structured-production-read]
+verify_jwt = false
+
+[functions.mahleos-feedback-structured-production-read-v1-3]
+verify_jwt = false

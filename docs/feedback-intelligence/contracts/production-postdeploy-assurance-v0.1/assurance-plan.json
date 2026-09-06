@@ -1,0 +1,64 @@
+{
+  "schema_version": "rewireperform-v1.1-production-postdeploy-assurance-plan-v1",
+  "status": "LOCAL_ASSURANCE_CONTRACT_PREPARED_PRODUCTION_NOT_APPLIED",
+  "generated_at": "2026-08-13T13:20:00+02:00",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "persistent_plan_sha256": "f2cef8f1c44415e341cfe28fdc22a35d049191423ea475c374f47d1adaaa3f20",
+  "persistent_manifest_sha256": "79718341bb1a9a036315eff5a015dc03dfbdf7105d34409d734ea048e7ab98bf",
+  "persistent_package_sha256": "dffeace2c2e26436f6ceffba71a4938b7cafab26425b9a722be5136650c0657a",
+  "expected_result": {
+    "status": "PASS_V1_1_PRODUCTION_MIGRATIONS_APPLIED_RUNTIME_CLOSED",
+    "project_ref": "bqsbxesmybthwtxmowfz",
+    "source_package_sha256": "dffeace2c2e26436f6ceffba71a4938b7cafab26425b9a722be5136650c0657a",
+    "completed_migrations": 25,
+    "completed_versions_sha256": "42ea240bbf1289cc6772615584c311b5672953d2344baab7d041c1b4ede6c5ac",
+    "final_remote_migration_count": 104,
+    "final_remote_versions_sha256": "f20873d87cd352ceed9460bf995d20fdde4b7e984c660983f81a5277b312981b",
+    "target_audit_status": "PASS_V1_1_PERSISTENT_TARGET_METADATA_AUDIT",
+    "retry_count": 0,
+    "credential_persisted_by_operator": false,
+    "application_values_returned": false,
+    "runtime_activation_authorized": false
+  },
+  "required_control_plane_evidence": {
+    "exact_remote_migration_history": true,
+    "exact_edge_slugs": [
+      "mahleos-feedback-intelligence-production-read",
+      "submit-organization-access-request"
+    ],
+    "exact_production_feedback_secret_names": [
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY",
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS",
+      "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL",
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE",
+      "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE"
+    ],
+    "presence_only_secret_observation": true,
+    "production_feedback_reader_password_null": true,
+    "migration_application_rows_read": true,
+    "migration_application_read_scope": {
+      "public.teams": [
+        "id",
+        "created_by"
+      ],
+      "public.user_roles": [
+        "user_id",
+        "role"
+      ]
+    },
+    "postdeploy_metadata_audit_application_rows_read": false,
+    "application_values_persisted_in_evidence": false
+  },
+  "activation": {
+    "database_apply_gate_open": false,
+    "edge_deploy": false,
+    "credentials": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "minor_feedback": false,
+    "real_jarvis": false,
+    "organization_inquiry_public": false,
+    "app_store_submission": false
+  },
+  "next_gate": "AWAIT_GREEN_ROLLBACK_BACKUP_AND_SEPARATE_PERSISTENT_APPLY_APPROVAL"
+}

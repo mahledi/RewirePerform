@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveDay } from "@/lib/getDayContent";
@@ -6,11 +7,10 @@ import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import {
   COACH_JOURNAL_QUESTIONS,
   TEAM_STANDARDS,
-  getCoachDayGuidance,
-  getWeeklyScienceBite,
 } from "@/content/coachToolkit";
-import { BookOpen, Sparkles, ShieldCheck, NotebookPen, Loader2, Save } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { BookOpen, ShieldCheck, NotebookPen, Loader2, Save } from "lucide-react";
+import { toast } from "sonner";
+import type { CalendarEventType } from "@/content/matrixDayTypes";
 
 interface Props {
   teamId: string;
@@ -22,6 +22,13 @@ interface TeamRow {
   program_start_date: string | null;
 }
 
+type CoachJournalKey =
+  | "gratitude"
+  | "reflection_1"
+  | "reflection_2"
+  | "reflection_3"
+  | "action_commitment";
+
 const Section = ({
   icon,
   title,
@@ -31,10 +38,10 @@ const Section = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="bg-secondary/40 border border-border/50 rounded-2xl p-5 space-y-4">
-    <div className="flex items-center gap-2">
+  <div className="min-w-0 space-y-4 rounded-2xl border border-border/50 bg-secondary/40 p-4 sm:p-5">
+    <div className="flex min-w-0 items-center gap-2">
       {icon}
-      <h3 className="font-heading text-base font-semibold">{title}</h3>
+      <h3 className="min-w-0 font-heading text-base font-semibold">{title}</h3>
     </div>
     {children}
   </div>
@@ -44,6 +51,7 @@ const CoachToolkit = ({ teamId }: Props) => {
   const { user } = useAuth();
   const [team, setTeam] = useState<TeamRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [todayContext, setTodayContext] = useState<CalendarEventType>("training");
 
   // Journal state
   const [weekNumber, setWeekNumber] = useState(1);
@@ -74,11 +82,26 @@ const CoachToolkit = ({ teamId }: Props) => {
     };
   }, [teamId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const today = format(new Date(), "yyyy-MM-dd");
+    supabase
+      .from("team_calendar_events")
+      .select("event_type")
+      .eq("team_id", teamId)
+      .eq("date", today)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setTodayContext((data?.event_type as CalendarEventType | undefined) ?? "training");
+      });
+    return () => { cancelled = true; };
+  }, [teamId]);
+
   const dayInfo = team?.program_start_date
     ? getCurrentProgramDay(team.program_start_date)
     : null;
   const resolved = dayInfo
-    ? resolveDay(dayInfo.dayNumber, new Date(), "training")
+    ? resolveDay(dayInfo.dayNumber, new Date(), todayContext)
     : null;
 
   // Calc current program week (1..8) for journal prefill
@@ -128,13 +151,11 @@ const CoachToolkit = ({ teamId }: Props) => {
     );
     setSavingJournal(false);
     if (error) {
-      toast({ title: "Speichern fehlgeschlagen", description: error.message, variant: "destructive" });
+      toast.error("Speichern fehlgeschlagen", { description: error.message });
     } else {
-      toast({ title: "Gespeichert", description: `Coach Journal Woche ${weekNumber}` });
+      toast.success("Gespeichert", { description: `Coach Journal Woche ${weekNumber}` });
     }
   };
-
-  const scienceBite = getWeeklyScienceBite();
 
   if (loading) {
     return (
@@ -145,11 +166,11 @@ const CoachToolkit = ({ teamId }: Props) => {
   }
 
   return (
-    <div className="space-y-5">
-      {/* SECTION 1 — HEUTE IM SPIELERPROGRAMM */}
+    <div className="w-full min-w-0 space-y-5">
+      {/* SECTION 1 — HEUTE IM ATHLETEN-PROGRAMM */}
       <Section
         icon={<BookOpen className="w-5 h-5 text-primary" />}
-        title="Heute im Spielerprogramm"
+        title="Heute im Athleten-Programm"
       >
         {!team?.program_start_date ? (
           <p className="text-sm text-muted-foreground">
@@ -160,89 +181,43 @@ const CoachToolkit = ({ teamId }: Props) => {
             Außerhalb des 56-Tage-Fensters.
           </p>
         ) : (
-          (() => {
-            const guidance = getCoachDayGuidance(
-              resolved.matrix.primaryMechanism,
-              resolved.matrix.lens
-            );
-            return (
-              <div className="space-y-4 text-sm">
-                <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Tag {resolved.matrix.dayNumber}
-                  </div>
-                  <div className="font-heading text-lg font-semibold mt-1">
-                    {resolved.content.coreShift || resolved.matrix.lens}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Linie: {resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute lernen die Spieler
-                  </div>
-                  <p className="text-foreground/90">
-                    {resolved.matrix.practiceFocus}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute üben die Spieler
-                  </div>
-                  <ol className="list-decimal list-inside space-y-1 text-foreground/90">
-                    {resolved.content.tasks.map((t) => (
-                      <li key={t.id}>{t.title}</li>
-                    ))}
-                  </ol>
-                </div>
-
-                <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
-                  <div className="text-xs font-medium text-primary mb-1">
-                    Als Coach unterstützen
-                  </div>
-                  <p className="text-foreground/90">{guidance.support}</p>
-                </div>
-
-                <div className="bg-secondary/60 border border-border/50 rounded-xl p-3">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    Heute vermeiden
-                  </div>
-                  <p className="text-foreground/90">{guidance.avoid}</p>
-                </div>
-
-                <div className="bg-secondary/60 border border-border/50 rounded-xl p-3">
-                  <div className="text-xs font-medium text-muted-foreground mb-1">
-                    60 Sekunden Integration
-                  </div>
-                  <p className="text-foreground/90">{guidance.integration60s}</p>
-                </div>
+          <div className="space-y-4 text-sm">
+            <div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                Tag {resolved.matrix.dayNumber}
               </div>
-            );
-          })()
+              <div className="font-heading text-lg font-semibold mt-1">
+                {resolved.content.coreShift || resolved.content.title || resolved.content.lens || resolved.matrix.lens}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {resolved.context.label} · Linie: {resolved.content.title ?? resolved.content.lens ?? resolved.matrix.lens} · Phase {resolved.matrix.phase} · Woche {resolved.matrix.week}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">
+                Inhalt
+              </div>
+              <p className="text-foreground/90">
+                {resolved.matrix.practiceFocus}
+              </p>
+            </div>
+
+            <div>
+              <div className="text-xs font-medium text-muted-foreground mb-1">
+                Aufgaben
+              </div>
+              <ol className="list-decimal list-inside space-y-1 text-foreground/90">
+                {resolved.content.tasks.map((t) => (
+                  <li key={t.id}>{t.title}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
         )}
       </Section>
 
-      {/* SECTION 2 — SCIENCE BITE */}
-      <Section
-        icon={<Sparkles className="w-5 h-5 text-primary" />}
-        title="Science Bite für Coaches"
-      >
-        <div className="space-y-3 text-sm">
-          <div className="font-heading text-base font-semibold">{scienceBite.title}</div>
-          <p className="text-foreground/90">{scienceBite.explanation}</p>
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-3">
-            <div className="text-xs font-medium text-primary mb-1">
-              Was bedeutet das für dich als Coach?
-            </div>
-            <p className="text-foreground/90">{scienceBite.coachAngle}</p>
-          </div>
-        </div>
-      </Section>
-
-      {/* SECTION 3 — TEAM STANDARDS */}
+      {/* SECTION 2 — TEAM STANDARDS */}
       <Section
         icon={<ShieldCheck className="w-5 h-5 text-primary" />}
         title="Team Standards"
@@ -255,27 +230,23 @@ const CoachToolkit = ({ teamId }: Props) => {
             >
               <div className="font-medium">{s.title}</div>
               <p className="text-muted-foreground text-xs mt-1">{s.explanation}</p>
-              <p className="text-foreground/90 text-xs mt-2">
-                <span className="text-primary font-medium">Coach-Verhalten:</span>{" "}
-                {s.coachBehavior}
-              </p>
             </li>
           ))}
         </ul>
       </Section>
 
-      {/* SECTION 4 — COACH JOURNAL */}
+      {/* SECTION 3 — COACH JOURNAL */}
       <Section
         icon={<NotebookPen className="w-5 h-5 text-primary" />}
         title="Coach Journal"
       >
         <div className="space-y-4 text-sm">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <label className="text-xs text-muted-foreground">Woche</label>
             <select
               value={weekNumber}
               onChange={(e) => setWeekNumber(Number(e.target.value))}
-              className="bg-secondary/60 border border-border/50 rounded-lg px-3 py-1.5 text-sm"
+              className="min-w-0 rounded-lg border border-border/50 bg-secondary/60 px-3 py-1.5 text-sm"
             >
               {Array.from({ length: 8 }).map((_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -285,19 +256,19 @@ const CoachToolkit = ({ teamId }: Props) => {
             </select>
           </div>
 
-          {[
+          {([
             { key: "gratitude", label: COACH_JOURNAL_QUESTIONS.gratitude },
             { key: "reflection_1", label: COACH_JOURNAL_QUESTIONS.reflection_1 },
             { key: "reflection_2", label: COACH_JOURNAL_QUESTIONS.reflection_2 },
             { key: "reflection_3", label: COACH_JOURNAL_QUESTIONS.reflection_3 },
             { key: "action_commitment", label: COACH_JOURNAL_QUESTIONS.action_commitment },
-          ].map((q) => (
+          ] satisfies { key: CoachJournalKey; label: string }[]).map((q) => (
             <div key={q.key}>
               <label className="text-xs font-medium text-muted-foreground block mb-1">
                 {q.label}
               </label>
               <textarea
-                value={(journal as any)[q.key]}
+                value={journal[q.key]}
                 onChange={(e) =>
                   setJournal((prev) => ({ ...prev, [q.key]: e.target.value }))
                 }

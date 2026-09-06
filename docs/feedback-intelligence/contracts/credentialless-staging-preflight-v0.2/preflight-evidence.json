@@ -1,0 +1,140 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-credentialless-staging-preflight-v2",
+  "evidence_status": "PASS_V0_3_3_CREDENTIALLESS_PREFLIGHT_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "target": {
+    "project_ref": "zbeswjipayspgvcipzmx",
+    "project_name": "RewirePerform Staging",
+    "region": "eu-central-1",
+    "environment": "staging",
+    "jurisdiction": "DE",
+    "data_scope": "synthetic_only"
+  },
+  "producer_basis": {
+    "apple_rc_commit": "5eadb046d4a4902d98393bb0284a5471bc3d2a20",
+    "postdeploy_integration_commit": "061076d5d35e4c443ca6a482c0dc6676a46a0832",
+    "repository_state": "PINNED_COMMITTED_INPUTS"
+  },
+  "accepted_postdeploy": {
+    "producer_commit": "bdba136a30e95718f47da545ec575b81378f659f",
+    "evidence_sha256": "cb48c6efaf4ac0da906608ac0191e749850693016a3d6379ae8a69acae8a6999",
+    "manifest_sha256": "39d3188144515cf48ac5ac7bdb3ad4275a3698ccf5430355b8cc59bdb01401d9",
+    "package_sha256": "2dc086363fd4bfe8523550471fa24548de838e57d9a53200226613b15f49e479",
+    "consumer_commit": "602945a7b67fbc09a99f41361888b0447f6ec1e2",
+    "consumer_acceptance_sha256": "0941fd066378e4e5ec16435dc2c789dde9476f9073e24921c695be49f6981164",
+    "review_status": "ACCEPTED_V0_3_3_POSTDEPLOY_ASSURANCE_AWAITING_FRESH_CREDENTIALLESS_PREFLIGHT"
+  },
+  "observations": {
+    "secret_presence": {
+      "source_path": "docs/feedback-intelligence/contracts/credentialless-staging-preflight-v0.2/secret-presence-observation-2026-08-10.json",
+      "source_sha256": "ad8f0227d2785cb5f86c9f4b91996dcc5c959ea826d77050ccc995228734a32d",
+      "schema_version": "rewireperform-feedback-intelligence-secret-presence-observation-v1",
+      "observed_at": "2026-08-10T18:56:16Z",
+      "target": {
+        "project_ref": "zbeswjipayspgvcipzmx",
+        "environment": "staging"
+      },
+      "method": "SUPABASE_MANAGEMENT_API_SECRET_NAME_PRESENCE_ONLY",
+      "custom_secret_count": 10,
+      "expected_feedback_secrets": {
+        "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY": false,
+        "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY_PREVIOUS": false,
+        "MAHLEOS_FEEDBACK_READER_DATABASE_URL": false,
+        "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_GATE": false,
+        "MAHLEOS_FEEDBACK_INTELLIGENCE_PRODUCTION_GATE": false
+      },
+      "secret_values_read": false,
+      "secret_values_persisted": false,
+      "secret_digests_persisted": false,
+      "unrelated_secret_names_persisted": false
+    },
+    "database_preflight": {
+      "source_path": "docs/feedback-intelligence/contracts/credentialless-staging-preflight-v0.2/database-preflight-observation-2026-08-10.json",
+      "source_sha256": "1452216f59c1391f75ff3ac14f51ca1d0e262490b6f0aa2237dd25ab22382728",
+      "schema_version": "rewireperform-feedback-intelligence-database-preflight-observation-v1",
+      "observed_at": "2026-08-10T18:57:52.789259+00:00",
+      "target": {
+        "project_ref": "zbeswjipayspgvcipzmx",
+        "environment": "staging"
+      },
+      "method": "SUPABASE_MCP_READ_ONLY_METADATA_AND_CONFIGURATION_QUERY",
+      "reader_role": {
+        "present": true,
+        "can_login": true,
+        "superuser": false,
+        "create_db": false,
+        "create_role": false,
+        "inherit": false,
+        "replication": false,
+        "bypass_rls": false,
+        "password_is_null": true
+      },
+      "machine_contract": {
+        "row_count": 1,
+        "contract_version": "0.2.1-draft",
+        "schema_version": "rewire-feedback-intelligence-export-v0.2.1-draft",
+        "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+        "consumer_pin_ready": false,
+        "synthetic_export_enabled": false,
+        "production_export_enabled": false,
+        "machine_credential_ready": false,
+        "privacy_notice_ready": false,
+        "app_store_declaration_ready": false,
+        "minor_policy_ready": false,
+        "producer_package_is_null": true
+      },
+      "collection_settings": {
+        "row_count": 1,
+        "athlete_collection_enabled": false,
+        "text_collection_enabled": false,
+        "privacy_notice_ready": false,
+        "app_store_declaration_ready": false,
+        "minor_policy_ready": false
+      },
+      "guardian_policy": {
+        "active_policy_count": 0,
+        "non_draft_policy_count": 0
+      },
+      "application_rows_read": false,
+      "configuration_rows_read": true,
+      "application_functions_called": false,
+      "database_mutated": false
+    }
+  },
+  "runtime_gates": {
+    "credentials_provisioned": false,
+    "keychain_written": false,
+    "reader_password_set": false,
+    "consumer_enabled": false,
+    "synthetic_read_enabled": false,
+    "machine_read_enabled": false,
+    "real_data_read_enabled": false,
+    "production_read_enabled": false,
+    "feedback_collection_enabled": false,
+    "text_collection_enabled": false,
+    "minor_policy_enabled": false,
+    "guardian_policy_enabled": false,
+    "network_read_performed": false,
+    "application_rows_read": false,
+    "export_function_called": false,
+    "credential_mutation_performed": false,
+    "edge_deploy_performed": false,
+    "database_mutation_performed": false,
+    "production_mutation_performed": false,
+    "push_performed": false,
+    "merge_performed": false,
+    "app_store_release_authorized": false
+  },
+  "historical_evidence": {
+    "v0_3_2_preflight_authorizes_v0_3_3": false,
+    "prior_synthetic_read_authorizes_current_read": false,
+    "silent_reinterpretation_allowed": false,
+    "historical_bytes_preserved": true
+  },
+  "next_gate": {
+    "decision": "AWAITING_JARVIS_V0_3_3_CREDENTIALLESS_PREFLIGHT_REVIEW",
+    "consumer_review_required": true,
+    "credentials_allowed": false,
+    "one_shot_read_allowed": false,
+    "production_allowed": false
+  }
+}

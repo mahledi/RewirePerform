@@ -1,6 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Loader2, Info, ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { Lock, AlertTriangle, TrendingUp, BarChart3, Activity, Info, ArrowDown, ArrowUp, Minus, RefreshCw, Target, Zap } from "lucide-react";
+import { captureAppError } from "@/lib/monitoring";
+import {
+  createPostgrestResultError,
+  isTransientRemoteLoadError,
+  loadWithSingleTransientRetry,
+  useRefreshWhenFailed,
+} from "@/lib/recoverableRemoteLoad";
 
 // Direction per subscale: which direction = improvement
 type Dir = "higher_is_better" | "lower_is_better";
@@ -60,6 +67,7 @@ interface OutcomeData {
   total_athletes: number;
   sufficient_data: boolean;
   reason?: string;
+  consent_scope?: string;
   cohort_breakdown: {
     never_started: number;
     only_pre: number;
@@ -94,46 +102,145 @@ function isImprovement(subscale: string, change: number): boolean | null {
   return dir === "higher_is_better" ? change > 0 : change < 0;
 }
 
-const TeamEvidence = ({ teamId }: { teamId: string }) => {
+const TeamEvidence = ({ teamId, active = true }: { teamId: string; active?: boolean }) => {
   const [data, setData] = useState<OutcomeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [autoRecoverable, setAutoRecoverable] = useState(false);
+  const dataRef = useRef<OutcomeData | null>(null);
+  const lifecycleRef = useRef(0);
+  const inFlightRef = useRef<Promise<void> | null>(null);
+
+  const load = useCallback(({ preserveData = false }: { preserveData?: boolean } = {}) => {
+    if (inFlightRef.current) return inFlightRef.current;
+
+    const lifecycle = lifecycleRef.current;
+    if (!preserveData || dataRef.current === null) setLoading(true);
+    setError(null);
+
+    const request = (async () => {
+      try {
+        const next = await loadWithSingleTransientRetry(async () => {
+          const result = await supabase.rpc(
+            "compute_team_outcomes",
+            { team_id_param: teamId, min_n: 5 },
+          );
+          if (result.error) throw createPostgrestResultError(result);
+          return result.data as unknown as OutcomeData;
+        }, { shouldRetry: () => lifecycle === lifecycleRef.current });
+
+        if (lifecycle !== lifecycleRef.current) return;
+        dataRef.current = next;
+        setData(next);
+        setAutoRecoverable(false);
+      } catch (loadError) {
+        if (lifecycle !== lifecycleRef.current) return;
+        setError("Entwicklungsdaten konnten gerade nicht geladen werden.");
+        setAutoRecoverable(isTransientRemoteLoadError(loadError));
+        void captureAppError({
+          eventName: "coach_evidence_load_failed",
+          error: loadError,
+          role: "coach",
+          route: "/coach",
+          metadata: { source: "compute_team_outcomes" },
+        });
+      } finally {
+        if (lifecycle === lifecycleRef.current) {
+          setLoading(false);
+          inFlightRef.current = null;
+        }
+      }
+    })();
+    inFlightRef.current = request;
+    return request;
+  }, [teamId]);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
+    lifecycleRef.current += 1;
+    dataRef.current = null;
+    setData(null);
     setError(null);
-    supabase
-      .rpc("compute_team_outcomes", { team_id_param: teamId, min_n: 5 })
-      .then(({ data: rpcData, error: rpcError }) => {
-        if (cancelled) return;
-        if (rpcError) setError(rpcError.message);
-        else setData(rpcData as unknown as OutcomeData);
-        setLoading(false);
-      });
+    setAutoRecoverable(false);
+    void load();
     return () => {
-      cancelled = true;
+      lifecycleRef.current += 1;
+      inFlightRef.current = null;
     };
-  }, [teamId]);
+  }, [load]);
+
+  const recover = useCallback(() => {
+    void load({ preserveData: true });
+  }, [load]);
+  useRefreshWhenFailed({ active, failed: error !== null && autoRecoverable, refresh: recover });
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border/50 bg-card p-5">
+          <div className="mb-4 h-5 w-44 rounded-full bg-secondary/70" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+            <div className="h-24 animate-pulse rounded-xl bg-secondary/50" />
+          </div>
+        </div>
+        <div className="h-48 animate-pulse rounded-2xl border border-border/50 bg-card" />
       </div>
     );
   }
 
-  if (error || !data) {
+  if (error && !data) {
     return (
-      <div className="text-center py-12 text-muted-foreground text-sm">
-        {error ?? "Keine Daten verfügbar."}
+      <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 p-5 text-sm text-muted-foreground">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-400" />
+          <div className="min-w-0">
+            <p className="font-heading font-semibold text-foreground mb-1">Entwicklungsdaten gerade nicht verfügbar</p>
+            <p className="leading-relaxed">{error} Die restliche Coach-Übersicht bleibt nutzbar.</p>
+            <button
+              type="button"
+              onClick={() => void load()}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border/60 px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Erneut laden
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const enoughTeam = data.total_athletes >= data.min_n;
-  const cb = data.cohort_breakdown;
+  const totalAthletes = Number(data?.total_athletes ?? 0);
+  const minN = Number(data?.min_n ?? 5);
+
+  if (!data || totalAthletes === 0) {
+    const noConsentedData = data?.reason === "no_consented_athletes";
+    return (
+      <div className="rounded-2xl border border-border/50 bg-card p-6 text-center">
+        <BarChart3 className="mx-auto mb-4 h-10 w-10 text-primary" />
+        <h3 className="font-heading text-lg font-semibold text-foreground mb-2">
+          {noConsentedData ? "Noch keine freigegebenen Entwicklungsdaten" : "Noch keine Entwicklungsdaten verfügbar"}
+        </h3>
+        <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+          {noConsentedData
+            ? "Diese Ansicht nutzt nur freiwillig freigegebene, aggregierte Datenbeiträge. Das Team kann normal trainieren; Auswertung erscheint erst, wenn genügend freigegebene Messdaten vorliegen."
+            : "Entwicklung wird erst sichtbar, wenn Athlet:innen registriert sind und genügend Pre-, Mid- oder Post-Daten vorliegen."}
+        </p>
+      </div>
+    );
+  }
+
+  const enoughTeam = totalAthletes >= minN;
+  const cb = data.cohort_breakdown ?? {
+    never_started: 0,
+    only_pre: 0,
+    pre_and_mid_no_post: 0,
+    completed_pre_post: 0,
+  };
+  const assessmentCompletion = data.assessment_completion ?? { pre_n: 0, mid_n: 0, post_n: 0 };
+  const changes = data.changes ?? { pre_post: [], pre_mid: [] };
+  const weeklyTrend = data.weekly_trend ?? [];
 
   const renderChangeRow = (row: ChangeRow, label: "Pre → Post" | "Pre → Mid") => {
     const second = row.avg_post ?? row.avg_mid ?? 0;
@@ -141,9 +248,9 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
     const Icon = improved === true ? ArrowUp : improved === false ? ArrowDown : Minus;
     const cls = improved === true ? "text-primary" : improved === false ? "text-yellow-400" : "text-muted-foreground";
     return (
-      <div key={`${label}-${row.assessment_type}-${row.subscale}`} className="bg-card border border-border/50 rounded-2xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div>
+      <div key={`${label}-${row.assessment_type}-${row.subscale}`} className="min-w-0 rounded-2xl border border-border/50 bg-card p-4">
+        <div className="mb-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
               {ASSESSMENT_LABELS[row.assessment_type] ?? row.assessment_type}
             </p>
@@ -162,7 +269,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
               )}
             </span>
             {row.cohens_d_z != null && (
-              <span className="text-xs text-muted-foreground ml-auto">
+              <span className="text-xs text-muted-foreground sm:ml-auto">
                 d_z = {row.cohens_d_z}
                 {row.low_confidence && " · niedrige Konfidenz"}
               </span>
@@ -170,7 +277,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Zu wenig Paare ({row.n_pairs}/{data.min_n}) für anonymisierte Auswertung.
+            Zu wenig Paare ({row.n_pairs}/{minN}) für anonymisierte Auswertung.
           </p>
         )}
       </div>
@@ -178,22 +285,34 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="w-full min-w-0 space-y-5">
+      {error && (
+        <div className="flex items-start justify-between gap-3 rounded-xl border border-yellow-400/25 bg-yellow-400/5 p-4 text-xs text-muted-foreground">
+          <div className="flex min-w-0 items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" aria-hidden="true" />
+            <p>Die letzte Aktualisierung ist fehlgeschlagen. Die zuletzt erfolgreich geladenen Daten bleiben sichtbar.</p>
+          </div>
+          <button type="button" onClick={() => void load({ preserveData: true })} className="shrink-0 font-semibold text-foreground">
+            Erneut laden
+          </button>
+        </div>
+      )}
       {/* Privacy banner */}
       <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
         <Lock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-medium text-foreground mb-1">Aggregierte Teamdaten</p>
+          <p className="text-sm font-medium text-foreground mb-1">Aggregierte, freigegebene Teamdaten</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Du siehst nur Aggregate (mind. {data.min_n} Spieler). Keine Einzelwerte, keine Reflexionen, keine Journale.
+            Diese Ansicht zeigt nur beobachtete Teammuster ab mindestens {minN} Athlet:innen und nur aus freiwillig freigegebenen Datenbeiträgen.
+            Keine Einzelwerte, keine psychologischen Labels, keine Reflexionen, keine Journale.
           </p>
         </div>
       </div>
 
       {/* Cohort breakdown */}
       <section>
-        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Teilnahme-Status</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <h3 className="font-heading text-sm font-semibold text-foreground mb-3">Messstatus im Team</h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="bg-card border border-border/50 rounded-2xl p-3">
             <p className="text-xs text-muted-foreground">Pre + Post abgeschlossen</p>
             <p className="text-xl font-bold text-foreground">{cb.completed_pre_post}</p>
@@ -207,7 +326,7 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
             <p className="text-xl font-bold text-foreground">{cb.only_pre}</p>
           </div>
           <div className="bg-card border border-border/50 rounded-2xl p-3">
-            <p className="text-xs text-muted-foreground">Pre-Test offen</p>
+            <p className="text-xs text-muted-foreground">Pre-Messung offen</p>
             <p className="text-xl font-bold text-foreground">{cb.never_started}</p>
           </div>
         </div>
@@ -216,18 +335,18 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Assessment counts */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-primary" /> Assessment-Status
+          <BarChart3 className="w-4 h-4 text-primary" /> Messfenster-Readiness
         </h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[
-            { label: "Pre", n: data.assessment_completion.pre_n },
-            { label: "Mid", n: data.assessment_completion.mid_n },
-            { label: "Post", n: data.assessment_completion.post_n },
+            { label: "Pre", n: assessmentCompletion.pre_n },
+            { label: "Mid", n: assessmentCompletion.mid_n },
+            { label: "Post", n: assessmentCompletion.post_n },
           ].map((item) => (
             <div key={item.label} className="bg-card border border-border/50 rounded-2xl p-4 text-center">
               <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
               <p className="text-2xl font-bold text-foreground">
-                {item.n}<span className="text-xs text-muted-foreground"> / {data.total_athletes}</span>
+                {item.n}<span className="text-xs text-muted-foreground"> / {totalAthletes}</span>
               </p>
             </div>
           ))}
@@ -238,14 +357,14 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {data.adherence && (
         <section>
           <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-primary" /> Adherence (Team-Schnitt)
+            <Activity className="w-4 h-4 text-primary" /> Nutzung & Fortschritt (aggregiert)
           </h3>
           {!enoughTeam ? (
             <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
-              Zu wenig Daten für anonymisierte Auswertung (mind. {data.min_n} Spieler).
+              Zu wenig Daten für anonymisierte Auswertung (mind. {minN} Athlet:innen).
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="bg-card border border-border/50 rounded-2xl p-4">
                 <p className="text-xs text-muted-foreground mb-1">Ø Completion-Rate</p>
                 <p className="text-xl font-bold text-foreground">
@@ -288,16 +407,16 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Subscale changes */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-primary" /> Beobachtete Veränderung pro Subskala
+          <TrendingUp className="w-4 h-4 text-primary" /> Beobachtete Veränderung pro Messbereich
         </h3>
-        {data.changes.pre_post.length === 0 && data.changes.pre_mid.length === 0 ? (
+        {changes.pre_post.length === 0 && changes.pre_mid.length === 0 ? (
           <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
             Noch keine ausreichenden Pre/Mid- oder Pre/Post-Paare verfügbar.
           </p>
         ) : (
           <div className="space-y-3">
-            {data.changes.pre_post.map((row) => renderChangeRow(row, "Pre → Post"))}
-            {data.changes.pre_mid.map((row) => renderChangeRow(row, "Pre → Mid"))}
+            {changes.pre_post.map((row) => renderChangeRow(row, "Pre → Post"))}
+            {changes.pre_mid.map((row) => renderChangeRow(row, "Pre → Mid"))}
           </div>
         )}
       </section>
@@ -305,27 +424,36 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Weekly trend */}
       <section>
         <h3 className="font-heading text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" /> Wochentrend (Stimmung / Energie / Fokus)
+          <Activity className="w-4 h-4 text-primary" /> Teamzustand über Wochen (aggregiert)
         </h3>
-        {data.weekly_trend.length === 0 ? (
+        {weeklyTrend.length === 0 ? (
           <p className="text-xs text-muted-foreground bg-muted/40 rounded-xl p-4">
-            Noch keine Check-in-Daten.
+            Noch keine ausreichend aggregierten Check-in-Daten.
           </p>
         ) : (
           <div className="space-y-2">
-            {data.weekly_trend.map((w) => (
-              <div key={w.week_start} className="bg-card border border-border/50 rounded-xl p-3 flex items-center gap-3 text-xs">
-                <span className="text-muted-foreground w-24 shrink-0">{w.week_start}</span>
+            {weeklyTrend.map((w) => (
+              <div key={w.week_start} className="flex min-w-0 flex-col gap-2 rounded-xl border border-border/50 bg-card p-3 text-xs sm:flex-row sm:items-center sm:gap-3">
+                <span className="text-muted-foreground sm:w-24 sm:shrink-0">{w.week_start}</span>
                 {w.sufficient_data ? (
-                  <div className="flex gap-3 flex-1">
-                    <span>😊 {w.avg_mood ?? "—"}</span>
-                    <span>⚡ {w.avg_energy ?? "—"}</span>
-                    <span>🎯 {w.avg_focus ?? "—"}</span>
+                  <div className="flex min-w-0 flex-1 flex-wrap gap-3">
+                    <span className="inline-flex items-center gap-1" aria-label={`Stimmung ${w.avg_mood ?? "nicht verfügbar"}`}>
+                      <Activity className="h-3.5 w-3.5 text-primary" />
+                      {w.avg_mood ?? "—"}
+                    </span>
+                    <span className="inline-flex items-center gap-1" aria-label={`Energie ${w.avg_energy ?? "nicht verfügbar"}`}>
+                      <Zap className="h-3.5 w-3.5 text-primary" />
+                      {w.avg_energy ?? "—"}
+                    </span>
+                    <span className="inline-flex items-center gap-1" aria-label={`Fokus ${w.avg_focus ?? "nicht verfügbar"}`}>
+                      <Target className="h-3.5 w-3.5 text-primary" />
+                      {w.avg_focus ?? "—"}
+                    </span>
                   </div>
                 ) : (
                   <span className="text-muted-foreground italic">Zu wenig Daten</span>
                 )}
-                <span className="text-muted-foreground ml-auto">n={w.n_users}</span>
+                <span className="text-muted-foreground sm:ml-auto">n={w.n_users}</span>
               </div>
             ))}
           </div>
@@ -337,10 +465,10 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
         <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-2xl p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
           <div className="text-xs text-muted-foreground leading-relaxed">
-            <p className="text-foreground font-medium mb-1">Fehlende Daten</p>
-            {cb.never_started > 0 && <p>{cb.never_started} Spieler ohne Pre-Test.</p>}
-            {cb.only_pre > 0 && <p>{cb.only_pre} Spieler nur mit Pre-Test.</p>}
-            {cb.pre_and_mid_no_post > 0 && <p>{cb.pre_and_mid_no_post} Spieler ohne Post-Test.</p>}
+            <p className="text-foreground font-medium mb-1">Datenlücken</p>
+            {cb.never_started > 0 && <p>{cb.never_started} offene Pre-Messungen.</p>}
+            {cb.only_pre > 0 && <p>{cb.only_pre} Teilnahmen bisher nur mit Pre-Messung.</p>}
+            {cb.pre_and_mid_no_post > 0 && <p>{cb.pre_and_mid_no_post} Teilnahmen noch ohne Post-Messung.</p>}
           </div>
         </div>
       )}
@@ -348,7 +476,9 @@ const TeamEvidence = ({ teamId }: { teamId: string }) => {
       {/* Disclaimer */}
       <div className="bg-muted/40 border border-border/40 rounded-2xl p-4 flex items-start gap-3">
         <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-        <p className="text-xs text-muted-foreground leading-relaxed">{data.disclaimer}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {data.disclaimer ?? "Entwicklungsdaten werden nur aggregiert angezeigt und erst ab ausreichender Gruppengröße belastbar."}
+        </p>
       </div>
     </div>
   );

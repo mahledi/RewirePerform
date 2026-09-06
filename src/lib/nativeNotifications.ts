@@ -1,0 +1,429 @@
+import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
+import {
+  LocalNotifications,
+  type ActionPerformed,
+  type LocalNotificationSchema,
+} from "@capacitor/local-notifications";
+
+const MORNING_NOTIFICATION_ID = 56_000;
+const EVENING_NOTIFICATION_ID = 56_001;
+const PRE_TRAINING_NOTIFICATION_ID_START = 56_002;
+const MAX_PRE_TRAINING_NOTIFICATIONS = 56;
+const LAST_OWNED_NOTIFICATION_ID =
+  PRE_TRAINING_NOTIFICATION_ID_START + MAX_PRE_TRAINING_NOTIFICATIONS - 1;
+const REST_VISUALIZATION_NOTIFICATION_ID_START = 57_000;
+const LAST_REST_VISUALIZATION_NOTIFICATION_ID = REST_VISUALIZATION_NOTIFICATION_ID_START + 56;
+
+const STORAGE_PREFIX = "rewire_native_reminders:";
+const OWNER_STORAGE_KEY = "rewire_native_reminders_owner";
+const REMINDER_CHANNEL_ID = "rewireperform-reminders-v1";
+
+export type NativeReminderKind = "morning" | "evening" | "pre_training" | "rest_visualization";
+
+export interface NativeTrainingMoment {
+  date: string;
+  hour: number;
+  minute: number;
+  contextType?: "training" | "competition";
+}
+
+export interface NativeReminderPreferences {
+  enabled: boolean;
+  morningHour: number;
+  morningMinute: number;
+  eveningHour: number;
+  eveningMinute: number;
+  preTrainingMinutes: number;
+}
+
+export interface BuildNativeReminderInput extends NativeReminderPreferences {
+  userId: string;
+  includeDaily: boolean;
+  trainingMoments: NativeTrainingMoment[];
+  now?: Date;
+}
+
+export const DEFAULT_NATIVE_REMINDER_PREFERENCES: NativeReminderPreferences = {
+  enabled: false,
+  morningHour: 7,
+  morningMinute: 30,
+  eveningHour: 21,
+  eveningMinute: 0,
+  preTrainingMinutes: 60,
+};
+
+const isIntegerInRange = (value: unknown, min: number, max: number): value is number =>
+  Number.isInteger(value) && Number(value) >= min && Number(value) <= max;
+
+const validatePreferences = (
+  value: Partial<NativeReminderPreferences>,
+): NativeReminderPreferences | null => {
+  if (
+    typeof value.enabled !== "boolean" ||
+    !isIntegerInRange(value.morningHour, 0, 23) ||
+    !isIntegerInRange(value.morningMinute, 0, 59) ||
+    !isIntegerInRange(value.eveningHour, 0, 23) ||
+    !isIntegerInRange(value.eveningMinute, 0, 59) ||
+    !isIntegerInRange(value.preTrainingMinutes, 0, 24 * 60)
+  ) {
+    return null;
+  }
+
+  return value as NativeReminderPreferences;
+};
+
+const storageKey = (userId: string) => `${STORAGE_PREFIX}${userId}`;
+
+const readStorage = (key: string) => {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeStorage = (key: string, value: string | null) => {
+  if (typeof window === "undefined") return;
+  try {
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, value);
+  } catch {
+    // Native reminders still work when WebView storage is temporarily unavailable.
+  }
+};
+
+export const getNativeReminderPreferences = (
+  userId: string,
+): NativeReminderPreferences | null => {
+  const raw = readStorage(storageKey(userId));
+  if (!raw) return null;
+
+  try {
+    return validatePreferences(JSON.parse(raw) as Partial<NativeReminderPreferences>);
+  } catch {
+    return null;
+  }
+};
+
+const saveNativeReminderPreferences = (
+  userId: string,
+  preferences: NativeReminderPreferences,
+) => {
+  writeStorage(storageKey(userId), JSON.stringify(preferences));
+};
+
+export const dateAtLocalTime = (date: string, hour: number, minute: number) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match || !isIntegerInRange(hour, 0, 23) || !isIntegerInRange(minute, 0, 59)) {
+    return null;
+  }
+
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const result = new Date(year, month - 1, day, hour, minute, 0, 0);
+  if (
+    result.getFullYear() !== year ||
+    result.getMonth() !== month - 1 ||
+    result.getDate() !== day
+  ) {
+    return null;
+  }
+  return result;
+};
+
+const reminderExtra = (
+  userId: string,
+  route: "/dashboard" | "/journal" | "/pre-training",
+  kind: NativeReminderKind,
+  scheduledDate?: string,
+) => ({
+  source: "native_local",
+  userId,
+  route,
+  kind,
+  ...(scheduledDate ? { scheduledDate } : {}),
+});
+
+export const buildNativeReminderNotifications = (
+  input: BuildNativeReminderInput,
+): LocalNotificationSchema[] => {
+  const preferences = validatePreferences(input);
+  if (!preferences || !input.userId.trim()) {
+    throw new Error("Ungültige Einstellungen für App-Erinnerungen");
+  }
+
+  const notifications: LocalNotificationSchema[] = [];
+  if (input.includeDaily) {
+    notifications.push(
+      {
+        id: MORNING_NOTIFICATION_ID,
+        title: "Dein Check-in ist bereit",
+        body: "Nimm dir kurz Zeit für deinen heutigen Status.",
+        schedule: {
+          on: {
+            hour: preferences.morningHour,
+            minute: preferences.morningMinute,
+          },
+        },
+        threadIdentifier: "rewireperform-reminders",
+        channelId: REMINDER_CHANNEL_ID,
+        interruptionLevel: "active",
+        extra: reminderExtra(input.userId, "/dashboard", "morning"),
+      },
+      {
+        id: EVENING_NOTIFICATION_ID,
+        title: "Zeit für deinen Tagesabschluss",
+        body: "Halte fest, was heute wichtig war.",
+        schedule: {
+          on: {
+            hour: preferences.eveningHour,
+            minute: preferences.eveningMinute,
+          },
+        },
+        threadIdentifier: "rewireperform-reminders",
+        channelId: REMINDER_CHANNEL_ID,
+        interruptionLevel: "active",
+        extra: reminderExtra(input.userId, "/journal", "evening"),
+      },
+    );
+  }
+
+  const now = input.now ?? new Date();
+  const seenDates = new Set<string>();
+  const scheduledTraining = input.trainingMoments
+    .slice()
+    .sort((a, b) => {
+      const dateComparison = a.date.localeCompare(b.date);
+      if (dateComparison !== 0) return dateComparison;
+      if (a.hour !== b.hour) return a.hour - b.hour;
+      return a.minute - b.minute;
+    })
+    .flatMap((moment) => {
+      if (seenDates.has(moment.date)) return [];
+      seenDates.add(moment.date);
+      const trainingAt = dateAtLocalTime(moment.date, moment.hour, moment.minute);
+      if (!trainingAt) return [];
+      const reminderAt = new Date(
+        trainingAt.getTime() - preferences.preTrainingMinutes * 60_000,
+      );
+      return reminderAt.getTime() > now.getTime() + 30_000
+        ? [{ moment, reminderAt }]
+        : [];
+    })
+    .slice(0, MAX_PRE_TRAINING_NOTIFICATIONS);
+
+  scheduledTraining.forEach(({ moment, reminderAt }, index) => {
+    const isCompetition = moment.contextType === "competition";
+    notifications.push({
+      id: PRE_TRAINING_NOTIFICATION_ID_START + index,
+      title: isCompetition ? "Deine Wettkampfvorbereitung" : "Mentale Vorbereitung",
+      body: "Dein kurzer Pre-Training-Flow ist bereit.",
+      schedule: { at: reminderAt },
+      threadIdentifier: "rewireperform-reminders",
+      channelId: REMINDER_CHANNEL_ID,
+      interruptionLevel: "active",
+      extra: reminderExtra(
+        input.userId,
+        "/pre-training",
+        "pre_training",
+        moment.date,
+      ),
+    });
+  });
+
+  return notifications;
+};
+
+export const isNativeNotificationsAvailable = () => Capacitor.isNativePlatform();
+
+export const hasNativeNotificationPermission = async () => {
+  if (!isNativeNotificationsAvailable()) return false;
+  const status = await LocalNotifications.checkPermissions();
+  return status.display === "granted";
+};
+
+export const requestNativeNotificationPermission = async () => {
+  if (!isNativeNotificationsAvailable()) return false;
+  const current = await LocalNotifications.checkPermissions();
+  if (current.display === "granted") return true;
+  const requested = await LocalNotifications.requestPermissions();
+  return requested.display === "granted";
+};
+
+const isRecurringReminderId = (id: number) =>
+  id >= MORNING_NOTIFICATION_ID && id <= LAST_OWNED_NOTIFICATION_ID;
+
+const isRestVisualizationNotificationId = (id: number) =>
+  id > REST_VISUALIZATION_NOTIFICATION_ID_START
+  && id <= LAST_REST_VISUALIZATION_NOTIFICATION_ID;
+
+const isOwnedNotificationId = (id: number) =>
+  isRecurringReminderId(id) || isRestVisualizationNotificationId(id);
+
+const getPendingNotifications = async (matches: (id: number) => boolean) => {
+  const pending = await LocalNotifications.getPending();
+  return pending.notifications.filter((notification) =>
+    matches(notification.id),
+  );
+};
+
+const getRecurringPendingNotifications = () => getPendingNotifications(isRecurringReminderId);
+const getOwnedPendingNotifications = () => getPendingNotifications(isOwnedNotificationId);
+
+const cancelPendingNotifications = async (ids: number[]) => {
+  if (ids.length === 0) return;
+  await LocalNotifications.cancel({
+    notifications: ids.map((id) => ({ id })),
+  });
+};
+
+const ensureNativeReminderChannel = async () => {
+  if (Capacitor.getPlatform?.() !== "android") return;
+  await LocalNotifications.createChannel({
+    id: REMINDER_CHANNEL_ID,
+    name: "Erinnerungen",
+    description: "Check-in, Training und Tagesabschluss",
+    importance: 4,
+    visibility: 0,
+    vibration: true,
+  });
+};
+
+export const scheduleNativeReminders = async (input: BuildNativeReminderInput) => {
+  if (!isNativeNotificationsAvailable()) {
+    throw new Error("Erinnerungen sind nur in der App verfügbar");
+  }
+  if (!(await hasNativeNotificationPermission())) {
+    throw new Error("Benachrichtigungen sind in den Geräteeinstellungen nicht erlaubt");
+  }
+
+  await ensureNativeReminderChannel();
+  const notifications = buildNativeReminderNotifications(input);
+  const pendingBefore = await getRecurringPendingNotifications();
+  if (notifications.length > 0) {
+    await LocalNotifications.schedule({ notifications });
+  }
+
+  const nextIds = new Set(notifications.map((notification) => notification.id));
+  await cancelPendingNotifications(
+    pendingBefore
+      .map((notification) => notification.id)
+      .filter((id) => !nextIds.has(id)),
+  );
+
+  saveNativeReminderPreferences(input.userId, {
+    enabled: true,
+    morningHour: input.morningHour,
+    morningMinute: input.morningMinute,
+    eveningHour: input.eveningHour,
+    eveningMinute: input.eveningMinute,
+    preTrainingMinutes: input.preTrainingMinutes,
+  });
+  writeStorage(OWNER_STORAGE_KEY, input.userId);
+  return notifications.length;
+};
+
+export interface RestVisualizationReminderInput {
+  userId: string;
+  date: string;
+  dayNumber: number;
+  hour: number;
+  minute: number;
+  now?: Date;
+}
+
+export const buildRestVisualizationNotification = (
+  input: RestVisualizationReminderInput,
+): LocalNotificationSchema => {
+  if (
+    !input.userId.trim()
+    || !isIntegerInRange(input.dayNumber, 1, 56)
+    || !isIntegerInRange(input.hour, 0, 23)
+    || !isIntegerInRange(input.minute, 0, 59)
+  ) {
+    throw new Error("Ungültige Erinnerung für die Visualisierung");
+  }
+  const at = dateAtLocalTime(input.date, input.hour, input.minute);
+  const now = input.now ?? new Date();
+  if (!at || at.getTime() <= now.getTime() + 30_000) {
+    throw new Error("Wähle eine Uhrzeit, die noch vor dir liegt");
+  }
+
+  return {
+    id: REST_VISUALIZATION_NOTIFICATION_ID_START + input.dayNumber,
+    title: "Deine Visualisierung ist bereit",
+    body: "Die App führt dich jetzt Schritt für Schritt durch deine Visualisierung.",
+    schedule: { at },
+    threadIdentifier: "rewireperform-rest-visualization",
+    channelId: REMINDER_CHANNEL_ID,
+    interruptionLevel: "active",
+    extra: reminderExtra(
+      input.userId,
+      "/dashboard",
+      "rest_visualization",
+      input.date,
+    ),
+  };
+};
+
+export const scheduleRestVisualizationReminder = async (
+  input: RestVisualizationReminderInput,
+) => {
+  if (!isNativeNotificationsAvailable()) {
+    throw new Error("Erinnerungen sind nur in der App verfügbar");
+  }
+  const permission = await requestNativeNotificationPermission();
+  if (!permission) {
+    throw new Error("Benachrichtigungen sind in den Einstellungen nicht erlaubt");
+  }
+  await ensureNativeReminderChannel();
+  const notification = buildRestVisualizationNotification(input);
+  await LocalNotifications.cancel({ notifications: [{ id: notification.id }] });
+  await LocalNotifications.schedule({ notifications: [notification] });
+  writeStorage(OWNER_STORAGE_KEY, input.userId);
+  return notification;
+};
+
+export const cancelRestVisualizationReminder = async (dayNumber: number) => {
+  if (!isNativeNotificationsAvailable() || !isIntegerInRange(dayNumber, 1, 56)) return;
+  await LocalNotifications.cancel({
+    notifications: [{ id: REST_VISUALIZATION_NOTIFICATION_ID_START + dayNumber }],
+  });
+};
+
+export const disableNativeReminders = async (userId: string) => {
+  if (isNativeNotificationsAvailable()) {
+    const pending = await getOwnedPendingNotifications();
+    await cancelPendingNotifications(pending.map((notification) => notification.id));
+  }
+
+  const current =
+    getNativeReminderPreferences(userId) ?? DEFAULT_NATIVE_REMINDER_PREFERENCES;
+  saveNativeReminderPreferences(userId, { ...current, enabled: false });
+  if (readStorage(OWNER_STORAGE_KEY) === userId) writeStorage(OWNER_STORAGE_KEY, null);
+};
+
+export const detachNativeRemindersFromInactiveUser = async (
+  activeUserId: string | null,
+) => {
+  if (!isNativeNotificationsAvailable()) return;
+  const owner = readStorage(OWNER_STORAGE_KEY);
+  if (!owner || owner === activeUserId) return;
+
+  const pending = await getOwnedPendingNotifications();
+  await cancelPendingNotifications(pending.map((notification) => notification.id));
+  writeStorage(OWNER_STORAGE_KEY, null);
+};
+
+export const listenForNativeReminderActions = async (
+  callback: (action: ActionPerformed) => void,
+): Promise<PluginListenerHandle | null> => {
+  if (!isNativeNotificationsAvailable()) return null;
+  return LocalNotifications.addListener(
+    "localNotificationActionPerformed",
+    callback,
+  );
+};

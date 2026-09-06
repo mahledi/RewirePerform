@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000512",
+  "view": "admin_feedback_metadata",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-admin-feedback-metadata-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "counts": {
+      "total": 7,
+      "open": 1,
+      "reviewed": 2,
+      "resolved": 4,
+      "new_24h": 0,
+      "new_7d": 1
+    },
+    "open_by_category": {
+      "bug": 1,
+      "suggestion": 0,
+      "general": 0,
+      "other": 0
+    },
+    "by_platform": {
+      "ios": 3,
+      "android": 3,
+      "web": 1
+    },
+    "by_runtime": {
+      "native": 6,
+      "browser": 1
+    },
+    "by_app_version": {
+      "1.2.0": 7
+    },
+    "test_data_included": false,
+    "free_text_included": false,
+    "admin_notes_included": false,
+    "direct_identifiers_included": false
+  }
+}

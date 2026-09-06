@@ -10,12 +10,16 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      VITE_SUPABASE_URL: https://twceqincrbrenyuqukpj.supabase.co
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'ci-placeholder-publishable-key' }}
-      VITE_SUPABASE_PROJECT_ID: twceqincrbrenyuqukpj
+      VITE_SUPABASE_URL: https://abcdefghijklmnopqrst.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-publishable-key
+      VITE_SUPABASE_PROJECT_ID: abcdefghijklmnopqrst
+      VITE_APP_ENV: ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Historical feedback package pins are verified with git show.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -23,17 +27,21 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-brand.txt
+
+      - name: Install Node dependencies
         run: npm ci
 
-      - name: Verify environment template
-        run: npm run validate:env -- --example-only
+      - name: Install isolated Production dry-run transport
+        run: npm ci --ignore-scripts --prefix tools/production-rollback-dry-run
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Install brand verification dependencies
+        run: python -m pip install --disable-pip-version-check --requirement requirements-brand.txt
 
-      - name: Build
-        run: npm run build
-
-      - name: Test
-        run: npm test
+      - name: Verify
+        run: npm run ci

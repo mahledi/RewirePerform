@@ -1,7 +1,7 @@
 /**
  * Program Progress / Adherence Service
  *
- * Idempotent berechneter täglicher Snapshot pro Spieler:
+ * Idempotent berechneter täglicher Snapshot pro Athlet:in:
  *   - days_available, days_completed, completion_rate
  *   - current_streak, longest_streak
  *   - comprehension_average
@@ -10,10 +10,10 @@
  * Wird beim Dashboard-Load aufgerufen. Pro (user, date) bzw. pro
  * (user, program_instance_id, date) soll nur ein Eintrag existieren.
  */
-import { format, differenceInCalendarDays, parseISO, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { getEffectiveProgramStart, getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import { getEffectiveTodayDate } from "@/lib/qaTime";
 
 export interface ProgressSnapshot {
   user_id: string;
@@ -32,165 +32,32 @@ export interface ProgressSnapshot {
   journals_completed_count: number;
 }
 
-function computeStreaks(completedDates: string[]): { current: number; longest: number } {
-  if (completedDates.length === 0) return { current: 0, longest: 0 };
-  const sorted = [...new Set(completedDates)].sort();
-  let longest = 1;
-  let run = 1;
-  for (let i = 1; i < sorted.length; i++) {
-    const diff = differenceInCalendarDays(parseISO(sorted[i]), parseISO(sorted[i - 1]));
-    if (diff === 1) {
-      run += 1;
-      longest = Math.max(longest, run);
-    } else {
-      run = 1;
-    }
-  }
-  // current streak: counted from latest backwards
-  const today = startOfDay(new Date());
-  const latest = parseISO(sorted[sorted.length - 1]);
-  let current = 0;
-  if (differenceInCalendarDays(today, latest) <= 1) {
-    current = 1;
-    for (let i = sorted.length - 1; i > 0; i--) {
-      const d = differenceInCalendarDays(parseISO(sorted[i]), parseISO(sorted[i - 1]));
-      if (d === 1) current += 1;
-      else break;
-    }
-  }
-  return { current, longest };
-}
-
 /**
  * Schreibt (oder aktualisiert) den heutigen Snapshot für den User.
  * Idempotent — kann mehrfach pro Tag aufgerufen werden.
  */
 export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnapshot | null> {
-  const today = new Date();
-  const todayStr = format(today, "yyyy-MM-dd");
-
-  // Resolve current cohort instance first
   const instance = await getOrCreateActiveInstance(userId);
-  const instanceId = instance?.id ?? null;
-
-  // days_available is now derived from instance.started_at, capped at 56
-  const startDate = instance?.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
-  const info = getCurrentProgramDay(startDate, today);
-  const programDay = info?.dayNumber ?? null;
-
-  let daysAvailable = 0;
-  if (startDate) {
-    const diff = differenceInCalendarDays(startOfDay(today), startOfDay(parseISO(startDate)));
-    daysAvailable = Math.max(0, Math.min(56, diff + 1));
-  }
-
-  const teamId = instance?.team_id ?? null;
-
-  // Cohort-scoped reads
-  const baseFilter = (q: any) =>
-    instanceId ? q.eq("program_instance_id", instanceId) : q.eq("user_id", userId);
-
-  const [completionsRes, checkinsRes, journalsRes, comprehensionRes] = await Promise.all([
-    baseFilter(
-      supabase
-        .from("user_day_completion")
-        .select("day_number, completion_status, completed_at, task_completion, program_instance_id")
-        .eq("user_id", userId)
-    ),
-    baseFilter(
-      supabase.from("daily_checkins").select("date, program_instance_id").eq("user_id", userId)
-    ),
-    baseFilter(
-      supabase.from("daily_journals").select("date, program_instance_id").eq("user_id", userId)
-    ),
-    baseFilter(
-      supabase
-        .from("comprehension_check_instances")
-        .select("correct_count, total_count, status, program_instance_id")
-        .eq("user_id", userId)
-        .eq("status", "completed")
-    ),
-  ]);
-
-  const completionsAll = (completionsRes.data ?? []).filter(
-    (c: any) => c.completion_status === "completed"
-  );
-  // unique completed days
-  const uniqueDays = new Set(completionsAll.map((c: any) => c.day_number));
-  const daysCompleted = uniqueDays.size;
-
-  const tasksCompletedCount = completionsAll.reduce(
-    (sum: number, c: any) => sum + (Array.isArray(c.task_completion) ? c.task_completion.length : 0),
-    0
-  );
-  const completedDates = completionsAll
-    .map((c: any) => c.completed_at)
-    .filter(Boolean)
-    .map((d: string) => d.slice(0, 10));
-  const { current: currentStreak, longest: longestStreak } = computeStreaks(completedDates);
-
-  const checkinsCount = checkinsRes.data?.length ?? 0;
-  const journalsCount = journalsRes.data?.length ?? 0;
-
-  const comprehensions = comprehensionRes.data ?? [];
-  let comprehensionAvg: number | null = null;
-  const rates = comprehensions
-    .filter((c: any) => c.total_count > 0)
-    .map((c: any) => c.correct_count / c.total_count);
-  if (rates.length > 0) {
-    comprehensionAvg = rates.reduce((a: number, b: number) => a + b, 0) / rates.length;
-  }
-
-  const completionRate = daysAvailable > 0 ? Math.min(1, daysCompleted / daysAvailable) : 0;
-
-  const snapshot: ProgressSnapshot = {
-    user_id: userId,
-    team_id: teamId,
-    program_instance_id: instanceId,
-    date: todayStr,
-    program_day: programDay,
-    days_available: daysAvailable,
-    days_completed: daysCompleted,
-    completion_rate: Number(completionRate.toFixed(4)),
-    current_streak: currentStreak,
-    longest_streak: longestStreak,
-    comprehension_average:
-      comprehensionAvg !== null ? Number(comprehensionAvg.toFixed(4)) : null,
-    tasks_completed_count: tasksCompletedCount,
-    checkins_completed_count: checkinsCount,
-    journals_completed_count: journalsCount,
-  };
-
-  let existingQuery = supabase
-    .from("program_progress_snapshots")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("date", todayStr);
-
-  existingQuery = instanceId
-    ? existingQuery.eq("program_instance_id", instanceId)
-    : existingQuery.is("program_instance_id", null);
-
-  const { data: existing, error: lookupError } = await existingQuery.maybeSingle();
-
-  if (lookupError) {
-    console.error("upsertTodaySnapshot lookup error:", lookupError);
+  if (!instance?.id) {
+    console.error("upsertTodaySnapshot error: active program instance required");
     return null;
   }
 
-  const { error } = existing?.id
-    ? await supabase
-        .from("program_progress_snapshots")
-        .update(snapshot)
-        .eq("id", existing.id)
-    : await supabase
-        .from("program_progress_snapshots")
-        .insert(snapshot);
+  const { data, error } = await supabase.rpc("refresh_my_program_progress_snapshot", {
+    _program_instance_id: instance.id,
+  });
 
-  if (error) {
-    console.error("upsertTodaySnapshot error:", error);
+  if (error || !data || typeof data !== "object" || Array.isArray(data)) {
+    console.error("upsertTodaySnapshot RPC error:", error ?? "invalid snapshot response");
     return null;
   }
+
+  const snapshot = data as unknown as ProgressSnapshot;
+  if (snapshot.user_id !== userId || snapshot.program_instance_id !== instance.id) {
+    console.error("upsertTodaySnapshot RPC error: snapshot scope mismatch");
+    return null;
+  }
+
   return snapshot;
 }
 
@@ -200,6 +67,7 @@ export async function upsertTodaySnapshot(userId: string): Promise<ProgressSnaps
  * kein Banner mehr — Eindeutigkeits-Index in DB verhindert Doppel-Speicherung.
  */
 export interface RetestStatus {
+  preDone: boolean;
   midDue: boolean;
   postDue: boolean;
   midDone: boolean;
@@ -207,31 +75,77 @@ export interface RetestStatus {
   programDay: number | null;
 }
 
-const REQUIRED_TYPES = ["csai2r", "smtq", "flow_short"];
+export type AssessmentTiming = "pre" | "mid" | "post";
 
-export async function getRetestStatus(userId: string): Promise<RetestStatus> {
+const REQUIRED_TYPES = ["csai2r", "smtq", "flow_short"] as const;
+
+export interface AssessmentCompletionStatus extends RetestStatus {
+  instanceId: string;
+  completedAssessmentIds: Record<AssessmentTiming, string[]>;
+}
+
+export async function getAssessmentCompletionStatus(
+  userId: string,
+  referenceDate?: Date,
+): Promise<AssessmentCompletionStatus> {
   const instance = await getOrCreateActiveInstance(userId);
-  const startDate = instance?.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
-  const info = getCurrentProgramDay(startDate, new Date());
+  if (!instance?.id) throw new Error("active_program_instance_required");
+
+  const startDate = instance.started_at ?? (await getEffectiveProgramStart(userId)).startDate;
+  const effectiveToday = referenceDate ?? await getEffectiveTodayDate(userId);
+  const info = getCurrentProgramDay(startDate, effectiveToday);
   const programDay = info?.dayNumber ?? null;
 
-  // Cohort-scoped: only assessments from current instance count
-  let q = supabase
+  const { data, error } = await supabase
     .from("assessments")
     .select("assessment_type, timing, program_instance_id")
     .eq("user_id", userId)
-    .in("timing", ["mid", "post"]);
-  if (instance?.id) q = q.eq("program_instance_id", instance.id);
-  const { data } = await q;
+    .eq("program_instance_id", instance.id)
+    .in("timing", ["pre", "mid", "post"]);
 
-  const midTypes = new Set((data ?? []).filter((a) => a.timing === "mid").map((a) => a.assessment_type));
-  const postTypes = new Set((data ?? []).filter((a) => a.timing === "post").map((a) => a.assessment_type));
+  if (error) throw error;
 
-  const midDone = REQUIRED_TYPES.every((t) => midTypes.has(t));
-  const postDone = REQUIRED_TYPES.every((t) => postTypes.has(t));
+  const completedAssessmentIds: Record<AssessmentTiming, string[]> = {
+    pre: [],
+    mid: [],
+    post: [],
+  };
+  for (const assessment of data ?? []) {
+    if (assessment.timing === "pre" || assessment.timing === "mid" || assessment.timing === "post") {
+      if (!completedAssessmentIds[assessment.timing].includes(assessment.assessment_type)) {
+        completedAssessmentIds[assessment.timing].push(assessment.assessment_type);
+      }
+    }
+  }
 
-  const midDue = !!programDay && programDay >= 28 && programDay < 56 && !midDone;
-  const postDue = !!programDay && programDay >= 56 && !postDone;
+  const hasAll = (timing: AssessmentTiming) =>
+    REQUIRED_TYPES.every((type) => completedAssessmentIds[timing].includes(type));
+  const preDone = hasAll("pre");
+  const midDone = hasAll("mid");
+  const postDone = hasAll("post");
+  const midDue = preDone && Boolean(programDay && programDay >= 28 && programDay < 56 && !midDone);
+  const postDue = preDone && Boolean(programDay && programDay >= 56 && !postDone);
 
-  return { midDue, postDue, midDone, postDone, programDay };
+  return {
+    instanceId: instance.id,
+    completedAssessmentIds,
+    preDone,
+    midDue,
+    postDue,
+    midDone,
+    postDone,
+    programDay,
+  };
+}
+
+export async function getRetestStatus(userId: string): Promise<RetestStatus> {
+  const {
+    preDone,
+    midDue,
+    postDue,
+    midDone,
+    postDone,
+    programDay,
+  } = await getAssessmentCompletionStatus(userId);
+  return { preDone, midDue, postDue, midDone, postDone, programDay };
 }

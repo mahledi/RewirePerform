@@ -1,59 +1,48 @@
-# Weg zur vollen Unabhängigkeit
+# Mobile Hero: Scroll-Hint (Peek + Pfeil)
 
-Ziel: RewirePerform läuft komplett ohne Lovable — eigenes Hosting (Web + iOS App Store), eigene Backend-Kontrolle, eigene CI/CD. Lovable bleibt optional als Dev-Tool.
+Nur Mobile. Desktop bleibt unverändert.
 
-## Aktueller Stand (gut!)
+## Ziel
+Beim Einloggen / Landen auf der Startseite soll auf Mobile sofort klar sein: hier geht es weiter nach unten — ohne dass der Hero unruhig oder „self-made" wirkt.
 
-- Code auf GitHub synchronisiert (Single Source of Truth)
-- Vite-Build → standard `dist/` Output → läuft überall
-- Supabase ist Standard-Postgres + Auth, kein Lovable-Lock-in
-- Capacitor iOS-Shell bereits eingerichtet (`ios/`)
-- `docs/PORTABILITY.md` + `docs/DEPLOYMENT.md` existieren bereits
-- Env-Validierung (`npm run validate:env`) vorhanden
+## Was geändert wird
 
-**Du bist schon zu ~80% unabhängig.** Es fehlt nur die Aktivierung.
+**Datei:** `src/components/HeroSection.tsx` (einzige Datei)
 
-## Die 4 Schritte zur Unabhängigkeit
+### 1. Hero-Höhe (Section-Peek)
+- Aktuell: `min-h-screen`
+- Neu: `min-h-[88svh] md:min-h-screen`
+- Wirkung: Auf Mobile ragt der obere Rand der nächsten Section (`WhySection`) ca. 12 % ins Viewport — klassisches „Content peek"-Signal. `svh` statt `vh` verhindert das iOS-URL-Bar-Springen. Desktop bleibt 100vh.
 
-### Schritt 1: Eigenes Web-Hosting (1–2 Stunden)
-- Vercel/Netlify/Cloudflare Pages mit GitHub-Repo verbinden
-- Build-Settings: `npm ci` / `npm run build` / Output `dist`
-- Env-Variablen setzen: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
-- Custom Domain `rewireperform.com` verbinden
-- Supabase Auth → Redirect-URLs um neue Domain ergänzen
+### 2. Animierter Scroll-Indikator (Mobile only)
+Neues Element am unteren Hero-Rand, oberhalb des bestehenden `bg-gradient-to-t`-Fades, sichtbar nur `< md`:
 
-### Schritt 2: Supabase aus Lovable Cloud "befreien" (kritisch)
-Aktuell läuft die DB als **Lovable Cloud Managed Supabase** (`twceqincrbrenyuqukpj`). Optionen:
+- Position: `absolute bottom-6 left-1/2 -translate-x-1/2`, `z-20`, `md:hidden`
+- Inhalt:
+  - Mikro-Label `Mehr erfahren` in `text-[11px] uppercase tracking-[0.18em] text-muted-foreground`
+  - `ChevronDown`-Icon (lucide-react, bereits verfügbar), `w-4 h-4 text-primary/80`
+- Animation: sanftes vertikales Bouncen des Icons (2 px, 1.8s loop, ease-in-out), respektiert `prefers-reduced-motion` → Animation aus.
+- Interaktion: `<button>` mit `onClick` → smooth-scroll zu `#why` via `document.getElementById('why')?.scrollIntoView({ behavior: 'smooth', block: 'start' })`
+- Erscheinen: Framer-Motion fade-in mit `delay: 0.6`, damit es nach den CTAs kommt und nicht ablenkt.
+- Fade-out beim Scrollen: optional, sobald `window.scrollY > 80` → `opacity-0` (verhindert, dass der Pfeil später noch sichtbar über Hero schwebt). Nur wenn schlank umsetzbar mit einem `useEffect` + `useState`.
 
-- **Option A (empfohlen, einfach):** DB **behalten wie sie ist**. Lovable Cloud bleibt der Hoster, du nutzt sie direkt über Supabase API. Funktioniert auch ohne Lovable Editor. Risiko: Lovable könnte irgendwann den Zugriff ändern.
-- **Option B (volle Souveränität):** Migration zu eigenem Supabase-Account. Schema via `supabase db dump` exportieren, neues Projekt anlegen, Daten + Users migrieren, Edge Functions deployen, Frontend-Env umstellen. Aufwand: 1 Tag, einmal sauber dokumentiert.
-
-### Schritt 3: iOS App Store (Capacitor, schon vorbereitet)
-- Apple Developer Account ($99/Jahr)
-- `npm run app:build` → `npx cap sync ios` → Xcode öffnen
-- App Icons + Splash bereits in `ios/App/App/Assets.xcassets/`
-- App Store Connect: Eintrag erstellen → TestFlight → Review → Live
-- Anleitung steht teilweise in `docs/APP_STORE.md`
-
-### Schritt 4: CI/CD ohne Lovable
-- GitHub Actions (`.github/workflows/ci.yml` existiert bereits)
-- Erweitern um: Auto-Deploy zu Vercel + Supabase Edge Functions bei Push auf `main`
-- Damit ist Lovable nur noch ein optionaler Editor
-
-## Was diese Plan-Iteration jetzt liefert
-
-Ich schlage vor, **jetzt nur Schritt 1 + 4 vorzubereiten** (Web-Deploy + CI), weil das dich sofort unabhängig macht ohne DB-Migrations-Risiko. Schritt 2 (DB-Souveränität) und Schritt 3 (App Store) machen wir separat, wenn du bereit bist.
-
-Konkret in diesem Loop:
-1. `docs/INDEPENDENCE.md` schreiben — eine klare Schritt-für-Schritt-Anleitung (Web-Deploy, DB-Migration, App Store, CI/CD), die du auch in einem Jahr noch verstehst, ohne mich zu fragen.
-2. `.github/workflows/deploy.yml` ergänzen — Auto-Deploy-Skeleton für Vercel + Supabase Functions (auskommentiert, du aktivierst es wenn du den Hoster gewählt hast).
-3. `scripts/export-supabase-schema.sh` — One-Click-Skript für DB-Dump (für spätere Migration).
-
-Kein Refactoring, keine Code-Änderungen am App-Verhalten. Nur Doku + Tooling für Unabhängigkeit.
+### 3. CTA-Reihenfolge unverändert
+Beide Buttons bleiben wie sie sind — der Scroll-Pfad wird nur durch den Indikator + Peek kommuniziert, nicht durch Umbau der CTAs. So bleibt die Hierarchie clean.
 
 ## Technische Details
 
-- Keine neuen Runtime-Dependencies
-- Keine DB-Migrationen
-- Keine Änderungen an `src/`, Supabase-Schema oder Edge Functions
-- Lovable-spezifisches (`lovable-tagger`, `.lovable/`) bleibt — stört Standalone-Betrieb nicht
+- Bounce-Animation: inline via `style={{ animation: 'hero-bounce 1.8s ease-in-out infinite' }}` oder über eine kleine Keyframe-Erweiterung. Vorschlag: lokal mit Framer-Motion `animate={{ y: [0, 4, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}` — keine Tailwind-Config-Änderung nötig, konsistent mit den anderen Motion-Komponenten im Hero.
+- Reduced-Motion: Framer respektiert das automatisch über `useReducedMotion()`-Hook.
+- Bestehende `#why`-ID auf `Index.tsx` (`<div id="why">`) ist bereits vorhanden — kein Routing/IDs-Setup nötig.
+- Keine neuen Dependencies, keine Änderung an Navbar, keine Touch von Desktop-Styles.
+
+## Was NICHT angefasst wird
+- Desktop-Hero (bleibt `min-h-screen`, kein Pfeil)
+- Navbar (Mobile/Desktop)
+- CTAs, Hero-Bild, Headline, Subtitle
+- Andere Sections
+
+## Verifikation
+- Mobile (375 / 390 px): Beim Laden ist Pfeil sichtbar, oberer Rand der nächsten Section ragt knapp ins Bild, Tap auf Pfeil scrollt smooth zu `#why`.
+- Desktop (≥768 px): visuell identisch zu jetzt.
+- `prefers-reduced-motion`: Pfeil sichtbar, kein Bouncen.
