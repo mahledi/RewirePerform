@@ -61,3 +61,14 @@ Invarianten:
 
 Wenn eine Invariante nicht erfüllt ist, wird die gesamte Transaktion
 zurückgerollt.
+
+### Minor-Guard-Kompatibilität
+
+Der Production-Rollback-Proof fand eine interne Testinstanz, deren synthetischer
+Autorisierungszustand gewöhnliche Produktwrites korrekt blockiert. Migration
+`20260907073744_allow_internal_test_classification_without_product_authorization.sql`
+lässt diesen Guard bestehen und erlaubt ausschließlich eine
+datenschutzschützende Wartungstransition: `is_test_instance` darf von `false`
+auf `true` wechseln, wenn jede andere Spalte der Programminstanz unverändert
+bleibt. Inserts, Rückstufungen, kombinierte Datenänderungen und jeder normale
+unautorisierte Write bleiben fail-closed.
