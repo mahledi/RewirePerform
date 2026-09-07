@@ -21,13 +21,13 @@ describe("rest visualization wake-lock lifecycle", () => {
 
     const view = render(<RestDayVisualizationFlow draft={draft!} />);
     fireEvent.click(screen.getByRole("button", { name: "Visualisierung starten" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Atmung starten" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Timer starten" }));
 
     await waitFor(() => expect(request).toHaveBeenCalledWith("screen"));
     fireEvent.click(screen.getByRole("button", { name: "Timer pausieren" }));
     await waitFor(() => expect(releases[0]).toHaveBeenCalledOnce());
 
-    fireEvent.click(screen.getByRole("button", { name: "Atmung starten" }));
+    fireEvent.click(screen.getByRole("button", { name: "Timer starten" }));
     await waitFor(() => expect(request).toHaveBeenCalledTimes(2));
     view.unmount();
     await waitFor(() => expect(releases[1]).toHaveBeenCalledOnce());

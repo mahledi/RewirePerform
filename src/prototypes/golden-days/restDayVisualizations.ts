@@ -4,7 +4,6 @@ import type {
 } from "./goldenDayDrafts";
 
 export type RestVisualizationPhaseId =
-  | "breathing"
   | "situation"
   | "sentence"
   | "action";
@@ -656,7 +655,7 @@ const EDITORIAL: Record<number, RestEditorial> = {
   },
 };
 
-const PHASE_DURATIONS = [120, 35, 35, 50] as const;
+const PHASE_DURATIONS = [35, 35, 50] as const;
 
 const buildPhases = (
   draft: GoldenDayDraft,
@@ -664,24 +663,19 @@ const buildPhases = (
 ): RestVisualizationPhase[] => {
   return [
     {
-      id: "breathing",
-      prompt: "Atme durch die Nase in den Bauch ein. Zähle von eins bis vier und sieh jede Zahl im Kopf. Atme langsam aus, zähle bis sechs und sieh sie wieder.",
-      durationSec: PHASE_DURATIONS[0],
-    },
-    {
       id: "situation",
       prompt: `Stell dir vor: ${editorial.scene} ${editorial.moment}`,
-      durationSec: PHASE_DURATIONS[1],
+      durationSec: PHASE_DURATIONS[0],
     },
     {
       id: "sentence",
       prompt: `Dein Satz für diese Situation ist: „${draft.cue}“ ${editorial.action}`,
-      durationSec: PHASE_DURATIONS[2],
+      durationSec: PHASE_DURATIONS[1],
     },
     {
       id: "action",
       prompt: "Lass dieselbe Situation noch einmal ablaufen. Nutze deinen heutigen Satz und stell dir genau vor, wie du so handelst, wie du wirklich handeln möchtest.",
-      durationSec: PHASE_DURATIONS[3],
+      durationSec: PHASE_DURATIONS[2],
     },
   ];
 };
