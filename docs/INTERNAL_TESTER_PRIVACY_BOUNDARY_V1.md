@@ -1,6 +1,6 @@
 # Internal Tester Privacy Boundary V1
 
-Status: `TESTED_LOCAL_PRODUCTION_ROLLBACK_PROVEN`
+Status: `ACTIVE_LIVE_PROVEN_SERVER_SIDE`
 
 ## Was diese Grenze garantiert
 
@@ -72,3 +72,63 @@ datenschutzschützende Wartungstransition: `is_test_instance` darf von `false`
 auf `true` wechseln, wenn jede andere Spalte der Programminstanz unverändert
 bleibt. Inserts, Rückstufungen, kombinierte Datenänderungen und jeder normale
 unautorisierte Write bleiben fail-closed.
+
+## Production-Aktivierung vom 7. September 2026
+
+### Code-Provenienz
+
+- Privacy-Grenze: PR `#194`, Merge
+  `0dca54c73532741d26e4d9072f08012c3cf851d9`.
+- Minor-Guard-Kompatibilität: PR `#195`, Merge
+  `2f801028bfccee87fe641df0da6a99b1cdf53535`.
+- GitHub CI für PR `#195`: `232/232` Testdateien und `1226/1226` Tests grün;
+  Build, Typecheck, SQL-/Privacy-Validatoren und Vercel Preview grün.
+
+### Production-Apply
+
+- Ziel: `bqsbxesmybthwtxmowfz` (`RewirePerform real`, `eu-central-1`,
+  `ACTIVE_HEALTHY`).
+- Atomarer Rollback-Proof: `6` Migrationen, SQL SHA-256
+  `660b1d5d87dac532fe750d373bcfd6285f717a3a5ce2813e62d2ddcb103f05b8`.
+- Persistenter atomarer Apply: SQL SHA-256
+  `8fa45f8e33f79a629fb0158cf257cb3e5e48ec9f2c7f25d2397526f8d225e6a0`.
+- Angewandte Migrationen:
+  `20260906133746`, `20260906135858`, `20260906135859`,
+  `20260906135900`, `20260906135901`, `20260907073744`.
+- Nach dem Apply: `3` Testteams, `11` interne Testprofile, `8`
+  Test-Programminstanzen und `14` neue private Auditzeilen. Keine Accounts oder
+  Trackingdaten wurden gelöscht.
+
+### Live-Nachweis
+
+Der read-only Production-Smoke mit echten Rollen- und Datenbankpfaden bestand
+unter SHA-256
+`1cb36ec7e7d7141bd47d77e98af903e13d1d9b51e57bec6e89fe4860c0fdecb7`:
+
+- Coach-RLS, Profile und Rollen: `0` sichtbare interne Tester;
+- Coach-Aktivität, Check-ins und Fragebogenstatus: jeweils `27` offizielle
+  Athleten und `0` interne Tester;
+- Program-Run: `27` offizielle Athleten, `27` Zuweisungen und `27` aktive
+  offizielle Instanzen;
+- Admin-Teamübersicht: genau `1` offizielles Team, `30` offizielle Mitglieder,
+  `27` offizielle Athleten und `0` Testteams;
+- Team Pulse, Coach Evidence, Admin-Systemzustand, Aktivitätstrends,
+  Programmverständnis und strukturierte Feedback Intelligence antworteten ohne
+  interne Testerkennung; `subject_reference` erschien nicht in der
+  Feedback-Ausgabe;
+- das interne Testkonto behielt seine eigene Profil-, Rollen- und Teamansicht;
+- `anon` und `authenticated` können weder klassifizieren noch das private Audit
+  lesen; `service_role` kann klassifizieren.
+
+Der vollständig zurückgerollte Reminder-Smoke unter SHA-256
+`78a63ab7894838c8948a5338fc61c3d6c5b9ba70b61cb9195afcfc1ebfdd7d26`
+erzeugte für `27` offizielle Empfänger und `0` interne Tester einen
+Test-Claim. Es blieb keine Notification-Zeile bestehen und es wurde keine Mail
+oder Push-Nachricht versendet.
+
+### Ehrliche Grenze
+
+`LIVE_PROVEN_SERVER_SIDE` beweist die Production-Datenbank-, RLS-, RPC-,
+Admin-/Jarvis- und Reminder-Auswahlgrenze. Ein physischer Coach-Browser-Smoke
+und ein echter zugestellter Push sind nicht Teil dieses Nachweises und werden
+nicht als bewiesen behauptet.
