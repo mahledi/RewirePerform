@@ -21,6 +21,7 @@ const migrationSource = () => [
   "supabase/migrations/20260829185434_add_jarvis_activity_trends_machine_read.sql",
   "supabase/migrations/20260829190341_add_jarvis_auth_signup_success_coverage.sql",
   "supabase/migrations/20260901103644_jarvis_program_start_observability_v1_4.sql",
+  "supabase/migrations/20260907085639_jarvis_coach_dashboard_observability_v1.sql",
 ].map(readRepoFile).join("\n");
 
 describe("MahleOS operational read contract", () => {
@@ -102,6 +103,7 @@ describe("MahleOS operational read contract", () => {
     expect(migration).toContain("'SERVER_ACCOUNT_CREATION_ONLY'");
     expect(migration).toContain("'AUTHENTICATED_APP_EVENTS'");
     expect(migration).toContain("'STRUCTURAL_AND_DELIVERY_ONLY'");
+    expect(migration).toContain("'AUTHENTICATED_DELIVERY_AND_SERVER_ROSTER_RECONCILIATION'");
     expect(migration).toContain("extensions.digest(convert_to(payload::text, 'UTF8'), 'sha256')");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated");
     expect(migration).toContain("TO service_role");

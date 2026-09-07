@@ -64,7 +64,7 @@ describe("Jarvis program-start observability v1.4", () => {
       "utf8",
     ));
 
-    expect(schema.properties.schema_version.const).toBe("mahleos-system-health-v1.5");
+    expect(schema.properties.schema_version.const).toBe("mahleos-system-health-v1.6");
     expect(schema.properties.program_integrity.required).toContain(
       "active_runs_with_assignment_set_mismatch",
     );

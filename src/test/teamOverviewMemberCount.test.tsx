@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   from: vi.fn(),
   invoke: vi.fn(),
   rpc: vi.fn(),
+  captureAppError: vi.fn(),
+  trackAppEvent: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -16,7 +18,10 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-vi.mock("@/lib/monitoring", () => ({ captureAppError: vi.fn() }));
+vi.mock("@/lib/monitoring", () => ({
+  captureAppError: mocks.captureAppError,
+  trackAppEvent: mocks.trackAppEvent,
+}));
 
 const queryResult = (value: unknown) => ({
   select: vi.fn().mockReturnThis(),
@@ -104,6 +109,48 @@ describe("coach team member count", () => {
       expect(screen.getByText("Sportler im Team").previousElementSibling).toHaveTextContent("6");
     });
     expect(await screen.findByText("Athlet 6")).toBeInTheDocument();
+    expect(mocks.trackAppEvent).toHaveBeenCalledWith({
+      eventName: "coach_dashboard_loaded",
+      status: "success",
+      role: "coach",
+      teamId: "team-1",
+      route: "/coach",
+      metadata: {
+        stage: "team_overview_activity_snapshot",
+        item_count: 6,
+      },
+    });
+  });
+
+  it("records a bounded failure with the authorized team scope", async () => {
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === "compute_team_outcomes") {
+        return Promise.resolve({ data: null, error: null });
+      }
+      if (name === "get_coach_team_checkin_status_v1_4") {
+        return abortableResult({ data: null, error: { code: "rpc_unavailable" } });
+      }
+      if (name === "get_team_questionnaire_status") {
+        return Promise.resolve({ data: [], error: null });
+      }
+      throw new Error(`Unexpected RPC: ${name}`);
+    });
+
+    render(<TeamOverview teamId="team-1" />);
+
+    await waitFor(() => expect(mocks.captureAppError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: "coach_dashboard_loaded",
+        role: "coach",
+        teamId: "team-1",
+        route: "/coach",
+        metadata: { stage: "team_overview_checkin_status" },
+      }),
+    ));
+    expect(mocks.trackAppEvent).not.toHaveBeenCalledWith(expect.objectContaining({
+      eventName: "coach_dashboard_loaded",
+      status: "success",
+    }));
   });
 
   it("makes an unstarted program prominent and routes through the provided real start action", async () => {

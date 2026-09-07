@@ -40,6 +40,10 @@ const programStartObservabilityMigration = readFileSync(
   resolve("supabase/migrations/20260901103644_jarvis_program_start_observability_v1_4.sql"),
   "utf8",
 );
+const coachDashboardObservabilityMigration = readFileSync(
+  resolve("supabase/migrations/20260907085639_jarvis_coach_dashboard_observability_v1.sql"),
+  "utf8",
+);
 const contractSchemaNames = [
   "system-health",
   "tracking-quality",
@@ -283,6 +287,8 @@ try {
       created_at timestamptz NOT NULL DEFAULT now(),
       event_name text NOT NULL,
       status text NOT NULL,
+      role text,
+      team_id uuid REFERENCES public.teams(id),
       is_test boolean NOT NULL DEFAULT false,
       metadata jsonb NOT NULL DEFAULT '{}'::jsonb
     );
@@ -393,6 +399,7 @@ try {
   await db.exec(activityTrendsMachineMigration);
   await db.exec(authSignupCoverageMigration);
   await db.exec(programStartObservabilityMigration);
+  await db.exec(coachDashboardObservabilityMigration);
 
   const privileges = await db.query(`
     SELECT
@@ -562,6 +569,30 @@ try {
       ('56d-transfer-v2-2026-07', 11),
       ('56d-transfer-v2-2026-07', 18);
   `);
+  await db.query(
+    `INSERT INTO public.app_event_log(event_name, status, role, team_id, metadata, is_test)
+     VALUES (
+       'coach_dashboard_loaded',
+       'success',
+       'coach',
+       $1,
+       '{"stage":"team_overview_activity_snapshot","item_count":5,"source_authority":"client_reported_non_authoritative"}'::jsonb,
+       false
+     )`,
+    [ids.team],
+  );
+  await db.query(
+    `INSERT INTO public.app_event_log(event_name, status, role, team_id, metadata, is_test)
+     VALUES (
+       'coach_dashboard_loaded',
+       'success',
+       'coach',
+       $1,
+       '{"stage":"team_overview_activity_snapshot","item_count":0,"source_authority":"client_reported_non_authoritative"}'::jsonb,
+       true
+     )`,
+    [ids.testTeam],
+  );
 
   for (const [index, athlete] of ids.athletes.entries()) {
     await db.query("INSERT INTO auth.users(id) VALUES ($1)", [athlete.user]);
@@ -669,6 +700,12 @@ try {
     "Program start must expose reconciled successes without inventing attempt or failure coverage",
   );
   assert(
+    daily.data.system_health.critical_journey_coverage.coach_dashboard.state === "OBSERVED_MATCHING"
+      && daily.data.system_health.critical_journey_coverage.coach_dashboard.successful_deliveries_24h === 1
+      && daily.data.system_health.critical_journey_coverage.coach_dashboard.roster_mismatches_24h === 0,
+    "Coach activity delivery must reconcile its bounded row count with the production roster",
+  );
+  assert(
     daily.data.system_health.program_integrity.activated_teams_without_active_run === 0
       && daily.data.system_health.program_integrity.active_runs_with_assignment_set_mismatch === 0,
     "Healthy production program runs must reconcile their complete athlete assignment set",
@@ -682,6 +719,34 @@ try {
   assert(!serializedDaily.includes("PRIVATE-METADATA-CONTENT"), "Technical metadata must not leave RewirePerform");
   assert(!serializedDaily.includes("QA-PRIVATE-FEEDBACK-CONTENT"), "QA feedback must stay excluded");
   assert(!serializedDaily.includes(ids.athletes[0].user), "User IDs must not leave RewirePerform");
+
+  await db.query(
+    `INSERT INTO public.app_event_log(event_name, status, role, team_id, metadata, is_test)
+     VALUES (
+       'coach_dashboard_loaded',
+       'success',
+       'coach',
+       $1,
+       '{"stage":"team_overview_activity_snapshot","item_count":0,"source_authority":"client_reported_non_authoritative"}'::jsonb,
+       false
+     )`,
+    [ids.team],
+  );
+  const dashboardMismatch = await db.query(
+    "SELECT public._mahleos_system_health() AS payload",
+  );
+  assert(
+    asObject(dashboardMismatch.rows[0].payload).critical_journey_coverage.coach_dashboard
+      .roster_mismatches_24h === 1,
+    "A delivered empty coach snapshot must be detected when the production roster is not empty",
+  );
+  await db.query(
+    `DELETE FROM public.app_event_log
+     WHERE event_name = 'coach_dashboard_loaded'
+       AND status = 'success'
+       AND is_test = false
+       AND metadata->>'item_count' = '0'`,
+  );
 
   await db.query(
     "INSERT INTO public.teams(id, program_activated_at, is_test_team) VALUES ($1, now(), false)",

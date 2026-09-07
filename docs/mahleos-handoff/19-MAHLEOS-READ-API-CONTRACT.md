@@ -88,7 +88,7 @@ Enthaelt gemeinsam:
 
 Diese Antworten verwenden die Schema-Versionen:
 
-- `mahleos-system-health-v1.5`
+- `mahleos-system-health-v1.6`
 - `mahleos-tracking-quality-v1`
 - `mahleos-feedback-status-v1`
 
@@ -106,6 +106,15 @@ Aktivierungen. Fehlende aktive Runs, leere Runs sowie fehlende oder unerwartete
 aktive Spielerzuordnungen werden als identifier-freie Integritaetszaehler
 ausgegeben und erzwingen `RED`. Versuche und fehlgeschlagene Aktivierungen
 bleiben bis zu einer eigenen serverseitigen Outcome-Quelle explizit `null`.
+Der Coach-Aktivitaetsbereich meldet nach einer authentifizierten Auslieferung nur
+die begrenzte Anzahl sichtbarer Athleten. Die private System-Health-Funktion
+vergleicht den jeweils neuesten Stand pro Production-Team mit dem serverseitig
+erwarteten, um Testprofile bereinigten Kader. Abweichungen, unpruefbare
+Erfolgsmeldungen und technische Ladefehler werden getrennt gezaehlt. Kein
+aktueller Aufruf bleibt ehrlich `NO_RECENT_OBSERVATION`; er ist nicht automatisch
+ein Produktfehler und darf nicht als Live-Beweis ausgegeben werden. Ein
+clientseitiger Erfolgsbeleg bleibt ohne diesen serverseitigen Abgleich
+nicht-autoritative Telemetrie.
 E-Mail, User-ID, Team-ID, Teamcode, IP-Adresse, User-Agent, Route, Metadaten und
 Freitext verlassen diese Aggregatgrenze nicht.
 

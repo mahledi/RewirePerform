@@ -20,7 +20,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "mahleos-system-health-v1.5"
+      "const": "mahleos-system-health-v1.6"
     },
     "generated_at": {
       "type": "string",
@@ -204,6 +204,7 @@
         "auth_signup",
         "team_join",
         "program_start",
+        "coach_dashboard",
         "minor_authorization"
       ],
       "properties": {
@@ -317,6 +318,53 @@
             },
             "state_reconciliation": {
               "const": "COMPLETE"
+            }
+          },
+          "additionalProperties": false
+        },
+        "coach_dashboard": {
+          "type": "object",
+          "required": [
+            "coverage",
+            "authority",
+            "successful_deliveries_24h",
+            "failures_24h",
+            "roster_mismatches_24h",
+            "unverifiable_successes_24h",
+            "state"
+          ],
+          "properties": {
+            "coverage": {
+              "const": "AUTHENTICATED_DELIVERY_AND_SERVER_ROSTER_RECONCILIATION"
+            },
+            "authority": {
+              "const": "authenticated_app_event_log_plus_server_roster"
+            },
+            "successful_deliveries_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failures_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "roster_mismatches_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unverifiable_successes_24h": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "state": {
+              "enum": [
+                "NO_RECENT_OBSERVATION",
+                "OBSERVED_MATCHING",
+                "PARTIAL_FAILURE",
+                "FAILED",
+                "MISMATCH",
+                "UNVERIFIABLE"
+              ]
             }
           },
           "additionalProperties": false

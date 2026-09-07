@@ -111,7 +111,7 @@ const healthFlowFailures = strictObject(
 );
 
 const criticalJourneyCoverage = strictObject(
-  ["auth_login", "auth_signup", "team_join", "program_start", "minor_authorization"],
+  ["auth_login", "auth_signup", "team_join", "program_start", "coach_dashboard", "minor_authorization"],
   {
     auth_login: strictObject(
       ["coverage", "authority", "successes_24h", "failures_24h"],
@@ -152,6 +152,35 @@ const criticalJourneyCoverage = strictObject(
         state_reconciliation: { const: "COMPLETE" },
       },
     ),
+    coach_dashboard: strictObject(
+      [
+        "coverage",
+        "authority",
+        "successful_deliveries_24h",
+        "failures_24h",
+        "roster_mismatches_24h",
+        "unverifiable_successes_24h",
+        "state",
+      ],
+      {
+        coverage: { const: "AUTHENTICATED_DELIVERY_AND_SERVER_ROSTER_RECONCILIATION" },
+        authority: { const: "authenticated_app_event_log_plus_server_roster" },
+        successful_deliveries_24h: nonnegativeInteger,
+        failures_24h: nonnegativeInteger,
+        roster_mismatches_24h: nonnegativeInteger,
+        unverifiable_successes_24h: nonnegativeInteger,
+        state: {
+          enum: [
+            "NO_RECENT_OBSERVATION",
+            "OBSERVED_MATCHING",
+            "PARTIAL_FAILURE",
+            "FAILED",
+            "MISMATCH",
+            "UNVERIFIABLE",
+          ],
+        },
+      },
+    ),
     minor_authorization: strictObject(
       ["coverage", "authority", "delivery_failures_24h"],
       {
@@ -180,7 +209,7 @@ const systemHealthSchema = schema("system-health", "MahleOS system health v1", s
     "privacy_exclusions",
   ],
   {
-    schema_version: { const: "mahleos-system-health-v1.5" },
+    schema_version: { const: "mahleos-system-health-v1.6" },
     generated_at: dateTime,
     reporting_timezone: reportingTimezone,
     status: operationalStatus,
@@ -1244,7 +1273,7 @@ const lockId = "70000000-0000-4000-8000-000000000501";
 const checksum = "a".repeat(64);
 
 const systemHealth = {
-  schema_version: "mahleos-system-health-v1.5",
+  schema_version: "mahleos-system-health-v1.6",
   generated_at: generatedAt,
   reporting_timezone: "UTC",
   status: "GREEN",
@@ -1306,6 +1335,15 @@ const systemHealth = {
       successes_24h: 1,
       failures_24h: null,
       state_reconciliation: "COMPLETE",
+    },
+    coach_dashboard: {
+      coverage: "AUTHENTICATED_DELIVERY_AND_SERVER_ROSTER_RECONCILIATION",
+      authority: "authenticated_app_event_log_plus_server_roster",
+      successful_deliveries_24h: 4,
+      failures_24h: 0,
+      roster_mismatches_24h: 0,
+      unverifiable_successes_24h: 0,
+      state: "OBSERVED_MATCHING",
     },
     minor_authorization: {
       coverage: "STRUCTURAL_AND_DELIVERY_ONLY",
@@ -1627,7 +1665,7 @@ const evidenceResponse = {
 
 const manifest = {
   contract_id: "rewireperform-mahleos-machine-read",
-  contract_version: "1.5.0",
+  contract_version: "1.6.0",
   status: "IMPLEMENTED_NOT_PRODUCTION_ACTIVATED",
   reporting_timezone: "UTC",
   authentication: {
