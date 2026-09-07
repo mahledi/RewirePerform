@@ -7,7 +7,7 @@ import {
 
 const words = (value: string): number => value.trim().split(/\s+/u).filter(Boolean).length;
 
-const expectedSeconds = 240;
+const expectedSeconds = 120;
 
 describe("56-day rest visualization editorial contract", () => {
   it("authors one complete, universal visualization path for every fixed program day", () => {
@@ -17,17 +17,14 @@ describe("56-day rest visualization editorial contract", () => {
       const visualization = getRestDayVisualization(draft);
       expect(visualization.day).toBe(draft.day);
       expect(visualization.phases.map((phase) => phase.id)).toEqual([
-        "breathing", "situation", "sentence", "action",
+        "situation", "sentence", "action",
       ]);
       expect(visualization.phases.reduce((sum, phase) => sum + phase.durationSec, 0)).toBe(expectedSeconds);
-      expect(visualization.phases[0]).toMatchObject({ id: "breathing", durationSec: 120 });
-      expect(visualization.phases[0].prompt).toContain("bis vier");
-      expect(visualization.phases[0].prompt).toContain("bis sechs");
-      expect(visualization.phases[0].prompt).toContain("Bauch");
-      expect(visualization.phases[0].prompt).toContain("jede Zahl im Kopf");
-      expect(visualization.phases[1].prompt).toMatch(/^Stell dir vor:/u);
-      expect(visualization.phases[2].prompt).toContain(draft.cue);
-      expect(visualization.phases[3].prompt).toContain("dieselbe Situation noch einmal");
+      expect(visualization.estimatedMinutes).toBe(2);
+      expect(visualization.phases.map((phase) => phase.durationSec)).toEqual([35, 35, 50]);
+      expect(visualization.phases[0].prompt).toMatch(/^Stell dir vor:/u);
+      expect(visualization.phases[1].prompt).toContain(draft.cue);
+      expect(visualization.phases[2].prompt).toContain("dieselbe Situation noch einmal");
       expect(visualization.transfer.trim().length).toBeGreaterThan(0);
       expect(visualization.journal.questions).toHaveLength(2);
       expect(new Set(visualization.journal.questions.map((question) => question.id)).size).toBe(2);
@@ -54,7 +51,7 @@ describe("56-day rest visualization editorial contract", () => {
 
     for (const draft of PROGRAM_DAY_DRAFTS) {
       const visualization = getRestDayVisualization(draft);
-      const [, situation, sentence] = visualization.phases;
+      const [situation, sentence] = visualization.phases;
       scenes.push(situation.prompt);
       sentences.push(sentence.prompt);
       transfers.push(visualization.transfer);
@@ -97,10 +94,9 @@ describe("56-day rest visualization editorial contract", () => {
       for (const phrase of blocked) {
         expect(visibleCopy, `Tag ${draft.day} contains blocked phrase: ${phrase}`).not.toContain(phrase);
       }
-      expect(words(visualization.phases[0].prompt), `Tag ${draft.day} breathing is too long`).toBeLessThanOrEqual(30);
-      expect(words(visualization.phases[1].prompt), `Tag ${draft.day} situation is too long`).toBeLessThanOrEqual(55);
-      expect(words(visualization.phases[2].prompt), `Tag ${draft.day} sentence is too long`).toBeLessThanOrEqual(55);
-      expect(words(visualization.phases[3].prompt), `Tag ${draft.day} action is too long`).toBeLessThanOrEqual(24);
+      expect(words(visualization.phases[0].prompt), `Tag ${draft.day} situation is too long`).toBeLessThanOrEqual(55);
+      expect(words(visualization.phases[1].prompt), `Tag ${draft.day} sentence is too long`).toBeLessThanOrEqual(55);
+      expect(words(visualization.phases[2].prompt), `Tag ${draft.day} action is too long`).toBeLessThanOrEqual(24);
       for (const question of visualization.journal.questions) {
         expect(words(question.prompt), `Tag ${draft.day} journal question is too long`).toBeLessThanOrEqual(24);
       }

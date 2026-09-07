@@ -48,7 +48,6 @@ type RestDayVisualizationFlowProps = {
 type SessionStep = "intro" | "active" | "complete";
 
 const PHASE_LABELS: Record<RestVisualizationPhase["id"], string> = {
-  breathing: "Ruhig atmen",
   situation: "Die Situation",
   sentence: "Dein Satz",
   action: "Deine Handlung",
@@ -327,7 +326,7 @@ const RestDayVisualizationFlow = ({
             {firstName ? `${firstName}, deine Visualisierung ist bereit.` : "Deine Visualisierung ist bereit."}
           </h2>
           <p className="mt-3 max-w-lg text-sm leading-6 text-white/52">
-            Du startest mit zwei Minuten ruhiger Atmung. Danach bleibst du für drei einfache Schritte in derselben Sportsituation.
+            Du gehst in drei einfachen Schritten durch dieselbe Sportsituation: die Situation, dein Satz und deine Handlung.
           </p>
 
           <div className="mt-6 divide-y divide-white/[0.055] border-y border-white/[0.055]">
@@ -441,7 +440,7 @@ const RestDayVisualizationFlow = ({
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">{PHASE_LABELS[phase.id]}</p>
             <p className="mt-1 text-xs text-white/35">
-              {phase.id === "breathing" ? "2 Minuten ankommen" : `Visualisierung ${phaseIndex} von 3`}
+              {`Visualisierung ${phaseIndex + 1} von ${phases.length}`}
             </p>
           </div>
         </div>
@@ -469,7 +468,7 @@ const RestDayVisualizationFlow = ({
           {!phaseFinished && (
             <AthleteFlowButton
               onClick={() => running ? pauseTimer() : void startTimer()}
-              aria-label={running ? "Timer pausieren" : phase.id === "breathing" ? "Atmung starten" : "Timer starten"}
+              aria-label={running ? "Timer pausieren" : "Timer starten"}
               className={cn(
                 "min-h-14 w-full",
                 running
@@ -478,7 +477,7 @@ const RestDayVisualizationFlow = ({
               )}
             >
               {running ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
-              {running ? "Pausieren" : phase.id === "breathing" ? "Atmung starten" : "Augen schließen & starten"}
+              {running ? "Pausieren" : "Augen schließen & starten"}
             </AthleteFlowButton>
           )}
           {phaseFinished && (

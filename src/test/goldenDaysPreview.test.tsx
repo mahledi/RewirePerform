@@ -220,7 +220,7 @@ describe("complete 56-day V1.1 internal preview", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tag 2" }));
     fireEvent.click(screen.getByRole("button", { name: "Visualisierung" }));
     expect(screen.getByRole("heading", { name: "Deine Visualisierung ist bereit." })).toBeInTheDocument();
-    expect(screen.getByText(/zwei Minuten ruhiger Atmung/)).toBeInTheDocument();
+    expect(screen.getByText(/Du gehst in drei einfachen Schritten/)).toBeInTheDocument();
     expect(screen.getByText(/Was siehst du, hörst du und spürst du in deinem Körper/)).toBeInTheDocument();
     expect(screen.getByText(/Kein klares Bild\? Kein Problem/)).toBeInTheDocument();
     expect(screen.getByTestId("visualization-sound-lab")).toBeInTheDocument();
@@ -230,12 +230,12 @@ describe("complete 56-day V1.1 internal preview", () => {
       fireEvent.click(screen.getByRole("button", { name: "Visualisierung starten" }));
       await Promise.resolve();
     });
-    expect(screen.getByText("2 Minuten ankommen")).toBeInTheDocument();
+    expect(screen.getByText("Visualisierung 1 von 3")).toBeInTheDocument();
 
-    const durations = [120, 35, 35, 50];
+    const durations = [35, 35, 50];
     for (let phase = 0; phase < durations.length; phase += 1) {
       await act(async () => {
-        fireEvent.click(screen.getByRole("button", { name: phase === 0 ? "Atmung starten" : "Timer starten" }));
+        fireEvent.click(screen.getByRole("button", { name: "Timer starten" }));
         await Promise.resolve();
       });
       expect(screen.queryByRole("button", { name: "Nächster Schritt" })).not.toBeInTheDocument();
@@ -246,7 +246,7 @@ describe("complete 56-day V1.1 internal preview", () => {
 
       if (phase < durations.length - 1) {
         fireEvent.click(screen.getByRole("button", { name: "Nächster Schritt" }));
-        expect(screen.getByText(`Visualisierung ${phase + 1} von 3`)).toBeInTheDocument();
+        expect(screen.getByText(`Visualisierung ${phase + 2} von 3`)).toBeInTheDocument();
       }
     }
 

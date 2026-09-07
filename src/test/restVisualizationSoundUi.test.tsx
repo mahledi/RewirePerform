@@ -50,12 +50,12 @@ describe("rest visualization sound UI", () => {
       fireEvent.click(screen.getByRole("button", { name: "Visualisierung starten" }));
     });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Atmung starten" }));
+      fireEvent.click(screen.getByRole("button", { name: "Timer starten" }));
     });
     expect(audio.startSession).toHaveBeenCalledOnce();
 
     await act(async () => {
-      vi.advanceTimersByTime(120_250);
+      vi.advanceTimersByTime(35_250);
       await Promise.resolve();
     });
 
