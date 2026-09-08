@@ -8,7 +8,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { captureAppError } from "@/lib/monitoring";
+import { captureAppError, trackAppEvent } from "@/lib/monitoring";
 import { getCurrentProgramDay } from "@/lib/getCurrentProgramDay";
 import { toast } from "sonner";
 
@@ -89,6 +89,20 @@ const TeamOverview = ({
     setActivityRows(rows);
   }, []);
 
+  const recordActivityDelivery = useCallback((itemCount: number) => {
+    void trackAppEvent({
+      eventName: "coach_dashboard_loaded",
+      status: "success",
+      role: "coach",
+      teamId,
+      route: "/coach",
+      metadata: {
+        stage: "team_overview_activity_snapshot",
+        item_count: itemCount,
+      },
+    });
+  }, [teamId]);
+
   const refreshCheckinStatus = useCallback(async () => {
     if (backgroundRefreshInFlight.current) return;
     backgroundRefreshInFlight.current = true;
@@ -109,6 +123,7 @@ const TeamOverview = ({
         supported_push_channels: row.supported_push_channels ?? [],
         questionnaire_complete: questionnaireByUser.get(row.user_id),
       })));
+      recordActivityDelivery((data ?? []).length);
       setLastStatusRefreshAt(new Date());
       setPartialWarnings((warnings) => warnings.filter(
         (warning) => warning !== "Der aktuelle Check-in-Status konnte gerade nicht aktualisiert werden.",
@@ -121,6 +136,7 @@ const TeamOverview = ({
         eventName: "coach_dashboard_loaded",
         error: refreshError,
         role: "coach",
+        teamId,
         route: "/coach",
         metadata: { stage: "team_overview_background_checkin_status" },
       });
@@ -129,7 +145,7 @@ const TeamOverview = ({
       backgroundRefreshInFlight.current = false;
       setBackgroundRefreshing(false);
     }
-  }, [storeRows, teamId]);
+  }, [recordActivityDelivery, storeRows, teamId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,6 +163,7 @@ const TeamOverview = ({
           if (!cancelled) {
             setStats({ member_count: 0, assessments_completed: 0, aggregate_ready: false, min_n: MIN_AGGREGATE_SAMPLE });
             storeRows([]);
+            recordActivityDelivery(0);
           }
           return;
         }
@@ -159,6 +176,7 @@ const TeamOverview = ({
           if (!cancelled) {
             setStats({ member_count: 0, assessments_completed: 0, aggregate_ready: false, min_n: MIN_AGGREGATE_SAMPLE });
             storeRows([]);
+            recordActivityDelivery(0);
           }
           return;
         }
@@ -195,7 +213,7 @@ const TeamOverview = ({
           ["team_overview_questionnaire_status", questionnaireStatus],
         ] as const) {
           if (result.error) void captureAppError({
-            eventName: "coach_dashboard_loaded", error: result.error, role: "coach", route: "/coach", metadata: { stage },
+            eventName: "coach_dashboard_loaded", error: result.error, role: "coach", teamId, route: "/coach", metadata: { stage },
           });
         }
 
@@ -219,12 +237,15 @@ const TeamOverview = ({
           min_n: MIN_AGGREGATE_SAMPLE,
         });
         storeRows(nextRows);
-        if (!activityStatus.error) setLastStatusRefreshAt(new Date());
+        if (!activityStatus.error) {
+          setLastStatusRefreshAt(new Date());
+          recordActivityDelivery(nextRows.length);
+        }
         setPartialWarnings(warnings);
       } catch (loadError) {
         if (!cancelled) {
           void captureAppError({
-            eventName: "coach_dashboard_loaded", error: loadError, role: "coach", route: "/coach", metadata: { stage: "team_overview_base_load" },
+            eventName: "coach_dashboard_loaded", error: loadError, role: "coach", teamId, route: "/coach", metadata: { stage: "team_overview_base_load" },
           });
           setError(loadError instanceof Error ? loadError.message : "Teamdaten konnten nicht geladen werden.");
         }
@@ -237,7 +258,7 @@ const TeamOverview = ({
     };
     void loadStats();
     return () => { cancelled = true; };
-  }, [reloadKey, storeRows, teamId]);
+  }, [recordActivityDelivery, reloadKey, storeRows, teamId]);
 
   useEffect(() => {
     if (!programStartDate) return;

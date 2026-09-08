@@ -9,7 +9,7 @@
     "generated_at": "2026-07-21T12:00:00Z",
     "reporting_timezone": "UTC",
     "system_health": {
-      "schema_version": "mahleos-system-health-v1.5",
+      "schema_version": "mahleos-system-health-v1.6",
       "generated_at": "2026-07-21T12:00:00Z",
       "reporting_timezone": "UTC",
       "status": "GREEN",
@@ -74,6 +74,15 @@
           "successes_24h": 1,
           "failures_24h": null,
           "state_reconciliation": "COMPLETE"
+        },
+        "coach_dashboard": {
+          "coverage": "AUTHENTICATED_DELIVERY_AND_SERVER_ROSTER_RECONCILIATION",
+          "authority": "authenticated_app_event_log_plus_server_roster",
+          "successful_deliveries_24h": 4,
+          "failures_24h": 0,
+          "roster_mismatches_24h": 0,
+          "unverifiable_successes_24h": 0,
+          "state": "OBSERVED_MATCHING"
         },
         "minor_authorization": {
           "coverage": "STRUCTURAL_AND_DELIVERY_ONLY",
