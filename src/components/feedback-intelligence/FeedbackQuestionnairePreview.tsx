@@ -550,7 +550,7 @@ export const FeedbackQuestionnairePreview = ({
                   onClick={() => void skipExperience()}
                   disabled={busy}
                 >
-                  Diesen Zwischenstand überspringen
+                  Für Tag {day} kein Feedback geben
                 </button>
               )}
             </div>

@@ -105,7 +105,7 @@ describe("feedback intelligence synthetic preview", () => {
     expect(screen.getByText(/Zwischenstand von Tag 10 jetzt nach/)).toBeInTheDocument();
     expect(screen.getByText(/Fragebogen bleibt Tag 10 zugeordnet/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Später erinnern" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Diesen Zwischenstand überspringen" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Für Tag 10 kein Feedback geben" })).toBeInTheDocument();
   });
 
   it("finishes the structured-only flow without asking for a written response", async () => {

@@ -154,7 +154,7 @@ describe("feedback checkpoint live gate", () => {
     mocks.dismiss.mockResolvedValue(undefined);
     renderGate();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Diesen Zwischenstand überspringen" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Für Tag 10 kein Feedback geben" }));
     await waitFor(() => expect(mocks.dismiss).toHaveBeenCalledWith("feedback-day-10-v1"));
     expect(mocks.defer).not.toHaveBeenCalled();
     expect(screen.queryByTestId("feedback-checkpoint-gate")).not.toBeInTheDocument();

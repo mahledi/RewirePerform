@@ -83,7 +83,10 @@ describe("WebsiteGoldenPagePreview", () => {
     fireEvent.click(screen.getByRole("button", { name: "Coach-Einführung schließen" }));
 
     expect(screen.getByRole("heading", { name: "Der Überblick ist klar. Jetzt wird das Produkt persönlich." })).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "Anmelden" })[0]).toHaveAttribute("href", "/auth");
+    const loginCta = screen.getByTestId("public-login-cta");
+    expect(loginCta).toHaveAttribute("href", "/auth?mode=login");
+    expect(loginCta).toHaveClass("inline-flex", "shrink-0", "border-primary/35", "bg-primary/[0.10]", "text-primary");
+    expect(loginCta).not.toHaveClass("hidden");
     expect(screen.getAllByRole("link", { name: /Als Athlet starten|Jetzt registrieren/ })[0]).toHaveAttribute("href", "/auth?mode=signup&intent=solo");
     expect(screen.getByRole("link", { name: /Zugang anfragen/ })).toHaveAttribute("href", "/team-access");
     expect(screen.getAllByRole("link", { name: "RewirePerform im App Store laden" })[0]).toHaveAttribute(
