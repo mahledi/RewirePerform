@@ -41,7 +41,7 @@ const Privacy = () => {
 
         <h1 className="font-heading text-3xl md:text-4xl font-bold mb-4">RewirePerform Datenschutz</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Stand: 1. September 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
+          Stand: 8. September 2026. Diese Seite erklärt, welche Daten RewirePerform erhebt, warum,
           auf welcher Rechtsgrundlage und was mit ihnen passiert — und was ausdrücklich <em>nicht</em>
           passiert.
         </p>
@@ -71,7 +71,7 @@ const Privacy = () => {
               ) : (
                 <li><span className="text-foreground">Feedback Intelligence ist nicht Teil dieser V1.1-Auslieferung.</span> In V1.1 werden keine Feedback-Checkpoints, keine freiwilligen Produktfeedback-Kommentare und keine hierfür vorgesehenen Analysedaten erhoben oder verarbeitet.</li>
               )}
-              <li><span className="text-foreground">Trainer sehen keine privaten Athleteninhalte.</span> Keine Stimmungswerte, keine Journale, keine Einzelantworten und keine psychologischen Bezeichnungen. Trainer können nur eigene, strukturierte Beobachtungen zu sichtbarem Sportverhalten erfassen.</li>
+              <li><span className="text-foreground">Trainer sehen keine privaten Athleteninhalte.</span> Keine einzelnen Zustandswerte, keine Journale, keine freien Antworten und keine individuellen Assessment-Ergebnisse. Sichtbar sind nur operative Teilnahmeinformationen und ausreichend große Teamaggregate. Trainer können außerdem eigene, strukturierte Beobachtungen zu sichtbarem Sportverhalten erfassen.</li>
               <li><span className="text-foreground">Gruppierte Fortschrittsdaten ohne direkte Identifikatoren</span> können beobachtete Veränderungen und Datenqualität dokumentieren - <em>aber nur, wenn du aktiv zustimmst</em>. Du entscheidest. Du kannst jederzeit widerrufen.</li>
             </ul>
           </section>
@@ -97,7 +97,7 @@ const Privacy = () => {
           <section>
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Rechtsgrundlage (DSGVO)</h2>
             <ul className="space-y-2">
-              <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Teamzugang, Programmfortschritt, Tageslogik, Check-ins, Assessments und auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
+              <li><span className="text-foreground">Art. 6 Abs. 1 lit. b DSGVO — Bereitstellung des Angebots:</span> Konto, Teamzugang, Programmfortschritt, Tageslogik, Check-ins, Assessments, Kalender- und Trainingsplanung sowie auf Wunsch Erinnerungen. Ohne die jeweils erforderlichen Daten kann die zugehörige Funktion nicht erbracht werden.</li>
               {webAnalyticsEnabled && <li><span className="text-foreground">Art. 6 Abs. 1 lit. f DSGVO — datensparsame Reichweitenmessung der öffentlichen Website:</span> Wir werten aggregiert aus, welche öffentlichen Seiten aufgerufen werden und über welche Quellen Menschen die Website finden, damit wir die Information über RewirePerform verständlicher machen können. Dafür werden keine RewirePerform-Konten, Trainings-, Gesundheits-, Feedback- oder Freitextdaten verwendet und keine Werbeprofile erstellt.</li>}
               <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Soweit du selbst vorvertragliche Schritte anfragst, erfolgt die Bearbeitung auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Soweit du eine Organisation vertrittst, stützen wir die angefragte geschäftliche Kommunikation und die angemessene Vorbereitung auf Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse besteht darin, die von dir initiierte Anfrage sicher und passend zu beantworten. Der technische Missbrauchsschutz und die Prüfung offensichtlicher Fake-/Spam-Anfragen beruhen ebenfalls auf diesem Sicherheitsinteresse.</li>
               <li><span className="text-foreground">Art. 6 Abs. 1 lit. a DSGVO - Einwilligung:</span> Die Nutzung freiwillig freigegebener Pilotdaten für interne Analysen sowie nicht identifizierende Pilotberichte und Präsentationen. {feedbackEnabled ? "Dies gilt außerdem für freiwillige Feedback-Checkpoints. Ein Produktfeedback-Kommentar und seine interne Prüfung zur Produktverbesserung erfordern eine zusätzliche ausdrückliche Einwilligung, die jederzeit ohne Nachteil widerrufbar ist." : "Feedback Intelligence, Feedback-Kommentare und ein Jarvis-Zugriff sind nicht Teil dieser V1.1-Auslieferung."}</li>
@@ -124,14 +124,17 @@ const Privacy = () => {
             <h2 className="font-heading text-xl font-semibold text-foreground mb-2">Welche Daten konkret verarbeitet werden</h2>
             <ul className="space-y-2">
               <li><span className="text-foreground">Konto:</span> E-Mail, Passwort-Hash, Rolle (Athlet, Trainer oder Administrator) und Sportprofil-Angaben.</li>
-              <li><span className="text-foreground">Programmfortschritt:</span> aktueller Tag, erledigte Aufgaben, Serien und Phase.</li>
-              <li><span className="text-foreground">Check-ins:</span> Stimmung, Energie und Fokus als Zahlenwerte pro Tag.</li>
+              <li><span className="text-foreground">Programmfortschritt:</span> Programmlauf und Startdatum, aktueller Tag, geöffnete und erledigte Aufgaben, Abschlusszeitpunkte, Bearbeitungsdauer, Serien und Phase. Bei einer Ruhetags-Visualisierung wird nur der Abschluss gespeichert, nicht die vorgestellte Szene.</li>
+              <li><span className="text-foreground">Täglicher Check-in:</span> Ereignisart sowie Stimmung, Energie, mentale Klarheit beziehungsweise Fokus, Stress beziehungsweise innere Spannung, Erholung, Schlafqualität, körperliche Bereitschaft, Bereitschaft beziehungsweise Motivation, Leistungsdruck und Verbindung zum sportlichen Umfeld als Zahlenwerte pro Tag. Zusätzlich wird gespeichert, welche vorgesehenen Schritte abgeschlossen wurden.</li>
               <li><span className="text-foreground">Strukturierte Assessments und Fragebögen:</span> Werte zu Beginn, in der Mitte und am Ende, um beobachtete Veränderungen über die 56 Tage zu dokumentieren. Aussagekraft, Version und Nutzungsrechte jedes Instruments werden getrennt bewertet.</li>
               <li><span className="text-foreground">Strukturierte Transfer-Beobachtungen:</span> An ausgewählten Tagen eine kurze Antwort zu einem konkreten Verhalten in Training oder Wettkampf. Sie ersetzt die optionale freie Reflexion und enthält keinen Freitext.</li>
-              <li><span className="text-foreground">Trainer-Beobachtungen:</span> Strukturierte Bewertungen direkt beobachtbaren Sportverhaltens. Sie enthalten keine Diagnose und keinen Pflicht-Freitext.</li>
+              <li><span className="text-foreground">Kalender und Training:</span> eigene beziehungsweise teambezogene Trainings-, Wettkampf- und Ruhetage, Zeiten, Zeitzone und Erinnerungsplanung, soweit diese Funktionen genutzt werden.</li>
+              <li><span className="text-foreground">Trainer-Beobachtungen:</span> Strukturierte Bewertungen direkt beobachtbaren Sportverhaltens. Sie enthalten keine Diagnose und keinen Pflicht-Freitext. Sie gehören derzeit nicht zur Pilot-Auswertung und werden nicht an Jarvis oder in externe Auswertungs-Exporte übermittelt.</li>
               <li><span className="text-foreground">Coach-Teamzugänge:</span> Teamzuordnung, Coach-Rolle und ein hochentropischer Teamlink. Der Lead Coach verwaltet diesen Link; jeder Co-Coach verwendet ein eigenes bestätigtes Konto.</li>
               <li><span className="text-foreground">Journale, private Reflexionen und sonstige freie Antworten:</span> werden ausschließlich gespeichert, damit du sie wiederfindest. <span className="text-foreground">Sie werden nicht ausgewertet, nicht durchsucht, nicht von einer KI gelesen, nicht in Gruppenwerte einbezogen und nicht für Personalisierung verwendet.</span></li>
               <li><span className="text-foreground">Feedback Intelligence:</span> {feedbackEnabled ? "An Tag 10, 24, 39 und 55 freiwillige, überspringbare Auswahlantworten. Jarvis verarbeitet dafür pseudonymisierte Einzelzeilen nur vorübergehend im Arbeitsspeicher und gibt ausschließlich Gruppenzusammenfassungen pro Frage ab mindestens fünf unterschiedlichen Teilnehmenden aus. Ein optionaler, klar markierter Produktfeedback-Kommentar wird nach getrennter Einwilligung ausschließlich für die geschützte menschliche Admin-Prüfung gespeichert und niemals an Jarvis übermittelt. Dein Coach sieht keine Einzelantworten oder Kommentare. Name, E-Mail-Adresse, Journale, private Reflexionen, Supporttexte, Team- und Coach-IDs sind ausgeschlossen." : "Die vorgesehenen Checkpoints an Tag 10, 24, 39 und 55, freiwillige Produktfeedback-Kommentare und ein zugehöriger Analyseexport sind nicht Teil dieser V1.1-Auslieferung. Dafür werden in V1.1 keine Daten erhoben."}</li>
+              <li><span className="text-foreground">Direkte Support- und Feedbacknachrichten:</span> Wenn du unter „Mehr“ einen Fehler, Vorschlag oder allgemeinen Hinweis sendest, speichern wir Nachricht, Kategorie, Zeitpunkt und minimierte technische Angaben wie Plattform, App-Version, Online-Status und die bereinigte App-Seite. Diese Nachrichten werden von berechtigten Administratoren zur Bearbeitung gelesen, aber nicht mit Feedback Intelligence vermischt und nicht an Jarvis übermittelt.</li>
+              <li><span className="text-foreground">Technische Fehlerdaten:</span> Bei einem fehlgeschlagenen Kernvorgang können ein normalisierter Fehlercode, eine bereinigte App-Seite, Zeitpunkt, Plattform, App-Version und Testkennzeichnung gespeichert werden. Normale Nutzung wird nicht als technisches Fehlerereignis protokolliert.</li>
               <li><span className="text-foreground">Team- und Organisationsanfragen:</span> Name, E-Mail-Adresse, Funktion sowie die angegebenen Team-, Organisations-, Sport- und Projektinformationen. Eine Telefonnummer wird nur in der ausführlichen Organisationsstrecke und nur freiwillig beziehungsweise passend zum gewählten Kontaktweg erhoben. Bitte übermittle dabei keine Namen oder persönlichen Daten von Athleten.</li>
               <li><span className="text-foreground">Trainingszeiten und Benachrichtigungseinstellungen:</span> nur, wenn du Erinnerungen aktivierst.</li>
             </ul>
@@ -197,11 +200,12 @@ const Privacy = () => {
               <li>– Programmfortschritt (Tage, Serien und Abschlussquoten)</li>
               <li>– Veränderungen zwischen Anfang und Ende aus freigegebenen, versionierten Assessments und Fragebögen</li>
               <li>– zeitliche Entwicklungen bei Stimmung, Energie und Fokus</li>
-              <li>– strukturierte Transfer-Antworten und Teambeobachtungen von Trainern</li>
+              <li>– strukturierte Transfer-Antworten</li>
             </ul>
             <p className="mt-3 text-foreground">Was niemals einfließt — auch nicht mit deiner Zustimmung:</p>
             <ul className="mt-2 space-y-1">
               <li>– Journaltexte, persönliche Reflexionen und sonstige freie Antworten</li>
+              <li>– strukturierte Team- oder Einzelbeobachtungen von Trainern</li>
               <li>– identifizierbare Einzelantworten oder individuelle Athletenprofile in Berichten und Präsentationen</li>
               <li>– Identifizierende Merkmale (Name, E-Mail, Geburtsdatum, Position, Verein)</li>
               <li>– Werte aus Gruppen mit weniger als fünf freigegebenen Personen</li>
@@ -216,6 +220,11 @@ const Privacy = () => {
               ist freiwillig, jederzeit in den Einstellungen widerrufbar und beeinflusst <span className="text-foreground">in keiner Weise</span>,
               wie die App für dich funktioniert. Nach einem Widerruf werden keine neuen Pilotdaten erhoben, vorhandene personenbezogene
               Transferdaten aus der Pilot-Auswertung entfernt und nicht mehr in neue Auswertungen einbezogen. Bereits gebildete, wirklich anonyme Gruppenaggregate können bestehen bleiben.
+            </p>
+            <p className="mt-3">
+              In einer früheren Guardian-Information wurden freigegebene Coach-Beobachtungen als möglicher Pilotdatenbereich genannt.
+              Dieser Bereich ist im aktuellen technischen Umfang nicht aktiviert und wird nicht auf Grundlage dieser Formulierung verarbeitet.
+              Eine spätere Einbeziehung erfordert eine neue, konkrete Information und eine neue Entscheidung.
             </p>
           </section>
 
@@ -284,6 +293,7 @@ const Privacy = () => {
               <li>– minimierte Einwilligungsnachweise ohne E-Mail-Adresse der sorgeberechtigten Person: bis zu drei Jahre ab der jeweiligen Entscheidung</li>
               <li>– interne technische Fehlerereignisse: höchstens 30 Tage</li>
               <li>– Push-Zustellprotokolle: höchstens 90 Tage nach ihrer Erstellung</li>
+              <li>– direkte Support- und Feedbacknachrichten: solange sie für Bearbeitung und Nachvollziehbarkeit benötigt werden; bei Kontolöschung werden sie aus dem aktiven System entfernt. Eine kürzere automatische Regelfrist ist derzeit noch nicht technisch eingerichtet</li>
               <li>– personenbezogene Pilot-Auswertungsdaten: bis zum frühesten Zeitpunkt aus Widerruf, Kontolöschung, dokumentiertem Zweckende oder spätestens 365 Tage nach Speicherung im Evidenzmodell; bei Widerruf werden die personenbezogenen, pseudonymisierten Evidenzdaten unmittelbar aus der Pilot-Auswertung entfernt</li>
               <li>– Feedback-Checkpoints, Produktfeedback-Kommentare und personenbeziehbare Analyseableitungen: {feedbackEnabled ? "Produktfeedback-Kommentare und personenbeziehbare Ableitungen höchstens 365 Tage und früher bei Widerruf, Kontolöschung oder Zweckende; Auswahlantworten getrennt nach den für das Konto und die interne Produktverbesserung geltenden Fristen" : "nicht Teil dieser V1.1-Auslieferung; dafür werden in V1.1 keine Daten gespeichert"}</li>
               <li>– abgelehnte, zurückgezogene oder nicht weiterverfolgte Team- und Organisationsanfragen: spätestens zwölf Monate nach Abschluss; bestätigte Fake- oder Spam-Anfragen können sofort vollständig gelöscht werden</li>
