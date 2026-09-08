@@ -9,6 +9,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 import {
   FeedbackIntelligenceApiError,
   claimMyFeedbackCheckpoint,
+  deferMyFeedbackCheckpoint,
   listMyFeedbackTextConsents,
   saveMyFeedbackDraft,
   withdrawMyFeedbackText,
@@ -48,6 +49,8 @@ describe("feedback intelligence athlete API adapter", () => {
         client_submission_id: null,
         client_revision: 0,
         program_day: 24,
+        is_overdue: true,
+        days_overdue: 3,
       },
     });
 
@@ -57,8 +60,28 @@ describe("feedback intelligence athlete API adapter", () => {
       checkpointDay: 24,
       textEnabled: false,
       clientSubmissionId: null,
+      isOverdue: true,
+      daysOverdue: 3,
     });
     expect(mocks.rpc).toHaveBeenCalledWith("claim_my_feedback_checkpoint", undefined);
+  });
+
+  it("defers an open checkpoint only after an exact server acknowledgement", async () => {
+    mocks.rpc.mockResolvedValueOnce({
+      error: null,
+      data: { ok: true, state: "invited", remind_after: "2026-09-09T08:00:00.000Z" },
+    });
+    await expect(deferMyFeedbackCheckpoint("feedback-day-10-v1")).resolves.toBeUndefined();
+    expect(mocks.rpc).toHaveBeenCalledWith("defer_my_feedback_checkpoint", {
+      _campaign_reference: "feedback-day-10-v1",
+    });
+
+    mocks.rpc.mockResolvedValueOnce({
+      error: null,
+      data: { ok: false, reason: "checkpoint_not_open" },
+    });
+    await expect(deferMyFeedbackCheckpoint("feedback-day-10-v1"))
+      .rejects.toEqual(new FeedbackIntelligenceApiError("feedback_defer_invalid_response"));
   });
 
   it("keeps text closed unless both client and server gates are enabled", async () => {

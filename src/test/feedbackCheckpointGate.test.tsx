@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   userId: "gate-user-1",
   enabled: false,
   claim: vi.fn(),
+  defer: vi.fn(),
   dismiss: vi.fn(),
   begin: vi.fn(),
   save: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("@/lib/feedbackIntelligenceApi", () => ({
   isFeedbackIntelligenceClientEnabled: () => mocks.enabled,
   claimMyFeedbackCheckpoint: mocks.claim,
+  deferMyFeedbackCheckpoint: mocks.defer,
   dismissMyFeedbackCheckpoint: mocks.dismiss,
 }));
 
@@ -68,6 +70,7 @@ describe("feedback checkpoint live gate", () => {
     mocks.enabled = false;
     mocks.userId = `gate-user-${Math.random()}`;
     mocks.claim.mockReset();
+    mocks.defer.mockReset();
     mocks.dismiss.mockReset();
     mocks.begin.mockReset();
     mocks.save.mockReset();
@@ -132,16 +135,29 @@ describe("feedback checkpoint live gate", () => {
     expect(await screen.findByText("Deine Sicht zählt.")).toBeInTheDocument();
   });
 
-  it("dismisses without starting or blocking the dashboard", async () => {
+  it("defers without permanently dismissing, starting, or blocking the dashboard", async () => {
+    mocks.enabled = true;
+    mocks.claim.mockResolvedValue(claim);
+    mocks.defer.mockResolvedValue(undefined);
+    renderGate();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Später erinnern" }));
+    await waitFor(() => expect(mocks.defer).toHaveBeenCalledWith("feedback-day-10-v1"));
+    expect(screen.queryByTestId("feedback-checkpoint-gate")).not.toBeInTheDocument();
+    expect(mocks.dismiss).not.toHaveBeenCalled();
+    expect(mocks.begin).not.toHaveBeenCalled();
+  });
+
+  it("keeps an explicit per-checkpoint skip separate from remind me later", async () => {
     mocks.enabled = true;
     mocks.claim.mockResolvedValue(claim);
     mocks.dismiss.mockResolvedValue(undefined);
     renderGate();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Jetzt nicht" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Diesen Zwischenstand überspringen" }));
     await waitFor(() => expect(mocks.dismiss).toHaveBeenCalledWith("feedback-day-10-v1"));
+    expect(mocks.defer).not.toHaveBeenCalled();
     expect(screen.queryByTestId("feedback-checkpoint-gate")).not.toBeInTheDocument();
-    expect(mocks.begin).not.toHaveBeenCalled();
   });
 
   it("hydrates an existing draft directly at its saved question", async () => {

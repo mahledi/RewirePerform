@@ -89,7 +89,7 @@ Direkte Tabellenrechte sind für `anon`, `authenticated`, Coaches und `service_r
 - Selbst vollständig geöffnete globale Flags können die Ländermatrix nicht umgehen. Nicht-DE-Länder bleiben gesperrt und sind keine Blocker für den Deutschland-Release.
 - Alle Kampagnen haben Status `draft`; nichts ist aktiv.
 - Ein transaktionaler Athletenvertrag speichert vollständige strukturierte Snapshots, nutzt monotone `client_revision` plus `client_mutation_id`, ignoriert veraltete Offline-Retries und finalisiert atomar/idempotent.
-- Checkpoints werden ausschließlich am exakten kalendertagbasierten Programmtag beansprucht; eine Einladung wird je Kampagne und Programminstanz höchstens einmal vergeben, ein begonnener Entwurf kann später wiederaufgenommen werden.
+- Ursprünglicher V1.1-Vertrag: Checkpoints wurden ausschließlich am exakten kalendertagbasierten Programmtag beansprucht. V1.5 ersetzt diese Einschränkung: Der älteste fällige, weder abgeschlossene noch ausdrücklich übersprungene Checkpoint wird auch bei einem späteren Login angeboten. „Später erinnern“ pausiert nur die erneute Anzeige; ein begonnener Entwurf kann unverändert wiederaufgenommen werden.
 - Globale technische Gates für Athlete Collection, Text Collection, Privacy Notice, App-Store-Deklaration und Minor Policy bleiben alle `false`.
 - Der App-Adapter besitzt zusätzlich `VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED`; ohne den exakten Wert `true` führt er keinen Supabase-Aufruf aus.
 - Das Dashboard lädt das Live-Gate separat und nur für verifizierte Athleten. Bei geschlossenem Client-Gate erfolgt kein Claim; React-StrictMode-Doppelaufrufe werden pro Session dedupliziert.

@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import {
   claimMyFeedbackCheckpoint,
+  deferMyFeedbackCheckpoint,
   dismissMyFeedbackCheckpoint,
   isFeedbackIntelligenceClientEnabled,
   type FeedbackCheckpointClaim,
@@ -165,7 +166,13 @@ const FeedbackCheckpointGate = () => {
     setLatestSnapshot(snapshot);
   }, [initializePersistence, persistence]);
 
-  const dismiss = useCallback(async () => {
+  const defer = useCallback(async () => {
+    if (!claim?.campaignReference) throw new Error("feedback_campaign_missing");
+    await deferMyFeedbackCheckpoint(claim.campaignReference);
+    setClosed(true);
+  }, [claim?.campaignReference]);
+
+  const skip = useCallback(async () => {
     if (!claim?.campaignReference) throw new Error("feedback_campaign_missing");
     await dismissMyFeedbackCheckpoint(claim.campaignReference);
     setClosed(true);
@@ -198,6 +205,7 @@ const FeedbackCheckpointGate = () => {
         key={claim.campaignReference}
         day={claim.checkpointDay}
         mode="live"
+        overdueByDays={claim.daysOverdue ?? 0}
         initialScreen={initialScreen}
         initialQuestionId={latestSnapshot?.resumeQuestionId ?? draft?.resumeQuestionId}
         initialAnswers={latestSnapshot?.answers ?? draft?.answers}
@@ -208,7 +216,8 @@ const FeedbackCheckpointGate = () => {
         onStart={async () => {
           await initializePersistence();
         }}
-        onDismiss={dismiss}
+        onDefer={defer}
+        onSkip={skip}
         onSave={save}
         onSubmit={submit}
         onComplete={() => setClosed(true)}
