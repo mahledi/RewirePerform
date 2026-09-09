@@ -17,6 +17,8 @@ export interface FeedbackCheckpointClaim {
   clientSubmissionId?: string | null;
   clientRevision?: number;
   programDay?: number;
+  isOverdue?: boolean;
+  daysOverdue?: number;
 }
 
 export interface FeedbackDraftSnapshot {
@@ -134,7 +136,18 @@ export const claimMyFeedbackCheckpoint = async (): Promise<FeedbackCheckpointCla
       : optionalString(result.client_submission_id),
     clientRevision: optionalNumber(result.client_revision),
     programDay: optionalNumber(result.program_day),
+    isOverdue: optionalBoolean(result.is_overdue),
+    daysOverdue: optionalNumber(result.days_overdue),
   };
+};
+
+export const deferMyFeedbackCheckpoint = async (campaignReference: string) => {
+  const result = asObject(await callFeedbackRpc("defer_my_feedback_checkpoint", {
+    _campaign_reference: campaignReference,
+  }), "feedback_defer_invalid_response");
+  if (result.ok !== true || result.state !== "invited" || typeof result.remind_after !== "string") {
+    throw new FeedbackIntelligenceApiError("feedback_defer_invalid_response");
+  }
 };
 
 export const dismissMyFeedbackCheckpoint = async (campaignReference: string) => {

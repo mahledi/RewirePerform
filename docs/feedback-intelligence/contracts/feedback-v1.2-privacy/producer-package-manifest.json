@@ -27,7 +27,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "02506f952ff2363ec19e655b8b28505387c08355ed512ec38c30234fdeb07619",
+  "package_sha256": "a0d4ee6057dfdc990c769f64b4813f9459eda43c16c713548eed9b7bf660f8aa",
   "files": [
     {
       "path": ".env.example",
@@ -39,7 +39,7 @@
     },
     {
       "path": "src/pages/Privacy.tsx",
-      "sha256": "cd95373bf68115849870ee22969372806b84ef98c376f15e882b7acc425c2acb"
+      "sha256": "279fa9f10f29ae80475874a0062a5036d3848a51b4efefc8eaa1f0e002c2b4e4"
     },
     {
       "path": "src/content/feedbackTextConsentV12.ts",
@@ -51,7 +51,7 @@
     },
     {
       "path": "src/lib/feedbackIntelligenceApi.ts",
-      "sha256": "3c28319a29270ebafc8e89ec8b72381b642d9e4de4cc74d299689120d7f2d849"
+      "sha256": "9ee9896a57e58c821612635ce2878e9a5f6b700a1076fa32f92bca1ebbd090d5"
     },
     {
       "path": "src/lib/feedbackIntelligencePersistence.ts",
@@ -59,11 +59,11 @@
     },
     {
       "path": "src/components/feedback-intelligence/FeedbackCheckpointGate.tsx",
-      "sha256": "405ff8e4ccd64685f15362b9c5487f20b25f8637b708239ea9f56f599165f3f7"
+      "sha256": "8919c3cc882e74765e1b5ac1672e926c7266c4981aea02596016e314d98eb68b"
     },
     {
       "path": "src/components/feedback-intelligence/FeedbackQuestionnairePreview.tsx",
-      "sha256": "2790e580a4414fb97794347aae0c40b2f46b63b24978e666268c41d95804fdf0"
+      "sha256": "987deb34f2b1576b77d8d4cdd00ac84d270dda794a4ace66417476f1597eb241"
     },
     {
       "path": "src/components/settings/FeedbackTextConsentSettings.tsx",
@@ -159,11 +159,11 @@
     },
     {
       "path": "src/test/feedbackIntelligenceApi.test.ts",
-      "sha256": "768982dfafb44fc6c895690bb042cdea398e33997aaf78a3f4516b04a24f37ac"
+      "sha256": "8450ce5331b7767e907c1ec0730093a4c82bd17eeaa31cb91bdbf34a89479db3"
     },
     {
       "path": "src/test/feedbackIntelligencePreview.test.tsx",
-      "sha256": "8ea8406cc570999ca9fa6360115c088f36096c3fd802753e1e99496356acc054"
+      "sha256": "75facee5b44b469cb8148932bcc10245a3ad40e57b2b52e98e54b2fd9c57f819"
     },
     {
       "path": "src/test/feedbackTextConsentSettings.test.tsx",

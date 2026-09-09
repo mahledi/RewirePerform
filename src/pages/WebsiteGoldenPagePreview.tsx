@@ -434,7 +434,11 @@ const WebsiteGoldenPagePreview = () => {
             <button type="button" onClick={() => scrollTo(systemRef)} className="hidden min-h-11 rounded-full px-4 text-xs font-semibold text-white/48 transition-colors hover:text-white sm:block">
               Das System
             </button>
-            <a href="/auth" className="hidden min-h-11 items-center rounded-full px-3 text-xs font-semibold text-white/56 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:flex">
+            <a
+              href="/auth?mode=login"
+              data-testid="public-login-cta"
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/35 bg-primary/[0.10] px-3.5 text-xs font-semibold text-primary shadow-[0_12px_30px_-20px_rgba(46,173,137,0.9)] transition-all hover:border-primary/55 hover:bg-primary/[0.16] hover:text-[#72D5B8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-4"
+            >
               Anmelden
             </a>
             <button type="button" onClick={() => scrollTo(rolesRef)} className="flex min-h-11 items-center rounded-full border border-white/[0.09] bg-white/[0.045] px-4 text-xs font-semibold text-white/78 transition-all hover:border-primary/35 hover:bg-primary/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -471,7 +475,7 @@ const WebsiteGoldenPagePreview = () => {
               </button>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <a href="/auth" className="text-xs font-medium text-white/48 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Bereits registriert? Anmelden</a>
+              <a href="/auth?mode=login" className="text-xs font-medium text-white/48 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Bereits registriert? Anmelden</a>
               <AppStoreLink compact />
             </div>
           </div>
@@ -663,7 +667,7 @@ const WebsiteGoldenPagePreview = () => {
                   <p className="mt-3 max-w-md text-sm leading-6 text-white/45">Registriere dich direkt und beginne mit deinem persönlichen 56-Tage-Programm.</p>
                   <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                     <a href="/auth?mode=signup&intent=solo" className="inline-flex min-h-[50px] items-center justify-center rounded-2xl bg-primary px-5 text-sm font-semibold text-[#07110E] transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Jetzt registrieren <ArrowRight className="ml-2 h-4 w-4" /></a>
-                    <a href="/auth" className="inline-flex min-h-[50px] items-center justify-center rounded-2xl border border-white/[0.09] bg-white/[0.03] px-5 text-sm font-semibold text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Anmelden</a>
+                    <a href="/auth?mode=login" className="inline-flex min-h-[50px] items-center justify-center rounded-2xl border border-white/[0.09] bg-white/[0.03] px-5 text-sm font-semibold text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Anmelden</a>
                   </div>
                 </div>
               </div>

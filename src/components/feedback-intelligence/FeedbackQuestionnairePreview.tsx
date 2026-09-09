@@ -52,8 +52,10 @@ type FeedbackQuestionnairePreviewProps = {
   initialConsentState?: FeedbackExperienceTextConsentState;
   initialPassedQuestionIds?: string[];
   textEnabled?: boolean;
+  overdueByDays?: number;
   onStart?: () => Promise<void>;
-  onDismiss?: () => Promise<void>;
+  onDefer?: () => Promise<void>;
+  onSkip?: () => Promise<void>;
   onSave?: (snapshot: FeedbackExperienceSnapshot) => Promise<void>;
   onSubmit?: (snapshot: FeedbackExperienceSnapshot) => Promise<void>;
   onComplete?: () => void;
@@ -252,8 +254,10 @@ export const FeedbackQuestionnairePreview = ({
   initialConsentState = "not_asked",
   initialPassedQuestionIds = [],
   textEnabled = true,
+  overdueByDays = 0,
   onStart,
-  onDismiss,
+  onDefer,
+  onSkip,
   onSave,
   onSubmit,
   onComplete,
@@ -332,11 +336,23 @@ export const FeedbackQuestionnairePreview = ({
     }
   };
 
-  const dismissExperience = async () => {
+  const deferExperience = async () => {
     setBusy(true);
     setSaveError(false);
     try {
-      await onDismiss?.();
+      await onDefer?.();
+    } catch {
+      setSaveError(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const skipExperience = async () => {
+    setBusy(true);
+    setSaveError(false);
+    try {
+      await onSkip?.();
     } catch {
       setSaveError(true);
     } finally {
@@ -483,6 +499,11 @@ export const FeedbackQuestionnairePreview = ({
               <p className="mt-5 text-base leading-7 text-white/62">
                 Sag uns, wie sich RewirePerform an dieser Stelle für dich anfühlt. Ehrliche Kritik hilft uns genauso wie das, was bereits gut funktioniert.
               </p>
+              {overdueByDays > 0 && (
+                <p className="mt-3 rounded-2xl border border-primary/15 bg-primary/[0.06] px-4 py-3 text-sm leading-6 text-white/62">
+                  Du holst den Zwischenstand von Tag {day} jetzt nach. Der Fragebogen bleibt Tag {day} zugeordnet.
+                </p>
+              )}
               <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-sm text-white/58">
                 <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
                 <span>
@@ -516,11 +537,21 @@ export const FeedbackQuestionnairePreview = ({
                 <Button
                   variant="ghost"
                   className="h-11 w-full rounded-2xl text-white/55"
-                  onClick={() => void dismissExperience()}
+                  onClick={() => void deferExperience()}
                   disabled={busy}
                 >
-                  Jetzt nicht
+                  Später erinnern
                 </Button>
+              )}
+              {mode === "live" && (
+                <button
+                  type="button"
+                  className="min-h-10 w-full px-3 text-xs text-white/38 underline-offset-4 hover:text-white/60 hover:underline"
+                  onClick={() => void skipExperience()}
+                  disabled={busy}
+                >
+                  Für Tag {day} kein Feedback geben
+                </button>
               )}
             </div>
           </motion.section>
