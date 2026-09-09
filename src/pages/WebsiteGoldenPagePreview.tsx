@@ -434,13 +434,6 @@ const WebsiteGoldenPagePreview = () => {
             <button type="button" onClick={() => scrollTo(systemRef)} className="hidden min-h-11 rounded-full px-4 text-xs font-semibold text-white/48 transition-colors hover:text-white sm:block">
               Das System
             </button>
-            <a
-              href="/auth?mode=login"
-              data-testid="public-login-cta"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/35 bg-primary/[0.10] px-3.5 text-xs font-semibold text-primary shadow-[0_12px_30px_-20px_rgba(46,173,137,0.9)] transition-all hover:border-primary/55 hover:bg-primary/[0.16] hover:text-[#72D5B8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-4"
-            >
-              Anmelden
-            </a>
             <button type="button" onClick={() => scrollTo(rolesRef)} className="flex min-h-11 items-center rounded-full border border-white/[0.09] bg-white/[0.045] px-4 text-xs font-semibold text-white/78 transition-all hover:border-primary/35 hover:bg-primary/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               System erleben
             </button>
@@ -475,7 +468,14 @@ const WebsiteGoldenPagePreview = () => {
               </button>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-              <a href="/auth?mode=login" className="text-xs font-medium text-white/48 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Bereits registriert? Anmelden</a>
+              <a
+                href="/auth?mode=login"
+                data-testid="public-login-cta"
+                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-primary/35 bg-primary/[0.10] px-5 text-sm font-semibold shadow-[0_12px_30px_-20px_rgba(46,173,137,0.9)] transition-all hover:border-primary/55 hover:bg-primary/[0.16] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <span className="text-white/58">Bereits registriert?</span>
+                <span className="text-primary">Anmelden</span>
+              </a>
               <AppStoreLink compact />
             </div>
           </div>
