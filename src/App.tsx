@@ -51,7 +51,7 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 const AdminJarvis = lazy(() => import("./pages/AdminJarvis.tsx"));
 const AdminContent = lazy(() => import("./pages/AdminContent.tsx"));
 const AdminQA = lazy(() => import("./pages/AdminQA.tsx"));
-const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Privacy = lazy(() => import("./pages/PublicPrivacyPage.tsx"));
 const Imprint = lazy(() => import("./pages/Imprint.tsx"));
 const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));

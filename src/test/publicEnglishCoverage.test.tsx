@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { PublicLanguageProvider } from "@/contexts/PublicLanguageContext";
-import Privacy from "@/pages/Privacy";
+import Privacy from "@/pages/PublicPrivacyPage";
 import OrganizationAccess from "@/pages/OrganizationAccess";
 import AccountDeletion from "@/pages/AccountDeletion";
 import TeamInvite from "@/pages/TeamInvite";
