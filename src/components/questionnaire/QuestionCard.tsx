@@ -1,18 +1,33 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MessageSquarePlus } from "lucide-react";
 import type { Question } from "@/data/questionnaireData";
 import VoiceInput from "@/components/VoiceInput";
+import { CUSTOM_ANSWER_MAX_LENGTH, supportsPrivateCustomAnswer } from "@/lib/questionnaireCustomAnswers";
 
 interface QuestionCardProps {
   question: Question;
   answer: string | string[] | number | undefined;
   onAnswer: (value: string | string[] | number) => void;
+  customAnswer?: string;
+  onCustomAnswer?: (value: string) => void;
+  isRequired?: boolean;
+  validationError?: string | null;
 }
 
-const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
+const QuestionCard = ({
+  question,
+  answer,
+  onAnswer,
+  customAnswer = "",
+  onCustomAnswer,
+  isRequired = true,
+  validationError = null,
+}: QuestionCardProps) => {
   const [textValue, setTextValue] = useState(
     typeof answer === "string" ? answer : ""
   );
+  const [customAnswerOpen, setCustomAnswerOpen] = useState(customAnswer.trim().length > 0);
 
   const handleTextChange = (val: string) => {
     setTextValue(val);
@@ -30,7 +45,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
         className="w-full"
       >
         {/* Depth indicator */}
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-wrap items-center gap-2 mb-3 md:mb-4">
           {question.depth === "core" && (
             <span className="px-2.5 py-1 rounded-md bg-primary/10 text-xs font-medium text-primary">
               Kernfrage
@@ -41,22 +56,25 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
               Tiefgehend
             </span>
           )}
+          <span className="px-2.5 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
+            {isRequired ? "Pflicht" : "Optional"}
+          </span>
         </div>
 
-        <h2 className="font-heading text-2xl md:text-3xl font-bold mb-3 leading-tight">
+        <h2 className="font-heading text-xl md:text-3xl font-bold mb-2 md:mb-3 leading-tight">
           {question.question}
         </h2>
 
         {question.subtext && (
-          <p className="text-muted-foreground mb-8 leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-8 leading-relaxed">
             {question.subtext}
           </p>
         )}
 
         {/* Scale input */}
         {question.type === "scale" && (
-          <div className="mt-8">
-            <div className="flex justify-between text-sm text-muted-foreground mb-3">
+          <div className="mt-4 md:mt-8">
+            <div className="flex justify-between text-sm text-muted-foreground mb-2 md:mb-3">
               <span>{question.scaleLabels?.[0]}</span>
               <span>{question.scaleLabels?.[1]}</span>
             </div>
@@ -65,10 +83,11 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                 <button
                   key={val}
                   onClick={() => onAnswer(val)}
-                  className={`h-12 rounded-lg font-heading font-semibold text-sm transition-all ${
+                  aria-pressed={answer === val}
+                  className={`h-10 md:h-12 rounded-lg font-heading font-semibold text-sm transition-all ${
                     answer === val
                       ? "bg-primary text-primary-foreground shadow-glow"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent"
+                      : "bg-secondary text-secondary-foreground hover:bg-muted"
                   }`}
                 >
                   {val}
@@ -80,7 +99,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
 
         {/* Text input */}
         {question.type === "text" && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 md:mt-6 space-y-2 md:space-y-3">
             <VoiceInput
               currentValue={textValue}
               onTranscript={(val) => handleTextChange(val)}
@@ -90,23 +109,34 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
               value={textValue}
               onChange={(e) => handleTextChange(e.target.value)}
               placeholder={question.placeholder}
-              rows={5}
-              className="w-full p-5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 resize-none font-body leading-relaxed transition-all"
+              rows={4}
+              aria-invalid={!!validationError}
+              className={`w-full p-4 md:p-5 rounded-xl bg-secondary border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 resize-none font-body leading-relaxed transition-all ${
+                validationError
+                  ? "border-destructive/60 focus:ring-destructive/20 focus:border-destructive/70"
+                  : "border-border focus:ring-muted-foreground/20 focus:border-muted-foreground/40"
+              }`}
             />
+            {validationError && (
+              <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                {validationError}
+              </p>
+            )}
           </div>
         )}
 
         {/* Single choice */}
         {question.type === "choice" && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-3 md:mt-6 space-y-2 md:space-y-3">
             {question.options?.map((opt) => (
               <button
                 key={opt.id}
                 onClick={() => onAnswer(opt.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all ${
+                aria-pressed={answer === opt.id}
+                className={`w-full text-left p-3 md:p-4 rounded-xl border transition-all ${
                   answer === opt.id
                     ? "border-primary bg-primary/10 text-foreground"
-                    : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
+                    : "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground/40 hover:bg-muted"
                 }`}
               >
                 <span className="text-sm">{opt.text}</span>
@@ -117,7 +147,7 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
 
         {/* Multi choice */}
         {question.type === "multi" && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-3 md:mt-6 space-y-2 md:space-y-3">
             {question.options?.map((opt) => {
               const selected = Array.isArray(answer) && answer.includes(opt.id);
               return (
@@ -130,10 +160,11 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                       : [...current, opt.id];
                     onAnswer(updated);
                   }}
-                  className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  aria-pressed={selected}
+                  className={`w-full text-left p-3 md:p-4 rounded-xl border transition-all ${
                     selected
                       ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-secondary text-secondary-foreground hover:border-primary/30"
+                      : "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground/40 hover:bg-muted"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -153,6 +184,44 @@ const QuestionCard = ({ question, answer, onAnswer }: QuestionCardProps) => {
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {supportsPrivateCustomAnswer(question) && onCustomAnswer && (
+          <div className="mt-4 rounded-xl border border-border/70 bg-secondary/35 p-3 md:mt-5 md:p-4">
+            <button
+              type="button"
+              onClick={() => setCustomAnswerOpen((open) => !open)}
+              aria-expanded={customAnswerOpen}
+              className="flex min-h-11 w-full items-center gap-2 text-left text-sm font-semibold text-primary"
+            >
+              <MessageSquarePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Eigene Antwort ergänzen
+            </button>
+            <AnimatePresence initial={false}>
+              {customAnswerOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <textarea
+                    value={customAnswer}
+                    onChange={(event) => onCustomAnswer(event.target.value)}
+                    maxLength={CUSTOM_ANSWER_MAX_LENGTH}
+                    rows={3}
+                    aria-label="Eigene Antwort"
+                    placeholder="Was passt für dich zusätzlich?"
+                    className="mt-2 w-full resize-none rounded-xl border border-border bg-background/70 p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/15"
+                  />
+                  <div className="mt-2 flex items-start justify-between gap-3 text-[11px] leading-relaxed text-muted-foreground">
+                    <span>Du kannst damit auch ohne Auswahl antworten. Privat: Dein Coach sieht diesen Text nicht.</span>
+                    <span className="shrink-0">{customAnswer.length}/{CUSTOM_ANSWER_MAX_LENGTH}</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </motion.div>

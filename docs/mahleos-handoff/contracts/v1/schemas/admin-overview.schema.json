@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/admin-overview.schema.json",
+  "title": "MahleOS admin overview v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "counts",
+    "test_data_included",
+    "privacy_level",
+    "direct_identifiers_included",
+    "private_content_included"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-admin-overview-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "users",
+        "athletes",
+        "coaches",
+        "admins",
+        "teams",
+        "active_program_runs",
+        "active_program_instances",
+        "completed_days_total",
+        "checkins_total",
+        "assessments_total",
+        "comprehension_checks_completed"
+      ],
+      "properties": {
+        "users": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "athletes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coaches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "admins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "teams": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_program_runs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_program_instances": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_days_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkins_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assessments_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "comprehension_checks_completed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "privacy_level": {
+      "const": "company_counts_only"
+    },
+    "direct_identifiers_included": {
+      "const": false
+    },
+    "private_content_included": {
+      "const": false
+    }
+  },
+  "additionalProperties": false
+}

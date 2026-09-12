@@ -1,0 +1,55 @@
+{
+  "schema_version": "rewireperform-v1.1-production-postdeploy-result-package-v1",
+  "status": "PASS_PRODUCTION_DATABASE_APPLIED_RUNTIME_GATES_CLOSED",
+  "observed_at": "2026-08-13T11:20:16Z",
+  "package_sha256": "d7f494446dae39b51e8a3e950447e45bc2164553d5bec3986dedda3f0bf62a02",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/postdeploy-evidence.json",
+      "sha256": "e2d04a3c529a48ab4dd2b23eff9d7409a1ea77fb115abbeadd2cde6da5984c3f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/postdeploy-evidence.schema.json",
+      "sha256": "4d52d56126259a90b7cf437da83a84168acc8d669dbb479a283acc3f3d53ac8a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/edge-presence-observation-2026-08-13.json",
+      "sha256": "d15b4002cfd6463a4f74e7eeec53500259b2c16e9fccdd13ab9046704cb82903"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/secret-presence-observation-2026-08-13.json",
+      "sha256": "27fda94faf910dc86f8bf021ee5eed8d22b9b06a75dc3229e6b3a98a43510f6a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/reader-role-observation-2026-08-13.json",
+      "sha256": "b3b85f6f6562816a7e2b70378859d63b1bfff44bbefb8b28f5d862eb71f704ed"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-postdeploy-assurance-v0.1/combined-control-plane-observation-2026-08-13.json",
+      "sha256": "3200354342d2cf24501cdddb5af5a3bb4957c390d24acf885ee61d3cc038f874"
+    },
+    {
+      "path": "scripts/generate-v1-1-production-postdeploy-evidence.mjs",
+      "sha256": "9e4e78310b031c69daf1e7638046de8933d2fcde3e6ffc73ad8fd23f06126ed8"
+    },
+    {
+      "path": "src/test/v11ProductionPostdeployEvidence.test.ts",
+      "sha256": "5aaac37e755b91857791abe6af4f6ab88da17b6ac67408bdda4d13f6606fdbf7"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCTION_POSTDEPLOY_ASSURANCE_V1_1.md",
+      "sha256": "8c0c108e1c6229e16ca4d84e4bf78eb6f6fae4ad14f072a38a4346ef3aea3eed"
+    }
+  ],
+  "gates": {
+    "database_apply_gate_open": false,
+    "edge_deploy": false,
+    "credentials": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "minor_feedback": false,
+    "real_jarvis": false,
+    "organization_inquiry_public": false,
+    "app_store_submission": false
+  }
+}

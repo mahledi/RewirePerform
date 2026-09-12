@@ -1,18 +1,23 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Clock, Brain, Shield, Sparkles, FastForward, Loader2 } from "lucide-react";
+import { ArrowRight, FastForward, Loader2, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { buildQASyntheticAnswers } from "@/lib/qaSyntheticAnswers";
 import { buildDeterministicQuestionnaireAnalysis } from "@/lib/deterministicQuestionnaireAnalysis";
 import { toast } from "sonner";
-import { getOptionText } from "@/data/questionnaireData";
+import { getSportAnswerText } from "@/data/questionnaireData";
 import {
   ONBOARDING_V2_CATEGORIES,
   ONBOARDING_V2_INSTRUMENT_ID,
   ONBOARDING_V2_QUESTIONS,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import type { Json } from "@/integrations/supabase/types";
+import type { DataContributionConsentState } from "@/lib/dataContributionConsent";
+import { useMinorAuthorization } from "@/hooks/useMinorAuthorization";
+import { saveAuthorizedDataContribution } from "@/lib/minorAuthorization";
+import { buildStructuredSportProfile } from "@/lib/personalization/sportTaxonomy";
 
 interface QuestionnaireIntroProps {
   onStart: () => void;
@@ -20,21 +25,57 @@ interface QuestionnaireIntroProps {
 
 const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
   const navigate = useNavigate();
+  const { status: authorizationStatus, setStatus: setAuthorizationStatus } = useMinorAuthorization();
   const [isTestUser, setIsTestUser] = useState(false);
   const [skipping, setSkipping] = useState(false);
+  const [showDataDetails, setShowDataDetails] = useState(false);
+  const [consent, setConsent] = useState<DataContributionConsentState>(null);
+  const [profileReady, setProfileReady] = useState(false);
+  const [savingConsent, setSavingConsent] = useState<"yes" | "no" | null>(null);
 
   useEffect(() => {
+    if (!authorizationStatus) return;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("is_test_user")
-        .eq("id", user.id)
-        .maybeSingle();
-      setIsTestUser(!!data?.is_test_user);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("is_test_user")
+          .eq("id", user.id)
+          .maybeSingle();
+        setIsTestUser(!!profileData?.is_test_user);
+        setConsent(
+          authorizationStatus.data_contribution_status === "authorized"
+            ? true
+            : authorizationStatus.data_contribution_status === "not_asked"
+              ? null
+              : false,
+        );
+      } finally {
+        setProfileReady(true);
+      }
     })();
-  }, []);
+  }, [authorizationStatus]);
+
+  const handleStart = async (choice?: boolean) => {
+    if (choice === undefined || consent !== null) {
+      onStart();
+      return;
+    }
+
+    setSavingConsent(choice ? "yes" : "no");
+    try {
+      const next = await saveAuthorizedDataContribution(choice);
+      setAuthorizationStatus(next);
+      setConsent(choice);
+      onStart();
+    } catch {
+      toast.error("Deine Entscheidung konnte gerade nicht sicher gespeichert werden. Bitte versuche es noch einmal.");
+    } finally {
+      setSavingConsent(null);
+    }
+  };
 
   const handleQASkip = async () => {
     setSkipping(true);
@@ -43,28 +84,31 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
       if (!user) throw new Error("Not authenticated");
 
       const answers = buildQASyntheticAnswers();
+      const sportAnswer = getSportAnswerText(answers["sport-01"]);
       const analysis = buildDeterministicQuestionnaireAnalysis(answers, {
-        sport: answers["sport-01"] as string,
+        sport: sportAnswer,
         position: answers["sport-02"] as string,
         level: answers["sport-03"] as string,
       });
 
-      await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({
-          sport: getOptionText("sport-01", answers["sport-01"] as string),
-          team: answers["sport-02"] as string,
+          sport: sportAnswer,
+          position: answers["sport-02"] as string,
+          ...buildStructuredSportProfile(sportAnswer, answers["sport-03"] as string),
         })
         .eq("id", user.id);
+      if (profileError) throw profileError;
 
       const { error: insErr } = await supabase
         .from("questionnaire_responses")
         .insert({
           user_id: user.id,
           session_id: user.id,
-          answers: answers as any,
-          analysis: analysis as any,
-          scores: analysis.scores as any,
+          answers: answers as Json,
+          analysis: analysis as unknown as Json,
+          scores: analysis.scores as unknown as Json,
           instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
           questionnaire_version: ONBOARDING_V2_VERSION,
           timing: "pre",
@@ -84,19 +128,6 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Back button */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
-        <div className="max-w-2xl mx-auto">
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Zurück</span>
-          </button>
-        </div>
-      </div>
-
       <div className="flex-1 flex items-center justify-center px-6 py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -106,8 +137,7 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
         >
           {/* Badge */}
           <div className="flex items-center gap-2 mb-8">
-            <div className="px-4 py-2 rounded-full bg-primary/10 border-glow flex items-center gap-2">
-              <Brain className="w-4 h-4 text-primary" />
+            <div className="px-4 py-2 rounded-full bg-primary/10 border-glow">
               <span className="text-sm font-medium text-primary">Startprofil</span>
             </div>
           </div>
@@ -126,7 +156,17 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
           {/* Preparation cards */}
           <div className="space-y-4 mb-12">
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Clock className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">01</span>
+              <div>
+                <h3 className="font-heading font-semibold mb-1">Jederzeit speichern und pausieren</h3>
+                <p className="text-sm text-muted-foreground">
+                  Deine Antworten werden zwischengespeichert. Wenn etwas dazwischenkommt, kannst du später weitermachen.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">02</span>
               <div>
                 <h3 className="font-heading font-semibold mb-1">Nimm dir 20-30 Minuten Zeit</h3>
                 <p className="text-sm text-muted-foreground">
@@ -136,17 +176,40 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
             </div>
 
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Shield className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">03</span>
               <div>
-                <h3 className="font-heading font-semibold mb-1">Absolute Ehrlichkeit</h3>
+                <h3 className="font-heading font-semibold mb-1">Warum wir dich fragen</h3>
                 <p className="text-sm text-muted-foreground">
-                  Es gibt keine richtigen Antworten. Private Texte bleiben privat und werden Coaches nicht angezeigt.
+                  Deine Angaben helfen dem System, dein Startprofil, deine Fortschrittslogik und passende Tagesimpulse besser einzuordnen.
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setShowDataDetails((open) => !open)}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary"
+                >
+                  Mehr erfahren
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showDataDetails ? "rotate-180" : ""}`} />
+                </button>
+                {showDataDetails && (
+                  <div className="mt-3 space-y-2 rounded-xl border border-border/50 bg-background/40 p-3 text-xs leading-relaxed text-muted-foreground">
+                    <p>
+                      Relevant sind vor allem Fragebogenantworten, Check-ins, Trainingszeiten und Programmfortschritt.
+                      Daraus entstehen Hinweise für Aufgaben, Rückblick, Erinnerungen und Fortschrittsauswertung.
+                    </p>
+                    <p>
+                      Journale und freie Reflexionen werden nur für dich gespeichert. Sie werden nicht analysiert, nicht von
+                      einer KI verarbeitet und weder Coaches noch Evidence-Auswertungen als Inhalt zugänglich gemacht.
+                    </p>
+                    <p>
+                      Es geht nicht darum, dich zu bewerten. Die Daten sollen nachvollziehbar machen, wo du startest, wie du arbeitest und welche nächsten Schritte sinnvoll sind.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="p-5 rounded-xl bg-gradient-card border-glow flex items-start gap-4">
-              <Sparkles className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <span className="pt-0.5 font-mono text-xs font-semibold text-primary">04</span>
               <div>
                 <h3 className="font-heading font-semibold mb-1">Messbarer Startpunkt</h3>
                 <p className="text-sm text-muted-foreground">
@@ -167,24 +230,81 @@ const QuestionnaireIntro = ({ onStart }: QuestionnaireIntroProps) => {
                   key={cat.id}
                   className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-sm"
                 >
-                  {cat.icon} {cat.title}
+                  {cat.title}
                 </span>
               ))}
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onStart}
-            className="group w-full flex items-center justify-center gap-3 px-8 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow"
-          >
-            Ich bin bereit
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </motion.button>
+          {!profileReady ? (
+            <button
+              type="button"
+              disabled
+              className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-xl bg-primary/70 font-heading font-semibold text-lg text-primary-foreground"
+            >
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Wird vorbereitet...
+            </button>
+          ) : consent === null ? (
+            <div className="mb-6 rounded-2xl border border-primary/25 bg-primary/5 p-5 shadow-sm">
+              <div className="space-y-3">
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary">Freiwillige Pilot-Auswertung</p>
+                  <h3 className="font-heading text-xl font-semibold">
+                    Nimm an der RewirePerform-Pilot-Auswertung teil
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    Deine Nutzung kann uns helfen zu verstehen, welche Aufgaben abgeschlossen werden, wo beobachtete
+                    Veränderungen sichtbar sind und wie wir das 56-Tage-System für Athletinnen und Athleten verbessern können.
+                  </p>
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Wenn du zustimmst, dürfen strukturierte Nutzungs-, Fortschritts-, Check-in-, Assessment- und kurze
+                  Transferdaten für interne Pilot-Analysen sowie nicht identifizierende Pilotberichte und Präsentationen
+                  ausgewertet werden. Solche Daten dokumentieren Beobachtungen; sie beweisen allein weder Ursache noch sportliche Leistungssteigerung.
+                </p>
+                <p className="rounded-xl border border-border/60 bg-background/50 p-3 text-xs leading-relaxed text-muted-foreground">
+                  Private Journaltexte und freie Antworten werden dafür nie verwendet. Bei Minderjährigen wird die
+                  Pilot-Auswertung nur nach der aktuellen altersgerechten Freigabe aktiviert. Du kannst ablehnen und
+                  RewirePerform trotzdem vollständig nutzen. Deine Entscheidung kannst du später in den Einstellungen ändern.
+                </p>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => handleStart(true)}
+                  disabled={savingConsent !== null}
+                  className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 font-heading font-semibold text-primary-foreground transition-all hover:shadow-glow disabled:opacity-60"
+                >
+                  {savingConsent === "yes" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Ja, am Pilot teilnehmen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleStart(false)}
+                  disabled={savingConsent !== null}
+                  className="flex min-h-14 items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 font-heading font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-60"
+                >
+                  {savingConsent === "no" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  Nicht jetzt
+                </button>
+              </div>
+            </div>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleStart()}
+              className="group w-full flex items-center justify-center gap-3 px-8 py-5 rounded-xl bg-primary font-heading font-semibold text-lg text-primary-foreground transition-all hover:shadow-glow"
+            >
+              Ich bin bereit
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </motion.button>
+          )}
 
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Deine Antworten sind vertraulich und werden ausschließlich für dein Programm verwendet.
+            Deine Antworten sind vertraulich. Pilotdaten werden nur mit aktueller Zustimmung und ohne identifizierende Einzelprofile berichtet.
           </p>
 
           {isTestUser && (

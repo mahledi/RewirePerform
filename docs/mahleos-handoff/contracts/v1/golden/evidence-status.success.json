@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000508",
+  "view": "evidence_status",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-evidence-status-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "status": "GREEN",
+    "active_locks": 1,
+    "program_run_locks": 1,
+    "solo_aggregate_locks": 0,
+    "checksum_valid": 1,
+    "checksum_invalid": 0,
+    "returned_locks": 1,
+    "truncated": false,
+    "locks": [
+      {
+        "lock_id": "70000000-0000-4000-8000-000000000501",
+        "scope_type": "program_run",
+        "program_run_id": "20000000-0000-4000-8000-000000000501",
+        "sport_category": null,
+        "sport_level": null,
+        "protocol_version": "56d-transfer-v2-2026-07",
+        "snapshot_schema_version": "program-run-evidence-lock-v2-2026-07",
+        "source_cutoff": "2026-07-21T12:00:00Z",
+        "locked_at": "2026-07-21T12:00:00Z",
+        "integrity_status": "VALID"
+      }
+    ],
+    "test_data_included": false,
+    "privacy_level": "data_lock_metadata_and_integrity_only",
+    "privacy_exclusions": [
+      "evidence_payload",
+      "analysis_manifest",
+      "locked_by",
+      "athlete_identifiers",
+      "private_text",
+      "individual_values"
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/pilot-catalog.schema.json",
+  "title": "MahleOS pilot catalog v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "status",
+    "total_active_runs",
+    "returned_runs",
+    "truncated",
+    "runs",
+    "test_data_included",
+    "privacy_level",
+    "privacy_exclusions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-pilot-catalog-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "status": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED",
+        "NO_DATA"
+      ]
+    },
+    "total_active_runs": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "returned_runs": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "runs": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": [
+          "program_run_id",
+          "run_status",
+          "started_at",
+          "current_program_day",
+          "readiness_status",
+          "athletes",
+          "evidence_eligible",
+          "validated_pre_complete",
+          "active_7d",
+          "aggregate_visible",
+          "low_confidence"
+        ],
+        "properties": {
+          "program_run_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "run_status": {
+            "const": "active"
+          },
+          "started_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "current_program_day": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 56
+          },
+          "readiness_status": {
+            "enum": [
+              "GREEN",
+              "YELLOW",
+              "RED"
+            ]
+          },
+          "athletes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "evidence_eligible": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "validated_pre_complete": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "active_7d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "aggregate_visible": {
+            "type": "boolean"
+          },
+          "low_confidence": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "privacy_level": {
+      "const": "opaque_run_references_and_operational_counts_only"
+    },
+    "privacy_exclusions": {
+      "const": [
+        "team_name",
+        "athlete_names",
+        "user_ids",
+        "missing_player_lists",
+        "individual_scores",
+        "coach_observation_values",
+        "journal_text",
+        "reflection"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

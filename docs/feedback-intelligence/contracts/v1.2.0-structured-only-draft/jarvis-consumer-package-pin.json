@@ -1,0 +1,16 @@
+{
+  "schema_version": "rewireperform-jarvis-consumer-package-pin-v1",
+  "jarvis_commit": "ef1b7ce40d09894ccb0fb8fa8d3b03784f6f9979",
+  "contract_version": "1.2.0-structured-only-draft",
+  "schema_sha256": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff",
+  "consumer_contract_sha256": "d1b57de3528f45204e4bedafebb9db8f15f6602b9d4cbe0f812f083cf78fd60e",
+  "consumer_manifest_sha256": "788d9bb1c6d66473abad9f8be1ad53e2e1535da6f8ad45c67d16d2745418f541",
+  "consumer_package_sha256": "3c5925eb341a9f827ff93ec4fc3c0c0bb71519ecf8dcc0076ef4636b988a5543",
+  "consumer_tests": {"focused": "21/21", "full": "1555/1555"},
+  "activation": {
+    "producer_confirmed": false,
+    "credentials_accessed": false,
+    "network_accessed": false,
+    "production_read_performed": false
+  }
+}

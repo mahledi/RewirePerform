@@ -1,0 +1,31 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-combined-staging-postdeploy-package-v1",
+  "package_status": "SANITIZED_UNSIGNED_AWAITING_CONSUMER_POSTDEPLOY_REVIEW",
+  "package_sha256": "4be78184303b4d4547dcb5730da8cbcb4dedd45d2ebb1d6df273ff5b1c5e98cd",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.1/postdeploy-evidence.json",
+      "sha256": "3ff7ed70bf0523c0e23b5e1800a6c0143d4edcd6a6a215597a3c081919101b55"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.1/evidence.schema.json",
+      "sha256": "1b06fd3c7912cc87a1ee27d83716d6a389f96affe16bb95d542f894acb93951f"
+    },
+    {
+      "path": "scripts/generate-feedback-combined-staging-postdeploy.mjs",
+      "sha256": "6f9d8d22d546b8bace36e2eb9ea28c1d33b956c8076d8f08e45ed7b089e93c1a"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceCombinedStagingPostdeploy.test.ts",
+      "sha256": "4ffb3bd7e551449c3dad9b9410bdd188155cad1bb8499833aa056e2612f42972"
+    },
+    {
+      "path": "docs/feedback-intelligence/COMBINED_STAGING_POSTDEPLOY_V1_1.md",
+      "sha256": "38b1d0a5561701dec8713deac9b9ceb0c9413e10b7e18e89b6dc5ad73185b431"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.1/remote-audit-result-2026-08-10.json",
+      "sha256": "2c7ea549a01f8403b4495dd17bd1a6cfdb7f5f80e72e7943e63f01bf6a83d006"
+    }
+  ]
+}

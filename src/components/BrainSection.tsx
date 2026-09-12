@@ -1,26 +1,26 @@
 import { motion } from "framer-motion";
-import { Shield, Brain, Flame, Repeat } from "lucide-react";
+import { BookOpen, Eye, Repeat, Target } from "lucide-react";
 
 const cards = [
   {
-    icon: Shield,
-    title: "Amygdala & Bedrohung",
-    text: "Unter Druck reagieren Bedrohungssysteme schneller. Das Ziel ist nicht, Angst auszuschalten, sondern Verhalten trotz innerer Aktivierung steuerbar zu machen.",
-  },
-  {
-    icon: Brain,
-    title: "Präfrontaler Kortex & Kontrolle",
-    text: "Fokus, Bewertung und Handlungskontrolle stehen in Verbindung mit präfrontalen Prozessen. Das System trainiert die Rückkehr zur bewussten nächsten Handlung.",
-  },
-  {
-    icon: Flame,
-    title: "aMCC & Anstrengung",
-    text: "Der anterior midcingulate cortex wird mit Anstrengung, Widerstand und freiwilligem Handeln trotz Unkomfort in Verbindung gebracht. Deshalb enthält das Programm kleine, machbare Challenges.",
-  },
-  {
     icon: Repeat,
-    title: "Basalganglien & Automatisierung",
-    text: "Was wiederholt wird, kann leichter verfügbar werden. Das System bringt mentale Skills aus der Theorie in wiederholte Alltagspraxis.",
+    title: "Wiederholung",
+    text: "Kurze, wiederkehrende Einheiten bringen mentale Fähigkeiten aus einmaligem Wissen in den Sportalltag.",
+  },
+  {
+    icon: Target,
+    title: "Aufmerksamkeit",
+    text: "Konkrete Tagesanker helfen Athlet:innen, den Fokus auf die nächste beeinflussbare Handlung zu richten.",
+  },
+  {
+    icon: BookOpen,
+    title: "Reflexion & aktives Erinnern",
+    text: "Fragen, aktives Erinnern und Journaling machen Erfahrungen bewusst und für die nächste Situation nutzbar.",
+  },
+  {
+    icon: Eye,
+    title: "Visualisierung",
+    text: "Mentales Durchspielen verbindet den Satz des Tages mit einer konkreten sportlichen Situation — als Übung, nicht als Wirkversprechen.",
   },
 ];
 
@@ -37,21 +37,21 @@ const BrainSection = () => {
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="px-4 py-2 rounded-full bg-primary/10 border-glow">
               <span className="text-sm font-medium text-primary tracking-widest uppercase">
-                Neurowissenschaft
+                Wissenschaftliche Grundlage
               </span>
             </div>
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
-            Das Gehirn ist die Grundlage.
+            Wissenschaftliche Prinzipien.
             <br />
-            <span className="text-gradient">Nicht die Metapher.</span>
+            <span className="text-gradient">Praktisch übersetzt.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            RewirePerform arbeitet mit Prinzipien der Neuroplastizität:
-            Wiederholung, Aufmerksamkeit, emotionaler Kontext, Selbstregulation
-            und Verhalten unter Druck. Die täglichen Aufgaben sind mentale Reps —
-            nicht als Motivation, sondern als Training für Muster, die im
-            Wettkampf entscheiden.
+            RewirePerform verbindet Erkenntnisse aus Sportpsychologie,
+            Lernforschung und Neurowissenschaft mit wiederholbaren Routinen.
+            Die Forschung begründet die eingesetzten Prinzipien. Wie gut das
+            Gesamtsystem im Sportalltag funktioniert, prüfen wir kontrolliert
+            im Pilot.
           </p>
         </motion.div>
 
@@ -88,10 +88,10 @@ const BrainSection = () => {
           viewport={{ once: true }}
           className="mt-10 text-center text-xs text-muted-foreground/70 max-w-2xl mx-auto"
         >
-          RewirePerform misst keine Gehirnaktivität und behauptet keine
-          garantierte physische Veränderung. Das System ist darauf ausgelegt,
-          Bedingungen zu schaffen, die neuroplastische Anpassung unterstützen
-          können.
+          RewirePerform misst keine Gehirnaktivität und garantiert keine
+          körperliche Veränderung. Das System übersetzt erforschte Prinzipien
+          in eine klare 56-Tage-Struktur, deren Nutzen wir im realen
+          Sportalltag überprüfen.
         </motion.p>
       </div>
     </section>

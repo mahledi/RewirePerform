@@ -1,23 +1,43 @@
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { Check, X, ArrowRight, Loader2 } from "lucide-react";
 import type { ComprehensionQuestion } from "@/content/matrixDayTypes";
+import {
+  AthleteFlowButton,
+  AthleteFlowProgress,
+  athleteFlowChoice,
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+} from "@/components/app/AthleteFlowScene";
 
 interface Props {
   questions: ComprehensionQuestion[];
-  onComplete: (results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]) => void;
+  onComplete: (results: { questionId: string; selectedOptionId: string; isCorrect: boolean }[]) => void | Promise<void>;
 }
 
+export const shuffleComprehensionOptions = (questions: ComprehensionQuestion[]) =>
+  questions.map((question) => {
+    const options = [...question.options];
+    for (let i = options.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    return { ...question, options };
+  });
+
 export default function ComprehensionCheck({ questions, onComplete }: Props) {
+  const reduceMotion = useReducedMotion();
+  const shuffledQuestions = useMemo(() => shuffleComprehensionOptions(questions), [questions]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [results, setResults] = useState<
     { questionId: string; selectedOptionId: string; isCorrect: boolean }[]
   >([]);
+  const [completing, setCompleting] = useState(false);
 
-  const q = questions[index];
-  const total = questions.length;
+  const q = shuffledQuestions[index];
+  const total = shuffledQuestions.length;
   const isLast = index === total - 1;
   const correct = useMemo(() => (selected ? selected === q.correctOptionId : false), [selected, q]);
 
@@ -41,7 +61,8 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
     const next = [...results, newResult];
     setResults(next);
     if (isLast) {
-      onComplete(next);
+      setCompleting(true);
+      Promise.resolve(onComplete(next)).catch(() => setCompleting(false));
       return;
     }
     setIndex(index + 1);
@@ -56,20 +77,16 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
           <span>Frage {index + 1} / {total}</span>
           <span>{results.filter((r) => r.isCorrect).length} richtig</span>
         </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-primary rounded-full"
-            animate={{ width: `${((index + (showFeedback ? 1 : 0)) / total) * 100}%` }}
-          />
-        </div>
+        <AthleteFlowProgress value={((index + (showFeedback ? 1 : 0)) / total) * 100} />
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
           key={q.id}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
+          initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 14, scale: 0.992 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.995 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
         >
           <h3 className="font-heading text-xl font-semibold mb-5 leading-snug">{q.stem}</h3>
 
@@ -79,25 +96,25 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
               const isCorrectOpt = opt.id === q.correctOptionId;
               const showState = showFeedback && (isSelected || isCorrectOpt);
               return (
-                <button
+                <AthleteFlowButton
                   key={opt.id}
                   data-testid={`comprehension-option-${opt.id}`}
                   onClick={() => handleSelect(opt.id)}
                   disabled={showFeedback}
-                  className={`w-full text-left p-4 rounded-xl border transition-all flex items-start gap-3 ${
+                  aria-pressed={isSelected}
+                  pressScale={0.985}
+                  className={`${athleteFlowChoice(isSelected)} min-h-14 items-start p-4 ${
                     showState && isCorrectOpt
-                      ? "bg-primary/10 border-primary text-foreground"
+                      ? "border-primary/60 bg-primary/[0.1] text-foreground shadow-[inset_0_1px_0_rgba(98,198,168,0.12)]"
                       : showState && isSelected && !isCorrectOpt
                       ? "bg-destructive/10 border-destructive/50 text-foreground"
-                      : isSelected
-                      ? "bg-secondary border-primary/50"
-                      : "bg-secondary/40 border-border/50 hover:bg-secondary/70"
-                  } ${showFeedback ? "cursor-default" : "active:scale-[0.99]"}`}
+                      : ""
+                  } ${showFeedback ? "cursor-default" : ""}`}
                 >
                   <span className="text-sm flex-1">{opt.text}</span>
                   {showState && isCorrectOpt && <Check className="w-5 h-5 text-primary shrink-0" />}
                   {showState && isSelected && !isCorrectOpt && <X className="w-5 h-5 text-destructive shrink-0" />}
-                </button>
+                </AthleteFlowButton>
               );
             })}
           </div>
@@ -105,27 +122,33 @@ export default function ComprehensionCheck({ questions, onComplete }: Props) {
           <AnimatePresence>
             {showFeedback && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-xl bg-accent/10 border border-accent/20 mb-5"
+                transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+                className={`mb-5 ${athleteFlowPanel} p-4`}
               >
                 <p className="text-xs text-muted-foreground leading-relaxed">{q.explanation}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <button
+          <AthleteFlowButton
             data-testid={isLast ? "comprehension-finish" : "comprehension-next"}
             onClick={handleNext}
-            disabled={!showFeedback}
-            className={`w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-heading font-semibold transition-all ${
-              showFeedback
-                ? "bg-primary text-primary-foreground hover:shadow-glow"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
+            disabled={!showFeedback || completing}
+            className={`${athleteFlowPrimaryButton} w-full`}
           >
-            {isLast ? "Check abschließen" : "Weiter"} <ArrowRight className="w-4 h-4" />
-          </button>
+            {completing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Speichert...
+              </>
+            ) : (
+              <>
+                {isLast ? "Check abschließen" : "Weiter"} <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </AthleteFlowButton>
         </motion.div>
       </AnimatePresence>
     </div>

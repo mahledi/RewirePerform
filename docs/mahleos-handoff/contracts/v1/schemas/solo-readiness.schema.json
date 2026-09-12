@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/solo-readiness.schema.json",
+  "title": "MahleOS solo readiness v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "status",
+    "setup",
+    "evidence_authorization",
+    "pre_measurement",
+    "daily_tracking",
+    "transfer_tracking",
+    "cohort_breakdown",
+    "suppressed_cohort_count",
+    "data_quality",
+    "test_data_included",
+    "privacy_level",
+    "privacy_exclusions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-solo-readiness-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "status": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED",
+        "NO_DATA"
+      ]
+    },
+    "setup": {
+      "type": "object",
+      "required": [
+        "athletes",
+        "active_instances",
+        "multiple_active_instances"
+      ],
+      "properties": {
+        "athletes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_instances": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "multiple_active_instances": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_authorization": {
+      "type": "object",
+      "required": [
+        "eligible",
+        "not_eligible",
+        "complete"
+      ],
+      "properties": {
+        "eligible": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "not_eligible": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pre_measurement": {
+      "type": "object",
+      "required": [
+        "validated_complete",
+        "validated_missing"
+      ],
+      "properties": {
+        "validated_complete": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validated_missing": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "daily_tracking": {
+      "type": "object",
+      "required": [
+        "day_1_completed",
+        "checkins_today",
+        "active_7d",
+        "inactive_7d"
+      ],
+      "properties": {
+        "day_1_completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkins_today": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_7d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inactive_7d": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "transfer_tracking": {
+      "type": "object",
+      "required": [
+        "measurements_completed",
+        "measurements_expected"
+      ],
+      "properties": {
+        "measurements_completed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "measurements_expected": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "cohort_breakdown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sport_category",
+          "sport_level",
+          "athletes",
+          "evidence_eligible",
+          "aggregate_visible",
+          "low_confidence"
+        ],
+        "properties": {
+          "sport_category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "sport_level": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "athletes": {
+            "type": "integer",
+            "minimum": 5
+          },
+          "evidence_eligible": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "aggregate_visible": {
+            "const": true
+          },
+          "low_confidence": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "suppressed_cohort_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "data_quality": {
+      "type": "object",
+      "required": [
+        "duplicate_checkins",
+        "completions_without_checkin",
+        "aggregate_visible",
+        "low_confidence",
+        "minimum_aggregate_n"
+      ],
+      "properties": {
+        "duplicate_checkins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completions_without_checkin": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "aggregate_visible": {
+          "type": "boolean"
+        },
+        "low_confidence": {
+          "type": "boolean"
+        },
+        "minimum_aggregate_n": {
+          "const": 5
+        }
+      },
+      "additionalProperties": false
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "privacy_level": {
+      "const": "solo_operational_counts_with_suppressed_cohorts"
+    },
+    "privacy_exclusions": {
+      "const": [
+        "athlete_names",
+        "user_ids",
+        "individual_checkins",
+        "individual_scores",
+        "journal_text",
+        "reflection"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

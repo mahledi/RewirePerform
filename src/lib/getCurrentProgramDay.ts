@@ -53,25 +53,47 @@ export interface EffectiveProgramStart {
 }
 
 export const getEffectiveProgramStart = async (
-  userId: string
+  userId: string,
+  signal?: AbortSignal,
 ): Promise<EffectiveProgramStart> => {
+  const requestSignal = signal ?? new AbortController().signal;
   // 1) Team-Mitgliedschaften laden
   const { data: memberships } = await supabase
     .from("team_members")
     .select("team_id")
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .retry(false)
+    .abortSignal(requestSignal);
 
-  const teamIds = (memberships ?? []).map((m: any) => m.team_id);
+  const teamIds = (memberships ?? []).map((membership) => membership.team_id);
   let teamStart: string | null = null;
 
   if (teamIds.length > 0) {
+    const { data: activeRuns } = await supabase
+      .from("program_runs")
+      .select("started_at")
+      .in("team_id", teamIds)
+      .eq("status", "active")
+      .not("started_at", "is", null)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .retry(false)
+      .abortSignal(requestSignal);
+
+    const activeRunStart = activeRuns?.[0]?.started_at ?? null;
+    if (activeRunStart) {
+      return { startDate: activeRunStart, source: "team", hasTeam: true };
+    }
+
     const { data: teams } = await supabase
       .from("teams")
       .select("program_start_date")
-      .in("id", teamIds);
+      .in("id", teamIds)
+      .retry(false)
+      .abortSignal(requestSignal);
 
     const dates = (teams ?? [])
-      .map((t: any) => t.program_start_date as string | null)
+      .map((team) => team.program_start_date)
       .filter((d): d is string => !!d)
       .sort();
     teamStart = dates[0] ?? null;
@@ -86,6 +108,8 @@ export const getEffectiveProgramStart = async (
     .from("program_settings")
     .select("program_start")
     .eq("user_id", userId)
+    .retry(false)
+    .abortSignal(requestSignal)
     .maybeSingle();
 
   return {

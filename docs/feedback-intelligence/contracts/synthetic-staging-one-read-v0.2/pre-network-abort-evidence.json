@@ -1,0 +1,64 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-pre-network-abort-evidence-v1-proposed",
+  "contract_status": "SANITIZED_PRE_NETWORK_ABORT_CLOSED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "generated_at": "2026-08-09T12:20:40.134Z",
+  "producer_commit": "1e6270233f8f5017dd825e3ff6293469035522c7",
+  "consumer_operator_commit": "29e92be1d9516d43eb2a929e26b89faec1e6162b",
+  "provisioning_evidence_sha256": "52b337fd5256f6ff5a446c251bf11c0e10cdeec13ebcadc1afd731be09eb6488",
+  "secret_values_included": false,
+  "failure": {
+    "error_code": "MACHINE_KEY_UNAVAILABLE_OR_INVALID",
+    "operator_state_at_failure": "ARMED_FOR_ONE_SYNTHETIC_READ",
+    "request_budget": 1,
+    "requests_consumed": 0,
+    "replay_headers_created": false,
+    "request_id": null,
+    "network_request_count": 0,
+    "retry_performed": false
+  },
+  "persistence": {
+    "raw_response_persisted": false,
+    "raw_text_persisted": false,
+    "subject_reference_persisted": false
+  },
+  "local_diagnostic": {
+    "keychain_item_was_present": true,
+    "stored_value_length": 0,
+    "machine_key_valid": false,
+    "key_value_emitted": false
+  },
+  "cleanup": {
+    "edge_secret_names_removed": [
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY",
+      "MAHLEOS_FEEDBACK_READER_DATABASE_URL",
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_GATE",
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_PRODUCTION_GATE"
+    ],
+    "edge_secret_names_present_after_cleanup": [],
+    "forbidden_edge_secret_names_present_after_cleanup": [],
+    "reader_password_state": "NULL",
+    "consumer_pin_ready": false,
+    "synthetic_export_enabled": false,
+    "machine_credential_ready": false,
+    "production_export_enabled": false,
+    "local_keychain_item_removed": true,
+    "local_keychain_absence_verified": true,
+    "in_memory_secret_values_cleared": true,
+    "synthetic_fixture_users": 0,
+    "synthetic_fixture_rows": 0
+  },
+  "postabort_audit": {
+    "status": "PASS_POSTABORT_ASSURANCE",
+    "result_sha256": "cc04db7bc72c18495f43f5f1786c76cb449a481c5a9d2f8ac1f26bed6f9d08b3",
+    "reader_callable_function_count": 1,
+    "reader_relation_privileges": [],
+    "reader_sequence_privileges": [],
+    "public_execute_defaults": [],
+    "application_rows_read": false,
+    "application_functions_called": false,
+    "database_mutated": false
+  },
+  "production": false,
+  "real_data_read": false
+}

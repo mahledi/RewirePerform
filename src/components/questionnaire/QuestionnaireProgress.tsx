@@ -2,24 +2,19 @@ interface QuestionnaireProgressProps {
   current: number;
   total: number;
   categoryTitle: string;
-  categoryIcon: string;
 }
 
 const QuestionnaireProgress = ({
   current,
   total,
   categoryTitle,
-  categoryIcon,
 }: QuestionnaireProgressProps) => {
   const progress = ((current + 1) / total) * 100;
 
   return (
     <div className="w-full mb-8">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{categoryIcon}</span>
-          <span className="text-sm font-medium text-muted-foreground">{categoryTitle}</span>
-        </div>
+        <span className="text-sm font-medium text-muted-foreground">{categoryTitle}</span>
         <span className="text-sm text-muted-foreground font-heading">
           {current + 1} / {total}
         </span>

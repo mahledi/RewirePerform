@@ -1,0 +1,133 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-combined-staging-postdeploy-v2",
+  "evidence_status": "PASS_V0_3_3_POSTDEPLOY_ASSURANCE_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "target": {
+    "project_ref": "zbeswjipayspgvcipzmx",
+    "environment": "staging",
+    "region": "eu-central-1",
+    "jurisdiction": "DE",
+    "data_scope": "synthetic_only"
+  },
+  "producer_basis": {
+    "apple_rc_commit": "f23aac2d1dd27d9f9bbcce2c690f7c14478d6969",
+    "predeploy_integration_commit": "0a459a511d5271597294c0d926e05568ccaabbef",
+    "repository_state": "PINNED_COMMITTED_INPUTS"
+  },
+  "accepted_predeploy": {
+    "evidence_sha256": "c7beb25bc3af8278835029aa9bc1b6cdd78d598969f2eac7757da7cee8e97984",
+    "manifest_sha256": "a39a0836dcfdd8b93e7ab785f056c8946a8b59ebed1220c32197a31675fb8cfa",
+    "package_sha256": "ce262b8af6cef042e82ada1b1ddd5f54262dbaa0b621908b58eabf3735d4f2dc",
+    "consumer_commit": "59e84cb70f07cb2e51c09e267d2d209aaf805421",
+    "consumer_acceptance_sha256": "cf352c7af509cd3ff1b61039e1437059d574697713e05b30e0cfa0224013554d"
+  },
+  "remote_registry_migration": {
+    "remote_version": "20260810183222",
+    "name": "feedback_intelligence_visualization_copy_v1_1_2",
+    "local_path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+    "local_sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9",
+    "applied": true
+  },
+  "database_assurance": {
+    "executed_at": "2026-08-10T18:33:18.574371+00:00",
+    "audit_phase": "POSTDEPLOY_ASSURANCE",
+    "audit_result_path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.2/remote-audit-result-2026-08-10-v0-3-3.json",
+    "audit_result_sha256": "b06fb65c9157a33ee16a8b5a474387c91353eb534b887ac63de4e48c8f4a89d5",
+    "audit_sql_sha256": "7f7865f769f46bfab204c37d071ee743636fe183f6d6876a24557e51dc508bd3",
+    "application_rows_read": false,
+    "application_functions_called": false,
+    "database_mutated": false,
+    "draft_campaigns": [
+      {
+        "campaign_reference": "feedback-day-10-v1",
+        "content_version": "feedback-intelligence-content-v1.1.2",
+        "questionnaire_version": "feedback-d10-v1.1.2",
+        "questionnaire_manifest_hash": "48c2bf887ec96a0cc49eb327b380f7da7d163beb08929b9b359bfa0356692f2c",
+        "status": "draft"
+      },
+      {
+        "campaign_reference": "feedback-day-24-v1",
+        "content_version": "feedback-intelligence-content-v1.1.2",
+        "questionnaire_version": "feedback-d24-v1.1.2",
+        "questionnaire_manifest_hash": "679f09ab0a4c08a0521404cbbef2d88a8f0121cb353c42f310a3f09cc20689e8",
+        "status": "draft"
+      },
+      {
+        "campaign_reference": "feedback-day-39-v1",
+        "content_version": "feedback-intelligence-content-v1.1.2",
+        "questionnaire_version": "feedback-d39-v1.1.2",
+        "questionnaire_manifest_hash": "b566002d6f1d0c74f1eafb8554f370fa7f409f871473717079a478ad7b238b44",
+        "status": "draft"
+      },
+      {
+        "campaign_reference": "feedback-day-55-v1",
+        "content_version": "feedback-intelligence-content-v1.1.2",
+        "questionnaire_version": "feedback-d55-v1.1.2",
+        "questionnaire_manifest_hash": "b8b1eb9e97348090e2993ee634dc0616228f6c1138b450174d132f48b1029600",
+        "status": "draft"
+      }
+    ],
+    "reader_direct_relation_privileges": 0,
+    "reader_direct_sequence_privileges": 0,
+    "reader_callable_function_count": 1,
+    "gateway_execute_matrix": {
+      "anon": false,
+      "authenticated": false,
+      "service_role": false,
+      "mahleos_feedback_reader": true
+    },
+    "public_execute_default_count": 0
+  },
+  "runtime_assurance": {
+    "export_manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
+    "export_package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
+    "export_schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
+    "gateway_request_schema_sha256": "74e3616a67975766b51238d5573671d8e086014392d0e59e3ee9696ab287d204",
+    "gateway_definition_sha256": "d08d3fbf17420570ad6e8f29f0e3e19717a874f19a767c8eb7c7656acf7aedfd",
+    "internal_export_definition_sha256": "534d0d8770899566658b7efb68c6bc31cfecc068dcf5cf94c30f09143b2ab043",
+    "export_unchanged": true,
+    "request_schema_unchanged": true,
+    "gateway_definition_unchanged": true,
+    "internal_export_definition_unchanged": true
+  },
+  "edge_assurance": {
+    "slug": "mahleos-feedback-intelligence-read",
+    "observed_version": 25,
+    "status": "ACTIVE",
+    "source_sha256": "b1e1cf077970011f6f62beef121ec617c94a4f37849163958bc1a2840199c384",
+    "source_manifest_sha256": "cd76527cbe5bd3accfc7b64c8860b2ad5a11042bcecb2f5b4722510255f2eb6a",
+    "source_unchanged": true,
+    "redeployed_for_v0_3_3": false
+  },
+  "historical_evidence": {
+    "v0_3_2_authorizes_v0_3_3": false,
+    "silent_reinterpretation_allowed": false,
+    "historical_bytes_preserved": true
+  },
+  "gates": {
+    "feedback_collection_enabled": false,
+    "text_collection_enabled": false,
+    "minor_policy_enabled": false,
+    "guardian_policy_enabled": false,
+    "consumer_pin_enabled": false,
+    "synthetic_export_enabled": false,
+    "reader_password_provisioned_by_this_gate": false,
+    "machine_key_provisioned_by_this_gate": false,
+    "credential_mutation_performed": false,
+    "network_read_performed": false,
+    "export_function_called": false,
+    "production_export_enabled": false,
+    "real_data_read_enabled": false,
+    "additional_database_write_performed": false,
+    "edge_deploy_performed": false,
+    "push_performed": false,
+    "merge_performed": false,
+    "app_store_release_authorized": false
+  },
+  "next_gate": {
+    "decision": "AWAITING_JARVIS_V0_3_3_POSTDEPLOY_REVIEW",
+    "consumer_review_required": true,
+    "credentials_allowed": false,
+    "network_read_allowed": false,
+    "production_allowed": false
+  }
+}

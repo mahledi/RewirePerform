@@ -1,0 +1,18 @@
+{
+  "schema_version": "mahles-jarvis-structured-feedback-consumer-contract-v1.2.0-draft",
+  "contract_version": "1.2.0-structured-only-draft",
+  "contract_status": "PROPOSED_AWAITING_PRODUCER_CONFIRMATION",
+  "success_schema_version": "rewire-feedback-intelligence-structured-export-v1.2.0-draft",
+  "required_producer_fields": ["subject_reference", "questionnaire_version", "language", "product_version", "content_version", "program_day", "question_id", "construct_id", "item_family_id", "item_variant_id", "scale_id", "structured_answer", "activity_snapshot"],
+  "forbidden_fields": ["comment", "consent", "feedback_reference", "campaign_reference", "user_id", "program_instance_id", "team_id", "coach_id", "name", "email", "journal_text", "reflection_text", "support_text"],
+  "processing": {
+    "subject_reference": "IN_MEMORY_ONLY_NEVER_OUTPUT_OR_PERSIST",
+    "minimum_group_size": 5,
+    "minimum_group_unit": "QUESTION_AND_OUTPUT_GROUP",
+    "model_training": false,
+    "automated_individual_decisions": false,
+    "observational_not_causal": true
+  },
+  "activation": {"producer_confirmed": false, "consumer_pin_ready": false, "credentials_allowed": false, "network_read_allowed": false, "production_read_allowed": false},
+  "historical_contracts": {"0.2.1_raw_text_draft_can_authorize": false, "null_comment_wrapper_can_authorize": false, "text_consent_payload_reused": false}
+}

@@ -1,10 +1,9 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Cloud, CloudOff, Loader2, Pause } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { questions, categories, getQuestionsByCategory } from "@/data/questionnaireData";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import QuestionnaireProgress from "./QuestionnaireProgress";
 import QuestionCard from "./QuestionCard";
 import CategoryIntro from "./CategoryIntro";
@@ -12,13 +11,29 @@ import {
   ONBOARDING_V2_INSTRUMENT_ID,
   ONBOARDING_V2_VERSION,
 } from "@/content/questionnaireV2";
+import { writeLocalDraft } from "@/lib/localDrafts";
+import { isOptionalOnboardingQuestion, isRequiredOnboardingQuestion } from "@/lib/questionnaireCompletion";
+import type { Json } from "@/integrations/supabase/types";
+import {
+  applyPrivateCustomAnswer,
+  customAnswerKey,
+} from "@/lib/questionnaireCustomAnswers";
 
 interface QuestionnaireFlowProps {
   onComplete: (answers: Record<string, string | string[] | number>) => void;
   onBack: () => void;
   initialAnswers?: Record<string, string | string[] | number>;
   initialCategoryIndex?: number;
+  initialGlobalIndex?: number;
   draftId?: string | null;
+  draftStorageKey?: string;
+  onPauseExit: (draft: QuestionnairePauseDraft) => void | Promise<void>;
+}
+
+export interface QuestionnairePauseDraft {
+  answers: Record<string, string | string[] | number>;
+  lastCategoryIndex: number;
+  lastGlobalIndex?: number;
 }
 
 type FlowState =
@@ -26,21 +41,24 @@ type FlowState =
   | { type: "question"; globalIndex: number };
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+const LEGACY_QUESTIONNAIRE_DRAFT_KEY = `questionnaire:${ONBOARDING_V2_INSTRUMENT_ID}`;
 
 const QuestionnaireFlow = ({
   onComplete,
   onBack,
   initialAnswers = {},
   initialCategoryIndex = 0,
+  initialGlobalIndex,
   draftId = null,
+  draftStorageKey = LEGACY_QUESTIONNAIRE_DRAFT_KEY,
+  onPauseExit,
 }: QuestionnaireFlowProps) => {
-  const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string | string[] | number>>(initialAnswers);
-  const [flowState, setFlowState] = useState<FlowState>({
-    type: "category-intro",
-    categoryIndex: Math.min(initialCategoryIndex, categories.length - 1),
-  });
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pausing, setPausing] = useState(false);
   const draftIdRef = useRef<string | null>(draftId);
   const isSavingRef = useRef<boolean>(false);
   const pendingSaveRef = useRef<{ answers: Record<string, string | string[] | number>; categoryIndex: number; silent: boolean } | null>(null);
@@ -49,14 +67,34 @@ const QuestionnaireFlow = ({
     return categories.flatMap((cat) => getQuestionsByCategory(cat.id));
   }, []);
 
+  const [flowState, setFlowState] = useState<FlowState>(() => {
+    if (
+      typeof initialGlobalIndex === "number" &&
+      initialGlobalIndex >= 0 &&
+      initialGlobalIndex < orderedQuestions.length
+    ) {
+      return { type: "question", globalIndex: initialGlobalIndex };
+    }
+    return {
+      type: "category-intro",
+      categoryIndex: Math.min(initialCategoryIndex, categories.length - 1),
+    };
+  });
+
   const totalQuestions = orderedQuestions.length;
 
   const handleAnswer = useCallback(
     (questionId: string, value: string | string[] | number) => {
+      setSubmitError(null);
+      setValidationError(null);
       setAnswers((prev) => ({ ...prev, [questionId]: value }));
     },
     []
   );
+
+  const handleCustomAnswer = useCallback((questionId: string, value: string) => {
+    setAnswers((previous) => applyPrivateCustomAnswer(previous, questionId, value));
+  }, []);
 
   const getCurrentCategoryForQuestion = (globalIndex: number) => {
     const q = orderedQuestions[globalIndex];
@@ -76,6 +114,45 @@ const QuestionnaireFlow = ({
 
   const currentQuestion =
     flowState.type === "question" ? orderedQuestions[flowState.globalIndex] : null;
+
+  const isOptionalTextQuestion = (question: typeof currentQuestion) => {
+    if (!question) return false;
+    return isOptionalOnboardingQuestion(question);
+  };
+
+  const isRequiredQuestion = (question: typeof currentQuestion) => {
+    if (!question) return false;
+    return isRequiredOnboardingQuestion(question);
+  };
+
+  const validateQuestion = (question: typeof currentQuestion) => {
+    if (!question) return "Diese Frage konnte nicht geladen werden.";
+    const answer = answers[question.id];
+
+    if (question.type === "text") {
+      if (isOptionalTextQuestion(question) && (!answer || String(answer).trim() === "")) {
+        return null;
+      }
+      const text = typeof answer === "string" ? answer.trim() : "";
+      const normalized = text.toLowerCase();
+      const throwawayAnswers = new Set(["-", ".", "..", "...", "ka", "k.a.", "idk", "egal", "nichts", "keine ahnung"]);
+      if (!text) {
+        return "Diese Antwort ist wichtig für dein Startprofil. Ein kurzer ehrlicher Satz reicht.";
+      }
+      if (throwawayAnswers.has(normalized) || text.length < 4) {
+        return "Schreib bitte etwas Konkreteres. Es muss nicht perfekt sein, nur ehrlich genug.";
+      }
+      return null;
+    }
+
+    if (answer === undefined || answer === "") {
+      return "Bitte wähle eine Antwort aus.";
+    }
+    if (Array.isArray(answer) && answer.length === 0) {
+      return "Bitte wähle mindestens eine passende Antwort aus.";
+    }
+    return null;
+  };
 
   // Persist draft to Supabase
   const saveDraft = useCallback(
@@ -97,6 +174,9 @@ const QuestionnaireFlow = ({
           setSaveState("error");
           return;
         }
+        const { getOrCreateActiveInstance } = await import("@/lib/programInstance");
+        const instance = await getOrCreateActiveInstance(user.id);
+        if (!instance?.id) throw new Error("active_program_instance_required");
 
         // Falls noch keine draftId bekannt: prüfen ob es schon einen offenen Draft gibt
         // (z.B. parallele Sessions / weiterer Tab) und den verwenden statt neuen einzufügen.
@@ -105,6 +185,7 @@ const QuestionnaireFlow = ({
             .from("questionnaire_responses")
             .select("id")
             .eq("user_id", user.id)
+            .eq("program_instance_id", instance.id)
             .eq("is_complete", false)
             .order("progress_updated_at", { ascending: false })
             .limit(1)
@@ -118,12 +199,13 @@ const QuestionnaireFlow = ({
           const { error } = await supabase
             .from("questionnaire_responses")
             .update({
-              answers: currentAnswers as any,
+              answers: currentAnswers as Json,
               last_category_index: categoryIndex,
               progress_updated_at: new Date().toISOString(),
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance.id,
             })
             .eq("id", draftIdRef.current);
           if (error) throw error;
@@ -133,12 +215,13 @@ const QuestionnaireFlow = ({
             .insert({
               user_id: user.id,
               session_id: user.id,
-              answers: currentAnswers as any,
+              answers: currentAnswers as Json,
               last_category_index: categoryIndex,
               is_complete: false,
               instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
               questionnaire_version: ONBOARDING_V2_VERSION,
               timing: "pre",
+              program_instance_id: instance.id,
               scores: {},
             })
             .select("id")
@@ -150,6 +233,7 @@ const QuestionnaireFlow = ({
               .from("questionnaire_responses")
               .select("id")
               .eq("user_id", user.id)
+              .eq("program_instance_id", instance.id)
               .eq("is_complete", false)
               .order("progress_updated_at", { ascending: false })
               .limit(1)
@@ -159,12 +243,13 @@ const QuestionnaireFlow = ({
               await supabase
                 .from("questionnaire_responses")
                 .update({
-                  answers: currentAnswers as any,
+                  answers: currentAnswers as Json,
                   last_category_index: categoryIndex,
                   progress_updated_at: new Date().toISOString(),
                   instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
                   questionnaire_version: ONBOARDING_V2_VERSION,
                   timing: "pre",
+                  program_instance_id: instance.id,
                 })
                 .eq("id", rescued.id);
             } else {
@@ -187,7 +272,6 @@ const QuestionnaireFlow = ({
         const pending = pendingSaveRef.current;
         pendingSaveRef.current = null;
         if (pending) {
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
           saveDraft(pending.answers, pending.categoryIndex, { silent: pending.silent });
         }
       }
@@ -199,34 +283,43 @@ const QuestionnaireFlow = ({
     if (flowState.type === "category-intro") return true;
     if (!currentQuestion) return false;
     const answer = answers[currentQuestion.id];
+    if (currentQuestion.type === "text") {
+      if (!isRequiredQuestion(currentQuestion)) return true;
+      return typeof answer === "string" && answer.trim().length > 0;
+    }
     if (answer === undefined || answer === "") return false;
     if (Array.isArray(answer) && answer.length === 0) return false;
     return true;
   };
 
   const goNext = async () => {
+    if (submitting) return;
     if (flowState.type === "category-intro") {
       const startIndex = getGlobalIndexForCategoryStart(flowState.categoryIndex);
+      setValidationError(null);
       setFlowState({ type: "question", globalIndex: startIndex });
+      return;
+    }
+
+    const error = validateQuestion(currentQuestion);
+    if (error) {
+      setValidationError(error);
       return;
     }
 
     const idx = flowState.globalIndex;
     if (idx >= totalQuestions - 1) {
-      // Final submit — mark complete
-      if (draftIdRef.current) {
-        await supabase
-          .from("questionnaire_responses")
-          .update({
-            answers: answers as any,
-            is_complete: true,
-            last_category_index: categories.length,
-            instrument_id: ONBOARDING_V2_INSTRUMENT_ID,
-            questionnaire_version: ONBOARDING_V2_VERSION,
-            timing: "pre",
-          })
-          .eq("id", draftIdRef.current);
-      }
+      setSubmitting(true);
+      setSubmitError(null);
+      setSaveState("saving");
+      writeLocalDraft(draftStorageKey, {
+        answers,
+        lastCategoryIndex: categories.length,
+        lastGlobalIndex: totalQuestions - 1,
+        savedAt: new Date().toISOString(),
+      });
+      setSaveState("saved");
+      setSubmitting(false);
       onComplete(answers);
       return;
     }
@@ -239,11 +332,13 @@ const QuestionnaireFlow = ({
       await saveDraft(answers, nextCatIndex);
       setFlowState({ type: "category-intro", categoryIndex: nextCatIndex });
     } else {
+      setValidationError(null);
       setFlowState({ type: "question", globalIndex: idx + 1 });
     }
   };
 
   const goBack = () => {
+    setValidationError(null);
     if (flowState.type === "category-intro") {
       if (flowState.categoryIndex === 0) {
         onBack();
@@ -270,35 +365,55 @@ const QuestionnaireFlow = ({
 
   // Pause: save current state and exit
   const handlePause = async () => {
+    if (pausing) return;
     const currentCatIndex =
       flowState.type === "category-intro"
         ? flowState.categoryIndex
         : categories.findIndex(
             (c) => c.id === orderedQuestions[flowState.globalIndex].category
           );
-    await saveDraft(answers, currentCatIndex);
-    toast({
-      title: "Fortschritt gespeichert",
-      description: "Du kannst jederzeit zurückkommen und weitermachen.",
+    const pauseDraft: QuestionnairePauseDraft = {
+      answers,
+      lastCategoryIndex: currentCatIndex,
+      lastGlobalIndex: flowState.type === "question" ? flowState.globalIndex : undefined,
+    };
+    setPausing(true);
+    writeLocalDraft(draftStorageKey, {
+      ...pauseDraft,
+      savedAt: new Date().toISOString(),
     });
-    navigate("/dashboard");
+    try {
+      await saveDraft(answers, currentCatIndex);
+      toast.success("Fortschritt gespeichert", {
+        description: "Du bleibst angemeldet und kannst jederzeit weitermachen.",
+      });
+      await onPauseExit(pauseDraft);
+    } finally {
+      setPausing(false);
+    }
   };
 
   // Auto-save on answer change (debounced, silent)
   useEffect(() => {
     if (Object.keys(answers).length === 0) return;
+    const currentCatIndex =
+      flowState.type === "category-intro"
+        ? flowState.categoryIndex
+        : categories.findIndex(
+            (c) => c.id === orderedQuestions[flowState.globalIndex].category
+          );
+    writeLocalDraft(draftStorageKey, {
+      answers,
+      lastCategoryIndex: currentCatIndex,
+      lastGlobalIndex: flowState.type === "question" ? flowState.globalIndex : undefined,
+      savedAt: new Date().toISOString(),
+    });
     const handle = setTimeout(() => {
-      const currentCatIndex =
-        flowState.type === "category-intro"
-          ? flowState.categoryIndex
-          : categories.findIndex(
-              (c) => c.id === orderedQuestions[flowState.globalIndex].category
-            );
       saveDraft(answers, currentCatIndex, { silent: true });
     }, 1500);
     return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [answers]);
+  }, [answers, flowState]);
 
   const isLastQuestion =
     flowState.type === "question" && flowState.globalIndex === totalQuestions - 1;
@@ -334,26 +449,29 @@ const QuestionnaireFlow = ({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-5 md:px-6 py-2.5 md:py-4">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between gap-3 mb-2 md:mb-3">
             <div className="min-h-[1rem]">
               <SaveIndicator />
             </div>
             <button
               onClick={handlePause}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              disabled={submitting || pausing}
+              className="flex min-h-11 items-center gap-2 rounded-xl border border-border bg-secondary/70 px-3 py-2 text-xs font-medium text-secondary-foreground hover:bg-muted transition-colors disabled:opacity-60"
             >
-              <Pause className="w-3 h-3" />
-              Pause &amp; später fortsetzen
+              {pausing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Pause className="h-3.5 w-3.5" />}
+              {pausing ? "Wird gespeichert…" : "Speichern & Pause"}
             </button>
           </div>
+          <p className="mb-2 text-[11px] leading-snug text-muted-foreground md:text-xs">
+            Deine Antworten werden zwischengespeichert. Du kannst jederzeit pausieren und später weiterarbeiten.
+          </p>
           {flowState.type === "question" && currentQuestion && (
             <QuestionnaireProgress
               current={flowState.globalIndex}
               total={totalQuestions}
               categoryTitle={getCurrentCategoryForQuestion(flowState.globalIndex).title}
-              categoryIcon={getCurrentCategoryForQuestion(flowState.globalIndex).icon}
             />
           )}
           {flowState.type === "category-intro" && (
@@ -365,7 +483,7 @@ const QuestionnaireFlow = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
+      <div className="flex-1 flex items-start md:items-center justify-center px-5 md:px-6 py-5 pb-28 md:py-12">
         <div className="max-w-2xl w-full">
           <AnimatePresence mode="wait">
             {flowState.type === "category-intro" && (
@@ -373,6 +491,7 @@ const QuestionnaireFlow = ({
                 key={`cat-${flowState.categoryIndex}`}
                 categoryId={categories[flowState.categoryIndex].id}
                 onContinue={goNext}
+                showInlineButton={false}
               />
             )}
             {flowState.type === "question" && currentQuestion && (
@@ -381,6 +500,10 @@ const QuestionnaireFlow = ({
                 question={currentQuestion}
                 answer={answers[currentQuestion.id]}
                 onAnswer={(val) => handleAnswer(currentQuestion.id, val)}
+                customAnswer={String(answers[customAnswerKey(currentQuestion.id)] ?? "")}
+                onCustomAnswer={(value) => handleCustomAnswer(currentQuestion.id, value)}
+                isRequired={isRequiredQuestion(currentQuestion)}
+                validationError={validationError}
               />
             )}
           </AnimatePresence>
@@ -388,29 +511,39 @@ const QuestionnaireFlow = ({
       </div>
 
       {/* Bottom navigation */}
-      {flowState.type === "question" && (
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 py-4">
+      {(flowState.type === "question" || flowState.type === "category-intro") && (
+        <div className="sticky bottom-0 bg-background/90 backdrop-blur-xl border-t border-border/50 px-5 md:px-6 pt-2.5 md:pt-4 pb-[calc(env(safe-area-inset-bottom)+0.625rem)] md:pb-4">
+          {submitError && (
+            <div className="max-w-2xl mx-auto mb-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-muted-foreground">
+              {submitError}
+            </div>
+          )}
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <button
               onClick={goBack}
-              className="flex items-center gap-2 px-5 py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">Zurück</span>
             </button>
 
             <motion.button
-              whileHover={canProceed() ? { scale: 1.02 } : {}}
-              whileTap={canProceed() ? { scale: 0.98 } : {}}
+              whileHover={canProceed() && !submitting ? { scale: 1.02 } : {}}
+              whileTap={canProceed() && !submitting ? { scale: 0.98 } : {}}
               onClick={goNext}
-              disabled={!canProceed()}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-heading font-semibold transition-all ${
-                canProceed()
+              disabled={!canProceed() || submitting}
+              className={`flex min-w-[8.5rem] items-center justify-center gap-2 px-6 py-3 md:py-3.5 rounded-xl font-heading font-semibold transition-all ${
+                canProceed() && !submitting
                   ? "bg-primary text-primary-foreground hover:shadow-glow"
                   : "bg-muted text-muted-foreground cursor-not-allowed"
               }`}
             >
-              {isLastQuestion ? (
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Speichert...
+                </>
+              ) : isLastQuestion ? (
                 <>
                   Abschließen
                   <Check className="w-4 h-4" />

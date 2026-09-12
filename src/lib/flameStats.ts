@@ -43,6 +43,7 @@ export interface FlameCompletionRow {
   day_number: number;
   completed_at: string | null;
   completion_status: string;
+  task_completion?: unknown;
 }
 
 export interface FlameSnapshot {
@@ -51,6 +52,23 @@ export interface FlameSnapshot {
   days_available: number;
   days_completed: number;
   program_day: number | null;
+}
+
+export function countActiveApplications(completions: FlameCompletionRow[]): number {
+  const applicationsPerDay = new Map<number, number>();
+  completions
+    .filter((completion) => completion.completion_status === "completed")
+    .forEach((completion) => {
+      const count = Array.isArray(completion.task_completion)
+        ? completion.task_completion.length
+        : 0;
+      applicationsPerDay.set(
+        completion.day_number,
+        Math.max(applicationsPerDay.get(completion.day_number) ?? 0, count),
+      );
+    });
+  return Array.from(applicationsPerDay.values())
+    .reduce((total, count) => total + count, 0);
 }
 
 const LEVEL_LABEL: Record<FlameLevel, string> = {

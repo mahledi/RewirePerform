@@ -1,134 +1,120 @@
-# Evidence & Outcomes Layer — Known Limitations (V1)
+# Evidence & Outcomes Layer - Known Limitations
 
-This document records honest limitations of the current Beweis-Engine.
-It is intentionally conservative so that no marketing or coach-facing
-copy overstates what the system can prove.
+Stand: 20. Juli 2026
 
----
+Dieses Dokument beschreibt bewusst konservativ, was RewirePerform mit dem
+aktuellen Tracking- und Evidence-System messen und was es nicht beweisen kann.
 
-## 1. Cohort model is user-level, not true team-level
+## 1. Mannschaftslaeufe existieren, sind aber keine Kontrollgruppen
 
-**V1 uses user-level `program_instances` with a `team_id` reference.
-A true team-level `program_run` / cohort model is deferred.**
+`program_runs` bindet einen benannten Mannschaftslauf an ein Team, ein
+Startdatum und die zugeordneten `program_instances`. Damit koennen Daten einem
+konkreten Pilotlauf zugeordnet werden.
 
-What this means:
-- A `program_instance` represents **one athlete's run through the
-  56-day program**, not a synchronized team cohort.
-- Multiple athletes on the same team may start their cycles on
-  different dates and proceed at different speeds.
-- `compute_team_outcomes(team_id)` aggregates **all athlete instances
-  attached to the team via `program_instances.team_id`**, regardless of
-  whether they started on the same day.
-- There is **no "Team Cohort 2026-Spring"** entity yet. If a team
-  re-runs the program, it will appear as athletes starting new
-  individual cycles, not as a single team cohort.
+Der Coach-Outcome-Screen verwendet aktuell den aktiven Lauf. Historische oder
+abgeschlossene Laeufe werden ueber explizite Dossiers und Data Locks
+ausgewertet. Eine automatische statistische Gegenueberstellung von Lauf 1 gegen
+Lauf 2 ist noch kein freigegebener Outcome-Vertrag.
 
-When this matters:
-- Coaches cannot currently compare "Cycle 1 of Team A" against
-  "Cycle 2 of Team A" as two distinct group-level cohorts.
-- Pre/Post aggregates may mix athletes from different start months.
+Ein Mannschaftslauf ist keine Kontrollgruppe. Er verbessert Zuordnung und
+Reproduzierbarkeit, erzeugt allein aber keine Kausalevidenz.
 
-Planned (deferred):
-- Add a `program_runs` table keyed by `(team_id, run_number,
-  started_at, ended_at)`.
-- Add `program_run_id` to `program_instances` so each athlete cycle
-  is bound to a specific team-level run.
-- Update `compute_team_outcomes` to optionally scope by `program_run_id`.
+## 2. Beobachtete Entwicklung ist kein allgemeiner Kausalnachweis
 
----
+Das System kann Programmnutzung, wiederholte In-App-Antworten, strukturierte
+Coach-Beobachtungen und Pre-/Mid-/Post-Verlaeufe messen.
 
-## 2. No control group / no causal claim
+Zulaessige Beschreibung:
 
-The system measures **observed change during the program**.
-It does not run A/B comparisons against a control group.
+- beobachtete Veraenderung waehrend des Programms
+- aggregierter Team- oder Solo-Verlauf
+- Athleten berichteten eine Veraenderung
+- Coaches beobachteten ein bestimmtes Verhalten
 
-Therefore the UI and any external communication must avoid:
-- "proven", "bewiesen", "guaranteed", "garantiert"
-- "rewired brain", "neuronal umverdrahtet"
-- "caused improvement", "verursacht", "kausal"
+Ohne vorab definiertes Vergleichs- oder randomisiertes Design unzulaessig:
 
-The UI is allowed to say:
-- "beobachtete Veränderung"
-- "während des Programms"
-- "aggregierte Teamdaten"
-- "ohne Kontrollgruppe keine Wirksamkeitsaussage" (current disclaimer)
+- RewirePerform verursachte sportliche Leistungssteigerung
+- RewirePerform fuehrte zu Sieg oder Qualifikation
+- die App hat das Gehirn nachweislich umverdrahtet
+- eine Veraenderung ist garantiert oder universell
 
-This wording is enforced both in `TeamEvidence.tsx` and in the
-`disclaimer` field returned by `compute_team_outcomes`.
+## 3. In-App-Messung ist nicht gleich Wettkampfleistung
 
----
+Check-ins, Transfer-Pulse, Frageboegen und Assessments messen Antworten und
+Verhalten innerhalb des festgelegten App-Protokolls. Sie koennen relevante
+mentale Prozesse abbilden, beweisen aber ohne externe sportnahe Outcomes keinen
+Transfer auf Ergebnis, Technik, Taktik oder Wettkampfleistung.
 
-## 3. Anonymity threshold is hard-coded at n ≥ 5
+Selbstbericht, Coach-Beobachtung und objektivere Performance-Tasks muessen im
+Reporting getrennt bleiben.
 
-- Team aggregates only render when at least **5 valid athletes**
-  contributed.
-- Pre→Post / Pre→Mid subscale rows only render when **5 paired
-  athletes** exist for that subscale.
-- Weekly check-in trends only render mood/energy/focus values when
-  **≥ 5 distinct athletes contributed in that week**.
+## 4. Mindestgruppe und Unsicherheit
 
-If a team has 4 active athletes, **no aggregate values are shown** —
-this is a design choice, not a bug.
+- Sensible Aggregate bleiben unter `n = 5` verborgen.
+- Werte bei `n = 5` bis `9` werden als kleine Datenbasis beziehungsweise
+  `low_confidence` markiert.
+- Pre-/Post-Aenderungen brauchen mindestens fuenf gueltige Paare.
+- Fehlende Messungen und Drop-out werden berichtet, nicht still aufgefuellt.
 
----
+Die Grenze schuetzt Privatsphaere. Sie macht kleine Gruppen nicht automatisch
+statistisch belastbar.
 
-## 4. Effect size is paired Cohen's d_z, not d_av or Hedges' g
+## 5. Aktuelle Autorisierung bleibt erforderlich
 
-- `d_z = mean(diff) / sd_sample(diff)`
-- This is the appropriate within-subject paired effect size.
-- It is **not directly comparable** to between-group Cohen's d
-  reported in many published RCTs.
-- When `n < 10`, the row is flagged `low_confidence: true`.
-- When `sd(diff) = 0` (every athlete changed by the exact same
-  amount, e.g. perfect dummy data), `d_z` is returned as `NULL`.
+Neue Evidence wird nur fuer eine aktive Programminstanz und ein aktives,
+versioniertes Protokoll erhoben. Ein abgeschlossener Lauf kann in einer
+dynamischen Auswertung bleiben, solange der aktuelle Consent und bei
+Minderjaehrigen die erforderlichen aktuellen Receipts weiterhin gueltig sind.
 
----
+Ein Widerruf entfernt die Person aus neuen dynamischen Aggregaten. Bereits
+erzeugte Data Locks werden nicht still veraendert. Deren Invalidierungs-,
+Aufbewahrungs- und Loeschregel muss vor einem realen Minderjaehrigenpilot
+fachlich und rechtlich final festgelegt werden.
 
-## 5. Subscale direction is hard-coded in the frontend
+## 6. Coach-Zugriff bleibt begrenzt
 
-`SUBSCALE_DIRECTION` in `src/components/coach/TeamEvidence.tsx`
-maps each subscale to `higher_is_better` or `lower_is_better`.
-Currently covers: CSAI-2R (cognitive_anxiety, somatic_anxiety,
-self_confidence), SMTQ (confidence, constancy, control), Flow
-short (absorption, fluency, anxiety/Besorgnis).
+Coaches duerfen operative Aktivitaet sehen, zum Beispiel letzte Aktivitaet,
+absolvierte Tage, Completion Rate, Streak, Check-in-Anzahl und Journal-Anzahl.
 
-Adding a new validated assessment requires updating this map,
-otherwise the row will render with a neutral arrow and no
-"improvement" classification.
+Coaches erhalten nicht:
 
----
+- Journal- oder Reflexionstext
+- einzelne Mood-, Energie-, Fokus- oder Stresswerte
+- einzelne Assessment-Antworten oder Scores
+- psychologische Labels oder Persoenlichkeitsurteile
+- einzelne Evidence-Beitraege fuer Teamvergleiche
 
-## 6. Coach RLS is aggregate-only — no individual drilldown
+Der Teamzustand wird serverseitig aggregiert und gibt keine Athleten-ID aus.
 
-After the privacy hardening migration, coaches **cannot** read:
-- `daily_journals` (any row)
-- `daily_checkins` (individual rows)
-- `assessments` (individual rows)
+## 7. Solo-Sport-Taxonomie ist eine Analysehilfe
 
-Coaches can only call `compute_team_outcomes(team_id)`, which
-returns aggregates. There is intentionally **no escape hatch** to
-view a single athlete's reflections from the coach UI.
+Die strukturierte Einteilung nach Sportkategorie, Teilnahmeformat und Niveau
+wird aus bereits vorhandenen Onboarding-Antworten abgeleitet. Sie ermoeglicht
+vergleichbare Solo-Aggregate, ist aber keine validierte sportwissenschaftliche
+Klassifikation und keine Leistungsdiagnose.
 
----
+Unbekannte oder mehrdeutige Sportarten muessen als `unknown_or_other` sichtbar
+bleiben, statt sicher klingend falsch zugeordnet zu werden.
 
-## 7. Backfill artifacts (Cycle 1)
+## 8. Data Locks sichern Reproduzierbarkeit, nicht Wahrheit
 
-The cohort migration backfilled **one `program_instance` per
-existing user**, with `cycle_number = 1` and `started_at` inferred
-from `program_settings.program_start` or `CURRENT_DATE`. For users
-who completed work before backfill, the start date may not match
-their real-world start. This affects historical `days_available` /
-`days_completed` only, not future cycles.
+Ein Data Lock friert ein Aggregat, Analysemanifest, Source-Cutoff und SHA-256-
+Pruefsumme ein. Das beweist, welcher Datenstand ausgewertet wurde und ob der
+Payload spaeter veraendert wurde.
 
----
+Ein Data Lock beweist nicht automatisch:
 
-## 8. Verified at: 2026-04-28
+- dass die zugrunde liegenden Antworten inhaltlich wahr sind
+- dass Missingness zufaellig ist
+- dass eine Skala fuer jeden Kontext validiert oder lizenziert ist
+- dass eine beobachtete Veraenderung von RewirePerform verursacht wurde
 
-- Migration `20260428122846_c5d3a14a-87ba-4644-aca1-9c9430660c3f.sql`
-  is the final cohort + privacy + statistics migration.
-- All `program_instance_id` columns confirmed present on the 6
-  affected tables.
-- `compute_team_outcomes(uuid, integer)` exists with `EXECUTE`
-  granted to `authenticated`, revoked from `PUBLIC`.
-- Forbidden vocabulary scan in `src/components/coach/` and
-  `src/pages/Coach.tsx`: **0 matches**.
+## 9. Lokale und produktive Evidenz sind getrennt
+
+Der Integrationskandidat vom 20. Juli besteht lokale Unit-, Vertrags- und
+PostgreSQL-kompatible Negativtests. Seine neuen Migrationen und Edge Functions
+sind noch nicht auf Production aktiviert.
+
+Vor jeder externen Aussage muessen Production-Migrationsstand, Function-Grants,
+RLS/JWT, Consent-Population, Testdatenfilter, Pruefsummen und Exportinhalt erneut
+gegen das reale Zielsystem verifiziert werden.

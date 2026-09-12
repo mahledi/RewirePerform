@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000510",
+  "view": "admin_teams",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-admin-teams-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "returned_teams": 1,
+    "truncated": false,
+    "teams": [
+      {
+        "team_reference": "aggregate-team-0123456789abcdef",
+        "sport_category": "football",
+        "program_start_date": "2026-07-14",
+        "athletes": 9,
+        "active_7d": 8,
+        "inactive_7d": 1,
+        "checkins_7d": 31,
+        "completed_days_7d": 31,
+        "pre_n": 9,
+        "mid_n": 0,
+        "post_n": 0,
+        "run_reference": "aggregate-run-fedcba9876543210",
+        "run_status": "active",
+        "run_started_at": "2026-07-14"
+      }
+    ],
+    "test_data_included": false,
+    "team_names_included": false,
+    "direct_identifiers_included": false,
+    "private_content_included": false
+  }
+}

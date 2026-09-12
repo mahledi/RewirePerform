@@ -11,7 +11,7 @@ import {
 
 export type { QuestionType, QuestionPrivacy, ScoringDirection, RewireQuestionOption };
 
-export interface QuestionCategory extends RewireQuestionCategory {}
+export type QuestionCategory = RewireQuestionCategory;
 
 export interface Question extends RewireQuestion {
   question: string;
@@ -64,4 +64,23 @@ export function getQuestionById(questionId: string): Question | undefined {
 export function getOptionText(questionId: string, optionId: string): string {
   const question = getQuestionById(questionId);
   return question?.options?.find((option) => option.id === optionId)?.text ?? optionId;
+}
+
+const legacySportAnswerLabels: Record<string, string> = {
+  football: "Fußball",
+  basketball: "Basketball",
+  handball: "Handball",
+  tennis: "Tennis",
+  athletics: "Leichtathletik",
+  other: "Anderer Sport",
+};
+
+export function getSportAnswerText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const optionLabel = getOptionText("sport-01", trimmed).trim();
+  return legacySportAnswerLabels[trimmed] ?? (optionLabel || trimmed);
 }

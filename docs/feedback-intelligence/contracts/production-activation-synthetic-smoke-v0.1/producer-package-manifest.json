@@ -1,0 +1,94 @@
+{
+  "schema_version": "rewireperform-feedback-v1.1-production-activation-synthetic-smoke-package-v1",
+  "package_status": "LOCAL_UNSIGNED_EXTERNAL_GATES_CLOSED",
+  "source_base_commit": "acae4d643984f77fcd009804d69cfd114ab970e0",
+  "package_sha256": "c6782775a9f809705d994b33b84f7d68d754ba50b5370ce1b97783d68e11d415",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-activation-synthetic-smoke-v0.1/activation-smoke-plan.json",
+      "sha256": "125991d15c10931a1b40f02be24960157a8137f2f235086db66a81df6b1a7c3f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-activation-synthetic-smoke-v0.1/activation-smoke-plan.schema.json",
+      "sha256": "26e45304da69b40ec2ef936785cf16a558e28b3b6df159cf9a9d443d42a90832"
+    },
+    {
+      "path": "supabase/migrations/20260813115737_feedback_consent_guardian_de_v1_1_final_contract.sql",
+      "sha256": "6a2933e3d33a41fe0c35523be795160c04f030dfccf3f4579078fabb0784eba9"
+    },
+    {
+      "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9"
+    },
+    {
+      "path": "supabase/migrations/20260813125221_feedback_intelligence_v1_1_activation_contract.sql",
+      "sha256": "960d5809ed248c05c5f7e64b36fdf0f12a160f9e9f7b3a3c663bda434e375ba4"
+    },
+    {
+      "path": "supabase/migrations/20260813125222_feedback_intelligence_v1_1_reclose_contract.sql",
+      "sha256": "be999f2f69b9c6c75abde320a8d3521ca4425c2db0426cf32c629c918205278b"
+    },
+    {
+      "path": "scripts/generate-feedback-v1-1-activation-smoke.mjs",
+      "sha256": "fe5e2008fea60e4e91e4d37d1ffdea9ffa2b8a6002a049be606592a6cd60b4cb"
+    },
+    {
+      "path": "scripts/run-feedback-v1-1-activation-synthetic-smoke.mjs",
+      "sha256": "3fd621d9242e5b97ed7d4127d1e935c85c38d4bcea8043c4f19664b00b50a268"
+    },
+    {
+      "path": "scripts/feedback-v1-1-activation-smoke-sql.mjs",
+      "sha256": "11e7b116da8facbe02948df04a0dfa3914ca750492f172d79aead69e7bd4f85f"
+    },
+    {
+      "path": "scripts/execute-feedback-v1-1-activation-smoke-query.mjs",
+      "sha256": "3554e3a3fae154b2e6f1f358c386d16795a95932fcc36b94026a7c8360cf34d4"
+    },
+    {
+      "path": "scripts/execute-postgres-simple-query.mjs",
+      "sha256": "824f223542467cdd24b42bd6ed43cc51048be54c45e16c6902ea1c35789786aa"
+    },
+    {
+      "path": "scripts/run-v1-1-production-rollback-dry-run.mjs",
+      "sha256": "229481d9d7a2d0c93889e881aef9549edc549c46507b4f96ba94e3cf3d5bc460"
+    },
+    {
+      "path": "tools/production-rollback-dry-run/package.json",
+      "sha256": "4617a30bd39d6dd594d66e806a59294f48b6b2661dc07c2cbdcfe11fb4d9bcaa"
+    },
+    {
+      "path": "tools/production-rollback-dry-run/package-lock.json",
+      "sha256": "473380ffa329b62ab69946269f1d8da16ae98360c0bd38fcde29b4cf76de3c53"
+    },
+    {
+      "path": "scripts/verify-feedback-intelligence-sql.mjs",
+      "sha256": "88ae23ec0eb16e615f3ea80c1b1e3ae439bcc07d9e613d728522ace42c6f58df"
+    },
+    {
+      "path": "scripts/verify-guardian-feedback-text-sql.mjs",
+      "sha256": "27216c37625dff37dce7c3493e4a6cd5250db60f206863b8296b56d1be29f7f5"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceProductionActivationSmoke.test.ts",
+      "sha256": "06f91dd61078c37093a3298acb87d909dce9895636111b2ecf35b83a04181106"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCTION_ACTIVATION_SYNTHETIC_SMOKE_V0_1.md",
+      "sha256": "72ee2fd3d30a53fd481452674fed716b3306953b2919ea294041a2391cf30037"
+    }
+  ],
+  "external_gates": {
+    "qualified_legal_reference_supplied": false,
+    "production_activation_approved": false,
+    "production_database_credential_approved": false,
+    "synthetic_smoke_approved": false,
+    "real_athlete_data": false,
+    "real_comment_text": false,
+    "jarvis_credential": false,
+    "jarvis_read": false,
+    "push": false,
+    "merge": false,
+    "deploy": false,
+    "app_store_action": false
+  }
+}

@@ -5,7 +5,7 @@ const cards = [
   {
     icon: Lock,
     title: "Private Reflexion",
-    text: "Spieler können ehrlich reflektieren. Journale und Freitexte bleiben privat.",
+    text: "Athlet:innen können ehrlich reflektieren. Journale und Freitexte bleiben privat.",
   },
   {
     icon: Sliders,
@@ -15,7 +15,7 @@ const cards = [
   {
     icon: CheckCircle2,
     title: "Comprehension Check",
-    text: "Spieler wiederholen, was sie tun sollen — damit Wissen in Anwendung übergeht.",
+    text: "Athlet:innen wiederholen, was sie tun sollen — damit Wissen in Anwendung übergeht.",
   },
 ];
 
@@ -30,7 +30,7 @@ const PlayersSection = () => {
           className="max-w-3xl mb-16"
         >
           <span className="text-sm font-medium text-primary tracking-widest uppercase mb-4 block">
-            Für Spieler
+            Für Athlet:innen
           </span>
           <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6">
             Verstehen. Anwenden.
@@ -38,7 +38,7 @@ const PlayersSection = () => {
             <span className="text-gradient">Wiederholen.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Spieler lernen nicht nur, was in ihrem Kopf passiert. Sie üben
+            Athlet:innen lernen nicht nur, was in ihrem Kopf passiert. Sie üben
             täglich, anders zu reagieren: nach Fehlern, bei Druck, bei
             Müdigkeit, bei Selbstzweifel und in Momenten, in denen das Ego die
             Kontrolle übernehmen will.

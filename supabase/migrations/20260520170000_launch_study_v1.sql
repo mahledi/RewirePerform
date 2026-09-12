@@ -2,6 +2,8 @@
 -- Privacy-safe internal evaluation layer for cohorts, aggregate snapshots,
 -- and presentation exports. This migration does not delete or rewrite old data.
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
 CREATE TABLE IF NOT EXISTS public.study_cohorts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
@@ -28,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.study_participants (
   team_id uuid REFERENCES public.teams(id) ON DELETE SET NULL,
   program_instance_id uuid REFERENCES public.program_instances(id) ON DELETE SET NULL,
   role text NOT NULL DEFAULT 'athlete',
-  anonymized_key text NOT NULL DEFAULT encode(gen_random_bytes(12), 'hex'),
+  anonymized_key text NOT NULL DEFAULT encode(extensions.gen_random_bytes(12), 'hex'),
   consent_status text NOT NULL DEFAULT 'internal_evaluation',
   included boolean NOT NULL DEFAULT true,
   exclusion_reason text,

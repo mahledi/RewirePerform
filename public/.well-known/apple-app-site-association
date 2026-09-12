@@ -1,0 +1,48 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "F7A976G38N.com.rewireperform.app"
+        ],
+        "components": [
+          {
+            "/": "/auth",
+            "?": {
+              "flow": "signup"
+            },
+            "comment": "RewirePerform signup confirmation only"
+          },
+          {
+            "/": "/auth/reset-password",
+            "?": {
+              "flow": "recovery"
+            },
+            "comment": "RewirePerform password recovery confirmation"
+          },
+          {
+            "/": "/join",
+            "?": {
+              "team": "??????"
+            },
+            "comment": "RewirePerform athlete team invitation"
+          },
+          {
+            "/": "/organization/invite",
+            "?": {
+              "token": "????????????????????????????????????????????????????????????????"
+            },
+            "comment": "RewirePerform legacy email-bound coach invitation"
+          },
+          {
+            "/": "/organization/invite",
+            "?": {
+              "coach": "????????????????????"
+            },
+            "comment": "RewirePerform shareable Co-Coach invitation"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/production-consent-postdeploy-v1.1/evidence.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evidence_status", "recorded_date", "project_ref", "producer", "migration", "metadata_audit", "privacy_boundary", "authorization", "next_gate"],
+  "properties": {
+    "schema_version": {"const": "rewireperform-feedback-consent-production-postdeploy-v1.1-evidence-v1"},
+    "evidence_status": {"const": "PASS_FINAL_CONSENT_REGISTERED_PRODUCTION_RUNTIME_GATES_CLOSED"},
+    "recorded_date": {"const": "2026-08-13"},
+    "project_ref": {"const": "bqsbxesmybthwtxmowfz"},
+    "producer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["commit", "functional_commit", "consent_manifest_sha256", "consent_package_sha256"],
+      "properties": {
+        "commit": {"const": "e50d6e68a0bbd25064e3752f94eed1ad9d5ff552"},
+        "functional_commit": {"const": "fabb7110970d6f48e3f2c4b104122320941c0e34"},
+        "consent_manifest_sha256": {"const": "5a28d9f407ed59c45dbbdddc35699e3e848ee750a87f19720ed3995b2361b05e"},
+        "consent_package_sha256": {"const": "7191f1ea0394b45cbce55e473f91461c6076a2db3586ce6a720f5568190d4ff3"}
+      }
+    },
+    "migration": {
+      "type": "object", "additionalProperties": false,
+      "required": ["local_path", "local_sha256", "remote_version", "remote_name", "applied"],
+      "properties": {
+        "local_path": {"const": "supabase/migrations/20260813115737_feedback_consent_guardian_de_v1_1_final_contract.sql"},
+        "local_sha256": {"const": "6a2933e3d33a41fe0c35523be795160c04f030dfccf3f4579078fabb0784eba9"},
+        "remote_version": {"const": "20260813123955"},
+        "remote_name": {"const": "feedback_consent_guardian_de_v1_1_final_contract"},
+        "applied": {"const": true}
+      }
+    },
+    "metadata_audit": {"$ref": "#/$defs/metadataAudit"},
+    "privacy_boundary": {"$ref": "#/$defs/privacyBoundary"},
+    "authorization": {"$ref": "#/$defs/authorization"},
+    "next_gate": {"const": "INDEPENDENT_CONSUMER_REVIEW_REQUIRED_EXTERNAL_GATES_REMAIN_CLOSED"}
+  },
+  "$defs": {
+    "closedRuntimeGates": {
+      "type": "object", "additionalProperties": false,
+      "required": ["athlete_collection_enabled", "text_collection_enabled", "privacy_notice_ready", "app_store_declaration_ready", "minor_policy_ready"],
+      "properties": {
+        "athlete_collection_enabled": {"const": false}, "text_collection_enabled": {"const": false},
+        "privacy_notice_ready": {"const": false}, "app_store_declaration_ready": {"const": false},
+        "minor_policy_ready": {"const": false}
+      }
+    },
+    "metadataAudit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["jurisdiction_policy", "campaigns", "guardian_policy", "runtime_gates"],
+      "properties": {
+        "jurisdiction_policy": {
+          "type": "object", "additionalProperties": false,
+          "required": ["jurisdiction", "policy_version", "product_minimum_age", "guardian_required_below_age", "structured_collection_status", "raw_text_collection_status"],
+          "properties": {
+            "jurisdiction": {"const": "DE"}, "policy_version": {"const": "feedback-jurisdiction-minor-de-v1.1.0"},
+            "product_minimum_age": {"const": 13}, "guardian_required_below_age": {"const": 16},
+            "structured_collection_status": {"const": "legal_review_required"},
+            "raw_text_collection_status": {"const": "legal_review_required"}
+          }
+        },
+        "campaigns": {
+          "type": "object", "additionalProperties": false,
+          "required": ["count", "references", "consent_version", "notice_sha256", "status"],
+          "properties": {
+            "count": {"const": 4},
+            "references": {"const": ["feedback-day-10-v1", "feedback-day-24-v1", "feedback-day-39-v1", "feedback-day-55-v1"]},
+            "consent_version": {"const": "feedback-text-consent-v1.1.0"},
+            "notice_sha256": {"const": "c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16"},
+            "status": {"const": "draft"}
+          }
+        },
+        "guardian_policy": {
+          "type": "object", "additionalProperties": false,
+          "required": ["count", "policy_reference", "consent_version", "athlete_notice_sha256", "guardian_notice_sha256", "raw_text_retention_days", "status", "active_policy_count"],
+          "properties": {
+            "count": {"const": 1}, "policy_reference": {"const": "guardian-feedback-text-de-v1.1.0"},
+            "consent_version": {"const": "feedback-text-consent-v1.1.0"},
+            "athlete_notice_sha256": {"const": "c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16"},
+            "guardian_notice_sha256": {"const": "90b0ede2a1a7671f1631e2048a605e6331006972ee05e63d38d229857f0aeb0b"},
+            "raw_text_retention_days": {"const": 365}, "status": {"const": "draft"}, "active_policy_count": {"const": 0}
+          }
+        },
+        "runtime_gates": {"$ref": "#/$defs/closedRuntimeGates"}
+      }
+    },
+    "privacyBoundary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["metadata_only", "application_rows_read", "application_functions_called", "application_values_persisted", "secret_presence_checked", "secret_values_read", "credential_values_persisted", "database_mutated_by_audit"],
+      "properties": {
+        "metadata_only": {"const": true}, "application_rows_read": {"const": false},
+        "application_functions_called": {"const": false}, "application_values_persisted": {"const": false},
+        "secret_presence_checked": {"const": false}, "secret_values_read": {"const": false},
+        "credential_values_persisted": {"const": false}, "database_mutated_by_audit": {"const": false}
+      }
+    },
+    "authorization": {
+      "type": "object", "additionalProperties": false,
+      "required": ["campaigns_active", "guardian_policy_active", "feedback_collection", "feedback_comments", "jarvis_credentials", "jarvis_real_data_read", "app_store_action", "push", "merge"],
+      "properties": {
+        "campaigns_active": {"const": false}, "guardian_policy_active": {"const": false},
+        "feedback_collection": {"const": false}, "feedback_comments": {"const": false},
+        "jarvis_credentials": {"const": false}, "jarvis_real_data_read": {"const": false},
+        "app_store_action": {"const": false}, "push": {"const": false}, "merge": {"const": false}
+      }
+    }
+  }
+}

@@ -12,7 +12,7 @@ const steps = [
     icon: Repeat,
     title: "Tägliche Praxis",
     description:
-      "Jeden Tag trainieren Spieler konkrete Skills: Fokus, Prozessdenken, Fehlerreaktion, Selbstgespräch, Druckinterpretation, Discomfort und Reflexion.",
+      "Jeden Tag üben Athlet:innen konkrete Schritte für Fokus, die nächste Handlung, konstruktive Fehlerreaktion, Selbstgespräch und Verhalten unter Druck.",
   },
   {
     icon: Users,
@@ -24,7 +24,7 @@ const steps = [
     icon: LineChart,
     title: "Evidence Layer",
     description:
-      "Pre/Mid/Post-Assessments, Adherence, Comprehension und Teamdaten zeigen beobachtete Entwicklung über 56 Tage.",
+      "Pre/Mid/Post-Assessments, Dranbleiben, Comprehension und Teamdaten zeigen beobachtete Entwicklung über 56 Tage.",
   },
 ];
 
@@ -47,9 +47,10 @@ const ProcessSection = () => {
             <span className="text-gradient">Tägliche Reps.</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Jeder Tag verbindet Science Bite, mentale Aufgabe, Verständnischeck
-            und Reflexion. Die Struktur bleibt stabil — die Anwendung wird über
-            Sport, Position, Zustand und Fortschritt persönlich eingeordnet.
+            Der Daily Flow verbindet Science Bite, Tages-Puls, eine Mission und
+            einen kurzen Verständnis-Check. Trainings-, Wettkampf- und Ruhetage
+            erhalten einen passenden Ablauf; das private Journal folgt getrennt
+            am Abend.
           </p>
         </motion.div>
 

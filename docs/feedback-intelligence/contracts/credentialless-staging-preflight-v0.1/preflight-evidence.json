@@ -1,0 +1,80 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-credentialless-staging-preflight-v1",
+  "evidence_status": "PASS_CREDENTIALLESS_PREFLIGHT_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "target": {
+    "project_ref": "zbeswjipayspgvcipzmx",
+    "project_name": "RewirePerform Staging",
+    "region": "eu-central-1",
+    "environment": "staging",
+    "data_scope": "synthetic_only"
+  },
+  "accepted_postdeploy": {
+    "producer_commit": "5d8b97ecec98c5091b12decf60c788820c98ec6a",
+    "evidence_sha256": "3ff7ed70bf0523c0e23b5e1800a6c0143d4edcd6a6a215597a3c081919101b55",
+    "manifest_sha256": "10f9b7581ea68add7c57b87d17f6e36b98a1efa2acf33b3780dd608b7eb7632c",
+    "package_sha256": "4be78184303b4d4547dcb5730da8cbcb4dedd45d2ebb1d6df273ff5b1c5e98cd",
+    "consumer_commit": "812fd918e48b9740ca9e37b7b3c6ff4b008dc66f",
+    "consumer_acceptance_sha256": "a90018ce863edc56f89cd19f0c14952977626dc2499083c8a04cb94814d227c2"
+  },
+  "secret_presence_observation": {
+    "recorded_at": "2026-08-10T12:14:11Z",
+    "method": "SUPABASE_DASHBOARD_SECRET_NAME_PRESENCE_ONLY",
+    "dashboard_path": "/dashboard/project/zbeswjipayspgvcipzmx/functions/secrets",
+    "custom_secret_count": 3,
+    "expected_feedback_secrets": {
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY": false,
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY_PREVIOUS": false,
+      "MAHLEOS_FEEDBACK_READER_DATABASE_URL": false,
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_GATE": false,
+      "MAHLEOS_FEEDBACK_INTELLIGENCE_PRODUCTION_GATE": false
+    },
+    "secret_values_read": false,
+    "secret_values_persisted": false,
+    "secret_digests_persisted": false,
+    "unrelated_secret_names_persisted": false
+  },
+  "database_preflight": {
+    "method": "SUPABASE_MANAGEMENT_API_METADATA_QUERY",
+    "application_rows_read": false,
+    "application_functions_called": false,
+    "database_mutated": false,
+    "reader_password_is_null": true,
+    "reader_role_is_hardened": true,
+    "contract_version": "0.2.1-draft",
+    "schema_version": "rewire-feedback-intelligence-export-v0.2.1-draft",
+    "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+    "producer_package_unset": true,
+    "database_gates": {
+      "consumer_pin_ready": false,
+      "synthetic_export_enabled": false,
+      "production_export_enabled": false,
+      "machine_credential_ready": false,
+      "privacy_notice_ready": false,
+      "app_store_declaration_ready": false,
+      "minor_policy_ready": false
+    }
+  },
+  "runtime_gates": {
+    "credentials_provisioned": false,
+    "keychain_written": false,
+    "reader_password_set": false,
+    "synthetic_read_enabled": false,
+    "machine_read_enabled": false,
+    "production_read_enabled": false,
+    "real_data_read_enabled": false,
+    "network_read_performed": false,
+    "export_function_called": false,
+    "credential_mutation_performed": false,
+    "production_mutation_performed": false,
+    "push_performed": false,
+    "merge_performed": false,
+    "app_store_release_authorized": false
+  },
+  "next_gate": {
+    "decision": "AWAITING_CONSUMER_CREDENTIALLESS_PREFLIGHT_REVIEW",
+    "consumer_review_required": true,
+    "credentials_allowed": false,
+    "one_shot_read_allowed": false,
+    "production_allowed": false
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "schema_version": "rewireperform-coach-invitation-privacy-delta-v1",
+  "delta_version": "coach-invitation-privacy-delta-v1.1.0",
+  "status": "LOCAL_REVIEW_CANDIDATE_NOT_ACTIVATED",
+  "purpose": "personal, admin-approved Coach access and Lead-managed reusable Co-Coach team access",
+  "processor": {
+    "name": "Resend",
+    "data_categories": [
+      "recipient email address",
+      "transactional email content including one-time personal access link",
+      "delivery metadata"
+    ],
+    "exclusions": [
+      "athlete data",
+      "check-ins",
+      "journals",
+      "private reflections",
+      "feedback comments",
+      "Jarvis data",
+      "open and click tracking"
+    ]
+  },
+  "invitation_boundary": {
+    "personal_admin_invitation": {
+      "trigger": "personal admin approval",
+      "email_bound": true,
+      "one_time": true,
+      "expires_after": "7 days"
+    },
+    "co_coach_team_link": {
+      "trigger": "Lead Coach shares the active team link",
+      "email_bound": false,
+      "reusable_for_fresh_confirmed_coach_accounts": true,
+      "expires_after": null,
+      "lead_coach_can_renew": true,
+      "existing_team_members_rejected": true
+    }
+  },
+  "historical_boundary": {
+    "feedback_consent_package": "unchanged historical package at e50d6e68a0bbd25064e3752f94eed1ad9d5ff552",
+    "feedback_or_jarvis_scope_changed": false
+  },
+  "activation": {
+    "production_edge_function_deployed": false,
+    "production_email_sender_configured": false,
+    "resend_tracking_disabled_verified": false,
+    "live_invitation_delivery_verified": false,
+    "production_database_mutated_by_this_delta": false,
+    "feedback_or_jarvis_activated": false
+  },
+  "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
+  "package_sha256": "3296f8f84e3d287b5d47c85298e9458aa9c833daf2c7883ed73bc5597d79ddbc",
+  "files": [
+    {
+      "path": "src/pages/Privacy.tsx",
+      "sha256": "7c2a880eef9396fdcfcd1b209f90987ce007879f93c7a1b1ab7bba62bb6be0d1"
+    },
+    {
+      "path": "src/components/coach/TeamStaffInvitation.tsx",
+      "sha256": "f1f1c2f66d4c7db684f5e58daa23194918cf0c0eeab5a0ecb7937c3245bb6077"
+    },
+    {
+      "path": "src/pages/OrganizationInvite.tsx",
+      "sha256": "d55ce651c17a8859306d415ea898c9216db7f573f29629fd21d6dcfc6af3bc69"
+    },
+    {
+      "path": "src/pages/CoachFirstRunExperience.tsx",
+      "sha256": "f26bfb3043bef0a078b2c8e0b7b5643520187cea5984a0c987e53436a0957af7"
+    },
+    {
+      "path": "supabase/migrations/20260818130641_persistent_team_coach_invitation_v1_1.sql",
+      "sha256": "c9899c486944989bec57d32a8015b3abfb682475953f349c974215ad91f8c5a7"
+    },
+    {
+      "path": "supabase/functions/send-organization-access-invitation/index.ts",
+      "sha256": "3365d9f9c96d2b73a85409da68dcaea887ddccd0b2d65edee371ad3921f619fe"
+    },
+    {
+      "path": "src/components/admin/OrganizationRequestManager.tsx",
+      "sha256": "5fa78a4008fb7fb2fc32968bcc8584da06ae52c3d1e7c6a86b95f87b0eff2fae"
+    },
+    {
+      "path": "supabase/config.toml",
+      "sha256": "e8999a530035e0c3c2d364278e45794f52fb882f37a0345eeb189b4bbb8bbe4d"
+    },
+    {
+      "path": "docs/V1_1_RELEASE_OPERATIONS_2026-08-09.md",
+      "sha256": "57682c1e2412538783714af226b723bab2ff03aa79a3ed20967922d1e1974fa7"
+    },
+    {
+      "path": "src/test/organizationInvitationDeliveryContract.test.ts",
+      "sha256": "3c9b1aa70453c416f6867ca948bfafc80bb83f99458ddefecc5295c77b1a9b75"
+    },
+    {
+      "path": "src/test/organizationInvite.test.tsx",
+      "sha256": "9ec7fac81cf9c8f049e6186be4155372329aba33b4ed893bc8ab2a69ef30e5a6"
+    },
+    {
+      "path": "src/test/teamStaffInvitation.test.tsx",
+      "sha256": "840f69b81e1a68fd6b25ddf015e5bb8469aeb1eba44c8b05cb3130327fa97e88"
+    },
+    {
+      "path": "src/test/persistentCoachInvitationMigration.test.ts",
+      "sha256": "b4b474a2b84a9ac83343b81647758f0b04e746bd76ee120058d0ece4f8bdf38d"
+    }
+  ]
+}

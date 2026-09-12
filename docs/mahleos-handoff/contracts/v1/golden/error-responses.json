@@ -1,0 +1,44 @@
+[
+  {
+    "error": "invalid_request",
+    "request_id": "90000000-0000-4000-8000-000000000531"
+  },
+  {
+    "error": "invalid_json"
+  },
+  {
+    "error": "unauthorized"
+  },
+  {
+    "error": "not_found",
+    "request_id": "90000000-0000-4000-8000-000000000532"
+  },
+  {
+    "error": "method_not_allowed"
+  },
+  {
+    "error": "request_too_large"
+  },
+  {
+    "error": "unsupported_media_type"
+  },
+  {
+    "error": "rate_limited",
+    "request_id": "90000000-0000-4000-8000-000000000533"
+  },
+  {
+    "error": "service_not_configured"
+  },
+  {
+    "error": "operations_read_unavailable",
+    "request_id": "90000000-0000-4000-8000-000000000534"
+  },
+  {
+    "error": "evidence_read_unavailable",
+    "request_id": "90000000-0000-4000-8000-000000000535"
+  },
+  {
+    "error": "checksum_mismatch",
+    "request_id": "90000000-0000-4000-8000-000000000536"
+  }
+]

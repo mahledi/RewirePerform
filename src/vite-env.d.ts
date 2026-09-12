@@ -1,15 +1,17 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/client" />
 
-declare module "virtual:pwa-register" {
-  export interface RegisterSWOptions {
-    immediate?: boolean;
-    onNeedRefresh?: () => void;
-    onOfflineReady?: () => void;
-    onRegistered?: (registration: ServiceWorkerRegistration | undefined) => void;
-    onRegisterError?: (error: unknown) => void;
-  }
-  export function registerSW(
-    options?: RegisterSWOptions
-  ): (reloadPage?: boolean) => Promise<void>;
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string;
+  readonly VITE_SUPABASE_PUBLISHABLE_KEY: string;
+  readonly VITE_SUPABASE_PROJECT_ID: string;
+  readonly VITE_APP_ENV?: string;
+  readonly VITE_RELEASE_LINE?: string;
+  readonly VITE_FEEDBACK_INTELLIGENCE_V1_ENABLED?: string;
+  readonly VITE_FEEDBACK_TEXT_V1_ENABLED?: string;
+  readonly VITE_TURNSTILE_SITE_KEY?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }

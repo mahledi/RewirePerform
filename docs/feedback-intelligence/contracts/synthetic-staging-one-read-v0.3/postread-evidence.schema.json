@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/synthetic-staging-one-read-v0.3/postread-evidence.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_status",
+    "project_ref",
+    "generated_at",
+    "apple_rc_release_basis",
+    "consumer_operator_commit",
+    "request_id",
+    "accepted_pins",
+    "network_request_count",
+    "data_scope",
+    "consumer_result",
+    "gate_close",
+    "cleanup",
+    "postread_audit",
+    "production",
+    "real_data_read"
+  ],
+  "properties": {
+    "schema_version": { "const": "rewireperform-feedback-intelligence-postread-evidence-v0.3.3" },
+    "contract_status": { "const": "SANITIZED_V0_3_3_ONE_SYNTHETIC_READ_CLOSED" },
+    "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "apple_rc_release_basis": { "const": "408b653953d2d9be7c29f8ada2924d7333746a62" },
+    "consumer_operator_commit": { "const": "d50b8967df8abd21cd581f752136ff5c3613a6ac" },
+    "request_id": { "type": "string", "format": "uuid" },
+    "accepted_pins": {
+      "type": "object",
+      "minProperties": 13,
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{40,64}$" }
+    },
+    "network_request_count": { "const": 1 },
+    "data_scope": { "const": "synthetic" },
+    "consumer_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "http_status",
+        "validated_item_count",
+        "question_count",
+        "evidence_sha256",
+        "raw_response_persisted",
+        "raw_text_persisted",
+        "subject_reference_persisted"
+      ],
+      "properties": {
+        "http_status": { "const": 200 },
+        "validated_item_count": { "const": 825 },
+        "question_count": { "const": 55 },
+        "evidence_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "raw_response_persisted": { "const": false },
+        "raw_text_persisted": { "const": false },
+        "subject_reference_persisted": { "const": false }
+      }
+    },
+    "gate_close": {
+      "type": "object",
+      "minProperties": 11,
+      "additionalProperties": { "const": false }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "secret_names_removed",
+        "secret_names_present_after_cleanup",
+        "all_current_secret_names_absent",
+        "reader_password_state",
+        "local_keychain_removal_required",
+        "in_memory_secret_values_cleared",
+        "synthetic_fixture_users",
+        "synthetic_fixture_rows"
+      ],
+      "properties": {
+        "secret_names_removed": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true },
+        "secret_names_present_after_cleanup": { "type": "array", "maxItems": 0 },
+        "all_current_secret_names_absent": { "type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true },
+        "reader_password_state": { "const": "NULL" },
+        "local_keychain_removal_required": { "const": true },
+        "in_memory_secret_values_cleared": { "const": true },
+        "synthetic_fixture_users": { "const": 0 },
+        "synthetic_fixture_rows": { "const": 0 }
+      }
+    },
+    "postread_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "result_sha256",
+        "reader_callable_function_count",
+        "reader_relation_privileges",
+        "reader_sequence_privileges",
+        "public_execute_defaults",
+        "application_rows_read",
+        "application_functions_called",
+        "database_mutated"
+      ],
+      "properties": {
+        "status": { "const": "PASS_V0_3_3_POSTREAD_ASSURANCE" },
+        "result_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "reader_callable_function_count": { "const": 1 },
+        "reader_relation_privileges": { "type": "array", "maxItems": 0 },
+        "reader_sequence_privileges": { "type": "array", "maxItems": 0 },
+        "public_execute_defaults": { "type": "array", "maxItems": 0 },
+        "application_rows_read": { "const": false },
+        "application_functions_called": { "const": false },
+        "database_mutated": { "const": false }
+      }
+    },
+    "production": { "const": false },
+    "real_data_read": { "const": false }
+  }
+}

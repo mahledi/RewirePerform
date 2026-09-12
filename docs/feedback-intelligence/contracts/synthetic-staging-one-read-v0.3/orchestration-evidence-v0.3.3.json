@@ -1,0 +1,40 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-one-shot-orchestration-v0.3.3",
+  "status": "COMPLETE_FAIL_CLOSED_ONE_REQUEST_CLEANED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "pre_request_holds": [
+    {
+      "classification": "LOCAL_TRANSPORT_TLS_FAILURE",
+      "provisioning_started": false,
+      "network_data_request_count": 0,
+      "mutation_performed": false
+    },
+    {
+      "classification": "MASKED_ROLE_PASSWORD_PRECONDITION_QUERY",
+      "provisioning_started": false,
+      "network_data_request_count": 0,
+      "mutation_performed": false
+    }
+  ],
+  "successful_cycle": {
+    "provisioning_attempt_count": 1,
+    "network_data_request_count": 1,
+    "request_succeeded": true,
+    "request_retry_performed": false,
+    "cleanup_started_in_finally": true
+  },
+  "cleanup_correction": {
+    "initial_secret_delete_result": "HTTP_400_INVALID_BULK_BODY_SHAPE",
+    "other_cleanup_actions_continued_independently": true,
+    "official_request_contract_source": "supabase/cli DELETE_v1_projects___PROJECT_REF___secrets/default.request.json",
+    "corrected_body": "ARRAY_OF_EXACT_SECRET_NAMES",
+    "additional_network_data_request_count": 0,
+    "all_credentials_removed": true,
+    "all_gates_closed": true,
+    "postread_audit_passed": true
+  },
+  "secret_values_included": false,
+  "secret_digests_included": false,
+  "production": false,
+  "real_data": false
+}

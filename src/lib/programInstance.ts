@@ -19,6 +19,7 @@ export interface ProgramInstance {
   id: string;
   user_id: string;
   team_id: string | null;
+  program_run_id: string | null;
   cycle_number: number;
   status: "active" | "completed" | "abandoned";
   started_at: string;
@@ -32,40 +33,89 @@ export function clearInstanceCache(userId?: string) {
   else memo = {};
 }
 
-export async function getOrCreateActiveInstance(
-  userId: string
+export async function getActiveInstance(
+  userId: string,
+  signal?: AbortSignal,
 ): Promise<ProgramInstance | null> {
-  if (memo[userId]) return memo[userId];
-
-  const { data: existing } = await supabase
+  const requestSignal = signal ?? new AbortController().signal;
+  const { data, error } = await supabase
     .from("program_instances")
     .select("*")
     .eq("user_id", userId)
     .eq("status", "active")
+    .retry(false)
+    .abortSignal(requestSignal)
     .maybeSingle();
 
+  if (error) throw error;
+  return (data as ProgramInstance | null) ?? null;
+}
+
+export async function getOrCreateActiveInstance(
+  userId: string,
+  signal?: AbortSignal,
+): Promise<ProgramInstance | null> {
+  if (memo[userId]) return memo[userId];
+  const requestSignal = signal ?? new AbortController().signal;
+
+  const existing = await getActiveInstance(userId, requestSignal);
+
   if (existing) {
-    memo[userId] = existing as ProgramInstance;
+    memo[userId] = existing;
     return memo[userId];
   }
 
   // Create one. Derive team_id + start date.
-  const effective = await getEffectiveProgramStart(userId);
+  const effective = await getEffectiveProgramStart(userId, requestSignal);
 
-  const { data: tm } = await supabase
+  const { data: memberships, error: membershipError } = await supabase
     .from("team_members")
-    .select("team_id")
+    .select("team_id, joined_at")
     .eq("user_id", userId)
-    .limit(1);
-  const teamId = tm?.[0]?.team_id ?? null;
+    .order("joined_at", { ascending: false })
+    .limit(10)
+    .retry(false)
+    .abortSignal(requestSignal);
+
+  if (membershipError) {
+    throw membershipError;
+  }
+
+  const teamIds = (memberships ?? []).map((membership) => membership.team_id);
+  const { data: activeRuns, error: activeRunError } = teamIds.length
+    ? await supabase
+        .from("program_runs")
+        .select("id, team_id")
+        .in("team_id", teamIds)
+        .eq("status", "active")
+        .limit(2)
+        .retry(false)
+        .abortSignal(requestSignal)
+    : { data: [], error: null };
+
+  if (activeRunError) {
+    throw activeRunError;
+  }
+
+  // A managed run must be assigned by Coach/Admin. Creating an unscoped
+  // instance here would silently pollute the pilot's data boundary.
+  if (activeRuns && activeRuns.length > 0) {
+    console.error("getOrCreateActiveInstance: active team run requires manager assignment");
+    return null;
+  }
+
+  const teamId = memberships?.[0]?.team_id ?? null;
 
   // Find next cycle number
-  const { data: prior } = await supabase
+  const { data: prior, error: priorError } = await supabase
     .from("program_instances")
     .select("cycle_number")
     .eq("user_id", userId)
     .order("cycle_number", { ascending: false })
-    .limit(1);
+    .limit(1)
+    .retry(false)
+    .abortSignal(requestSignal);
+  if (priorError) throw priorError;
   const nextCycle = (prior?.[0]?.cycle_number ?? 0) + 1;
 
   const { data: created, error } = await supabase
@@ -73,15 +123,25 @@ export async function getOrCreateActiveInstance(
     .insert({
       user_id: userId,
       team_id: teamId,
+      program_run_id: null,
       cycle_number: nextCycle,
       status: "active",
       started_at: effective.startDate ?? new Date().toISOString().slice(0, 10),
     })
+    .abortSignal(requestSignal)
     .select()
     .single();
 
   if (error || !created) {
-    console.error("getOrCreateActiveInstance error:", error);
+    if (error?.code === "23505") {
+      const concurrent = await getActiveInstance(userId, requestSignal);
+      if (concurrent) {
+        memo[userId] = concurrent;
+        return concurrent;
+      }
+    }
+    if (error) throw error;
+    console.error("getOrCreateActiveInstance returned no created row");
     return null;
   }
   memo[userId] = created as ProgramInstance;

@@ -1,0 +1,27 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-combined-staging-predeploy-package-v1",
+  "package_status": "LOCAL_UNSIGNED_FAIL_CLOSED_AWAITING_SEPARATE_STAGING_APPLY",
+  "package_sha256": "8b27e88fb03081a751e2062ec263400b0736dc7d70e893c83ea2e3deefdf8e26",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-predeploy-v0.1/evidence.json",
+      "sha256": "78caa5bd105045b5430391d70f2b905a82326f5f5e637d4cd85b5712e4d46c9e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-predeploy-v0.1/evidence.schema.json",
+      "sha256": "0b7571a736bef6b1c0f2c26a0833a1bc1610126341cc967ef86852e7dbf2e34f"
+    },
+    {
+      "path": "scripts/generate-feedback-combined-staging-predeploy.mjs",
+      "sha256": "240b123d7adace9494549c0a4c25723027c30975ca2d7b0cb3ee0b09e11b4fc5"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceCombinedStagingPredeploy.test.ts",
+      "sha256": "e5bac918b4e42ca5f37a2a398b66ab2b161209b8ef953ae7e8e982b8a25d3a34"
+    },
+    {
+      "path": "docs/feedback-intelligence/COMBINED_STAGING_PREDEPLOY_V1_1.md",
+      "sha256": "b4c97f81b5a42aa0202f40118b3a79bc81cc4bb6be0c40583093e499db7d77d6"
+    }
+  ]
+}

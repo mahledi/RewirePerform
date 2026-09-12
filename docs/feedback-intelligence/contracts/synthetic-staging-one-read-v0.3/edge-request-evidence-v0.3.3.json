@@ -1,0 +1,25 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-edge-request-evidence-v0.3.3",
+  "contract_status": "SANITIZED_V0_3_3_SYNTHETIC_REQUEST_OBSERVED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "request_id": "1502b081-854f-4758-ba5a-2717ab09a766",
+  "network_request_count": 1,
+  "http_status": 200,
+  "gateway_access_log": {
+    "recorded_at": "2026-08-11T05:58:30.038345+00:00",
+    "matching_rows": 1,
+    "outcome": "success"
+  },
+  "export_access_log": {
+    "requested_at": "2026-08-11T05:58:29.819675+00:00",
+    "matching_success_rows_in_cycle_window": 1,
+    "returned_count": 825
+  },
+  "validated_item_count": 825,
+  "question_count": 55,
+  "raw_response_persisted": false,
+  "raw_text_persisted": false,
+  "subject_reference_persisted": false,
+  "production": false,
+  "real_data": false
+}

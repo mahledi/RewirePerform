@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/evidence-status.schema.json",
+  "title": "MahleOS evidence status v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "status",
+    "active_locks",
+    "program_run_locks",
+    "solo_aggregate_locks",
+    "checksum_valid",
+    "checksum_invalid",
+    "returned_locks",
+    "truncated",
+    "locks",
+    "test_data_included",
+    "privacy_level",
+    "privacy_exclusions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-evidence-status-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "status": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED",
+        "NO_DATA"
+      ]
+    },
+    "active_locks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "program_run_locks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "solo_aggregate_locks": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksum_valid": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksum_invalid": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "returned_locks": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "locks": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": [
+          "lock_id",
+          "scope_type",
+          "program_run_id",
+          "sport_category",
+          "sport_level",
+          "protocol_version",
+          "snapshot_schema_version",
+          "source_cutoff",
+          "locked_at",
+          "integrity_status"
+        ],
+        "properties": {
+          "lock_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "scope_type": {
+            "enum": [
+              "program_run",
+              "solo_aggregate"
+            ]
+          },
+          "program_run_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "sport_category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "sport_level": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "protocol_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "snapshot_schema_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "source_cutoff": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "locked_at": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "integrity_status": {
+            "enum": [
+              "VALID",
+              "INVALID"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "privacy_level": {
+      "const": "data_lock_metadata_and_integrity_only"
+    },
+    "privacy_exclusions": {
+      "const": [
+        "evidence_payload",
+        "analysis_manifest",
+        "locked_by",
+        "athlete_identifiers",
+        "private_text",
+        "individual_values"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

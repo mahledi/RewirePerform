@@ -1,0 +1,97 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-edge-deployment-evidence-v1",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "deployment": {
+    "slug": "mahleos-feedback-intelligence-read",
+    "version": 1,
+    "deployment_id": "4579d2b9-16c9-4387-be84-d5a5b440265e",
+    "status": "ACTIVE",
+    "verify_jwt": false,
+    "ezbr_sha256": "952c86471d41377314d53c1663716717957519132233ddd7abf6aee68c7be8ee"
+  },
+  "hash_semantics": {
+    "ezbr_sha256": "Opaque SHA-256 deployment-bundle identifier returned by Supabase deploy and get_edge_function APIs; it is not treated as a local-source digest.",
+    "source_file_sha256": "SHA-256 over the exact UTF-8 file bytes returned by get_edge_function and independently over the mapped local file bytes.",
+    "source_manifest_sha256": "SHA-256 over sorted lines '<file_sha256><two spaces><deployed_path><newline>' for all six deployed files."
+  },
+  "producer": {
+    "gateway_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
+    "gateway_manifest_sha256": "4c53990d8f1c751a2d2d9d5820abf0c418cf38c47cd59ecdbc90501d75e28d07",
+    "gateway_package_sha256": "5f89b849bb148f0d02b4bdafbb0b072bcec5087a02614856f011133b6f13a8d3",
+    "postdeploy_commit": "4b46b8180a79edf0658e9d567d116e69cecd594e"
+  },
+  "sources": [
+    {
+      "deployed_path": "functions/_shared/boundedRequestBody.ts",
+      "local_path": "supabase/functions/_shared/boundedRequestBody.ts",
+      "sha256": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e",
+      "deployed_byte_match": true
+    },
+    {
+      "deployed_path": "functions/_shared/feedbackIntelligenceDatabase.ts",
+      "local_path": "supabase/functions/_shared/feedbackIntelligenceDatabase.ts",
+      "sha256": "13b39c3b60f1abc973d0126a653185ec9506673b7ee428e358596e9719d8a2d5",
+      "deployed_byte_match": true
+    },
+    {
+      "deployed_path": "functions/_shared/feedbackIntelligenceGatewayHttp.ts",
+      "local_path": "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts",
+      "sha256": "61690142b2ff292a2bc82d60327332a5e93479da529f5462504a5a344792f0d8",
+      "deployed_byte_match": true
+    },
+    {
+      "deployed_path": "functions/_shared/feedbackIntelligenceMachineAuth.ts",
+      "local_path": "supabase/functions/_shared/feedbackIntelligenceMachineAuth.ts",
+      "sha256": "03dc6c5ba920be84957ff36bd9544188ff7a759b78b5a7c8e21e8859ee8cbc3c",
+      "deployed_byte_match": true
+    },
+    {
+      "deployed_path": "functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
+      "local_path": "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
+      "sha256": "78a3685d1b18e1fb5e70faf9fbc66dd6a419a5dc22a9cde18b78c9df6dda1ea1",
+      "deployed_byte_match": true
+    },
+    {
+      "deployed_path": "functions/mahleos-feedback-intelligence-read/index.ts",
+      "local_path": "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
+      "sha256": "905622344608afef5f49908885cee961c5ddf84cd9178e4df380f5223a9e26f7",
+      "deployed_byte_match": true
+    }
+  ],
+  "source_manifest_sha256": "97d6714a8871f510996cfd39fc23505fde0f5b82a02e1acfd4627f201eecbf91",
+  "config": {
+    "path": "supabase/config.toml",
+    "sha256": "197a95483a19755aab1bf0e44bb2b5af71961c30bf08ead46af3d7b2213dd65e",
+    "verify_jwt": false
+  },
+  "runtime_configuration": [
+    {
+      "name": "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY",
+      "present": false,
+      "evidence_basis": "NOT_PROVISIONED_IN_APPROVED_PRODUCER_CHAIN"
+    },
+    {
+      "name": "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_KEY_PREVIOUS",
+      "present": false,
+      "evidence_basis": "NOT_PROVISIONED_IN_APPROVED_PRODUCER_CHAIN"
+    },
+    {
+      "name": "MAHLEOS_FEEDBACK_READER_DATABASE_URL",
+      "present": false,
+      "evidence_basis": "NOT_PROVISIONED_IN_APPROVED_PRODUCER_CHAIN"
+    },
+    {
+      "name": "MAHLEOS_FEEDBACK_INTELLIGENCE_MACHINE_GATE",
+      "present": false,
+      "evidence_basis": "NOT_PROVISIONED_IN_APPROVED_PRODUCER_CHAIN"
+    },
+    {
+      "name": "MAHLEOS_FEEDBACK_INTELLIGENCE_PRODUCTION_GATE",
+      "present": false,
+      "evidence_basis": "NOT_PROVISIONED_IN_APPROVED_PRODUCER_CHAIN"
+    }
+  ],
+  "deployed_byte_match": true,
+  "network_invocation_performed": false,
+  "production": false
+}

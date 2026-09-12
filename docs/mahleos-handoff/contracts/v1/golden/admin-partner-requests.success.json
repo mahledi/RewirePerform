@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000513",
+  "view": "admin_partner_requests",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-admin-partner-requests-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "counts": {
+      "total": 3,
+      "submitted": 1,
+      "needs_information": 0,
+      "review_ready": 1,
+      "call_requested": 0,
+      "approved": 1,
+      "activated": 0,
+      "declined_or_withdrawn": 0,
+      "open_older_than_7d": 1
+    },
+    "by_organization_type": {
+      "local_club": 2,
+      "academy": 1
+    },
+    "by_rollout_scope": {
+      "single_team": 2,
+      "pilot": 1
+    },
+    "by_desired_start": {
+      "asap": 1,
+      "next_4_weeks": 2
+    },
+    "contact_details_included": false,
+    "organization_names_included": false,
+    "notes_or_context_included": false,
+    "direct_identifiers_included": false
+  }
+}

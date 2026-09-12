@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Brain, Eye, Flame, Heart, Target, Sparkles, Wind, Sunrise, BookOpen, Shield,
-  Check, Lightbulb, ChevronDown, ArrowRight, MessageCircle, Quote,
+  Check, ChevronDown,
 } from "lucide-react";
 import type { DailyTask } from "@/content/matrixDayTypes";
+import {
+  AthleteFlowButton,
+  athleteFlowPanel,
+  athleteFlowPrimaryButton,
+  athleteFlowStageSurface,
+} from "@/components/app/AthleteFlowScene";
 
 const iconMap: Record<string, typeof Brain> = {
   brain: Brain, eye: Eye, flame: Flame, heart: Heart, target: Target,
@@ -15,183 +21,116 @@ interface TaskDetailProps {
   task: DailyTask;
   isCompleted: boolean;
   onComplete: () => void;
-  onBack?: () => void;
 }
 
-/**
- * Task Detail mit interaktiver Reframing-Schicht.
- * Step-through (Trigger → Reframe → Anchor → Self-Talk → Aktion).
- * Bewusst leicht, nicht gamified.
- */
 const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const Icon = iconMap[task.icon ?? "brain"] ?? Brain;
-  const [reframeStep, setReframeStep] = useState(0); // 0: trigger, 1: reframe, 2: anchor, 3: ready
-  const [showWhy, setShowWhy] = useState(false);
-  const hasReframe = !!task.reframeStep;
-
-  const reframeSteps = task.reframeStep
-    ? [
-        { label: "Trigger", icon: Flame, text: task.reframeStep.trigger },
-        { label: "Reframe", icon: Eye, text: task.reframeStep.reframe },
-        { label: "Heute", icon: Target, text: task.reframeStep.anchor },
-      ]
-    : [];
+  const useMoment = task.trigger || task.whenToUse;
+  const actionSteps = task.concreteAction
+    .split("\n")
+    .map((step) => step.replace(/^\d+\.\s*/, "").trim())
+    .filter(Boolean);
+  const explanationParagraphs = task.detailedExplanation
+    ?.split(/\n\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean) ?? [];
 
   return (
-    <motion.div
-      key="task-detail"
-      initial={{ opacity: 0, x: 30 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
-      className="space-y-6"
-    >
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-          <Icon className="w-6 h-6 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-heading text-2xl font-bold leading-tight">{task.title}</h2>
-          <p className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">
-            {task.systemFunction} · {task.whenToUse}
-          </p>
-        </div>
-      </div>
-
-      {/* Why */}
-      <button
-        onClick={() => setShowWhy(!showWhy)}
-        className={`w-full text-left rounded-2xl p-4 transition-all ${
-          showWhy ? "bg-accent/10 border border-accent/20" : "bg-secondary/30 hover:bg-secondary/50"
-        }`}
+    <div className="space-y-6">
+      <section
+        data-testid="daily-mission"
+        className={`relative overflow-hidden p-5 sm:p-6 ${athleteFlowStageSurface}`}
       >
-        <div className="flex items-center gap-2 text-xs font-medium text-primary mb-1">
-          <Lightbulb className="w-3.5 h-3.5" />
-          <span>Warum heute</span>
-          <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${showWhy ? "rotate-180" : ""}`} />
-        </div>
-        <p className="text-sm text-foreground leading-relaxed">{task.why}</p>
-        {showWhy && (
-          <p className="text-xs text-muted-foreground leading-relaxed mt-3 pt-3 border-t border-border/30">
-            {task.detailedExplanation}
-          </p>
-        )}
-      </button>
-
-      {/* Trigger — Wann der Task aktiv wird */}
-      {task.trigger && (
-        <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
-          <p className="text-[11px] uppercase tracking-widest text-primary mb-1 flex items-center gap-1.5">
-            <Flame className="w-3 h-3" /> Wann aktiv
-          </p>
-          <p className="text-sm text-foreground/90 leading-relaxed">{task.trigger}</p>
-        </div>
-      )}
-
-      {/* Concrete Action */}
-      <div className="p-5 rounded-2xl bg-gradient-card border-glow">
-        <p className="text-xs font-medium text-primary uppercase tracking-wider mb-2">Konkrete Handlung</p>
-        <p className="text-sm text-foreground leading-relaxed">{task.concreteAction}</p>
-      </div>
-
-      {/* Reframing Step-through */}
-      {hasReframe && (
-        <div className="p-5 rounded-2xl bg-secondary/40 border border-border/40">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-primary uppercase tracking-wider">Reframing</p>
-            <div className="flex gap-1">
-              {reframeSteps.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1 rounded-full transition-all ${
-                    i <= reframeStep ? "bg-primary w-6" : "bg-border w-3"
-                  }`}
-                />
-              ))}
+        <div className="relative">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 shadow-[0_0_30px_-16px_rgba(46,173,137,0.78)]">
+              <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
             </div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Deine Mission</p>
           </div>
-          <AnimatePresence mode="wait">
-            {reframeStep < reframeSteps.length && (
+
+          <h2 className="font-heading text-[1.75rem] font-semibold leading-[1.12] tracking-[-0.04em] text-foreground sm:text-[2rem]">
+            {task.title}
+          </h2>
+          <p className="mt-4 text-[15px] leading-7 text-white/60">{task.why}</p>
+
+          <div className={`mt-6 ${athleteFlowPanel} px-4 py-4`}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">Wenn es passiert</p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/88">{useMoment}</p>
+          </div>
+
+          <div className="mt-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/42">Was du machst</p>
+            <ol className="mt-3 space-y-2.5">
+              {actionSteps.map((step, index) => (
+                <li key={`${task.id}-step-${index}`} className="flex gap-3 text-[14px] leading-6 text-foreground/90 sm:text-[15px]">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold tabular-nums text-primary">
+                    {index + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {task.selfTalk && (
+            <div className="mt-6 rounded-[22px] border border-primary/20 bg-primary/[0.085] px-5 py-5 text-center shadow-[0_18px_55px_-34px_rgba(46,173,137,0.72)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary/80">Dein Satz für den Moment</p>
+              <p className="mt-2 font-heading text-xl font-semibold leading-snug text-primary sm:text-2xl">
+                {task.selfTalk}
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {explanationParagraphs.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025]">
+          <button
+            type="button"
+            aria-expanded={detailsOpen}
+            aria-controls={`task-explanation-${task.id}`}
+            onClick={() => setDetailsOpen((open) => !open)}
+            className="flex min-h-12 w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-foreground transition-colors hover:bg-white/[0.035] active:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span>Genauer verstehen</span>
+            <ChevronDown
+              className={`h-5 w-5 shrink-0 text-primary transition-transform duration-200 ${detailsOpen ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            />
+          </button>
+          <AnimatePresence initial={false}>
+            {detailsOpen && (
               <motion.div
-                key={reframeStep}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-3"
+                id={`task-explanation-${task.id}`}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="overflow-hidden"
               >
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                  {reframeSteps[reframeStep].label}
-                </p>
-                <p className="text-base text-foreground leading-relaxed">
-                  {reframeSteps[reframeStep].text}
-                </p>
+                <div className="space-y-3 border-t border-white/[0.06] px-5 py-5">
+                  {explanationParagraphs.map((paragraph, index) => (
+                    <p key={`${task.id}-explanation-${index}`} className="text-[15px] leading-7 text-foreground/78">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-          {reframeStep < reframeSteps.length && (
-            <button
-              onClick={() => setReframeStep((s) => Math.min(s + 1, reframeSteps.length))}
-              className="mt-4 inline-flex items-center gap-2 text-sm text-primary font-medium"
-            >
-              {reframeStep === reframeSteps.length - 1 ? "Verstanden" : "Weiter"}
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
       )}
 
-      {/* Self-Talk Anchor */}
-      {task.selfTalk && (
-        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex gap-3">
-          <Quote className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-          <div>
-            <p className="text-[11px] uppercase tracking-widest text-primary mb-1">Self-Talk Anker</p>
-            <p className="text-sm text-foreground italic leading-relaxed">„{task.selfTalk}"</p>
-          </div>
-        </div>
-      )}
-
-      {/* Micro Reframe (kompakt) */}
-      {task.microReframe && (
-        <div className="p-4 rounded-2xl bg-secondary/30 flex gap-3">
-          <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">{task.microReframe}</p>
-        </div>
-      )}
-
-      {/* Sport-spezifische Beispiele */}
-      {task.sportSpecificExamples && task.sportSpecificExamples.length > 0 && (
-        <div className="p-4 rounded-2xl bg-secondary/20 space-y-2">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">In deinem Sport</p>
-          {task.sportSpecificExamples.map((ex, i) => (
-            <p key={i} className="text-xs text-foreground/80 leading-relaxed">
-              {ex.example}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {/* Visualization Cue (nur wenn vorgesehen) */}
-      {task.visualizationCue && (
-        <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
-          <p className="text-[11px] uppercase tracking-widest text-primary mb-1">Visualisierung</p>
-          <p className="text-sm text-foreground leading-relaxed">{task.visualizationCue.scene}</p>
-          <p className="text-xs text-muted-foreground mt-1">{task.visualizationCue.durationSec}s</p>
-        </div>
-      )}
-
-      {/* Complete */}
-      <motion.button
+      <AthleteFlowButton
         data-testid={`task-complete-${task.id}`}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
         onClick={onComplete}
         disabled={isCompleted}
-        className={`w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-heading font-semibold text-lg transition-all ${
+        className={`${athleteFlowPrimaryButton} min-h-14 w-full text-base ${
           isCompleted
-            ? "bg-primary/20 text-primary cursor-default"
-            : "bg-primary text-primary-foreground hover:shadow-glow"
+            ? "cursor-default bg-primary/15 text-primary shadow-none"
+            : ""
         }`}
       >
         {isCompleted ? (
@@ -199,8 +138,8 @@ const TaskDetail = ({ task, isCompleted, onComplete }: TaskDetailProps) => {
         ) : (
           <><Check className="w-5 h-5" /> Verstanden</>
         )}
-      </motion.button>
-    </motion.div>
+      </AthleteFlowButton>
+    </div>
   );
 };
 

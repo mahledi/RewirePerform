@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+
+import { createHash } from "node:crypto";
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+const root = process.cwd();
+const checkOnly = process.argv.includes("--check");
+const outputPath = "docs/feedback-intelligence/contracts/staging-release-pair-v0.1/release-pair.json";
+const sha256 = (value) => createHash("sha256").update(value).digest("hex");
+
+const releasePair = {
+  schema_version: "rewireperform-feedback-intelligence-staging-release-pair-v1",
+  release_status: "UNSIGNED_CONSUMER_ACCEPTED_DEPLOYMENT_GATE_ONLY",
+  target_project_ref: "zbeswjipayspgvcipzmx",
+  producer: {
+    commit: "077a35f82fe7fd7972621a9c2ea1cc481ff991e0",
+    gateway_commit: "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
+    gateway_manifest_sha256: "4c53990d8f1c751a2d2d9d5820abf0c418cf38c47cd59ecdbc90501d75e28d07",
+    gateway_package_sha256: "5f89b849bb148f0d02b4bdafbb0b072bcec5087a02614856f011133b6f13a8d3",
+    audit_manifest_sha256: "efecfcc0a7c37e5d41d1d850d4f84deed496d4b1c5a247bf41fb20de0bf0046f",
+    audit_package_sha256: "f2a9157387afaaf6bbd47a6f58fd250346340c870fa0fae70d5982d947cbcc2c",
+    audit_sql_sha256: "0f155228882726242bd305a9676abf9eed86c29dc89d9ce9b87e1c1cde297434",
+    predeploy_result_sha256: "7833f7472e6c8ebbf32aeb4f70e0faa3309c150fcf6bcf8896b7f7a96635246b",
+    predeploy_result_manifest_sha256: "1f52f79634368743e34d8dfb4ef917b5f9abb9248b38fcdbe8c52c095596ba89"
+  },
+  consumer: {
+    branch: "agent/feedback-intelligence-machine-gateway-v0-1-20260807",
+    commit: "266eac3d362ede7ceafd2c25b6109d3c2d8c8bc0",
+    acceptance_sha256: "14263aa360b181470270bca7fa60a7e3f992722486e6a3cc3bf5fc63346e27db",
+    decision: "GO_DEPLOYMENT_AND_POSTDEPLOY_METADATA_AUDIT_ONLY"
+  },
+  next_gate: {
+    migration_and_edge_staging: true,
+    postdeploy_metadata_audit_required: true,
+    credentials: false,
+    synthetic_network_read: false,
+    production: false,
+    real_data: false,
+    writes: false
+  }
+};
+const serialized = `${JSON.stringify(releasePair, null, 2)}\n`;
+
+if (checkOnly) {
+  const current = await readFile(resolve(root, outputPath), "utf8");
+  if (current !== serialized) {
+    console.error(`${outputPath}: generated release-pair drift`);
+    process.exit(1);
+  }
+  console.log(JSON.stringify({
+    status: "UNSIGNED_RELEASE_PAIR_VERIFIED_DEPLOYMENT_GATE_ONLY",
+    release_pair_sha256: sha256(current),
+    producer_commit: releasePair.producer.commit,
+    consumer_commit: releasePair.consumer.commit,
+    credentials_closed: !releasePair.next_gate.credentials,
+    production_closed: !releasePair.next_gate.production
+  }, null, 2));
+} else {
+  await writeFile(resolve(root, outputPath), serialized, "utf8");
+  console.log(`${outputPath} written`);
+}

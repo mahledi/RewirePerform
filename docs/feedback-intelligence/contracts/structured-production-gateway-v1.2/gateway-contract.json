@@ -1,0 +1,30 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-structured-production-gateway-v1.2.0-draft",
+  "contract_status": "LOCAL_PREPARED_NOT_ACTIVATED",
+  "endpoint": "/functions/v1/mahleos-feedback-structured-production-read",
+  "database_role": "mahleos_feedback_production_reader",
+  "database_rpc": "feedback_machine_production.read_feedback_intelligence_production_structured_v1_2(text,text,text,text)",
+  "contract_version": "1.2.0-structured-only-draft",
+  "schema_sha256": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff",
+  "consumer_commit": "ef1b7ce40d09894ccb0fb8fa8d3b03784f6f9979",
+  "privacy": {
+    "eligibility_rechecked_at_read": true,
+    "minimum_group_size": 5,
+    "minimum_group_unit": "QUESTION_AND_OUTPUT_GROUP",
+    "raw_text_in_contract": false,
+    "text_consent_in_contract": false,
+    "direct_identifiers_in_contract": false,
+    "subject_reference_handling": "IN_MEMORY_ONLY_NEVER_OUTPUT_OR_PERSIST",
+    "model_training": false,
+    "automated_individual_decisions": false
+  },
+  "activation": {
+    "migration_applied": false,
+    "edge_deployed": false,
+    "reader_credential_ready": false,
+    "machine_credential_ready": false,
+    "runtime_machine_gate_open": false,
+    "runtime_real_data_gate_open": false,
+    "production_read_performed": false
+  }
+}

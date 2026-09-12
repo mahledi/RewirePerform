@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/combined-staging-predeploy-v0.2/evidence.schema.json",
+  "title": "Feedback Intelligence v0.3.3 combined Staging predeploy evidence v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_status",
+    "generated_at",
+    "target",
+    "producer_basis",
+    "producer_inputs",
+    "accepted_historical_staging",
+    "staging_delta",
+    "historical_evidence",
+    "gates",
+    "next_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rewireperform-feedback-intelligence-combined-staging-predeploy-v2"
+    },
+    "evidence_status": {
+      "const": "PREPARED_FAIL_CLOSED_V0_3_3_AWAITING_SINGLE_REGISTRY_MIGRATION_APPLY"
+    },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_ref", "environment", "jurisdiction", "data_scope"],
+      "properties": {
+        "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+        "environment": { "const": "staging" },
+        "jurisdiction": { "const": "DE" },
+        "data_scope": { "const": "synthetic_only" }
+      }
+    },
+    "producer_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_commit", "feedback_integration_commit", "repository_state"],
+      "properties": {
+        "release_commit": { "$ref": "#/$defs/commit" },
+        "feedback_integration_commit": { "$ref": "#/$defs/commit" },
+        "repository_state": { "const": "PINNED_COMMITTED_INPUTS" }
+      }
+    },
+    "producer_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semantics", "export", "gateway"],
+      "properties": {
+        "semantics": { "$ref": "#/$defs/inputPin" },
+        "export": { "$ref": "#/$defs/inputPin" },
+        "gateway": { "$ref": "#/$defs/inputPin" }
+      }
+    },
+    "accepted_historical_staging": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "predeploy_evidence_sha256",
+        "postdeploy_evidence_sha256",
+        "postdeploy_package_sha256",
+        "historical_baseline_only",
+        "applied_migrations",
+        "edge_source_sha256",
+        "edge_deployed_byte_match"
+      ],
+      "properties": {
+        "predeploy_evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "postdeploy_evidence_sha256": { "$ref": "#/$defs/sha256" },
+        "postdeploy_package_sha256": { "$ref": "#/$defs/sha256" },
+        "historical_baseline_only": { "const": true },
+        "applied_migrations": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/appliedMigration" }
+        },
+        "edge_source_sha256": { "$ref": "#/$defs/sha256" },
+        "edge_deployed_byte_match": { "const": true }
+      }
+    },
+    "staging_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pending_migrations", "runtime_bytes"],
+      "properties": {
+        "pending_migrations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "purpose", "status"],
+            "properties": {
+              "path": {
+                "const": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql"
+              },
+              "sha256": { "$ref": "#/$defs/sha256" },
+              "purpose": { "const": "DRAFT_CAMPAIGN_REGISTRY_METADATA_ONLY" },
+              "status": { "const": "NOT_APPLIED_BY_THIS_GATE" }
+            }
+          }
+        },
+        "runtime_bytes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "export_manifest_sha256",
+            "export_package_sha256",
+            "export_schema_sha256",
+            "gateway_request_schema_sha256",
+            "edge_source_sha256",
+            "export_unchanged",
+            "request_schema_unchanged",
+            "edge_source_unchanged",
+            "edge_redeploy_required"
+          ],
+          "properties": {
+            "export_manifest_sha256": { "$ref": "#/$defs/sha256" },
+            "export_package_sha256": { "$ref": "#/$defs/sha256" },
+            "export_schema_sha256": { "$ref": "#/$defs/sha256" },
+            "gateway_request_schema_sha256": { "$ref": "#/$defs/sha256" },
+            "edge_source_sha256": { "$ref": "#/$defs/sha256" },
+            "export_unchanged": { "const": true },
+            "request_schema_unchanged": { "const": true },
+            "edge_source_unchanged": { "const": true },
+            "edge_redeploy_required": { "const": false }
+          }
+        }
+      }
+    },
+    "historical_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v0_3_2_postdeploy_authorizes_v0_3_3",
+        "v0_3_2_synthetic_read_authorizes_v0_3_3",
+        "silent_reinterpretation_allowed",
+        "historical_bytes_preserved"
+      ],
+      "properties": {
+        "v0_3_2_postdeploy_authorizes_v0_3_3": { "const": false },
+        "v0_3_2_synthetic_read_authorizes_v0_3_3": { "const": false },
+        "silent_reinterpretation_allowed": { "const": false },
+        "historical_bytes_preserved": { "const": true }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feedback_collection_enabled",
+        "text_collection_enabled",
+        "minor_policy_enabled",
+        "guardian_policy_enabled",
+        "consumer_pin_enabled",
+        "synthetic_export_enabled",
+        "reader_password_provisioned",
+        "machine_key_provisioned",
+        "edge_runtime_enabled",
+        "network_read_performed",
+        "production_export_enabled",
+        "real_data_read_enabled",
+        "database_write_performed",
+        "edge_deploy_performed",
+        "push_performed",
+        "merge_performed",
+        "app_store_release_authorized"
+      ],
+      "properties": {
+        "feedback_collection_enabled": { "const": false },
+        "text_collection_enabled": { "const": false },
+        "minor_policy_enabled": { "const": false },
+        "guardian_policy_enabled": { "const": false },
+        "consumer_pin_enabled": { "const": false },
+        "synthetic_export_enabled": { "const": false },
+        "reader_password_provisioned": { "const": false },
+        "machine_key_provisioned": { "const": false },
+        "edge_runtime_enabled": { "const": false },
+        "network_read_performed": { "const": false },
+        "production_export_enabled": { "const": false },
+        "real_data_read_enabled": { "const": false },
+        "database_write_performed": { "const": false },
+        "edge_deploy_performed": { "const": false },
+        "push_performed": { "const": false },
+        "merge_performed": { "const": false },
+        "app_store_release_authorized": { "const": false }
+      }
+    },
+    "next_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "separate_staging_apply_approval_required",
+        "exact_database_mutations_required",
+        "edge_redeploy_required",
+        "metadata_only_audit_without_prior_apply_sufficient",
+        "metadata_only_audit_after_apply_sufficient",
+        "credentials_allowed",
+        "network_read_allowed",
+        "production_allowed"
+      ],
+      "properties": {
+        "decision": { "const": "READY_FOR_SEPARATELY_APPROVED_SINGLE_REGISTRY_MIGRATION_APPLY" },
+        "separate_staging_apply_approval_required": { "const": true },
+        "exact_database_mutations_required": { "const": 1 },
+        "edge_redeploy_required": { "const": false },
+        "metadata_only_audit_without_prior_apply_sufficient": { "const": false },
+        "metadata_only_audit_after_apply_sufficient": { "const": true },
+        "credentials_allowed": { "const": false },
+        "network_read_allowed": { "const": false },
+        "production_allowed": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "inputPin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_version",
+        "source_commit",
+        "integration_commit",
+        "manifest_sha256",
+        "package_sha256",
+        "consumer_commit",
+        "consumer_acceptance_sha256",
+        "consumer_status"
+      ],
+      "properties": {
+        "contract_version": { "type": "string", "minLength": 1 },
+        "source_commit": { "$ref": "#/$defs/commit" },
+        "integration_commit": { "$ref": "#/$defs/commit" },
+        "manifest_sha256": { "$ref": "#/$defs/sha256" },
+        "package_sha256": { "$ref": "#/$defs/sha256" },
+        "consumer_commit": { "$ref": "#/$defs/commit" },
+        "consumer_acceptance_sha256": { "$ref": "#/$defs/sha256" },
+        "consumer_status": { "const": "ACCEPTED_LOCAL_UNSIGNED" }
+      }
+    },
+    "appliedMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "historically_applied"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "historically_applied": { "const": true }
+      }
+    }
+  }
+}

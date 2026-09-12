@@ -1,0 +1,90 @@
+{
+  "schema_version": "rewireperform-feedback-producer-package-manifest-v1",
+  "contract_version": "0.2.0-draft",
+  "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "generated_at": "2026-08-05T14:08:00+02:00",
+  "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
+  "producer_base_commit": "2535ade4ee021dffa19eb5c3bacd4144edeb7430",
+  "producer_worktree_dirty": true,
+  "package_signed": false,
+  "package_status": "LOCAL_UNSIGNED_AWAITING_CONSUMER_REVIEW",
+  "release_scope": {
+    "jurisdiction": "DE",
+    "non_de_status": "OUT_OF_SCOPE_FAIL_CLOSED"
+  },
+  "digest_algorithm": "sha256",
+  "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
+  "package_sha256": "faf2101dd64f2e0d215db4dd2933c19b69c76bdc0a76526e2144778f74619537",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2/proposed-export.schema.json",
+      "sha256": "fb1ef751bc4701a497f224bb421220e08b3387eba5c2eaec9e91e2cbf474b4e9"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2/producer-decisions.json",
+      "sha256": "4e08970ae2d3a6dc4f466d6e585b86a5ee62061a810ee39136853d33022d5664"
+    },
+    {
+      "path": "supabase/migrations/20260805103650_feedback_intelligence_v1_dach_minor_policy.sql",
+      "sha256": "0898a586f602b02d1ac5137c3f01bd2f2a3b6f6b6b88eb9f36548d266683bcde"
+    },
+    {
+      "path": "supabase/migrations/20260805104000_feedback_intelligence_v0_2_machine_export.sql",
+      "sha256": "95f6ea0f50607ff96cb28fe9d532e94a4c294eaa625239bf061637c6ac8c5c3a"
+    },
+    {
+      "path": "supabase/migrations/20260805103840_feedback_intelligence_v1_activity_snapshot.sql",
+      "sha256": "45a00b71b1ded02ba48d5e40d7632aca1c50535a135a4967bb9db4fbd19e7259"
+    },
+    {
+      "path": "supabase/migrations/20260805103900_feedback_intelligence_v1_admin_aggregates.sql",
+      "sha256": "66796f1b36cd23de22479bea840a48937cf792bd925ab17bc2cb1cb1336f0eb7"
+    },
+    {
+      "path": "supabase/migrations/20260805104100_feedback_intelligence_v1_consent_self_service.sql",
+      "sha256": "18d2f559a74c7e34e3e024083da22c5219e1e63cfc4ba64bcb84738de79b04c8"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCER_CONFIRMATION_V0_2_DRAFT.md",
+      "sha256": "8789b39af091173c12f25acb512cc216891ecf6c13e76fe4b152d61c6b518062"
+    },
+    {
+      "path": "docs/feedback-intelligence/MACHINE_EXPORT_V0_2_DRAFT.md",
+      "sha256": "bc1973031cb222bc2299263bd0599f03c94752b9a8f893ab380b9d37cbf595cf"
+    },
+    {
+      "path": "docs/feedback-intelligence/APP_STORE_PRIVACY_DRAFT.md",
+      "sha256": "d71dc19e120a53fe9bdd3626f8f52edbd3691910c898f822e3b02fbb3e29a102"
+    }
+  ],
+  "activation": {
+    "consumer_execute_granted": false,
+    "machine_credential_ready": false,
+    "network_transport_ready": false,
+    "synthetic_export_enabled": false,
+    "production_export_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false
+  },
+  "local_evidence": {
+    "vitest_files_passed": 100,
+    "vitest_tests_passed": 562,
+    "feedback_focused_tests_passed": 34,
+    "feedback_sql_verifier": "passed",
+    "production_web_build": "passed",
+    "app_store_static_readiness": "passed",
+    "responsive_privacy_ui": "passed_1280_and_390_without_horizontal_overflow"
+  },
+  "open_release_gates": [
+    "QUALIFIED_LEGAL_AND_PRIVACY_APPROVAL",
+    "FIXED_RAW_TEXT_RETENTION_AND_AUTOMATED_DELETION",
+    "DE_MINOR_AND_GUARDIAN_APPROVAL",
+    "NAMED_MACHINE_PROCESSOR_OR_CONFIRMED_NO_REAL_TEXT_EXPORT",
+    "SIGNED_COMMITTED_PRODUCER_PACKAGE",
+    "DEDICATED_MACHINE_ACTOR_AND_CREDENTIAL",
+    "SYNTHETIC_STAGING_READ",
+    "NATIVE_DEVICE_VALIDATION",
+    "SEPARATE_PUSH_MERGE_DEPLOYMENT_AND_PRODUCTION_APPROVALS"
+  ]
+}

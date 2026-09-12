@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rewireperform:feedback-intelligence-structured-production-request:1.2.0-draft",
+  "title": "Structured-only Feedback Intelligence Production request V1.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["client_id", "contract_version", "schema_sha256", "data_scope"],
+  "properties": {
+    "client_id": {"const": "mahles-jarvis-feedback-intelligence-production"},
+    "contract_version": {"const": "1.2.0-structured-only-draft"},
+    "schema_sha256": {"const": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff"},
+    "data_scope": {"const": "production"}
+  }
+}
