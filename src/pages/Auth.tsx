@@ -47,12 +47,29 @@ import {
   isObscuredExistingAccountSignUp,
 } from "@/lib/authAccountCollision";
 import { trackAppEvent } from "@/lib/monitoring";
+import { usePublicLanguage } from "@/contexts/PublicLanguageContext";
+import { PublicLanguageSwitch } from "@/components/public/PublicLanguageSwitch";
 
 type Mode = "intent" | "signup" | "login" | "verify" | "forgot" | "recovery-sent" | "link-error";
 type Intent = "solo" | "join" | "organization";
 type TeamJoinStatus = "idle" | "confirmation";
 
 const Auth = () => {
+  const { tr, language } = usePublicLanguage();
+  const localizedAuthError = (error: Parameters<typeof authErrorMessage>[0], fallbackDe: string, fallbackEn: string) => {
+    const message = authErrorMessage(error, fallbackDe);
+    if (language === "de") return message;
+    const known: Record<string, string> = {
+      "E-Mail oder Passwort ist nicht korrekt.": "Email or password is incorrect.",
+      "Bitte bestätige zuerst deine E-Mail-Adresse.": "Please confirm your email address first.",
+      "Bitte warte kurz, bevor du eine weitere E-Mail anforderst.": "Please wait before requesting another email.",
+      [`Das Passwort muss mindestens ${MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen haben.`]: `Your password must contain at least ${MIN_ACCOUNT_PASSWORD_LENGTH} characters.`,
+      "Das neue Passwort muss sich vom bisherigen Passwort unterscheiden.": "Your new password must be different from your current password.",
+      "Der Code ist abgelaufen. Fordere bitte eine neue E-Mail an.": "The code has expired. Please request a new email.",
+      "Der Code ist ungültig oder wurde bereits verwendet.": "The code is invalid or has already been used.",
+    };
+    return known[message] ?? fallbackEn;
+  };
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -256,7 +273,7 @@ const Auth = () => {
       beginPostSignupOnboarding(user.id, "join");
     }
     if (!queuePostAuthorizationTeamJoin(user.id, activeTeamJoinCode, requiresOnboarding)) {
-      toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+      toast.error(tr("Bitte gib einen gültigen 6-stelligen Teamcode ein.", "Please enter a valid six-character team code."));
       return;
     }
     navigate("/questionnaire", { replace: true });
@@ -339,7 +356,7 @@ const Auth = () => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     if (intent === "join" && !normalizeTeamInviteCode(teamCode)) {
-      toast.error("Bitte gib den 6-stelligen Teamcode ein, um den Teambeitritt abzuschließen.");
+      toast.error(tr("Bitte gib den 6-stelligen Teamcode ein, um den Teambeitritt abzuschließen.", "Enter your six-character team code to finish joining the team."));
       return;
     }
     setLoading(true);
@@ -350,7 +367,7 @@ const Auth = () => {
         setPassword("");
         setMode("verify");
       }
-      toast.error(authErrorMessage(error, "Die Anmeldung konnte gerade nicht abgeschlossen werden."));
+      toast.error(localizedAuthError(error, "Die Anmeldung konnte gerade nicht abgeschlossen werden.", "Sign-in could not be completed right now."));
     } else {
       await trackAppEvent({
         eventName: "auth_login",
@@ -380,7 +397,7 @@ const Auth = () => {
         }
         const requiresOnboarding = Boolean(!athleteIntroComplete && pendingPostSignupIntent(data.user.id));
         if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, requiresOnboarding)) {
-          toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+          toast.error(tr("Bitte gib einen gültigen 6-stelligen Teamcode ein.", "Please enter a valid six-character team code."));
           setLoading(false);
           return;
         }
@@ -389,7 +406,7 @@ const Auth = () => {
         return;
       }
 
-      toast.success("Willkommen zurück!");
+      toast.success(tr("Willkommen zurück!", "Welcome back!"));
       navigate(
         pendingPostSignupIntent(data.user.id) ? "/questionnaire" : safeRedirect ?? nextRoute,
         { replace: true },
@@ -402,15 +419,15 @@ const Auth = () => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
     if (password.length < MIN_ACCOUNT_PASSWORD_LENGTH) {
-      toast.error(`Passwort muss mindestens ${MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen haben.`);
+      toast.error(tr(`Passwort muss mindestens ${MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen haben.`, `Password must contain at least ${MIN_ACCOUNT_PASSWORD_LENGTH} characters.`));
       return;
     }
     if (!fullName.trim()) {
-      toast.error("Bitte gib deinen Namen ein.");
+      toast.error(tr("Bitte gib deinen Namen ein.", "Please enter your name."));
       return;
     }
     if (intent === "join" && !normalizeTeamInviteCode(teamCode)) {
-      toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+      toast.error(tr("Bitte gib einen gültigen 6-stelligen Teamcode ein.", "Please enter a valid six-character team code."));
       return;
     }
     setLoading(true);
@@ -435,14 +452,14 @@ const Auth = () => {
     });
 
     if (isObscuredExistingAccountSignUp(data.user, error)) {
-      setSignupNotice(EXISTING_ACCOUNT_NOTICE);
+      setSignupNotice(tr(EXISTING_ACCOUNT_NOTICE, "An account may already exist for this email address. Please sign in or reset your password."));
       setPassword("");
       setLoading(false);
       return;
     }
 
     if (error) {
-      toast.error(authErrorMessage(error, "Das Konto konnte gerade nicht erstellt werden."));
+      toast.error(localizedAuthError(error, "Das Konto konnte gerade nicht erstellt werden.", "The account could not be created right now."));
       setLoading(false);
       return;
     }
@@ -457,7 +474,7 @@ const Auth = () => {
       else beginPostSignupOnboarding(data.user.id, intent);
     }
     if (intent === "join" && !queuePostAuthorizationTeamJoin(data.user.id, teamCode, !athleteIntroComplete)) {
-      toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+      toast.error(tr("Bitte gib einen gültigen 6-stelligen Teamcode ein.", "Please enter a valid six-character team code."));
       setLoading(false);
       return;
     }
@@ -470,7 +487,7 @@ const Auth = () => {
       return;
     }
 
-    toast.success("Konto erstellt! Willkommen.");
+    toast.success(tr("Konto erstellt! Willkommen.", "Account created. Welcome!"));
 
     navigate(intent === "organization" && safeRedirect ? safeRedirect : "/questionnaire");
     setLoading(false);
@@ -485,9 +502,9 @@ const Auth = () => {
       options: { emailRedirectTo: emailRedirectTo() },
     });
     if (error) {
-      toast.error(authErrorMessage(error, "Die Bestätigungs-E-Mail konnte gerade nicht erneut gesendet werden."));
+      toast.error(localizedAuthError(error, "Die Bestätigungs-E-Mail konnte gerade nicht erneut gesendet werden.", "The confirmation email could not be sent again right now."));
     } else {
-      toast.success("Bestätigungs-E-Mail erneut gesendet.");
+      toast.success(tr("Bestätigungs-E-Mail erneut gesendet.", "Confirmation email sent again."));
     }
     setResending(false);
   };
@@ -509,12 +526,12 @@ const Auth = () => {
     });
 
     if (error) {
-      toast.error(authErrorMessage(error, "Die Reset-E-Mail konnte gerade nicht gesendet werden."));
+      toast.error(localizedAuthError(error, "Die Reset-E-Mail konnte gerade nicht gesendet werden.", "The password reset email could not be sent right now."));
     } else {
       setPendingEmail(normalizedEmail);
       setVerificationCode("");
       setMode("recovery-sent");
-      if (isRepeat) toast.success("Reset-E-Mail erneut gesendet.");
+      if (isRepeat) toast.success(tr("Reset-E-Mail erneut gesendet.", "Password reset email sent again."));
     }
 
     setLoading(false);
@@ -531,7 +548,7 @@ const Auth = () => {
     });
 
     if (error || !data.user) {
-      toast.error(authErrorMessage(error ?? {}, "Der Bestätigungscode konnte nicht geprüft werden."));
+      toast.error(localizedAuthError(error ?? {}, "Der Bestätigungscode konnte nicht geprüft werden.", "The confirmation code could not be verified."));
       setVerifyingCode(false);
       return;
     }
@@ -543,7 +560,7 @@ const Auth = () => {
     }
     if (intent === "join") {
       if (!queuePostAuthorizationTeamJoin(data.user.id, teamCode, !athleteIntroComplete)) {
-        toast.error("Bitte gib einen gültigen 6-stelligen Teamcode ein.");
+        toast.error(tr("Bitte gib einen gültigen 6-stelligen Teamcode ein.", "Please enter a valid six-character team code."));
         setVerifyingCode(false);
         return;
       }
@@ -552,12 +569,12 @@ const Auth = () => {
     }
 
     if (intent === "organization" && safeRedirect) {
-      toast.success("E-Mail bestätigt.");
+      toast.success(tr("E-Mail bestätigt.", "Email confirmed."));
       navigate(safeRedirect, { replace: true });
       return;
     }
 
-    toast.success("E-Mail bestätigt.");
+    toast.success(tr("E-Mail bestätigt.", "Email confirmed."));
     navigate("/questionnaire", { replace: true });
   };
 
@@ -571,7 +588,7 @@ const Auth = () => {
     });
 
     if (error) {
-      toast.error(authErrorMessage(error, "Der Sicherheitscode konnte nicht geprüft werden."));
+      toast.error(localizedAuthError(error, "Der Sicherheitscode konnte nicht geprüft werden.", "The security code could not be verified."));
       setVerifyingCode(false);
       return;
     }
@@ -582,6 +599,7 @@ const Auth = () => {
   if (user && role === "athlete" && isConfirmedTeamJoinReturn && teamJoinStatus === "confirmation") {
     return (
       <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+        <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -590,9 +608,9 @@ const Auth = () => {
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Users className="h-7 w-7" aria-hidden="true" />
           </div>
-          <h1 className="mb-3 font-heading text-3xl font-bold">Team beitreten?</h1>
+          <h1 className="mb-3 font-heading text-3xl font-bold">{tr("Team beitreten?", "Join this team?")}</h1>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Bestätige den Teambeitritt bewusst. Erst danach wird dein Athletenkonto dem Team zugeordnet.
+            {tr("Bestätige den Teambeitritt bewusst. Erst danach wird dein Athletenkonto dem Team zugeordnet.", "Confirm that you want to join this team. Your athlete account will only be linked to the team after you confirm.")}
           </p>
           <button
             type="button"
@@ -600,7 +618,7 @@ const Auth = () => {
             className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground transition-shadow hover:shadow-glow"
           >
             <Users className="h-4 w-4" aria-hidden="true" />
-            Team beitreten
+            {tr("Team beitreten", "Join team")}
           </button>
           <button
             type="button"
@@ -608,8 +626,8 @@ const Auth = () => {
             className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
           >
             {pendingPostSignupIntent(user.id) || metadataOnboardingIntent
-              ? "Ohne Team fortfahren"
-              : "Abbrechen"}
+              ? tr("Ohne Team fortfahren", "Continue without a team")
+              : tr("Abbrechen", "Cancel")}
           </button>
           <LegalLinks />
         </motion.div>
@@ -620,7 +638,7 @@ const Auth = () => {
   // Don't flash login UI while restoring session or while a logged-in user is being redirected
   if (authLoading || switching) {
     return (
-      <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
+      <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? tr("Schließe deinen Teambeitritt ab...", "Finishing your team join...") : tr("Stelle deine Sitzung wieder her...", "Restoring your session...")} />
     );
   }
 
@@ -656,10 +674,10 @@ const Auth = () => {
     return (
       <AccessStatusScreen
         checking={retryingRole}
-        title={retryingRole ? "Zugang wird geprüft" : "Rolle konnte nicht sicher geprüft werden"}
+        title={retryingRole ? tr("Zugang wird geprüft", "Checking access") : tr("Rolle konnte nicht sicher geprüft werden", "Could not verify your role securely")}
         message={retryingRole
-          ? "Wir stellen deine sichere Sitzung wieder her."
-          : "Deine Daten bleiben geschützt. Stelle die Verbindung wieder her und prüfe den Zugang erneut."}
+          ? tr("Wir stellen deine sichere Sitzung wieder her.", "We are restoring your secure session.")
+          : tr("Deine Daten bleiben geschützt. Stelle die Verbindung wieder her und prüfe den Zugang erneut.", "Your data remains protected. Restore the connection and check your access again.")}
         onRetry={retryingRole ? undefined : () => void retryRoleVerification()}
       />
     );
@@ -667,7 +685,7 @@ const Auth = () => {
 
   if (user && !forceSwitch && mode !== "link-error") {
     return (
-      <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? "Schließe deinen Teambeitritt ab..." : "Stelle deine Sitzung wieder her..."} />
+      <AppLoadingShell subtitle={isConfirmedTeamJoinReturn ? tr("Schließe deinen Teambeitritt ab...", "Finishing your team join...") : tr("Stelle deine Sitzung wieder her...", "Restoring your session...")} />
     );
   }
 
@@ -675,8 +693,8 @@ const Auth = () => {
     return (
       <AuthStatusLayout
         icon={<CircleAlert className="h-7 w-7" aria-hidden="true" />}
-        title="Der Link ist nicht mehr gültig."
-        description={authLinkError?.message ?? "Dieser Sicherheitslink konnte nicht bestätigt werden."}
+        title={tr("Der Link ist nicht mehr gültig.", "This link is no longer valid.")}
+        description={language === "en" ? (authLinkError?.code === "otp_expired" || authLinkError?.code === "access_denied" ? "This security link has expired or has already been used." : "This security link could not be confirmed.") : authLinkError?.message ?? "Dieser Sicherheitslink konnte nicht bestätigt werden."}
         tone="error"
       >
         <button
@@ -684,7 +702,7 @@ const Auth = () => {
           onClick={() => setMode("login")}
           className="mt-8 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground hover:shadow-glow"
         >
-          Zur Anmeldung
+          {tr("Zur Anmeldung", "Go to sign-in")}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
         <button
@@ -692,7 +710,7 @@ const Auth = () => {
           onClick={() => setMode("forgot")}
           className="mt-3 min-h-11 w-full px-4 py-3 text-sm font-medium text-primary hover:underline"
         >
-          Neuen Passwort-Link anfordern
+          {tr("Neuen Passwort-Link anfordern", "Request a new password link")}
         </button>
       </AuthStatusLayout>
     );
@@ -701,6 +719,7 @@ const Auth = () => {
   if (mode === "forgot") {
     return (
       <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+        <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -712,21 +731,21 @@ const Auth = () => {
             className="mb-8 flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Zur Anmeldung
+            {tr("Zur Anmeldung", "Back to sign-in")}
           </button>
           <BrandMark />
           <div className="mb-8 mt-8 text-center">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
               <KeyRound className="h-7 w-7" aria-hidden="true" />
             </div>
-            <h1 className="mb-3 font-heading text-3xl font-bold">Passwort zurücksetzen.</h1>
+            <h1 className="mb-3 font-heading text-3xl font-bold">{tr("Passwort zurücksetzen.", "Reset your password.")}</h1>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Gib deine E-Mail-Adresse ein. Du erhältst einen sicheren Link und einen sechsstelligen Code.
+              {tr("Gib deine E-Mail-Adresse ein. Du erhältst einen sicheren Link und einen sechsstelligen Code.", "Enter your email address. You will receive a secure link and a six-digit code.")}
             </p>
           </div>
           <form onSubmit={requestPasswordReset} className="space-y-4">
             <FieldEmail value={email} onChange={setEmail} />
-            <SubmitButton loading={loading} label="Reset-E-Mail senden" />
+            <SubmitButton loading={loading} label={tr("Reset-E-Mail senden", "Send reset email")} />
           </form>
           <LegalLinks />
         </motion.div>
@@ -738,10 +757,10 @@ const Auth = () => {
     return (
       <AuthStatusLayout
         icon={<MailCheck className="h-7 w-7" aria-hidden="true" />}
-        title="Prüfe deine E-Mails."
+        title={tr("Prüfe deine E-Mails.", "Check your email.")}
         description={
           <>
-            Falls ein Konto für <strong className="break-all text-foreground">{pendingEmail}</strong> besteht, ist die Reset-E-Mail unterwegs.
+            {tr("Falls ein Konto für", "If an account exists for")} <strong className="break-all text-foreground">{pendingEmail}</strong>{tr(" besteht, ist die Reset-E-Mail unterwegs.", ", the reset email is on its way.")}
           </>
         }
       >
@@ -750,7 +769,7 @@ const Auth = () => {
           onChange={setVerificationCode}
           onSubmit={() => void verifyRecoveryCode()}
           loading={verifyingCode}
-          label="Code prüfen"
+          label={tr("Code prüfen", "Verify code")}
         />
         <StatusAction
           variant="secondary"
@@ -759,7 +778,7 @@ const Auth = () => {
           className="mt-4"
         >
           {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
-          E-Mail erneut senden
+          {tr("E-Mail erneut senden", "Resend email")}
         </StatusAction>
         <StatusAction
           variant="link"
@@ -769,7 +788,7 @@ const Auth = () => {
           }}
           className="mt-3"
         >
-          E-Mail-Adresse ändern
+          {tr("E-Mail-Adresse ändern", "Change email address")}
         </StatusAction>
       </AuthStatusLayout>
     );
@@ -779,15 +798,15 @@ const Auth = () => {
     return (
       <AuthStatusLayout
         icon={<MailCheck className="h-7 w-7" aria-hidden="true" />}
-        title="Bestätige deine E-Mail."
+        title={tr("Bestätige deine E-Mail.", "Confirm your email.")}
         description={(
           <>
             <p>
-            Wir haben einen Bestätigungslink an<br />
-            <strong className="break-all text-foreground">{pendingEmail}</strong> gesendet.
+            {tr("Wir haben einen Bestätigungslink an", "We sent a confirmation link to")}<br />
+            <strong className="break-all text-foreground">{pendingEmail}</strong>{tr(" gesendet.", ".")}
             </p>
             <p className="mt-3">
-              Öffne den Link in der E-Mail oder gib den sechsstelligen Code ein.
+              {tr("Öffne den Link in der E-Mail oder gib den sechsstelligen Code ein.", "Open the link in the email or enter the six-digit code.")}
             </p>
           </>
         )}
@@ -797,7 +816,7 @@ const Auth = () => {
           onChange={setVerificationCode}
           onSubmit={() => void completeEmailVerification()}
           loading={verifyingCode}
-          label="E-Mail bestätigen"
+          label={tr("E-Mail bestätigen", "Confirm email")}
         />
         <StatusAction
           variant="secondary"
@@ -806,14 +825,14 @@ const Auth = () => {
           className="mt-8"
         >
           {resending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
-          E-Mail erneut senden
+          {tr("E-Mail erneut senden", "Resend email")}
         </StatusAction>
         <StatusAction
           variant="link"
           onClick={() => setMode("signup")}
           className="mt-3"
         >
-          E-Mail-Adresse ändern
+          {tr("E-Mail-Adresse ändern", "Change email address")}
         </StatusAction>
       </AuthStatusLayout>
     );
@@ -823,6 +842,7 @@ const Auth = () => {
   if (mode === "intent") {
     return (
       <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+        <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -830,23 +850,23 @@ const Auth = () => {
         >
           <div className="text-center mb-8">
             <BrandMark className="mb-6" />
-            <h1 className="font-heading text-3xl font-bold mb-2">Wie startest du?</h1>
+            <h1 className="font-heading text-3xl font-bold mb-2">{tr("Wie startest du?", "How would you like to start?")}</h1>
             <p className="text-muted-foreground text-sm">
-              Wähle, wie du RewirePerform nutzen möchtest.
+              {tr("Wähle, wie du RewirePerform nutzen möchtest.", "Choose how you want to use RewirePerform.")}
             </p>
           </div>
 
           <div className="space-y-3">
             <IntentCard
               icon={<UserPlus className="w-5 h-5" />}
-              title="Team beitreten"
-              description="Du hast einen Teamcode oder Einladungslink von deinem Coach erhalten. Dann starte hier."
+              title={tr("Team beitreten", "Join a team")}
+              description={tr("Du hast einen Teamcode oder Einladungslink von deinem Coach erhalten. Dann starte hier.", "Have a team code or invitation link from your coach? Start here.")}
               onClick={() => pickIntent("join")}
             />
             <IntentCard
               icon={<Sparkles className="w-5 h-5" />}
-              title="Ohne Team starten"
-              description="Du hast keine Teameinladung und nutzt dein persönliches Programm allein."
+              title={tr("Ohne Team starten", "Start without a team")}
+              description={tr("Du hast keine Teameinladung und nutzt dein persönliches Programm allein.", "No team invitation? Use your personal program on your own.")}
               onClick={() => pickIntent("solo")}
             />
           </div>
@@ -858,20 +878,20 @@ const Auth = () => {
               <Building2 className="h-5 w-5" aria-hidden="true" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Für Verantwortliche</span>
-              <span className="mt-1 block font-heading text-base font-semibold text-foreground">Für Teams &amp; Organisationen</span>
-              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">RewirePerform kontrolliert in einem Team, Verein oder einer Organisation einführen.</span>
+              <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">{tr("Für Verantwortliche", "For decision-makers")}</span>
+              <span className="mt-1 block font-heading text-base font-semibold text-foreground">{tr("Für Teams & Organisationen", "For teams & organizations")}</span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{tr("RewirePerform kontrolliert in einem Team, Verein oder einer Organisation einführen.", "Introduce RewirePerform in your team, club or organization in a controlled way.")}</span>
             </span>
             <ArrowRight className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
           </TeamAccessLink>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Bereits registriert?{" "}
+            {tr("Bereits registriert?", "Already registered?")}{" "}
             <button
               onClick={() => setMode("login")}
               className="text-primary font-medium hover:underline"
             >
-              Anmelden
+              {tr("Anmelden", "Sign in")}
             </button>
           </p>
           <LegalLinks />
@@ -884,6 +904,7 @@ const Auth = () => {
   if (mode === "login") {
     return (
       <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 sm:px-6">
+        <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -891,15 +912,15 @@ const Auth = () => {
         >
           <div className="text-center mb-10">
             <BrandMark className="mb-6" />
-            <h1 className="font-heading text-3xl font-bold mb-2">Willkommen zurück.</h1>
+            <h1 className="font-heading text-3xl font-bold mb-2">{tr("Willkommen zurück.", "Welcome back.")}</h1>
             <p className="text-muted-foreground text-sm">
               {intent === "join"
-                ? "Melde dich an, um den Teambeitritt mit deinem Code abzuschließen."
+                ? tr("Melde dich an, um den Teambeitritt mit deinem Code abzuschließen.", "Sign in to finish joining the team with your code.")
                 : intent === "organization"
                   ? coachInviteCode
-                    ? "Melde dich an. Dein Co-Coach-Code ist bereits eingetragen."
-                    : "Melde dich mit der eingeladenen E-Mail-Adresse an, um den Organisationszugang zu bestätigen."
-                : "Melde dich an, um dein Programm fortzusetzen."}
+                    ? tr("Melde dich an. Dein Co-Coach-Code ist bereits eingetragen.", "Sign in. Your co-coach code is already entered.")
+                    : tr("Melde dich mit der eingeladenen E-Mail-Adresse an, um den Organisationszugang zu bestätigen.", "Sign in with the invited email address to confirm your organization access.")
+                : tr("Melde dich an, um dein Programm fortzusetzen.", "Sign in to continue your program.")}
             </p>
           </div>
 
@@ -913,8 +934,8 @@ const Auth = () => {
                     type="text"
                     name="team-code"
                     autoComplete="one-time-code"
-                    aria-label="Teamcode"
-                    placeholder="Teamcode (6 Zeichen)"
+                    aria-label={tr("Teamcode", "Team code")}
+                    placeholder={tr("Teamcode (6 Zeichen)", "Team code (6 characters)")}
                     value={teamCode}
                     onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
                     maxLength={6}
@@ -922,7 +943,7 @@ const Auth = () => {
                   />
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-2 px-1">
-                  Der Code wird nach dem Login erneut geprüft und deinem Konto zugeordnet.
+                  {tr("Der Code wird nach dem Login erneut geprüft und deinem Konto zugeordnet.", "The code is checked again after sign-in and linked to your account.")}
                 </p>
               </div>
             )}
@@ -934,19 +955,19 @@ const Auth = () => {
                 onClick={() => setMode("forgot")}
                 className="min-h-11 px-1 text-sm font-medium text-primary hover:underline"
               >
-                Passwort vergessen?
+                {tr("Passwort vergessen?", "Forgot your password?")}
               </button>
             </div>
-            <SubmitButton loading={loading} label="Anmelden" />
+            <SubmitButton loading={loading} label={tr("Anmelden", "Sign in")} />
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Noch kein Konto?{" "}
+            {tr("Noch kein Konto?", "No account yet?")}{" "}
             <button
               onClick={() => setMode(intent === "join" ? "signup" : "intent")}
               className="text-primary font-medium hover:underline"
             >
-              Registrieren
+              {tr("Registrieren", "Register")}
             </button>
           </p>
           <LegalLinks />
@@ -957,18 +978,19 @@ const Auth = () => {
 
   // ─── SIGNUP ───────────────────────────────────────────────────
   const intentTitle =
-    intent === "solo" ? "Du startest allein."
-    : intent === "join" ? "Du trittst einem Team bei."
-    : coachInviteCode ? "Dein Coach-Zugang." : "Dein Organisationszugang.";
+    intent === "solo" ? tr("Du startest allein.", "Start on your own.")
+    : intent === "join" ? tr("Du trittst einem Team bei.", "Join your team.")
+    : coachInviteCode ? tr("Dein Coach-Zugang.", "Your coach access.") : tr("Dein Organisationszugang.", "Your organization access.");
   const intentSub =
-    intent === "solo" ? "Dein personalisiertes Mental-Performance-Programm beginnt gleich."
-    : intent === "join" ? "Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast."
+    intent === "solo" ? tr("Dein personalisiertes Mental-Performance-Programm beginnt gleich.", "Your personalized mental performance program is about to begin.")
+    : intent === "join" ? tr("Gib den Teamcode ein, den du als Athletin oder Athlet erhalten hast.", "Enter the team code you received as an athlete.")
     : coachInviteCode
-      ? "Registriere dich als Coach. Dein Co-Coach-Code bleibt bis zur Team-Verbindung eingetragen."
-      : "Registriere dich mit der persönlich eingeladenen E-Mail-Adresse. Danach bestätigst du deine freigegebene Rolle.";
+      ? tr("Registriere dich als Coach. Dein Co-Coach-Code bleibt bis zur Team-Verbindung eingetragen.", "Register as a coach. Your co-coach code stays entered until you connect with the team.")
+      : tr("Registriere dich mit der persönlich eingeladenen E-Mail-Adresse. Danach bestätigst du deine freigegebene Rolle.", "Register with the email address that received the personal invitation. Then confirm your approved role.");
 
   return (
     <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+      <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -978,7 +1000,7 @@ const Auth = () => {
           onClick={() => intent === "organization" && safeRedirect ? navigate(safeRedirect) : setMode("intent")}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
-          <ArrowLeft className="w-4 h-4" /> Zurück
+          <ArrowLeft className="w-4 h-4" /> {tr("Zurück", "Back")}
         </button>
 
         <div className="text-center mb-8">
@@ -989,7 +1011,7 @@ const Auth = () => {
 
         {inviteLinkInvalid && intent === "join" && (
           <p role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-foreground">
-            Der Einladungslink ist nicht vollständig. Gib den sechsstelligen Teamcode bitte erneut ein.
+            {tr("Der Einladungslink ist nicht vollständig. Gib den sechsstelligen Teamcode bitte erneut ein.", "The invitation link is incomplete. Please enter your six-character team code again.")}
           </p>
         )}
 
@@ -997,17 +1019,17 @@ const Auth = () => {
           {coachInviteCode && <CoachInviteCodeCard code={coachInviteCode} />}
           {organizationInviteEmailHint && (
             <div className="rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-sm">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Persönlich eingeladene Adresse</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{tr("Persönlich eingeladene Adresse", "Personally invited address")}</p>
               <p className="mt-1 font-medium text-foreground">{organizationInviteEmailHint}</p>
             </div>
           )}
           {signupNotice && (
             <div role="alert" className="rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-sm text-foreground">
               <p>{signupNotice}</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Du kannst dich anmelden, dein Passwort zurücksetzen oder die E-Mail-Adresse im Formular ändern.</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{tr("Du kannst dich anmelden, dein Passwort zurücksetzen oder die E-Mail-Adresse im Formular ändern.", "You can sign in, reset your password or change the email address in the form.")}</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => setMode("login")}>Anmelden</Button>
-                <Button type="button" size="sm" variant="ghost" onClick={() => setMode("forgot")}>Passwort zurücksetzen</Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => setMode("login")}>{tr("Anmelden", "Sign in")}</Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setMode("forgot")}>{tr("Passwort zurücksetzen", "Reset password")}</Button>
               </div>
             </div>
           )}
@@ -1017,9 +1039,9 @@ const Auth = () => {
               type="text"
               name="name"
               autoComplete="name"
-              aria-label="Vollständiger Name"
+              aria-label={tr("Vollständiger Name", "Full name")}
               required
-              placeholder="Vollständiger Name"
+              placeholder={tr("Vollständiger Name", "Full name")}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
@@ -1034,8 +1056,8 @@ const Auth = () => {
                   type="text"
                   name="team-code"
                   autoComplete="one-time-code"
-                  aria-label="Teamcode"
-                  placeholder="Teamcode (6 Zeichen)"
+                  aria-label={tr("Teamcode", "Team code")}
+                  placeholder={tr("Teamcode (6 Zeichen)", "Team code (6 characters)")}
                   value={teamCode}
                   onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
                   maxLength={6}
@@ -1043,23 +1065,23 @@ const Auth = () => {
                 />
               </div>
               <p className="text-[11px] text-muted-foreground mt-2 px-1">
-                Der Teamcode verbindet dein Athletenkonto nach der E-Mail-Bestätigung mit dem Team.
+                {tr("Der Teamcode verbindet dein Athletenkonto nach der E-Mail-Bestätigung mit dem Team.", "The team code links your athlete account to the team after email confirmation.")}
               </p>
             </div>
           )}
 
           <FieldEmail value={email} onChange={(value) => { setEmail(value); setSignupNotice(null); }} />
           <FieldPassword value={password} onChange={setPassword} autoComplete="new-password" />
-          <SubmitButton loading={loading} label="Konto erstellen" />
+          <SubmitButton loading={loading} label={tr("Konto erstellen", "Create account")} />
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          Bereits registriert?{" "}
+          {tr("Bereits registriert?", "Already registered?")}{" "}
           <button
             onClick={() => setMode("login")}
             className="text-primary font-medium hover:underline"
           >
-            {intent === "join" ? "Anmelden und Teambeitritt abschließen" : "Anmelden"}
+            {intent === "join" ? tr("Anmelden und Teambeitritt abschließen", "Sign in and finish joining the team") : tr("Anmelden", "Sign in")}
           </button>
         </p>
         <LegalLinks />
@@ -1069,15 +1091,18 @@ const Auth = () => {
 };
 
 // ─── small subcomponents ───
-const CoachInviteCodeCard = ({ code }: { code: string }) => (
+const CoachInviteCodeCard = ({ code }: { code: string }) => {
+  const { tr } = usePublicLanguage();
+  return (
   <div className="flex min-h-14 items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3">
     <KeyRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
     <span className="min-w-0">
-      <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Coach-Code · bereits eingetragen</span>
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{tr("Coach-Code · bereits eingetragen", "Coach code · already entered")}</span>
       <span className="mt-1 block break-all font-mono text-sm font-semibold tracking-[0.08em] text-foreground">{code}</span>
     </span>
   </div>
-);
+  );
+};
 
 const IntentCard = ({
   icon, title, description, onClick,
@@ -1110,16 +1135,18 @@ const AuthCodeEntry = ({
   onSubmit: () => void;
   loading: boolean;
   label: string;
-}) => (
+}) => {
+  const { tr } = usePublicLanguage();
+  return (
   <div className="mt-7 border-t border-border/60 pt-6">
-    <label className="mb-3 block text-sm font-medium text-foreground">Sicherheitscode</label>
+    <label className="mb-3 block text-sm font-medium text-foreground">{tr("Sicherheitscode", "Security code")}</label>
     <InputOTP
       maxLength={6}
       value={value}
       onChange={onChange}
       inputMode="numeric"
       pattern="[0-9]*"
-      aria-label="Sechsstelliger Sicherheitscode"
+      aria-label={tr("Sechsstelliger Sicherheitscode", "Six-digit security code")}
       containerClassName="justify-center"
       disabled={loading}
     >
@@ -1139,7 +1166,8 @@ const AuthCodeEntry = ({
       {label}
     </button>
   </div>
-);
+  );
+};
 
 const FieldEmail = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
   <div className="relative">
@@ -1168,6 +1196,7 @@ const FieldPassword = ({
   autoComplete: "current-password" | "new-password";
 }) => {
   const [visible, setVisible] = useState(false);
+  const { tr } = usePublicLanguage();
 
   return (
     <div className="relative">
@@ -1176,9 +1205,9 @@ const FieldPassword = ({
         type={visible ? "text" : "password"}
         name="password"
         autoComplete={autoComplete}
-        aria-label="Passwort"
+        aria-label={tr("Passwort", "Password")}
         required
-        placeholder="Passwort"
+        placeholder={tr("Passwort", "Password")}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full pl-11 pr-14 py-3.5 rounded-xl bg-secondary/50 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary text-sm"
@@ -1186,7 +1215,7 @@ const FieldPassword = ({
       <button
         type="button"
         onClick={() => setVisible((current) => !current)}
-        aria-label={visible ? "Passwort verbergen" : "Passwort anzeigen"}
+        aria-label={visible ? tr("Passwort verbergen", "Hide password") : tr("Passwort anzeigen", "Show password")}
         aria-pressed={visible}
         className="absolute right-1 top-1/2 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >

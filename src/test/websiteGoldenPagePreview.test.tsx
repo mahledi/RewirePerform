@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import WebsiteGoldenPagePreview from "@/pages/WebsiteGoldenPagePreview";
+import { MemoryRouter } from "react-router-dom";
+import { PublicLanguageProvider } from "@/contexts/PublicLanguageContext";
 
 describe("WebsiteGoldenPagePreview", () => {
   beforeAll(() => {
@@ -49,9 +51,11 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(source).not.toMatch(/Stabilisierung von Lernspuren|Zentrale mentale Prinzipien tauchen gezielt erneut auf/);
     expect(source).not.toContain("Jeder Moment hat eine klare Aufgabe.");
     expect(source).not.toContain('border-t border-white/[0.055]');
-    expect(source).toContain('<span className="text-primary">die nächste Handlung.</span>');
-    expect(source).toContain('<span className="text-primary">Dann prüfen.</span>');
-    expect(source).toContain('<span className="text-primary">mental ausführen.</span>');
+    expect(source).toContain('tr("die nächste Handlung.", "the next action.")');
+    expect(source).toContain('tr("Dann prüfen.", "Then check.")');
+    expect(source).toContain('tr("mental ausführen.", "rehearse it mentally.")');
+    expect(source).not.toContain('tr("Das System", "The system")');
+    expect(source).toContain('<PublicLanguageSwitch />');
     expect(source).not.toContain("Interne Golden-Page-Vorschau");
     expect(source).not.toContain("Interne Vorschau");
     expect(source).toContain("Interaktive Produktvorschau mit gekennzeichneten Beispieldaten.");
@@ -99,5 +103,58 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(screen.getByRole("link", { name: "Datenschutz" })).toHaveAttribute("href", "/privacy");
     expect(screen.getByRole("link", { name: "Impressum" })).toHaveAttribute("href", "/imprint");
     expect(screen.getByRole("link", { name: "Support" })).toHaveAttribute("href", "/support");
+  });
+
+  it("switches the public website and both app flights to English", () => {
+    window.localStorage.removeItem("rewireperform.public-language");
+    const view = render(
+      <MemoryRouter>
+        <PublicLanguageProvider><WebsiteGoldenPagePreview /></PublicLanguageProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose English" }));
+    expect(document.documentElement.lang).toBe("en");
+    expect(screen.getByRole("heading", { level: 1, name: "Train the system behind your performance." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Explore the system" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Das System" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Explore as an athlete/ }));
+    expect(screen.getByRole("heading", { name: "See what is coming up right away." })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continue/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close introduction" }));
+
+    fireEvent.click(screen.getByRole("button", { name: /Explore as a coach/ }));
+    expect(screen.getByRole("heading", { name: "Your team. Clear in one place." })).toBeInTheDocument();
+    view.unmount();
+    window.localStorage.removeItem("rewireperform.public-language");
+  });
+
+  it("keeps every athlete and coach preview scene free of visible German copy in English", () => {
+    const germanCopy = /[ÄÖÜäöüß]|\b(?:Heute|Dein|Deine|Schritt|Weiter|Zurück|Anmelden|Spieler|Athleten|Trainer|Ruhetag|Trainingstag|Wettkampf|Einladung|Reflexion|Datenschutz|Stimmung|Fortschritt|Gemeinsam|Vorbereitung)\b/i;
+    window.localStorage.removeItem("rewireperform.public-language");
+    const view = render(
+      <MemoryRouter>
+        <PublicLanguageProvider><WebsiteGoldenPagePreview /></PublicLanguageProvider>
+      </MemoryRouter>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Choose English" }));
+    expect(document.body.textContent).not.toMatch(germanCopy);
+
+    fireEvent.click(screen.getByRole("button", { name: /Explore as an athlete/ }));
+    for (let scene = 0; scene < 10; scene += 1) {
+      expect(screen.getByTestId("first-run-stage").textContent).not.toMatch(germanCopy);
+      if (scene < 9) fireEvent.click(screen.getByRole("button", { name: /Continue/ }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Close introduction" }));
+
+    fireEvent.click(screen.getByRole("button", { name: /Explore as a coach/ }));
+    for (let scene = 0; scene < 10; scene += 1) {
+      expect(screen.getByTestId("coach-first-run-stage").textContent).not.toMatch(germanCopy);
+      if (scene < 9) fireEvent.click(screen.getByRole("button", { name: /Continue/ }));
+    }
+
+    view.unmount();
+    window.localStorage.removeItem("rewireperform.public-language");
   });
 });

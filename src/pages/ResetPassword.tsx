@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandLockup } from "@/components/brand/BrandLogo";
+import { usePublicLanguage } from "@/contexts/PublicLanguageContext";
+import { PublicLanguageSwitch } from "@/components/public/PublicLanguageSwitch";
 import {
   authErrorMessage,
   MIN_ACCOUNT_PASSWORD_LENGTH,
@@ -24,6 +26,27 @@ const hasRecoveryHint = () => {
 };
 
 const ResetPassword = () => {
+  const { tr, language } = usePublicLanguage();
+  const shownError = (message: string) => {
+    if (language === "de") return message;
+    const known: Record<string, string> = {
+      "Dieser Sicherheitslink ist abgelaufen oder wurde bereits verwendet.": "This security link has expired or has already been used.",
+      "Dieser Sicherheitslink konnte nicht bestätigt werden.": "This security link could not be confirmed.",
+      "Dieser Passwort-Link ist abgelaufen oder wurde bereits verwendet.": "This password link has expired or has already been used.",
+      "Der Sicherheitslink konnte gerade nicht geprüft werden.": "The security link could not be checked right now.",
+      [`Dein Passwort muss mindestens ${MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen haben.`]: `Your password must contain at least ${MIN_ACCOUNT_PASSWORD_LENGTH} characters.`,
+      "Die beiden Passwörter stimmen nicht überein.": "The passwords do not match.",
+      "E-Mail oder Passwort ist nicht korrekt.": "Email or password is incorrect.",
+      "Bitte bestätige zuerst deine E-Mail-Adresse.": "Please confirm your email address first.",
+      "Bitte warte kurz, bevor du eine weitere E-Mail anforderst.": "Please wait before requesting another email.",
+      [`Das Passwort muss mindestens ${MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen haben.`]: `Your password must contain at least ${MIN_ACCOUNT_PASSWORD_LENGTH} characters.`,
+      "Das neue Passwort muss sich vom bisherigen Passwort unterscheiden.": "Your new password must be different from your current password.",
+      "Der Code ist abgelaufen. Fordere bitte eine neue E-Mail an.": "The code has expired. Please request a new email.",
+      "Der Code ist ungültig oder wurde bereits verwendet.": "The code is invalid or has already been used.",
+      "Das Passwort konnte gerade nicht geändert werden.": "The password could not be changed right now.",
+    };
+    return known[message] ?? "The password could not be changed right now.";
+  };
   const navigate = useNavigate();
   const initialLinkError = useMemo(
     () => parseAuthLinkError(window.location.search, window.location.hash),
@@ -108,7 +131,7 @@ const ResetPassword = () => {
       <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground">
         <div className="text-center" role="status" aria-live="polite">
           <Loader2 className="mx-auto h-7 w-7 animate-spin text-primary" aria-hidden="true" />
-          <p className="mt-4 text-sm text-muted-foreground">Sicherheitslink wird geprüft...</p>
+          <p className="mt-4 text-sm text-muted-foreground">{tr("Sicherheitslink wird geprüft...", "Checking security link...")}</p>
         </div>
       </main>
     );
@@ -116,16 +139,16 @@ const ResetPassword = () => {
 
   if (state === "invalid") {
     return (
-      <RecoveryLayout icon={<CircleAlert className="h-7 w-7" />} tone="error" title="Der Link ist nicht mehr gültig.">
-        <p className="text-sm leading-relaxed text-muted-foreground">{errorMessage}</p>
+      <RecoveryLayout icon={<CircleAlert className="h-7 w-7" />} tone="error" title={tr("Der Link ist nicht mehr gültig.", "This link is no longer valid.")}>
+        <p className="text-sm leading-relaxed text-muted-foreground">{shownError(errorMessage)}</p>
         <Link
           to="/auth?mode=forgot"
           className="mt-8 flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:shadow-glow"
         >
-          Neuen Link anfordern
+          {tr("Neuen Link anfordern", "Request a new link")}
         </Link>
         <Link to="/auth" className="mt-3 flex min-h-11 items-center justify-center text-sm font-medium text-primary hover:underline">
-          Zur Anmeldung
+          {tr("Zur Anmeldung", "Go to sign-in")}
         </Link>
       </RecoveryLayout>
     );
@@ -133,41 +156,41 @@ const ResetPassword = () => {
 
   if (state === "success") {
     return (
-      <RecoveryLayout icon={<CheckCircle2 className="h-7 w-7" />} title="Passwort geändert.">
+      <RecoveryLayout icon={<CheckCircle2 className="h-7 w-7" />} title={tr("Passwort geändert.", "Password changed.")}>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Dein neues Passwort ist aktiv. Du kannst RewirePerform jetzt sicher weiterverwenden.
+          {tr("Dein neues Passwort ist aktiv. Du kannst RewirePerform jetzt sicher weiterverwenden.", "Your new password is active. You can now continue using RewirePerform securely.")}
         </p>
         <button
           type="button"
           onClick={() => navigate("/auth", { replace: true })}
           className="mt-8 min-h-11 w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:shadow-glow"
         >
-          Weiter zu RewirePerform
+          {tr("Weiter zu RewirePerform", "Continue to RewirePerform")}
         </button>
       </RecoveryLayout>
     );
   }
 
   return (
-    <RecoveryLayout icon={<KeyRound className="h-7 w-7" />} title="Neues Passwort festlegen.">
+    <RecoveryLayout icon={<KeyRound className="h-7 w-7" />} title={tr("Neues Passwort festlegen.", "Set a new password.")}>
       <p className="text-sm leading-relaxed text-muted-foreground">
-        Verwende mindestens {MIN_ACCOUNT_PASSWORD_LENGTH} Zeichen und kein Passwort, das du bereits an anderer Stelle nutzt.
+        {tr("Verwende mindestens", "Use at least")} {MIN_ACCOUNT_PASSWORD_LENGTH} {tr("Zeichen und kein Passwort, das du bereits an anderer Stelle nutzt.", "characters and avoid a password you already use elsewhere.")}
       </p>
       <form onSubmit={updatePassword} className="mt-8 space-y-4 text-left">
         <PasswordField
           id="new-password"
-          label="Neues Passwort"
+          label={tr("Neues Passwort", "New password")}
           value={password}
           onChange={setPassword}
         />
         <PasswordField
           id="confirm-password"
-          label="Passwort wiederholen"
+          label={tr("Passwort wiederholen", "Repeat password")}
           value={confirmation}
           onChange={setConfirmation}
         />
         {errorMessage && errorMessage !== "Dieser Passwort-Link ist abgelaufen oder wurde bereits verwendet." && (
-          <p role="alert" className="text-sm leading-relaxed text-destructive">{errorMessage}</p>
+          <p role="alert" className="text-sm leading-relaxed text-destructive">{shownError(errorMessage)}</p>
         )}
         <button
           type="submit"
@@ -175,7 +198,7 @@ const ResetPassword = () => {
           className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-heading text-sm font-semibold text-primary-foreground hover:shadow-glow disabled:opacity-50"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Lock className="h-4 w-4" aria-hidden="true" />}
-          Passwort speichern
+          {tr("Passwort speichern", "Save password")}
         </button>
       </form>
     </RecoveryLayout>
@@ -221,10 +244,13 @@ const RecoveryLayout = ({
   title: string;
   tone?: "default" | "error";
   children: React.ReactNode;
-}) => (
+}) => {
+  const { tr } = usePublicLanguage();
+  return (
   <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 text-foreground sm:px-6">
+    <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md text-center">
-      <Link to="/" aria-label="Zur Startseite" className="mx-auto flex items-center justify-center gap-2">
+      <Link to="/" aria-label={tr("Zur Startseite", "Go to homepage")} className="mx-auto flex items-center justify-center gap-2">
         <BrandLockup symbolSize={34} textClassName="text-xl" />
       </Link>
       <div className={`mx-auto mb-5 mt-8 flex h-14 w-14 items-center justify-center rounded-full ${tone === "error" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
@@ -232,12 +258,13 @@ const RecoveryLayout = ({
       </div>
       <h1 className="mb-3 font-heading text-3xl font-bold">{title}</h1>
       {children}
-      <nav aria-label="Rechtliches und Hilfe" className="mt-8 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <Link to="/privacy" className="hover:text-foreground">Datenschutz</Link>
+      <nav aria-label={tr("Rechtliches und Hilfe", "Legal information and help")} className="mt-8 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <Link to="/privacy" className="hover:text-foreground">{tr("Datenschutz", "Privacy")}</Link>
         <Link to="/support" className="hover:text-foreground">Support</Link>
       </nav>
     </motion.div>
   </main>
-);
+  );
+};
 
 export default ResetPassword;

@@ -6,11 +6,14 @@ import { useNavigate } from "react-router-dom";
 import AppLoadingShell from "@/components/AppLoadingShell";
 import { BrandLockup, BrandSymbol } from "@/components/brand/BrandLogo";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePublicLanguage } from "@/contexts/PublicLanguageContext";
+import { PublicLanguageSwitch } from "@/components/public/PublicLanguageSwitch";
 
 const FirstRunRoleEntry = () => {
   const navigate = useNavigate();
   const reduceMotion = useReducedMotion();
   const { user, role, roleVerified, loading } = useAuth();
+  const { tr } = usePublicLanguage();
   const isNativeApp = Capacitor.isNativePlatform();
 
   useEffect(() => {
@@ -21,11 +24,11 @@ const FirstRunRoleEntry = () => {
   }, [loading, navigate, role, roleVerified, user]);
 
   if (loading || (user && (!roleVerified || !role))) {
-    return <AppLoadingShell subtitle="Prüfe deinen Zugang..." />;
+    return <AppLoadingShell subtitle={tr("Prüfe deinen Zugang...", "Checking your access...")} />;
   }
 
   if (user && role) {
-    return <AppLoadingShell subtitle="Öffne deinen Bereich..." />;
+    return <AppLoadingShell subtitle={tr("Öffne deinen Bereich...", "Opening your area...")} />;
   }
 
   const entrance = reduceMotion
@@ -45,16 +48,17 @@ const FirstRunRoleEntry = () => {
         <header className="flex items-center justify-between">
           <BrandLockup symbolSize={28} textClassName="text-[13px] tracking-[-0.02em]" />
           <div className="flex items-center gap-1 sm:gap-2">
+            <PublicLanguageSwitch />
             {!isNativeApp && (
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                aria-label="Zurück zur Website"
+                aria-label={tr("Zurück zur Website", "Back to website")}
                 className="flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[11px] font-semibold text-white/58 transition-colors hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3 sm:text-xs"
               >
                 <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
                 <span className="sm:hidden">Website</span>
-                <span className="hidden sm:inline">Zurück zur Website</span>
+                <span className="hidden sm:inline">{tr("Zurück zur Website", "Back to website")}</span>
               </button>
             )}
             <button
@@ -62,7 +66,7 @@ const FirstRunRoleEntry = () => {
               onClick={() => navigate("/auth?mode=login")}
               className="flex min-h-11 items-center rounded-xl px-2 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-3 sm:text-xs"
             >
-              Anmelden
+              {tr("Anmelden", "Log in")}
             </button>
           </div>
         </header>
@@ -77,13 +81,13 @@ const FirstRunRoleEntry = () => {
                 </span>
               </div>
               <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary [@media(max-height:700px)]:mt-0 sm:mt-6">
-                Dein Einstieg
+                {tr("Dein Einstieg", "Your starting point")}
               </p>
               <h1 className="mx-auto mt-3 max-w-2xl font-heading text-[clamp(2rem,7vw,4rem)] font-semibold leading-[0.98] tracking-[-0.055em] [@media(max-height:700px)]:text-[1.75rem]">
-                Wie nutzt du RewirePerform?
+                {tr("Wie nutzt du RewirePerform?", "How will you use RewirePerform?")}
               </h1>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/48 [@media(max-height:700px)]:mt-2 [@media(max-height:700px)]:text-xs sm:mt-4 sm:text-base">
-                Wähle deinen Bereich. Danach zeigen wir dir in wenigen Schritten genau das System, das zu deiner Rolle gehört.
+                {tr("Wähle deinen Bereich. Danach zeigen wir dir in wenigen Schritten genau das System, das zu deiner Rolle gehört.", "Choose your area. We will then show you the part of the system that fits your role in a few short steps.")}
               </p>
             </div>
 
@@ -98,11 +102,11 @@ const FirstRunRoleEntry = () => {
                   <span className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-primary/20 bg-primary/[0.10] text-primary sm:h-12 sm:w-12 sm:rounded-2xl">
                     <Sparkles className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary [@media(max-height:700px)]:mt-3 sm:mt-7">Ich bin Athlet</p>
+                  <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary [@media(max-height:700px)]:mt-3 sm:mt-7">{tr("Ich bin Athlet", "I am an athlete")}</p>
                   <div className="mt-1.5 flex items-end justify-between gap-4 sm:mt-2">
                     <div>
-                      <h2 className="font-heading text-[22px] font-semibold tracking-[-0.035em] sm:text-2xl">Mental trainieren.</h2>
-                      <p className="mt-1.5 text-xs leading-relaxed text-white/45 [@media(max-height:700px)]:hidden sm:mt-2">Daily Flow, Trainingstransfer und deine Entwicklung.</p>
+                      <h2 className="font-heading text-[22px] font-semibold tracking-[-0.035em] sm:text-2xl">{tr("Mental trainieren.", "Train your mental skills.")}</h2>
+                      <p className="mt-1.5 text-xs leading-relaxed text-white/45 [@media(max-height:700px)]:hidden sm:mt-2">{tr("Daily Flow, Trainingstransfer und deine Entwicklung.", "Daily Flow, training transfer and your progress.")}</p>
                     </div>
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.035] text-primary transition-transform group-hover:translate-x-1">
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -121,11 +125,11 @@ const FirstRunRoleEntry = () => {
                   <span className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-primary/20 bg-primary/[0.10] text-primary sm:h-12 sm:w-12 sm:rounded-2xl">
                     <UsersRound className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary [@media(max-height:700px)]:mt-3 sm:mt-7">Ich bin Coach</p>
+                  <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary [@media(max-height:700px)]:mt-3 sm:mt-7">{tr("Ich bin Coach", "I am a coach")}</p>
                   <div className="mt-1.5 flex items-end justify-between gap-4 sm:mt-2">
                     <div>
-                      <h2 className="font-heading text-[22px] font-semibold tracking-[-0.035em] sm:text-2xl">Team begleiten.</h2>
-                      <p className="mt-1.5 text-xs leading-relaxed text-white/45 [@media(max-height:700px)]:hidden sm:mt-2">Aktivität, Teamzustand und Coaching-Praxis im Blick.</p>
+                      <h2 className="font-heading text-[22px] font-semibold tracking-[-0.035em] sm:text-2xl">{tr("Team begleiten.", "Support your team.")}</h2>
+                      <p className="mt-1.5 text-xs leading-relaxed text-white/45 [@media(max-height:700px)]:hidden sm:mt-2">{tr("Aktivität, Teamzustand und Coaching-Praxis im Blick.", "See activity, the team picture and your coaching practice.")}</p>
                     </div>
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.035] text-primary transition-transform group-hover:translate-x-1">
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -137,7 +141,7 @@ const FirstRunRoleEntry = () => {
 
             <div className="mx-auto mt-4 flex max-w-xl items-start justify-center gap-2 text-center text-[11px] leading-relaxed text-white/32 [@media(max-height:700px)]:mt-3 [@media(max-height:700px)]:text-[10px] sm:mt-6">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/75" aria-hidden="true" />
-              <p>Deine Auswahl öffnet nur die passende Einführung. Zugänge und Rollen werden danach sicher geprüft.</p>
+              <p>{tr("Deine Auswahl öffnet nur die passende Einführung. Zugänge und Rollen werden danach sicher geprüft.", "Your choice only opens the relevant introduction. Access and roles are verified afterwards.")}</p>
             </div>
           </motion.div>
         </section>

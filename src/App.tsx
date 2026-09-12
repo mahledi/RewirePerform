@@ -18,6 +18,7 @@ import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardi
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 import AppScrollReset from "./components/app/AppScrollReset";
 import AthleteRouteLoadingShell from "./components/app/AthleteRouteLoadingShell";
+import { PublicLanguageProvider } from "@/contexts/PublicLanguageContext";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -50,7 +51,7 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 const AdminJarvis = lazy(() => import("./pages/AdminJarvis.tsx"));
 const AdminContent = lazy(() => import("./pages/AdminContent.tsx"));
 const AdminQA = lazy(() => import("./pages/AdminQA.tsx"));
-const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Privacy = lazy(() => import("./pages/PublicPrivacyPage.tsx"));
 const Imprint = lazy(() => import("./pages/Imprint.tsx"));
 const Presentation = lazy(() => import("./pages/Presentation.tsx"));
 const Support = lazy(() => import("./pages/Support.tsx"));
@@ -301,8 +302,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <BrowserRouter>
-        <AppScrollReset />
-        <AppRoutes />
+        <PublicLanguageProvider>
+          <AppScrollReset />
+          <AppRoutes />
+        </PublicLanguageProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </QueryClientProvider>

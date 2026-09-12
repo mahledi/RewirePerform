@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BrandLockup } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
+import { usePublicLanguage } from "@/contexts/PublicLanguageContext";
+import { PublicLanguageSwitch } from "@/components/public/PublicLanguageSwitch";
 
-export const BrandMark = ({ className = "" }: { className?: string }) => (
+export const BrandMark = ({ className = "" }: { className?: string }) => {
+  const { tr } = usePublicLanguage();
+  return (
   <Link
     to="/"
-    aria-label="Zur Startseite"
+    aria-label={tr("Zur Startseite", "Go to homepage")}
     className={cn(
       "mx-auto flex w-fit items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       className,
@@ -15,21 +19,25 @@ export const BrandMark = ({ className = "" }: { className?: string }) => (
   >
     <BrandLockup symbolSize={34} textClassName="text-xl" />
   </Link>
-);
+  );
+};
 
-export const LegalLinks = () => (
-  <nav aria-label="Rechtliches und Hilfe" className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+export const LegalLinks = () => {
+  const { tr } = usePublicLanguage();
+  return (
+  <nav aria-label={tr("Rechtliches und Hilfe", "Legal information and help")} className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
     <Link to="/privacy" className="transition-colors hover:text-foreground">
-      Datenschutz
+      {tr("Datenschutz", "Privacy")}
     </Link>
     <Link to="/imprint" className="transition-colors hover:text-foreground">
-      Impressum
+      {tr("Impressum", "Legal notice")}
     </Link>
     <Link to="/support" className="transition-colors hover:text-foreground">
       Support
     </Link>
   </nav>
-);
+  );
+};
 
 export const AuthStatusLayout = ({
   icon,
@@ -45,6 +53,7 @@ export const AuthStatusLayout = ({
   children: ReactNode;
 }) => (
   <div className="flex min-h-screen items-center justify-center overflow-x-hidden bg-background px-4 py-8 sm:px-6 sm:py-10">
+    <PublicLanguageSwitch className="absolute right-4 top-4 z-20" />
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
