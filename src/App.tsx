@@ -18,6 +18,7 @@ import PostSignupOnboardingGate from "./components/onboarding/PostSignupOnboardi
 import NativeAuthReturnHandler from "./components/auth/NativeAuthReturnHandler";
 import AppScrollReset from "./components/app/AppScrollReset";
 import AthleteRouteLoadingShell from "./components/app/AthleteRouteLoadingShell";
+import { PublicLanguageProvider } from "@/contexts/PublicLanguageContext";
 
 const queryClient = new QueryClient();
 const evidencePreviewEnabled = import.meta.env.DEV
@@ -301,8 +302,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <BrowserRouter>
-        <AppScrollReset />
-        <AppRoutes />
+        <PublicLanguageProvider>
+          <AppScrollReset />
+          <AppRoutes />
+        </PublicLanguageProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </QueryClientProvider>

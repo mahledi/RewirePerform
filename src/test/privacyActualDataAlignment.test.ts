@@ -30,7 +30,8 @@ describe("actual data processing transparency", () => {
     expect(privacy).toContain(
       "Sie gehören derzeit nicht zur Pilot-Auswertung und werden nicht an Jarvis oder in externe Auswertungs-Exporte übermittelt.",
     );
-    expect(privacy).toContain("– strukturierte Team- oder Einzelbeobachtungen von Trainern");
+    expect(privacy).toContain("strukturierte Team- oder Einzelbeobachtungen von Trainern");
+    expect(privacy).toContain("Structured team or individual coach observations");
     expect(inventory).toContain("Derzeit aus Pilot-, Jarvis- und externen Auswertungen ausgeschlossen; V4 erforderlich");
   });
 
