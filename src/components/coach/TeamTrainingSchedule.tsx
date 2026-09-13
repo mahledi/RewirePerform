@@ -432,7 +432,9 @@ const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingSche
                   <button
                     key={key}
                     type="button"
-                    onClick={() => upsertDay(day)}
+                    onClick={() => setSelectedDate(day)}
+                    aria-label={`${format(day, "EEEE, d. MMMM yyyy", { locale: de })}, ${event ? eventConfig[event.event_type].label : "Noch kein Team-Event"}`}
+                    aria-pressed={Boolean(isSelected)}
                     className={`relative aspect-square min-h-11 rounded-lg text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                       !inMonth ? "opacity-30" : ""
                     } ${isToday(day) ? "ring-1 ring-primary" : ""} ${
@@ -515,6 +517,15 @@ const TeamTrainingSchedule = ({ teamId, variant = "embedded" }: TeamTrainingSche
                         ))}
                       </SelectContent>
                     </Select>
+                  )}
+                  {selectedEvent.event_type !== selectedTool && (
+                    <button
+                      type="button"
+                      onClick={() => upsertDay(selectedDate)}
+                      className="min-h-12 w-full rounded-xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      {eventConfig[selectedEvent.event_type].label} in {eventConfig[selectedTool].label} ändern
+                    </button>
                   )}
                 </div>
               ) : (
