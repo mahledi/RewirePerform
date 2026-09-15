@@ -46,10 +46,14 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
 
   await page.getByRole("button", { name: "In 30 Sekunden verstehen" }).click();
   await expect(page.getByRole("heading", { name: "Erst verstehen, dann vertiefen." })).toBeVisible();
-  await page.getByRole("tab", { name: /03 Im Sport anwenden/ }).click();
-  await expect(page.getByRole("heading", { name: "Aus dem Gedanken wird eine nächste Handlung." })).toBeVisible();
+  await page.getByRole("tab", { name: /02 Mission verstehen/ }).click();
+  await expect(page.getByRole("heading", { name: "Aus dem Fokus wird eine konkrete Aufgabe." })).toBeVisible();
+  await page.getByRole("tab", { name: /03 Vor Training abrufen/ }).click();
+  await expect(page.getByRole("heading", { name: "Erst erinnerst du dich selbst. Dann prüfst du den Satz." })).toBeVisible();
   await page.getByRole("button", { name: "Für mein Team" }).click();
   await expect(page.getByRole("heading", { name: "Mentale Arbeit bleibt oft in einzelnen Gesprächen hängen." })).toBeVisible();
+  await page.getByRole("tab", { name: /03 Zustand & Fokus/ }).click();
+  await expect(page.getByRole("heading", { name: "Der Coach erkennt, was das Team heute brauchen könnte." })).toBeVisible();
   await expect(page.getByRole("link", { name: /Teamzugang ansehen/ })).toHaveAttribute("href", "/team-access");
   await expectNoHorizontalOverflow(page);
 
@@ -169,10 +173,12 @@ test("internal introduction evidence completes without collecting personal data"
     } else {
       await expect(page.getByLabel("Schritt 10 von 10")).toHaveCount(0);
     }
-    expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+    expect(await page.evaluate(() => Object.keys(window.localStorage).filter((key) => key !== "rewireperform.public-language"))).toEqual([]);
     await expectNoHorizontalOverflow(page);
 
     if (index === 0) await capture(page, testInfo, "introduction-today");
+    if (index === 2) await capture(page, testInfo, "introduction-mission");
+    if (index === 4) await capture(page, testInfo, "introduction-pre-training");
     if (index === 7) await capture(page, testInfo, "introduction-measurement");
     if (index < firstRunSceneHeadings.length - 1) {
       await page.getByRole("button", { name: "Weiter" }).click();
@@ -195,7 +201,7 @@ test("internal introduction evidence completes without collecting personal data"
       }),
     ),
   );
-  expect(storedValues).toEqual({});
+  expect(storedValues).toEqual({ "rewireperform.public-language": "de" });
   expect(pageErrors).toEqual([]);
 });
 
