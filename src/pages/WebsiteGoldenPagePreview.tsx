@@ -39,6 +39,8 @@ import { PublicLanguageSwitch } from "@/components/public/PublicLanguageSwitch";
 
 type Flight = "athlete" | "coach" | null;
 type DailyContext = "training" | "competition" | "rest";
+type QuickAudience = "athlete" | "team";
+type QuickVisual = AthleteFirstRunSceneId | CoachFirstRunSceneId;
 
 const contextContent: Record<DailyContext, {
   label: string;
@@ -342,6 +344,174 @@ const LearningLoopShot = () => {
   );
 };
 
+const QuickProductShot = ({ audience, sceneId }: { audience: QuickAudience; sceneId: QuickVisual }) => (
+  <div className="relative h-[300px] w-[170px] shrink-0 sm:h-[378px] sm:w-[214px]">
+    <div className="absolute left-0 top-0 origin-top-left scale-[0.49] sm:scale-[0.62]">
+      {audience === "athlete"
+        ? <AthleteFirstRunSceneVisual sceneId={sceneId as AthleteFirstRunSceneId} mode="solo" />
+        : <CoachFirstRunSceneVisual sceneId={sceneId as CoachFirstRunSceneId} />}
+    </div>
+  </div>
+);
+
+const QuickSystemFlight = ({ onOpenDetails }: { onOpenDetails: () => void }) => {
+  const { tr } = usePublicLanguage();
+  const reduced = Boolean(useReducedMotion());
+  const [audience, setAudience] = useState<QuickAudience>("athlete");
+  const [activeStep, setActiveStep] = useState(0);
+  const athleteSteps = [
+    {
+      label: tr("Das Problem", "The problem"),
+      title: tr("Du weißt, was du tun willst. Unter Druck fehlt oft der Zugriff.", "You know what you want to do. Under pressure, access is often missing."),
+      copy: tr("Nach einem Fehler, bei Druck oder Selbstzweifeln bleibt der Kopf hängen – obwohl dein sportliches Können weiterhin da ist.", "After a mistake, under pressure or with self-doubt, your mind can get stuck even though your sporting ability is still there."),
+      visual: "today" as AthleteFirstRunSceneId,
+    },
+    {
+      label: tr("Täglich trainieren", "Train daily"),
+      title: tr("Ein klarer Fokus statt immer neuer Tipps.", "One clear focus instead of endless new tips."),
+      copy: tr("Du verstehst eine mentale Reaktion, übst sie in kleinen Schritten und begegnest ihr über den 56-Tage-Weg wieder.", "You understand one mental response, practise it in small steps and revisit it across the 56-day journey."),
+      visual: "science" as AthleteFirstRunSceneId,
+    },
+    {
+      label: tr("Im Sport anwenden", "Use it in sport"),
+      title: tr("Aus dem Gedanken wird eine nächste Handlung.", "A thought becomes your next action."),
+      copy: tr("Die tägliche Mission verbindet den mentalen Fokus mit einer konkreten Situation in Training, Wettkampf oder Regeneration.", "The daily mission connects the mental focus to a concrete situation in training, competition or recovery."),
+      visual: "tasks" as AthleteFirstRunSceneId,
+    },
+    {
+      label: tr("Entwicklung erkennen", "Recognise progress"),
+      title: tr("Du siehst deine Wiederholungen – nicht ein Urteil über dich.", "You see your repetitions, not a judgement of you."),
+      copy: tr("Rückblicke und dein eigener Verlauf zeigen, woran du gearbeitet hast und welche Reaktionen dir leichter zugänglich werden.", "Reflections and your own history show what you have practised and which responses are becoming easier to access."),
+      visual: "development" as AthleteFirstRunSceneId,
+    },
+  ];
+  const teamSteps = [
+    {
+      label: tr("Das Problem", "The problem"),
+      title: tr("Mentale Arbeit bleibt oft in einzelnen Gesprächen hängen.", "Mental work often stays trapped in isolated conversations."),
+      copy: tr("Spieler hören einen hilfreichen Gedanken – aber zwischen zwei Gesprächen fehlt die wiederholte Anwendung im Sportalltag.", "Players hear a helpful idea, but between conversations the repeated application in everyday sport is missing."),
+      visual: "console" as CoachFirstRunSceneId,
+    },
+    {
+      label: tr("Gemeinsames System", "Shared system"),
+      title: tr("Das Team arbeitet täglich in einem verbundenen Lernweg.", "The team works daily within one connected learning journey."),
+      copy: tr("Die Athleten erhalten strukturierte Tagesinhalte. Der Coach kennt den mentalen Schwerpunkt, ohne private Antworten zu lesen.", "Athletes receive structured daily content. The coach knows the mental focus without reading private answers."),
+      visual: "program" as CoachFirstRunSceneId,
+    },
+    {
+      label: tr("Training verbinden", "Connect training"),
+      title: tr("Der Tagesfokus kann im Training wieder auftauchen.", "The daily focus can reappear in training."),
+      copy: tr("Coach-Kommunikation und mentale Praxis sprechen dieselbe Sprache. So bleibt das Thema nicht nur in der App.", "Coach communication and mental practice use the same language, so the topic does not stay inside the app."),
+      visual: "practice" as CoachFirstRunSceneId,
+    },
+    {
+      label: tr("Orientierung erhalten", "Gain context"),
+      title: tr("Der Coach sieht Beteiligung und das geschützte Teambild.", "The coach sees participation and a protected team picture."),
+      copy: tr("Aktivität und ausreichend große Teamaggregate geben Orientierung. Journale, Freitexte und einzelne Check-ins bleiben privat.", "Activity and sufficiently large team aggregates provide context. Journals, free text and individual check-ins stay private."),
+      visual: "privacy" as CoachFirstRunSceneId,
+    },
+  ];
+  const steps = audience === "athlete" ? athleteSteps : teamSteps;
+  const current = steps[activeStep];
+  const chooseAudience = (next: QuickAudience) => {
+    setAudience(next);
+    setActiveStep(0);
+  };
+
+  return (
+    <div className="relative mx-auto w-full max-w-[1260px]">
+      <div className="mx-auto max-w-3xl text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">{tr("RewirePerform in 30 Sekunden", "RewirePerform in 30 seconds")}</p>
+        <h2 id="quick-system-title" className="mt-4 text-[clamp(2.5rem,5.8vw,5.4rem)] font-semibold leading-[0.93] tracking-[-0.062em]">
+          {tr("Erst verstehen,", "Understand first,")} <span className="text-primary">{tr("dann vertiefen.", "then go deeper.")}</span>
+        </h2>
+        <p className="mx-auto mt-6 max-w-2xl text-[15px] leading-7 text-white/54 sm:text-base">
+          {tr("Wähle deine Perspektive und klicke dich durch die vier Schritte. Das ausführliche System bleibt darunter erhalten.", "Choose your perspective and click through four steps. The full system remains available below.")}
+        </p>
+      </div>
+
+      <div className="mx-auto mt-8 grid max-w-lg grid-cols-2 gap-2 rounded-2xl border border-white/[0.07] bg-black/25 p-1.5" role="group" aria-label={tr("Perspektive auswählen", "Choose perspective")}>
+        {([
+          ["athlete", tr("Für mich als Athlet", "For me as an athlete"), UserRound],
+          ["team", tr("Für mein Team", "For my team"), UsersRound],
+        ] as const).map(([id, label, Icon]) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={audience === id}
+            onClick={() => chooseAudience(id)}
+            className={cn(
+              "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-sm",
+              audience === id ? "bg-primary text-[#07110E]" : "text-white/55 hover:bg-white/[0.045] hover:text-white",
+            )}
+          >
+            <Icon className="h-4 w-4" aria-hidden="true" /> {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-4" role="tablist" aria-label={tr("Vier Schritte des Systems", "Four steps of the system")}>
+        {steps.map((step, index) => (
+          <button
+            key={`${audience}-${step.label}`}
+            type="button"
+            role="tab"
+            aria-selected={activeStep === index}
+            aria-controls="quick-system-panel"
+            onClick={() => setActiveStep(index)}
+            className={cn(
+              "min-h-[74px] rounded-2xl border px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:min-h-[82px] sm:px-4",
+              activeStep === index
+                ? "border-primary/38 bg-primary/[0.09] text-white"
+                : "border-white/[0.065] bg-white/[0.025] text-white/46 hover:border-white/15 hover:bg-white/[0.04]",
+            )}
+          >
+            <span className={cn("text-[10px] font-semibold", activeStep === index ? "text-primary" : "text-white/30")}>0{index + 1}</span>
+            <span className="mt-1.5 block text-xs font-semibold leading-4 sm:text-sm">{step.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div id="quick-system-panel" role="tabpanel" className="relative mt-4 min-h-[540px] overflow-hidden rounded-[30px] border border-white/[0.075] bg-[linear-gradient(145deg,rgba(18,21,24,0.98),rgba(8,10,12,0.98))] px-5 py-7 sm:min-h-[500px] sm:px-8 lg:px-12">
+        <ProductLight className="-right-40 -top-40 h-[30rem] w-[30rem] opacity-70" />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${audience}-${activeStep}`}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: reduced ? 0.01 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="relative grid min-h-[480px] items-center gap-5 sm:min-h-[440px] lg:grid-cols-[1fr_0.72fr] lg:gap-12"
+          >
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">0{activeStep + 1} · {current.label}</p>
+              <h3 className="mt-4 text-[clamp(2rem,4.4vw,4.25rem)] font-semibold leading-[0.98] tracking-[-0.052em]">{current.title}</h3>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-white/55 sm:text-base">{current.copy}</p>
+            </div>
+            <div className="relative mx-auto flex h-[310px] w-full items-start justify-center overflow-hidden sm:h-[390px] lg:items-center">
+              <ProductLight className="left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 opacity-80" />
+              <div className="relative z-10"><QuickProductShot audience={audience} sceneId={current.visual} /></div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a
+          href={audience === "athlete" ? "/auth?mode=signup&intent=solo" : "/team-access"}
+          className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-primary px-6 text-sm font-semibold text-[#07110E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto"
+        >
+          {audience === "athlete" ? tr("Solo starten", "Start Solo") : tr("Teamzugang ansehen", "Explore team access")}
+          <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+        </a>
+        <button type="button" onClick={onOpenDetails} className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-white/[0.10] bg-white/[0.025] px-6 text-sm font-semibold text-white/70 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:w-auto">
+          {tr("System im Detail ansehen", "Explore the full system")} <ArrowDown className="ml-2 h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const ContextShowcase = () => {
   const [context, setContext] = useState<DailyContext>("training");
   const { tr, language } = usePublicLanguage();
@@ -440,6 +610,7 @@ const WebsiteGoldenPagePreview = () => {
   const { tr, language } = usePublicLanguage();
   const reduced = Boolean(useReducedMotion());
   const heroRef = useRef<HTMLElement>(null);
+  const quickFlightRef = useRef<HTMLElement>(null);
   const rolesRef = useRef<HTMLElement>(null);
   const systemRef = useRef<HTMLElement>(null);
   const [flight, setFlight] = useState<Flight>(null);
@@ -479,8 +650,8 @@ const WebsiteGoldenPagePreview = () => {
           <span className="sm:hidden" aria-label="RewirePerform"><BrandSymbol size={28} /></span>
           <span className="hidden sm:block"><BrandLockup symbolSize={26} textClassName="text-[13px] tracking-[-0.02em]" /></span>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button type="button" onClick={() => scrollTo(rolesRef)} className="flex min-h-11 items-center rounded-full border border-white/[0.09] bg-white/[0.045] px-4 text-xs font-semibold text-white/78 transition-all hover:border-primary/35 hover:bg-primary/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-              {tr("System erleben", "Explore the system")}
+            <button type="button" onClick={() => scrollTo(quickFlightRef)} className="flex min-h-11 items-center rounded-full border border-white/[0.09] bg-white/[0.045] px-4 text-xs font-semibold text-white/78 transition-all hover:border-primary/35 hover:bg-primary/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              {tr("Kurz verstehen", "Quick overview")}
             </button>
             <PublicLanguageSwitch />
           </div>
@@ -499,18 +670,18 @@ const WebsiteGoldenPagePreview = () => {
           <div className="relative z-10 max-w-[900px]">
             <p className="text-xs font-medium text-white/46 sm:text-sm">{tr("Mentale Performance · täglich trainiert", "Mental performance · trained daily")}</p>
             <h1 id="golden-hero-title" className="mt-5 text-[clamp(3.35rem,7.5vw,7.4rem)] font-semibold leading-[0.88] tracking-[-0.072em]">
-              {tr("Trainiere das System", "Train the system")}
-              <span className="mt-[0.14em] block text-primary">{tr("hinter deiner Performance.", "behind your performance.")}</span>
+              {tr("Trainiere, klar zu handeln", "Train yourself to act clearly")}
+              <span className="mt-[0.14em] block text-primary">{tr("wenn es darauf ankommt.", "when it matters.")}</span>
             </h1>
             <p className="mt-7 max-w-[680px] text-base leading-7 text-white/64 sm:text-lg sm:leading-8">
-              {tr("RewirePerform bringt mentale Fähigkeiten aus einzelnen Gesprächen in eine klare tägliche Praxis – für Athleten, Coaches und Teams.", "RewirePerform turns mental skills into a clear daily practice for athletes, coaches and teams.")}
+              {tr("Fehler, Druck oder Selbstzweifel nehmen dir nicht dein Können – aber manchmal den Zugriff darauf. RewirePerform macht mentale Fähigkeiten zu einer täglichen Praxis für die nächste passende Handlung.", "Mistakes, pressure or self-doubt do not take away your ability, but they can make it harder to access. RewirePerform turns mental skills into daily practice for your next suitable action.")}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a href="/auth?mode=signup&intent=solo" className="group flex min-h-[52px] items-center justify-center rounded-2xl bg-primary px-6 text-sm font-semibold text-[#07110E] shadow-[0_18px_45px_-22px_rgba(46,173,137,0.95)] transition-transform hover:scale-[1.012] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                 {tr("Als Athlet starten", "Start as an athlete")} <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
-              <button type="button" onClick={() => scrollTo(systemRef)} className="flex min-h-[52px] items-center justify-center rounded-2xl border border-white/[0.10] bg-black/20 px-6 text-sm font-semibold text-white/76 backdrop-blur-xl transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                {tr("System verstehen", "Understand the system")} <ArrowDown className="ml-2 h-4 w-4" />
+              <button type="button" onClick={() => scrollTo(quickFlightRef)} className="flex min-h-[52px] items-center justify-center rounded-2xl border border-white/[0.10] bg-black/20 px-6 text-sm font-semibold text-white/76 backdrop-blur-xl transition-colors hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                {tr("In 30 Sekunden verstehen", "Understand in 30 seconds")} <ArrowDown className="ml-2 h-4 w-4" />
               </button>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -533,6 +704,11 @@ const WebsiteGoldenPagePreview = () => {
             </motion.div>
           </div>
         </motion.div>
+      </section>
+
+      <section ref={quickFlightRef} className="relative scroll-mt-[68px] overflow-hidden bg-[#090B0E] px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24" aria-labelledby="quick-system-title">
+        <ProductLight className="-left-52 top-1/3 h-[34rem] w-[34rem] opacity-50" />
+        <QuickSystemFlight onOpenDetails={() => scrollTo(systemRef)} />
       </section>
 
       <section ref={systemRef} className="relative px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24" aria-labelledby="why-title">
