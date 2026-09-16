@@ -689,8 +689,8 @@ const WebsiteGoldenPagePreview = () => {
           <div className="relative z-10 max-w-[900px]">
             <p className="text-xs font-medium text-white/46 sm:text-sm">{tr("Mentale Performance · täglich trainiert", "Mental performance · trained daily")}</p>
             <h1 id="golden-hero-title" className="mt-5 text-[clamp(3.35rem,7.5vw,7.4rem)] font-semibold leading-[0.88] tracking-[-0.072em]">
-              {tr("Trainiere, klar zu handeln", "Train yourself to act clearly")}
-              <span className="mt-[0.14em] block text-primary">{tr("wenn es darauf ankommt.", "when it matters.")}</span>
+              {tr("Trainiere das System", "Train the system")}
+              <span className="mt-[0.14em] block text-primary">{tr("hinter deiner Performance.", "behind your performance.")}</span>
             </h1>
             <p className="mt-7 max-w-[680px] text-base leading-7 text-white/64 sm:text-lg sm:leading-8">
               {tr("Fehler, Druck oder Selbstzweifel nehmen dir nicht dein Können – aber manchmal den Zugriff darauf. RewirePerform macht mentale Fähigkeiten zu einer täglichen Praxis für die nächste passende Handlung.", "Mistakes, pressure or self-doubt do not take away your ability, but they can make it harder to access. RewirePerform turns mental skills into daily practice for your next suitable action.")}
