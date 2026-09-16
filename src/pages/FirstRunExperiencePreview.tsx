@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ClipboardCheck,
   Dumbbell,
+  Eye,
   Flame,
   Home,
   Menu,
@@ -73,19 +74,19 @@ const scenes: Scene[] = [
   },
   {
     id: "science",
-    eyebrow: "Daily Flow · 1 von 5",
+    eyebrow: "Daily Flow · 1 von 4",
     title: "Zuerst verstehst du den Fokus des Tages.",
     position: { x: 500, y: -60, scale: 0.96 },
   },
   {
     id: "tasks",
-    eyebrow: "Daily Flow · 4 von 5",
+    eyebrow: "Daily Flow · 3 von 4",
     title: "Eine klare Mission bringt ihn in deinen Alltag.",
     position: { x: 900, y: -420, scale: 0.96 },
   },
   {
     id: "check",
-    eyebrow: "Daily Flow · 5 von 5",
+    eyebrow: "Daily Flow · 4 von 4",
     title: "Ein kurzer Check festigt, was du heute brauchst.",
     position: { x: 650, y: -950, scale: 0.96 },
   },
@@ -129,9 +130,9 @@ const scenes: Scene[] = [
 
 const englishScenes: Pick<Scene, "eyebrow" | "title">[] = [
   { eyebrow: "Your system for today", title: "See what is coming up right away." },
-  { eyebrow: "Daily Flow · 1 of 5", title: "First, understand today's focus." },
-  { eyebrow: "Daily Flow · 4 of 5", title: "One clear mission brings it into your day." },
-  { eyebrow: "Daily Flow · 5 of 5", title: "A short check reinforces what you need today." },
+  { eyebrow: "Daily Flow · 1 of 4", title: "First, understand today's focus." },
+  { eyebrow: "Daily Flow · 3 of 4", title: "One clear mission brings it into your day." },
+  { eyebrow: "Daily Flow · 4 of 4", title: "A short check reinforces what you need today." },
   { eyebrow: "Before your session", title: "See the same focus again before training." },
   { eyebrow: "After your day", title: "Reflect on what actually happened in the evening." },
   { eyebrow: "Your progress", title: "See your repetitions, not a judgement." },
@@ -345,7 +346,7 @@ const TodayScreen = () => {
             </span>
             <span>
               <span className="block text-[11px] font-semibold">{tr("Daily Flow starten", "Start Daily Flow")}</span>
-              <span className="mt-0.5 block text-[8px] text-black/65">{tr("10 Tages-Puls-Fragen · eine Mission", "10 daily pulse questions · one mission")}</span>
+              <span className="mt-0.5 block text-[8px] text-black/65">{tr("Tages-Puls · Mission · Verständnis-Check", "Daily pulse · mission · understanding check")}</span>
             </span>
           </span>
           <ArrowRight className="h-4 w-4 shrink-0 text-black/60" />
@@ -404,7 +405,7 @@ const FlowHeader = ({ title, step }: { title: string; step: number }) => {
     </div>
     <div className="border-b border-white/[0.045] bg-[#0D0E12]/88 px-4 py-2">
       <div className="flex items-center gap-1.5">
-        {Array.from({ length: 5 }, (_, index) => (
+        {Array.from({ length: 4 }, (_, index) => (
           <span
             key={index}
             className={cn(
@@ -413,7 +414,7 @@ const FlowHeader = ({ title, step }: { title: string; step: number }) => {
             )}
           />
         ))}
-        <span className="ml-1 text-[8px] tabular-nums text-white/42">{step + 1}/5</span>
+        <span className="ml-1 text-[8px] tabular-nums text-white/42">{step + 1}/4</span>
       </div>
     </div>
   </>
@@ -441,43 +442,29 @@ const ScienceScreen = () => {
   const { tr } = usePublicLanguage();
   return (
   <FlowScreen title="Science Bite" step={0} labelledBy="preview-science-title">
-    <div className="rounded-2xl bg-gradient-card border-glow overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-border/50 p-4">
-        <div>
-          <p className="mb-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Science Bite</p>
-          <h2 id="preview-science-title" className="text-[19px] font-bold leading-tight">
-            {tr("Nimm das vollständige Bild wieder auf", "Bring the full picture back into view")}
-          </h2>
-        </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
-          <Brain className="h-4 w-4 text-primary" />
-        </span>
-      </div>
-      <div className="space-y-3 p-4">
-        <p className="text-[10px] leading-4 text-muted-foreground">
-          {tr("Ein enger Blick ist nicht automatisch falsch – nur unvollständig.", "A narrow view is not automatically wrong, just incomplete.")}
-        </p>
-        <p className="text-[10px] leading-4 text-muted-foreground">
+    <div className="flex h-full flex-col justify-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.09] text-primary shadow-[0_0_34px_-18px_rgba(46,173,137,0.75)]">
+        <Brain className="h-5 w-5" />
+      </span>
+      <p className="mt-6 text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">Science Bite</p>
+      <h2 id="preview-science-title" className="mt-3 text-[25px] font-semibold leading-[1.08] tracking-[-0.04em]">
+        {tr("Ein enger Blick ist nicht automatisch falsch – nur unvollständig.", "A narrow view is not automatically wrong, just incomplete.")}
+      </h2>
+      <div className="mt-4 space-y-3">
+        <p className="text-[10px] leading-4 text-white/62">
           {tr("Unter Belastung kann ein Problem fast deine gesamte Aufmerksamkeit einnehmen. Andere reale Informationen verschwinden dadurch aus deinem Arbeitsbild.", "Under pressure, one problem can take up almost all your attention. Other real information can disappear from your working picture.")}
         </p>
-        <p className="text-[10px] leading-4 text-muted-foreground">
+        <p className="text-[10px] leading-4 text-white/62">
           {tr("Den Blick zu öffnen heißt nicht, positiv zu denken. Es heißt, mehr von der tatsächlichen Situation wahrzunehmen.", "Widening your view does not mean thinking positively. It means noticing more of what is actually happening.")}
         </p>
       </div>
-    </div>
-    <div className="mt-3 rounded-2xl border border-border/50 bg-primary/10 p-4">
-      <div className="flex items-start gap-3">
-        <Dumbbell className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-        <div>
-          <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-primary">{tr("Heute als Training", "Today's training")}</p>
-          <p className="mt-1 text-[10px] leading-4 text-foreground">
-            {tr("Wenn ein Problem fast alles verdeckt, holst du das Funktionierende und deine Möglichkeiten wieder mit ins Bild.", "When one problem crowds out almost everything else, bring what is working and your options back into view.")}
-          </p>
-        </div>
+      <div className="mt-5 border-l border-primary/35 pl-4">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-primary">{tr("Heute als Training", "Today's training")}</p>
+        <p className="mt-1 text-[9px] leading-4 text-white/58">{tr("Wenn ein Problem fast alles verdeckt, holst du das Funktionierende und deine Möglichkeiten wieder mit ins Bild.", "When one problem crowds out almost everything else, bring what is working and your options back into view.")}</p>
       </div>
-    </div>
-    <div className="mt-3 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
-      {tr("Verstanden", "Got it")} <ArrowRight className="ml-2 h-3.5 w-3.5" />
+      <div className="mt-5 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
+        {tr("Verstanden", "Got it")} <ArrowRight className="ml-2 h-3.5 w-3.5" />
+      </div>
     </div>
   </FlowScreen>
   );
@@ -486,42 +473,43 @@ const ScienceScreen = () => {
 const TasksScreen = () => {
   const { tr, language } = usePublicLanguage();
   return (
-  <FlowScreen title={tr("Deine Mission", "Your mission")} step={3} labelledBy="preview-tasks-title">
-    <h2 id="preview-tasks-title" className="text-[20px] font-bold">{tr("Heute im Fokus", "Today's focus")}</h2>
-    <p className="mt-1 text-[9px] text-muted-foreground">{tr("Tag 22 · Nimm das vollständige Bild wieder auf", "Day 22 · Bring the full picture back into view")}</p>
-    <p className="mt-3 text-[9px] leading-4 text-muted-foreground">
-      {tr("Eine Mission. Die Schritte gehören zusammen und führen dich zu einer Handlung.", "One mission. The steps work together and lead to an action.")}
-    </p>
-    <div className="mt-4 rounded-2xl border border-border/50 bg-gradient-card p-4">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-          <Target className="h-4 w-4" />
-        </span>
-        <div>
-          <p className="text-[10px] font-semibold">{tr("Drei Teile ins Bild holen", "Bring three parts into view")}</p>
-          <p className="mt-1 text-[8px] leading-3 text-muted-foreground">{tr("Wenn ein Problem fast die ganze Situation bestimmt.", "When one problem seems to define the whole situation.")}</p>
-        </div>
-      </div>
-      <div className="mt-4 space-y-2.5">
+  <FlowScreen title={tr("Deine Mission", "Your mission")} step={2} labelledBy="preview-tasks-title">
+    <div className="flex items-center gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary"><Target className="h-4 w-4" /></span>
+      <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Deine Mission", "Your mission")}</p>
+    </div>
+    <h2 id="preview-tasks-title" className="mt-4 text-[23px] font-semibold leading-[1.08] tracking-[-0.04em]">{tr("Nimm das vollständige Bild wieder auf", "Bring the full picture back into view")}</h2>
+    <p className="mt-3 text-[9px] leading-4 text-white/58">{tr("Mehr Überblick gibt dir mehr Möglichkeiten für deine nächste Entscheidung.", "A wider view gives you more options for your next decision.")}</p>
+    <div className="mt-4 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-3.5">
+      <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/42">{tr("Wenn es passiert", "When it happens")}</p>
+      <p className="mt-2 text-[9px] leading-4 text-white/76">{tr("Wähle eine Szene, in der dein Blick sehr eng wurde.", "Choose a situation in which your view became very narrow.")}</p>
+    </div>
+    <div className="mt-4">
+      <p className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/42">{tr("Was du machst", "What you do")}</p>
+      <div className="mt-3 space-y-2.5">
         {(language === "en" ? [
-          "Name the real problem.",
-          "Ask: What is working, or what else is possible?",
-          "Choose your next action from the full picture.",
+          "Name the problem without playing it down.",
+          "Ask: What else is there?",
+          "Find two concrete things your first view left out.",
         ] : [
-          "Benenne das reale Problem.",
-          "Frag: Was funktioniert oder ist außerdem möglich?",
-          "Wähle aus dem ganzen Bild deine nächste Handlung.",
+          "Benenne das Problem, ohne es kleinzureden.",
+          "Frag: Was ist außerdem da?",
+          "Finde zwei konkrete Dinge, die dein erster Blick ausgelassen hat.",
         ]).map((step, index) => {
         return (
-          <div key={step} className="flex items-center gap-3 rounded-xl bg-secondary/35 px-3 py-2.5">
+          <div key={step} className="flex items-center gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-[8px] font-semibold text-primary">
               {index + 1}
             </span>
-            <p className="text-[9px] leading-3.5 text-foreground">{step}</p>
+            <p className="text-[9px] leading-3.5 text-white/76">{step}</p>
           </div>
         );
       })}
       </div>
+    </div>
+    <div className="mt-4 rounded-[20px] border border-primary/20 bg-primary/[0.085] px-4 py-3.5 text-center">
+      <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-primary/80">{tr("Dein Satz für den Moment", "Your phrase for the moment")}</p>
+      <p className="mt-2 text-[18px] font-semibold text-primary">{tr("Was ist außerdem da?", "What else is there?")}</p>
     </div>
   </FlowScreen>
   );
@@ -530,7 +518,7 @@ const TasksScreen = () => {
 const CheckScreen = () => {
   const { tr, language } = usePublicLanguage();
   return (
-  <FlowScreen title={tr("Verständnis-Check", "Understanding check")} step={4} labelledBy="preview-check-title">
+  <FlowScreen title={tr("Verständnis-Check", "Understanding check")} step={3} labelledBy="preview-check-title">
     <h2 id="preview-check-title" className="text-[20px] font-bold">{tr("Kurzer Verständnis-Check", "Short understanding check")}</h2>
     <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
       {tr("Eine kurze Frage zum heutigen Fokus. Kein Test — nur Festigung.", "One short question about today's focus. Not a test, just reinforcement.")}
@@ -587,62 +575,29 @@ const ScreenHeaderPreview = ({
 );
 
 const AnchorScreen = () => {
-  const { tr, language } = usePublicLanguage();
+  const { tr } = usePublicLanguage();
   return (
   <AppScreen labelledBy="preview-anchor-title" chrome="none">
     <ScreenHeaderPreview title="Pre-Training" eyebrow={tr("Vor deiner Einheit", "Before your session")} />
     <div className="h-[546px] overflow-hidden px-5 py-6">
-      <div>
-        <p className="mb-3 text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">Pre-Training</p>
-        <h2 id="preview-anchor-title" className="text-[24px] font-bold leading-tight tracking-[-0.035em]">
-          {tr("Bereit für die nächste Einheit", "Ready for the next session")}
-        </h2>
-        <p className="mt-2 text-[10px] leading-4 text-muted-foreground">
-          {tr("Kurz sortieren, klare Linse setzen, dann raus in die Arbeit.", "Take a moment to get clear, then get to work.")}
-        </p>
-      </div>
+      <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Erst erinnern", "Recall first")}</p>
+      <h2 id="preview-anchor-title" className="mt-3 text-[25px] font-semibold leading-[1.1] tracking-[-0.04em]">
+        {tr("Was ist heute dein Satz?", "What is your phrase today?")}
+      </h2>
+      <p className="mt-3 text-[10px] leading-4 text-white/52">{tr("Antworte kurz aus deiner Erinnerung. Danach prüfst du den Satz aus dem Daily Flow.", "Answer briefly from memory. Then check the phrase from the Daily Flow.")}</p>
 
       <div className="mt-5 rounded-[24px] border border-white/[0.065] bg-white/[0.025] p-4">
-        <div className="flex items-start gap-3">
-          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          <div>
-          <p className="text-[8px] uppercase tracking-[0.14em] text-muted-foreground">{tr("Heutiger Fokus", "Today's focus")}</p>
-          <p className="mt-1 text-[11px] font-semibold">{tr("Nimm das vollständige Bild wieder auf", "Bring the full picture back into view")}</p>
-          <p className="mt-1 text-[9px] leading-4 text-muted-foreground">
-            {tr("Ein Problem ist real. Es ist aber selten die ganze Situation.", "A problem is real, but rarely the whole situation.")}
-          </p>
-          <p className="mt-3 text-[8px] leading-3.5 text-muted-foreground">
-            {tr("Nenne mindestens eine weitere reale Information und handle dann aus dem ganzen Bild.", "Name at least one other real piece of information, then act from the full picture.")}
-            </p>
-          </div>
+        <p className="text-[9px] leading-4 text-white/76">{tr("Welche Frage öffnet deinen Blick, wenn ein Problem alles andere verdeckt?", "Which question opens your view when one problem blocks out everything else?")}</p>
+        <div className="mt-4 min-h-[72px] rounded-2xl border border-white/[0.075] bg-black/15 px-3 py-3 text-[9px] text-white/25">{tr("Deine kurze Erinnerung …", "Your short reminder …")}</div>
+        <div className="mt-3 flex h-11 items-center justify-center gap-2 rounded-2xl border border-primary/45 bg-primary/[0.055] text-[10px] font-semibold text-white">
+          <Eye className="h-3.5 w-3.5" /> {tr("Erinnerung prüfen", "Check recall")}
         </div>
       </div>
 
-      <div className="mt-4 space-y-2.5">
-        {(language === "en" ? [
-          ["1", "Recall actively", "What question opens your view when one problem blocks out everything else?"],
-          ["2", "Check your recall", "Then see today's key phrase again, clearly and prominently."],
-          ["3", "Take it with you", "Use the full picture in your next action."],
-        ] : [
-          ["1", "Erinnere dich aktiv", "Welche Frage öffnet deinen Blick, wenn ein Problem alles andere verdeckt?"],
-          ["2", "Prüfe deine Erinnerung", "Danach siehst du den heutigen Satz noch einmal klar und groß."],
-          ["3", "Nimm ihn mit", "Nutze das vollständige Bild in deiner nächsten Handlung."],
-        ]).map(([number, title, copy]) => (
-          <div key={title} className="flex gap-3 rounded-[20px] border border-white/[0.065] bg-white/[0.025] p-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[9px] font-semibold text-primary">
-              {number}
-            </span>
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold leading-tight">{title}</p>
-              <p className="mt-1 line-clamp-2 text-[8px] leading-3 text-muted-foreground">{copy}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-primary-foreground">
-        <Target className="mr-2 h-3.5 w-3.5" />
-        {tr("Bereit fürs Training", "Ready for training")}
+      <div className="mt-5 rounded-[24px] border border-primary/25 bg-primary/[0.10] p-5 text-center shadow-[0_0_34px_rgba(46,173,137,0.10)]">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Dein Satz für heute", "Your phrase for today")}</p>
+        <p className="mt-3 text-[23px] font-semibold tracking-[-0.035em] text-primary">{tr("Was ist außerdem da?", "What else is there?")}</p>
+        <p className="mt-2 text-[9px] leading-4 text-white/48">{tr("Nimm das Problem wahr und hole weitere reale Informationen wieder mit ins Bild.", "Notice the problem and bring other real information back into view.")}</p>
       </div>
     </div>
   </AppScreen>

@@ -34,8 +34,8 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto("/");
-  await expect(page.locator("#golden-hero-title")).toContainText("Trainiere das System");
-  await expect(page.getByRole("button", { name: "System verstehen" })).toBeVisible();
+  await expect(page.locator("#golden-hero-title")).toContainText("Trainiere, klar zu handeln");
+  await expect(page.getByRole("button", { name: "In 30 Sekunden verstehen" })).toBeVisible();
   await expect(page.getByRole("link", { name: "RewirePerform im App Store laden" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "RewirePerform im App Store laden" }).first()).toHaveAttribute(
     "href",
@@ -43,6 +43,19 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   );
   await expectNoHorizontalOverflow(page);
   await capture(page, testInfo, "home");
+
+  await page.getByRole("button", { name: "In 30 Sekunden verstehen" }).click();
+  await expect(page.getByRole("heading", { name: "Erst verstehen, dann vertiefen." })).toBeVisible();
+  await page.getByRole("tab", { name: /02 Mission verstehen/ }).click();
+  await expect(page.getByRole("heading", { name: "Aus dem Fokus wird eine konkrete Aufgabe." })).toBeVisible();
+  await page.getByRole("tab", { name: /03 Vor Training abrufen/ }).click();
+  await expect(page.getByRole("heading", { name: "Erst erinnerst du dich selbst. Dann prüfst du den Satz." })).toBeVisible();
+  await page.getByRole("button", { name: "Für mein Team" }).click();
+  await expect(page.getByRole("heading", { name: "Mentale Arbeit bleibt oft in einzelnen Gesprächen hängen." })).toBeVisible();
+  await page.getByRole("tab", { name: /03 Zustand & Fokus/ }).click();
+  await expect(page.getByRole("heading", { name: "Der Coach erkennt, was das Team heute brauchen könnte." })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Teamzugang ansehen/ })).toHaveAttribute("href", "/team-access");
+  await expectNoHorizontalOverflow(page);
 
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { level: 1, name: "RewirePerform Datenschutz" })).toBeVisible();
@@ -160,10 +173,12 @@ test("internal introduction evidence completes without collecting personal data"
     } else {
       await expect(page.getByLabel("Schritt 10 von 10")).toHaveCount(0);
     }
-    expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+    expect(await page.evaluate(() => Object.keys(window.localStorage).filter((key) => key !== "rewireperform.public-language"))).toEqual([]);
     await expectNoHorizontalOverflow(page);
 
     if (index === 0) await capture(page, testInfo, "introduction-today");
+    if (index === 2) await capture(page, testInfo, "introduction-mission");
+    if (index === 4) await capture(page, testInfo, "introduction-pre-training");
     if (index === 7) await capture(page, testInfo, "introduction-measurement");
     if (index < firstRunSceneHeadings.length - 1) {
       await page.getByRole("button", { name: "Weiter" }).click();
@@ -186,7 +201,7 @@ test("internal introduction evidence completes without collecting personal data"
       }),
     ),
   );
-  expect(storedValues).toEqual({});
+  expect(storedValues).toEqual({ "rewireperform.public-language": "de" });
   expect(pageErrors).toEqual([]);
 });
 

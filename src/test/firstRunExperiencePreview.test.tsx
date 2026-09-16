@@ -75,7 +75,7 @@ describe("first run experience preview", () => {
     expect(screen.getByRole("heading", { name: "Du siehst sofort, was ansteht." })).toBeInTheDocument();
     expect(screen.getByText("Hallo Noah.")).toBeInTheDocument();
     expect(screen.getAllByText("Nimm das vollständige Bild wieder auf").length).toBeGreaterThan(0);
-    expect(screen.getByText("10 Tages-Puls-Fragen · eine Mission")).toBeInTheDocument();
+    expect(screen.getByText("Tages-Puls · Mission · Verständnis-Check")).toBeInTheDocument();
     expect(screen.getAllByText("Pre-Training").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tagesjournal").length).toBeGreaterThan(0);
     expect(screen.getByText("Wochenplan")).toBeInTheDocument();
@@ -86,9 +86,9 @@ describe("first run experience preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Eine klare Mission bringt ihn in deinen Alltag." })).toBeInTheDocument();
-    expect(screen.getByText("Drei Teile ins Bild holen")).toBeInTheDocument();
-    expect(screen.getByText("Benenne das reale Problem.")).toBeInTheDocument();
-    expect(screen.getByText("Wähle aus dem ganzen Bild deine nächste Handlung.")).toBeInTheDocument();
+    expect(screen.getByText("Wenn es passiert")).toBeInTheDocument();
+    expect(screen.getByText("Benenne das Problem, ohne es kleinzureden.")).toBeInTheDocument();
+    expect(screen.getAllByText("Was ist außerdem da?").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Ein kurzer Check festigt, was du heute brauchst." })).toBeInTheDocument();
@@ -96,7 +96,8 @@ describe("first run experience preview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Vor dem Training siehst du denselben Fokus wieder." })).toBeInTheDocument();
-    expect(screen.getByText("Bereit für die nächste Einheit")).toBeInTheDocument();
+    expect(screen.getByText("Was ist heute dein Satz?")).toBeInTheDocument();
+    expect(screen.getByText("Erinnerung prüfen")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Am Abend reflektierst du den echten Tag." })).toBeInTheDocument();
