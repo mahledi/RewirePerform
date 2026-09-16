@@ -67,7 +67,7 @@ describe("WebsiteGoldenPagePreview", () => {
   it("reuses the real athlete and coach introductions from the role cards", async () => {
     render(<WebsiteGoldenPagePreview />);
 
-    expect(screen.getByRole("heading", { name: "Trainiere, klar zu handeln wenn es darauf ankommt." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Trainiere das System hinter deiner Performance." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Erst verstehen, dann vertiefen." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Für mich als Athlet" })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("tab", { name: /02 Mission verstehen/ }));
@@ -129,7 +129,7 @@ describe("WebsiteGoldenPagePreview", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Choose English" }));
     expect(document.documentElement.lang).toBe("en");
-    expect(screen.getByRole("heading", { level: 1, name: "Train yourself to act clearly when it matters." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Train the system behind your performance." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Quick overview" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Understand first, then go deeper." })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Das System" })).not.toBeInTheDocument();

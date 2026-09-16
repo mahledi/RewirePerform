@@ -34,7 +34,7 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto("/");
-  await expect(page.locator("#golden-hero-title")).toContainText("Trainiere, klar zu handeln");
+  await expect(page.locator("#golden-hero-title")).toContainText("Trainiere das System");
   await expect(page.getByRole("button", { name: "In 30 Sekunden verstehen" })).toBeVisible();
   await expect(page.getByRole("link", { name: "RewirePerform im App Store laden" }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "RewirePerform im App Store laden" }).first()).toHaveAttribute(
