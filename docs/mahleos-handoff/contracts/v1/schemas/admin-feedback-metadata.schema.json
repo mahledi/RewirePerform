@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/admin-feedback-metadata.schema.json",
+  "title": "MahleOS admin feedback metadata v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "counts",
+    "open_by_category",
+    "by_platform",
+    "by_runtime",
+    "by_app_version",
+    "test_data_included",
+    "free_text_included",
+    "admin_notes_included",
+    "direct_identifiers_included"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-admin-feedback-metadata-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "total",
+        "open",
+        "reviewed",
+        "resolved",
+        "new_24h",
+        "new_7d"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reviewed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resolved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "new_24h": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "new_7d": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "open_by_category": {
+      "type": "object",
+      "required": [
+        "bug",
+        "suggestion",
+        "general",
+        "other"
+      ],
+      "properties": {
+        "bug": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "suggestion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "general": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "other": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "by_platform": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_.:/-]{1,96}$"
+      },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "by_runtime": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_.:/-]{1,96}$"
+      },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "by_app_version": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_.:/-]{1,96}$"
+      },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "free_text_included": {
+      "const": false
+    },
+    "admin_notes_included": {
+      "const": false
+    },
+    "direct_identifiers_included": {
+      "const": false
+    }
+  },
+  "additionalProperties": false
+}

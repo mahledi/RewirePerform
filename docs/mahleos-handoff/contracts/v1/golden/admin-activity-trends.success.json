@@ -1,0 +1,81 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000514",
+  "view": "admin_activity_trends",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "admin-activity-trends-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "window_days": 7,
+    "previous_window": {
+      "start_date": "2026-07-08",
+      "end_date": "2026-07-14"
+    },
+    "current_window": {
+      "start_date": "2026-07-15",
+      "end_date": "2026-07-21"
+    },
+    "segments": [
+      {
+        "participation_mode": "all",
+        "sample_size": 12,
+        "sufficient_data": true,
+        "previous_active_athletes": 6,
+        "current_active_athletes": 8,
+        "active_athlete_delta": 2,
+        "active_athlete_change_rate": 0.3333,
+        "direction": "up",
+        "previous_checkins": 20,
+        "current_checkins": 28,
+        "previous_completed_days": 18,
+        "current_completed_days": 24
+      },
+      {
+        "participation_mode": "team",
+        "sample_size": 8,
+        "sufficient_data": true,
+        "previous_active_athletes": 5,
+        "current_active_athletes": 4,
+        "active_athlete_delta": -1,
+        "active_athlete_change_rate": -0.2,
+        "direction": "down",
+        "previous_checkins": 14,
+        "current_checkins": 12,
+        "previous_completed_days": 11,
+        "current_completed_days": 10
+      },
+      {
+        "participation_mode": "solo",
+        "sample_size": 4,
+        "sufficient_data": false,
+        "previous_active_athletes": null,
+        "current_active_athletes": null,
+        "active_athlete_delta": null,
+        "active_athlete_change_rate": null,
+        "direction": "insufficient_data",
+        "previous_checkins": null,
+        "current_checkins": null,
+        "previous_completed_days": null,
+        "current_completed_days": null
+      }
+    ],
+    "data_quality": {
+      "previous_unclassified_events": 1,
+      "current_unclassified_events": 2,
+      "unclassified_events_in_overall": true
+    },
+    "privacy": {
+      "minimum_distinct_athletes_per_segment": 5,
+      "test_profiles_excluded": true,
+      "test_program_instances_excluded": true,
+      "test_teams_excluded": true,
+      "names_or_emails_included": false,
+      "direct_identifiers_included": false,
+      "individual_rows_included": false,
+      "free_text_included": false,
+      "observational_not_causal": true
+    }
+  }
+}

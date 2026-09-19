@@ -1,0 +1,20 @@
+{
+  "status": "COMPLETE_V0_3_3_SYNTHETIC_ONE_SHOT_POSTREAD_ASSURED",
+  "generated_at": "2026-08-11T06:06:54.559541+00:00",
+  "apple_rc_release_basis": "408b653953d2d9be7c29f8ada2924d7333746a62",
+  "consumer_operator_commit": "d50b8967df8abd21cd581f752136ff5c3613a6ac",
+  "request_id": "1502b081-854f-4758-ba5a-2717ab09a766",
+  "network_request_count": 1,
+  "http_status": 200,
+  "validated_item_count": 825,
+  "question_count": 55,
+  "raw_response_persisted": false,
+  "raw_text_persisted": false,
+  "subject_reference_persisted": false,
+  "credentials_removed": true,
+  "keychain_absent": true,
+  "reader_password_null": true,
+  "all_gates_closed": true,
+  "production": false,
+  "real_data": false
+}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Loader2, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QuestionCard from "@/components/questionnaire/QuestionCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,9 @@ import {
 } from "@/content/questionnaireV2";
 import type { Question } from "@/data/questionnaireData";
 import { scoreDevelopmentIndex } from "@/lib/developmentIndexScoring";
+import { captureAppError } from "@/lib/monitoring";
+import { getOrCreateActiveInstance } from "@/lib/programInstance";
+import type { Json } from "@/integrations/supabase/types";
 
 type Timing = "pre" | "mid" | "post";
 
@@ -40,7 +43,7 @@ const DeepProfile = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const timing = resolveTiming(searchParams.get("timing"));
-  const { user } = useAuth();
+  const { user, role, isTestUser } = useAuth();
 
   const deepQuestions = useMemo(
     () =>
@@ -69,24 +72,58 @@ const DeepProfile = () => {
     setSaving(true);
 
     const scores = scoreDevelopmentIndex(answers, timing);
-    const { error } = await supabase.from("deep_profile_assessments").insert({
+    const instance = await getOrCreateActiveInstance(user.id);
+    if (!instance?.id) {
+      toast.error("Dein Programmlauf ist noch nicht vollständig eingerichtet.");
+      setSaving(false);
+      return;
+    }
+
+    const payload = {
       user_id: user.id,
       session_id: user.id,
       timing,
-      answers: answers as any,
-      scores: scores as any,
+      answers: answers as unknown as Json,
+      scores: scores as unknown as Json,
       instrument_id: DEVELOPMENT_INDEX_INSTRUMENT_ID,
       questionnaire_version: DEVELOPMENT_INDEX_VERSION,
-    });
+      program_instance_id: instance.id,
+    };
+
+    const { data: existing, error: lookupError } = await supabase
+      .from("deep_profile_assessments")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("program_instance_id", instance.id)
+      .eq("instrument_id", DEVELOPMENT_INDEX_INSTRUMENT_ID)
+      .eq("timing", timing)
+      .maybeSingle();
+    const { error } = lookupError
+      ? { error: lookupError }
+      : existing
+        ? await supabase.from("deep_profile_assessments").update(payload).eq("id", existing.id)
+        : await supabase.from("deep_profile_assessments").insert(payload);
 
     if (error) {
       console.error("Save error:", error);
+      void captureAppError({
+        eventName: "deep_profile_saved",
+        error,
+        role,
+        route: "/deep-profile",
+        isTest: isTestUser,
+        metadata: {
+          timing,
+          item_count: Object.keys(answers).length,
+          has_program_instance: true,
+        },
+      });
       toast.error("Speichern fehlgeschlagen. Bitte versuche es erneut.");
       setSaving(false);
       return;
     }
 
-    toast.success(timing === "pre" ? "Startwert gespeichert." : "Entwicklungsindex gespeichert.");
+    toast.success(timing === "pre" ? "Startmessung gespeichert." : "Abschlussmessung gespeichert.");
     setSaving(false);
     setDone(true);
   };
@@ -115,16 +152,16 @@ const DeepProfile = () => {
             <Check className="w-10 h-10 text-primary" />
           </motion.div>
           <h2 className="font-heading text-2xl font-bold mb-2">
-            {timing === "pre" ? "Startwert gespeichert" : "Entwicklung gespeichert"}
+            {timing === "pre" ? "Startmessung gespeichert" : "Abschlussmessung gespeichert"}
           </h2>
           <p className="text-muted-foreground mb-8">
             Deine Antworten wurden gespeichert. Freitext bleibt privat; Coaches sehen nur geschützte Team-Aggregate ab ausreichender Gruppengröße.
           </p>
           <button
-            onClick={() => navigate(timing === "post" ? "/progress" : "/dashboard")}
+            onClick={() => navigate("/dashboard")}
             className="px-8 py-3 rounded-xl bg-primary font-heading font-semibold text-primary-foreground hover:shadow-glow transition-all"
           >
-            {timing === "post" ? "Fortschritt ansehen" : "Zum Dashboard"}
+            Zum Dashboard
           </button>
         </motion.div>
       </div>
@@ -135,13 +172,10 @@ const DeepProfile = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            <span className="font-heading font-bold text-sm">RewirePerform Development Index</span>
-          </div>
+          <span className="font-heading font-bold text-sm">RewirePerform Deep-Dive</span>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground px-2 py-1 rounded-md bg-secondary">
-              {timing === "pre" ? "Pre" : timing === "mid" ? "Mid" : "Post"}
+              {timing === "pre" ? "Start" : timing === "mid" ? "Zwischen" : "Abschluss"}
             </span>
             <span className="text-xs text-muted-foreground">
               {currentIndex + 1} / {deepQuestions.length}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-database-preflight-observation-v1",
+  "observed_at": "2026-08-10T18:57:52.789259+00:00",
+  "target": {
+    "project_ref": "zbeswjipayspgvcipzmx",
+    "environment": "staging"
+  },
+  "method": "SUPABASE_MCP_READ_ONLY_METADATA_AND_CONFIGURATION_QUERY",
+  "reader_role": {
+    "present": true,
+    "can_login": true,
+    "superuser": false,
+    "create_db": false,
+    "create_role": false,
+    "inherit": false,
+    "replication": false,
+    "bypass_rls": false,
+    "password_is_null": true
+  },
+  "machine_contract": {
+    "row_count": 1,
+    "contract_version": "0.2.1-draft",
+    "schema_version": "rewire-feedback-intelligence-export-v0.2.1-draft",
+    "contract_status": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+    "consumer_pin_ready": false,
+    "synthetic_export_enabled": false,
+    "production_export_enabled": false,
+    "machine_credential_ready": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false,
+    "producer_package_is_null": true
+  },
+  "collection_settings": {
+    "row_count": 1,
+    "athlete_collection_enabled": false,
+    "text_collection_enabled": false,
+    "privacy_notice_ready": false,
+    "app_store_declaration_ready": false,
+    "minor_policy_ready": false
+  },
+  "guardian_policy": {
+    "active_policy_count": 0,
+    "non_draft_policy_count": 0
+  },
+  "application_rows_read": false,
+  "configuration_rows_read": true,
+  "application_functions_called": false,
+  "database_mutated": false
+}

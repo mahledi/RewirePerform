@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/tracking-quality.schema.json",
+  "title": "MahleOS tracking quality v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "status",
+    "activity",
+    "integrity",
+    "save_pipeline_24h",
+    "test_data_included",
+    "privacy_level",
+    "privacy_exclusions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-tracking-quality-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "status": {
+      "enum": [
+        "GREEN",
+        "YELLOW",
+        "RED"
+      ]
+    },
+    "activity": {
+      "type": "object",
+      "required": [
+        "active_instances",
+        "active_athletes_7d",
+        "checkins_today",
+        "checkins_7d",
+        "completed_days_today",
+        "completed_days_7d",
+        "fresh_snapshots_today"
+      ],
+      "properties": {
+        "active_instances": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_athletes_7d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkins_today": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkins_7d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_days_today": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_days_7d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fresh_snapshots_today": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "integrity": {
+      "type": "object",
+      "required": [
+        "duplicate_checkins_56d",
+        "checkins_missing_instance_7d",
+        "completions_missing_instance_7d",
+        "completions_without_checkin_7d"
+      ],
+      "properties": {
+        "duplicate_checkins_56d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkins_missing_instance_7d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completions_missing_instance_7d": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completions_without_checkin_7d": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "save_pipeline_24h": {
+      "type": "object",
+      "required": [
+        "success",
+        "failed"
+      ],
+      "properties": {
+        "success": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "privacy_level": {
+      "const": "aggregate_tracking_counts_only"
+    },
+    "privacy_exclusions": {
+      "const": [
+        "user_ids",
+        "daily_checkin_values",
+        "wellbeing_metrics",
+        "reflection",
+        "journal_text",
+        "assessment_scores"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

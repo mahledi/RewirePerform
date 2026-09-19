@@ -1,0 +1,126 @@
+{
+  "schema_version": "rewireperform-v1.1-production-post-edge-deploy-preflight-v1",
+  "status": "PASS_PRODUCTION_EDGE_DEPLOYED_CREDENTIALLESS_RUNTIME_CLOSED",
+  "observed_at": "2026-08-13T11:59:14Z",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "migration_state": {
+    "remote_migration_count": 104,
+    "remote_versions_sha256": "f20873d87cd352ceed9460bf995d20fdde4b7e984c660983f81a5277b312981b"
+  },
+  "edge_functions": {
+    "mahleos-feedback-intelligence-production-read": {
+      "id": "1daee0c6-0831-4136-80ca-796e7a7ac1e3",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "deployment_digest_sha256": "32f1d1f2c847fec8cf31f5821ead3c8e7e3d977fdf7d039964280be07e50503c",
+      "remote_files": {
+        "supabase/functions/mahleos-feedback-intelligence-production-read/index.ts": "71767f232ca00c7e3def5c51683b47c7512130fb538197cf879ff5027261d1ae",
+        "supabase/functions/_shared/feedbackIntelligenceProductionMachineAuth.ts": "0f120f08fafc95a6373f563f196ccd0efd06d1b4e9743eae3e3d45478a856f00",
+        "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts": "78a3685d1b18e1fb5e70faf9fbc66dd6a419a5dc22a9cde18b78c9df6dda1ea1",
+        "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts": "61690142b2ff292a2bc82d60327332a5e93479da529f5462504a5a344792f0d8",
+        "supabase/functions/_shared/feedbackIntelligenceProductionDatabase.ts": "735c670c9e6ed4994d0b12b5d23d617f038a85674d2dde4a9c2cb97e9d11a5e4",
+        "supabase/functions/_shared/boundedRequestBody.ts": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e"
+      }
+    },
+    "submit-organization-access-request": {
+      "id": "a81e37b6-7e58-4a78-8f45-0da426a073d7",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "deployment_digest_sha256": "96a2d7bdbd97b17700198890afe747f6554ee412ac62718e2032785d1a6c583a",
+      "remote_files": {
+        "supabase/functions/submit-organization-access-request/index.ts": "1b6d9600f81bfa97ef7c979a1e689df4f02c4cc3eb8b2ced2be8f8da1ed58234",
+        "supabase/functions/_shared/supabaseService.ts": "5310e93594f4088266845f21472b6c6f77d3b67e8bc26191b916e84dc2c4cd9e",
+        "supabase/functions/_shared/boundedRequestBody.ts": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e"
+      }
+    }
+  },
+  "secret_presence": {
+    "source": "supabase-secrets-list-presence-only-v1",
+    "feedback": {
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY": false,
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_KEY_PREVIOUS": false,
+      "MAHLEOS_FEEDBACK_PRODUCTION_READER_DATABASE_URL": false,
+      "MAHLEOS_FEEDBACK_PRODUCTION_MACHINE_GATE": false,
+      "MAHLEOS_FEEDBACK_PRODUCTION_REAL_DATA_GATE": false
+    },
+    "organization": {
+      "TURNSTILE_SECRET_KEY": false,
+      "ORGANIZATION_INQUIRY_ALLOWED_ORIGINS": false,
+      "ORGANIZATION_INQUIRY_PUBLIC_ENABLED": false
+    },
+    "secret_values_read": false,
+    "secret_values_persisted": false,
+    "unrelated_secret_names_persisted": false
+  },
+  "reader_boundary": {
+    "observed_at": "2026-08-13T11:20:16Z",
+    "observation_reused_after_edge_only_deploy": true,
+    "role_name": "mahleos_feedback_production_reader",
+    "password_is_null": true,
+    "login": true,
+    "superuser": false,
+    "inherit": false,
+    "bypassrls": false,
+    "callable_rpc_count": 1,
+    "relation_privilege_count": 0,
+    "sequence_privilege_count": 0,
+    "public_callable_path_count": 0
+  },
+  "negative_http_matrix": [
+    {
+      "function": "mahleos-feedback-intelligence-production-read",
+      "condition": "missing_machine_key",
+      "http_status": 503,
+      "response_code": "service_not_configured"
+    },
+    {
+      "function": "submit-organization-access-request",
+      "condition": "allowed_origin_runtime_closed",
+      "origin": "https://rewireperform.com",
+      "http_status": 503,
+      "response_code": "service_not_available"
+    },
+    {
+      "function": "submit-organization-access-request",
+      "condition": "www_allowed_origin_runtime_closed",
+      "origin": "https://www.rewireperform.com",
+      "http_status": 503,
+      "response_code": "service_not_available"
+    },
+    {
+      "function": "submit-organization-access-request",
+      "condition": "foreign_origin",
+      "origin": "https://example.com",
+      "http_status": 403,
+      "response_code": "origin_not_allowed"
+    }
+  ],
+  "privacy": {
+    "application_rows_read": false,
+    "application_values_persisted": false,
+    "database_mutated_by_audit": false,
+    "credential_values_read": false,
+    "credential_values_persisted": false
+  },
+  "gates": {
+    "feedback_credentials": false,
+    "feedback_machine_runtime": false,
+    "feedback_real_data": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "minor_feedback": false,
+    "guardian_feedback": false,
+    "real_jarvis": false,
+    "organization_inquiry_public": false,
+    "app_store_submission": false
+  },
+  "authorization_boundary": {
+    "authorizes_credentials": false,
+    "authorizes_feedback_read": false,
+    "authorizes_organization_write": false,
+    "authorizes_production_activation": false,
+    "historical_pre_edge_evidence_authorizes_current_state": false
+  }
+}

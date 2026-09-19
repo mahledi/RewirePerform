@@ -1,0 +1,16 @@
+{
+  "status": "PASS_V0_3_3_POSTREAD_ASSURANCE",
+  "observed_at": "2026-08-11T06:06:54.387987+00:00",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "metadata_only": true,
+  "reader_password_state": "NULL",
+  "reader_callable_function_count": 1,
+  "reader_relation_privileges": [],
+  "reader_sequence_privileges": [],
+  "public_execute_defaults": [],
+  "application_rows_read": false,
+  "application_functions_called": false,
+  "database_mutated": false,
+  "production": false,
+  "real_data": false
+}

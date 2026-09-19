@@ -1,16 +1,18 @@
 /**
- * Service-Worker-Registrierung mit harten Guards:
- * - Niemals in Dev (import.meta.env.DEV)
- * - Niemals in einem iframe (Lovable-Preview)
- * - Niemals auf Lovable-Preview-Hostnamen
+ * Minimal production Service Worker registration.
  *
- * In allen "verbotenen" Kontexten werden vorhandene SWs deregistriert,
- * damit kein veralteter Cache hängen bleibt.
+ * The SW is kept for installability, cache cleanup and push notifications, but
+ * it no longer drives app updates from the client. That avoids Safari/iOS reload
+ * loops and stale app-shell races.
  */
+
 export async function registerSW() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-  const isNativeShell = !!(window as any).Capacitor?.isNativePlatform?.();
+  const nativeWindow = window as Window & {
+    Capacitor?: { isNativePlatform?: () => boolean };
+  };
+  const isNativeShell = Boolean(nativeWindow.Capacitor?.isNativePlatform?.());
   if (isNativeShell) return;
 
   const isInIframe = (() => {
@@ -30,7 +32,6 @@ export async function registerSW() {
   const isDev = import.meta.env.DEV;
 
   if (isDev || isInIframe || isPreviewHost) {
-    // Cleanup any leftover SW registrations to avoid stale caches in preview/dev.
     try {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map((r) => r.unregister()));
@@ -40,9 +41,23 @@ export async function registerSW() {
     return;
   }
 
+  // Kill-switch: ?sw=off entfernt eine bestehende SW-Registrierung sofort.
+  if (window.location.search.includes("sw=off")) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map((k) => caches.delete(k)));
+    } catch {
+      /* noop */
+    }
+    return;
+  }
+
   try {
-    const { registerSW: register } = await import("virtual:pwa-register");
-    register({ immediate: true });
+    await navigator.serviceWorker.register("/sw.js", {
+      updateViaCache: "none",
+    });
   } catch (err) {
     console.warn("[pwa] SW registration failed:", err);
   }

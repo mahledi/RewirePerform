@@ -28,6 +28,8 @@ export interface DeterministicAnalysis {
   rest_day_tasks: string[];
   mental_score: number;
   start_profile_score: number;
+  score_visibility: "internal_only";
+  measurement_boundary: string;
   category_scores: Record<string, number>;
   strongest_dimensions: string[];
   dominant_category: string;
@@ -229,7 +231,7 @@ export function buildDeterministicQuestionnaireAnalysis(
     .map(([dimension]) => dimension);
 
   return {
-    summary: `Dein Startprofil zeigt aktuell den stärksten Bereich in "${dominant_category}". Diese Auswertung beschreibt Antwortmuster für dein 56-Tage-System und ist keine Diagnose.`,
+    summary: `Dein Startprofil beschreibt Antwortmuster für dein 56-Tage-System. Diese interne Einordnung ist keine Diagnose und kein Ranking.`,
     strengths,
     development_areas,
     patterns: buildPatterns(category_scores),
@@ -263,8 +265,11 @@ export function buildDeterministicQuestionnaireAnalysis(
       "10 Minuten ohne Input: Atmung, Spaziergang oder Ruhe.",
       "Ein Muster benennen, das morgen leichter werden soll.",
     ],
+    // Backward-compatible internal baseline. This must not be shown as a player-facing mental score.
     mental_score: start_profile_score,
     start_profile_score,
+    score_visibility: "internal_only",
+    measurement_boundary: "Interne Startprofil- und Fortschrittsbaseline; keine Diagnose, kein Ranking, nicht athlet-facing.",
     category_scores,
     strongest_dimensions,
     dominant_category,

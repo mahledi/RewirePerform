@@ -130,6 +130,7 @@ export interface DailyJournal {
   journalTitle: string;
   questions: JournalQuestion[];
   gratitudeInstruction: string;
+  gratitudeMinWords?: number;
   freeReflectionPrompt?: string;
 }
 
@@ -155,6 +156,10 @@ export interface ComprehensionQuestion {
 
 export interface DailyContent {
   dayNumber: number;
+  /** Verständlicher Athleten-Titel; die feste Matrix bleibt davon unberührt. */
+  title?: string;
+  /** Athletennahe Formulierung der Tageslinse. */
+  lens?: string;
   scienceBite: {
     fact: string;
     source?: string;
@@ -162,8 +167,8 @@ export interface DailyContent {
   };
   todayTrigger: string;
   coreShift: string;
-  /** Genau 3 Tasks pro Tag */
-  tasks: [DailyTask, DailyTask, DailyTask];
+  /** Eine sichtbare Mission; ihre Schritte gehören zusammen. */
+  tasks: [DailyTask, ...DailyTask[]];
   journal: DailyJournal;
   gratitudePrompt: string;
   selfTalkAnchors: SelfTalkAnchor[];
@@ -177,6 +182,32 @@ export interface DailyContent {
     rest: string;
     match: string;
   };
+  /** Aktiver Abruf vor Training oder Wettkampf. */
+  preTraining?: {
+    label: "Pre-Training" | "Pre-Wettkampf";
+    recallPrompt: string;
+    reveal: string;
+    application: string;
+  };
+}
+
+export interface ResolvedDayContext {
+  /** Sichtbarer Name der Kalenderart. */
+  label: string;
+  /** Tages- und mechanismusspezifische Anwendung im aktuellen Kalenderkontext. */
+  focus: string;
+  checkin: {
+    pulseTitle: string;
+    pulseDescription: string;
+    reflectionTitle: string;
+    reflectionDescription: string;
+    journalReminder: string;
+    taskIntro: string;
+    completionMessage: string;
+  };
+  journal: {
+    intro: string;
+  };
 }
 
 /**
@@ -187,6 +218,7 @@ export interface ResolvedDay {
   matrix: MatrixDay;
   content: DailyContent;
   calendarEventType: CalendarEventType;
+  context: ResolvedDayContext;
   /** Datum dieses Programmtags im realen Kalender */
   date: string; // yyyy-MM-dd
 }

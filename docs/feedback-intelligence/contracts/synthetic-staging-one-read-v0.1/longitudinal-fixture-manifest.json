@@ -1,0 +1,39 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-synthetic-longitudinal-fixture-manifest-v1",
+  "contract_status": "LOCAL_SYNTHETIC_FIXTURE_ONLY_NOT_ACTIVATED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "data_scope": "synthetic",
+  "digest_algorithm": "sha256",
+  "package_digest_algorithm": "sha256 over the exact UTF-8 output of shasum -a 256 for files in manifest order, including two spaces and each relative path",
+  "package_sha256": "447354f9d6e2adba24ad827fda3bceb2617d2302304a84e42970415ff951744f",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/prepare-longitudinal-fixture.sql",
+      "sha256": "3659481fa133a55d06d9a0dcce636c7c1ba30c7f2c9693585eb4f2dd685bbc2a"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/synthetic-staging-one-read-v0.1/cleanup-longitudinal-fixture.sql",
+      "sha256": "efa6a66c7b06fac27e60a65b5569f41214baf27715865ffa7000ff03194375a9"
+    }
+  ],
+  "expected_counts": {
+    "subjects": 15,
+    "submissions": 60,
+    "structured_answer_items": 825,
+    "activity_snapshots": 60,
+    "consent_valid_synthetic_comments": 20,
+    "under_16_submissions_with_guardian_scope": 20,
+    "checkpoint_days": [10, 24, 39, 55],
+    "question_definitions": 55
+  },
+  "privacy": {
+    "real_users": false,
+    "names_or_emails": false,
+    "journal_or_reflection_text": false,
+    "coach_or_team_data": false,
+    "comments_are_clearly_marked_synthetic": true,
+    "cleanup_is_exact_id_scoped": true,
+    "machine_access_audit_remains_append_only": true
+  },
+  "production": false
+}

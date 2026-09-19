@@ -29,8 +29,11 @@ const CTASection = () => {
               Zugang sichern
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </button>
-            <button className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-xl border border-border font-heading font-semibold text-lg text-foreground transition-all hover:bg-secondary">
-              Demo anfragen
+            <button
+              onClick={() => navigate("/demo")}
+              className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-xl border border-border font-heading font-semibold text-lg text-foreground transition-all hover:bg-secondary"
+            >
+              Demo ansehen
             </button>
           </div>
           <p className="text-sm text-muted-foreground mt-8 font-heading">

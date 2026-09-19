@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/staging-postdeploy-assurance-v0.2/evidence.schema.json",
+  "title": "RewirePerform Feedback Intelligence staging postdeploy assurance v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_status",
+    "target_project_ref",
+    "remote_migration",
+    "database_assurance",
+    "edge_assurance",
+    "approved_inputs",
+    "external_gates"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "rewireperform-feedback-intelligence-staging-postdeploy-assurance-v2"
+    },
+    "contract_status": {
+      "const": "PASS_POSTDEPLOY_ASSURANCE_UNSIGNED_AWAITING_CONSUMER_REVIEW"
+    },
+    "target_project_ref": { "const": "zbeswjipayspgvcipzmx" },
+    "remote_migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "name", "local_path", "local_sha256", "applied"],
+      "properties": {
+        "version": { "const": "20260809113253" },
+        "name": { "const": "feedback_intelligence_declined_consent_export_remediation" },
+        "local_path": {
+          "const": "supabase/migrations/20260809093000_feedback_intelligence_declined_consent_export_remediation.sql"
+        },
+        "local_sha256": {
+          "const": "b82bdda5a60133e8ada310bfacdfbf50475f4a56d65668b41a3dcd96071ed2e6"
+        },
+        "applied": { "const": true }
+      }
+    },
+    "database_assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executed_at",
+        "audit_phase",
+        "validator_status",
+        "result_path",
+        "result_sha256",
+        "audit_sql_sha256",
+        "audit_package_manifest_sha256",
+        "audit_package_sha256",
+        "application_rows_read",
+        "application_functions_called",
+        "database_mutated",
+        "function_definition_sha256"
+      ],
+      "properties": {
+        "executed_at": { "const": "2026-08-09T11:33:20.00875+00:00" },
+        "audit_phase": { "const": "POSTDEPLOY_ASSURANCE" },
+        "validator_status": { "const": "PASS_POSTDEPLOY_ASSURANCE" },
+        "result_path": {
+          "const": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/remote-staging-postdeploy-result-2026-08-09.json"
+        },
+        "result_sha256": {
+          "const": "087ed49f622cc6eca77177c31229601c1dafb72ba005365c2c14098518f48fb0"
+        },
+        "audit_sql_sha256": {
+          "const": "7f7865f769f46bfab204c37d071ee743636fe183f6d6876a24557e51dc508bd3"
+        },
+        "audit_package_manifest_sha256": {
+          "const": "8b2a98c143780056046a2d98d83b25786e58c31f800ffb726d20ff12528690b5"
+        },
+        "audit_package_sha256": {
+          "const": "06e86e836f8100a3e377a26d137881831aeaa456ecf1a8eaf13530a11863e4cf"
+        },
+        "application_rows_read": { "const": false },
+        "application_functions_called": { "const": false },
+        "database_mutated": { "const": false },
+        "function_definition_sha256": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["gateway", "internal_export"],
+          "properties": {
+            "gateway": {
+              "const": "0d617fcb5e5a7ece31ca94b7ff0cf07026712b0d9ed4206c95bee9f4b198a8af"
+            },
+            "internal_export": {
+              "const": "89420ddf3f79ad57538f4fb1ad56458717874490ddbc88b52d577e081d3e872f"
+            }
+          }
+        }
+      }
+    },
+    "edge_assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slug",
+        "deployment_id",
+        "observed_version",
+        "status",
+        "verify_jwt",
+        "ezbr_sha256",
+        "source_file_count",
+        "source_manifest_sha256",
+        "deployed_source_byte_match",
+        "redeployed_in_this_gate"
+      ],
+      "properties": {
+        "slug": { "const": "mahleos-feedback-intelligence-read" },
+        "deployment_id": { "const": "4579d2b9-16c9-4387-be84-d5a5b440265e" },
+        "observed_version": { "const": 11 },
+        "status": { "const": "ACTIVE" },
+        "verify_jwt": { "const": false },
+        "ezbr_sha256": {
+          "const": "952c86471d41377314d53c1663716717957519132233ddd7abf6aee68c7be8ee"
+        },
+        "source_file_count": { "const": 6 },
+        "source_manifest_sha256": {
+          "const": "97d6714a8871f510996cfd39fc23505fde0f5b82a02e1acfd4627f201eecbf91"
+        },
+        "deployed_source_byte_match": { "const": true },
+        "redeployed_in_this_gate": { "const": false }
+      }
+    },
+    "approved_inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "producer_deployment_source_commit",
+        "producer_implementation_commit",
+        "gateway_manifest_sha256",
+        "gateway_package_sha256",
+        "release_pair_sha256",
+        "consumer_acceptance_commit",
+        "consumer_acceptance_sha256"
+      ],
+      "properties": {
+        "producer_deployment_source_commit": {
+          "const": "1e34e4559d6f5df5aab162f84786f8262ddedea8"
+        },
+        "producer_implementation_commit": {
+          "const": "970f581fb855ecff432283f099de6b85a95fc564"
+        },
+        "gateway_manifest_sha256": {
+          "const": "97b4caf3109650be74963587c1340ddd699e0aa80b6acf587da79cfdf0ed001d"
+        },
+        "gateway_package_sha256": {
+          "const": "15c85f345592c7df3b0c700134ff5ab2c6b7b86b3ea64e4a7088168a488dbbbb"
+        },
+        "release_pair_sha256": {
+          "const": "21028aba62cc882b6a57c65e7a039b64f980d15393c4d7757ece43fd7574b585"
+        },
+        "consumer_acceptance_commit": {
+          "const": "abfc59fe92d33b5f5ef8a36626ba89c92a5d4de0"
+        },
+        "consumer_acceptance_sha256": {
+          "const": "52faaedc994af43b2c0f0c99cb11680072e2581dedcfddf04fcfc2bbd4d71b51"
+        }
+      }
+    },
+    "external_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer_postdeploy_review_required",
+        "credentials_provisioned",
+        "reader_password_provisioned",
+        "network_read_performed",
+        "production_approved",
+        "real_data_read",
+        "push_performed",
+        "merge_performed"
+      ],
+      "properties": {
+        "consumer_postdeploy_review_required": { "const": true },
+        "credentials_provisioned": { "const": false },
+        "reader_password_provisioned": { "const": false },
+        "network_read_performed": { "const": false },
+        "production_approved": { "const": false },
+        "real_data_read": { "const": false },
+        "push_performed": { "const": false },
+        "merge_performed": { "const": false }
+      }
+    }
+  }
+}

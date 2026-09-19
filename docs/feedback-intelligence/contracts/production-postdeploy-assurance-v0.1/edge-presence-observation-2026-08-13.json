@@ -1,0 +1,11 @@
+{
+  "schema_version": "rewireperform-production-edge-presence-observation-v1",
+  "observed_at": "2026-08-13T11:20:16Z",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "source": "supabase-functions-list-metadata-v1",
+  "observed_slugs": {
+    "mahleos-feedback-intelligence-production-read": false,
+    "submit-organization-access-request": false
+  },
+  "application_rows_read": false
+}

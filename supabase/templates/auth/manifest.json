@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "sender_name": "RewirePerform",
+  "sender_email": "no-reply@auth.rewireperform.com",
+  "support_url": "https://rewireperform.com/support",
+  "templates": {
+    "confirmation.html": {
+      "dashboard_template": "Confirm signup",
+      "subject": "Bestätige deine E-Mail für RewirePerform",
+      "enabled": true
+    },
+    "recovery.html": {
+      "dashboard_template": "Reset password",
+      "subject": "Setze dein RewirePerform-Passwort zurück",
+      "enabled": true
+    },
+    "password_changed_notification.html": {
+      "dashboard_template": "Password changed",
+      "subject": "Dein RewirePerform-Passwort wurde geändert",
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": "rewireperform-feedback-consent-production-postdeploy-package-v1",
+  "package_status": "LOCAL_UNSIGNED_AWAITING_INDEPENDENT_CONSUMER_REVIEW",
+  "producer_commit": "e50d6e68a0bbd25064e3752f94eed1ad9d5ff552",
+  "package_sha256": "478a3aff35f7280d30faf87cfcc9f13bc29ffa47d8f84ddaa8081f8275a57842",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-consent-postdeploy-v1.1/postdeploy-evidence.json",
+      "sha256": "4d3b691b931435b03bea4fa39a951d2591a8f0b19510a7c3dbcf3b161459c826"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-consent-postdeploy-v1.1/evidence.schema.json",
+      "sha256": "9b0a8255454d24bc63a597e17c1cf953561297d039e9106a18253d3e6553f87d"
+    },
+    {
+      "path": "supabase/migrations/20260813115737_feedback_consent_guardian_de_v1_1_final_contract.sql",
+      "sha256": "6a2933e3d33a41fe0c35523be795160c04f030dfccf3f4579078fabb0784eba9"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/consent-v1.1/producer-package-manifest.json",
+      "sha256": "5a28d9f407ed59c45dbbdddc35699e3e848ee750a87f19720ed3995b2361b05e"
+    },
+    {
+      "path": "scripts/generate-feedback-consent-production-postdeploy-v1-1.mjs",
+      "sha256": "fa83031685bdcb3cadfd5dd9985071615b8a222c4bbd35014bf2178905b71b9f"
+    },
+    {
+      "path": "src/test/feedbackConsentProductionPostdeployV11.test.ts",
+      "sha256": "bc4655cea7f1376419234f381c3847c68b70d950ca68266eeac62a86813bf40f"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCTION_CONSENT_POSTDEPLOY_V1_1.md",
+      "sha256": "db8c8d72796614b315a87f2dc14a5fd9a3f0e3d6159e6f121afdfcfb34d64d48"
+    }
+  ],
+  "authorization": {
+    "campaigns_active": false,
+    "guardian_policy_active": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "jarvis_credentials": false,
+    "jarvis_real_data_read": false,
+    "app_store_action": false,
+    "push": false,
+    "merge": false
+  }
+}

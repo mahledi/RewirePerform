@@ -23,4 +23,11 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: ["src/test/feedbackIntelligenceStagingPrivilegeAuditV02.test.ts"],
+    rules: {
+      // This evidence test is byte-pinned by the accepted audit package.
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 );

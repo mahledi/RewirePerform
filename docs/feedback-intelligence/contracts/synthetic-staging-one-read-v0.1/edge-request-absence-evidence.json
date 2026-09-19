@@ -1,0 +1,18 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-edge-request-absence-v1",
+  "contract_status": "SANITIZED_METADATA_ONLY_NO_EDGE_INVOCATION_OBSERVED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "generated_at": "2026-08-08T08:32:37Z",
+  "request_id": "1ed626e9-a9b0-4935-83c0-1cd8b0852f0a",
+  "edge_function_slug": "mahleos-feedback-intelligence-read",
+  "log_window": "LAST_24_HOURS",
+  "exact_request_id_present": false,
+  "edge_function_slug_present": false,
+  "http_response_observed_by_consumer": false,
+  "gateway_rpc_call_observed": false,
+  "application_rows_read": false,
+  "raw_logs_included": false,
+  "secret_values_included": false,
+  "production": false,
+  "real_data_read": false
+}

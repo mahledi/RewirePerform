@@ -1,0 +1,126 @@
+{
+  "brand": "RewirePerform",
+  "logo_version": "1.0.0",
+  "status": "LOCKED",
+  "generated_at": "2026-07-18",
+  "assets": [
+    {
+      "path": "exports/app-store/rewireperform-app-icon-1024.png",
+      "bytes": 44935,
+      "sha256": "2cae24cd5b4da2aa3d78ac9dc597161f6a017472768c4c7c8d4725182c345e8f",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGB"
+    },
+    {
+      "path": "exports/apple/rewireperform-apple-touch-icon-180.png",
+      "bytes": 13242,
+      "sha256": "503c86f812b3b3bbb6dd259afe1ecc275b5bc555352586b3c533b17169f91c48",
+      "width": 180,
+      "height": 180,
+      "mode": "RGB"
+    },
+    {
+      "path": "exports/email/rewireperform-email-dark-background-256.png",
+      "bytes": 22843,
+      "sha256": "f3c0b57811463f9468a4770f1baca5f063b76c7dbd941bf4542029f06e469976",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "exports/email/rewireperform-email-light-background-256.png",
+      "bytes": 19496,
+      "sha256": "821292407abe4eaf5df2aa6774958bd094a53270fd40b44379ea328a42918ffc",
+      "width": 256,
+      "height": 256,
+      "mode": "RGBA"
+    },
+    {
+      "path": "exports/pwa/rewireperform-app-icon-192.png",
+      "bytes": 14304,
+      "sha256": "c8bb8395fe42ab4240e4637892dd54ef2bd3999128ac8caa0528570a08bd874a",
+      "width": 192,
+      "height": 192,
+      "mode": "RGB"
+    },
+    {
+      "path": "exports/pwa/rewireperform-app-icon-512.png",
+      "bytes": 39459,
+      "sha256": "7ed2fcfba929935ebc2728a66029213ec97f889fdb9944a7155b5ba3d13e13e6",
+      "width": 512,
+      "height": 512,
+      "mode": "RGB"
+    },
+    {
+      "path": "exports/web/rewireperform-favicon-32.png",
+      "bytes": 1724,
+      "sha256": "c2178c6a5b00c7c077629a622754f6386d9b59f564720e7bed3ea394da73da54",
+      "width": 32,
+      "height": 32,
+      "mode": "RGB"
+    },
+    {
+      "path": "exports/web/rewireperform-favicon-64.png",
+      "bytes": 4396,
+      "sha256": "0e557c5ff6bd446c2b2ed701ff21158b912c62e423713564a2c2316d54397830",
+      "width": 64,
+      "height": 64,
+      "mode": "RGB"
+    },
+    {
+      "path": "exports/web/rewireperform-symbol-dark-background-512.png",
+      "bytes": 47318,
+      "sha256": "15bfe48734c8b66f59026f9141da57f9ec4de3d51fe320005f38348803de498c",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "exports/web/rewireperform-symbol-light-background-512.png",
+      "bytes": 40418,
+      "sha256": "cf7209ace30d216d151982d53ade87b54cdd15dc47df06cf6df712b5ed1e5c03",
+      "width": 512,
+      "height": 512,
+      "mode": "RGBA"
+    },
+    {
+      "path": "master/rewireperform-app-icon-v1.svg",
+      "bytes": 7469,
+      "sha256": "aaec0c0174ae8439b3c3f879bcfd999e7e9322de20c7b7e444668651fa79c0f5"
+    },
+    {
+      "path": "master/rewireperform-symbol-green-v1.svg",
+      "bytes": 7417,
+      "sha256": "211735e0091bde6ace1d3ccaf7db14f5b1786ba4df84ca992d8ee39a047cebd7"
+    },
+    {
+      "path": "master/rewireperform-symbol-light-background-v1.svg",
+      "bytes": 7417,
+      "sha256": "be3ec1017cb16b80aa1ce8fe51dad07e5d621e4bbf35bc81af9701ad706cb146"
+    },
+    {
+      "path": "master/rewireperform-symbol-midnight-v1.svg",
+      "bytes": 7417,
+      "sha256": "60db60a283aede99327a4669bc601141068ca6c79334198a3242f2521473b9dd"
+    },
+    {
+      "path": "master/rewireperform-symbol-v1.svg",
+      "bytes": 7417,
+      "sha256": "866211b9e9cdd7684394c2201295b4fa273609c62fe04e36aad3bb986b27ef49"
+    },
+    {
+      "path": "master/rewireperform-symbol-white-v1.svg",
+      "bytes": 7417,
+      "sha256": "2b3fd19dfe444e8c3f0c5b35693816c0aaeb202accd663c0b873e64b71b13af2"
+    },
+    {
+      "path": "preview/rewireperform-logo-delivery-sheet.png",
+      "bytes": 150987,
+      "sha256": "cf8d7c42964082a99b364b9411c644037b9758d4f213fccf920e89f1ce0ca548",
+      "width": 1600,
+      "height": 1000,
+      "mode": "RGB"
+    }
+  ]
+}

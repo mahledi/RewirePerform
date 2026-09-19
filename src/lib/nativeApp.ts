@@ -2,20 +2,63 @@ import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 
-export async function configureNativeShell() {
-  if (!Capacitor.isNativePlatform()) return;
+const APP_LOADING_SELECTOR = '[data-app-loading-shell="true"]';
 
-  try {
-    await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#0e1217" });
-    await StatusBar.setOverlaysWebView({ overlay: false });
-  } catch (err) {
-    console.warn("[native] status bar setup failed:", err);
+export function configureNativeShell() {
+  if (!Capacitor.isNativePlatform()) return () => {};
+
+  void (async () => {
+    try {
+      await StatusBar.setStyle({ style: Style.Light });
+      await StatusBar.setBackgroundColor({ color: "#0D0E12" });
+      await StatusBar.setOverlaysWebView({ overlay: false });
+    } catch (err) {
+      console.warn("[native] status bar setup failed:", err);
+    }
+  })();
+
+  const root = document.getElementById("root");
+  if (!root) return () => {};
+
+  let firstFrame: number | null = null;
+  let secondFrame: number | null = null;
+  let hidden = false;
+
+  const cancelFrames = () => {
+    if (firstFrame !== null) window.cancelAnimationFrame(firstFrame);
+    if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
+    firstFrame = null;
+    secondFrame = null;
+  };
+
+  const observer = new MutationObserver(() => scheduleReadinessCheck());
+
+  const hideWhenReady = () => {
+    firstFrame = null;
+    secondFrame = null;
+    if (hidden || root.childElementCount === 0 || root.querySelector(APP_LOADING_SELECTOR)) return;
+
+    hidden = true;
+    observer.disconnect();
+    void SplashScreen.hide({ fadeOutDuration: 120 }).catch((err: unknown) => {
+      console.warn("[native] splash screen hide failed:", err);
+    });
+  };
+
+  function scheduleReadinessCheck() {
+    if (hidden) return;
+    cancelFrames();
+    firstFrame = window.requestAnimationFrame(() => {
+      firstFrame = null;
+      secondFrame = window.requestAnimationFrame(hideWhenReady);
+    });
   }
 
-  try {
-    await SplashScreen.hide();
-  } catch (err) {
-    console.warn("[native] splash screen hide failed:", err);
-  }
+  observer.observe(root, { childList: true, subtree: true });
+  scheduleReadinessCheck();
+
+  return () => {
+    observer.disconnect();
+    cancelFrames();
+  };
 }

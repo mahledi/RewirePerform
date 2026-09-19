@@ -1,0 +1,70 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000511",
+  "view": "admin_comprehension",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-admin-comprehension-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "summary": {
+      "participants": 9,
+      "completed_checks": 42,
+      "question_responses": 126,
+      "correct_responses": 101,
+      "incorrect_responses": 25,
+      "accuracy": 0.8016,
+      "sufficient_data": true
+    },
+    "weeks": [
+      {
+        "week_number": 1,
+        "participants": 9,
+        "completed_checks": 42,
+        "question_responses": 126,
+        "correct_responses": 101,
+        "incorrect_responses": 25,
+        "accuracy": 0.8016
+      }
+    ],
+    "days": [
+      {
+        "day_number": 7,
+        "week_number": 1,
+        "participants": 9,
+        "completed_checks": 9,
+        "question_responses": 27,
+        "correct_responses": 21,
+        "incorrect_responses": 6,
+        "accuracy": 0.7778
+      }
+    ],
+    "questions": [
+      {
+        "day_number": 7,
+        "week_number": 1,
+        "question_id": "day7-q1",
+        "question_version_key": "0123456789abcdef0123456789abcdef",
+        "target": "program_understanding",
+        "participants": 9,
+        "times_shown": 9,
+        "correct_responses": 7,
+        "incorrect_responses": 2,
+        "accuracy": 0.7778,
+        "needs_content_review": false
+      }
+    ],
+    "suppressed_groups": {
+      "weeks": 0,
+      "days": 0,
+      "questions": 0
+    },
+    "minimum_distinct_participants": 5,
+    "question_text_included": false,
+    "selected_options_included": false,
+    "direct_identifiers_included": false,
+    "private_content_included": false,
+    "test_data_included": false
+  }
+}

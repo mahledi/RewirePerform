@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.local/contracts/feedback-intelligence/edge-deployment-evidence-v0.1/evidence.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_ref", "deployment", "hash_semantics", "producer", "sources", "source_manifest_sha256", "config", "runtime_configuration", "deployed_byte_match", "network_invocation_performed", "production"],
+  "properties": {
+    "schema_version": { "const": "rewireperform-feedback-intelligence-edge-deployment-evidence-v1" },
+    "project_ref": { "const": "zbeswjipayspgvcipzmx" },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "version", "deployment_id", "status", "verify_jwt", "ezbr_sha256"],
+      "properties": {
+        "slug": { "const": "mahleos-feedback-intelligence-read" },
+        "version": { "const": 1 },
+        "deployment_id": { "const": "4579d2b9-16c9-4387-be84-d5a5b440265e" },
+        "status": { "const": "ACTIVE" },
+        "verify_jwt": { "const": false },
+        "ezbr_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "hash_semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ezbr_sha256", "source_file_sha256", "source_manifest_sha256"],
+      "properties": {
+        "ezbr_sha256": { "type": "string" },
+        "source_file_sha256": { "type": "string" },
+        "source_manifest_sha256": { "type": "string" }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gateway_commit", "gateway_manifest_sha256", "gateway_package_sha256", "postdeploy_commit"],
+      "properties": {
+        "gateway_commit": { "const": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658" },
+        "gateway_manifest_sha256": { "const": "4c53990d8f1c751a2d2d9d5820abf0c418cf38c47cd59ecdbc90501d75e28d07" },
+        "gateway_package_sha256": { "const": "5f89b849bb148f0d02b4bdafbb0b072bcec5087a02614856f011133b6f13a8d3" },
+        "postdeploy_commit": { "const": "4b46b8180a79edf0658e9d567d116e69cecd594e" }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["deployed_path", "local_path", "sha256", "deployed_byte_match"],
+        "properties": {
+          "deployed_path": { "type": "string" },
+          "local_path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "deployed_byte_match": { "const": true }
+        }
+      }
+    },
+    "source_manifest_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "verify_jwt"],
+      "properties": {
+        "path": { "const": "supabase/config.toml" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "verify_jwt": { "const": false }
+      }
+    },
+    "runtime_configuration": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "present", "evidence_basis"],
+        "properties": {
+          "name": { "type": "string" },
+          "present": { "const": false },
+          "evidence_basis": { "const": "NOT_PROVISIONED_IN_APPROVED_PRODUCER_CHAIN" }
+        }
+      }
+    },
+    "deployed_byte_match": { "const": true },
+    "network_invocation_performed": { "const": false },
+    "production": { "const": false }
+  }
+}

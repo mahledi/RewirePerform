@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "status", "source_base_commit", "project_ref", "activation_contract", "synthetic_fixture_boundary", "scenarios", "execution", "external_gates", "next_gate"],
+  "properties": {
+    "schema_version": { "const": "rewireperform-feedback-v1.1-production-activation-synthetic-smoke-plan-v1" },
+    "status": { "const": "LOCAL_CONTRACT_READY_EXTERNAL_GATES_CLOSED" },
+    "source_base_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "project_ref": { "const": "bqsbxesmybthwtxmowfz" },
+    "activation_contract": { "type": "object" },
+    "synthetic_fixture_boundary": { "type": "object" },
+    "scenarios": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "type": "object" } },
+    "execution": { "type": "object" },
+    "external_gates": { "type": "object" },
+    "next_gate": { "type": "string" }
+  }
+}

@@ -1,0 +1,123 @@
+import { useEffect } from "react";
+import { PushNotifications } from "@capacitor/push-notifications";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  detachNativeRemindersFromInactiveUser,
+  isNativeNotificationsAvailable,
+  listenForNativeReminderActions,
+} from "@/lib/nativeNotifications";
+import { refreshEnabledNativeReminders } from "@/lib/nativeReminderPlan";
+import {
+  isNativeRemotePushAvailable,
+  syncNativeRemotePushRegistration,
+} from "@/lib/nativeRemotePush";
+import { createRestVisualizationNavigationState } from "@/lib/nativeRestVisualizationIntent";
+
+const SAFE_NOTIFICATION_ROUTES = new Set([
+  "/dashboard",
+  "/journal",
+  "/pre-training",
+]);
+
+const remoteNotificationExtra = (data: Record<string, unknown> | undefined) => {
+  const nested = data?.rewireperform;
+  if (nested && typeof nested === "object") return nested as Record<string, unknown>;
+  if (typeof nested === "string") {
+    try {
+      const parsed = JSON.parse(nested) as unknown;
+      if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
+    } catch {
+      return data;
+    }
+  }
+  // FCM data payloads are flat string maps; APNs uses the nested object above.
+  return data;
+};
+
+export const NativeNotificationRouter = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isNativeNotificationsAvailable()) return;
+    let disposed = false;
+    let handle: Awaited<ReturnType<typeof listenForNativeReminderActions>> = null;
+    let remoteHandle: Awaited<ReturnType<typeof PushNotifications.addListener>> | null = null;
+
+    const handleRoute = (extra: Record<string, unknown> | undefined, actionId?: string) => {
+      if (actionId === "dismiss") return;
+      const route = typeof extra?.route === "string" ? extra.route : null;
+      const reminderUserId = typeof extra?.userId === "string" ? extra.userId : null;
+      const routePath = route?.split(/[?#]/, 1)[0] ?? null;
+      if (!route || !routePath || !SAFE_NOTIFICATION_ROUTES.has(routePath)) return;
+      if (reminderUserId && user && reminderUserId !== user.id) {
+        toast.error("Diese Erinnerung gehört zu einem anderen Account.");
+        return;
+      }
+      const restVisualizationState = createRestVisualizationNavigationState(extra);
+      navigate(route, restVisualizationState ? { state: restVisualizationState } : undefined);
+    };
+
+    void listenForNativeReminderActions((action) => {
+      handleRoute(action.notification.extra as Record<string, unknown> | undefined, action.actionId);
+    }).then((listenerHandle) => {
+      if (disposed) void listenerHandle?.remove();
+      else handle = listenerHandle;
+    });
+
+    if (isNativeRemotePushAvailable()) {
+      void PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        const data = action.notification.data as Record<string, unknown> | undefined;
+        handleRoute(remoteNotificationExtra(data), action.actionId);
+      }).then((listenerHandle) => {
+        if (disposed) void listenerHandle.remove();
+        else remoteHandle = listenerHandle;
+      });
+    }
+
+    return () => {
+      disposed = true;
+      void handle?.remove();
+      void remoteHandle?.remove();
+    };
+  }, [navigate, user]);
+
+  useEffect(() => {
+    if (loading || !isNativeNotificationsAvailable()) return;
+    let disposed = false;
+    let syncing = false;
+    let lastSyncAt = 0;
+
+    const sync = async (force = false) => {
+      if (disposed || syncing) return;
+      if (!force && Date.now() - lastSyncAt < 5 * 60_000) return;
+      syncing = true;
+      try {
+        await detachNativeRemindersFromInactiveUser(user?.id ?? null);
+        if (user) {
+          await refreshEnabledNativeReminders(user.id);
+          await syncNativeRemotePushRegistration(user.id);
+        }
+        lastSyncAt = Date.now();
+      } catch (error) {
+        console.warn("[native] reminder sync failed", error);
+      } finally {
+        syncing = false;
+      }
+    };
+
+    void sync(true);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") void sync();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      disposed = true;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [loading, user]);
+
+  return null;
+};

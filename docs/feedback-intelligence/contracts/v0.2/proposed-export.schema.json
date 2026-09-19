@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:mahleos:rewire-feedback-intelligence-export:0.2.0-draft",
+  "title": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract_status", "generated_at", "items", "privacy"],
+  "properties": {
+    "schema_version": {"const": "rewire-feedback-intelligence-export-v0.2-draft"},
+    "contract_status": {"const": "PRODUCER_CONFIRMED_DRAFT_NOT_ACTIVATED"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "items": {
+      "type": "array",
+      "maxItems": 5000,
+      "items": {"$ref": "#/$defs/item"}
+    },
+    "privacy": {"$ref": "#/$defs/privacy"}
+  },
+  "$defs": {
+    "hashReference": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "safeId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$"},
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["feedback_reference", "campaign_reference", "subject_reference", "questionnaire_version", "language", "product_version", "content_version", "program_day", "question_id", "construct_id", "item_family_id", "item_variant_id", "scale_id", "structured_answer", "comment", "consent", "activity_snapshot"],
+      "properties": {
+        "feedback_reference": {"$ref": "#/$defs/hashReference"},
+        "campaign_reference": {"$ref": "#/$defs/hashReference"},
+        "subject_reference": {"$ref": "#/$defs/hashReference"},
+        "questionnaire_version": {"$ref": "#/$defs/safeId"},
+        "language": {"type": "string", "pattern": "^[a-z]{2}(?:-[A-Z]{2})?$"},
+        "product_version": {"$ref": "#/$defs/safeId"},
+        "content_version": {"$ref": "#/$defs/safeId"},
+        "program_day": {"enum": [10, 24, 39, 55]},
+        "question_id": {"$ref": "#/$defs/safeId"},
+        "construct_id": {"$ref": "#/$defs/safeId"},
+        "item_family_id": {"$ref": "#/$defs/safeId"},
+        "item_variant_id": {"$ref": "#/$defs/safeId"},
+        "scale_id": {"$ref": "#/$defs/safeId"},
+        "structured_answer": {"$ref": "#/$defs/safeId"},
+        "comment": {"type": ["string", "null"], "minLength": 1, "maxLength": 2000, "$comment": "Producer maximum is 1200; 2000 is the defensive consumer acceptance ceiling and values above 1200 are quarantined as producer contract deviations."},
+        "consent": {"$ref": "#/$defs/consent"},
+        "activity_snapshot": {"$ref": "#/$defs/activitySnapshot"}
+      }
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "scope", "consent_version", "notice_hash", "consent_reference", "granted_at", "withdrawn_at", "valid_at_export"],
+      "properties": {
+        "state": {"enum": ["GRANTED", "NOT_GRANTED"]},
+        "scope": {"const": "product-improvement-individual-text-ai-analysis-v1"},
+        "consent_version": {"$ref": "#/$defs/safeId"},
+        "notice_hash": {"$ref": "#/$defs/hashReference"},
+        "consent_reference": {"anyOf": [{"$ref": "#/$defs/hashReference"}, {"type": "null"}]},
+        "granted_at": {"type": ["string", "null"], "format": "date-time"},
+        "withdrawn_at": {"type": ["string", "null"], "format": "date-time"},
+        "valid_at_export": {"type": "boolean"}
+      }
+    },
+    "activitySnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_window", "program_days_available", "program_days_completed", "checkins_completed", "journal_entries_created_count", "tasks_completed", "transfer_pulse_count", "resume_delay_bucket", "continuation_status_bucket"],
+      "properties": {
+        "observation_window": {"$ref": "#/$defs/observationWindow"},
+        "program_days_available": {"type": "integer", "minimum": 0, "maximum": 56},
+        "program_days_completed": {"type": "integer", "minimum": 0, "maximum": 56},
+        "checkins_completed": {"type": "integer", "minimum": 0, "maximum": 56},
+        "journal_entries_created_count": {"type": "integer", "minimum": 0, "maximum": 56},
+        "tasks_completed": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "transfer_pulse_count": {"type": "null", "$comment": "Must remain null until a separate producer source and privacy approval."},
+        "resume_delay_bucket": {"enum": ["NO_RESUME_NEEDED", "DAYS_1_3", "DAYS_4_7", "DAYS_8_PLUS", "NOT_AVAILABLE"], "$comment": "SAME_DAY is reserved but is not emitted or accepted from feedback-activity-counts-v1.0.0."},
+        "continuation_status_bucket": {"enum": ["ACTIVE_OR_COMPLETED", "PAUSED_1_3_DAYS", "PAUSED_4_7_DAYS", "PAUSED_8_PLUS_DAYS", "NOT_AVAILABLE"]}
+      }
+    },
+    "observationWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_program_day", "end_program_day", "bucket"],
+      "properties": {
+        "start_program_day": {"const": 1},
+        "end_program_day": {"enum": [10, 24, 39, 55]},
+        "bucket": {"enum": ["DAY_01_10", "DAY_01_24", "DAY_01_39", "DAY_01_55"]}
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_reference_is_pseudonymous", "subject_reference_scope", "direct_identifiers_exported", "names_emails_teams_coaches_exported", "journal_reflection_support_text_exported", "journal_length_or_quality_exported", "raw_text_requires_consent", "raw_text_is_untrusted_data", "raw_text_persisted_by_consumer", "observational_not_causal", "minimum_cohort_size", "small_cohorts_suppressed", "coach_access"],
+      "properties": {
+        "subject_reference_is_pseudonymous": {"const": true},
+        "subject_reference_scope": {"const": "FEEDBACK_ACTIVITY_PACKAGE_ONLY"},
+        "direct_identifiers_exported": {"const": false},
+        "names_emails_teams_coaches_exported": {"const": false},
+        "journal_reflection_support_text_exported": {"const": false},
+        "journal_length_or_quality_exported": {"const": false},
+        "raw_text_requires_consent": {"const": true},
+        "raw_text_is_untrusted_data": {"const": true},
+        "raw_text_persisted_by_consumer": {"const": false},
+        "observational_not_causal": {"const": true},
+        "minimum_cohort_size": {"const": 5},
+        "small_cohorts_suppressed": {"const": true},
+        "coach_access": {"const": false}
+      }
+    }
+  }
+}

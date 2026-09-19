@@ -1,5 +1,11 @@
 # Launch-Study V1
 
+> **Historischer Stand.** Dieses Dokument beschreibt die erste Study-Schicht.
+> Die darin genannten direkten Study-Exporte und Snapshot-Builder sind nicht mehr
+> der aktuelle Freigabevertrag. Der lokale Integrationskandidat vom 20. Juli 2026
+> erlaubt externe Evidence nur noch ueber unveraenderliche Team-/Solo-Data-Locks.
+> Source of Truth: `docs/TRACKING_EVIDENCE_HARDENING_2026-07-20.md`.
+
 Launch-Study V1 turns the existing RewirePerform tracking layer into a privacy-safe internal evaluation system. It is built for product review, club presentations, pilot reporting, and later research preparation.
 
 ## What It Measures
@@ -63,14 +69,14 @@ Tables:
 - `study_aggregate_snapshots`
 - `study_export_manifests`
 
-Admin-only RPCs:
+Historische Admin-RPCs (kein aktueller Exportpfad):
 
 - `get_admin_study_overview(include_test boolean default false)`
 - `create_study_aggregate_snapshot(_cohort_id uuid default null, include_test boolean default false)`
 
 ## Admin UI
 
-Admin Control Center now includes:
+Die historische Admin-Oberflaeche umfasste:
 
 - Study / Evidence tab
 - activation and adherence metrics

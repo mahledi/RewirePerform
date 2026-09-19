@@ -1,10 +1,15 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.99.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
 
 function rand(n = 10) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -17,10 +22,13 @@ function rand(n = 10) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  let admin: ReturnType<typeof createClient> | null = null;
+  let createdTeamId: string | null = null;
+  const createdUserIds: string[] = [];
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -30,14 +38,16 @@ Deno.serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(token);
     if (claimsErr || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
     const adminId = claimsData.claims.sub as string;
 
-    const admin = createClient(SUPABASE_URL, SERVICE);
-    const { data: roleRow } = await admin.from("user_roles").select("role").eq("user_id", adminId).eq("role", "admin").maybeSingle();
+    admin = createClient(SUPABASE_URL, SERVICE);
+    const { data: roleRow, error: roleError } = await admin.from("user_roles")
+      .select("role").eq("user_id", adminId).eq("role", "admin").maybeSingle();
+    if (roleError) throw new Error(`admin role lookup: ${roleError.message}`);
     if (!roleRow) {
-      return new Response(JSON.stringify({ error: "Forbidden: admin role required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return jsonResponse({ error: "Forbidden: admin role required" }, 403);
     }
 
     const suffix = rand(4).toLowerCase();
@@ -57,9 +67,26 @@ Deno.serve(async (req) => {
       });
       if (uErr || !u.user) throw new Error(`createUser ${a.email}: ${uErr?.message}`);
       const uid = u.user.id;
-      // profiles + role may be set by triggers; upsert to ensure
-      await admin.from("profiles").upsert({ id: uid, full_name: a.full_name, sport: "Football", is_test_user: true }, { onConflict: "id" });
-      await admin.from("user_roles").upsert({ user_id: uid, role: a.role as any }, { onConflict: "user_id,role" });
+      createdUserIds.push(uid);
+      // Auth creates the canonical profile. Only mark this synthetic account here;
+      // rewriting product fields would correctly trip the minor authorization guard.
+      const { error: profileError } = await admin.from("profiles")
+        .update({ is_test_user: true })
+        .eq("id", uid);
+      if (profileError) throw new Error(`profile ${a.email}: ${profileError.message}`);
+      const { error: roleError } = await admin.from("user_roles")
+        .upsert({ user_id: uid, role: a.role }, { onConflict: "user_id,role" });
+      if (roleError) throw new Error(`role ${a.email}: ${roleError.message}`);
+      if (a.role === "athlete") {
+        const { error: authorizationError } = await admin.rpc("minor_service_action", {
+          _action: "set_age",
+          _user_id: uid,
+          _payload: { age_band: "adult" },
+        });
+        if (authorizationError) {
+          throw new Error(`authorization ${a.email}: ${authorizationError.message}`);
+        }
+      }
       created.push({ role: a.role, email: a.email, user_id: uid });
     }
 
@@ -79,41 +106,74 @@ Deno.serve(async (req) => {
       .select()
       .single();
     if (teamErr || !team) throw new Error(`team: ${teamErr?.message}`);
+    createdTeamId = team.id;
 
     const memberRows = [coach, ...athletes].map((c) => ({ team_id: team.id, user_id: c.user_id }));
-    await admin.from("team_members").insert(memberRows);
+    const { error: memberError } = await admin.from("team_members").insert(memberRows);
+    if (memberError) throw new Error(`team members: ${memberError.message}`);
+
+    const { data: programRun, error: runError } = await admin
+      .from("program_runs")
+      .insert({
+        team_id: team.id,
+        name: `${team.name} · Run 1`,
+        status: "active",
+        started_at: today,
+        created_by: adminId,
+        metadata: { source: "qa-create-cohort" },
+      })
+      .select("id")
+      .single();
+    if (runError || !programRun) throw new Error(`program run: ${runError?.message}`);
 
     // Program instances for athletes
     const instanceRows = athletes.map((a) => ({
       user_id: a.user_id,
       team_id: team.id,
+      program_run_id: programRun.id,
       cycle_number: 1,
       status: "active",
       started_at: today,
       is_test_instance: true,
     }));
-    await admin.from("program_instances").insert(instanceRows);
+    const { error: instanceError } = await admin.from("program_instances").insert(instanceRows);
+    if (instanceError) throw new Error(`program instances: ${instanceError.message}`);
 
     // Default QA time override = real today (day 1)
-    await admin.from("qa_time_overrides").insert({
+    const { error: overrideError } = await admin.from("qa_time_overrides").insert({
       scope: "team",
       team_id: team.id,
       simulated_date: today,
       simulated_day_number: 1,
       created_by: adminId,
     });
+    if (overrideError) throw new Error(`QA time override: ${overrideError.message}`);
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         success: true,
         team: { id: team.id, name: team.name, access_code: team.access_code, coach_access_code: team.coach_access_code, program_start_date: today },
         password,
         accounts: created,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  } catch (e: any) {
+      });
+  } catch (e: unknown) {
     console.error("qa-create-cohort error", e);
-    return new Response(JSON.stringify({ error: e?.message ?? "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (admin) {
+      try {
+        if (createdTeamId) {
+          await admin.from("qa_time_overrides").delete().eq("team_id", createdTeamId);
+          await admin.from("program_instances").delete().eq("team_id", createdTeamId);
+          await admin.from("program_runs").delete().eq("team_id", createdTeamId);
+          await admin.from("team_members").delete().eq("team_id", createdTeamId);
+          await admin.from("teams").delete().eq("id", createdTeamId);
+        }
+        for (const userId of [...createdUserIds].reverse()) {
+          await admin.auth.admin.deleteUser(userId);
+        }
+      } catch (cleanupError) {
+        console.error("qa-create-cohort cleanup error", cleanupError);
+      }
+    }
+    const message = e instanceof Error ? e.message : "Internal error";
+    return jsonResponse({ error: message }, 500);
   }
 });

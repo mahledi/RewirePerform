@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "request_id": "90000000-0000-4000-8000-000000000509",
+  "view": "admin_overview",
+  "checksum_algorithm": "sha256",
+  "response_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "data": {
+    "schema_version": "mahleos-admin-overview-v1",
+    "generated_at": "2026-07-21T12:00:00Z",
+    "reporting_timezone": "UTC",
+    "counts": {
+      "users": 12,
+      "athletes": 9,
+      "coaches": 2,
+      "admins": 1,
+      "teams": 2,
+      "active_program_runs": 1,
+      "active_program_instances": 9,
+      "completed_days_total": 84,
+      "checkins_total": 76,
+      "assessments_total": 9,
+      "comprehension_checks_completed": 42
+    },
+    "test_data_included": false,
+    "privacy_level": "company_counts_only",
+    "direct_identifiers_included": false,
+    "private_content_included": false
+  }
+}

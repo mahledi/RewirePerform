@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.rewireperform.app",
+      "sha256_cert_fingerprints": [
+        "04:4A:E1:48:B4:72:1A:DA:64:3E:A0:5B:B7:22:B0:53:65:6F:CF:1C:AE:0C:DE:DE:B0:A2:D5:80:AD:3B:33:9D"
+      ]
+    }
+  }
+]

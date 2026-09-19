@@ -1,0 +1,130 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-combined-staging-predeploy-v2",
+  "evidence_status": "PREPARED_FAIL_CLOSED_V0_3_3_AWAITING_SINGLE_REGISTRY_MIGRATION_APPLY",
+  "generated_at": "2026-08-10T19:30:00+02:00",
+  "target": {
+    "project_ref": "zbeswjipayspgvcipzmx",
+    "environment": "staging",
+    "jurisdiction": "DE",
+    "data_scope": "synthetic_only"
+  },
+  "producer_basis": {
+    "release_commit": "c132feba8e2b540475a54fef258b17bd4dafc7df",
+    "feedback_integration_commit": "b418a54a06fadf8fc4d1e7f96ec3ebe7b27e3c7c",
+    "repository_state": "PINNED_COMMITTED_INPUTS"
+  },
+  "producer_inputs": {
+    "semantics": {
+      "contract_version": "0.3.3-draft",
+      "source_commit": "6beef95999bdddc78b9f7bfc8a40d725f4b1af96",
+      "integration_commit": "b418a54a06fadf8fc4d1e7f96ec3ebe7b27e3c7c",
+      "manifest_sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f",
+      "package_sha256": "c5df75dd0ddbf717b039e1c809d9e06b06219b7e55e1d4384886a07496e210d5",
+      "consumer_commit": "71f853da86a0d6450233c695702747d52059cd6e",
+      "consumer_acceptance_sha256": "a5563f83bcaef42d743ee898cdf02331d7965d18b88ab4ad431bde35f6176818",
+      "consumer_status": "ACCEPTED_LOCAL_UNSIGNED"
+    },
+    "export": {
+      "contract_version": "0.2.1-draft",
+      "source_commit": "1eb9de1960213878fc4186f76aca0bd59b2c99c9",
+      "integration_commit": "b418a54a06fadf8fc4d1e7f96ec3ebe7b27e3c7c",
+      "manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
+      "package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
+      "consumer_commit": "91983b226ddac2c068c55b62c7dc706baedfee93",
+      "consumer_acceptance_sha256": "9cd280b2e5ebe958237d6ba77e4f7c6f06217a5b0daf4897aea02c9c72396cfb",
+      "consumer_status": "ACCEPTED_LOCAL_UNSIGNED"
+    },
+    "gateway": {
+      "contract_version": "0.2.1+0.3.3-draft",
+      "source_commit": "e0de56f3dfdf6dc540fae1759b5bb4d8e12fafd3",
+      "integration_commit": "b418a54a06fadf8fc4d1e7f96ec3ebe7b27e3c7c",
+      "manifest_sha256": "bc69e224b22e568269a74eff7d021533075dab931fb8adf6bc212f79a58d9f0e",
+      "package_sha256": "5828858602b3a28374b6e11ea5c80649f908eef2f1c0527f1382a39d2b477ed0",
+      "consumer_commit": "71f853da86a0d6450233c695702747d52059cd6e",
+      "consumer_acceptance_sha256": "a2a236212b7e4e1f5c6ce323c9ddd9ee1b583f4f1974bcb251a33603f4a0f8d6",
+      "consumer_status": "ACCEPTED_LOCAL_UNSIGNED"
+    }
+  },
+  "accepted_historical_staging": {
+    "predeploy_evidence_sha256": "78caa5bd105045b5430391d70f2b905a82326f5f5e637d4cd85b5712e4d46c9e",
+    "postdeploy_evidence_sha256": "3ff7ed70bf0523c0e23b5e1800a6c0143d4edcd6a6a215597a3c081919101b55",
+    "postdeploy_package_sha256": "4be78184303b4d4547dcb5730da8cbcb4dedd45d2ebb1d6df273ff5b1c5e98cd",
+    "historical_baseline_only": true,
+    "applied_migrations": [
+      {
+        "path": "supabase/migrations/20260810122000_feedback_text_consent_notice_v1_1.sql",
+        "sha256": "50eea80f6977972c921429db697e295dfe6134c74ea8a480c937537f549e9f6f",
+        "historically_applied": true
+      },
+      {
+        "path": "supabase/migrations/20260810122100_guardian_feedback_text_notice_v1_1.sql",
+        "sha256": "3663a7f385cbf168aac2d200ced3a7aa68906de5f736a1a768e401480e1788d1",
+        "historically_applied": true
+      },
+      {
+        "path": "supabase/migrations/20260810122749_feedback_intelligence_transfer_pulse_count_v0_2_1.sql",
+        "sha256": "463bf24d04eb981fa6509b47e0ce97487d8f51061f4ba514f652052399ab06e6",
+        "historically_applied": true
+      }
+    ],
+    "edge_source_sha256": "b1e1cf077970011f6f62beef121ec617c94a4f37849163958bc1a2840199c384",
+    "edge_deployed_byte_match": true
+  },
+  "staging_delta": {
+    "pending_migrations": [
+      {
+        "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+        "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9",
+        "purpose": "DRAFT_CAMPAIGN_REGISTRY_METADATA_ONLY",
+        "status": "NOT_APPLIED_BY_THIS_GATE"
+      }
+    ],
+    "runtime_bytes": {
+      "export_manifest_sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab",
+      "export_package_sha256": "8c1bd5807865c41c7572ddd47872bca355515f99a4f7ef1f17a017d1bd35794b",
+      "export_schema_sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d",
+      "gateway_request_schema_sha256": "74e3616a67975766b51238d5573671d8e086014392d0e59e3ee9696ab287d204",
+      "edge_source_sha256": "b1e1cf077970011f6f62beef121ec617c94a4f37849163958bc1a2840199c384",
+      "export_unchanged": true,
+      "request_schema_unchanged": true,
+      "edge_source_unchanged": true,
+      "edge_redeploy_required": false
+    }
+  },
+  "historical_evidence": {
+    "v0_3_2_postdeploy_authorizes_v0_3_3": false,
+    "v0_3_2_synthetic_read_authorizes_v0_3_3": false,
+    "silent_reinterpretation_allowed": false,
+    "historical_bytes_preserved": true
+  },
+  "gates": {
+    "feedback_collection_enabled": false,
+    "text_collection_enabled": false,
+    "minor_policy_enabled": false,
+    "guardian_policy_enabled": false,
+    "consumer_pin_enabled": false,
+    "synthetic_export_enabled": false,
+    "reader_password_provisioned": false,
+    "machine_key_provisioned": false,
+    "edge_runtime_enabled": false,
+    "network_read_performed": false,
+    "production_export_enabled": false,
+    "real_data_read_enabled": false,
+    "database_write_performed": false,
+    "edge_deploy_performed": false,
+    "push_performed": false,
+    "merge_performed": false,
+    "app_store_release_authorized": false
+  },
+  "next_gate": {
+    "decision": "READY_FOR_SEPARATELY_APPROVED_SINGLE_REGISTRY_MIGRATION_APPLY",
+    "separate_staging_apply_approval_required": true,
+    "exact_database_mutations_required": 1,
+    "edge_redeploy_required": false,
+    "metadata_only_audit_without_prior_apply_sufficient": false,
+    "metadata_only_audit_after_apply_sufficient": true,
+    "credentials_allowed": false,
+    "network_read_allowed": false,
+    "production_allowed": false
+  }
+}

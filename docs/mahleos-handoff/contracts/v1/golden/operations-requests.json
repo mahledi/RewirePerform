@@ -1,0 +1,46 @@
+[
+  {},
+  {
+    "view": "daily_brief"
+  },
+  {
+    "view": "system_health"
+  },
+  {
+    "view": "tracking_quality"
+  },
+  {
+    "view": "feedback_status"
+  },
+  {
+    "view": "pilot_readiness",
+    "program_run_id": "20000000-0000-4000-8000-000000000501"
+  },
+  {
+    "view": "pilot_catalog"
+  },
+  {
+    "view": "solo_readiness"
+  },
+  {
+    "view": "evidence_status"
+  },
+  {
+    "view": "admin_overview"
+  },
+  {
+    "view": "admin_teams"
+  },
+  {
+    "view": "admin_comprehension"
+  },
+  {
+    "view": "admin_feedback_metadata"
+  },
+  {
+    "view": "admin_partner_requests"
+  },
+  {
+    "view": "admin_activity_trends"
+  }
+]

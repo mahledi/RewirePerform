@@ -1,0 +1,91 @@
+{
+  "schema_version": "rewireperform-feedback-structured-production-package-v1.2.0-draft",
+  "contract_version": "1.2.0-structured-only-draft",
+  "package_status": "LOCAL_PREPARED_NOT_ACTIVATED",
+  "package_sha256": "d9a345e482c20ae5cfcf5c7ed7f60d1ec3ea5ce04599f9234472a92d4a1aa870",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/structured-export.schema.json",
+      "sha256": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/consumer-contract.json",
+      "sha256": "d1b57de3528f45204e4bedafebb9db8f15f6602b9d4cbe0f812f083cf78fd60e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v1.2.0-structured-only-draft/jarvis-consumer-package-pin.json",
+      "sha256": "c5569db6cbe84728baccdab0ecf297817d005f3805a347ad5cc3afa093ff8543"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/structured-production-gateway-v1.2/request.schema.json",
+      "sha256": "4cc57041950ebd4a5b765f2c09aa841b990c23ec78105c99ce9d99b1dd81941e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/structured-production-gateway-v1.2/gateway-contract.json",
+      "sha256": "cbb3d61a2a1fec1880eb6ffa2e6e85530debff7e5a3f8856a903259f3db7f6d8"
+    },
+    {
+      "path": "supabase/migrations/20260824121000_feedback_jarvis_structured_only_v1_2.sql",
+      "sha256": "0145f375b4ecd89946baa81d3e38d47d9b317351b348463d6bea1d2d8e9abdd4"
+    },
+    {
+      "path": "supabase/migrations/20260824143000_feedback_machine_reader_net_privilege_hardening_v1_2.sql",
+      "sha256": "4b57b6636e8cae3c7a7d55c3689a543b99f742672cbe5a86099626ae9837b953"
+    },
+    {
+      "path": "supabase/migrations/20260824150000_feedback_jarvis_structured_contract_v1_2.sql",
+      "sha256": "25cc6f332c71fbe56ad76631c8c950b6fd3efa6465eb7bb7cf08fa3677ecc519"
+    },
+    {
+      "path": "supabase/functions/_shared/boundedRequestBody.ts",
+      "sha256": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts",
+      "sha256": "61690142b2ff292a2bc82d60327332a5e93479da529f5462504a5a344792f0d8"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
+      "sha256": "78a3685d1b18e1fb5e70faf9fbc66dd6a419a5dc22a9cde18b78c9df6dda1ea1"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceProductionMachineAuth.ts",
+      "sha256": "0f120f08fafc95a6373f563f196ccd0efd06d1b4e9743eae3e3d45478a856f00"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceProductionDatabase.ts",
+      "sha256": "735c670c9e6ed4994d0b12b5d23d617f038a85674d2dde4a9c2cb97e9d11a5e4"
+    },
+    {
+      "path": "supabase/functions/mahleos-feedback-structured-production-read/index.ts",
+      "sha256": "d65ae1fb14e7012253a5b52fffd91b07d6ab8e12ce9e6d46bc0f00f39845fa6c"
+    },
+    {
+      "path": "src/test/feedbackJarvisStructuredContractV12.test.ts",
+      "sha256": "d881d9c87a880faa74b5f83809fcf5f95323d9a9b6bdfe5a47e072546760ad0d"
+    },
+    {
+      "path": "src/test/feedbackMachineReaderNetPrivilegeHardeningV12.test.ts",
+      "sha256": "ad7a3b1ddf5d000ae0452a44b9127a844456603eec65e568f8f2e44dc1d5f693"
+    },
+    {
+      "path": "scripts/generate-feedback-structured-production-gateway-v1-2-package.mjs",
+      "sha256": "ef675cfd0d5b81fa06114b52fb314774dcfebe733fa5d2250f77018e5dcf5dac"
+    }
+  ],
+  "pins": {
+    "endpoint": "/functions/v1/mahleos-feedback-structured-production-read",
+    "rpc": "feedback_machine_production.read_feedback_intelligence_production_structured_v1_2(text,text,text,text)",
+    "schema_sha256": "1aa3b1ed3a56722c0b496b8dfc4a661bc364df4cec3bb838f41715e7b8570cff",
+    "jarvis_commit": "ef1b7ce40d09894ccb0fb8fa8d3b03784f6f9979",
+    "jarvis_consumer_manifest_sha256": "788d9bb1c6d66473abad9f8be1ad53e2e1535da6f8ad45c67d16d2745418f541",
+    "jarvis_consumer_package_sha256": "3c5925eb341a9f827ff93ec4fc3c0c0bb71519ecf8dcc0076ef4636b988a5543"
+  },
+  "activation": {
+    "migration_applied": false,
+    "edge_deployed": false,
+    "credentials_ready": false,
+    "runtime_gates_open": false,
+    "production_read_performed": false
+  }
+}

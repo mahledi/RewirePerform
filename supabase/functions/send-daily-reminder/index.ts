@@ -13,7 +13,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY")!;
-const rawSubject = Deno.env.get("VAPID_SUBJECT") ?? "hello@rewireperform.com";
+const rawSubject = Deno.env.get("VAPID_SUBJECT") ?? "support@rewireperform.com";
 const VAPID_SUBJECT =
   rawSubject.startsWith("mailto:") || rawSubject.startsWith("http")
     ? rawSubject
@@ -28,20 +28,21 @@ type PushError = {
 };
 
 type NotifType = "morning" | "pre_training" | "evening";
+type NotifSource = "time" | "team_calendar" | "team_weekly_schedule" | "solo_schedule";
 
 const PAYLOADS: Record<NotifType, { title: string; body: string; url: string }> = {
   morning: {
-    title: "RewirePerform - Guten Morgen",
+    title: "Guten Morgen",
     body: "Dein Check-in wartet. Starte bewusst in deinen Tag.",
     url: "/dashboard",
   },
   pre_training: {
-    title: "RewirePerform - Pre-Training",
+    title: "Pre-Training",
     body: "Eine kurze Vorbereitung: Fokus, Aufgabe, nächste Aktion.",
     url: "/pre-training",
   },
   evening: {
-    title: "RewirePerform - Tagesabschluss",
+    title: "Tagesabschluss",
     body: "Dein Journal wartet. Drei ruhige Minuten für deinen Abschluss.",
     url: "/journal",
   },
@@ -70,6 +71,28 @@ interface TrainingScheduleRow {
   training_timezone: string | null;
 }
 
+interface TeamScheduleRow {
+  team_id: string;
+  day_of_week: number;
+  training_local_hour: number;
+  training_local_minute: number;
+  training_timezone: string;
+}
+
+interface TeamCalendarEventRow {
+  team_id: string;
+  date: string;
+  event_type: "training" | "rest" | "competition";
+  training_local_hour: number | null;
+  training_local_minute: number | null;
+  training_timezone: string | null;
+}
+
+interface ProgramInstanceRow {
+  user_id: string;
+  started_at: string | null;
+}
+
 const toMinuteOfDay = (hour: number, minute: number) => hour * 60 + minute;
 
 const minutesMatch = (target: number, now: Date) => {
@@ -85,6 +108,9 @@ const dateForOffset = (now: Date, offsetMinutes: number) => {
 const localParts = (date: Date, timeZone: string) => {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
@@ -93,12 +119,18 @@ const localParts = (date: Date, timeZone: string) => {
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
   const rawHour = Number(get("hour"));
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
   return {
+    date: year && month && day ? `${year}-${month}-${day}` : date.toISOString().slice(0, 10),
     dayOfWeek: dayMap[get("weekday")] ?? date.getUTCDay(),
     hour: rawHour === 24 ? 0 : rawHour,
     minute: Number(get("minute")),
   };
 };
+
+const localDateFor = (date: Date, timeZone: string) => localParts(date, timeZone).date;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -110,7 +142,7 @@ Deno.serve(async (req) => {
   // Load all subscriptions
   const { data: subs, error: subsErr } = await supa
     .from("push_subscriptions")
-    .select("id,user_id,endpoint,p256dh,auth,morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes");
+    .select("id,user_id,endpoint,p256dh,auth,morning_hour,morning_minute,evening_hour,evening_minute,pre_training_minutes,timezone");
   if (subsErr) {
     return new Response(JSON.stringify({ error: subsErr.message }), {
       status: 500,
@@ -118,14 +150,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Filter to users with active program instance
+  // Filter to users with an effectively started active program instance.
+  // Future-started team/solo programs must not receive morning, evening or pre-training pushes.
   const userIds = [...new Set((subs ?? []).map((s) => s.user_id))];
   const { data: instances } = await supa
     .from("program_instances")
-    .select("user_id")
+    .select("user_id,started_at")
     .eq("status", "active")
     .in("user_id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
-  const activeUsers = new Set((instances ?? []).map((i) => i.user_id));
+  const activeUsers = new Set(
+    ((instances ?? []) as ProgramInstanceRow[])
+      .filter((instance) => {
+        if (!instance.started_at) return false;
+        return instance.started_at.slice(0, 10) <= today;
+      })
+      .map((instance) => instance.user_id),
+  );
 
   const { data: schedule } = await supa
     .from("training_schedule")
@@ -138,6 +178,40 @@ Deno.serve(async (req) => {
     scheduleByUser.set(r.user_id, rows);
   });
 
+  const { data: memberships } = await supa
+    .from("team_members")
+    .select("team_id,user_id")
+    .in("user_id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
+  const teamIds = [...new Set((memberships ?? []).map((m) => m.team_id))];
+  const teamIdsByUser = new Map<string, string[]>();
+  (memberships ?? []).forEach((membership) => {
+    const rows = teamIdsByUser.get(membership.user_id) ?? [];
+    rows.push(membership.team_id);
+    teamIdsByUser.set(membership.user_id, rows);
+  });
+
+  const { data: teamSchedule } = await supa
+    .from("team_training_schedule")
+    .select("team_id,day_of_week,training_local_hour,training_local_minute,training_timezone")
+    .in("team_id", teamIds.length ? teamIds : ["00000000-0000-0000-0000-000000000000"]);
+  const scheduleByTeam = new Map<string, TeamScheduleRow[]>();
+  ((teamSchedule ?? []) as TeamScheduleRow[]).forEach((row) => {
+    const rows = scheduleByTeam.get(row.team_id) ?? [];
+    rows.push(row);
+    scheduleByTeam.set(row.team_id, rows);
+  });
+
+  const { data: teamCalendarEvents } = await supa
+    .from("team_calendar_events")
+    .select("team_id,date,event_type,training_local_hour,training_local_minute,training_timezone")
+    .in("team_id", teamIds.length ? teamIds : ["00000000-0000-0000-0000-000000000000"]);
+  const calendarEventsByTeam = new Map<string, TeamCalendarEventRow[]>();
+  ((teamCalendarEvents ?? []) as TeamCalendarEventRow[]).forEach((row) => {
+    const rows = calendarEventsByTeam.get(row.team_id) ?? [];
+    rows.push(row);
+    calendarEventsByTeam.set(row.team_id, rows);
+  });
+
   let sent = 0;
   let skipped = 0;
   const removed: string[] = [];
@@ -145,19 +219,64 @@ Deno.serve(async (req) => {
   for (const sub of (subs ?? []) as Subscription[]) {
     if (!activeUsers.has(sub.user_id)) continue;
 
-    const types: Array<{ type: NotifType; scheduledFor: Date; sentDate: string }> = [];
+    const types: Array<{ type: NotifType; scheduledFor: Date; sentDate: string; source: NotifSource }> = [];
+    const localToday = localDateFor(now, sub.timezone || "UTC");
     const morningTarget = toMinuteOfDay(sub.morning_hour, sub.morning_minute);
     if (minutesMatch(morningTarget, now)) {
-      types.push({ type: "morning", scheduledFor: now, sentDate: today });
+      types.push({ type: "morning", scheduledFor: now, sentDate: localToday, source: "time" });
     }
     const eveningTarget = toMinuteOfDay(sub.evening_hour, sub.evening_minute);
     if (minutesMatch(eveningTarget, now)) {
-      types.push({ type: "evening", scheduledFor: now, sentDate: today });
+      types.push({ type: "evening", scheduledFor: now, sentDate: localToday, source: "time" });
     }
-    for (const row of scheduleByUser.get(sub.user_id) ?? []) {
+    const userRows = scheduleByUser.get(sub.user_id) ?? [];
+    const teamIdsForUser = teamIdsByUser.get(sub.user_id) ?? [];
+    const teamRows = teamIdsForUser.flatMap((teamId) => scheduleByTeam.get(teamId) ?? []);
+    const trainingMoment = new Date(now.getTime() + sub.pre_training_minutes * 60_000);
+    const teamCalendarMatches = teamIdsForUser.flatMap((teamId) =>
+      (calendarEventsByTeam.get(teamId) ?? []).filter((event) => {
+        const timeZone = event.training_timezone || sub.timezone || "UTC";
+        return localParts(trainingMoment, timeZone).date === event.date;
+      }),
+    );
+    const restDayFromTeamCalendar = teamCalendarMatches.some((event) => event.event_type === "rest");
+    const timedTeamEvents = teamCalendarMatches.filter(
+      (event) =>
+        (event.event_type === "training" || event.event_type === "competition") &&
+        typeof event.training_local_hour === "number",
+    );
+
+    for (const event of timedTeamEvents) {
+      const timeZone = event.training_timezone || sub.timezone || "UTC";
+      const local = localParts(trainingMoment, timeZone);
+      const localMinute = event.training_local_minute ?? 0;
+      if (event.training_local_hour === local.hour && localMinute === local.minute) {
+        types.push({
+          type: "pre_training",
+          scheduledFor: now,
+          sentDate: event.date,
+          source: "team_calendar",
+        });
+      }
+    }
+
+    const shouldUseWeeklyFallback = timedTeamEvents.length === 0 && !restDayFromTeamCalendar;
+    const effectiveTrainingRows = shouldUseWeeklyFallback
+      ? teamIdsForUser.length > 0
+        ? teamRows.map((row) => ({
+            user_id: sub.user_id,
+            day_of_week: row.day_of_week,
+            training_hour: row.training_local_hour,
+            training_local_hour: row.training_local_hour,
+            training_local_minute: row.training_local_minute,
+            training_timezone: row.training_timezone,
+          }))
+        : userRows
+      : [];
+
+    for (const row of effectiveTrainingRows) {
       if (typeof row.training_local_hour === "number") {
         const timeZone = sub.timezone || row.training_timezone || "UTC";
-        const trainingMoment = new Date(now.getTime() + sub.pre_training_minutes * 60_000);
         const local = localParts(trainingMoment, timeZone);
         const localMinute = row.training_local_minute ?? 0;
         if (
@@ -168,7 +287,8 @@ Deno.serve(async (req) => {
           types.push({
             type: "pre_training",
             scheduledFor: now,
-            sentDate: trainingMoment.toISOString().slice(0, 10),
+            sentDate: local.date,
+            source: teamIdsForUser.length > 0 ? "team_weekly_schedule" : "solo_schedule",
           });
         }
         continue;
@@ -181,6 +301,7 @@ Deno.serve(async (req) => {
           type: "pre_training",
           scheduledFor: now,
           sentDate: dateForOffset(now, reminderTarget < 0 ? 24 * 60 : 0),
+          source: "solo_schedule",
         });
       }
     }
@@ -210,6 +331,7 @@ Deno.serve(async (req) => {
           status: "pending",
           scheduled_for: item.scheduledFor.toISOString(),
           target_url: payload.url,
+          metadata: { source: item.source },
         })
         .select("id")
         .single();
@@ -219,40 +341,76 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const url = `${payload.url}${payload.url.includes("?") ? "&" : "?"}notification_id=${pending.id}&notification_type=${t}`;
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
-          },
-          JSON.stringify({ ...payload, url, notificationId: pending.id, notificationType: t }),
-        );
+      const url = `${payload.url}${payload.url.includes("?") ? "&" : "?"}notification_id=${pending.id}&notification_type=${t}&notification_user_id=${sub.user_id}`;
+      const matchingSubscriptions = ((subs ?? []) as Subscription[]).filter((candidate) => {
+        if (candidate.user_id !== sub.user_id) return false;
+        if (t === "morning") {
+          return candidate.morning_hour === sub.morning_hour &&
+            candidate.morning_minute === sub.morning_minute;
+        }
+        if (t === "evening") {
+          return candidate.evening_hour === sub.evening_hour &&
+            candidate.evening_minute === sub.evening_minute;
+        }
+        return candidate.pre_training_minutes === sub.pre_training_minutes;
+      });
+      let deliveredEndpoints = 0;
+      let failedEndpoints = 0;
+      let expiredEndpoints = 0;
+      let lastErrorCode: number | null = null;
+      let lastError = "unknown";
+
+      for (const target of matchingSubscriptions) {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: target.endpoint,
+              keys: { p256dh: target.p256dh, auth: target.auth },
+            },
+            JSON.stringify({ ...payload, url, notificationId: pending.id, notificationType: t }),
+          );
+          deliveredEndpoints++;
+        } catch (e: unknown) {
+          failedEndpoints++;
+          const pushError = e as PushError;
+          const code = pushError.statusCode;
+          lastErrorCode = typeof code === "number" ? code : null;
+          lastError = pushError.body ?? pushError.message ?? "unknown";
+          if (code === 404 || code === 410) {
+            await supa.from("push_subscriptions").delete().eq("id", target.id);
+            expiredEndpoints++;
+            removed.push(target.endpoint);
+          } else {
+            console.error("push error", code, lastError);
+          }
+        }
+      }
+
+      if (deliveredEndpoints > 0) {
         await supa.from("notification_log").update({
           status: "sent",
           sent_at: new Date().toISOString(),
+          metadata: {
+            source: item.source,
+            delivered_endpoints: deliveredEndpoints,
+            failed_endpoints: failedEndpoints,
+          },
         }).eq("id", pending.id);
         sent++;
-      } catch (e: unknown) {
-        const pushError = e as PushError;
-        const code = pushError.statusCode;
-        if (code === 404 || code === 410) {
-          await supa.from("push_subscriptions").delete().eq("id", sub.id);
-          await supa.from("notification_log").update({
-            status: "expired_subscription",
-            failed_at: new Date().toISOString(),
-            error_code: code,
-          }).eq("id", pending.id);
-          removed.push(sub.endpoint);
-        } else {
-          await supa.from("notification_log").update({
-            status: "failed",
-            failed_at: new Date().toISOString(),
-            error_code: typeof code === "number" ? code : null,
-            metadata: { error: pushError.body ?? pushError.message ?? "unknown" },
-          }).eq("id", pending.id);
-          console.error("push error", code, pushError.body ?? pushError.message);
-        }
+      } else {
+        await supa.from("notification_log").update({
+          status: expiredEndpoints > 0 && failedEndpoints === expiredEndpoints
+            ? "expired_subscription"
+            : "failed",
+          failed_at: new Date().toISOString(),
+          error_code: lastErrorCode,
+          metadata: {
+            source: item.source,
+            error: lastError,
+            delivered_endpoints: 0,
+            failed_endpoints: failedEndpoints,
+          },
+        }).eq("id", pending.id);
       }
     }
   }

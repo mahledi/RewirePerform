@@ -1,0 +1,99 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-combined-staging-postdeploy-package-v2",
+  "package_status": "SANITIZED_UNSIGNED_V0_3_3_AWAITING_CONSUMER_POSTDEPLOY_REVIEW",
+  "package_sha256": "2dc086363fd4bfe8523550471fa24548de838e57d9a53200226613b15f49e479",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.2/postdeploy-evidence.json",
+      "sha256": "cb48c6efaf4ac0da906608ac0191e749850693016a3d6379ae8a69acae8a6999"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.2/evidence.schema.json",
+      "sha256": "0146b8bfbe974af1315aaa92d637f79d2afd01010f3d1081a675565f17055ff2"
+    },
+    {
+      "path": "scripts/generate-feedback-combined-staging-postdeploy-v0-2.mjs",
+      "sha256": "6d2bb5b286eba79cd8b9faa100176240bc00efd178da5cb3cdde6483974c280b"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceCombinedStagingPostdeployV02.test.ts",
+      "sha256": "4f7ec639ca79306903612cc7e102d96b2e5b7dbeea887173bc2747b9c4bd9d91"
+    },
+    {
+      "path": "docs/feedback-intelligence/COMBINED_STAGING_POSTDEPLOY_V0_3_3_V1_1.md",
+      "sha256": "ad4e2085fa004f999313c0c8b498415ccb45c8d93301e6b6045e18fbc3011ee3"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.2/remote-audit-result-2026-08-10-v0-3-3.json",
+      "sha256": "b06fb65c9157a33ee16a8b5a474387c91353eb534b887ac63de4e48c8f4a89d5"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/audit.sql",
+      "sha256": "7f7865f769f46bfab204c37d071ee743636fe183f6d6876a24557e51dc508bd3"
+    },
+    {
+      "path": "supabase/migrations/20260810154932_feedback_intelligence_visualization_copy_v1_1_2.sql",
+      "sha256": "d7160cb28eb64529ba95fe4c9d47ceab352dc194cc105b6194670a9479a265a9"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-predeploy-v0.2/evidence.json",
+      "sha256": "c7beb25bc3af8278835029aa9bc1b6cdd78d598969f2eac7757da7cee8e97984"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-predeploy-v0.2/producer-package-manifest.json",
+      "sha256": "a39a0836dcfdd8b93e7ab785f056c8946a8b59ebed1220c32197a31675fb8cfa"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.3/producer-package-manifest.json",
+      "sha256": "eccdf05956b68d457d3fc2135e3984d2b56242e4742fc3379152587bc5e7c33f"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2.1/producer-package-manifest.json",
+      "sha256": "89298e177f65a7f517e9cc930c0dc9e0af588875117bf4449e7898200e31dfab"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/v0.2.1/proposed-export.schema.json",
+      "sha256": "e90eb3fc2ce717ef91ae35bcfcd5bc7944d3cc941faa8f071b42e934e967023d"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/gateway-contract.json",
+      "sha256": "625371ec54a78a1e9b26cf7ae485a4bcf07ee5705a0ea9c1166c71bad5d1be7c"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/producer-package-manifest.json",
+      "sha256": "bc69e224b22e568269a74eff7d021533075dab931fb8adf6bc212f79a58d9f0e"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/machine-gateway-v0.1/request.schema.json",
+      "sha256": "74e3616a67975766b51238d5573671d8e086014392d0e59e3ee9696ab287d204"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/combined-staging-postdeploy-v0.1/postdeploy-evidence.json",
+      "sha256": "3ff7ed70bf0523c0e23b5e1800a6c0143d4edcd6a6a215597a3c081919101b55"
+    },
+    {
+      "path": "supabase/functions/mahleos-feedback-intelligence-read/index.ts",
+      "sha256": "b1e1cf077970011f6f62beef121ec617c94a4f37849163958bc1a2840199c384"
+    },
+    {
+      "path": "supabase/functions/_shared/boundedRequestBody.ts",
+      "sha256": "7a707eb6a54df88e2314439658aca1fb53f7c666f53d58fd6a1dfd241323568e"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceGatewayHttp.ts",
+      "sha256": "61690142b2ff292a2bc82d60327332a5e93479da529f5462504a5a344792f0d8"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceMachineAuthCore.ts",
+      "sha256": "78a3685d1b18e1fb5e70faf9fbc66dd6a419a5dc22a9cde18b78c9df6dda1ea1"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceMachineAuth.ts",
+      "sha256": "03dc6c5ba920be84957ff36bd9544188ff7a759b78b5a7c8e21e8859ee8cbc3c"
+    },
+    {
+      "path": "supabase/functions/_shared/feedbackIntelligenceDatabase.ts",
+      "sha256": "13b39c3b60f1abc973d0126a653185ec9506673b7ee428e358596e9719d8a2d5"
+    }
+  ]
+}

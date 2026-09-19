@@ -1,0 +1,71 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-staging-privilege-audit-package-manifest-v2",
+  "contract_version": "0.2.0-draft",
+  "contract_status": "LOCAL_UNSIGNED_METADATA_ONLY_AWAITING_CONSUMER_REVIEW",
+  "generated_at": "2026-08-09T10:30:00+02:00",
+  "producer_branch": "codex/feedback-intelligence-v1-1-20260805",
+  "producer_source_commit": "970f581fb855ecff432283f099de6b85a95fc564",
+  "target_project_ref": "zbeswjipayspgvcipzmx",
+  "package_signed": false,
+  "package_sha256": "06e86e836f8100a3e377a26d137881831aeaa456ecf1a8eaf13530a11863e4cf",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/audit.sql",
+      "sha256": "7f7865f769f46bfab204c37d071ee743636fe183f6d6876a24557e51dc508bd3"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/result.schema.json",
+      "sha256": "1161e3b6d327cad0e473dc2de1488ea9f44b3a6574e826a4559b2fe041bd507b"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/predeploy.fixture.json",
+      "sha256": "1921f6596a8e6e669b73ff64af6be97e4e6637b261a660b258d4419fdfe76bac"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/staging-privilege-audit-v0.2/postdeploy-pass.fixture.json",
+      "sha256": "af9e05f48008659e90a94a7c6c0e802a35c6b28fbfef404adac74b991b173ce5"
+    },
+    {
+      "path": "scripts/validate-feedback-staging-privilege-audit-v0-2.mjs",
+      "sha256": "cf1b44395c06cfa5268e566265d25da3d1a8d1ba95f2ea55bb1ff001359b2d41"
+    },
+    {
+      "path": "src/test/feedbackIntelligenceStagingPrivilegeAuditV02.test.ts",
+      "sha256": "8b21d1dc06461177144be324b6b2a95f137a49298ff17a23693cb27bca39cb22"
+    },
+    {
+      "path": "docs/feedback-intelligence/STAGING_PRIVILEGE_AUDIT_HANDOFF_V0_2.md",
+      "sha256": "65ca90e46cd95d6ae95a26306ae9f586c4516376731a42b4206a244310d405f6"
+    }
+  ],
+  "executed_data_path_pins": {
+    "gateway": {
+      "signature": "public.read_feedback_intelligence_v0_2_draft(text,text,text,text)",
+      "definition_sha256": "0d617fcb5e5a7ece31ca94b7ff0cf07026712b0d9ed4206c95bee9f4b198a8af"
+    },
+    "internal_export": {
+      "signature": "feedback_analysis.export_feedback_intelligence_v0_2_internal(text,text,text,text)",
+      "definition_sha256": "89420ddf3f79ad57538f4fb1ad56458717874490ddbc88b52d577e081d3e872f"
+    }
+  },
+  "upstream_gateway_pins": {
+    "producer_commit": "970f581fb855ecff432283f099de6b85a95fc564",
+    "manifest_sha256": "97b4caf3109650be74963587c1340ddd699e0aa80b6acf587da79cfdf0ed001d",
+    "package_sha256": "15c85f345592c7df3b0c700134ff5ab2c6b7b86b3ea64e4a7088168a488dbbbb",
+    "consumer_branch": "agent/feedback-intelligence-machine-gateway-v0-1-20260807",
+    "consumer_commit": "ec197d6bcfb32e02596024f61d0fa2e0011fb871",
+    "consumer_acceptance": "PENDING_CURRENT_PACKAGE_REVIEW"
+  },
+  "scope": {
+    "catalog_metadata_only": true,
+    "application_rows": false,
+    "application_function_calls": false,
+    "mutations": false,
+    "credentials": false,
+    "signing": false,
+    "migration": false,
+    "edge_deployment": false,
+    "synthetic_network_read": false,
+    "production": false
+  }
+}

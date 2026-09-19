@@ -6,7 +6,7 @@ const items = [
   "Freitexte bleiben privat",
   "Coach sieht nur Aggregate",
   "Teamdaten ab n≥5",
-  "Keine psychologischen Labels einzelner Spieler",
+  "Keine psychologischen Labels einzelner Athlet:innen",
 ];
 
 const PrivacySection = () => {
@@ -28,9 +28,9 @@ const PrivacySection = () => {
               <span className="text-gradient">braucht Schutz.</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Spieler sollen sich selbst verstehen lernen, ohne Angst zu haben,
+              Athlet:innen sollen sich selbst verstehen lernen, ohne Angst zu haben,
               dass private Gedanken gegen sie verwendet werden. Deshalb trennt
-              RewirePerform klar zwischen Spieler-Privatsphäre und
+              RewirePerform klar zwischen Athlet:innen-Privatsphäre und
               Coach-Überblick.
             </p>
           </motion.div>

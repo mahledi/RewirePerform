@@ -89,15 +89,19 @@ interface Rewritten {
   explanation: string;
 }
 
-function extractJson(text: string): any | null {
+function extractJson(text: string): unknown {
   try {
     return JSON.parse(text);
-  } catch {}
+  } catch {
+    // Some model responses wrap the JSON in explanatory text.
+  }
   const m = text.match(/\{[\s\S]*\}/);
   if (m) {
     try {
       return JSON.parse(m[0]);
-    } catch {}
+    } catch {
+      // Fall through to the invalid-response path.
+    }
   }
   return null;
 }
@@ -150,21 +154,26 @@ async function rewriteDay(dayNumber: number, pool: ComprehensionQuestion[]): Pro
         console.error(`[Day ${dayNumber}] HTTP ${res.status}: ${await res.text()}`);
         return null;
       }
-      const json = await res.json();
+      const json = await res.json() as {
+        choices?: Array<{ message?: { tool_calls?: Array<{ function?: { arguments?: string } }>; content?: string } }>;
+      };
       const choice = json.choices?.[0];
       const toolCall = choice?.message?.tool_calls?.[0];
-      let parsed: any = null;
+      let parsed: unknown = null;
       if (toolCall?.function?.arguments) {
         parsed = extractJson(toolCall.function.arguments);
       }
       if (!parsed && choice?.message?.content) {
         parsed = extractJson(choice.message.content);
       }
-      if (!parsed?.questions) {
+      const parsedRecord = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? parsed as { questions?: unknown }
+        : null;
+      if (!Array.isArray(parsedRecord?.questions)) {
         console.error(`[Day ${dayNumber}] kein parsebares Ergebnis`);
         return null;
       }
-      return parsed.questions as Rewritten[];
+      return parsedRecord.questions as Rewritten[];
     } catch (e) {
       console.error(`[Day ${dayNumber}] attempt ${attempt} error:`, e);
       await new Promise((r) => setTimeout(r, 3000));

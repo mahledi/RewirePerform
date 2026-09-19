@@ -1,0 +1,31 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-edge-request-evidence-v1-proposed",
+  "contract_status": "SANITIZED_SYNTHETIC_REQUEST_OBSERVED",
+  "project_ref": "zbeswjipayspgvcipzmx",
+  "generated_at": "2026-08-09T12:54:03.373Z",
+  "request_id": "6b20e372-4318-4939-b3f9-0e06b472e4a3",
+  "edge_deployment_id": "4579d2b9-16c9-4387-be84-d5a5b440265e",
+  "function_slug": "mahleos-feedback-intelligence-read",
+  "network_request_count": 1,
+  "http_status": 200,
+  "data_scope": "synthetic",
+  "gateway_access_log": {
+    "matching_rows": 1,
+    "client_id": "mahles-jarvis-feedback-intelligence",
+    "outcome": "success",
+    "recorded_at": "2026-08-09T12:51:03.283064+00:00"
+  },
+  "platform_edge_logs": {
+    "function_slug_observed": true,
+    "deployment_id_observed": true,
+    "http_200_observed": true,
+    "request_id_observed": false,
+    "raw_logs_persisted": false
+  },
+  "secret_values_included": false,
+  "raw_response_persisted": false,
+  "raw_text_persisted": false,
+  "subject_reference_persisted": false,
+  "production": false,
+  "real_data_read": false
+}

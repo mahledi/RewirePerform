@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/error-response.schema.json",
+  "title": "MahleOS machine API error v1",
+  "type": "object",
+  "required": [
+    "error"
+  ],
+  "properties": {
+    "error": {
+      "enum": [
+        "invalid_request",
+        "invalid_json",
+        "unauthorized",
+        "not_found",
+        "method_not_allowed",
+        "request_too_large",
+        "unsupported_media_type",
+        "rate_limited",
+        "service_not_configured",
+        "operations_read_unavailable",
+        "evidence_read_unavailable",
+        "checksum_mismatch"
+      ]
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    }
+  },
+  "additionalProperties": false
+}

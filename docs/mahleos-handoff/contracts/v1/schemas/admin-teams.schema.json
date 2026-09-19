@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rewireperform.com/contracts/mahleos/v1/admin-teams.schema.json",
+  "title": "MahleOS admin teams v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "reporting_timezone",
+    "returned_teams",
+    "truncated",
+    "teams",
+    "test_data_included",
+    "team_names_included",
+    "direct_identifiers_included",
+    "private_content_included"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "mahleos-admin-teams-v1"
+    },
+    "generated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "reporting_timezone": {
+      "const": "UTC"
+    },
+    "returned_teams": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "teams": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": [
+          "team_reference",
+          "sport_category",
+          "program_start_date",
+          "athletes",
+          "active_7d",
+          "inactive_7d",
+          "checkins_7d",
+          "completed_days_7d",
+          "pre_n",
+          "mid_n",
+          "post_n",
+          "run_reference",
+          "run_status",
+          "run_started_at"
+        ],
+        "properties": {
+          "team_reference": {
+            "type": "string",
+            "pattern": "^aggregate-team-[a-f0-9]{16}$"
+          },
+          "sport_category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "program_start_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "athletes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "active_7d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "inactive_7d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "checkins_7d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "completed_days_7d": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pre_n": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mid_n": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "post_n": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "run_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^aggregate-run-[a-f0-9]{16}$"
+          },
+          "run_status": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "planned",
+              "active",
+              null
+            ]
+          },
+          "run_started_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "test_data_included": {
+      "const": false
+    },
+    "team_names_included": {
+      "const": false
+    },
+    "direct_identifiers_included": {
+      "const": false
+    },
+    "private_content_included": {
+      "const": false
+    }
+  },
+  "additionalProperties": false
+}

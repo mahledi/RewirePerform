@@ -13,12 +13,18 @@ interface TodayForYouProps {
  * Felder mit null werden ausgelassen, keine Platzhalter.
  */
 const TodayForYou = ({ data, compact = false }: TodayForYouProps) => {
-  // Wähle den stärksten verfügbaren "third line"-Inhalt.
-  const thirdLine =
-    data.stateEmphasis ?? data.profileEmphasis ?? data.journalPatternEmphasis ?? null;
-
-  // Wähle Sport- vs. Positionsbezug — Position gewinnt, weil spezifischer.
-  const secondLine = data.positionExample ?? data.sportExample;
+  const adaptationLines = [
+    data.primaryAdaptationLine,
+    data.secondaryAdaptationLine,
+  ].filter((line, index, lines): line is string =>
+    Boolean(
+      line &&
+      line.trim() &&
+      line !== data.sportContextLine &&
+      line !== data.roleContextLine &&
+      lines.indexOf(line) === index
+    )
+  );
 
   if (compact) {
     return (
@@ -45,10 +51,13 @@ const TodayForYou = ({ data, compact = false }: TodayForYouProps) => {
 
       <div className="space-y-2">
         <p className="text-sm text-foreground leading-relaxed">{data.athleteAddressLine}</p>
-        <p className="text-sm text-muted-foreground leading-relaxed">{secondLine}</p>
-        {thirdLine && (
-          <p className="text-sm text-muted-foreground leading-relaxed">{thirdLine}</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{data.sportContextLine}</p>
+        {data.roleContextLine && (
+          <p className="text-sm text-muted-foreground leading-relaxed">{data.roleContextLine}</p>
         )}
+        {adaptationLines.map((line) => (
+          <p key={line} className="text-sm text-muted-foreground leading-relaxed">{line}</p>
+        ))}
       </div>
 
       <div className="mt-4 pt-3 border-t border-border/50">

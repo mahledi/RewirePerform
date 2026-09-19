@@ -1,0 +1,21 @@
+{
+  "schema_version": "rewireperform-feedback-intelligence-staging-privilege-audit-remote-result-manifest-v1",
+  "contract_status": "REMOTE_METADATA_ONLY_PREDEPLOY_BASELINE_UNSIGNED",
+  "target_project_ref": "zbeswjipayspgvcipzmx",
+  "executed_at": "2026-08-08T07:09:09.455311+00:00",
+  "audit_phase": "PREDEPLOY_BASELINE",
+  "result_sha256": "7833f7472e6c8ebbf32aeb4f70e0faa3309c150fcf6bcf8896b7f7a96635246b",
+  "audit_sql_sha256": "0f155228882726242bd305a9676abf9eed86c29dc89d9ce9b87e1c1cde297434",
+  "audit_package_manifest_sha256": "efecfcc0a7c37e5d41d1d850d4f84deed496d4b1c5a247bf41fb20de0bf0046f",
+  "audit_package_sha256": "f2a9157387afaaf6bbd47a6f58fd250346340c870fa0fae70d5982d947cbcc2c",
+  "upstream_gateway": {
+    "producer_commit": "b35bfc89aa5c5781fb0b300440bb8cbb56f69658",
+    "consumer_commit": "75b0cbc7ef2179b26cfff7db9817770f9ed2a3ea"
+  },
+  "sanitized_evidence": true,
+  "application_rows_read": false,
+  "database_mutated": false,
+  "postdeploy_assurance_complete": false,
+  "signed_release_pair_complete": false,
+  "production_approved": false
+}

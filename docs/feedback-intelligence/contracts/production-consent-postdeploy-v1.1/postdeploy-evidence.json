@@ -1,0 +1,80 @@
+{
+  "schema_version": "rewireperform-feedback-consent-production-postdeploy-v1.1-evidence-v1",
+  "evidence_status": "PASS_FINAL_CONSENT_REGISTERED_PRODUCTION_RUNTIME_GATES_CLOSED",
+  "recorded_date": "2026-08-13",
+  "project_ref": "bqsbxesmybthwtxmowfz",
+  "producer": {
+    "commit": "e50d6e68a0bbd25064e3752f94eed1ad9d5ff552",
+    "functional_commit": "fabb7110970d6f48e3f2c4b104122320941c0e34",
+    "consent_manifest_sha256": "5a28d9f407ed59c45dbbdddc35699e3e848ee750a87f19720ed3995b2361b05e",
+    "consent_package_sha256": "7191f1ea0394b45cbce55e473f91461c6076a2db3586ce6a720f5568190d4ff3"
+  },
+  "migration": {
+    "local_path": "supabase/migrations/20260813115737_feedback_consent_guardian_de_v1_1_final_contract.sql",
+    "local_sha256": "6a2933e3d33a41fe0c35523be795160c04f030dfccf3f4579078fabb0784eba9",
+    "remote_version": "20260813123955",
+    "remote_name": "feedback_consent_guardian_de_v1_1_final_contract",
+    "applied": true
+  },
+  "metadata_audit": {
+    "jurisdiction_policy": {
+      "jurisdiction": "DE",
+      "policy_version": "feedback-jurisdiction-minor-de-v1.1.0",
+      "product_minimum_age": 13,
+      "guardian_required_below_age": 16,
+      "structured_collection_status": "legal_review_required",
+      "raw_text_collection_status": "legal_review_required"
+    },
+    "campaigns": {
+      "count": 4,
+      "references": [
+        "feedback-day-10-v1",
+        "feedback-day-24-v1",
+        "feedback-day-39-v1",
+        "feedback-day-55-v1"
+      ],
+      "consent_version": "feedback-text-consent-v1.1.0",
+      "notice_sha256": "c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16",
+      "status": "draft"
+    },
+    "guardian_policy": {
+      "count": 1,
+      "policy_reference": "guardian-feedback-text-de-v1.1.0",
+      "consent_version": "feedback-text-consent-v1.1.0",
+      "athlete_notice_sha256": "c308e8ad3d89b02c308a07090a4c09cb363f9cdb7d1e5d671ac295c545d95a16",
+      "guardian_notice_sha256": "90b0ede2a1a7671f1631e2048a605e6331006972ee05e63d38d229857f0aeb0b",
+      "raw_text_retention_days": 365,
+      "status": "draft",
+      "active_policy_count": 0
+    },
+    "runtime_gates": {
+      "athlete_collection_enabled": false,
+      "text_collection_enabled": false,
+      "privacy_notice_ready": false,
+      "app_store_declaration_ready": false,
+      "minor_policy_ready": false
+    }
+  },
+  "privacy_boundary": {
+    "metadata_only": true,
+    "application_rows_read": false,
+    "application_functions_called": false,
+    "application_values_persisted": false,
+    "secret_presence_checked": false,
+    "secret_values_read": false,
+    "credential_values_persisted": false,
+    "database_mutated_by_audit": false
+  },
+  "authorization": {
+    "campaigns_active": false,
+    "guardian_policy_active": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "jarvis_credentials": false,
+    "jarvis_real_data_read": false,
+    "app_store_action": false,
+    "push": false,
+    "merge": false
+  },
+  "next_gate": "INDEPENDENT_CONSUMER_REVIEW_REQUIRED_EXTERNAL_GATES_REMAIN_CLOSED"
+}

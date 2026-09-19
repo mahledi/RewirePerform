@@ -1,0 +1,40 @@
+{
+  "schema_version": "rewireperform-v1.1-production-post-edge-deploy-preflight-package-v1",
+  "status": "PASS_PRODUCTION_EDGE_DEPLOYED_CREDENTIALLESS_RUNTIME_CLOSED",
+  "observed_at": "2026-08-13T11:59:14Z",
+  "package_sha256": "15a30cbc5caf508338c033f89cf87e3bc1cb62b7bb2cfa5ac93686a3c57a99f9",
+  "files": [
+    {
+      "path": "docs/feedback-intelligence/contracts/production-post-edge-deploy-preflight-v0.1/evidence.json",
+      "sha256": "a49fa4b8685d4772463edd2bc3a214709083809b77f591c68aefba4fa87c29d4"
+    },
+    {
+      "path": "docs/feedback-intelligence/contracts/production-post-edge-deploy-preflight-v0.1/evidence.schema.json",
+      "sha256": "34efdf25ea40ff1a12cc6774baaffac89e9dd9a437e911b04d936221e3328839"
+    },
+    {
+      "path": "scripts/generate-v1-1-production-post-edge-deploy-preflight.mjs",
+      "sha256": "7dbffeb79b9d6f4ef2f83eab9d5bc218a5b1a0cdd22cc25e2e8e0b7361df465e"
+    },
+    {
+      "path": "src/test/v11ProductionPostEdgeDeployPreflight.test.ts",
+      "sha256": "cd972ebf7507ff7de21610b3492324f384ad1c333d8896202a39f36d94033294"
+    },
+    {
+      "path": "docs/feedback-intelligence/PRODUCTION_POST_EDGE_DEPLOY_PREFLIGHT_V1_1.md",
+      "sha256": "4b9f15346f61cdf0389b30598f942f5f6138801a7053a279e3461f7cfc7fb22c"
+    }
+  ],
+  "gates": {
+    "feedback_credentials": false,
+    "feedback_machine_runtime": false,
+    "feedback_real_data": false,
+    "feedback_collection": false,
+    "feedback_comments": false,
+    "minor_feedback": false,
+    "guardian_feedback": false,
+    "real_jarvis": false,
+    "organization_inquiry_public": false,
+    "app_store_submission": false
+  }
+}
