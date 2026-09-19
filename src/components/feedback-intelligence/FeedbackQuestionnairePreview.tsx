@@ -486,39 +486,34 @@ export const FeedbackQuestionnairePreview = ({
             transition={{ duration: shouldReduceMotion ? 0 : 0.24, ease: "easeOut" }}
             className="flex flex-1 flex-col justify-between"
           >
-            <div>
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/[0.1] text-primary">
-                <MessageSquareText className="h-5 w-5" />
-              </div>
-              <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                Kurzer Zwischenstand
-              </p>
-              <h1 className="mt-3 text-3xl font-semibold leading-[1.08] tracking-[-0.04em]">
+            <div className="pt-8 sm:pt-12">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Dein Zwischenstand</p>
+              <h1 className="mt-4 text-[clamp(2rem,8vw,3rem)] font-semibold leading-[1.04] tracking-[-0.045em]">
                 {checkpoint.heading}
               </h1>
-              <p className="mt-5 text-base leading-7 text-white/62">
-                Sag uns, wie sich RewirePerform an dieser Stelle für dich anfühlt. Ehrliche Kritik hilft uns genauso wie das, was bereits gut funktioniert.
+              <p className="mt-5 max-w-sm text-base leading-7 text-white/58">
+                Halte kurz fest, was dir hilft und was noch klarer werden sollte. So reflektierst du deinen bisherigen Weg und verbesserst RewirePerform mit.
               </p>
               {overdueByDays > 0 && (
-                <p className="mt-3 rounded-2xl border border-primary/15 bg-primary/[0.06] px-4 py-3 text-sm leading-6 text-white/62">
-                  Du holst den Zwischenstand von Tag {day} jetzt nach. Der Fragebogen bleibt Tag {day} zugeordnet.
+                <p className="mt-5 border-l border-primary/35 pl-4 text-sm leading-6 text-white/54">
+                  Dieser Zwischenstand gehört zu Tag {day} und wird jetzt nachgeholt.
                 </p>
               )}
-              <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-4 py-3 text-sm text-white/58">
-                <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
-                <span>
-                  Freiwillig · {checkpoint.durationLabel} · Fragen können übersprungen werden. Deine Auswahlantworten
-                  dienen nur der Produktverbesserung; dein Coach sieht keine Einzelantworten.
-                </span>
+              <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-white/42">
+                <span>{checkpoint.durationLabel}</span>
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-white/20" />
+                <span>Fragen einzeln überspringbar</span>
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-white/20" />
+                <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-primary" /> Coach sieht keine Einzelantworten</span>
               </div>
               {mode === "live" && (
                 <a
                   href="/privacy"
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-3 inline-flex text-xs font-medium text-primary hover:underline"
+                  className="mt-4 inline-flex min-h-10 items-center text-xs font-medium text-white/38 underline-offset-4 hover:text-white/60 hover:underline"
                 >
-                  Datenschutz zum Feedback
+                  Freiwilligkeit und Datenschutz
                 </a>
               )}
             </div>
@@ -530,7 +525,7 @@ export const FeedbackQuestionnairePreview = ({
                   onClick={() => void startExperience()}
                   disabled={busy}
                 >
-                  {busy ? "Wird geöffnet …" : "Freiwilliges Feedback starten"} <ArrowRight className="h-4 w-4" />
+                  {busy ? "Wird geöffnet …" : "Zwischenstand starten"} <ArrowRight className="h-4 w-4" />
                 </Button>
               </motion.div>
               {mode === "live" && (

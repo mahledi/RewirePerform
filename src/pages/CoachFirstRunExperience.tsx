@@ -278,7 +278,7 @@ const StateScreen = () => {
   <CoachAppScreen labelledBy="coach-preview-state-title" active="state">
     <div className="px-5 pt-5">
       <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Teamzustand · heute", "Team state · today")}</p>
-      <h2 id="coach-preview-state-title" className="mt-2 text-[25px] font-semibold leading-none tracking-[-0.045em]">{tr("Was braucht das Team?", "What does the team need?")}</h2>
+      <h2 id="coach-preview-state-title" className="mt-2 text-[25px] font-semibold leading-none tracking-[-0.045em]">{tr("Wie geht es dem Team heute?", "How is the team doing today?")}</h2>
       <p className="mt-3 text-[9px] leading-4 text-white/45">{tr("Nur sichtbar, wenn mindestens fünf Athleten geantwortet haben.", "Visible only when at least five athletes have responded.")}</p>
 
       <div className="mt-5 grid grid-cols-3 gap-2">

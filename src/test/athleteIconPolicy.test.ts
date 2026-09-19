@@ -35,6 +35,6 @@ describe("athlete interface icon policy", () => {
     expect(journal).toContain("<ArrowLeft");
     expect(journal).toContain("<ArrowRight");
     expect(journal).toContain("<Loader2");
-    expect(journal).toContain("<Mic");
+    expect(journal).toContain("<VoiceInput");
   });
 });

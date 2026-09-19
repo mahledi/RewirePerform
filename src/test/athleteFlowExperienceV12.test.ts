@@ -60,6 +60,11 @@ describe("V1.2 athlete flow experience contract", () => {
     expect(journal).toContain("<VoiceInput");
     expect(journal).toContain("safeJournalStep");
     expect(journal).toContain("allQuestionsReady");
+    expect(journal).toContain("freeReflectionStep");
+    expect(journal).toContain("safeJournalStep === lastJournalStep");
+    expect(journal).toContain("Eine Frage pro Schritt");
+    expect(journal).not.toContain("Sprich deine Antworten ein.");
+    expect(journal).not.toContain("Frühere Einträge");
     expect(preTraining).toContain('key="recall"');
     expect(preTraining).toContain('key="reveal"');
     expect(preTraining).toContain("Erinnerung prüfen");

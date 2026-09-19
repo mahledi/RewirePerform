@@ -18,12 +18,14 @@ import {
   Home,
   Menu,
   Mic,
+  Pause,
   RotateCcw,
   Settings,
   ShieldCheck,
   Sparkles,
   Target,
   Users,
+  Volume2,
   X,
 } from "lucide-react";
 import { BrandLockup, BrandSymbol } from "@/components/brand/BrandLogo";
@@ -52,6 +54,7 @@ export type AthleteFirstRunSceneId =
   | "tasks"
   | "check"
   | "anchor"
+  | "visualization"
   | "journal"
   | "development"
   | "measurement"
@@ -85,40 +88,22 @@ const scenes: Scene[] = [
     position: { x: 900, y: -420, scale: 0.96 },
   },
   {
-    id: "check",
-    eyebrow: "Daily Flow · 4 von 4",
-    title: "Ein kurzer Check festigt, was du heute brauchst.",
-    position: { x: 650, y: -950, scale: 0.96 },
-  },
-  {
     id: "anchor",
     eyebrow: "Vor deiner Einheit",
-    title: "Vor dem Training siehst du denselben Fokus wieder.",
+    title: "Vor dem Training rufst du denselben Fokus aktiv ab.",
     position: { x: 100, y: -1120, scale: 0.96 },
+  },
+  {
+    id: "visualization",
+    eyebrow: "Am Ruhetag",
+    title: "Du gehst die Reaktion in einer Sportszene durch.",
+    position: { x: -360, y: -1160, scale: 0.96 },
   },
   {
     id: "journal",
     eyebrow: "Nach deinem Tag",
-    title: "Am Abend reflektierst du den echten Tag.",
-    position: { x: -500, y: -1050, scale: 0.96 },
-  },
-  {
-    id: "development",
-    eyebrow: "Deine Entwicklung",
-    title: "Du siehst deine Wiederholungen, nicht eine Bewertung.",
-    position: { x: -980, y: -620, scale: 0.94 },
-  },
-  {
-    id: "measurement",
-    eyebrow: "Messung über 56 Tage",
-    title: "Viele Signale. Ein gemeinsamer Verlauf.",
-    position: { x: -1320, y: -280, scale: 0.96 },
-  },
-  {
-    id: "team",
-    eyebrow: "Solo oder im Team",
-    title: "Der gleiche klare Ablauf – passend zu deinem Alltag.",
-    position: { x: -1000, y: 0, scale: 0.96 },
+    title: "Eine Frage nach der anderen. Ohne Ablenkung.",
+    position: { x: -780, y: -900, scale: 0.96 },
   },
   {
     id: "start",
@@ -132,12 +117,9 @@ const englishScenes: Pick<Scene, "eyebrow" | "title">[] = [
   { eyebrow: "Your system for today", title: "See what is coming up right away." },
   { eyebrow: "Daily Flow · 1 of 4", title: "First, understand today's focus." },
   { eyebrow: "Daily Flow · 3 of 4", title: "One clear mission brings it into your day." },
-  { eyebrow: "Daily Flow · 4 of 4", title: "A short check reinforces what you need today." },
-  { eyebrow: "Before your session", title: "See the same focus again before training." },
-  { eyebrow: "After your day", title: "Reflect on what actually happened in the evening." },
-  { eyebrow: "Your progress", title: "See your repetitions, not a judgement." },
-  { eyebrow: "Measurement across 56 days", title: "Several signals. One connected picture." },
-  { eyebrow: "Solo or in a team", title: "The same clear routine, adapted to your day." },
+  { eyebrow: "Before your session", title: "Actively recall the same focus before training." },
+  { eyebrow: "On a rest day", title: "Rehearse your response in a sporting situation." },
+  { eyebrow: "After your day", title: "One question at a time. No distractions." },
   { eyebrow: "Ready", title: "Your journey starts with day one." },
 ];
 
@@ -147,7 +129,8 @@ const worldScreens = [
   { id: "tasks", x: 900, y: -420 },
   { id: "check", x: 650, y: -950 },
   { id: "anchor", x: 100, y: -1120 },
-  { id: "journal", x: -500, y: -1050 },
+  { id: "visualization", x: -360, y: -1160 },
+  { id: "journal", x: -780, y: -900 },
   { id: "development", x: -980, y: -620 },
   { id: "measurement", x: -1320, y: -280 },
   { id: "team", x: -1000, y: 0 },
@@ -604,8 +587,50 @@ const AnchorScreen = () => {
   );
 };
 
+const VisualizationScreen = () => {
+  const { tr } = usePublicLanguage();
+  return (
+    <AppScreen labelledBy="preview-visualization-title" chrome="none">
+      <ScreenHeaderPreview title={tr("Visualisierung", "Visualisation")} eyebrow={tr("Ruhetag · direkte Sportszene", "Rest day · direct sporting situation")} />
+      <div className="flex h-[546px] flex-col px-5 py-6">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Deine Reaktion", "Your response")}</p>
+        <h2 id="preview-visualization-title" className="mt-3 text-[25px] font-semibold leading-[1.08] tracking-[-0.04em]">
+          {tr("Stell dir einen entscheidenden Fehler vor.", "Imagine a crucial mistake.")}
+        </h2>
+        <p className="mt-3 text-[10px] leading-4 text-white/48">
+          {tr("Du bemerkst den Frust und siehst dich direkt wieder zur nächsten beeinflussbaren Aktion zurückkehren.", "You notice the frustration and picture yourself returning directly to the next controllable action.")}
+        </p>
+
+        <div className="relative mx-auto mt-7 flex h-44 w-44 items-center justify-center">
+          <div className="absolute inset-5 rounded-full bg-primary/[0.08] blur-2xl" />
+          <svg className="relative h-44 w-44 -rotate-90" viewBox="0 0 176 176" aria-hidden="true">
+            <circle cx="88" cy="88" r="76" fill="none" stroke="rgba(255,255,255,0.055)" strokeWidth="7" />
+            <circle cx="88" cy="88" r="76" fill="none" stroke="#2EAD89" strokeLinecap="round" strokeWidth="7" strokeDasharray="477" strokeDashoffset="188" />
+          </svg>
+          <div className="absolute text-center">
+            <p className="text-3xl font-semibold tabular-nums tracking-[-0.04em]">0:52</p>
+            <p className="mt-1 text-[8px] font-semibold text-white/35">{tr("Sportszene", "Sporting situation")}</p>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-[22px] border border-primary/22 bg-primary/[0.08] p-4 text-center">
+          <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Dein Satz für heute", "Your phrase for today")}</p>
+          <p className="mt-2 text-[21px] font-semibold tracking-[-0.035em]">{tr("Passiert. Nächste Aktion.", "It happened. Next action.")}</p>
+        </div>
+
+        <div className="mt-4 flex h-11 items-center justify-center gap-2 rounded-2xl border border-white/[0.075] bg-white/[0.025] text-[9px] font-semibold text-white/55">
+          <Pause className="h-3.5 w-3.5 fill-current" /> {tr("Pausieren", "Pause")}
+        </div>
+        <div className="mt-3 flex items-center justify-center gap-2 text-[8px] text-white/30">
+          <Volume2 className="h-3.5 w-3.5 text-primary" /> {tr("Ein leiser Ton beendet die Szene.", "A soft tone ends the scene.")}
+        </div>
+      </div>
+    </AppScreen>
+  );
+};
+
 const JournalScreen = () => {
-  const { tr, language } = usePublicLanguage();
+  const { tr } = usePublicLanguage();
   return (
   <AppScreen labelledBy="preview-journal-title" chrome="none">
     <ScreenHeaderPreview
@@ -617,71 +642,33 @@ const JournalScreen = () => {
         </span>
       )}
     />
-    <div className="h-[546px] overflow-hidden px-5 py-5">
-      <div className="rounded-2xl bg-gradient-card border-glow p-4">
-        <p className="mb-2 text-[8px] uppercase tracking-widest text-primary">{tr("Heute im Fokus", "Today's focus")}</p>
-        <h2 id="preview-journal-title" className="text-[11px] font-semibold leading-snug">
-          {tr("Nimm das vollständige Bild wieder auf", "Bring the full picture back into view")}
+    <div className="flex h-[546px] flex-col px-5 py-6">
+      <div className="flex items-center gap-2" aria-label={tr("Frage 1 von 3", "Question 1 of 3")}>
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/[0.065]"><div className="h-full w-1/3 rounded-full bg-primary" /></div>
+        <span className="text-[8px] text-white/34">1/3</span>
+      </div>
+
+      <div className="flex flex-1 flex-col justify-center py-5">
+        <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-primary">{tr("Deine Reflexion", "Your reflection")}</p>
+        <h2 id="preview-journal-title" className="mt-4 text-[27px] font-semibold leading-[1.08] tracking-[-0.045em]">
+          {tr("Welches Problem hat deinen Blick eng gemacht?", "Which problem narrowed your view?")}
         </h2>
-        <p className="mt-2 text-[9px] leading-4 text-muted-foreground">
-          {tr("Ein enger Blick ist nicht automatisch falsch – nur unvollständig.", "A narrow view is not automatically wrong, just incomplete.")}
-        </p>
-        <div className="mt-3 flex items-start gap-2 border-t border-border/50 pt-3">
-          <Dumbbell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-          <p className="text-[8px] leading-3.5 text-muted-foreground">
-            {tr("Schau auf eine konkrete Szene und hole das ganze Bild zurück.", "Look at a specific moment and bring back the full picture.")}
-          </p>
+        <div className="mt-7 min-h-[156px] rounded-[22px] border border-white/[0.075] bg-white/[0.025] p-4 text-[10px] leading-4 text-white/24">
+          {tr("Benenne die konkrete Situation …", "Name the specific situation …")}
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-[9px] font-medium text-primary">
+          <Mic className="h-3.5 w-3.5" /> {tr("Antwort einsprechen", "Speak answer")}
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border/50 bg-secondary/25 px-4 py-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <BookOpen className="h-4 w-4 shrink-0 text-primary" />
-          <div>
-            <p className="text-[10px] font-semibold">{tr("Frühere Einträge ansehen", "View earlier entries")}</p>
-            <p className="mt-0.5 text-[8px] text-muted-foreground">{tr("Privater Rückblick, nach Tagen geordnet.", "Private reflections, organised by day.")}</p>
-          </div>
-        </div>
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-      </div>
-
-      <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Mic className="h-3.5 w-3.5" />
-        </span>
-        <div>
-          <p className="text-[9px] font-medium">{tr("Sprich deine Antworten ein.", "Speak your answers.")}</p>
-          <p className="mt-1 text-[8px] leading-3 text-muted-foreground">
-            {tr("Du kannst den übernommenen Text anschließend bearbeiten oder vollständig tippen.", "You can edit the transcribed text afterwards or type your answer instead.")}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 space-y-4">
-        {(language === "en" ? [
-          ["Which problem narrowed your view?", "Name it without playing it down."],
-          ["What else was actually there?", "Something that worked, support or an option."],
-        ] : [
-          ["Welches Problem hat deinen Blick eng gemacht?", "Benenne es, ohne es kleinzureden."],
-          ["Was war außerdem real vorhanden?", "Etwas Funktionierendes, Unterstützung oder eine Möglichkeit."],
-        ]).map(([question, placeholder]) => (
-          <div key={question}>
-            <p className="text-[9px] font-medium leading-3.5">{question}</p>
-            <div className="mt-2 h-12 rounded-xl border border-border/40 bg-secondary/40 px-3 py-2 text-[8px] text-muted-foreground">
-              {placeholder}
-            </div>
-            <div className="mt-1.5 flex items-center gap-1.5 text-[8px] text-primary">
-              <Mic className="h-3 w-3" />
-              {tr("Antwort einsprechen", "Speak answer")}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 flex items-center gap-2 text-[8px] text-white/35">
+      <div className="flex items-center gap-2 text-[8px] text-white/35">
         <ShieldCheck className="h-3.5 w-3.5 text-primary" />
         {tr("Deine Journalantworten bleiben privat.", "Your journal answers stay private.")}
       </div>
+      <div className="mt-4 flex h-11 items-center justify-center rounded-xl bg-primary text-[10px] font-semibold text-[#07110E]">
+        {tr("Weiter", "Continue")} <ArrowRight className="ml-2 h-3.5 w-3.5" />
+      </div>
+      <p className="mt-3 text-center text-[8px] text-white/28">{tr("Nach dem Speichern erscheint die Reflexion in deinem eigenen Verlauf.", "After saving, the reflection appears in your own history.")}</p>
     </div>
   </AppScreen>
   );
@@ -993,6 +980,7 @@ export const AthleteFirstRunSceneVisual = ({
   if (sceneId === "tasks") return <TasksScreen />;
   if (sceneId === "check") return <CheckScreen />;
   if (sceneId === "anchor") return <AnchorScreen />;
+  if (sceneId === "visualization") return <VisualizationScreen />;
   if (sceneId === "journal") return <JournalScreen />;
   if (sceneId === "development") return <DevelopmentScreen />;
   if (sceneId === "measurement") return <MeasurementScreen />;
@@ -1156,7 +1144,7 @@ const FirstRunExperiencePreview = ({
                       x: (screen.x - scene.position.x) * sceneScale,
                       y: (screen.y - scene.position.y) * sceneScale,
                       scale: sceneScale,
-                      opacity: screen.id === scene.id ? 1 : 0.28,
+                      opacity: screen.id === scene.id ? 1 : 0,
                     }}
                 transition={reduceMotion
                   ? { duration: 0.01 }

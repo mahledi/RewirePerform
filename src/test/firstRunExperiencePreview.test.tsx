@@ -91,47 +91,30 @@ describe("first run experience preview", () => {
     expect(screen.getAllByText("Was ist außerdem da?").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Ein kurzer Check festigt, was du heute brauchst." })).toBeInTheDocument();
-    expect(screen.getByText("Was ist heute ausdrücklich nicht das Ziel?")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Vor dem Training siehst du denselben Fokus wieder." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Vor dem Training rufst du denselben Fokus aktiv ab." })).toBeInTheDocument();
     expect(screen.getByText("Was ist heute dein Satz?")).toBeInTheDocument();
     expect(screen.getByText("Erinnerung prüfen")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Am Abend reflektierst du den echten Tag." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Du gehst die Reaktion in einer Sportszene durch." })).toBeInTheDocument();
+    expect(screen.getByText("Stell dir einen entscheidenden Fehler vor.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
+    expect(screen.getByRole("heading", { name: "Eine Frage nach der anderen. Ohne Ablenkung." })).toBeInTheDocument();
     expect(screen.getByText("Welches Problem hat deinen Blick eng gemacht?")).toBeInTheDocument();
     expect(screen.getByText("Deine Journalantworten bleiben privat.")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Du siehst deine Wiederholungen, nicht eine Bewertung." })).toBeInTheDocument();
-    expect(screen.getByText("Nicht als Urteil. Als sichtbare Spur deiner Wiederholungen.")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Viele Signale. Ein gemeinsamer Verlauf." })).toBeInTheDocument();
-    expect(screen.getByText("Nicht ein Test. Ein Verlauf.")).toBeInTheDocument();
-    expect(screen.getByText("Programmtage")).toBeInTheDocument();
-    expect(screen.getByText("Bis zu 16")).toBeInTheDocument();
-    expect(screen.getByText("Coach-Reviews im Team")).toBeInTheDocument();
-    expect(screen.getByText("Du entscheidest. Keine Bewertung deiner Person.")).toBeInTheDocument();
-    expect(screen.getByText(/individuelle Coach-Werte fließen nicht in diese Zusammenfassung ein/)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
-    expect(screen.getByRole("heading", { name: "Der gleiche klare Ablauf – passend zu deinem Alltag." })).toBeInTheDocument();
-    expect(screen.getByText("Coach-Termine und deine mentale Praxis in einer gemeinsamen Linie.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     expect(screen.getByRole("heading", { name: "Dein Weg beginnt mit dem ersten Tag." })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ohne Team" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Registrierung starten")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Schritt 10 von 10")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Schritt 7 von 7")).not.toBeInTheDocument();
   }, 15_000);
 
   it("keeps the preview replayable and makes the team-code choice explicit", () => {
     render(<FirstRunExperiencePreview />);
 
-    for (let index = 0; index < 9; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     }
     fireEvent.click(screen.getByRole("button", { name: "Teamcode" }));
@@ -155,7 +138,7 @@ describe("first run experience preview", () => {
       />,
     );
 
-    for (let index = 0; index < 9; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
       fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
     }
 

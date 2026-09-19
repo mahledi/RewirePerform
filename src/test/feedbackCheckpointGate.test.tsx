@@ -130,7 +130,7 @@ describe("feedback checkpoint live gate", () => {
     mocks.begin.mockResolvedValue(persistence);
     renderGate();
 
-    fireEvent.click(await screen.findByRole("button", { name: /Feedback starten/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Zwischenstand starten/ }));
     await waitFor(() => expect(mocks.begin).toHaveBeenCalledTimes(1));
     expect(await screen.findByText("Deine Sicht zählt.")).toBeInTheDocument();
   });
@@ -181,6 +181,6 @@ describe("feedback checkpoint live gate", () => {
 
     const selected = await screen.findByRole("radio", { name: "Sehr verständlich" });
     expect(selected).toHaveAttribute("aria-checked", "true");
-    expect(screen.queryByRole("button", { name: /Feedback starten/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Zwischenstand starten/ })).not.toBeInTheDocument();
   });
 });
