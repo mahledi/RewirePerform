@@ -27,7 +27,7 @@
     "app_store_v1_2_submitted": false
   },
   "package_digest_algorithm": "sha256 over exact UTF-8 lines of sha256, two spaces and relative path in manifest order",
-  "package_sha256": "a0d4ee6057dfdc990c769f64b4813f9459eda43c16c713548eed9b7bf660f8aa",
+  "package_sha256": "e740169c95a8fa2a09c8c3180c7e8ab7eddafe38b370187a21844a678509bd31",
   "files": [
     {
       "path": ".env.example",
@@ -63,7 +63,7 @@
     },
     {
       "path": "src/components/feedback-intelligence/FeedbackQuestionnairePreview.tsx",
-      "sha256": "987deb34f2b1576b77d8d4cdd00ac84d270dda794a4ace66417476f1597eb241"
+      "sha256": "24608eec61662a8b43ceee85029aeaf9cd119223f0759025a123c453c711ed48"
     },
     {
       "path": "src/components/settings/FeedbackTextConsentSettings.tsx",
@@ -163,7 +163,7 @@
     },
     {
       "path": "src/test/feedbackIntelligencePreview.test.tsx",
-      "sha256": "75facee5b44b469cb8148932bcc10245a3ad40e57b2b52e98e54b2fd9c57f819"
+      "sha256": "b3f57c68766fa8db2ffe3e073a206f7600748eeab600783acc224ee33bd56d0c"
     },
     {
       "path": "src/test/feedbackTextConsentSettings.test.tsx",

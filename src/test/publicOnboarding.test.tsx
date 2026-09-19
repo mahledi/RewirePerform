@@ -49,7 +49,7 @@ const renderWelcome = (path: string) => render(
 );
 
 const advanceToFinalScene = () => {
-  for (let index = 0; index < 9; index += 1) {
+  for (let index = 0; index < 6; index += 1) {
     fireEvent.click(screen.getByRole("button", { name: "Weiter" }));
   }
 };
@@ -66,7 +66,7 @@ describe("post-signup onboarding", () => {
     auth.roleVerified = true;
   });
 
-  it("runs all ten scenes only for the newly registered athlete, then opens the questionnaire", () => {
+  it("runs all seven scenes only for the newly registered athlete, then opens the questionnaire", () => {
     beginPostSignupOnboarding("athlete-1", "solo");
     renderWelcome("/welcome?flow=post-signup&intent=solo");
 

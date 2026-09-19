@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { FeedbackQuestionnairePreview } from "@/components/feedback-intelligence/FeedbackQuestionnairePreview";
 
 const openFirstQuestion = async () => {
-  fireEvent.click(screen.getByRole("button", { name: /Feedback starten/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Zwischenstand starten/ }));
   fireEvent.click(await screen.findByRole("button", { name: /Verstanden/ }));
   await screen.findByText("Frage 1");
 };
@@ -95,15 +95,15 @@ describe("feedback intelligence synthetic preview", () => {
   it("explains the voluntary structured use before a live checkpoint starts", () => {
     render(<FeedbackQuestionnairePreview day={10} mode="live" textEnabled />);
 
-    expect(screen.getByText(/Freiwillig.*Produktverbesserung.*Coach sieht keine Einzelantworten/s)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Datenschutz zum Feedback" })).toHaveAttribute("href", "/privacy");
+    expect(screen.getByText(/Coach sieht keine Einzelantworten/)).toBeInTheDocument();
+    expect(screen.getByText(/verbesserst RewirePerform mit/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Freiwilligkeit und Datenschutz" })).toHaveAttribute("href", "/privacy");
   });
 
   it("keeps the scheduled checkpoint visible when feedback is completed late", () => {
     render(<FeedbackQuestionnairePreview day={10} mode="live" overdueByDays={5} />);
 
-    expect(screen.getByText(/Zwischenstand von Tag 10 jetzt nach/)).toBeInTheDocument();
-    expect(screen.getByText(/Fragebogen bleibt Tag 10 zugeordnet/)).toBeInTheDocument();
+    expect(screen.getByText(/Zwischenstand gehört zu Tag 10 und wird jetzt nachgeholt/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Später erinnern" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Für Tag 10 kein Feedback geben" })).toBeInTheDocument();
   });

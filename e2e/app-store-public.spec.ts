@@ -20,12 +20,9 @@ const firstRunSceneHeadings = [
   "Du siehst sofort, was ansteht.",
   "Zuerst verstehst du den Fokus des Tages.",
   "Eine klare Mission bringt ihn in deinen Alltag.",
-  "Ein kurzer Check festigt, was du heute brauchst.",
-  "Vor dem Training siehst du denselben Fokus wieder.",
-  "Am Abend reflektierst du den echten Tag.",
-  "Du siehst deine Wiederholungen, nicht eine Bewertung.",
-  "Viele Signale. Ein gemeinsamer Verlauf.",
-  "Der gleiche klare Ablauf – passend zu deinem Alltag.",
+  "Vor dem Training rufst du denselben Fokus aktiv ab.",
+  "Du gehst die Reaktion in einer Sportszene durch.",
+  "Eine Frage nach der anderen. Ohne Ablenkung.",
   "Dein Weg beginnt mit dem ersten Tag.",
 ] as const;
 
@@ -53,7 +50,7 @@ test("public product and legal routes render cleanly", async ({ page }, testInfo
   await page.getByRole("button", { name: "Für mein Team" }).click();
   await expect(page.getByRole("heading", { name: "Mentale Arbeit bleibt oft in einzelnen Gesprächen hängen." })).toBeVisible();
   await page.getByRole("tab", { name: /03 Zustand & Fokus/ }).click();
-  await expect(page.getByRole("heading", { name: "Der Coach erkennt, was das Team heute brauchen könnte." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Der Coach sieht, wie es dem Team heute geht." })).toBeVisible();
   await expect(page.getByRole("link", { name: /Teamzugang ansehen/ })).toHaveAttribute("href", "/team-access");
   await expectNoHorizontalOverflow(page);
 
@@ -169,9 +166,9 @@ test("internal introduction evidence completes without collecting personal data"
   for (const [index, heading] of firstRunSceneHeadings.entries()) {
     await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
     if (index < firstRunSceneHeadings.length - 1) {
-      await expect(page.getByLabel(`Schritt ${index + 1} von 10`)).toBeVisible();
+      await expect(page.getByLabel(`Schritt ${index + 1} von 7`)).toBeVisible();
     } else {
-      await expect(page.getByLabel("Schritt 10 von 10")).toHaveCount(0);
+      await expect(page.getByLabel("Schritt 7 von 7")).toHaveCount(0);
     }
     expect(await page.evaluate(() => Object.keys(window.localStorage).filter((key) => key !== "rewireperform.public-language"))).toEqual([]);
     await expectNoHorizontalOverflow(page);
@@ -219,7 +216,7 @@ test("introduction evidence remains accessible with reduced motion and large tex
 
   expect(await page.evaluate(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
   await expect(page.getByRole("heading", { level: 1, name: firstRunSceneHeadings[0] })).toBeVisible();
-  await expect(page.getByLabel("Schritt 1 von 10")).toBeVisible();
+  await expect(page.getByLabel("Schritt 1 von 7")).toBeVisible();
   await expect(page.getByRole("button", { name: "Weiter" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 

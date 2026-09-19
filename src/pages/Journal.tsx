@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowLeft, ArrowRight, BookOpen, Check, Dumbbell, Loader2, Mic, Moon, Trophy } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Dumbbell, Loader2, Moon, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +25,6 @@ import {
   AthleteFlowProgress,
   AthleteFlowScene,
   athleteFlowInput,
-  athleteFlowPanel,
   athleteFlowPrimaryButton,
   athleteFlowSecondaryButton,
 } from "@/components/app/AthleteFlowScene";
@@ -306,14 +305,16 @@ const Journal = () => {
   const j = content.journal;
   const contextConfig = journalContextConfig[resolved.calendarEventType];
   const ContextIcon = contextConfig.icon;
-  const displayTitle = content.title ?? matrix.lens;
-  const displayLens = content.lens ?? matrix.practiceFocus;
   const questionCount = j.questions.length;
   const gratitudeStep = questionCount;
-  const totalJournalSteps = questionCount + 1;
-  const safeJournalStep = Math.min(journalStep, gratitudeStep);
+  const hasFreeReflection = Boolean(j.freeReflectionPrompt);
+  const freeReflectionStep = hasFreeReflection ? questionCount + 1 : null;
+  const lastJournalStep = freeReflectionStep ?? gratitudeStep;
+  const totalJournalSteps = lastJournalStep + 1;
+  const safeJournalStep = Math.min(journalStep, lastJournalStep);
   const activeQuestion = j.questions[safeJournalStep];
   const isGratitudeStep = safeJournalStep === gratitudeStep;
+  const isFreeReflectionStep = freeReflectionStep !== null && safeJournalStep === freeReflectionStep;
   const gratitudeMinWords = j.gratitudeMinWords ?? 8;
   const gratitudeWords = countWords(gratitude);
   const currentAnswerReady = activeQuestion
@@ -345,54 +346,9 @@ const Journal = () => {
         )}
       />
 
-      <div className="relative mx-auto max-w-2xl space-y-6 px-5 py-7 pb-[calc(env(safe-area-inset-bottom)+7rem)]">
-        {/* Lens reminder */}
-        <AthleteFlowScene className="border-l border-primary/35 pl-4">
-          <p className="text-[10px] uppercase tracking-widest text-primary mb-2">Heute im Fokus</p>
-          <p className="text-base font-heading font-semibold leading-snug">{displayTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-white/55">{displayLens}</p>
-          <div className="mt-3 flex items-start gap-3">
-            <ContextIcon className={`w-4 h-4 mt-0.5 shrink-0 ${contextConfig.color}`} />
-            <p className="text-xs leading-5 text-white/42">{resolved.context.focus}</p>
-          </div>
-        </AthleteFlowScene>
-
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {resolved.context.journal.intro}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => navigate("/journal/history")}
-          className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-1 text-left text-white/48 transition-colors hover:text-white/72 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <BookOpen className="w-5 h-5 text-primary shrink-0" />
-            <div className="min-w-0">
-              <p className="text-sm font-heading font-semibold">Frühere Einträge</p>
-              <p className="text-xs text-white/35">Privater Rückblick</p>
-            </div>
-          </div>
-          <ArrowLeft className="w-4 h-4 text-muted-foreground rotate-180 shrink-0" />
-        </button>
-
-        {/* Speak-don't-type hint */}
-        <div className="flex items-start gap-3 border-l border-white/[0.08] pl-4">
-          <div className="p-2 text-primary shrink-0">
-            <Mic className="w-4 h-4" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground leading-snug">
-              Sprich deine Antworten ein.
-            </p>
-            <p className="mt-1 text-xs leading-5 text-white/42">
-              Nutze Sprache, wenn du Gedanken damit direkter festhalten kannst. Du kannst den übernommenen Text anschließend bearbeiten oder vollständig tippen.
-            </p>
-          </div>
-        </div>
-
+      <div className="relative mx-auto flex min-h-[calc(100dvh-5.5rem)] max-w-2xl flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+7rem)] pt-6">
         {saveError && (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
+          <div className="mb-5 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-muted-foreground">
             {saveError}
           </div>
         )}
@@ -401,17 +357,19 @@ const Journal = () => {
           <AthleteFlowProgress value={((safeJournalStep + 1) / totalJournalSteps) * 100} className="flex-1" />
           <span className="ml-1 text-[10px] tabular-nums text-white/38">{safeJournalStep + 1}/{totalJournalSteps}</span>
         </div>
+        <p className="sr-only">Eine Frage pro Schritt</p>
 
-        <AnimatePresence mode="wait" initial={false}>
+        <div className="flex flex-1 items-center py-8 sm:py-10">
+          <AnimatePresence mode="wait" initial={false}>
         {activeQuestion && (
           <AthleteFlowScene
             key={activeQuestion.id}
-            className={`space-y-4 ${athleteFlowPanel} p-5`}
+            className="w-full"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">
               Frage {safeJournalStep + 1} von {questionCount}
             </p>
-            <label className="block text-xl font-semibold leading-7 text-foreground">{activeQuestion.question}</label>
+            <label className="mt-4 block max-w-xl text-[clamp(1.75rem,6vw,2.65rem)] font-semibold leading-[1.08] tracking-[-0.04em] text-foreground">{activeQuestion.question}</label>
             <Textarea
               value={answers[activeQuestion.id] ?? ""}
               onChange={(event) => setAnswers((previous) => ({
@@ -419,56 +377,50 @@ const Journal = () => {
                 [activeQuestion.id]: event.target.value,
               }))}
               placeholder={activeQuestion.placeholder ?? ""}
-              className={`${athleteFlowInput} min-h-32 resize-none`}
+              className={`${athleteFlowInput} mt-7 min-h-[180px] resize-none rounded-[24px] p-5 text-base leading-7`}
             />
-            <VoiceInput
-              currentValue={answers[activeQuestion.id] ?? ""}
-              onTranscript={(text) => setAnswers((previous) => ({ ...previous, [activeQuestion.id]: text }))}
-              showHint={false}
-            />
+            <div className="mt-3"><VoiceInput currentValue={answers[activeQuestion.id] ?? ""} onTranscript={(text) => setAnswers((previous) => ({ ...previous, [activeQuestion.id]: text }))} showHint={false} /></div>
           </AthleteFlowScene>
         )}
 
         {isGratitudeStep && (
           <AthleteFlowScene
             key="gratitude"
-            className="space-y-4 rounded-[24px] border border-primary/15 bg-primary/[0.045] p-5 shadow-[inset_0_1px_0_rgba(98,198,168,0.06),0_22px_65px_-52px_rgba(46,173,137,0.72)]"
+            className="w-full"
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Blick öffnen</p>
-            <label className="block text-xl font-semibold leading-7">Was war heute gut, hilfreich oder tragend?</label>
-            <p className="text-sm leading-6 text-white/48">{j.gratitudeInstruction}</p>
+            <label className="mt-4 block max-w-xl text-[clamp(1.75rem,6vw,2.65rem)] font-semibold leading-[1.08] tracking-[-0.04em]">Was war heute gut, hilfreich oder tragend?</label>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/42">{j.gratitudeInstruction}</p>
             <Textarea
               value={gratitude}
               onChange={(event) => setGratitude(event.target.value)}
               placeholder="Schreib einen konkreten Satz …"
-              className={`${athleteFlowInput} min-h-32 resize-none`}
+              className={`${athleteFlowInput} mt-7 min-h-[180px] resize-none rounded-[24px] p-5 text-base leading-7`}
             />
-            <div className="flex items-center justify-between gap-3">
+            <div className="mt-3 flex items-center justify-between gap-3">
               <VoiceInput currentValue={gratitude} onTranscript={setGratitude} showHint={false} />
               <span className={`text-xs ${gratitudeWords >= gratitudeMinWords ? "text-primary" : "text-white/35"}`}>
                 {gratitudeWords}/{gratitudeMinWords} Wörter
               </span>
             </div>
+          </AthleteFlowScene>
+        )}
 
-            {j.freeReflectionPrompt && (
-              <div className="space-y-2 border-t border-white/[0.06] pt-4">
-                <label className="block text-xs text-muted-foreground">{j.freeReflectionPrompt}</label>
-                <Textarea
-                  value={freeReflection}
-                  onChange={(event) => setFreeReflection(event.target.value)}
-                  placeholder="Optional …"
-                  className={`${athleteFlowInput} min-h-20 resize-none`}
-                />
-                <VoiceInput
-                  currentValue={freeReflection}
-                  onTranscript={setFreeReflection}
-                  showHint={false}
-                />
-              </div>
-            )}
+        {isFreeReflectionStep && j.freeReflectionPrompt && (
+          <AthleteFlowScene key="free-reflection" className="w-full">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary">Freier Abschluss · optional</p>
+            <label className="mt-4 block max-w-xl text-[clamp(1.75rem,6vw,2.65rem)] font-semibold leading-[1.08] tracking-[-0.04em]">{j.freeReflectionPrompt}</label>
+            <Textarea
+              value={freeReflection}
+              onChange={(event) => setFreeReflection(event.target.value)}
+              placeholder="Optional …"
+              className={`${athleteFlowInput} mt-7 min-h-[180px] resize-none rounded-[24px] p-5 text-base leading-7`}
+            />
+            <div className="mt-3"><VoiceInput currentValue={freeReflection} onTranscript={setFreeReflection} showHint={false} /></div>
           </AthleteFlowScene>
         )}
         </AnimatePresence>
+        </div>
 
         <div className="sticky bottom-3 z-20 grid grid-cols-[auto_1fr] gap-3 rounded-[22px] border border-white/[0.07] bg-[#0B0C10]/92 p-2 shadow-[0_18px_60px_-30px_rgba(0,0,0,0.95)] backdrop-blur-2xl">
           <AthleteFlowButton
@@ -479,7 +431,7 @@ const Journal = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </AthleteFlowButton>
-          {isGratitudeStep ? (
+          {safeJournalStep === lastJournalStep ? (
             <AthleteFlowButton
               onClick={handleSave}
               disabled={saving || !allQuestionsReady || gratitudeWords < gratitudeMinWords}
@@ -499,8 +451,8 @@ const Journal = () => {
             </AthleteFlowButton>
           ) : (
             <AthleteFlowButton
-              onClick={() => setJournalStep((current) => Math.min(gratitudeStep, current + 1))}
-              disabled={!currentAnswerReady}
+              onClick={() => setJournalStep((current) => Math.min(lastJournalStep, current + 1))}
+              disabled={activeQuestion ? !currentAnswerReady : isGratitudeStep && gratitudeWords < gratitudeMinWords}
               className={`${athleteFlowPrimaryButton} w-full`}
             >
               Weiter <ArrowRight className="h-4 w-4" />

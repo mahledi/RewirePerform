@@ -398,10 +398,10 @@ const QuickSystemFlight = ({ onOpenDetails }: { onOpenDetails: () => void }) => 
       visual: "current-pre-training" as const,
     },
     {
-      label: tr("Entwicklung erkennen", "Recognise progress"),
-      title: tr("Du siehst deine Wiederholungen – nicht ein Urteil über dich.", "You see your repetitions, not a judgement of you."),
-      copy: tr("Rückblicke und dein eigener Verlauf zeigen, woran du gearbeitet hast und welche Reaktionen dir leichter zugänglich werden.", "Reflections and your own history show what you have practised and which responses are becoming easier to access."),
-      visual: "development" as AthleteFirstRunSceneId,
+      label: tr("Kurz reflektieren", "Reflect briefly"),
+      title: tr("Eine Frage holt die echte Situation noch einmal zurück.", "One question brings the real situation back into view."),
+      copy: tr("Im privaten Journal beantwortest du eine Frage nach der anderen. Du hältst fest, was passiert ist und was du in die nächste Situation mitnimmst.", "In your private journal, you answer one question at a time. You capture what happened and what you will carry into the next situation."),
+      visual: "journal" as AthleteFirstRunSceneId,
     },
   ];
   const teamSteps = [
@@ -419,8 +419,8 @@ const QuickSystemFlight = ({ onOpenDetails }: { onOpenDetails: () => void }) => 
     },
     {
       label: tr("Zustand & Fokus", "State & focus"),
-      title: tr("Der Coach erkennt, was das Team heute brauchen könnte.", "The coach sees what the team may need today."),
-      copy: tr("Energie, Fokus, Druck und ihr Verlauf werden nur als ausreichend großes Teambild gezeigt. Das schafft Orientierung, ohne einzelne Antworten offenzulegen.", "Energy, focus, pressure and their trend appear only as a sufficiently large team picture. This provides context without exposing individual answers."),
+      title: tr("Der Coach sieht, wie es dem Team heute geht.", "The coach sees how the team is doing today."),
+      copy: tr("Energie, Fokus, Druck und ihr Verlauf werden nur als ausreichend großes Teambild gezeigt. Es beschreibt den Zustand, ohne eine Handlung vorzuschreiben oder einzelne Antworten offenzulegen.", "Energy, focus, pressure and their trend appear only as a sufficiently large team picture. It describes the state without prescribing an action or exposing individual answers."),
       visual: "state" as CoachFirstRunSceneId,
     },
     {
@@ -469,7 +469,7 @@ const QuickSystemFlight = ({ onOpenDetails }: { onOpenDetails: () => void }) => 
         ))}
       </div>
 
-      <div className="mt-7 grid grid-cols-2 gap-2 sm:grid-cols-4" role="tablist" aria-label={tr("Vier Schritte des Systems", "Four steps of the system")}>
+      <div className="relative mt-10 grid grid-cols-2 gap-x-5 gap-y-2 border-y border-white/[0.07] sm:grid-cols-4" role="tablist" aria-label={tr("Vier Schritte des Systems", "Four steps of the system")}>
         {steps.map((step, index) => (
           <button
             key={`${audience}-${step.label}`}
@@ -479,14 +479,15 @@ const QuickSystemFlight = ({ onOpenDetails }: { onOpenDetails: () => void }) => 
             aria-controls="quick-system-panel"
             onClick={() => setActiveStep(index)}
             className={cn(
-              "min-h-[74px] rounded-2xl border px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:min-h-[82px] sm:px-4",
+              "relative min-h-[74px] px-1 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:min-h-[82px] sm:py-5",
               activeStep === index
-                ? "border-primary/38 bg-primary/[0.09] text-white"
-                : "border-white/[0.065] bg-white/[0.025] text-white/46 hover:border-white/15 hover:bg-white/[0.04]",
+                ? "text-white"
+                : "text-white/42 hover:text-white/72",
             )}
           >
+            <span className={cn("absolute inset-x-0 bottom-0 h-0.5 origin-left bg-primary transition-transform", activeStep === index ? "scale-x-100" : "scale-x-0")} aria-hidden="true" />
             <span className={cn("text-[10px] font-semibold", activeStep === index ? "text-primary" : "text-white/30")}>0{index + 1}</span>
-            <span className="mt-1.5 block text-xs font-semibold leading-4 sm:text-sm">{step.label}</span>
+            <span className="mt-1.5 block text-xs font-semibold leading-4 sm:text-[13px]">{step.label}</span>
           </button>
         ))}
       </div>

@@ -47,7 +47,7 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(source).not.toContain("Kurzes Feedback erscheint zu festgelegten Zeitpunkten");
     expect(source).toContain('AthleteShot sceneId="development"');
     expect(source).toContain("APP_STORE_PRODUCT_URL");
-    expect(source).not.toMatch(/Werkzeug|wird im Pilot geprüft|Eine Frage nach der anderen/);
+    expect(source).not.toMatch(/Werkzeug|wird im Pilot geprüft/);
     expect(source).not.toMatch(/Stabilisierung von Lernspuren|Zentrale mentale Prinzipien tauchen gezielt erneut auf/);
     expect(source).not.toContain("Jeder Moment hat eine klare Aufgabe.");
     expect(source).not.toContain('border-t border-white/[0.055]');
@@ -80,8 +80,8 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(await screen.findByRole("heading", { name: "Mentale Arbeit bleibt oft in einzelnen Gesprächen hängen." })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Teamzugang ansehen/ })).toHaveAttribute("href", "/team-access");
     fireEvent.click(screen.getByRole("tab", { name: /03 Zustand & Fokus/ }));
-    expect(await screen.findByRole("heading", { name: "Der Coach erkennt, was das Team heute brauchen könnte." })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Was braucht das Team?" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Der Coach sieht, wie es dem Team heute geht." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Wie geht es dem Team heute?" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Nicht 56 einzelne Tipps. Ein Lernweg." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Mentale Fähigkeiten sind trainierbar. Weil dein Gehirn lernt." })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Jeder Moment hat eine klare Aufgabe." })).not.toBeInTheDocument();
@@ -157,9 +157,9 @@ describe("WebsiteGoldenPagePreview", () => {
     expect(document.body.textContent).not.toMatch(germanCopy);
 
     fireEvent.click(screen.getByRole("button", { name: /Explore as an athlete/ }));
-    for (let scene = 0; scene < 10; scene += 1) {
+    for (let scene = 0; scene < 7; scene += 1) {
       expect(screen.getByTestId("first-run-stage").textContent).not.toMatch(germanCopy);
-      if (scene < 9) fireEvent.click(screen.getByRole("button", { name: /Continue/ }));
+      if (scene < 6) fireEvent.click(screen.getByRole("button", { name: /Continue/ }));
     }
     fireEvent.click(screen.getByRole("button", { name: "Close introduction" }));
 
